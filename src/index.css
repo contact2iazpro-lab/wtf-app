@@ -117,3 +117,51 @@
 .btn-press:active {
   transform: scale(0.96);
 }
+
+/* WOW reveal animations */
+@keyframes wow-reveal {
+  0%   { transform: scale(0.6);    opacity: 0; filter: blur(8px); }
+  55%  { transform: scale(1.08);   opacity: 1; filter: blur(0); }
+  75%  { transform: scale(0.97); }
+  100% { transform: scale(1);      opacity: 1; }
+}
+
+@keyframes shine-sweep {
+  0%   { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
+  15%  { opacity: 0.55; }
+  100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes score-pop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  65%  { transform: scale(1.12); opacity: 1; }
+  85%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glow-ring {
+  0%   { box-shadow: 0 0 0 0px rgba(255,255,255,0.5); }
+  60%  { box-shadow: 0 0 0 14px rgba(255,255,255,0); }
+  100% { box-shadow: 0 0 0 0px rgba(255,255,255,0); }
+}
+
+.wow-image {
+  animation: wow-reveal 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.wow-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.45) 50%, transparent 60%);
+  animation: shine-sweep 0.7s ease-out 0.3s forwards;
+  pointer-events: none;
+}
+
+.wow-glow {
+  animation: glow-ring 0.8s ease-out 0.1s forwards;
+}
+
+.score-pop {
+  animation: score-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

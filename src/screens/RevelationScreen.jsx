@@ -108,14 +108,15 @@ export default function RevelationScreen({
 
       {/* Fact Image */}
       {fact.imageUrl && (
-        <div className="mx-5 mb-6 rounded-3xl overflow-hidden border border-wtf-border shrink-0" style={{ borderColor: cat?.color + '40', height: '280px' }}>
+        <div
+          className={`mx-5 mb-6 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped ? ' wow-shine wow-glow' : ''}`}
+          style={{ borderColor: cat?.color + '60', height: '280px' }}>
           <img
             src={fact.imageUrl}
             alt={fact.question}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.style.display = 'none'
-            }}
+            className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
+            style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
+            onError={(e) => { e.target.style.display = 'none' }}
           />
         </div>
       )}
@@ -130,22 +131,26 @@ export default function RevelationScreen({
       <div className="mx-5 mb-6 flex items-center gap-4">
         {/* Correct/Incorrect badge */}
         <div
-          className="flex-1 py-4 rounded-2xl text-center border-2 font-black text-lg"
+          className={`flex-1 py-4 rounded-2xl text-center border-2 font-black text-lg${!isDuel ? ' score-pop' : ''}`}
           style={{
             background: isCorrect ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
             borderColor: isCorrect ? '#4CAF50' : '#F44336',
             color: isCorrect ? '#4CAF50' : '#F44336',
+            animationDelay: !isDuel ? '0.5s' : '0s',
+            opacity: !isDuel ? 0 : 1,
           }}>
           {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
         </div>
 
         {/* Points earned */}
         <div
-          className="flex-1 py-4 rounded-2xl text-center border-2 font-black text-lg"
+          className={`flex-1 py-4 rounded-2xl text-center border-2 font-black text-lg${!isDuel ? ' score-pop' : ''}`}
           style={{
             background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
             borderColor: cat?.color + '60',
             color: cat?.color,
+            animationDelay: !isDuel ? '0.6s' : '0s',
+            opacity: !isDuel ? 0 : 1,
           }}>
           +{pointsEarned} pts
         </div>

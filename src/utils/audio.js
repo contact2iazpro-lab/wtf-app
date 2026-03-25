@@ -93,59 +93,100 @@ class AudioManager {
     try { this._ctx_get() } catch (_) { return }
     this._playing = true
 
-    const c = this._ctx
+    // ── Fun, upbeat, kid-friendly music in C major ─────────────────
+    // 130 BPM — style platformer / quiz show
+    const BPM = 130
+    const B = 60 / BPM // beat = 0.4615s
 
-    // Bass drone — A2
-    const bass = c.createOscillator()
-    const bassG = c.createGain()
-    const bassF = c.createBiquadFilter()
-    bassF.type = 'lowpass'
-    bassF.frequency.value = 280
-    bass.type = 'sine'
-    bass.frequency.value = 110
-    bassG.gain.value = 0.55
-    bass.connect(bassF); bassF.connect(bassG); bassG.connect(this._musicGain)
-    bass.start()
-    this._musicOscs.push(bass, bassG, bassF)
+    // Note frequencies — C major scale
+    const C3=130.81, G3=196.00, F3=174.61, Am3=220.00
+    const C4=261.63, D4=293.66, E4=329.63, F4=349.23
+    const G4=392.00, A4=440.00, B4=493.88, C5=523.25
+    const D5=587.33, E5=659.25
 
-    // Pad — A minor chord (A3, C4, E4) with slow filter sweep
-    ;[220, 261.63, 329.63].forEach((freq, i) => {
-      const osc = c.createOscillator()
-      const g = c.createGain()
-      const f = c.createBiquadFilter()
-      f.type = 'lowpass'
-      f.frequency.setValueAtTime(350, c.currentTime)
-      f.frequency.linearRampToValueAtTime(750, c.currentTime + 6)
-      f.frequency.linearRampToValueAtTime(350, c.currentTime + 12)
-      osc.type = 'sine'
-      osc.frequency.value = freq
-      osc.detune.value = (i - 1) * 4
-      g.gain.value = 0.13
-      osc.connect(f); f.connect(g); g.connect(this._musicGain)
-      osc.start()
-      this._musicOscs.push(osc, g, f)
-    })
-
-    // Melodic loop — A minor pentatonic
-    const melodyNotes = [
-      [440, 0], [523.25, 2.5], [587.33, 5], [659.25, 7],
-      [587.33, 9], [523.25, 11.5], [440, 14], [392, 16.5],
+    // Melody (offset in beats, duration in beats)
+    // 16-beat loop (4 bars of 4/4)
+    const melody = [
+      // Bar 1 — bouncy ascending
+      [C4, 0.0, 0.45], [E4, 0.5, 0.4], [G4, 1.0, 0.45], [E4, 1.5, 0.4],
+      // Bar 2
+      [C4, 2.0, 0.4], [D4, 2.5, 0.4], [E4, 3.0, 1.4],
+      // Bar 3 — higher run
+      [G4, 4.5, 0.4], [A4, 5.0, 0.45], [G4, 5.5, 0.4], [E4, 6.0, 0.4], [D4, 6.5, 0.4],
+      // Bar 4
+      [C4, 7.0, 0.4], [E4, 7.5, 0.4], [G4, 8.0, 0.4], [C5, 8.5, 0.4],
+      // Bar 5 — goes higher
+      [B4, 9.0, 0.4], [A4, 9.5, 0.4], [G4, 10.0, 0.85],
+      [A4, 10.5, 0.4], [G4, 11.0, 0.4], [E4, 11.5, 0.4],
+      // Bar 6
+      [D4, 12.0, 0.4], [E4, 12.5, 0.4], [F4, 13.0, 0.45], [E4, 13.5, 0.4],
+      // Bar 7 — climax
+      [D5, 14.0, 0.45], [C5, 14.5, 0.4], [B4, 15.0, 0.4], [A4, 15.5, 0.4],
+      // Bar 8 — resolution
+      [G4, 16.0, 0.85], [E4, 17.0, 0.4], [C4, 17.5, 0.4], [G4, 18.0, 1.6],
     ]
-    const LOOP_MS = 20000
+
+    // Bass line (one note per 2 beats = half notes)
+    const bass = [
+      C3, C3, F3, F3,   // bars 1-2
+      Am3, Am3, G3, G3, // bars 3-4
+      C3, C3, F3, F3,   // bars 5-6
+      G3, G3, C3, C3,   // bars 7-8
+    ]
+
+    // Chord stabs on beats 2 & 4 (C major / F major alternating)
+    const chordBeats = [
+      [1, [C4, E4, G4]],
+      [3, [C4, E4, G4]],
+      [5, [F3, A4, C5]],
+      [7, [F3, A4, C5]],
+      [9, [C4, E4, G4]],
+      [11, [C4, E4, G4]],
+      [13, [G3, B4, D5]],
+      [15, [G3, B4, D5]],
+    ]
+
+    const LOOP_BEATS = 20
+    const LOOP_MS = LOOP_BEATS * B * 1000
 
     const scheduleLoop = () => {
       if (!this._playing) return
-      melodyNotes.forEach(([freq, offset]) => {
+
+      // Melody — triangle wave (bright, sweet)
+      melody.forEach(([freq, beat, dur]) => {
         const t = setTimeout(() => {
-          if (this._playing) this._tone(freq, 1.8, 'sine', 0.07, 0, 'music')
-        }, offset * 1000)
+          if (!this._playing) return
+          this._tone(freq, dur * B, 'triangle', 0.11, 0, 'music')
+          // Chorus — tiny detune second layer
+          this._tone(freq * 1.003, dur * B * 0.9, 'triangle', 0.06, 0.008, 'music')
+        }, beat * B * 1000)
         this._musicTimers.push(t)
       })
+
+      // Bass — sine, one hit per 2 beats
+      bass.forEach((freq, i) => {
+        const t = setTimeout(() => {
+          if (!this._playing) return
+          this._tone(freq, B * 1.6, 'sine', 0.22, 0, 'music')
+        }, i * 2 * B * 1000)
+        this._musicTimers.push(t)
+      })
+
+      // Chord stabs — short, punchy
+      chordBeats.forEach(([beat, freqs]) => {
+        const t = setTimeout(() => {
+          if (!this._playing) return
+          freqs.forEach(f => this._tone(f, B * 0.35, 'sine', 0.055, 0, 'music'))
+        }, beat * B * 1000)
+        this._musicTimers.push(t)
+      })
+
+      // Loop
       const loop = setTimeout(scheduleLoop, LOOP_MS)
       this._musicTimers.push(loop)
     }
 
-    const start = setTimeout(scheduleLoop, 1500)
+    const start = setTimeout(scheduleLoop, 200)
     this._musicTimers.push(start)
   }
 

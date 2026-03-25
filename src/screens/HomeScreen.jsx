@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { audio } from '../utils/audio'
+
 const GAME_MODES = [
   { id: 'solo-flash', label: 'Solo Flash', emoji: '⚡', desc: '60s par fact', active: true },
   { id: 'duel', label: 'Multijoueur', emoji: '🎮', desc: '2-6 joueurs', active: true },
@@ -23,6 +26,25 @@ function StarLogo() {
 }
 
 export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarathon }) {
+  const [musicOn, setMusicOn] = useState(audio.musicEnabled)
+  const [sfxOn, setSfxOn] = useState(audio.sfxEnabled)
+
+  const handlePlay = () => { audio.startMusic(); audio.play('click'); onPlay() }
+  const handleDuel = () => { audio.startMusic(); audio.play('click'); onDuel() }
+  const handleMarathon = () => { audio.startMusic(); audio.play('click'); onMarathon() }
+
+  const toggleMusic = () => {
+    const next = !musicOn
+    setMusicOn(next)
+    audio.setMusicEnabled(next)
+  }
+  const toggleSfx = () => {
+    const next = !sfxOn
+    setSfxOn(next)
+    audio.setSfxEnabled(next)
+    if (next) audio.play('click')
+  }
+
   return (
     <div className="flex flex-col h-full w-full overflow-y-auto scrollbar-hide"
       style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
@@ -63,7 +85,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       {/* Play button */}
       <div className="px-6 mb-5">
         <button
-          onClick={onPlay}
+          onClick={handlePlay}
           className="btn-press w-full py-5 rounded-2xl text-white text-xl font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
           style={{
             background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)',
@@ -88,7 +110,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
           {GAME_MODES.map((mode) => (
             <div
               key={mode.id}
-              onClick={mode.active ? (mode.id === 'duel' ? onDuel : mode.id === 'marathon' ? onMarathon : onPlay) : undefined}
+              onClick={mode.active ? (mode.id === 'duel' ? handleDuel : mode.id === 'marathon' ? handleMarathon : handlePlay) : undefined}
               className={`rounded-2xl p-4 border transition-all duration-150 ${
                 mode.active ? 'cursor-pointer active:scale-95' : 'opacity-30 cursor-not-allowed'
               }`}
@@ -111,6 +133,32 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Audio controls */}
+      <div className="px-6 pb-8 flex gap-3">
+        <button
+          onClick={toggleMusic}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border font-bold text-sm transition-all active:scale-95"
+          style={{
+            background: musicOn ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
+            borderColor: musicOn ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
+            color: musicOn ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
+          }}>
+          <span>{musicOn ? '🎵' : '🔇'}</span>
+          <span>Musique</span>
+        </button>
+        <button
+          onClick={toggleSfx}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border font-bold text-sm transition-all active:scale-95"
+          style={{
+            background: sfxOn ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
+            borderColor: sfxOn ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
+            color: sfxOn ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
+          }}>
+          <span>{sfxOn ? '🔔' : '🔕'}</span>
+          <span>Bruitages</span>
+        </button>
       </div>
     </div>
   )

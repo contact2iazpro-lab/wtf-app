@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import CircularTimer from '../components/CircularTimer'
 import { getCategoryById } from '../data/facts'
+import { audio } from '../utils/audio'
 
 export default function QuestionScreen({
   fact,
@@ -24,8 +25,8 @@ export default function QuestionScreen({
   const cat = getCategoryById(fact.category)
 
   const handleShowHint = (hintNum) => {
-    if (hintNum === 1 && !showHint1) { setShowHint1(true); onUseHint(1) }
-    else if (hintNum === 2 && !showHint2) { setShowHint2(true); onUseHint(2) }
+    if (hintNum === 1 && !showHint1) { setShowHint1(true); onUseHint(1); audio.play('click') }
+    else if (hintNum === 2 && !showHint2) { setShowHint2(true); onUseHint(2); audio.play('click') }
   }
 
   // ── Quit confirmation modal ─────────────────────────────────────────────────
@@ -244,13 +245,13 @@ export default function QuestionScreen({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => onOpenValidate(false)}
+              onClick={() => { audio.play('wrong'); onOpenValidate(false) }}
               className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
               style={{ background: 'rgba(244,67,54,0.1)', borderColor: '#F44336', color: '#F44336' }}>
               ✗ Incorrect
             </button>
             <button
-              onClick={() => onOpenValidate(true)}
+              onClick={() => { audio.play('correct'); onOpenValidate(true) }}
               className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
               style={{ background: 'rgba(76,175,80,0.1)', borderColor: '#4CAF50', color: '#4CAF50' }}>
               ✓ Correct !
@@ -279,7 +280,7 @@ export default function QuestionScreen({
           {fact.options.map((option, index) => (
             <button
               key={index}
-              onClick={() => onSelectAnswer(index)}
+              onClick={() => { audio.play(index === fact.correctIndex ? 'correct' : 'wrong'); onSelectAnswer(index) }}
               className="btn-press py-4 rounded-2xl text-white font-bold text-sm transition-all active:scale-95 border"
               style={{
                 background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,

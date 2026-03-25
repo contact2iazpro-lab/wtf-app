@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getCategoryById } from '../data/facts'
+import { audio } from '../utils/audio'
 
 export default function RevelationScreen({
   fact,
@@ -22,8 +23,12 @@ export default function RevelationScreen({
 
   useEffect(() => {
     const timer = setTimeout(() => setFlipped(true), 300)
+    if (!isDuel) {
+      setTimeout(() => audio.play('reveal'), 150)
+      setTimeout(() => audio.play('points'), 600)
+    }
     return () => clearTimeout(timer)
-  }, [])
+  }, []) // eslint-disable-line
 
   const handleShare = () => {
     onShare()
@@ -240,7 +245,7 @@ export default function RevelationScreen({
           </button>
         )}
         <button
-          onClick={onNext}
+          onClick={() => { audio.play('click'); onNext() }}
           className="btn-press w-full py-5 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
           style={{
             background: isDuel

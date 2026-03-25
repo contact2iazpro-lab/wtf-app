@@ -1,0 +1,6 @@
+.vercel
+node_modules/
+dist/
+*.cjs
+fact_data_correct.json
+sources_temp.json

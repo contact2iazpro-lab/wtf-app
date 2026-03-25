@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node full_fix.cjs)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

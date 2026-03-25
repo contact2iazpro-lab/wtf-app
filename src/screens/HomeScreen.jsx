@@ -1,0 +1,117 @@
+const GAME_MODES = [
+  { id: 'solo-flash', label: 'Solo Flash', emoji: '⚡', desc: '60s par fact', active: true },
+  { id: 'duel', label: 'Multijoueur', emoji: '🎮', desc: '2-6 joueurs', active: true },
+  { id: 'marathon', label: 'Marathon', emoji: '🏃', desc: '20 questions', active: true },
+  { id: 'blitz', label: 'Blitz', emoji: '🔥', desc: 'Bientôt', active: false },
+]
+
+function StarLogo() {
+  return (
+    <div className="relative flex items-center justify-center animate-fade-up" style={{ width: 200, height: 200 }}>
+      {/* Glow behind logo */}
+      <div className="absolute inset-0" style={{
+        background: 'radial-gradient(circle, rgba(255,180,0,0.3) 0%, transparent 65%)',
+        filter: 'blur(18px)',
+      }} />
+      <img
+        src="/logo-wtf.png"
+        alt="WTF!"
+        style={{ width: 190, height: 190, objectFit: 'contain', position: 'relative', zIndex: 1, filter: 'drop-shadow(0 6px 20px rgba(255,120,0,0.5))' }}
+      />
+    </div>
+  )
+}
+
+export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarathon }) {
+  return (
+    <div className="flex flex-col h-full w-full overflow-y-auto scrollbar-hide"
+      style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+
+      {/* Header */}
+      <div className="relative pt-8 pb-4 px-6 flex flex-col items-center">
+        {/* Floating sparkles */}
+        <div className="absolute top-6 left-8 text-cyan-300/50 text-2xl select-none animate-pulse">✦</div>
+        <div className="absolute top-16 right-6 text-orange-300/50 text-lg select-none animate-pulse" style={{ animationDelay: '0.5s' }}>✦</div>
+        <div className="absolute top-4 right-20 text-yellow-300/60 text-base select-none">★</div>
+        <div className="absolute top-24 left-4 text-cyan-400/30 text-sm select-none">★</div>
+
+        {/* Star logo */}
+        <StarLogo />
+
+        {/* Subtitle */}
+        <p className="text-white/50 text-xs font-bold tracking-[0.35em] uppercase -mt-2 mb-5">
+          What The Fact
+        </p>
+
+        {/* Stats row */}
+        <div className="flex gap-3 w-full justify-center">
+          <div className="flex-1 max-w-36 rounded-2xl p-4 text-center border"
+            style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}>
+            <div className="text-3xl mb-1">🔥</div>
+            <div className="text-2xl font-black text-white">{streak}</div>
+            <div className="text-xs text-white/60 font-bold uppercase tracking-wide">Streak</div>
+          </div>
+          <div className="flex-1 max-w-36 rounded-2xl p-4 text-center border"
+            style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}>
+            <div className="text-3xl mb-1">⭐</div>
+            <div className="text-2xl font-black text-white">{totalScore}</div>
+            <div className="text-xs text-white/60 font-bold uppercase tracking-wide">Score Total</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Play button */}
+      <div className="px-6 mb-5">
+        <button
+          onClick={onPlay}
+          className="btn-press w-full py-5 rounded-2xl text-white text-xl font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
+          style={{
+            background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)',
+            boxShadow: '0 8px 40px rgba(255, 92, 26, 0.55), 0 2px 8px rgba(0,0,0,0.4)',
+            WebkitTextStroke: '0.5px rgba(255,255,255,0.3)',
+          }}>
+          <span className="flex items-center justify-center gap-3">
+            <span className="text-2xl">▶</span>
+            JOUER
+          </span>
+        </button>
+      </div>
+
+      {/* Game modes grid */}
+      <div className="px-6 pb-8">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="h-px flex-1 bg-white/10" />
+          <h2 className="text-white/40 text-xs font-bold uppercase tracking-[0.2em]">Modes de jeu</h2>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {GAME_MODES.map((mode) => (
+            <div
+              key={mode.id}
+              onClick={mode.active ? (mode.id === 'duel' ? onDuel : mode.id === 'marathon' ? onMarathon : onPlay) : undefined}
+              className={`rounded-2xl p-4 border transition-all duration-150 ${
+                mode.active ? 'cursor-pointer active:scale-95' : 'opacity-30 cursor-not-allowed'
+              }`}
+              style={mode.active ? {
+                background: 'rgba(0,0,0,0.3)',
+                borderColor: 'rgba(255,255,255,0.25)',
+                backdropFilter: 'blur(8px)',
+              } : {
+                background: 'rgba(0,0,0,0.15)',
+                borderColor: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(8px)',
+              }}>
+              <div className="text-3xl mb-2">{mode.emoji}</div>
+              <div className={`font-black text-sm ${mode.active ? 'text-white' : 'text-white/50'}`}>
+                {mode.label}
+              </div>
+              <div className={`text-xs mt-0.5 font-semibold ${mode.active ? 'text-yellow-300' : 'text-white/20'}`}>
+                {mode.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}

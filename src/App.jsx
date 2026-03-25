@@ -294,6 +294,7 @@ export default function App() {
           gameMode={gameMode}
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
+          playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
         />
       )}
       {screen === SCREENS.REVELATION && currentFact && (

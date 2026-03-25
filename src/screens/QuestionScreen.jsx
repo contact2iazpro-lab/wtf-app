@@ -17,6 +17,7 @@ export default function QuestionScreen({
   gameMode,
   playerName,
   playerColor,
+  playerEmoji,
 }) {
   const [answerMode, setAnswerMode] = useState(null) // null | 'open' | 'qcm'
   const [showHint1, setShowHint1] = useState(false)
@@ -89,7 +90,7 @@ export default function QuestionScreen({
           <div
             className="px-2.5 py-1 rounded-full text-xs font-black"
             style={{ background: playerColor + '20', color: playerColor }}>
-            {playerNumber === 1 ? '⚡' : '🔥'} {playerName}
+            {playerEmoji ?? '⚡'} {playerName}
           </div>
         )}
         <div className="text-xs font-bold text-white/50 uppercase tracking-wide">

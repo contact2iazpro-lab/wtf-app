@@ -77,7 +77,7 @@ export default function RevelationScreen({
   )
 
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+    <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: cat ? `radial-gradient(ellipse at 50% -10%, ${cat.color}55 0%, ${cat.bg} 50%, #060606 100%)` : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
       {quitModal}
       {/* Header with fact number */}
       <div className="px-5 pt-8 pb-4 flex items-center justify-between">
@@ -195,7 +195,7 @@ export default function RevelationScreen({
       </div>
 
       {/* Explanation section */}
-      <div className="mx-5 mb-6 rounded-3xl border p-5" style={{ background: 'rgba(0,0,0,0.35)', borderColor: cat?.color + '60', backdropFilter: 'blur(12px)' }}>
+      <div className="mx-5 mb-6 rounded-3xl border p-5" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">🧠</span>
           <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>

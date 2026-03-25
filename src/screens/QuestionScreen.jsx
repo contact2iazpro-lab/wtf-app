@@ -24,6 +24,16 @@ export default function QuestionScreen({
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const cat = getCategoryById(fact.category)
 
+  // Dynamic background per category
+  const screenBg = cat
+    ? `radial-gradient(ellipse at 50% -10%, ${cat.color}55 0%, ${cat.bg} 50%, #060606 100%)`
+    : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)'
+
+  // Dynamic card background
+  const cardBg = cat
+    ? `linear-gradient(135deg, ${cat.color}22 0%, ${cat.color}08 100%)`
+    : 'rgba(0,0,0,0.4)'
+
   const handleShowHint = (hintNum) => {
     if (hintNum === 1 && !showHint1) { setShowHint1(true); onUseHint(1); audio.play('click') }
     else if (hintNum === 2 && !showHint2) { setShowHint2(true); onUseHint(2); audio.play('click') }
@@ -121,10 +131,10 @@ export default function QuestionScreen({
     <div
       className="mx-5 mb-4 rounded-3xl p-5 border shrink-0"
       style={{
-        background: 'rgba(0,0,0,0.4)',
-        borderColor: cat?.color + '60',
+        background: cardBg,
+        borderColor: cat?.color + '70',
         backdropFilter: 'blur(12px)',
-        boxShadow: `0 4px 24px rgba(0,0,0,0.3)`,
+        boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
       }}>
       <h2 className="text-white text-lg font-bold leading-snug">{fact.question}</h2>
     </div>
@@ -133,7 +143,7 @@ export default function QuestionScreen({
   // ── Phase 0 : Mode selection ───────────────────────────────────────────────
   if (!answerMode) {
     return (
-      <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+      <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: screenBg }}>
         {quitModal}
         {header}
         {categoryBadge}
@@ -149,14 +159,14 @@ export default function QuestionScreen({
           <button
             onClick={() => setAnswerMode('open')}
             className="btn-press w-full py-5 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
-            style={{ background: 'rgba(34,197,94,0.06)', borderColor: 'rgba(34,197,94,0.5)', boxShadow: '0 4px 20px rgba(34,197,94,0.1)' }}>
+            style={{ background: `${cat?.color || '#22C55E'}12`, borderColor: `${cat?.color || '#22C55E'}60`, boxShadow: `0 4px 20px ${cat?.color || '#22C55E'}18` }}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-white font-black text-base">🧠 Question ouverte</div>
                 <div className="text-white/40 text-xs font-semibold mt-0.5">N°1 · N°2 · 60 secondes</div>
               </div>
               <div className="text-right">
-                <div className="font-black text-2xl" style={{ color: '#22C55E' }}>5</div>
+                <div className="font-black text-2xl" style={{ color: cat?.color || '#22C55E' }}>5</div>
                 <div className="text-xs font-bold text-white/40">pts max</div>
               </div>
             </div>
@@ -166,14 +176,14 @@ export default function QuestionScreen({
           <button
             onClick={() => setAnswerMode('qcm')}
             className="btn-press w-full py-5 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
-            style={{ background: 'rgba(255,92,26,0.06)', borderColor: 'rgba(255,92,26,0.5)', boxShadow: '0 4px 20px rgba(255,92,26,0.1)' }}>
+            style={{ background: `${cat?.color || '#FF5C1A'}08`, borderColor: `${cat?.color || '#FF5C1A'}40`, boxShadow: `0 4px 20px ${cat?.color || '#FF5C1A'}15` }}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-white font-black text-base">🎯 Choix multiple</div>
                 <div className="text-white/40 text-xs font-semibold mt-0.5">4 réponses · 20 secondes</div>
               </div>
               <div className="text-right">
-                <div className="font-black text-2xl text-wtf-orange">1</div>
+                <div className="font-black text-2xl" style={{ color: cat?.color || '#FF5C1A' }}>1</div>
                 <div className="text-xs font-bold text-white/40">pt</div>
               </div>
             </div>
@@ -186,7 +196,7 @@ export default function QuestionScreen({
   // ── Phase 1 : Open question ────────────────────────────────────────────────
   if (answerMode === 'open') {
     return (
-      <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+      <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: screenBg }}>
         {quitModal}
         {header}
         {categoryBadge}
@@ -266,7 +276,7 @@ export default function QuestionScreen({
 
   // ── Phase 2 : QCM ─────────────────────────────────────────────────────────
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+    <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: screenBg }}>
       {quitModal}
       {header}
       {categoryBadge}

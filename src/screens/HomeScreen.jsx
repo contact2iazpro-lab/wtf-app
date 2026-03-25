@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 
+const CREATURES = [
+  { emoji: '🦄', style: { top: '8%',  left: '6%',  fontSize: 44 }, anim: 'creature-float-1' },
+  { emoji: '🐸', style: { top: '6%',  right: '8%', fontSize: 38 }, anim: 'creature-float-2' },
+  { emoji: '🦊', style: { top: '30%', left: '2%',  fontSize: 34 }, anim: 'creature-float-3' },
+  { emoji: '🦋', style: { top: '28%', right: '3%', fontSize: 36 }, anim: 'creature-float-2' },
+  { emoji: '🐙', style: { top: '55%', left: '4%',  fontSize: 32 }, anim: 'creature-float-1' },
+  { emoji: '⭐', style: { top: '52%', right: '5%', fontSize: 36 }, anim: 'creature-float-3' },
+]
+
 const GAME_MODES = [
   { id: 'solo-flash', label: 'Solo Flash', emoji: '⚡', desc: '60s par fact', active: true },
   { id: 'duel', label: 'Multijoueur', emoji: '🎮', desc: '2-6 joueurs', active: true },
@@ -46,16 +55,22 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-y-auto scrollbar-hide"
-      style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+    <div className="flex flex-col h-full w-full overflow-y-auto scrollbar-hide rainbow-bg">
+
+      {/* Floating creatures — fixed to viewport */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        {CREATURES.map((c, i) => (
+          <div
+            key={i}
+            className={c.anim}
+            style={{ position: 'absolute', fontSize: c.style.fontSize, opacity: 0.55, userSelect: 'none', ...c.style }}>
+            {c.emoji}
+          </div>
+        ))}
+      </div>
 
       {/* Header */}
-      <div className="relative pt-8 pb-4 px-6 flex flex-col items-center">
-        {/* Floating sparkles */}
-        <div className="absolute top-6 left-8 text-cyan-300/50 text-2xl select-none animate-pulse">✦</div>
-        <div className="absolute top-16 right-6 text-orange-300/50 text-lg select-none animate-pulse" style={{ animationDelay: '0.5s' }}>✦</div>
-        <div className="absolute top-4 right-20 text-yellow-300/60 text-base select-none">★</div>
-        <div className="absolute top-24 left-4 text-cyan-400/30 text-sm select-none">★</div>
+      <div className="relative pt-8 pb-4 px-6 flex flex-col items-center" style={{ zIndex: 1 }}>
 
         {/* Star logo */}
         <StarLogo />
@@ -83,7 +98,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Play button */}
-      <div className="px-6 mb-5">
+      <div className="px-6 mb-5" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={handlePlay}
           className="btn-press w-full py-5 rounded-2xl text-white text-xl font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
@@ -100,7 +115,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Game modes grid */}
-      <div className="px-6 pb-8">
+      <div className="px-6 pb-8" style={{ position: 'relative', zIndex: 1 }}>
         <div className="flex items-center gap-2 mb-3">
           <div className="h-px flex-1 bg-white/10" />
           <h2 className="text-white/40 text-xs font-bold uppercase tracking-[0.2em]">Modes de jeu</h2>
@@ -136,7 +151,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Audio controls */}
-      <div className="px-6 pb-8 flex gap-3">
+      <div className="px-6 pb-8 flex gap-3" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={toggleMusic}
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border font-bold text-sm transition-all active:scale-95"

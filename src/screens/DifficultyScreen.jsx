@@ -86,7 +86,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         {DIFFICULTY_LEVELS.map((difficulty) => (
           <button
             key={difficulty.id}
-            onClick={() => handleSelect(difficulty.id)}
+            onClick={() => setSelectedId(difficulty.id)}
             className="btn-press rounded-3xl p-6 border-2 transition-all text-left active:scale-95"
             style={{
               background: selectedId === difficulty.id

@@ -127,7 +127,7 @@ export default function RevelationScreen({
           </div>
           {!isDuel && (
             <div className="text-xs font-black text-white/70 uppercase tracking-wide px-2.5 py-1 rounded-full" style={{ background: 'rgba(255, 165, 0, 0.15)', color: '#FFA500' }}>
-              ⭐ {sessionScore + pointsEarned}
+              ⭐ {sessionScore}
             </div>
           )}
         </div>

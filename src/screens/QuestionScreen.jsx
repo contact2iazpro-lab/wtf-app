@@ -305,8 +305,8 @@ export default function QuestionScreen({
       {factImage(true)}
       {questionCard}
 
-      {/* Hints display */}
-      <div className="flex-1 px-5 flex flex-col gap-2 mb-3 overflow-y-auto scrollbar-hide">
+      {/* Hints display — flex-1 only when hints are visible to avoid empty space */}
+      <div className={`px-5 flex flex-col gap-2 mb-3 overflow-y-auto scrollbar-hide ${showHint1 || showHint2 ? 'flex-1' : ''}`}>
         {showHint1 && (
           <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.4)' }}>
             <div className="flex items-center gap-2 mb-2">

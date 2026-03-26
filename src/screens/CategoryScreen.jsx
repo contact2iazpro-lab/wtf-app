@@ -7,8 +7,8 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
       <div className="flex items-center gap-4 px-6 pt-6 pb-2" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={onBack}
-          className="w-10 h-10 rounded-xl border flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: 'rgba(255,255,255,0.55)', borderColor: 'rgba(0,0,0,0.12)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', color: '#1a1a2e' }}>
+          className="w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+          style={{ background: 'rgba(255,255,255,0.55)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(0,0,0,0.12)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', color: '#1a1a2e' }}>
           ←
         </button>
         <div>
@@ -24,7 +24,7 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
           <button
             onClick={() => onSelectCategory(null)}
             className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
-            style={{ height: '85px', background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', border: '1px solid', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            style={{ height: '85px', background: 'rgba(255,255,255,0.6)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.9)', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <span className="text-2xl">🎲</span>
             <span className="font-bold text-xs leading-tight">
               Aléatoires
@@ -40,8 +40,9 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
               style={{
                 height: '85px',
                 background: 'rgba(255,255,255,0.6)',
+                borderWidth: '1px',
+                borderStyle: 'solid',
                 borderColor: 'rgba(255,255,255,0.9)',
-                border: '1px solid',
                 color: '#1a1a2e',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               }}>

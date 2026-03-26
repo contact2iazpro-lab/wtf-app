@@ -22,6 +22,7 @@ export default function RevelationScreen({
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [displayedScore, setDisplayedScore] = useState(sessionScore - pointsEarned)
   const [showScorePulse, setShowScorePulse] = useState(false)
+  const [showBadge, setShowBadge] = useState(false)
 
   const scoreRefTarget = useRef(null)
   const pointsBadgeRef = useRef(null)
@@ -32,11 +33,14 @@ export default function RevelationScreen({
   const isLast = factIndex + 1 >= totalFacts
 
   useEffect(() => {
-    const timer = setTimeout(() => setFlipped(true), 300)
+    const timer = setTimeout(() => {
+      setFlipped(true)
+      if (!isDuel) setShowBadge(true)
+    }, 300)
     if (!isDuel) {
       setTimeout(() => audio.playFile('Stamp.mp3'), 350)
       if (isCorrect) {
-        setTimeout(() => audio.playFile('Stamp Approval.mp3'), 350)
+        setTimeout(() => audio.playFile('What the fact.mp3'), 350)
         setTimeout(() => audio.playFile('Coins points.mp3'), 600)
       } else {
         setTimeout(() => audio.playFile('Stamp Refusal.mp3'), 350)
@@ -63,6 +67,7 @@ export default function RevelationScreen({
       const scoreTimer = setTimeout(() => {
         setDisplayedScore((prev) => prev + pointsEarned)
         setShowScorePulse(true)
+        setShowBadge(false) // Masquer le badge quand il arrive à destination
 
         const pulseTimer = setTimeout(() => setShowScorePulse(false), 600)
         return () => clearTimeout(pulseTimer)
@@ -120,7 +125,7 @@ export default function RevelationScreen({
       {quitModal}
 
       {/* Badge de points flottant vers le score */}
-      {!isDuel && flipped && (
+      {!isDuel && showBadge && (
         <div
           ref={pointsBadgeRef}
           className="fixed pointer-events-none"
@@ -129,7 +134,7 @@ export default function RevelationScreen({
             top: '50%',
             width: '180px',
             transform: animation
-              ? `translateX(calc(-50% + ${animation.offsetX}px)) translateY(calc(-50% + ${animation.offsetY}px)) scale(0.6)`
+              ? `translateX(calc(-50% + ${animation.offsetX}px)) translateY(calc(-50% + ${animation.offsetY}px)) scale(0)`
               : 'translateX(-50%) translateY(-50%) scale(1)',
             zIndex: 50,
             background: `linear-gradient(135deg, ${cat?.color}50 0%, ${cat?.color}30 100%)`,
@@ -142,7 +147,7 @@ export default function RevelationScreen({
             fontWeight: 900,
             textShadow: `0 4px 12px ${cat?.color}60`,
             boxShadow: `0 12px 32px ${cat?.color}40`,
-            opacity: animation ? 0.3 : 1,
+            opacity: animation ? 0 : 1,
             transition: animation
               ? `all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)`
               : 'none',

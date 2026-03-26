@@ -26,6 +26,7 @@ export default function RevelationScreen({
     const timer = setTimeout(() => setFlipped(true), 300)
     if (!isDuel) {
       setTimeout(() => audio.play('reveal'), 150)
+      setTimeout(() => audio.play('stamp'), 350)
       setTimeout(() => audio.play('points'), 600)
     }
     return () => clearTimeout(timer)
@@ -131,18 +132,18 @@ export default function RevelationScreen({
           />
           {/* Stamp overlay — solo mode only */}
           {!isDuel && flipped && (
-            <div className="absolute inset-0 flex items-end justify-end p-4">
+            <div className="absolute inset-0 flex items-end justify-end" style={{ paddingRight: '12px', paddingBottom: '12px' }}>
               <div
                 className="stamp-wow"
                 style={{
-                  fontSize: '72px',
+                  fontSize: '94px',
                   fontWeight: 900,
                   color: isCorrect ? '#4CAF50' : '#F44336',
                   textShadow: `0 4px 12px ${isCorrect ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)'}`,
                   transform: 'rotate(-15deg)',
                   border: `4px solid ${isCorrect ? '#4CAF50' : '#F44336'}`,
                   borderRadius: '8px',
-                  padding: '8px 16px',
+                  padding: '12px 24px',
                   backgroundColor: isCorrect ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
                   backdropFilter: 'blur(4px)',
                 }}>

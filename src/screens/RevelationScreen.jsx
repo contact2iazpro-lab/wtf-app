@@ -230,8 +230,8 @@ export default function RevelationScreen({
 
       {/* Answer comparison */}
       <div className="mx-5 mb-6 space-y-3 shrink-0">
-        {/* QCM mode: show correct answer and player's answer */}
-        {!isOpenMode && !isTimeout && (
+        {/* QCM mode: show correct answer only if player answered correctly */}
+        {!isOpenMode && !isTimeout && isCorrect && (
           <div className="rounded-2xl p-4 border border-green-500/40" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
             <div className="text-green-500 text-xs font-bold uppercase tracking-wide mb-2">✓ Bonne réponse:</div>
             <div className="text-white font-bold text-base">{correctAnswerText}</div>

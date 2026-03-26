@@ -27,7 +27,7 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
             style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', border: '1px solid', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <span className="text-2xl">🎲</span>
             <span className="font-bold text-xs leading-tight">
-              Trouve 20<br /><strong>F*cts</strong><br />Aléatoires
+              20<br />Aléatoires
             </span>
           </button>
 

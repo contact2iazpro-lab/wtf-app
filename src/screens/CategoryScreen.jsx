@@ -18,16 +18,20 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
       </div>
 
       <div className="flex-1 px-4 pb-8 overflow-y-auto scrollbar-hide" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Random button — first, full width */}
-        <button
-          onClick={() => onSelectCategory(null)}
-          className="btn-press w-full mb-2 py-2.5 rounded-2xl border font-black text-xs tracking-wide active:scale-95 transition-all flex items-center justify-center gap-2"
-          style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          🎲 Trouve 20 <strong>F*cts</strong> Aléatoires
-        </button>
-
-        {/* Categories list — 2 per row */}
+        {/* Categories grid — 2 per row, 8 rows total */}
         <div className="grid grid-cols-2 gap-2">
+          {/* Random button — first item in grid */}
+          <button
+            onClick={() => onSelectCategory(null)}
+            className="btn-press rounded-xl py-3 px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center gap-2"
+            style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', border: '1px solid', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <span className="text-2xl">🎲</span>
+            <span className="font-bold text-xs leading-tight">
+              Trouve 20<br /><strong>F*cts</strong><br />Aléatoires
+            </span>
+          </button>
+
+          {/* Categories */}
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}

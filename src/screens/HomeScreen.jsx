@@ -11,7 +11,7 @@ const CREATURES = [
 ]
 
 const GAME_MODES = [
-  { id: 'solo-flash', label: 'Solo Flash', emoji: '⚡', desc: '60s par fact', active: true },
+  { id: 'solo-flash', label: 'Mode Solo Flash', emoji: '⚡', desc: '60s par F*ct', active: true },
   { id: 'duel', label: 'Multijoueur', emoji: '🎮', desc: '2-6 joueurs', active: true },
   { id: 'marathon', label: 'Marathon', emoji: '🏃', desc: '20 questions', active: true },
   { id: 'blitz', label: 'Blitz', emoji: '🔥', desc: 'Bientôt', active: false },

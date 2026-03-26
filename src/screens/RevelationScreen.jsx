@@ -111,8 +111,8 @@ export default function RevelationScreen({
           )}
           <button
             onClick={() => setShowQuitConfirm(true)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
-            style={{ background: 'rgba(255,255,255,0.08)' }}>
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
             ✕
           </button>
         </div>

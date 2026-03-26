@@ -28,7 +28,7 @@ function renderTextWithBoldFact(text) {
 
 function StarLogo() {
   return (
-    <div className="relative flex items-center justify-center animate-fade-up" style={{ width: 200, height: 200 }}>
+    <div className="relative flex items-center justify-center animate-fade-up" style={{ width: 140, height: 140 }}>
       {/* Glow behind logo */}
       <div className="absolute inset-0" style={{
         background: 'radial-gradient(circle, rgba(255,180,0,0.3) 0%, transparent 65%)',
@@ -197,38 +197,38 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </button>
 
       {/* Header */}
-      <div className="relative pt-8 pb-4 px-6 flex flex-col items-center" style={{ zIndex: 1 }}>
+      <div className="relative pt-3 pb-2 px-6 flex flex-col items-center" style={{ zIndex: 1 }}>
 
         {/* Star logo */}
         <StarLogo />
 
         {/* Subtitle */}
-        <p className="text-sm font-black tracking-[0.15em] uppercase -mt-2 mb-5" style={{ color: '#7C3AED' }}>
+        <p className="text-sm font-black tracking-[0.15em] uppercase -mt-1 mb-3" style={{ color: '#7C3AED' }}>
           Vrai ou fou ?
         </p>
 
         {/* Stats row */}
-        <div className="flex gap-3 w-full justify-center">
-          <div className="flex-1 max-w-36 rounded-2xl p-4 text-center border"
+        <div className="flex gap-2 w-full justify-center">
+          <div className="flex-1 max-w-32 rounded-2xl p-2 text-center border"
             style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-            <div className="text-3xl mb-1">🔥</div>
-            <div className="text-2xl font-black" style={{ color: '#1a1a2e' }}>{streak}</div>
+            <div className="text-2xl mb-0.5">🔥</div>
+            <div className="text-xl font-black" style={{ color: '#1a1a2e' }}>{streak}</div>
             <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>Streak</div>
           </div>
-          <div className="flex-1 max-w-36 rounded-2xl p-4 text-center border"
+          <div className="flex-1 max-w-32 rounded-2xl p-2 text-center border"
             style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-            <div className="text-3xl mb-1">⭐</div>
-            <div className="text-2xl font-black" style={{ color: '#1a1a2e' }}>{totalScore}</div>
+            <div className="text-2xl mb-0.5">⭐</div>
+            <div className="text-xl font-black" style={{ color: '#1a1a2e' }}>{totalScore}</div>
             <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>Score Total</div>
           </div>
         </div>
       </div>
 
       {/* Play button */}
-      <div className="px-6 mb-5" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="px-6 mb-2" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={handlePlay}
-          className="btn-press w-full py-5 rounded-2xl text-white text-xl font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
+          className="btn-press w-full py-3 rounded-2xl text-white text-lg font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
           style={{
             background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)',
             boxShadow: '0 8px 40px rgba(255, 92, 26, 0.55), 0 2px 8px rgba(0,0,0,0.4)',
@@ -242,18 +242,18 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Game modes grid */}
-      <div className="px-6 pb-8" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="flex items-center gap-2 mb-3">
+      <div className="px-6 pb-2" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="flex items-center gap-2 mb-1.5">
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
           <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Modes de jeu</h2>
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-1.5">
           {GAME_MODES.map((mode) => (
             <div
               key={mode.id}
               onClick={mode.active ? (mode.id === 'duel' ? handleDuel : mode.id === 'marathon' ? handleMarathon : handlePlay) : undefined}
-              className={`rounded-2xl p-4 border transition-all duration-150 ${
+              className={`rounded-2xl p-2 border transition-all duration-150 ${
                 mode.active ? 'cursor-pointer active:scale-95' : 'opacity-40 cursor-not-allowed'
               }`}
               style={mode.active ? {
@@ -266,8 +266,8 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
                 borderColor: 'rgba(255,255,255,0.5)',
                 backdropFilter: 'blur(8px)',
               }}>
-              <div className="text-3xl mb-2">{mode.emoji}</div>
-              <div className="font-black text-sm" style={{ color: mode.active ? '#1a1a2e' : '#555' }}>
+              <div className="text-2xl mb-1">{mode.emoji}</div>
+              <div className="font-black text-xs" style={{ color: mode.active ? '#1a1a2e' : '#555' }}>
                 {mode.label}
               </div>
               <div className="text-xs mt-0.5 font-bold" style={{ color: mode.active ? '#FF6B1A' : '#aaa' }}>

@@ -2,43 +2,46 @@ import { CATEGORIES } from '../data/facts'
 
 export default function CategoryScreen({ onSelectCategory, onBack }) {
   return (
-    <div className="flex flex-col h-full w-full screen-enter" style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+    <div className="flex flex-col h-full w-full screen-enter rainbow-bg">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 pt-12 pb-4">
+      <div className="flex items-center gap-4 px-6 pt-12 pb-4" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={onBack}
-          className="w-10 h-10 rounded-xl border flex items-center justify-center text-white/80 active:scale-90 transition-transform"
-          style={{ background: 'rgba(0,0,0,0.3)', borderColor: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)' }}>
+          className="w-10 h-10 rounded-xl border flex items-center justify-center active:scale-90 transition-transform"
+          style={{ background: 'rgba(255,255,255,0.55)', borderColor: 'rgba(0,0,0,0.12)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', color: '#1a1a2e' }}>
           ←
         </button>
         <div>
-          <h1 className="text-xl font-black text-white">Choisis une catégorie</h1>
-          <p className="text-white/40 text-sm">Où se trouve le fait le plus What The F*ct ?</p>
+          <h1 className="text-xl font-black" style={{ color: '#1a1a2e' }}>Choisis une catégorie</h1>
+          <p className="text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>Où se trouve le fait le plus What The F*ct ?</p>
         </div>
       </div>
 
-      <div className="flex-1 px-4 pb-8 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 px-4 pb-8 overflow-y-auto scrollbar-hide" style={{ position: 'relative', zIndex: 1 }}>
         {/* Random button — first, full width */}
         <button
           onClick={() => onSelectCategory(null)}
-          className="btn-press w-full mb-3 py-3.5 rounded-2xl border text-yellow-300 font-black text-sm tracking-wide active:scale-95 transition-all flex items-center justify-center gap-2"
-          style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)', borderColor: 'rgba(255,200,50,0.5)' }}>
+          className="btn-press w-full mb-2 py-2.5 rounded-2xl border font-black text-xs tracking-wide active:scale-95 transition-all flex items-center justify-center gap-2"
+          style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
           🎲 Trouve 20 F*cts Aléatoires
         </button>
 
-        {/* Categories list — compact rows */}
-        <div className="flex flex-col gap-2">
+        {/* Categories list — ultra compact rows */}
+        <div className="flex flex-col gap-1">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className="btn-press rounded-xl px-4 py-2.5 text-left relative overflow-hidden border transition-all duration-150 active:scale-95 flex items-center gap-3"
+              className="btn-press rounded-lg px-3 py-1.5 text-left transition-all duration-150 active:scale-95 flex items-center gap-2"
               style={{
-                background: `linear-gradient(135deg, ${cat.color}22 0%, ${cat.bg} 100%)`,
-                borderColor: cat.color + '55',
+                background: 'rgba(255,255,255,0.55)',
+                borderColor: 'rgba(255,255,255,0.8)',
+                border: '1px solid',
+                color: '#1a1a2e',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
               }}>
-              <span className="text-2xl shrink-0">{cat.emoji}</span>
-              <span className="font-black text-sm text-white leading-tight" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+              <span className="text-lg shrink-0">{cat.emoji}</span>
+              <span className="font-bold text-xs leading-none">
                 {cat.label}
               </span>
             </button>

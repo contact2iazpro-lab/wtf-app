@@ -225,8 +225,15 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
         </div>
       </div>
 
-      {/* Bottom spacer */}
-      <div className="pb-8" />
+      {/* Cat president — bottom decoration */}
+      <div className="w-full flex justify-center mt-auto" style={{ position: 'relative', zIndex: 1 }}>
+        <img
+          src="/cat-president.png"
+          alt="Cat President"
+          className="w-full max-w-sm object-contain"
+          style={{ maskImage: 'linear-gradient(to top, transparent 0%, black 30%)', WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 30%)' }}
+        />
+      </div>
     </div>
   )
 }

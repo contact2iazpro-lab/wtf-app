@@ -92,7 +92,7 @@ export default function App() {
 
   const handleSelectCategory = useCallback((categoryId) => {
     let facts = [...getFactsByCategory(categoryId)].sort(() => Math.random() - 0.5)
-    if (gameMode === 'marathon') {
+    if (gameMode === 'marathon' && categoryId !== null) {
       facts = facts.slice(0, 20)
     }
     setSelectedCategory(categoryId)

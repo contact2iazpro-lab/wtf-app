@@ -97,10 +97,10 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
         <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-3">Rappel scoring</div>
         <div className="flex justify-between text-xs font-semibold">
           {[
-            { label: 'Open 0 ind.', pts: '+5 pts', color: '#22C55E' },
-            { label: 'Open 1 ind.', pts: '+3 pts', color: '#F59E0B' },
-            { label: 'Open 2 ind.', pts: '+2 pts', color: '#EF4444' },
-            { label: 'QCM', pts: '+1 pt', color: '#3B82F6' },
+            { label: 'Correct 0 ind.', pts: '+5 pts', color: '#22C55E' },
+            { label: 'Correct 1 ind.', pts: '+3 pts', color: '#F59E0B' },
+            { label: 'Correct 2 ind.', pts: '+2 pts', color: '#EF4444' },
+            { label: 'Faux', pts: '0 pt', color: '#3B82F6' },
           ].map((item) => (
             <div key={item.label} className="flex flex-col items-center gap-1">
               <div className="font-black text-xs" style={{ color: item.color }}>{item.pts}</div>

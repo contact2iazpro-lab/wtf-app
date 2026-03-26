@@ -82,7 +82,7 @@ export default function RevelationScreen({
       {quitModal}
       {/* Header with fact number */}
       <div className="px-5 pt-8 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {isDuel && (
             <div
               className="px-2.5 py-1 rounded-full text-xs font-black"
@@ -93,6 +93,11 @@ export default function RevelationScreen({
           <div className="text-xs font-bold text-white/50 uppercase tracking-wide">
             #{fact.id} · {factIndex + 1} / {totalFacts}
           </div>
+          {!isDuel && (
+            <div className="text-xs font-black text-white/70 uppercase tracking-wide px-2.5 py-1 rounded-full" style={{ background: 'rgba(255, 165, 0, 0.15)', color: '#FFA500' }}>
+              ⭐ {sessionScore + pointsEarned}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {cat && (
@@ -126,7 +131,7 @@ export default function RevelationScreen({
           />
           {/* Stamp overlay — solo mode only */}
           {!isDuel && flipped && (
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-end justify-end p-4">
               <div
                 className="stamp-wow"
                 style={{
@@ -156,23 +161,25 @@ export default function RevelationScreen({
 
       {/* Score indicator */}
       <div className="mx-5 mb-6 grid grid-cols-2 gap-3">
-        {/* Correct/Incorrect badge */}
-        <div
-          className={`py-4 rounded-2xl text-center border-2 font-black text-base${!isDuel ? ' score-pop' : ''}`}
-          style={{
-            background: isCorrect ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
-            borderColor: isCorrect ? '#4CAF50' : '#F44336',
-            color: isCorrect ? '#4CAF50' : '#F44336',
-            animationDelay: !isDuel ? '0.5s' : '0s',
-            opacity: !isDuel ? 0 : 1,
-            gridColumn: isDuel ? 'span 2' : 'span 1',
-          }}>
-          {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
-        </div>
+        {/* Correct/Incorrect badge — duel mode only */}
+        {isDuel && (
+          <div
+            className="py-4 rounded-2xl text-center border-2 font-black text-base score-pop"
+            style={{
+              background: isCorrect ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+              borderColor: isCorrect ? '#4CAF50' : '#F44336',
+              color: isCorrect ? '#4CAF50' : '#F44336',
+              animationDelay: '0.5s',
+              opacity: 0,
+              gridColumn: 'span 2',
+            }}>
+            {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+          </div>
+        )}
 
         {/* Points earned with slide animation — solo only */}
         {!isDuel && (
-          <div className="relative" style={{ height: '64px' }}>
+          <div className="relative col-span-2" style={{ height: '64px' }}>
             {/* Floating points that slide up and fade */}
             <div
               className="points-slide absolute inset-0 py-4 rounded-2xl text-center border-2 font-black text-base"
@@ -187,20 +194,6 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Session total — solo only */}
-        {!isDuel && (
-          <div
-            className="py-4 rounded-2xl text-center border-2 font-black text-base score-pop"
-            style={{
-              background: 'rgba(255, 165, 0, 0.1)',
-              borderColor: '#FFA500',
-              color: '#FFA500',
-              animationDelay: '0.8s',
-              opacity: 0,
-            }}>
-            ⭐ {sessionScore + pointsEarned}
-          </div>
-        )}
 
         {/* Points earned — duel mode */}
         {isDuel && (

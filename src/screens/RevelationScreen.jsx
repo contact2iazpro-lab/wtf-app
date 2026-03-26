@@ -122,7 +122,7 @@ export default function RevelationScreen({
               {duelContext.playerName}
             </div>
           )}
-          <div className="text-xs font-bold text-white/50 uppercase tracking-wide">
+          <div className="text-xs font-bold uppercase tracking-wide" style={{ color: cat?.color || 'rgba(255,255,255,0.5)' }}>
             #{fact.id} · {factIndex + 1} / {totalFacts}
           </div>
           {!isDuel && (

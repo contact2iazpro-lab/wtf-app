@@ -118,15 +118,15 @@
   transform: scale(0.96);
 }
 
-/* Rainbow animated background */
+/* Rainbow animated background — bright & vivid */
 .rainbow-bg {
   background: linear-gradient(
     135deg,
-    #1a0533, #0a1e4a, #003d2e, #1a0533,
-    #0a1e4a, #3d0a20, #1a0533
+    #FFE566, #FF6B9D, #4DD9C8, #FFB347,
+    #A29BFE, #FF6B9D, #FFE566
   );
   background-size: 400% 400%;
-  animation: rainbow-shift 12s ease infinite;
+  animation: rainbow-shift 8s ease infinite;
 }
 
 @keyframes rainbow-shift {

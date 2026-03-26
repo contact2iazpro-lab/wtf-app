@@ -105,7 +105,7 @@ function SettingsModal({ onClose }) {
         <button
           onClick={onClose}
           className="mt-5 w-full py-4 rounded-2xl font-black text-sm tracking-widest uppercase active:scale-95 transition-all"
-          style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          style={{ background: 'rgba(0,0,0,0.07)', color: 'rgba(0,0,0,0.45)', border: '1px solid rgba(0,0,0,0.1)' }}>
           ✕ Fermer
         </button>
       </div>
@@ -185,7 +185,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
         className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
-        style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', zIndex: 10, fontSize: 18 }}>
+        style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 10, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         ⚙️
       </button>
 
@@ -196,23 +196,23 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
         <StarLogo />
 
         {/* Subtitle */}
-        <p className="text-white/60 text-sm font-black tracking-[0.15em] uppercase -mt-2 mb-5">
+        <p className="text-sm font-black tracking-[0.15em] uppercase -mt-2 mb-5" style={{ color: '#7C3AED' }}>
           Vrai ou fou ?
         </p>
 
         {/* Stats row */}
         <div className="flex gap-3 w-full justify-center">
           <div className="flex-1 max-w-36 rounded-2xl p-4 text-center border"
-            style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}>
+            style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
             <div className="text-3xl mb-1">🔥</div>
-            <div className="text-2xl font-black text-white">{streak}</div>
-            <div className="text-xs text-white/60 font-bold uppercase tracking-wide">Streak</div>
+            <div className="text-2xl font-black" style={{ color: '#1a1a2e' }}>{streak}</div>
+            <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>Streak</div>
           </div>
           <div className="flex-1 max-w-36 rounded-2xl p-4 text-center border"
-            style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}>
+            style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
             <div className="text-3xl mb-1">⭐</div>
-            <div className="text-2xl font-black text-white">{totalScore}</div>
-            <div className="text-xs text-white/60 font-bold uppercase tracking-wide">Score Total</div>
+            <div className="text-2xl font-black" style={{ color: '#1a1a2e' }}>{totalScore}</div>
+            <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>Score Total</div>
           </div>
         </div>
       </div>
@@ -237,9 +237,9 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       {/* Game modes grid */}
       <div className="px-6 pb-8" style={{ position: 'relative', zIndex: 1 }}>
         <div className="flex items-center gap-2 mb-3">
-          <div className="h-px flex-1 bg-white/10" />
-          <h2 className="text-white/40 text-xs font-bold uppercase tracking-[0.2em]">Modes de jeu</h2>
-          <div className="h-px flex-1 bg-white/10" />
+          <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Modes de jeu</h2>
+          <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           {GAME_MODES.map((mode) => (
@@ -247,22 +247,23 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
               key={mode.id}
               onClick={mode.active ? (mode.id === 'duel' ? handleDuel : mode.id === 'marathon' ? handleMarathon : handlePlay) : undefined}
               className={`rounded-2xl p-4 border transition-all duration-150 ${
-                mode.active ? 'cursor-pointer active:scale-95' : 'opacity-30 cursor-not-allowed'
+                mode.active ? 'cursor-pointer active:scale-95' : 'opacity-40 cursor-not-allowed'
               }`}
               style={mode.active ? {
-                background: 'rgba(0,0,0,0.3)',
-                borderColor: 'rgba(255,255,255,0.25)',
-                backdropFilter: 'blur(8px)',
+                background: 'rgba(255,255,255,0.6)',
+                borderColor: 'rgba(255,255,255,0.9)',
+                backdropFilter: 'blur(12px)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               } : {
-                background: 'rgba(0,0,0,0.15)',
-                borderColor: 'rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.3)',
+                borderColor: 'rgba(255,255,255,0.5)',
                 backdropFilter: 'blur(8px)',
               }}>
               <div className="text-3xl mb-2">{mode.emoji}</div>
-              <div className={`font-black text-sm ${mode.active ? 'text-white' : 'text-white/50'}`}>
+              <div className="font-black text-sm" style={{ color: mode.active ? '#1a1a2e' : '#555' }}>
                 {mode.label}
               </div>
-              <div className={`text-xs mt-0.5 font-semibold ${mode.active ? 'text-yellow-300' : 'text-white/20'}`}>
+              <div className="text-xs mt-0.5 font-bold" style={{ color: mode.active ? '#FF6B1A' : '#aaa' }}>
                 {mode.desc}
               </div>
             </div>

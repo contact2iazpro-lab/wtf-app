@@ -13,7 +13,7 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
         </button>
         <div>
           <h1 className="text-xl font-black" style={{ color: '#1a1a2e' }}>Choisis une catégorie</h1>
-          <p className="text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>Où se trouve le fait le plus What The F*ct ?</p>
+          <p className="text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>Où se trouve le <strong>F*ct</strong> le plus What The <strong>F*ct</strong> ?</p>
         </div>
       </div>
 
@@ -23,7 +23,7 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
           onClick={() => onSelectCategory(null)}
           className="btn-press w-full mb-2 py-2.5 rounded-2xl border font-black text-xs tracking-wide active:scale-95 transition-all flex items-center justify-center gap-2"
           style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          🎲 Trouve 20 F*cts Aléatoires
+          🎲 Trouve 20 <strong>F*cts</strong> Aléatoires
         </button>
 
         {/* Categories list — ultra compact rows */}

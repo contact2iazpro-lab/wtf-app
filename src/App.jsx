@@ -246,7 +246,7 @@ export default function App() {
 
   const handleShare = useCallback(() => {
     if (!currentFact) return
-    const text = `🤯 WTF! "${currentFact.shortAnswer}" — ${currentFact.question}\nJoue sur What The Fact! #WTF`
+    const text = `🤯 WTF! "${currentFact.shortAnswer}" — ${currentFact.question}\nJoue sur What The F*ct! #WTF`
     if (navigator.share) {
       navigator.share({ text }).catch(() => {})
     } else {
@@ -320,7 +320,7 @@ export default function App() {
                 <div className="text-4xl text-center mb-4">📚</div>
                 <h2 className="text-xl font-black text-center mb-3" style={{ color: '#1a1a2e' }}>Comment jouer ?</h2>
                 <div className="text-sm mb-5" style={{ color: '#333', lineHeight: '1.6' }}>
-                  <p className="mb-3"><strong>🎯 Le jeu :</strong> Chaque fact vous pose une question sur un sujet aléatoire.</p>
+                  <p className="mb-3"><strong>🎯 Le jeu :</strong> Chaque <strong>F*ct</strong> vous pose une question sur un sujet aléatoire.</p>
                   <p className="mb-3"><strong>🧠 Mode ouvert :</strong> Vous trouvez la réponse en 60 secondes. Le questionneur valide. 5, 3 ou 2 pts selon les indices utilisés.</p>
                   <p className="mb-3"><strong>🎯 Choix multiple :</strong> 4 réponses en 20 secondes. 1 pt si correct.</p>
                   <p><strong>📊 Score :</strong> Accumulez des points et battez vos records !</p>

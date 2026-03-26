@@ -19,6 +19,13 @@ const GAME_MODES = [
   { id: 'blitz', label: 'Blitz', emoji: '🔥', desc: 'Bientôt', active: false },
 ]
 
+// Helper to render text with bold F*ct
+function renderTextWithBoldFact(text) {
+  if (!text || !text.includes('F*ct')) return text
+  const parts = text.split(/(F\*ct)/g)
+  return parts.map((part, i) => part === 'F*ct' ? <strong key={i}>{part}</strong> : part)
+}
+
 function StarLogo() {
   return (
     <div className="relative flex items-center justify-center animate-fade-up" style={{ width: 200, height: 200 }}>
@@ -264,7 +271,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
                 {mode.label}
               </div>
               <div className="text-xs mt-0.5 font-bold" style={{ color: mode.active ? '#FF6B1A' : '#aaa' }}>
-                {mode.desc}
+                {renderTextWithBoldFact(mode.desc)}
               </div>
             </div>
           ))}

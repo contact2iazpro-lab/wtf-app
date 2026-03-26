@@ -212,8 +212,8 @@ export default function RevelationScreen({
       {/* Image du fait */}
       {fact.imageUrl && (
         <div
-          className={`mx-5 mb-6 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', height: '280px' }}>
+          className={`mx-5 mb-3 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped ? ' wow-shine wow-glow' : ''}`}
+          style={{ borderColor: cat?.color + '60', height: '240px' }}>
           <img
             src={fact.imageUrl}
             alt={fact.question}
@@ -253,7 +253,7 @@ export default function RevelationScreen({
       </div>
 
       {/* Indicateur de score */}
-      <div className="mx-5 mb-6 grid grid-cols-2 gap-3 shrink-0">
+      <div className="mx-5 mb-3 grid grid-cols-2 gap-3 shrink-0">
         {/* Badge correct/incorrect — mode duel uniquement */}
         {isDuel && (
           <div
@@ -288,7 +288,7 @@ export default function RevelationScreen({
       </div>
 
       {/* Comparaison des réponses */}
-      <div className="mx-5 mb-6 space-y-3 shrink-0">
+      <div className="mx-5 mb-3 space-y-3 shrink-0">
         {!isOpenMode && !isTimeout && isCorrect && (
           <div className="rounded-2xl p-4 border border-green-500/40" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
             <div className="text-green-500 text-xs font-bold uppercase tracking-wide mb-2">✓ Bonne réponse:</div>
@@ -318,11 +318,11 @@ export default function RevelationScreen({
       </div>
 
       {/* Section scrollable explication + scores */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-5 px-5 pt-1">
+      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-3 px-5 pt-1">
         {/* Section explication — mode solo uniquement */}
         {!isDuel && isCorrect && (
-          <div className="rounded-3xl border p-5" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
-            <div className="flex items-center gap-2 mb-4">
+          <div className="rounded-3xl border p-4" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
+            <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">🧠</span>
               <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
             </div>

@@ -188,10 +188,10 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       {/* Settings modal */}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Gear button — top right */}
+      {/* Gear button — bottom right */}
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
-        className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+        className="absolute bottom-6 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
         style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 10, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         ⚙️
       </button>

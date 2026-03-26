@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { getFactsByCategory } from './data/facts'
+import { getFactsByCategory, FACTS, CATEGORIES } from './data/facts'
 import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
 import DifficultyScreen from './screens/DifficultyScreen'
@@ -106,9 +106,38 @@ export default function App() {
   }, [])
 
   const handleSelectCategory = useCallback((categoryId) => {
-    let facts = [...getFactsByCategory(categoryId)].sort(() => Math.random() - 0.5)
-    if (categoryId !== null) {
-      facts = facts.slice(0, 10)
+    let facts = []
+
+    if (categoryId === null) {
+      // "Aléatoires" : 1 question aléatoire de 10 catégories distinctes
+      const validCategories = CATEGORIES.filter(cat =>
+        FACTS.some(f => f.category === cat.id)
+      )
+
+      if (validCategories.length < 10) {
+        // Fallback: si moins de 10 catégories valides, prendre 10 questions aléatoires
+        console.warn(`[WARNING] Moins de 10 catégories valides (${validCategories.length}), fallback sur 10 questions aléatoires`)
+        facts = [...FACTS].sort(() => Math.random() - 0.5).slice(0, 10)
+      } else {
+        // Sélectionner 10 catégories aléatoires
+        const selectedCats = [...validCategories]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 10)
+
+        // Pour chaque catégorie, tirer 1 question aléatoire
+        facts = selectedCats.map(cat => {
+          const catFacts = FACTS.filter(f => f.category === cat.id)
+          return catFacts[Math.floor(Math.random() * catFacts.length)]
+        })
+
+        // Mélanger l'ordre final
+        facts.sort(() => Math.random() - 0.5)
+      }
+    } else {
+      // Catégorie spécifique : 10 questions de cette catégorie
+      facts = [...getFactsByCategory(categoryId)]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 10)
     }
 
     // Apply difficulty configuration to facts (generate options + shuffle)
@@ -126,7 +155,7 @@ export default function App() {
     setSelectedAnswer(null)
     setIsCorrect(null)
     setScreen(SCREENS.QUESTION)
-  }, [gameMode, selectedDifficulty])
+  }, [selectedDifficulty])
 
   // QCM mode — points based on difficulty + hints used
   const handleSelectAnswer = useCallback((answerIndex) => {

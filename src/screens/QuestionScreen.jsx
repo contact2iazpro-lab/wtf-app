@@ -150,26 +150,30 @@ export default function QuestionScreen({
         {questionCard}
 
         <div className="px-5 pb-8 flex flex-col gap-3 mt-auto shrink-0">
-          <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center mb-1">
-            Choisissez votre mode
-          </div>
-
-          {/* Open question */}
-          <button
-            onClick={() => setAnswerMode('open')}
-            className="btn-press w-full py-5 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
-            style={{ background: `${cat?.color || '#22C55E'}12`, borderColor: `${cat?.color || '#22C55E'}60`, boxShadow: `0 4px 20px ${cat?.color || '#22C55E'}18` }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-white font-black text-base">🧠 Question ouverte</div>
-                <div className="text-white/40 text-xs font-semibold mt-0.5">N°1 · N°2 · 60 secondes</div>
-              </div>
-              <div className="text-right">
-                <div className="font-black text-2xl" style={{ color: cat?.color || '#22C55E' }}>5</div>
-                <div className="text-xs font-bold text-white/40">pts max</div>
-              </div>
+          {playerName && (
+            <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center mb-1">
+              Choisissez votre mode
             </div>
-          </button>
+          )}
+
+          {/* Open question — duel only */}
+          {playerName && (
+            <button
+              onClick={() => setAnswerMode('open')}
+              className="btn-press w-full py-5 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
+              style={{ background: `${cat?.color || '#22C55E'}12`, borderColor: `${cat?.color || '#22C55E'}60`, boxShadow: `0 4px 20px ${cat?.color || '#22C55E'}18` }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-white font-black text-base">🧠 Question ouverte</div>
+                  <div className="text-white/40 text-xs font-semibold mt-0.5">N°1 · N°2 · 60 secondes</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-black text-2xl" style={{ color: cat?.color || '#22C55E' }}>5</div>
+                  <div className="text-xs font-bold text-white/40">pts max</div>
+                </div>
+              </div>
+            </button>
+          )}
 
           {/* QCM */}
           <button

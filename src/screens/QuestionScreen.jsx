@@ -72,36 +72,34 @@ export default function QuestionScreen({
 
   // ── Shared header ──────────────────────────────────────────────────────────
   const header = (
-    <div className="flex items-center justify-between px-5 pt-8 pb-4 shrink-0">
-      <div className="flex gap-1.5">
-        {Array.from({ length: totalFacts }).map((_, i) => (
-          <div
-            key={i}
-            className="h-1.5 rounded-full transition-all duration-300"
-            style={{
-              width: i === factIndex ? '24px' : '8px',
-              background: i < factIndex ? cat?.color : i === factIndex ? cat?.color : '#2E2E2E',
-            }}
-          />
-        ))}
-      </div>
-      <div className="flex items-center gap-2">
-        {playerName && (
-          <div
-            className="px-2.5 py-1 rounded-full text-xs font-black"
-            style={{ background: playerColor + '20', color: playerColor }}>
-            {playerEmoji ?? '⚡'} {playerName}
+    <div className="px-5 pt-8 pb-3 shrink-0">
+      {/* Top row: counter + player badge + quit */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          {playerName && (
+            <div
+              className="px-2.5 py-1 rounded-full text-xs font-black"
+              style={{ background: playerColor + '20', color: playerColor }}>
+              {playerEmoji ?? '⚡'} {playerName}
+            </div>
+          )}
+          <div className="text-xs font-bold text-white/50 uppercase tracking-wide">
+            {factIndex + 1} / {totalFacts}
           </div>
-        )}
-        <div className="text-xs font-bold text-white/50 uppercase tracking-wide">
-          {factIndex + 1} / {totalFacts}
         </div>
         <button
           onClick={() => setShowQuitConfirm(true)}
-          className="ml-1 w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
           style={{ background: 'rgba(255,255,255,0.08)' }}>
           ✕
         </button>
+      </div>
+      {/* Progress bar */}
+      <div className="h-1 rounded-full w-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
+        <div
+          className="h-1 rounded-full transition-all duration-300"
+          style={{ width: `${((factIndex + 1) / totalFacts) * 100}%`, background: cat?.color || '#FF6B1A' }}
+        />
       </div>
     </div>
   )

@@ -32,7 +32,7 @@ const DIFFICULTY_LEVELS = [
     emoji: '💚',
     color: '#22C55E',
     description: [
-      '6 choix possibles',
+      '4 choix possibles',
       '20 secondes de réflexion',
       'Avec indices',
       '3/2/1 points selon les indices',
@@ -49,7 +49,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
       id: difficulty.id,
       label: difficulty.label,
       emoji: difficulty.emoji,
-      choices: difficultyId === 'expert' || difficultyId === 'easy' ? 6 : 4,
+      choices: difficultyId === 'expert' ? 6 : 4,
       duration: difficultyId === 'expert' ? 10 : 20,
       hintsAllowed: difficultyId === 'easy',
       scoring: difficultyId === 'expert'

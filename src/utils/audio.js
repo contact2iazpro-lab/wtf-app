@@ -227,3 +227,12 @@ class AudioManager {
 }
 
 export const audio = new AudioManager()
+
+// Pause music when app goes to background, resume when it comes back
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (audio._playing) audio._ctx?.suspend?.()
+  } else {
+    if (audio._playing) audio._ctx?.resume?.()
+  }
+})

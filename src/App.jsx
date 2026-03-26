@@ -381,6 +381,19 @@ export default function App() {
                       <p><strong>📊 Score :</strong> Accumulez des points et battez vos records !</p>
                     </div>
                   </>
+                ) : gameMode === 'marathon' ? (
+                  <>
+                    <div className="text-4xl text-center mb-4">🏃</div>
+                    <h2 className="text-xl font-black text-center mb-3" style={{ color: '#1a1a2e' }}>Marathon</h2>
+                    <div className="text-sm mb-5" style={{ color: '#333', lineHeight: '1.6' }}>
+                      <p className="mb-3"><strong>🎯 Le jeu :</strong> Testez vos limites avec une série de <strong>20 questions</strong> sur des sujets variés et aléatoires.</p>
+                      <p className="mb-3"><strong>🎲 Choix :</strong> <strong>4 réponses</strong> possibles pour chaque question.</p>
+                      <p className="mb-3"><strong>⏱️ Temps :</strong> Vous avez <strong>20 secondes</strong> par question pour répondre.</p>
+                      <p className="mb-3"><strong>💡 Indices :</strong> Aucun indice disponible. Pas d'aide, juste vos connaissances !</p>
+                      <p className="mb-3"><strong>⭐ Points :</strong> <strong>3 points</strong> par réponse correcte.</p>
+                      <p><strong>🔥 Défi :</strong> Tenez 20 questions sans vous arrêter et établissez votre meilleur score !</p>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className="text-4xl text-center mb-4">🎮</div>

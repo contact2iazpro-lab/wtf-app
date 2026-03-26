@@ -286,9 +286,52 @@ export default function QuestionScreen({
       {factImage(true)}
       {questionCard}
 
-      <div className="flex-1" />
+      {/* Hints display */}
+      <div className="flex-1 px-5 flex flex-col gap-3 mb-4 overflow-y-auto scrollbar-hide">
+        {showHint1 && (
+          <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.4)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-0.5 rounded-full text-xs font-black border" style={{ color: '#FBBF24', borderColor: '#FBBF24', background: 'rgba(251,191,36,0.15)' }}>N°1</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-white/50">Indice</span>
+            </div>
+            <p className="text-white font-bold text-lg">{fact.hint1}</p>
+          </div>
+        )}
+        {showHint2 && (
+          <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(249,115,22,0.08)', borderColor: 'rgba(249,115,22,0.4)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-0.5 rounded-full text-xs font-black border" style={{ color: '#F97316', borderColor: '#F97316', background: 'rgba(249,115,22,0.15)' }}>N°2</span>
+              <span className="text-xs font-bold uppercase tracking-wide text-white/50">Indice</span>
+            </div>
+            <p className="text-white font-bold text-lg">{fact.hint2}</p>
+          </div>
+        )}
+      </div>
 
       <div className="px-5 pb-4 flex flex-col gap-3 shrink-0">
+        {/* Hint buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            disabled={showHint1}
+            onClick={() => handleShowHint(1)}
+            className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint1 ? 'opacity-40 cursor-not-allowed' : ''}`}
+            style={showHint1
+              ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
+              : { borderColor: '#FBBF24', color: '#FBBF24', background: 'rgba(251,191,36,0.1)' }}>
+            N°1 — Indice
+          </button>
+          <button
+            disabled={showHint2}
+            onClick={() => handleShowHint(2)}
+            className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint2 ? 'opacity-40 cursor-not-allowed' : ''}`}
+            style={showHint2
+              ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
+              : { borderColor: '#F97316', color: '#F97316', background: 'rgba(249,115,22,0.1)' }}>
+            N°2 — Indice
+          </button>
+        </div>
+
+        {/* Answer buttons */}
         <div className="grid grid-cols-2 gap-3">
           {fact.options.map((option, index) => (
             <button

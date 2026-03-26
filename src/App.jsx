@@ -8,6 +8,8 @@ import ResultsScreen from './screens/ResultsScreen'
 import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from './screens/DuelSetupScreen'
 import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
+import SettingsModal from './components/SettingsModal'
+import { audio } from './utils/audio'
 
 const SCREENS = {
   HOME: 'home',
@@ -63,6 +65,7 @@ export default function App() {
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
   const [showHowToPlay, setShowHowToPlay] = useState(() => localStorage.getItem('wtf_hide_howtoplay') !== 'true')
+  const [showSettings, setShowSettings] = useState(false)
 
   const numPlayers = duelPlayers.length || 1
 
@@ -103,11 +106,11 @@ export default function App() {
     setScreen(SCREENS.QUESTION)
   }, [gameMode])
 
-  // QCM mode — 1 pt if correct
+  // QCM mode — 5/3/2 pts based on hints used
   const handleSelectAnswer = useCallback((answerIndex) => {
     if (!currentFact) return
     const isAnswerCorrect = answerIndex === currentFact.correctIndex
-    const points = isAnswerCorrect ? 1 : 0
+    const points = isAnswerCorrect ? (hintsUsed === 0 ? 5 : hintsUsed === 1 ? 3 : 2) : 0
 
     setSelectedAnswer(answerIndex)
     setIsCorrect(isAnswerCorrect)
@@ -121,7 +124,7 @@ export default function App() {
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [currentFact, gameMode, duelCurrentPlayerIndex])
+  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed])
 
   // Open mode — 5/3/2 pts based on hints, validated by questioner
   const handleOpenValidate = useCallback((isCorrect) => {
@@ -423,6 +426,19 @@ export default function App() {
           onHome={handleHome}
         />
       )}
+
+      {/* Settings button — always accessible */}
+      {screen !== SCREENS.HOME && (
+        <button
+          onClick={() => { audio.play('click'); setShowSettings(true) }}
+          className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+          style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 10, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          ⚙️
+        </button>
+      )}
+
+      {/* Settings modal — always accessible */}
+      <SettingsModal showSettings={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   )
 }

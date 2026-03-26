@@ -112,7 +112,7 @@ function SettingsModal({ onClose }) {
         <button
           onClick={onClose}
           className="mt-5 w-full py-4 rounded-2xl font-black text-sm tracking-widest uppercase active:scale-95 transition-all"
-          style={{ background: 'rgba(0,0,0,0.07)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(0,0,0,0.1)' }}>
+          style={{ background: 'rgba(0,0,0,0.07)', color: 'rgba(255,255,255,1)', border: '1px solid rgba(0,0,0,0.1)' }}>
           ✕ Fermer
         </button>
       </div>

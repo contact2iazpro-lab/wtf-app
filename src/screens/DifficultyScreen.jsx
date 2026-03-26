@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 
 const DIFFICULTY_LEVELS = [
@@ -42,6 +43,7 @@ const DIFFICULTY_LEVELS = [
 
 export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
   const [selectedId, setSelectedId] = useState('normal')
+  const [showSettings, setShowSettings] = useState(false)
 
   const handleSelect = (difficultyId) => {
     const difficulty = DIFFICULTY_LEVELS.find(d => d.id === difficultyId)
@@ -69,6 +71,15 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden scrollbar-hide screen-enter" style={{ background: 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
+      {/* Settings button — top right */}
+      <button
+        onClick={() => { audio.play('click'); setShowSettings(true) }}
+        className="fixed top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+        style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 40, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        ⚙️
+      </button>
       {/* Header */}
       <div className="px-6 pt-4 pb-3 flex items-center justify-between shrink-0">
         <button

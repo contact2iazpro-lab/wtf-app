@@ -1,8 +1,22 @@
+import { useState } from 'react'
+import SettingsModal from '../components/SettingsModal'
 import { CATEGORIES } from '../data/facts'
+import { audio } from '../utils/audio'
 
 export default function CategoryScreen({ onSelectCategory, onBack }) {
+  const [showSettings, setShowSettings] = useState(false)
   return (
     <div className="flex flex-col h-full w-full overflow-hidden screen-enter rainbow-bg">
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
+      {/* Settings button — top right */}
+      <button
+        onClick={() => { audio.play('click'); setShowSettings(true) }}
+        className="fixed top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+        style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 40, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        ⚙️
+      </button>
+
       {/* Header */}
       <div className="flex items-center gap-4 px-6 pt-4 pb-2 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
         <button

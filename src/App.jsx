@@ -324,6 +324,10 @@ export default function App() {
     }
   }, [currentFact])
 
+  const handleShowRules = useCallback(() => {
+    setShowHowToPlay(true)
+  }, [])
+
   // Multiplayer context passed to screens
   const duelContext = gameMode === 'duel' ? {
     currentPlayerIndex: duelCurrentPlayerIndex,
@@ -583,7 +587,7 @@ export default function App() {
       </button>
 
       {/* Settings modal — always accessible */}
-      <SettingsModal showSettings={showSettings} onClose={() => setShowSettings(false)} />
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onShowRules={handleShowRules} />}
     </div>
   )
 }

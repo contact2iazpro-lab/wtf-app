@@ -9,27 +9,27 @@ export default function DuelResultsScreen({ players, onReplay, onHome }) {
       style={{ background: `radial-gradient(ellipse at 50% -10%, ${isDraw ? '#6B728022' : '#FF5C1A22'} 0%, #0D0D0D 60%)` }}>
 
       {/* Header */}
-      <div className="flex flex-col items-center pt-12 pb-8 px-6">
-        <div className="text-7xl mb-3 animate-bounce-in">{isDraw ? '🤝' : '🏆'}</div>
-        <div className="text-2xl font-black mb-1" style={{ color: isDraw ? '#6B7280' : '#FF5C1A' }}>
+      <div className="flex flex-col items-center pt-6 pb-4 px-6 shrink-0">
+        <div className="text-6xl mb-2 animate-bounce-in">{isDraw ? '🤝' : '🏆'}</div>
+        <div className="text-xl font-black mb-0.5" style={{ color: isDraw ? '#6B7280' : '#FF5C1A' }}>
           {isDraw ? 'Égalité !' : `${sorted[0].name} gagne !`}
         </div>
-        <div className="text-white/50 text-sm font-semibold">Partie terminée !</div>
+        <div className="text-white/50 text-xs font-semibold">Partie terminée !</div>
       </div>
 
       {/* Ranking */}
-      <div className="mx-5 mb-5 bg-wtf-card rounded-3xl border border-wtf-border p-4 card-shadow flex flex-col gap-2">
+      <div className="mx-5 mb-3 bg-wtf-card rounded-3xl border border-wtf-border p-3 card-shadow flex flex-col gap-1.5">
         {sorted.map((player, rank) => (
           <div
             key={player.name}
-            className="flex items-center gap-4 py-3 px-4 rounded-2xl border"
+            className="flex items-center gap-3 py-2 px-3 rounded-xl border"
             style={{
               background: rank === 0 ? 'rgba(255,92,26,0.1)' : 'rgba(255,255,255,0.03)',
               borderColor: rank === 0 ? 'rgba(255,92,26,0.4)' : 'rgba(255,255,255,0.08)',
             }}>
-            <div className="text-2xl w-8 text-center">{medals[rank] ?? `#${rank + 1}`}</div>
-            <div className="flex-1 font-black text-white truncate">{player.name}</div>
-            <div className="font-black text-xl" style={{ color: rank === 0 ? '#FF5C1A' : 'rgba(255,255,255,0.45)' }}>
+            <div className="text-lg w-6 text-center">{medals[rank] ?? `#${rank + 1}`}</div>
+            <div className="flex-1 font-black text-white truncate text-sm">{player.name}</div>
+            <div className="font-black text-base" style={{ color: rank === 0 ? '#FF5C1A' : 'rgba(255,255,255,0.45)' }}>
               {player.score}
               <span className="text-xs font-semibold text-white/25 ml-1">pts</span>
             </div>
@@ -39,9 +39,9 @@ export default function DuelResultsScreen({ players, onReplay, onHome }) {
 
       {!isDraw && sorted.length > 1 && (
         <div
-          className="mx-5 mb-6 rounded-2xl border border-wtf-border p-4 text-center"
+          className="mx-5 mb-3 rounded-xl border border-wtf-border p-2.5 text-center shrink-0"
           style={{ background: 'rgba(255,92,26,0.05)' }}>
-          <div className="text-white font-bold text-sm">
+          <div className="text-white font-bold text-xs">
             🎉 {sorted[0].name} l'emporte avec{' '}
             <span style={{ color: '#FF5C1A' }}>
               {sorted[0].score - sorted[1].score} pt{sorted[0].score - sorted[1].score > 1 ? 's' : ''}
@@ -52,10 +52,10 @@ export default function DuelResultsScreen({ players, onReplay, onHome }) {
       )}
 
       {/* Actions */}
-      <div className="px-5 pb-10 flex flex-col gap-3 mt-auto">
+      <div className="px-5 pb-4 flex flex-col gap-2 shrink-0">
         <button
           onClick={onReplay}
-          className="btn-press w-full py-5 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
+          className="btn-press w-full py-4 rounded-2xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
           style={{
             background: 'linear-gradient(135deg, #FF5C1A 0%, #D94A10 100%)',
             boxShadow: '0 8px 32px rgba(255, 92, 26, 0.4)',
@@ -64,7 +64,7 @@ export default function DuelResultsScreen({ players, onReplay, onHome }) {
         </button>
         <button
           onClick={onHome}
-          className="btn-press w-full py-4 rounded-2xl border border-wtf-border text-white/70 font-bold text-sm active:scale-95 transition-all"
+          className="btn-press w-full py-3 rounded-2xl border border-wtf-border text-white/70 font-bold text-xs active:scale-95 transition-all"
           style={{ background: 'rgba(255,255,255,0.04)' }}>
           🏠 Accueil
         </button>

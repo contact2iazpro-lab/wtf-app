@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import SettingsModal from '../components/SettingsModal'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
@@ -23,6 +24,7 @@ export default function RevelationScreen({
   const [displayedScore, setDisplayedScore] = useState(sessionScore - pointsEarned)
   const [showScorePulse, setShowScorePulse] = useState(false)
   const [showBadge, setShowBadge] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const scoreRefTarget = useRef(null)
   const pointsBadgeRef = useRef(null)
@@ -38,7 +40,6 @@ export default function RevelationScreen({
       if (!isDuel) setShowBadge(true)
     }, 300)
     if (!isDuel) {
-      setTimeout(() => audio.playFile('Stamp.mp3'), 350)
       if (isCorrect) {
         setTimeout(() => audio.playFile('What the fact.mp3'), 350)
         setTimeout(() => audio.playFile('Coins points.mp3'), 600)
@@ -123,6 +124,7 @@ export default function RevelationScreen({
   return (
     <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}45 0%, ${cat.color}30 50%, ${cat.color}15 100%)` : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
       {quitModal}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* Badge de points flottant vers le score */}
       {!isDuel && showBadge && (
@@ -190,20 +192,28 @@ export default function RevelationScreen({
               <span>{cat.label}</span>
             </div>
           )}
-          <button
-            onClick={() => setShowQuitConfirm(true)}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
-            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { audio.play('click'); setShowSettings(true) }}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+              ⚙️
+            </button>
+            <button
+              onClick={() => setShowQuitConfirm(true)}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+              ✕
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Image du fait */}
       {fact.imageUrl && (
         <div
-          className={`mx-5 mb-6 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', height: '280px' }}>
+          className={`mx-5 mb-3 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped ? ' wow-shine wow-glow' : ''}`}
+          style={{ borderColor: cat?.color + '60', height: '240px' }}>
           <img
             src={fact.imageUrl}
             alt={fact.question}
@@ -243,7 +253,7 @@ export default function RevelationScreen({
       </div>
 
       {/* Indicateur de score */}
-      <div className="mx-5 mb-6 grid grid-cols-2 gap-3 shrink-0">
+      <div className="mx-5 mb-3 grid grid-cols-2 gap-3 shrink-0">
         {/* Badge correct/incorrect — mode duel uniquement */}
         {isDuel && (
           <div
@@ -278,7 +288,7 @@ export default function RevelationScreen({
       </div>
 
       {/* Comparaison des réponses */}
-      <div className="mx-5 mb-6 space-y-3 shrink-0">
+      <div className="mx-5 mb-3 space-y-3 shrink-0">
         {!isOpenMode && !isTimeout && isCorrect && (
           <div className="rounded-2xl p-4 border border-green-500/40" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
             <div className="text-green-500 text-xs font-bold uppercase tracking-wide mb-2">✓ Bonne réponse:</div>
@@ -308,11 +318,11 @@ export default function RevelationScreen({
       </div>
 
       {/* Section scrollable explication + scores */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-5 px-5 pt-1">
+      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-3 px-5 pt-1">
         {/* Section explication — mode solo uniquement */}
         {!isDuel && isCorrect && (
-          <div className="rounded-3xl border p-5" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
-            <div className="flex items-center gap-2 mb-4">
+          <div className="rounded-3xl border p-4" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
+            <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">🧠</span>
               <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
             </div>

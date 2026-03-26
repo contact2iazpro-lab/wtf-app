@@ -87,9 +87,9 @@ export default function App() {
   }, [])
 
   const handleSelectCategory = useCallback((categoryId) => {
-    let facts = getFactsByCategory(categoryId)
+    let facts = [...getFactsByCategory(categoryId)].sort(() => Math.random() - 0.5)
     if (gameMode === 'marathon') {
-      facts = [...facts].sort(() => Math.random() - 0.5).slice(0, 20)
+      facts = facts.slice(0, 20)
     }
     setSelectedCategory(categoryId)
     setSessionFacts(facts)

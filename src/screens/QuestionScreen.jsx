@@ -25,14 +25,14 @@ export default function QuestionScreen({
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const cat = getCategoryById(fact.category)
 
-  // Dynamic background per category
+  // Dynamic background per category — vivid & bright
   const screenBg = cat
-    ? `radial-gradient(ellipse at 50% -10%, ${cat.color}55 0%, ${cat.bg} 50%, #060606 100%)`
+    ? `linear-gradient(135deg, ${cat.color}25 0%, ${cat.color}10 50%, #f5f5f5 100%)`
     : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)'
 
-  // Dynamic card background
+  // Dynamic card background — flashy & bright
   const cardBg = cat
-    ? `linear-gradient(135deg, ${cat.color}22 0%, ${cat.color}08 100%)`
+    ? `linear-gradient(135deg, ${cat.color}35 0%, ${cat.color}18 100%)`
     : 'rgba(0,0,0,0.4)'
 
   const handleShowHint = (hintNum) => {

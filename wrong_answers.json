@@ -1,0 +1,4500 @@
+[
+  {
+    "fact": "1",
+    "category": "kids",
+    "question": "Quelle caractéristique ont les bulles de savon si on souffle avec une baguette carrée ?",
+    "correct_answer": "Elles sont toujours rondes",
+    "wrong_answers": [
+      "Elles ont des coins arrondis",
+      "Elles sont légèrement ovales",
+      "Elles prennent la forme d'un carré aux coins arrondis",
+      "Elles sont carrées pendant 1 seconde avant de devenir rondes",
+      "Elles sont plus petites qu'avec une baguette ronde"
+    ]
+  },
+  {
+    "fact": "2",
+    "category": "histoire",
+    "question": "Que faisait Todd Kohlhepp, un tueur en série américain après chacun de ses crimes ?",
+    "correct_answer": "Un commentaire Amazon sur les armes de son crime",
+    "wrong_answers": [
+      "Un signalement sur eBay pour les outils achetés lors de ses crimes",
+      "Une note Google Maps sur les lieux de ses crimes",
+      "Un post Reddit dans un forum de survivalisme décrivant ses méthodes",
+      "Une critique Yelp sur les quincailleries où il s'approvisionnait",
+      "Un tweet cryptique citant les coordonnées GPS de ses crimes"
+    ]
+  },
+  {
+    "fact": "3",
+    "category": "animaux",
+    "question": "Quel est le principal atout de l'araignée crabe ?",
+    "correct_answer": "Elle peut être invisible et se camoufler",
+    "wrong_answers": [
+      "Elle peut marcher à reculons et sur les côtés comme un vrai crabe",
+      "Elle produit un venin paralysant parmi les plus puissants des araignées européennes",
+      "Elle tisse une toile en forme de spirale quasi invisible aux ultraviolets",
+      "Elle peut détacher et régénérer ses pattes pour échapper à un prédateur",
+      "Elle imite le mouvement d'un insecte mort pour attirer ses proies"
+    ]
+  },
+  {
+    "fact": "4",
+    "category": "technologie",
+    "question": "Quel événement a marqué les routes de Pékin en août 2010 ?",
+    "correct_answer": "Un embouteillage a duré 12 jours",
+    "wrong_answers": [
+      "Un embouteillage a duré 6 jours",
+      "Un embouteillage a duré 3 semaines",
+      "Le premier réseau de bus autonomes au monde a été inauguré",
+      "Un embouteillage de 100 km a été résolu en 48 heures grâce à une déviation d'urgence",
+      "Un embouteillage a duré 18 jours"
+    ]
+  },
+  {
+    "fact": "5",
+    "category": "sport",
+    "question": "Qu'utilisaient les premiers joueurs de hockey sur glace en guise de palets ?",
+    "correct_answer": "Des bouses de vache congelées",
+    "wrong_answers": [
+      "Des rondelles de bois taillées à la hache",
+      "Des pierres de rivière aplaties",
+      "Des morceaux de charbon compressé",
+      "Des boules de neige densifiées à la main",
+      "Des nœuds de racines de chêne gelés"
+    ]
+  },
+  {
+    "fact": "6",
+    "category": "kids",
+    "question": "Quel est le véhicule le plus rapide du monde ?",
+    "correct_answer": "Le traîneau du Père Noël",
+    "wrong_answers": [
+      "La fusée Saturn V de la NASA",
+      "Le Faucon Millennium de Han Solo",
+      "Le X-43A, l'avion hypersonique de la NASA",
+      "La DeLorean de Retour vers le Futur",
+      "Le vaisseau Enterprise de Star Trek"
+    ]
+  },
+  {
+    "fact": "7",
+    "category": "definition",
+    "question": "Qu'est-ce que la \"géhenne\" ?",
+    "correct_answer": "Lieu de souffrance extrême",
+    "wrong_answers": [
+      "Rituel de purification par le feu pratiqué dans l'Antiquité proche-orientale",
+      "Instrument de torture médiéval utilisé pour les aveux forcés",
+      "État de transe mystique recherché par certains ascètes religieux",
+      "Malédiction prononcée lors d'un serment brisé dans la tradition hébraïque",
+      "Texte sacré apocryphe décrivant les châtiments des âmes damnées"
+    ]
+  },
+  {
+    "fact": "8",
+    "category": "technologie",
+    "question": "Pourquoi la technologie \"Bluetooth\" a-t-elle reçu ce nom particulier ?",
+    "correct_answer": "En hommage à un roi Viking aux dents bleues",
+    "wrong_answers": [
+      "En référence à la couleur des premières puces électroniques utilisées dans le prototype, teintées en bleu pour les distinguer des composants standard",
+      "En hommage à un ingénieur suédois surnommé 'Bluethorn' qui aurait jeté les bases du protocole sans fil en 1989",
+      "Parce que les premiers signaux radio testés en laboratoire apparaissaient en bleu sur les oscilloscopes de l'époque",
+      "D'après le nom de code interne du projet chez Ericsson, 'Blue Tooth', désignant la fréquence 2,4 GHz jugée 'froide' comme la couleur bleue",
+      "En l'honneur d'un mathématicien danois du XIXe siècle, Niels Blåtand, dont les travaux sur la transmission de signaux ont inspiré les fondateurs du protocole"
+    ]
+  },
+  {
+    "fact": "9",
+    "category": "art",
+    "question": "Quelle est l'influence de la synesthésie sur la création artistique de Melissa McCracken ?",
+    "correct_answer": "Elle peint la musique qu'elle écoute",
+    "wrong_answers": [
+      "Elle sculpte les émotions ressenties lors de conversations",
+      "Elle traduit les odeurs de son environnement en aquarelles abstraites",
+      "Elle reproduit ses rêves récurrents sous forme de fresques murales",
+      "Elle transcrit visuellement les textures qu'elle touche en peintures",
+      "Elle retranscrit les paysages sonores urbains en gravures géométriques"
+    ]
+  },
+  {
+    "fact": "10",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"chicotin\" ?",
+    "correct_answer": "Un champignon hallucinogène",
+    "wrong_answers": [
+      "Un lichen parasite qui provoque des démangeaisons intenses au contact de la peau",
+      "Un insecte coléoptère dont la piqûre libère une toxine neurotoxique légère",
+      "Une plante grimpante aux baies rouges utilisée historiquement comme purgatif",
+      "Un petit crustacé d'eau douce utilisé comme appât en pêche traditionnelle",
+      "Un extrait amer de sève d'aloès utilisé au Moyen Âge pour sevrer les enfants du sein"
+    ]
+  },
+  {
+    "fact": "11",
+    "category": "phobies",
+    "question": "Qu'est-ce que la gephyrophobie ?",
+    "correct_answer": "La peur des ponts",
+    "wrong_answers": [
+      "La peur des tunnels",
+      "La peur des escaliers mécaniques",
+      "La peur des carrefours giratoires",
+      "La peur des viaducs autoroutiers",
+      "La peur des passerelles suspendues"
+    ]
+  },
+  {
+    "fact": "12",
+    "category": "histoire",
+    "question": "Quelle célébrité a été videur de bar dans sa jeunesse ?",
+    "correct_answer": "Le pape François",
+    "wrong_answers": [
+      "Le Dalaï-Lama",
+      "Mère Teresa",
+      "Le roi Charles III",
+      "Jean-Paul II",
+      "Barack Obama"
+    ]
+  },
+  {
+    "fact": "13",
+    "category": "kids",
+    "question": "Quel phénomène surprenant a été observé suite à la tornade marine de Toulouse de 1804 ?",
+    "correct_answer": "Il a plu des grenouilles",
+    "wrong_answers": [
+      "Il a plu des poissons",
+      "Il a plu des crabes",
+      "Il a plu des escargots",
+      "Il a plu des têtards",
+      "Il a plu des crapauds"
+    ]
+  },
+  {
+    "fact": "14",
+    "category": "sciences",
+    "question": "Quel matériau les chercheurs de l'université de Mexico ont-ils utilisé pour recréer des diamants ?",
+    "correct_answer": "De la téquila",
+    "wrong_answers": [
+      "Du tequila sunrise (cocktail industriel concentré en sucres de carbone)",
+      "De l'urine humaine déshydratée",
+      "Du jus de cactus fermenté",
+      "De la bière artisanale mexicaine",
+      "Du mezcal"
+    ]
+  },
+  {
+    "fact": "15",
+    "category": "records",
+    "question": "Quel record a réalisé Zafar Gill, un Pakistanais, en octobre 2007 ?",
+    "correct_answer": "Il a soulevé 62 kg avec son oreille",
+    "wrong_answers": [
+      "Il a soulevé 48 kg avec sa paupière",
+      "Il a soulevé 74 kg avec ses dents",
+      "Il a soulevé 55 kg avec son sourcil",
+      "Il a soulevé 38 kg avec sa langue",
+      "Il a soulevé 80 kg avec ses cheveux"
+    ]
+  },
+  {
+    "fact": "16",
+    "category": "sciences",
+    "question": "Qu'est-ce que le \"syndrome des vampires\" ?",
+    "correct_answer": "La porphyrie qui provoque des cloques au soleil",
+    "wrong_answers": [
+      "La xérodermie pigmentaire qui empêche toute cicatrisation à la lumière",
+      "L'hypersensibilité solaire cutanée qui déclenche des saignements sous-cutanés",
+      "La protéine Dracula, une mutation génétique qui dénature les globules rouges à l'UV",
+      "La mélatonine inversée, un trouble hormonal qui rend la peau translucide sous lumière vive",
+      "L'érythropoïèse nocturne, un syndrome où la production de globules rouges s'inverse la nuit"
+    ]
+  },
+  {
+    "fact": "17",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'eisoptrophobie ?",
+    "correct_answer": "La peur des miroirs ou de se voir dedans",
+    "wrong_answers": [
+      "La peur des vitres et des surfaces transparentes",
+      "La peur de son propre reflet dans l'eau ou toute surface réfléchissante autre que les miroirs",
+      "La peur des appareils photo et d'être pris en photo",
+      "La peur des fenêtres, notamment la nuit quand elles deviennent réfléchissantes",
+      "La peur du verre en général, qu'il soit transparent ou réfléchissant"
+    ]
+  },
+  {
+    "fact": "18",
+    "category": "lois",
+    "question": "Quelle interdiction s'applique aux automobilistes en Alabama ?",
+    "correct_answer": "Interdit de conduire les yeux bandés",
+    "wrong_answers": [
+      "Interdit de conduire en portant des chaussures à talons",
+      "Interdit de conduire avec un animal sur les genoux",
+      "Interdit de conduire en reculant sur une autoroute",
+      "Interdit de conduire pieds nus",
+      "Interdit de conduire avec des rétroviseurs teintés"
+    ]
+  },
+  {
+    "fact": "19",
+    "category": "animaux",
+    "question": "Quel aliment a été recraché par une baleine à fanons en 2021 ?",
+    "correct_answer": "Un pêcheur de homards",
+    "wrong_answers": [
+      "Un plongeur scientifique",
+      "Un surfeur",
+      "Un kayakiste",
+      "Un photographe sous-marin",
+      "Un pêcheur de thon"
+    ]
+  },
+  {
+    "fact": "20",
+    "category": "lois",
+    "question": "Quelle interdiction concerne les élans en Alaska ?",
+    "correct_answer": "Interdit de pousser un élan d'un avion en vol",
+    "wrong_answers": [
+      "Interdit de nourrir un élan depuis un véhicule en mouvement",
+      "Interdit de transporter un élan dans le coffre d'un véhicule motorisé",
+      "Interdit de photographier un élan sans autorisation écrite du propriétaire du terrain",
+      "Interdit de faire monter un élan dans un ascenseur public",
+      "Interdit de réveiller un élan en hibernation à des fins touristiques"
+    ]
+  },
+  {
+    "fact": "21",
+    "category": "corps-humain",
+    "question": "Qu'est-ce qui a assez d'énergie pour allumer une ampoule ?",
+    "correct_answer": "Un cerveau, même au repos",
+    "wrong_answers": [
+      "Un cœur humain adulte en plein effort physique",
+      "Deux mains qui se frottent pendant 30 secondes",
+      "Un foie humain en pleine digestion",
+      "Une contraction musculaire du quadriceps",
+      "Le souffle d'un humain adulte sur une turbine miniature"
+    ]
+  },
+  {
+    "fact": "22",
+    "category": "sante",
+    "question": "Quelle rareté biologique a fait connaître Mia Washington en 2009 ?",
+    "correct_answer": "Elle a eu des jumeaux de deux pères différents",
+    "wrong_answers": [
+      "Elle a donné naissance à des triplés issus de trois embryons de groupes sanguins différents",
+      "Elle a porté simultanément deux grossesses à des stades différents, un phénomène appelé superfétation",
+      "Elle a transmis à ses jumeaux deux ADN mitochondriaux distincts, issus de deux lignées maternelles",
+      "Elle a donné naissance à des jumeaux dont l'un était son clone génétique partiel",
+      "Elle a développé pendant sa grossesse les cellules immunitaires de ses deux enfants dans son propre sang"
+    ]
+  },
+  {
+    "fact": "23",
+    "category": "animaux",
+    "question": "Quel animal est réputé pour être parmi le plus venimeux au monde ?",
+    "correct_answer": "Un escargot",
+    "wrong_answers": [
+      "Une pieuvre",
+      "Un oursin",
+      "Une méduse",
+      "Un escargot de mer",
+      "Une étoile de mer"
+    ]
+  },
+  {
+    "fact": "24",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"cacochyme\" ?",
+    "correct_answer": "Faible, fatigué, en mauvaise santé générale.",
+    "wrong_answers": [
+      "Qui parle de manière confuse et incohérente, souvent à cause de la sénilité.",
+      "Qui est atteint d'une mauvaise digestion chronique causant une humeur irritable.",
+      "Qui souffre d'une déformation progressive des os due à l'âge.",
+      "Qui présente une pâleur maladive liée à un manque de circulation sanguine.",
+      "Qui est sujet à des crises de mélancolie profondes et inexpliquées."
+    ]
+  },
+  {
+    "fact": "25",
+    "category": "animaux",
+    "question": "Quelle spécificité anatomique est un atout pour le caméléon ?",
+    "correct_answer": "Il peut voir dans deux directions simultanément",
+    "wrong_answers": [
+      "Il peut retourner ses paupières pour protéger ses yeux du soleil",
+      "Il possède une troisième paupière transparente qui filtre les ultraviolets",
+      "Ses yeux peuvent grossir jusqu'à trois fois leur taille pour zoomer sur une proie",
+      "Il peut fermer chaque œil indépendamment pour dormir à moitié éveillé",
+      "Ses pupilles peuvent changer de forme selon la luminosité, comme le chat"
+    ]
+  },
+  {
+    "fact": "26",
+    "category": "geographie",
+    "question": "Quel vol commis en Jamaïque en 2008 n'a jamais été élucidé ?",
+    "correct_answer": "Le vol d'une plage",
+    "wrong_answers": [
+      "Le vol d'un récif corallien",
+      "Le vol d'une rivière",
+      "Le vol d'une forêt de mangroves",
+      "Le vol d'un lac de montagne",
+      "Le vol d'une cascade"
+    ]
+  },
+  {
+    "fact": "27",
+    "category": "kids",
+    "question": "Quel animal peut monter un escalier… mais pas le redescendre ?",
+    "correct_answer": "La vache",
+    "wrong_answers": [
+      "Le chameau",
+      "L'éléphant",
+      "Le cheval",
+      "Le cochon",
+      "La chèvre"
+    ]
+  },
+  {
+    "fact": "28",
+    "category": "phobies",
+    "question": "Qu'est-ce que la pédiophobie ?",
+    "correct_answer": "La peur des poupées",
+    "wrong_answers": [
+      "La peur des enfants",
+      "La peur des clowns",
+      "La peur des masques",
+      "La peur des statues de cire",
+      "La peur des mannequins de vitrine"
+    ]
+  },
+  {
+    "fact": "29",
+    "category": "sante",
+    "question": "Quel événement s'est produit lors des funérailles de Guillaume le Conquérant ?",
+    "correct_answer": "L'estomac de Guillaume le Conquérant a explosé",
+    "wrong_answers": [
+      "Le cercueil de Guillaume le Conquérant a pris feu durant la cérémonie",
+      "Le crâne de Guillaume le Conquérant s'est détaché et a roulé dans l'allée centrale",
+      "Les os de Guillaume le Conquérant se sont effondrés en poussière au contact de l'air",
+      "La cathédrale où se tenaient les funérailles s'est partiellement effondrée",
+      "Le visage de Guillaume le Conquérant a éclaté sous la pression des bandelettes funéraires"
+    ]
+  },
+  {
+    "fact": "30",
+    "category": "sciences",
+    "question": "Quel phénomène étonnant touche une femme aveugle atteinte de TDI ?",
+    "correct_answer": "Elle voit quand une autre personnalité prend le contrôle",
+    "wrong_answers": [
+      "Elle entend quand une autre personnalité prend le contrôle",
+      "Sa vision se rétablit uniquement sous hypnose",
+      "Elle perçoit les couleurs sans voir les formes",
+      "Son cortex visuel s'active durant le sommeil paradoxal",
+      "Elle retrouve la vue lors de crises épileptiques"
+    ]
+  },
+  {
+    "fact": "31",
+    "category": "phobies",
+    "question": "Qu'est-ce que la nomophobie ?",
+    "correct_answer": "La peur d'être sans téléphone mobile",
+    "wrong_answers": [
+      "La peur d'être sans adresse fixe ou domicile permanent",
+      "La peur des noms propres et de devoir se présenter en public",
+      "La peur des chiffres pairs dans les numéros de téléphone",
+      "La peur d'être sans connexion internet, même en présence de son téléphone",
+      "La peur des messages non lus et des notifications en attente"
+    ]
+  },
+  {
+    "fact": "32",
+    "category": "kids",
+    "question": "Quelle est la particularité des oreilles de Mickey Mouse ?",
+    "correct_answer": "Elles sont toujours dessinées de face",
+    "wrong_answers": [
+      "Elles changent de taille selon les émotions de Mickey",
+      "Elles sont légèrement asymétriques pour paraître plus naturelles",
+      "Elles sont toujours dessinées en profil, comme une vraie oreille de souris",
+      "Elles ont été redessinées plus de 12 fois depuis 1928",
+      "Elles sont positionnées plus haut sur la tête que chez une vraie souris"
+    ]
+  },
+  {
+    "fact": "33",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'hippopotomonstrosesquipédaliophobie ?",
+    "correct_answer": "La peur des mots longs (36 lettres)",
+    "wrong_answers": [
+      "La peur des hippopotames et des grands mammifères aquatiques",
+      "La peur des mots rares ou désuets que l'on ne comprend pas",
+      "La peur des serpents de grande taille (plus de 3 mètres)",
+      "La peur des discours politiques interminables",
+      "La peur de ne pas savoir épeler correctement les mots"
+    ]
+  },
+  {
+    "fact": "34",
+    "category": "sport",
+    "question": "Au Canada, quelle interdiction s'applique aux chasseurs ?",
+    "correct_answer": "Il est interdit de tuer Bigfoot",
+    "wrong_answers": [
+      "Il est interdit de tirer sur un animal portant un collier GPS gouvernemental",
+      "Il est interdit de chasser dans un rayon de 500 mètres autour d'un nid de pygargue à tête blanche",
+      "Il est interdit d'utiliser des appelants sonores électroniques après le coucher du soleil",
+      "Il est interdit de tuer le Wendigo, créature légendaire des forêts boréales",
+      "Il est interdit de chasser un animal albinos, quelle que soit l'espèce"
+    ]
+  },
+  {
+    "fact": "35",
+    "category": "kids",
+    "question": "En quoi le miel se distingue-t-il des autres aliments ?",
+    "correct_answer": "Il ne périme jamais",
+    "wrong_answers": [
+      "Il est le seul aliment à ne jamais cristalliser",
+      "Il est naturellement stérile à la sortie de la ruche",
+      "Il est le seul aliment sucré qui ne provoque aucune carie",
+      "Il continue de fermenter après sa mise en pot",
+      "Il est le seul aliment qui ne gèle pas, même à -30°C"
+    ]
+  },
+  {
+    "fact": "36",
+    "category": "definition",
+    "question": "Qu'est-ce que la \"clinomanie\" ?",
+    "correct_answer": "Désir excessif de rester au lit",
+    "wrong_answers": [
+      "Peur pathologique de tomber en pente ou de descendre des escaliers",
+      "Obsession compulsive de cligner des yeux de manière répétée",
+      "Addiction aux soins cliniques et aux hôpitaux au point de simuler des maladies",
+      "Trouble consistant à ne pouvoir s'endormir que dans une position parfaitement droite",
+      "Attirance irrésistible pour les surfaces froides comme le carrelage ou le marbre"
+    ]
+  },
+  {
+    "fact": "37",
+    "category": "sciences",
+    "question": "En 1929, à partir de quoi les chercheurs Wever et Bray ont-ils créé un téléphone ?",
+    "correct_answer": "Un chat",
+    "wrong_answers": [
+      "Un cochon d'Inde",
+      "Un chien",
+      "Une grenouille",
+      "Un lapin",
+      "Un pigeon"
+    ]
+  },
+  {
+    "fact": "38",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'alopophobie ?",
+    "correct_answer": "La peur des chauves",
+    "wrong_answers": [
+      "La peur des renards",
+      "La peur de perdre ses cheveux",
+      "La peur des poils sur le corps",
+      "La peur des perruques",
+      "La peur des miroirs"
+    ]
+  },
+  {
+    "fact": "39",
+    "category": "technologie",
+    "question": "Avec quoi des scientifiques ont-ils créé une super lentille optique ?",
+    "correct_answer": "De la soie d'araignée",
+    "wrong_answers": [
+      "Des écailles de papillon",
+      "Une membrane d'aile de libellule",
+      "Du cristallin de poisson abyssal",
+      "Des filaments de mycélium de champignon",
+      "Une couche de toile d'araignée tissée à plat"
+    ]
+  },
+  {
+    "fact": "40",
+    "category": "sport",
+    "question": "Quel exploit Dean Karnazes a-t-il réussi grâce à ses capacités physiques exceptionnelles ?",
+    "correct_answer": "Il a couru 563 km sans s'arrêter",
+    "wrong_answers": [
+      "Il a nagé 48 heures en mer ouverte sans combinaison thermique",
+      "Il a grimpé l'Everest en 18 heures sans bouteille d'oxygène",
+      "Il a couru 50 marathons dans 50 États américains en 50 jours consécutifs",
+      "Il a pédalé 1 200 km sans s'arrêter à travers le désert du Sahara",
+      "Il a couru pendant 72 heures sur un tapis roulant sans jamais s'asseoir"
+    ]
+  },
+  {
+    "fact": "41",
+    "category": "art",
+    "question": "Pourquoi Elmer McCurdy s'est rendu célèbre après 60 ans de figuration dans les films ?",
+    "correct_answer": "Sa dépouille a servi de mannequin aux studios TV",
+    "wrong_answers": [
+      "Son visage a servi de modèle pour le masque de Michael Myers",
+      "Son squelette a été utilisé comme accessoire de décor dans des westerns",
+      "Sa photo de casier judiciaire a inspiré le design de personnages de dessins animés",
+      "Son histoire a été adaptée sans que personne ne sache qu'il avait vraiment existé",
+      "Sa voix enregistrée par phonographe a été réutilisée dans des bandes sonores"
+    ]
+  },
+  {
+    "fact": "42",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'alektorophobie ?",
+    "correct_answer": "La peur des poulets",
+    "wrong_answers": [
+      "La peur des plumes et des objets couverts de duvet",
+      "La peur des œufs, notamment à la vue ou au toucher",
+      "La peur des fermiers et du monde agricole en général",
+      "La peur des cocoricos et des bruits stridents au réveil",
+      "La peur des animaux de basse-cour à plumage coloré"
+    ]
+  },
+  {
+    "fact": "43",
+    "category": "sciences",
+    "question": "Qu'a créé Clara Lazen, une écolière de 10 ans ?",
+    "correct_answer": "Une nouvelle molécule",
+    "wrong_answers": [
+      "Un nouveau minéral",
+      "Un nouveau type de cristal",
+      "Un nouvel alliage métallique",
+      "Un nouvel isotope radioactif",
+      "Un nouveau composé enzymatique"
+    ]
+  },
+  {
+    "fact": "44",
+    "category": "geographie",
+    "question": "Quel lieu peut-on louer pour 70 000 $ par nuit ?",
+    "correct_answer": "Le Liechtenstein",
+    "wrong_answers": [
+      "Le Monaco",
+      "L'île de Niue en Polynésie",
+      "Le Vatican",
+      "L'île de Sark dans la Manche",
+      "Le Saint-Marin"
+    ]
+  },
+  {
+    "fact": "45",
+    "category": "sport",
+    "question": "Quel record a été établi lors de la Coupe du monde de Football de 2018 ?",
+    "correct_answer": "Un record d'audience mondiale",
+    "wrong_answers": [
+      "Un record du nombre de buts marqués en phase de groupes",
+      "Un record du nombre de cartons rouges distribués dans un tournoi",
+      "Un record de fréquentation dans les stades sur l'ensemble du tournoi",
+      "Un record du nombre de tirs au but en une seule édition",
+      "Un record du nombre de pays différents ayant diffusé la compétition en direct"
+    ]
+  },
+  {
+    "fact": "46",
+    "category": "art",
+    "question": "Quelle technique surprenante Anna Dumitriu utilise-t-elle pour créer ses œuvres ?",
+    "correct_answer": "Elle peint avec des microbes vivants",
+    "wrong_answers": [
+      "Elle grave ses œuvres avec des enzymes digestives extraites de l'estomac humain",
+      "Elle tisse des toiles en utilisant des fils de soie produits par des vers génétiquement modifiés",
+      "Elle crée des sculptures à partir de cellules souches cultivées en laboratoire",
+      "Elle imprime ses images avec de l'encre fabriquée à partir d'ADN recombiné",
+      "Elle peint avec des spores de champignons bioluminescents"
+    ]
+  },
+  {
+    "fact": "47",
+    "category": "histoire",
+    "question": "Pourquoi la date du 31 décembre à 23h58 est symbolique ?",
+    "correct_answer": "C'est l'apparition des premiers humains sur Terre",
+    "wrong_answers": [
+      "C'est l'apparition des premiers vertébrés sur Terre",
+      "C'est l'extinction des dinosaures",
+      "C'est l'apparition des premières formes de vie multicellulaires",
+      "C'est le moment où la Terre entre dans le système solaire",
+      "C'est l'apparition des premiers mammifères"
+    ]
+  },
+  {
+    "fact": "48",
+    "category": "sciences",
+    "question": "En 1954, à quel phénomène incroyable Ann Hodges a-t-elle survécu ?",
+    "correct_answer": "Elle a été frappée par une météorite et survécu",
+    "wrong_answers": [
+      "Elle a été frappée par la foudre deux fois dans la même journée et survécu",
+      "Elle a survécu à l'impact direct d'un éclair de foudre en boule qui a traversé sa fenêtre",
+      "Elle a été percutée par un fragment de satellite soviétique tombé sur sa maison et survécu",
+      "Elle a survécu à l'explosion d'une météorite qui s'est désintégrée à moins de 10 mètres au-dessus de sa tête",
+      "Elle a été blessée par un fragment de comète entré par sa cheminée pendant son sommeil"
+    ]
+  },
+  {
+    "fact": "49",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"nycthémère\" ?",
+    "correct_answer": "Cycle de 24 heures, jour et nuit",
+    "wrong_answers": [
+      "Période de transition entre deux saisons, utilisée en météorologie climatique",
+      "Phase de sommeil profond durant laquelle le cerveau consolide la mémoire à long terme",
+      "Intervalle de temps entre deux marées hautes consécutives, soit environ 12h25",
+      "Durée minimale d'exposition à la lumière nécessaire à la photosynthèse chez les plantes",
+      "Cycle lunaire complet de 29,5 jours, base du calendrier agricole traditionnel"
+    ]
+  },
+  {
+    "fact": "50",
+    "category": "gastronomie",
+    "question": "En 1910, quel plat était synonyme de luxe dans certains restaurants aux États-Unis ?",
+    "correct_answer": "Le ragoût de tortue",
+    "wrong_answers": [
+      "Le ragoût d'alligator",
+      "La soupe d'esturgeon",
+      "Le rôti de cygne",
+      "Le bouillon de serpent à sonnette",
+      "Le ragoût d'iguane"
+    ]
+  },
+  {
+    "fact": "51",
+    "category": "sante",
+    "question": "De quoi souffrent les personnes atteintes de boanthropie ?",
+    "correct_answer": "Ils pensent être des vaches",
+    "wrong_answers": [
+      "Ils pensent être des chevaux",
+      "Ils pensent être des chiens",
+      "Ils pensent être des moutons",
+      "Ils pensent être des porcs",
+      "Ils pensent être des chèvres"
+    ]
+  },
+  {
+    "fact": "52",
+    "category": "art",
+    "question": "Quelle est la particularité du livre \"My Left Foot\" ?",
+    "correct_answer": "Il a été écrit avec le pied gauche",
+    "wrong_answers": [
+      "Il a été écrit entièrement en vers libres, sans aucune phrase complète",
+      "Il a été rédigé exclusivement de nuit, à la lueur d'une bougie, par superstition de l'auteur",
+      "Il a été dicté lettre par lettre via des clignements d'yeux",
+      "Il a été écrit à rebours, de la dernière page à la première",
+      "Il a été composé en miroir, de droite à gauche, comme les manuscrits de Léonard de Vinci"
+    ]
+  },
+  {
+    "fact": "53",
+    "category": "kids",
+    "question": "Quel acte surprenant a commis un garçon de 5 ans aux États-Unis en 2020 ?",
+    "correct_answer": "Il vole la voiture de ses parents pour acheter une Lamborghini",
+    "wrong_answers": [
+      "Il appelle le 911 pour signaler que ses parents refusent de lui acheter des bonbons",
+      "Il prend l'avion seul jusqu'à New York pour rencontrer le président",
+      "Il commande 27 pizzas avec la carte bancaire de sa mère et attend la livraison",
+      "Il conduit le tracteur du voisin jusqu'à la ville pour acheter un chien",
+      "Il s'échappe de chez lui à vélo pour rejoindre Disneyland à 80 kilomètres de là"
+    ]
+  },
+  {
+    "fact": "54",
+    "category": "sport",
+    "question": "En Espagne, qu'appelle-t-on \"La Tomatina\" ?",
+    "correct_answer": "Une gigantesque bataille de tomates",
+    "wrong_answers": [
+      "Une course de vitesse où les coureurs glissent sur un tapis de purée de tomates",
+      "Une technique de service au tennis très disputée en Catalogne, consistant à frapper la balle en coupant vers le bas",
+      "Un championnat national de dégustation de tomates anciennes organisé chaque été à Valence",
+      "Une danse traditionnelle andalouse exécutée uniquement lors des récoltes de tomates en septembre",
+      "Une compétition de lancer de précision où les participants doivent toucher des cibles avec des tomates séchées"
+    ]
+  },
+  {
+    "fact": "55",
+    "category": "kids",
+    "question": "Quelle espèce partage 60 % de son ADN avec l'être humain ?",
+    "correct_answer": "La banane",
+    "wrong_answers": [
+      "La mouche des fruits",
+      "Le champignon de Paris",
+      "La pomme de terre",
+      "La méduse",
+      "Le ver de terre"
+    ]
+  },
+  {
+    "fact": "56",
+    "category": "animaux",
+    "question": "Qu'avale la grenouille Rana pipiens en même temps que sa proie ?",
+    "correct_answer": "Ses yeux",
+    "wrong_answers": [
+      "Sa langue entière",
+      "Une partie de sa muqueuse nasale",
+      "Le revêtement de son palais",
+      "Ses tympans",
+      "Une fine membrane translucide de sa gorge"
+    ]
+  },
+  {
+    "fact": "57",
+    "category": "lois",
+    "question": "Quelle interdiction est imposée aux clients des pubs anglais ?",
+    "correct_answer": "Se saouler",
+    "wrong_answers": [
+      "Commander plus de deux verres à la fois",
+      "Rester assis plus de deux heures consécutives",
+      "Chanter sans autorisation explicite du gérant",
+      "Payer en espèces après 22h",
+      "Entrer avec un animal, même tenu en laisse"
+    ]
+  },
+  {
+    "fact": "58",
+    "category": "corps-humain",
+    "question": "Que voient les personnes infectées par le ver Loa Loa ?",
+    "correct_answer": "Le Loa Loa",
+    "wrong_answers": [
+      "Des larves microscopiques flottant dans leur champ visuel",
+      "Des filaments blancs se déplaçant sous leur peau",
+      "Des œufs du parasite dans leur salive",
+      "Des taches sombres pulsantes sur leur cornée",
+      "Le ver Wuchereria bancrofti"
+    ]
+  },
+  {
+    "fact": "59",
+    "category": "records",
+    "question": "Quelle prouesse de dextérité Mohammed Muqbel a-t-il réussi à accomplir ?",
+    "correct_answer": "Il a empilé quatre œufs l'un sur l'autre",
+    "wrong_answers": [
+      "Il a fait tenir cinq dés à jouer en équilibre sur la tranche d'une pièce de monnaie",
+      "Il a empilé trois œufs l'un sur l'autre",
+      "Il a fait tenir un œuf en équilibre sur la pointe d'un crayon pendant 47 secondes",
+      "Il a empilé six pièces de monnaie en équilibre sur le dos d'une mouche vivante",
+      "Il a fait tenir cinq allumettes verticales en équilibre sur un seul grain de riz"
+    ]
+  },
+  {
+    "fact": "60",
+    "category": "sante",
+    "question": "Par quel moyen improbable un jeune homme de 19 ans a-t-il réussi à se libérer de son TOC ?",
+    "correct_answer": "En se tirant une balle dans la tête",
+    "wrong_answers": [
+      "En recevant une décharge électrique accidentelle de 220 volts sur le crâne",
+      "En contractant une méningite bactérienne qui a provoqué une fièvre cérébrale de 41°C",
+      "En subissant un traumatisme crânien lors d'un accident de moto sans casque",
+      "En avalant involontairement un produit neurotoxique qui a provoqué des convulsions sévères",
+      "En se noyant brièvement et en souffrant d'un manque d'oxygène cérébral pendant 4 minutes"
+    ]
+  },
+  {
+    "fact": "61",
+    "category": "records",
+    "question": "Quel record de survie Vesna Vulovic détient-elle ?",
+    "correct_answer": "Une chute de 10 km sans parachute",
+    "wrong_answers": [
+      "Une chute de 8,5 km sans parachute",
+      "Une noyade de 47 minutes sans réanimation",
+      "Une chute de 10 km avec parachute défaillant",
+      "La survie à une dépressurisation totale de cabine pendant 12 minutes",
+      "Une chute de 6 km accrochée à un débris d'aile"
+    ]
+  },
+  {
+    "fact": "62",
+    "category": "sport",
+    "question": "En quoi la performance de l'alpiniste Kyle Maynard est-elle exceptionnelle ?",
+    "correct_answer": "Il a escaladé le Kilimandjaro sans bras ni jambes",
+    "wrong_answers": [
+      "Il a escaladé l'Everest sans bras ni jambes",
+      "Il a escaladé le Kilimandjaro en moins de 24 heures avec une seule jambe",
+      "Il a traversé la Manche à la nage sans bras",
+      "Il a escaladé le Kilimandjaro sans bras ni jambes et sans oxygène supplémentaire",
+      "Il a gravi les 7 sommets continentaux sans prothèses en moins d'un an"
+    ]
+  },
+  {
+    "fact": "63",
+    "category": "technologie",
+    "question": "Quels outils l'armée américaine déploie-t-elle pour les opérations de sauvetage spécialisées ?",
+    "correct_answer": "Des dauphins",
+    "wrong_answers": [
+      "Des poulpes",
+      "Des loutres de mer",
+      "Des otaries",
+      "Des bélugas",
+      "Des raies pastenagues"
+    ]
+  },
+  {
+    "fact": "64",
+    "category": "phobies",
+    "question": "Qu'est-ce que la taphophobie ?",
+    "correct_answer": "La peur d'être enterré vivant",
+    "wrong_answers": [
+      "La peur des cercueils et de tout objet associé aux rites funéraires",
+      "La peur de mourir seul, sans témoin ni proche à ses côtés",
+      "La peur des tombes et des cimetières",
+      "La peur de sombrer dans le coma et de ne plus se réveiller",
+      "La peur d'être oublié après sa mort"
+    ]
+  },
+  {
+    "fact": "65",
+    "category": "lois",
+    "question": "En 2007, quelle population a été arrêtée pour tentative d'espionnage ?",
+    "correct_answer": "14 écureuils",
+    "wrong_answers": [
+      "12 pigeons voyageurs",
+      "8 chiens renifleurs",
+      "21 corbeaux",
+      "6 dauphins",
+      "17 chats errants"
+    ]
+  },
+  {
+    "fact": "66",
+    "category": "animaux",
+    "question": "En 1474, pour quelle raison les habitants de Bâle se sont-ils réunis autour d'un coq ?",
+    "correct_answer": "Pour assister à son jugement et son exécution",
+    "wrong_answers": [
+      "Pour assister à son couronnement symbolique en tant que gardien officiel de la ville",
+      "Pour le désigner comme coupable d'une épidémie de peste et le bannir hors des remparts",
+      "Pour célébrer sa survie miraculeuse après avoir été retrouvé vivant sous les décombres d'un incendie",
+      "Pour témoigner lors du procès d'un boucher accusé de l'avoir volé à l'église",
+      "Pour observer l'éclosion d'un œuf qu'il avait pondu et que les autorités considéraient comme un présage divin"
+    ]
+  },
+  {
+    "fact": "67",
+    "category": "sciences",
+    "question": "Qu'est-ce qui a sauvé Elvita Adams, qui a sauté du 86e étage de l'Empire State Building ?",
+    "correct_answer": "Le vent",
+    "wrong_answers": [
+      "Un filet de sécurité installé la semaine précédente",
+      "La corniche en saillie du 85e étage",
+      "Un employé de maintenance qui travaillait sur la façade",
+      "Son manteau qui a ralenti sa chute en se gonflant",
+      "Un câble d'antenne tendu entre les étages"
+    ]
+  },
+  {
+    "fact": "68",
+    "category": "phobies",
+    "question": "Qu'est-ce que la deipnophobie ?",
+    "correct_answer": "La peur des conversations au cours des repas",
+    "wrong_answers": [
+      "La peur de manger seul en public",
+      "La peur d'avaler de travers et de s'étouffer en mangeant",
+      "La peur des grandes tablées et des repas de famille",
+      "La peur de ne pas finir son assiette par égard pour l'hôte",
+      "La peur des couverts et des ustensiles de table"
+    ]
+  },
+  {
+    "fact": "69",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"mirliflore\" ?",
+    "correct_answer": "Jeune homme élégant de manière excessive",
+    "wrong_answers": [
+      "Petit instrument de musique à anche que l'on fredonne avec la bouche",
+      "Herbe médicinale utilisée en phytothérapie contre les troubles digestifs",
+      "Ornement architectural en forme de volute sur les chapiteaux baroques",
+      "Jeune homme élégant mais discret, apprécié pour sa réserve naturelle",
+      "Variété de dahlia à fleurs doubles cultivée dans les jardins du XVIIIe siècle"
+    ]
+  },
+  {
+    "fact": "70",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"hapax\" ?",
+    "correct_answer": "Mot ou expression apparaissant une seule fois",
+    "wrong_answers": [
+      "Phénomène linguistique où un mot change de sens selon la région où il est employé",
+      "Figure de style consistant à répéter deux fois le même mot pour renforcer son sens",
+      "Terme désignant un mot emprunté à une langue morte et intégré tel quel dans une autre",
+      "Mot dont l'étymologie est totalement inconnue même des spécialistes de la langue",
+      "Variante orthographique d'un mot jugée acceptable mais non recommandée par l'usage officiel"
+    ]
+  },
+  {
+    "fact": "72",
+    "category": "sante",
+    "question": "Comment Pam Reynolds a-t-elle été remarquée ?",
+    "correct_answer": "Elle a décrit son opération du cœur et du cerveau",
+    "wrong_answers": [
+      "Elle a décrit avec précision la salle de réveil alors qu'elle était sous anesthésie totale",
+      "Elle a identifié les chirurgiens présents sans jamais les avoir rencontrés avant l'opération",
+      "Elle a récité mot pour mot les conversations tenues pendant son coma de trois semaines",
+      "Elle a dessiné les instruments chirurgicaux utilisés sans aucune formation médicale",
+      "Elle a prédit les complications post-opératoires de deux autres patients hospitalisés le même jour"
+    ]
+  },
+  {
+    "fact": "73",
+    "category": "sport",
+    "question": "Comment Jane Petkov a-t-il nagé de façon insolite pendant près de 3 heures ?",
+    "correct_answer": "Les pieds et mains liés, enfermés dans un sac",
+    "wrong_answers": [
+      "Les yeux bandés et les bras attachés dans le dos",
+      "Enchaîné à un bloc de béton de 10 kg",
+      "Les poignets liés dans une camisole de force",
+      "À reculons, les membres attachés deux à deux",
+      "Menotté à un partenaire inconscient"
+    ]
+  },
+  {
+    "fact": "74",
+    "category": "sante",
+    "question": "Pourquoi l'explosion chimique survenue à Tarragone en 2020 est elle célèbre ?",
+    "correct_answer": "Un homme est mort frappé par un couvercle à 2,5 km",
+    "wrong_answers": [
+      "Un homme est mort frappé par un couvercle à 1,2 km",
+      "Elle a provoqué une pluie de poissons sur la ville voisine de Reus",
+      "Un employé a survécu à l'explosion en étant protégé par une porte en acier",
+      "Elle a déclenché une évacuation de 12 000 personnes en moins de 8 minutes",
+      "Un fragment de tuyauterie a été retrouvé à 4,1 km du site, intact"
+    ]
+  },
+  {
+    "fact": "75",
+    "category": "sante",
+    "question": "Quel exploit un pilote d'avion a-t-il vécu en 1990 ?",
+    "correct_answer": "Il a été éjecté du cockpit… et a survécu",
+    "wrong_answers": [
+      "Il a piloté pendant 40 minutes avec les deux bras cassés après une turbulence violente",
+      "Il a survécu à une dépressurisation totale de la cabine sans masque à oxygène pendant 18 minutes",
+      "Il a atterri en urgence après avoir perdu connaissance, le copilote étant décédé en vol",
+      "Il a continué à donner des instructions vocales depuis l'extérieur de l'appareil avant d'être récupéré",
+      "Il a été frappé par la foudre dans le cockpit et a terminé l'atterrissage malgré une cécité temporaire"
+    ]
+  },
+  {
+    "fact": "76",
+    "category": "sante",
+    "question": "Selon des études, qu'est ce qui serait aussi nocive que fumer ?",
+    "correct_answer": "La solitude est aussi nocive que fumer",
+    "wrong_answers": [
+      "La sédentarité prolongée est aussi nocive que fumer",
+      "Le manque chronique de sommeil est aussi nocif que fumer",
+      "La pollution sonore urbaine est aussi nocive que fumer",
+      "La consommation excessive de sucre est aussi nocive que fumer",
+      "Le stress professionnel chronique est aussi nocif que fumer"
+    ]
+  },
+  {
+    "fact": "77",
+    "category": "technologie",
+    "question": "Qu'est-ce que le Plan \"Conop 8888\" ?",
+    "correct_answer": "Un plan militaire pour contrer les zombies",
+    "wrong_answers": [
+      "Un protocole de l'OTAN pour neutraliser les intelligences artificielles devenues hostiles",
+      "Un plan d'urgence du Pentagone pour évacuer Washington D.C. en cas d'éruption volcanique majeure",
+      "Un manuel de contre-espionnage de la CIA pour infiltrer les sectes apocalyptiques",
+      "Un plan de continuité gouvernementale américain en cas d'impact d'astéroïde sur le territoire continental",
+      "Un programme classifié de la NSA pour gérer une panne simultanée de tous les réseaux électriques mondiaux"
+    ]
+  },
+  {
+    "fact": "78",
+    "category": "art",
+    "question": "Pourquoi les Compact Disque (CD) peuvent contenir 74 minutes d'audio ?",
+    "correct_answer": "Pour contenir la Neuvième Symphonie de Beethoven",
+    "wrong_answers": [
+      "Pour contenir l'intégralité de la Cinquième Symphonie de Mahler",
+      "Pour correspondre à la durée maximale d'une face de vinyle 33 tours haute fidélité",
+      "Pour respecter la limite technique des lasers à semi-conducteur de l'époque",
+      "Pour contenir le Requiem de Mozart dans son enregistrement de référence par Karl Böhm",
+      "Pour permettre d'écouter un opéra de Wagner sans changement de support"
+    ]
+  },
+  {
+    "fact": "79",
+    "category": "corps-humain",
+    "question": "Quelle distinction existe entre les os d'un enfant et ceux d'un adulte ?",
+    "correct_answer": "99",
+    "wrong_answers": [
+      "270",
+      "350",
+      "340",
+      "206",
+      "230"
+    ]
+  },
+  {
+    "fact": "80",
+    "category": "kids",
+    "question": "Quel élément vivant terrestre peut être vu depuis l'espace ?",
+    "correct_answer": "La Grande Barrière de Corail en Australie",
+    "wrong_answers": [
+      "La Forêt Amazonienne au Brésil",
+      "La Mer des Sargasses dans l'Atlantique",
+      "Le Delta de l'Okavango en Afrique du Sud",
+      "Les rizières en terrasses de Bali en Indonésie",
+      "La Forêt de Kelp de Californie aux États-Unis"
+    ]
+  },
+  {
+    "fact": "81",
+    "category": "kids",
+    "question": "Que font les élèves dans certaines écoles japonaises ?",
+    "correct_answer": "Ils nettoient eux-mêmes leurs classes",
+    "wrong_answers": [
+      "Ils cuisinent leur propre repas à la cantine",
+      "Ils choisissent eux-mêmes leurs horaires de cours",
+      "Ils notent le comportement de leurs professeurs",
+      "Ils dorment 30 minutes en classe après le déjeuner",
+      "Ils apportent leurs propres chaises de chez eux"
+    ]
+  },
+  {
+    "fact": "82",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"phylactère\" ?",
+    "correct_answer": "Une bulle de BD",
+    "wrong_answers": [
+      "Un parchemin contenant une prière porté comme amulette protectrice",
+      "Un ornement architectural en forme de feuille stylisée utilisé dans les frises gothiques",
+      "Une technique de gravure médiévale sur plaque de cuivre repoussé",
+      "Un bandeau de tissu brodé porté autour du front lors des cérémonies byzantines",
+      "Un filet décoratif tressé utilisé pour maintenir les cheveux dans l'Antiquité romaine"
+    ]
+  },
+  {
+    "fact": "83",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"galimatias\" ?",
+    "correct_answer": "Discours confus, incompréhensible, du charabia.",
+    "wrong_answers": [
+      "Un instrument à vent medieval utilisé dans les processions religieuses flamandes",
+      "Un type de nœud marin complexe, utilisé pour attacher les voiles des galions",
+      "Un plat traditionnel du Sud-Ouest français, à base d'abats de volaille mijotés au vin blanc",
+      "Un procédé d'impression typographique obsolète, utilisé pour reproduire les enluminures",
+      "Un oiseau échassier migrateur, cousin du courlis, aujourd'hui disparu des côtes atlantiques"
+    ]
+  },
+  {
+    "fact": "84",
+    "category": "technologie",
+    "question": "Pourquoi l'intervention de la CIA à Loudoun, Virginie a-t-elle été controversée ?",
+    "correct_answer": "Elle a oublié un explosif dans un bus scolaire",
+    "wrong_answers": [
+      "Elle a espionné des élèves via des caméras installées dans des cartables de test",
+      "Elle a mené un exercice d'infiltration en recrutant un enseignant à l'insu du lycée",
+      "Elle a perdu un drone de surveillance dans la cour d'une école primaire",
+      "Elle a oublié un micro émetteur actif dans la salle du conseil municipal",
+      "Elle a conduit des simulations d'enlèvement sans prévenir la police locale"
+    ]
+  },
+  {
+    "fact": "85",
+    "category": "corps-humain",
+    "question": "Quelle était la condition physiologique particulière de Al Herpin ?",
+    "correct_answer": "Il ne dormait jamais",
+    "wrong_answers": [
+      "Il ne ressentait jamais la douleur",
+      "Il ne perdait jamais connaissance, même sous anesthésie générale",
+      "Il ne digérait jamais les glucides",
+      "Il ne cicatrisait jamais normalement",
+      "Il ne frissonnait jamais, quelle que soit la température"
+    ]
+  },
+  {
+    "fact": "86",
+    "category": "animaux",
+    "question": "Pourquoi l'anatomie de l'étoile de mer est-elle atypique ?",
+    "correct_answer": "Elles n'ont pas de cerveau",
+    "wrong_answers": [
+      "Elles n'ont pas de sang, mais un liquide à base d'eau de mer",
+      "Elles n'ont pas de bouche permanente, elle se forme au moment des repas",
+      "Elles n'ont pas de système digestif, elles absorbent les nutriments par la peau",
+      "Elles n'ont pas de symétrie bilatérale à la naissance, elle se développe après 3 ans",
+      "Elles n'ont pas de muscles, leurs mouvements sont entièrement hydrauliques"
+    ]
+  },
+  {
+    "fact": "87",
+    "category": "sciences",
+    "question": "Quelle initiative les ambulances de New Delhi ont-elle mise en place depuis 2009 ?",
+    "correct_answer": "Elles interviennent pour les arbres malades",
+    "wrong_answers": [
+      "Elles transportent des plants d'arbres vers les zones déboisées de la ville",
+      "Elles interviennent pour les animaux errants blessés sur la voie publique",
+      "Elles assurent le transport d'urgence des greffons d'organes entre hôpitaux",
+      "Elles prennent en charge les victimes de pollution atmosphérique sévère",
+      "Elles collectent les déchets organiques pour les transformer en compost urbain"
+    ]
+  },
+  {
+    "fact": "88",
+    "category": "sciences",
+    "question": "Que permet le réseau mycorhizien ?",
+    "correct_answer": "Il permet aux arbres de communiquer entre eux",
+    "wrong_answers": [
+      "Il permet aux plantes de se reproduire sans pollinisation",
+      "Il permet aux arbres de puiser l'eau des nappes phréatiques profondes",
+      "Il permet aux racines de résister aux parasites fongiques",
+      "Il permet aux forêts de réguler leur température interne",
+      "Il permet aux arbres de partager leurs nutriments avec les animaux voisins"
+    ]
+  },
+  {
+    "fact": "89",
+    "category": "histoire",
+    "question": "Qu'est-ce qui a déclenché l'incendie du crématorium à Richmond, Virginie, en 2014 ?",
+    "correct_answer": "La graisse d'un corps obèse de 225 kg",
+    "wrong_answers": [
+      "Une fuite de propane dans le système d'alimentation du four",
+      "Un excès de formaldehyde résiduel dans les tissus du défunt",
+      "La surchauffe du cercueil en bois verni lors de la combustion",
+      "Un court-circuit dans le système de filtration des fumées",
+      "La chaleur accumulée par une double crémation simultanée"
+    ]
+  },
+  {
+    "fact": "90",
+    "category": "kids",
+    "question": "Quel est le point commun entre toi et 20 millions d'autres personnes ?",
+    "correct_answer": "La date d'anniversaire",
+    "wrong_answers": [
+      "Le prénom",
+      "La couleur des yeux",
+      "Le groupe sanguin",
+      "Le signe astrologique",
+      "La pointure"
+    ]
+  },
+  {
+    "fact": "91",
+    "category": "sport",
+    "question": "Qu'est-ce qu'un cul de porc ?",
+    "correct_answer": "Un nœud marin",
+    "wrong_answers": [
+      "Une prise de lutte gréco-romaine consistant à saisir l'adversaire par les hanches par derrière",
+      "Un terme d'argot du cyclisme désignant une chute sur le bas du dos",
+      "Une technique d'aviron où les deux rameurs synchronisent leur poussée vers l'arrière",
+      "Un défaut de couture dans la fabrication des ballons de rugby ovales",
+      "Une posture de départ utilisée en natation synchronisée pour les figures inversées"
+    ]
+  },
+  {
+    "fact": "92",
+    "category": "records",
+    "question": "Quelle prouesse alimentaire Michel Lolito a-t-il réalisée entre 1978 et 1980 ?",
+    "correct_answer": "Il a mangé un avion",
+    "wrong_answers": [
+      "Il a mangé une voiture entière",
+      "Il a mangé un sous-marin de poche",
+      "Il a mangé une locomotive à vapeur",
+      "Il a mangé un hélicoptère militaire",
+      "Il a mangé un char d'assaut"
+    ]
+  },
+  {
+    "fact": "93",
+    "category": "art",
+    "question": "Quels matériaux utilise le sculpteur Mikhail Bozhok pour exprimer son talent ?",
+    "correct_answer": "Il sculpte principalement sur des crânes d'animaux",
+    "wrong_answers": [
+      "Il sculpte principalement sur des défenses de mammouth fossilisées",
+      "Il sculpte principalement sur des vertèbres de baleine séchées",
+      "Il sculpte principalement sur des carapaces de tortues marines",
+      "Il sculpte principalement sur des bois de cerf naturellement tombés",
+      "Il sculpte principalement sur des os de fémur de bovins"
+    ]
+  },
+  {
+    "fact": "94",
+    "category": "animaux",
+    "question": "En quoi le lézard \"Phrynosoma\" se distingue-t-il de ses congénères ?",
+    "correct_answer": "Il tire du sang de ses yeux pour se défendre",
+    "wrong_answers": [
+      "Il crache un venin corrosif par la bouche pour repousser les prédateurs",
+      "Il se sectionne volontairement la queue qui continue de se débattre pendant plusieurs minutes",
+      "Il gonfle son corps jusqu'à doubler de volume en aspirant de l'air",
+      "Il sécrète une substance collante par les pores de sa peau qui paralyse les petits prédateurs",
+      "Il change de couleur en moins d'une seconde pour imiter le motif d'un serpent venimeux local"
+    ]
+  },
+  {
+    "fact": "95",
+    "category": "lois",
+    "question": "Au Connecticut, pour quelle raison certains cornichons sont interdits de vente ?",
+    "correct_answer": "Ils ne rebondissent pas",
+    "wrong_answers": [
+      "Ils ne flottent pas dans leur saumure",
+      "Ils mesurent moins de 5 centimètres de long",
+      "Ils ont été marinés moins de 48 heures",
+      "Ils contiennent plus de 2% de vinaigre blanc",
+      "Ils ne font pas un son creux quand on les frappe"
+    ]
+  },
+  {
+    "fact": "96",
+    "category": "gastronomie",
+    "question": "Où fût enterré Frédéric Baur, le fondateur de Pringles ?",
+    "correct_answer": "Dans une boîte de Pringles",
+    "wrong_answers": [
+      "Dans une usine Pringles désaffectée de Cincinnati",
+      "Dans un cercueil en forme de tube cylindrique",
+      "Dans la crypte familiale de l'université de Cincinnati où il enseignait",
+      "Dans un silo industriel reconverti en mausolée privé",
+      "Sous le parquet de la première usine Pringles au monde"
+    ]
+  },
+  {
+    "fact": "97",
+    "category": "gastronomie",
+    "question": "À partir de quoi étaient fabriqués certains arômes de vanille ?",
+    "correct_answer": "De sécrétion de castor",
+    "wrong_answers": [
+      "De glandes sudoripares de porc",
+      "De sécrétions lacrymales de vache",
+      "D'urine de civette fermentée",
+      "De fiente de chauve-souris frugivore",
+      "De musc extrait des glandes génitales du chevreuil"
+    ]
+  },
+  {
+    "fact": "98",
+    "category": "sport",
+    "question": "Quel exploit incroyable un cacatoès a-t-il réalisé à Milan ?",
+    "correct_answer": "Il a parcouru 5 m en trottinette",
+    "wrong_answers": [
+      "Il a parcouru 5 m en skateboard",
+      "Il a parcouru 10 m en trottinette",
+      "Il a parcouru 5 m en trottinette en 22,14 secondes",
+      "Il a parcouru 5 m à vélo",
+      "Il a parcouru 3 m en trottinette"
+    ]
+  },
+  {
+    "fact": "99",
+    "category": "technologie",
+    "question": "Pour quelle raison le logo Wi‑Fi a-t-il été inventé ?",
+    "correct_answer": "Pour faire joli",
+    "wrong_answers": [
+      "Pour représenter visuellement la propagation des ondes radio",
+      "Pour imiter le symbole de la fréquence dans les manuels d'ingénierie des télécommunications",
+      "Pour rappeler le logo du protocole Bluetooth, afin d'unifier l'identité visuelle du sans-fil",
+      "Pour illustrer la portée décroissante du signal selon la distance",
+      "Pour symboliser les trois bandes de fréquence utilisées par les routeurs domestiques"
+    ]
+  },
+  {
+    "fact": "100",
+    "category": "geographie",
+    "question": "En quoi Yonge Street à Toronto se distingue-t-elle des autres rues ?",
+    "correct_answer": "Elle mesure 57 km de long",
+    "wrong_answers": [
+      "Elle mesure 86 km de long",
+      "Elle mesure 42 km de long",
+      "Elle mesure 73 km de long",
+      "Elle mesure 31 km de long",
+      "Elle mesure 64 km de long"
+    ]
+  },
+  {
+    "fact": "101",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'agyrophobie ?",
+    "correct_answer": "La peur de traverser la rue",
+    "wrong_answers": [
+      "La peur des foules dans les espaces publics",
+      "La peur des véhicules à moteur en mouvement",
+      "La peur des carrefours et des intersections",
+      "La peur des espaces ouverts et dégagés",
+      "La peur des transports en commun urbains"
+    ]
+  },
+  {
+    "fact": "102",
+    "category": "technologie",
+    "question": "Qu'est-ce que le projet \"Earthscraper\" ?",
+    "correct_answer": "Un immeuble de 65 étages sous terre à Mexico",
+    "wrong_answers": [
+      "Un tunnel ferroviaire de 52 niveaux creusé sous les Alpes suisses",
+      "Une ville souterraine de 40 étages construite sous Dubaï pour résister aux températures extrêmes",
+      "Un bunker gouvernemental de 80 étages enfoui sous Washington D.C.",
+      "Un complexe minier transformé en immeuble résidentiel de 55 étages sous Johannesburg",
+      "Une structure pyramidale inversée de 70 étages sous Tokyo servant de centre de données"
+    ]
+  },
+  {
+    "fact": "103",
+    "category": "histoire",
+    "question": "En 2004, quel objet banal a été vendu aux enchères pour $28 000 ?",
+    "correct_answer": "Un sandwich grillé au fromage",
+    "wrong_answers": [
+      "Une serviette en papier tachée de café",
+      "Un morceau de pain de mie moisi",
+      "Une canette de soda à moitié bue",
+      "Un ticket de caisse froissé",
+      "Une chips ordinaire en forme de croix"
+    ]
+  },
+  {
+    "fact": "104",
+    "category": "animaux",
+    "question": "Quelle particularité anatomique retrouve-t-on exclusivement chez la pieuvre ?",
+    "correct_answer": "Elle a trois cœurs",
+    "wrong_answers": [
+      "Elle a deux cerveaux",
+      "Elle a quatre reins",
+      "Elle a cinq poumons",
+      "Elle a deux foies",
+      "Elle a six glandes salivaires"
+    ]
+  },
+  {
+    "fact": "105",
+    "category": "records",
+    "question": "En 2013, au Bangladesh, qu'ont extrait les médecins d'un de leurs patients ?",
+    "correct_answer": "Un ténia de 25 mètres",
+    "wrong_answers": [
+      "Un ténia de 18 mètres",
+      "Un calcul rénal de 4,7 kilogrammes",
+      "Un ténia de 31 mètres",
+      "Une touffe de cheveux de 3 mètres",
+      "Un kyste hydatique de 12 litres"
+    ]
+  },
+  {
+    "fact": "106",
+    "category": "geographie",
+    "question": "Où peut-on admirer la plus grande chute d'eau au monde ?",
+    "correct_answer": "Sous la mer",
+    "wrong_answers": [
+      "Dans une grotte souterraine en Slovénie",
+      "Dans l'atmosphère de Jupiter",
+      "Au fond du cratère d'un volcan éteint en Islande",
+      "Dans un canyon sous-glaciaire en Antarctique",
+      "À l'intérieur d'un glacier au Groenland"
+    ]
+  },
+  {
+    "fact": "107",
+    "category": "art",
+    "question": "Comment J.M.W. Turner a-t-il été inspiré pour peindre \"Snow Storm\" ?",
+    "correct_answer": "Il s'est attaché à un mât pendant une tempête",
+    "wrong_answers": [
+      "Il s'est fait enfermer dans une cabine de bateau sans fenêtre pendant 48h pour ressentir la désorientation",
+      "Il a payé des marins pour lui décrire leurs tempêtes les plus terrifiantes en détail",
+      "Il s'est allongé sur le pont d'un navire les yeux grands ouverts sous la pluie battante",
+      "Il a suspendu ses toiles dans la mature d'un navire pour laisser la tempête peindre à sa place",
+      "Il a observé la tempête depuis le phare de Margate en y restant enfermé trois jours"
+    ]
+  },
+  {
+    "fact": "108",
+    "category": "geographie",
+    "question": "Quel musée insolite se trouve à Delhi, en Inde ?",
+    "correct_answer": "Musée des toilettes",
+    "wrong_answers": [
+      "Musée des pénitences",
+      "Musée des insultes",
+      "Musée des maladies tropicales",
+      "Musée des odeurs",
+      "Musée des déchets"
+    ]
+  },
+  {
+    "fact": "109",
+    "category": "animaux",
+    "question": "En quoi le \"petit-gris\" se distingue-t-il des autres escargots?",
+    "correct_answer": "Il est hermaphrodite",
+    "wrong_answers": [
+      "Il peut se reproduire par bouturage, comme une plante",
+      "Il change de sexe à chaque saison",
+      "Il est l'un des rares mollusques à avoir un système nerveux centralisé",
+      "Il est capable de féconder ses propres œufs sans partenaire",
+      "Il possède deux coquilles superposées à la naissance"
+    ]
+  },
+  {
+    "fact": "110",
+    "category": "sport",
+    "question": "Quel record détient le gardien de but Brésilien Rogerio Ceni ?",
+    "correct_answer": "Le record de buts marqués par un gardien",
+    "wrong_answers": [
+      "Le record du plus grand nombre de penalty arrêtés en carrière",
+      "Le record de matchs joués sans encaisser de but en championnat brésilien",
+      "Le record du gardien ayant remporté le plus de titres de champion du Brésil",
+      "Le record du gardien ayant joué le plus de matchs consécutifs en première division",
+      "Le record de passes décisives délivrées par un gardien en Serie A brésilienne"
+    ]
+  },
+  {
+    "fact": "111",
+    "category": "sport",
+    "question": "Pourquoi le Jockey Frank Hayes n'a pas célébré sa victoire le 4 juin 1923 ?",
+    "correct_answer": "Il est mort pendant la course",
+    "wrong_answers": [
+      "Il s'était évanoui à mi-course et dormait profondément sur sa monture à l'arrivée",
+      "Il avait été disqualifié pour avoir franchi la ligne sans tenir les rênes",
+      "Son cheval avait franchi la ligne en sens inverse, annulant techniquement la victoire",
+      "Il avait perdu connaissance dès le départ et ne savait pas qu'il avait participé à la course",
+      "Il était tombé de cheval à 50 mètres de l'arrivée et avait franchi la ligne à pied"
+    ]
+  },
+  {
+    "fact": "112",
+    "category": "phobies",
+    "question": "Qu'est-ce que la pentheraphobie ?",
+    "correct_answer": "La peur de la belle-mère",
+    "wrong_answers": [
+      "La peur du beau-père",
+      "La peur des réunions de famille",
+      "La peur du mariage",
+      "La peur de tomber amoureux",
+      "La peur des enfants"
+    ]
+  },
+  {
+    "fact": "113",
+    "category": "gastronomie",
+    "question": "Quelle peut être la particularité de la pastèque ?",
+    "correct_answer": "Elle peut être carrée",
+    "wrong_answers": [
+      "Elle peut être noire",
+      "Elle peut être sans pépins naturellement",
+      "Elle peut être entièrement rouge, sans écorce verte",
+      "Elle peut peser plus de 100 kg",
+      "Elle peut être creuse à l'intérieur"
+    ]
+  },
+  {
+    "fact": "114",
+    "category": "art",
+    "question": "Quelle performance artistique Abraham Poincheval a-t-il réalisée en 2014 ?",
+    "correct_answer": "Il a passé 13 jours dans un ours",
+    "wrong_answers": [
+      "Il a passé 13 jours dans une baleine naturalisée",
+      "Il a passé 13 jours enterré vivant sous une place publique",
+      "Il a passé 13 jours dans un rocher creusé",
+      "Il a passé 13 jours scellé dans un mur de musée",
+      "Il a passé 13 jours immergé dans une cuve de vin"
+    ]
+  },
+  {
+    "fact": "115",
+    "category": "geographie",
+    "question": "Pourquoi la ville de Monowi est-elle unique ?",
+    "correct_answer": "La ville a une seule résidente",
+    "wrong_answers": [
+      "La ville n'a aucun habitant officiel mais reste légalement incorporée",
+      "La ville est habitée uniquement par des personnes âgées de plus de 100 ans",
+      "La ville possède plus de bibliothèques que d'habitants",
+      "La ville a deux résidents officiels qui sont aussi maires tous les deux",
+      "La ville est la seule aux États-Unis sans code postal attribué"
+    ]
+  },
+  {
+    "fact": "116",
+    "category": "phobies",
+    "question": "Qu'est-ce que la dextrophobie ?",
+    "correct_answer": "La peur des objets à droite",
+    "wrong_answers": [
+      "La peur des mouvements vers la droite",
+      "La peur d'être droitier",
+      "La peur des droitiers",
+      "La peur de tourner à droite",
+      "La peur de la main droite"
+    ]
+  },
+  {
+    "fact": "117",
+    "category": "art",
+    "question": "Qui a écrit le roman d'amour \"Zabibah et le Roi\" ?",
+    "correct_answer": "Saddam Hussein",
+    "wrong_answers": [
+      "Mouammar Kadhafi",
+      "Mahmoud Ahmadinejad",
+      "Kim Jong-il",
+      "Idi Amin Dada",
+      "Hugo Chávez"
+    ]
+  },
+  {
+    "fact": "118",
+    "category": "animaux",
+    "question": "Quelle conséquence le stress peut-il avoir chez le rat ?",
+    "correct_answer": "Il mange ses bébés",
+    "wrong_answers": [
+      "Il perd ses poils par plaques",
+      "Il attaque les autres mâles de sa portée",
+      "Il cesse complètement de s'alimenter pendant plusieurs jours",
+      "Il ronge sa propre queue",
+      "Il abandonne son nid et ne revient jamais"
+    ]
+  },
+  {
+    "fact": "119",
+    "category": "lois",
+    "question": "Quel congé spécifique peut être accordé aux employés en Angleterre ?",
+    "correct_answer": "Un congé pour gueule de bois",
+    "wrong_answers": [
+      "Un congé pour rupture amoureuse",
+      "Un congé pour mauvaise météo",
+      "Un congé pour anniversaire de son animal de compagnie",
+      "Un congé pour décalage horaire émotionnel",
+      "Un congé pour lendemain de finale sportive"
+    ]
+  },
+  {
+    "fact": "120",
+    "category": "sciences",
+    "question": "Sur Terre, où peut-on trouver 1600 Kg d'or sans pouvoir l'extraire ?",
+    "correct_answer": "Dans le corps humain",
+    "wrong_answers": [
+      "Dans les eaux des océans",
+      "Dans la croûte terrestre sous les dorsales océaniques",
+      "Dans l'atmosphère terrestre sous forme de microparticules",
+      "Dans les glaciers polaires en suspension",
+      "Dans les nappes phréatiques profondes"
+    ]
+  },
+  {
+    "fact": "121",
+    "category": "lois",
+    "question": "En Thaïlande, sur quelle surface est-il interdit de marcher ?",
+    "correct_answer": "Des billets de banque",
+    "wrong_answers": [
+      "Des timbres-poste",
+      "Des pièces de monnaie",
+      "Des photos du roi encadrées",
+      "Des journaux contenant une photo du roi",
+      "Des passeports"
+    ]
+  },
+  {
+    "fact": "122",
+    "category": "technologie",
+    "question": "Pourquoi 1 seconde ne fait pas toujours 1 seconde ?",
+    "correct_answer": "À cause de la rotation de la Terre",
+    "wrong_answers": [
+      "À cause de la dilatation gravitationnelle près du sol",
+      "À cause des variations du champ magnétique terrestre",
+      "À cause de la précession des équinoxes",
+      "À cause des fluctuations de pression atmosphérique sur les horloges atomiques",
+      "À cause de la dérive des plaques tectoniques"
+    ]
+  },
+  {
+    "fact": "123",
+    "category": "lois",
+    "question": "Quel mot est-il interdit de prononcer dans le Kentucky ?",
+    "correct_answer": "Bingo !",
+    "wrong_answers": [
+      "Jackpot !",
+      "Banco !",
+      "Yahtzee !",
+      "Check !",
+      "Loto !"
+    ]
+  },
+  {
+    "fact": "124",
+    "category": "gastronomie",
+    "question": "Quelle boisson est coutumière pour les clients de Dawson City ?",
+    "correct_answer": "Un cocktail contenant un orteil humain momifié",
+    "wrong_answers": [
+      "Un cocktail contenant une dent de grizzly authentique",
+      "Un cocktail servi dans un crâne humain véritable",
+      "Un cocktail contenant un œil de bœuf séché",
+      "Un cocktail dans lequel flotte un doigt de castor momifié",
+      "Un cocktail contenant une phalange d'ours noir conservée dans l'alcool"
+    ]
+  },
+  {
+    "fact": "125",
+    "category": "technologie",
+    "question": "Quelle avancée technologique rend la voiture du Roi Charles III spéciale ?",
+    "correct_answer": "Elle roule au vin et au fromage",
+    "wrong_answers": [
+      "Elle roule à l'huile de friture recyclée des cuisines royales",
+      "Elle roule à la bière et au miel",
+      "Elle roule au thé et aux déchets de jardinage du palais",
+      "Elle roule à l'huile de colza cultivée sur les terres royales de Sandringham",
+      "Elle roule au whisky de malt et au petit-lait"
+    ]
+  },
+  {
+    "fact": "126",
+    "category": "sante",
+    "question": "Quelle particularité a la petite Lynlee ?",
+    "correct_answer": "Elle est née deux fois grâce à une opération",
+    "wrong_answers": [
+      "Elle a été transplantée dans l'utérus d'une autre femme pendant la grossesse",
+      "Elle a survécu à une naissance à 19 semaines sans aucune intervention chirurgicale",
+      "Elle a reçu une transfusion sanguine complète in utero trois semaines avant sa naissance",
+      "Elle est née avec le cœur situé à droite au lieu de gauche suite à une chirurgie fœtale",
+      "Elle a été opérée du cerveau dans le ventre de sa mère sans en être extraite"
+    ]
+  },
+  {
+    "fact": "127",
+    "category": "sport",
+    "question": "Quelle est la mise la plus insolite qu'un joueur de poker ait perdue lors d'une partie ?",
+    "correct_answer": "Sa femme",
+    "wrong_answers": [
+      "Son passeport et sa nationalité russe",
+      "Sa maison, ses deux voitures et le chien de la famille",
+      "Les droits de garde de son fils pendant 6 mois",
+      "Son droit à prendre la parole au dîner pendant un an",
+      "Sa collection complète de matriochkas estimée à 40 000 dollars"
+    ]
+  },
+  {
+    "fact": "128",
+    "category": "sciences",
+    "question": "Que incident a provoqué le crash du vol TU-134 le 20 octobre 1986 ?",
+    "correct_answer": "Le pilote a parié pouvoir atterrir les yeux bandés",
+    "wrong_answers": [
+      "Le copilote a éteint les moteurs pour prouver qu'il pouvait les redémarrer en vol",
+      "Le pilote a laissé un passager tenir les commandes pendant l'approche finale",
+      "Le capitaine a désactivé le radar d'altitude pour tester les instruments de secours",
+      "Le pilote a effectué l'approche en coupant toute communication radio pour gagner un pari",
+      "Le copilote a parié qu'il pouvait atterrir en vol manuel sans assistance gyroscopique"
+    ]
+  },
+  {
+    "fact": "129",
+    "category": "definition",
+    "question": "Que signifie faire du \"borborygme\" ?",
+    "correct_answer": "Avoir des gargouillis de ventre",
+    "wrong_answers": [
+      "Émettre des sons involontaires avec les articulations",
+      "Produire un ronflement grave et irrégulier pendant le sommeil",
+      "Avoir des spasmes musculaires dans la gorge lors d'une déglutition",
+      "Faire des bulles de salive sous l'effet d'une forte anxiété",
+      "Ressentir des vibrations dans les oreilles après un son trop fort"
+    ]
+  },
+  {
+    "fact": "130",
+    "category": "kids",
+    "question": "Qu'est-ce qui a poussé les enfants de Brooklyn à se précipiter dans les rues le 12 mai 1919 ?",
+    "correct_answer": "Pour goûter une inondation de chocolat",
+    "wrong_answers": [
+      "Pour attraper des poissons tombés d'un camion renversé",
+      "Pour ramasser des pièces de monnaie qui s'échappaient d'un coffre-fort explosé",
+      "Pour goûter une inondation de caramel",
+      "Pour attraper des bonbons lancés depuis un avion en panne",
+      "Pour ramasser des oranges roulant depuis un entrepôt effondré"
+    ]
+  },
+  {
+    "fact": "131",
+    "category": "art",
+    "question": "Pour quelle raison William Hill propose-t-il une récompense de 50 000 dollars ?",
+    "correct_answer": "Pour prouver l'existence de Nessie",
+    "wrong_answers": [
+      "Pour prouver l'existence du Bigfoot",
+      "Pour capturer vivant le dernier thylacine",
+      "Pour retrouver le trésor perdu du pirate Barbe-Noire",
+      "Pour identifier l'auteur anonyme des lettres Jack l'Éventreur",
+      "Pour filmer un kraken en eau profonde"
+    ]
+  },
+  {
+    "fact": "132",
+    "category": "animaux",
+    "question": "Au Honduras, à Yoro, quels animaux semblent parfois tomber du ciel ?",
+    "correct_answer": "Des poissons d'eau douce",
+    "wrong_answers": [
+      "Des grenouilles",
+      "Des crevettes d'eau saumâtre",
+      "Des crabes de rivière",
+      "Des anguilles",
+      "Des poissons d'eau salée"
+    ]
+  },
+  {
+    "fact": "133",
+    "category": "lois",
+    "question": "En Arizona, quelle est l'interdiction légale spécifique aux ânes ?",
+    "correct_answer": "Il est interdit de dormir dans une baignoire",
+    "wrong_answers": [
+      "Il est interdit de braire après 22h dans les zones résidentielles",
+      "Il est interdit de transporter un âne dans le coffre d'un véhicule motorisé",
+      "Il est interdit de laisser un âne sans surveillance dans un lieu public plus de 4 heures",
+      "Il est interdit d'attacher un âne à un poteau de signalisation routière",
+      "Il est interdit de faire monter un âne dans un ascenseur sans l'accord écrit du propriétaire de l'immeuble"
+    ]
+  },
+  {
+    "fact": "134",
+    "category": "animaux",
+    "question": "Quel talent de séduction possède une souris mâle ?",
+    "correct_answer": "Elle chante pour draguer",
+    "wrong_answers": [
+      "Elle danse en tournant sur elle-même",
+      "Elle offre de la nourriture à la femelle",
+      "Elle change de couleur de fourrure",
+      "Elle gonfle sa gorge pour paraître plus imposant",
+      "Elle tapote le sol avec ses pattes en rythme"
+    ]
+  },
+  {
+    "fact": "135",
+    "category": "histoire",
+    "question": "Qu'est-il arrivé à la colonie Roanoke au 16e siècle ?",
+    "correct_answer": "Elle a disparu mystérieusement au 16e siècle",
+    "wrong_answers": [
+      "Elle a été entièrement décimée par une épidémie de variole documentée dans les archives espagnoles",
+      "Elle a été abandonnée volontairement et ses habitants ont fondé une nouvelle colonie plus au nord",
+      "Elle a été rasée par une flotte française lors d'un raid colonial jamais officiellement reconnu",
+      "Elle a disparu mystérieusement au 17e siècle",
+      "Elle a été engloutie par une montée des eaux après un ouragan catastrophique de 1588"
+    ]
+  },
+  {
+    "fact": "136",
+    "category": "definition",
+    "question": "Qu'est-ce qu'une \"chicaya\" ?",
+    "correct_answer": "Dispute ou querelle",
+    "wrong_answers": [
+      "Danse traditionnelle de célébration",
+      "Instrument à percussion en bois",
+      "Repas communautaire partagé",
+      "Cérémonie de réconciliation entre clans",
+      "Marché nocturne informel"
+    ]
+  },
+  {
+    "fact": "137",
+    "category": "animaux",
+    "question": "Quel usage faisait-on de certains chats en 1650 ?",
+    "correct_answer": "Des instruments de musique",
+    "wrong_answers": [
+      "Des messagers postaux pour courtes distances",
+      "Des détecteurs de poison dans les mines de charbon",
+      "Des régulateurs de température dans les brasseries",
+      "Des instruments de navigation pour détecter les tempêtes en mer",
+      "Des thermomètres vivants dans les hôpitaux militaires"
+    ]
+  },
+  {
+    "fact": "138",
+    "category": "lois",
+    "question": "Qu'est-ce qu'il n'est pas interdit de faire en conduisant en Allemagne ?",
+    "correct_answer": "Conduire nu",
+    "wrong_answers": [
+      "Conduire pieds nus",
+      "Conduire en dormant sur le siège passager (côté conducteur automatique)",
+      "Conduire avec un animal sur les genoux",
+      "Conduire en buvant de la bière non ouverte",
+      "Conduire sans ceinture sur voie privée"
+    ]
+  },
+  {
+    "fact": "139",
+    "category": "definition",
+    "question": "Qu'est-ce que la \"sérendipité\" ?",
+    "correct_answer": "Découvrir par hasard ce qu'on ne cherchait pas.",
+    "wrong_answers": [
+      "Trouver la solution d'un problème en dormant.",
+      "Ressentir une émotion forte face à quelque chose de très beau.",
+      "Se souvenir soudainement d'un mot qu'on avait oublié.",
+      "Comprendre instinctivement quelque chose sans pouvoir l'expliquer.",
+      "La capacité à reconnaître un visage familier dans un lieu inconnu."
+    ]
+  },
+  {
+    "fact": "140",
+    "category": "art",
+    "question": "En 1961, au MoMa de New York, quel incident s'est produit sur l'œuvre de Matisse \"Le Bateau\" ?",
+    "correct_answer": "Il est resté accroché à l'envers pendant 47 jours",
+    "wrong_answers": [
+      "Il a été accroché dans la mauvaise salle pendant 23 jours avant d'être retrouvé",
+      "Il a été exposé sous le nom d'un autre artiste pendant 52 jours sans que personne ne le signale",
+      "Il a été partiellement recouvert par un rideau pendant 31 jours, cachant la moitié de la composition",
+      "Il a été éclairé avec un projecteur pointé dans la mauvaise direction pendant 38 jours, inversant visuellement les contrastes",
+      "Un visiteur l'a photographié à l'envers et la photo a circulé dans la presse pendant 12 jours avant qu'on réalise l'erreur"
+    ]
+  },
+  {
+    "fact": "141",
+    "category": "histoire",
+    "question": "Quelle ruse a permis de sauver les hommes lors de la prise du château de Weinsberg ?",
+    "correct_answer": "Les femmes les ont portées sur leur dos",
+    "wrong_answers": [
+      "Les femmes ont déguisé leurs maris en servantes pour franchir les lignes ennemies",
+      "Les femmes ont négocié la liberté des hommes en offrant toutes leurs dot et bijoux au roi Conrad III",
+      "Les femmes ont convaincu Conrad III que les hommes étaient des pèlerins sous protection de l'Église",
+      "Les femmes ont caché leurs maris dans des tonneaux de vin présentés comme tribut au roi",
+      "Les femmes ont plaidé devant Conrad III que leurs maris étaient leurs seuls biens possédés"
+    ]
+  },
+  {
+    "fact": "142",
+    "category": "technologie",
+    "question": "Quel événement a marqué Ralph Weidner lors d'un appel téléphonique en 1968 ?",
+    "correct_answer": "Il a été frappé par la foudre",
+    "wrong_answers": [
+      "Il a entendu une conversation entre deux inconnus parler de sa mort",
+      "Il a reçu un appel de sa propre voix lui annonçant sa mort",
+      "Sa ligne téléphonique a été foudroyée, grillant l'appareil sans le blesser",
+      "Il a perdu l'ouïe de l'oreille gauche suite à une surtension électrique",
+      "Il a été électrocuté par un défaut de câblage dans le combiné"
+    ]
+  },
+  {
+    "fact": "143",
+    "category": "sante",
+    "question": "Quel talent inattendu Ben McMahon a-t-il manifesté en sortant du coma ?",
+    "correct_answer": "Il parlait couramment le mandarin",
+    "wrong_answers": [
+      "Il jouait du piano au niveau conservatoire",
+      "Il récitait des poèmes en latin classique",
+      "Il parlait couramment le japonais",
+      "Il résolvait des équations différentielles de tête",
+      "Il dessinait des portraits hyperréalistes"
+    ]
+  },
+  {
+    "fact": "144",
+    "category": "records",
+    "question": "Quelle caractéristique partage une population de 2 700 personnes dans le monde ?",
+    "correct_answer": "Ils sont milliardaires",
+    "wrong_answers": [
+      "Ils ont visité l'espace",
+      "Ils ont gravi l'Everest",
+      "Ils sont centenaires et encore en activité professionnelle",
+      "Ils possèdent un sous-marin privé",
+      "Ils ont leur nom sur la liste noire d'au moins un gouvernement"
+    ]
+  },
+  {
+    "fact": "145",
+    "category": "sante",
+    "question": "Quelle était la cause de l'évacuation de l'hôpital de Sainte-Musse à Toulon en décembre 2022 ?",
+    "correct_answer": "Pour opérer un homme avec un obus dans le rectum",
+    "wrong_answers": [
+      "Pour opérer un homme avec une grenade dans l'estomac",
+      "Pour neutraliser une bombe artisanale découverte dans les toilettes d'urgence",
+      "Pour retirer une mine antichar coincée dans le bassin d'un patient",
+      "Pour opérer un homme avec un obus dans la cavité abdominale",
+      "Pour extraire un engin pyrotechnique avalé par un artificier retraité"
+    ]
+  },
+  {
+    "fact": "146",
+    "category": "kids",
+    "question": "Quel geste est presque impossible… mais tout le monde essaie dès qu'on en parle ?",
+    "correct_answer": "Se lécher le coude",
+    "wrong_answers": [
+      "Se mordre le genou",
+      "Se toucher l'oreille avec la langue",
+      "Se voir les yeux fermés",
+      "Se gratter dans le dos avec son propre coude",
+      "Se lécher le poignet"
+    ]
+  },
+  {
+    "fact": "147",
+    "category": "animaux",
+    "question": "Quelle aptitude biologique remarquable possède la grenouille \"Rana Sylvatica\" ?",
+    "correct_answer": "Elle peut \"ressusciter\" au printemps",
+    "wrong_answers": [
+      "Elle peut survivre complètement immergée sous l'eau pendant toute la durée de l'hiver",
+      "Elle peut réduire son métabolisme à 2% de son niveau normal et hiberner sans respirer pendant 6 mois",
+      "Elle peut se déshydrater jusqu'à perdre 90% de son eau corporelle et se réhydrater au printemps",
+      "Elle peut produire une protéine anticoagulante lui permettant de survivre à une perte de 60% de son sang",
+      "Elle peut entrer dans un état de dormance en s'enterrant à plus de 2 mètres de profondeur pour échapper au gel"
+    ]
+  },
+  {
+    "fact": "148",
+    "category": "records",
+    "question": "Quel record détient Yu Zhenhuan atteint d'hypertrichose ?",
+    "correct_answer": "Il est l'homme le plus poilu du monde",
+    "wrong_answers": [
+      "Il est l'homme avec le plus grand nombre de follicules pileux par cm²",
+      "Il est l'homme ayant subi le plus grand nombre d'épilations médicales documentées",
+      "Il est l'homme avec la croissance de poils la plus rapide jamais mesurée cliniquement",
+      "Il détient le record de la barbe la plus longue jamais cultivée en Asie",
+      "Il est l'homme avec le plus grand nombre de poils sur le visage recensés par le Livre Guinness"
+    ]
+  },
+  {
+    "fact": "149",
+    "category": "definition",
+    "question": "Que signifie le verbe \"pandiculer\" ?",
+    "correct_answer": "S'étirer en bâillant",
+    "wrong_answers": [
+      "Claquer des doigts de manière répétée et involontaire",
+      "Marcher en se dandinant légèrement d'un côté à l'autre",
+      "Produire un son grave et continu avec la gorge sans ouvrir la bouche",
+      "Frissonner de façon incontrôlable après avoir eu froid",
+      "Agiter les mains de façon frénétique pour se réchauffer"
+    ]
+  },
+  {
+    "fact": "150",
+    "category": "animaux",
+    "question": "Quel est le but de l'oothèque dans le cycle de vie du cafard ?",
+    "correct_answer": "Elle permet un seul accouplement pour toute sa vie",
+    "wrong_answers": [
+      "Elle protège les œufs de la déshydratation pendant la ponte",
+      "Elle stocke les spermatozoïdes pour féconder les œufs progressivement",
+      "Elle permet à la femelle de transporter ses œufs jusqu'à l'éclosion",
+      "Elle régule la température des œufs selon l'environnement",
+      "Elle déclenche le développement embryonnaire en détectant l'humidité"
+    ]
+  },
+  {
+    "fact": "151",
+    "category": "geographie",
+    "question": "Qu'est-ce que le Gondwana ?",
+    "correct_answer": "Un supercontinent",
+    "wrong_answers": [
+      "Une chaîne de montagnes submergée",
+      "Une zone de convergence tectonique",
+      "Un océan primitif disparu",
+      "Une faille géologique profonde",
+      "Un archipel préhistorique"
+    ]
+  },
+  {
+    "fact": "152",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"agélaste\" ?",
+    "correct_answer": "Quelqu'un qui ne rit jamais",
+    "wrong_answers": [
+      "Quelqu'un qui ne pleure jamais, même face à une émotion intense",
+      "Un individu incapable de ressentir la honte ou la gêne sociale",
+      "Une personne qui ne reconnaît jamais ses erreurs, même prouvées",
+      "Quelqu'un qui ne ressent jamais la douleur physique",
+      "Un individu incapable d'éprouver de l'ennui, quel que soit le contexte"
+    ]
+  },
+  {
+    "fact": "153",
+    "category": "geographie",
+    "question": "Qu'est-ce qui fait l'originalité de l'île \"Hub Island\" ?",
+    "correct_answer": "C'est la plus petit île habitée du monde",
+    "wrong_answers": [
+      "C'est la seule île habitée entièrement construite par l'homme",
+      "C'est l'île la plus éloignée de tout continent au monde",
+      "C'est la seule île au monde à appartenir à deux pays simultanément",
+      "C'est l'île habitée la plus septentrionale du monde",
+      "C'est la plus petite île à posséder un statut de nation indépendante reconnue"
+    ]
+  },
+  {
+    "fact": "154",
+    "category": "geographie",
+    "question": "Quelle étrange particularité a le désert d'Atacama ?",
+    "correct_answer": "Il fleurit après la pluie",
+    "wrong_answers": [
+      "Il neige plusieurs semaines par an malgré sa sécheresse extrême",
+      "Il produit des mirages si précis qu'ils trompent les instruments GPS",
+      "Il abrite des geysers actifs qui jaillissent à intervalles réguliers",
+      "Il est traversé par une rivière souterraine qui remonte à la surface la nuit",
+      "Il génère des orages électriques sans une seule goutte de pluie"
+    ]
+  },
+  {
+    "fact": "155",
+    "category": "definition",
+    "question": "Qu'est-ce que l'\"aboulie\" ?",
+    "correct_answer": "Incapacité à se décider ou à passer à l'action.",
+    "wrong_answers": [
+      "Peur irrationnelle d'être observé par les autres en public",
+      "Incapacité à ressentir de la honte ou du remords face à ses actes",
+      "Tendance compulsive à répéter les mêmes mots ou phrases sans raison",
+      "Sensation de vide émotionnel persistant après un effort intellectuel intense",
+      "Incapacité à reconnaître les visages familiers, y compris le sien dans un miroir"
+    ]
+  },
+  {
+    "fact": "156",
+    "category": "lois",
+    "question": "Comment Clement Vallandigham, a-t-il acquitté son client ?",
+    "correct_answer": "En se suicidant",
+    "wrong_answers": [
+      "En simulant lui-même les symptômes d'empoisonnement devant le jury",
+      "En reconstituant l'accident de voiture devant le tribunal et en percutant un mur",
+      "En avalant la substance prétendument létale pour en démontrer l'innocuité",
+      "En sautant du balcon du tribunal pour prouver que la chute était survicable",
+      "En tirant sur le procureur à blanc pour démontrer que l'arme était défectueuse"
+    ]
+  },
+  {
+    "fact": "157",
+    "category": "sante",
+    "question": "A quoi a survécu Phineas Gage le 13 septembre 1848 ?",
+    "correct_answer": "Il a survécu à une barre traversant son crâne",
+    "wrong_answers": [
+      "Il a survécu à une explosion de poudre à canon lui arrachant la moitié du visage",
+      "Il a survécu à une balle de mousquet logée dans le lobe temporal sans jamais être extraite",
+      "Il a survécu à une chute de 14 mètres lui fracturant le crâne en six endroits distincts",
+      "Il a survécu à un éclat de rail en acier perforant sa cage thoracique et son poumon gauche",
+      "Il a survécu à une lame de scie mécanique sectionnant partiellement sa colonne cervicale"
+    ]
+  },
+  {
+    "fact": "158",
+    "category": "sport",
+    "question": "Pourquoi l'avance notable de la joggeuse Rosie Ruiz lui a-t-elle valu la victoire ?",
+    "correct_answer": "Elle est arrivée trop tôt en trichant",
+    "wrong_answers": [
+      "Elle a bénéficié d'un raccourci officiel réservé aux élites",
+      "Elle a pris le métro sur une partie du parcours",
+      "Elle a commencé la course en avance sur les autres concurrentes",
+      "Elle a été portée par son équipe d'assistance sur 3 kilomètres",
+      "Elle a utilisé un vélo pliant dissimulé dans sa tenue"
+    ]
+  },
+  {
+    "fact": "159",
+    "category": "histoire",
+    "question": "Pour quelle raison la reine de Siam n'a-t-elle pas été sauvée lorsqu'elle s'est noyée ?",
+    "correct_answer": "Il était interdit de toucher la royauté",
+    "wrong_answers": [
+      "Aucun des témoins présents ne savait nager",
+      "La loi imposait d'attendre l'autorisation écrite du roi avant toute intervention",
+      "Les gardes royaux étaient tous positionnés sur l'autre rive du fleuve",
+      "Elle avait refusé tout secours par respect du protocole religieux",
+      "L'accident s'est produit dans une zone fluviale réservée aux seuls membres de la famille royale"
+    ]
+  },
+  {
+    "fact": "160",
+    "category": "technologie",
+    "question": "Pourquoi la toute première télécommande TV a-t-elle été inventée ?",
+    "correct_answer": "Par flemme",
+    "wrong_answers": [
+      "Pour éviter les accidents domestiques liés aux fils qui traînaient",
+      "Pour permettre aux personnes handicapées de changer de chaîne depuis leur fauteuil",
+      "Pour couper le son pendant les publicités sans déranger les autres",
+      "Pour éteindre la TV à distance le soir sans quitter son lit",
+      "Pour changer de chaîne sans réveiller les enfants endormis"
+    ]
+  },
+  {
+    "fact": "161",
+    "category": "kids",
+    "question": "En dehors de l'eau, quel élément incroyable compose le corps humain ?",
+    "correct_answer": "De poussière d'étoiles",
+    "wrong_answers": [
+      "De gaz de comètes",
+      "De fragments de météorites",
+      "De particules solaires",
+      "De cendres de planètes",
+      "De vapeur de nébuleuses"
+    ]
+  },
+  {
+    "fact": "162",
+    "category": "histoire",
+    "question": "Quel personnage célèbre est sculpté sur la cathédrale nationale de Washington ?",
+    "correct_answer": "Dark Vador",
+    "wrong_answers": [
+      "Yoda",
+      "Batman",
+      "Freddy Krueger",
+      "E.T. l'extraterrestre",
+      "Superman"
+    ]
+  },
+  {
+    "fact": "163",
+    "category": "histoire",
+    "question": "Comment les soldats ont-ils réussi à subsister pendant la famine du siège de Leningrad ?",
+    "correct_answer": "Ils ont mangé du papier peint",
+    "wrong_answers": [
+      "Ils ont bouilli et consommé leurs ceintures de cuir",
+      "Ils ont mangé de la sciure de bois mélangée à de la farine",
+      "Ils ont fabriqué une soupe à partir de colle de reliure de livres",
+      "Ils ont mâché des semelles de chaussures ramollies à l'eau chaude",
+      "Ils ont consommé de la pâte à base d'herbes et de terre argileuse"
+    ]
+  },
+  {
+    "fact": "164",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'arachibutyrophobie ?",
+    "correct_answer": "La peur que le beurre de cacahuète colle au palais",
+    "wrong_answers": [
+      "La peur d'être écrasé par un objet lourd pendant son sommeil",
+      "La peur que les arachides contaminent un plat sans qu'on le sache",
+      "La peur de s'étouffer avec un aliment collant",
+      "La peur compulsive de manger des légumineuses en public",
+      "La peur irrationnelle d'avoir une allergie aux noix non diagnostiquée"
+    ]
+  },
+  {
+    "fact": "165",
+    "category": "kids",
+    "question": "Quelle capacité n'a pas la girafe ?",
+    "correct_answer": "Parler ou tousser",
+    "wrong_answers": [
+      "Dormir debout",
+      "Nager en eau profonde",
+      "Voir derrière elle sans tourner la tête",
+      "Reconnaître son reflet dans un miroir",
+      "Sentir les odeurs à plus de 2 km"
+    ]
+  },
+  {
+    "fact": "166",
+    "category": "corps-humain",
+    "question": "Comment Bobby Leach, le casse-cou qui a survécu aux chutes du Niagara, est-il mort ?",
+    "correct_answer": "Il a glissé sur une peau de banane",
+    "wrong_answers": [
+      "Il a glissé sur une flaque d'huile de moteur lors d'une démonstration publique",
+      "Il a chuté d'une échelle en réparant le toit de sa maison",
+      "Il s'est noyé dans sa baignoire lors d'un malaise cardiaque",
+      "Il a trébuché sur un pavé descellé lors d'une promenade en ville",
+      "Il a glissé sur une peau d'orange devant un hôtel de Nouvelle-Zélande"
+    ]
+  },
+  {
+    "fact": "167",
+    "category": "sciences",
+    "question": "Quel masse céleste peut atteindre 600 millions de kg ?",
+    "correct_answer": "Un cumulus",
+    "wrong_answers": [
+      "Un cumulonimbus",
+      "Un stratus de basse altitude",
+      "Un nimbostratus",
+      "Un cirrocumulus dense",
+      "Un altocumulus castellanus"
+    ]
+  },
+  {
+    "fact": "168",
+    "category": "art",
+    "question": "En Chine, quel film est interdit de diffusion ?",
+    "correct_answer": "Retour vers le futur",
+    "wrong_answers": [
+      "Retour vers le futur 2",
+      "Terminator",
+      "Interstellar",
+      "Doctor Strange",
+      "La Planète des singes"
+    ]
+  },
+  {
+    "fact": "169",
+    "category": "kids",
+    "question": "Quel métier permet de grandir au cours de sa vie ?",
+    "correct_answer": "Astronaute",
+    "wrong_answers": [
+      "Basketteur",
+      "Plongeur",
+      "Gymnaste",
+      "Pompier",
+      "Alpiniste"
+    ]
+  },
+  {
+    "fact": "170",
+    "category": "corps-humain",
+    "question": "Quelle est la particularité anatomique de Dede Koswara ?",
+    "correct_answer": "Il a des écorces d'arbre sur la peau",
+    "wrong_answers": [
+      "Il a des écailles de poisson sur la peau",
+      "Sa peau durcit en kératine rigide comme des ongles",
+      "Il a des cornes osseuses qui poussent sur le crâne",
+      "Sa peau est recouverte de plaques calcifiées comme une carapace",
+      "Il a des nodules sous-cutanés qui ressemblent à des pierres"
+    ]
+  },
+  {
+    "fact": "171",
+    "category": "histoire",
+    "question": "Quelle étrange absence relie les avions… et une célèbre rue parisienne ?",
+    "correct_answer": "Il n'y a jamais de numéro 13.",
+    "wrong_answers": [
+      "Il n'y a jamais de numéro 4.",
+      "Il n'y a jamais de rangée centrale.",
+      "Il n'y a jamais de siège E.",
+      "Il n'y a jamais de numéro 17.",
+      "Il n'y a jamais de dernier numéro."
+    ]
+  },
+  {
+    "fact": "172",
+    "category": "animaux",
+    "question": "Pourquoi l'axolotl est-il un sujet d'étude important pour la recherche médicale ?",
+    "correct_answer": "Il peut régénérer tout son corps",
+    "wrong_answers": [
+      "Il est immunisé contre tous les cancers connus",
+      "Son sang contient un anticoagulant plus puissant que l'héparine",
+      "Il peut survivre à une congélation complète de ses organes",
+      "Sa peau sécrète un antidouleur 40 fois plus fort que la morphine",
+      "Il ne vieillit pas au-delà de sa phase larvaire"
+    ]
+  },
+  {
+    "fact": "173",
+    "category": "art",
+    "question": "Quel matériau est utilisé par l'artiste Vincent Castiglia dans ses œuvres ?",
+    "correct_answer": "Son propre sang",
+    "wrong_answers": [
+      "Ses propres larmes collectées sur plusieurs années",
+      "De la cendre humaine provenant de crématoriums",
+      "Son propre lait maternel mélangé à de l'huile",
+      "De l'urine fermentée et concentrée",
+      "Sa propre sueur cristallisée en pigments"
+    ]
+  },
+  {
+    "fact": "174",
+    "category": "animaux",
+    "question": "Pourquoi la ville de Talkeetna a suscité l'intérêt médiatique pendant 20 ans?",
+    "correct_answer": "Le maire était un chat",
+    "wrong_answers": [
+      "Le chef de la police était un perroquet dressé à réciter le code pénal",
+      "La ville était gouvernée par un conseil municipal composé uniquement d'enfants de moins de 10 ans",
+      "Le shérif officiel était un chien de traîneau décoré de la médaille civique de l'Alaska",
+      "La bibliothécaire municipale était un corbeau qui avait appris à trier les livres par couleur",
+      "Le juge de paix était un ours en peluche géant installé dans la salle d'audience"
+    ]
+  },
+  {
+    "fact": "175",
+    "category": "animaux",
+    "question": "Comment les papillons sélectionnent-ils les plantes propices à la ponte ?",
+    "correct_answer": "Ils goûtent avec leurs pieds",
+    "wrong_answers": [
+      "Ils détectent les phéromones végétales avec leurs antennes",
+      "Ils analysent la couleur des feuilles grâce à leurs yeux à facettes",
+      "Ils frottent leurs ailes contre les feuilles pour en absorber les substances",
+      "Ils repèrent l'odeur des fleurs environnantes avec leur trompe",
+      "Ils testent la texture des feuilles avec leurs pattes avant"
+    ]
+  },
+  {
+    "fact": "176",
+    "category": "gastronomie",
+    "question": "Comment un naufragé a-t-il survécu 24 jours en mer ?",
+    "correct_answer": "Il a survécu avec une bouteille de ketchup.",
+    "wrong_answers": [
+      "Il a survécu en mangeant des sachets de sauce soja récupérés dans l'épave",
+      "Il a survécu en consommant des cubes de bouillon Maggi dissous dans l'eau de mer",
+      "Il a survécu grâce à des tubes de moutarde trouvés dans la cale du bateau",
+      "Il a survécu en buvant de l'huile d'olive et des condiments divers",
+      "Il a survécu en ingérant du vinaigre balsamique mélangé à de l'eau de pluie"
+    ]
+  },
+  {
+    "fact": "177",
+    "category": "lois",
+    "question": "Quelle interdiction est en vigueur dans la ville de La Gresle, en France depuis décembre 2019 ?",
+    "correct_answer": "Il est interdit de mourir les week-ends",
+    "wrong_answers": [
+      "Il est interdit de tomber malade les jours fériés",
+      "Il est interdit de stationner devant la mairie le dimanche",
+      "Il est interdit de faire du bruit entre 22h et 8h les week-ends",
+      "Il est interdit d'accoucher sans autorisation préalable du maire",
+      "Il est interdit de se marier un vendredi"
+    ]
+  },
+  {
+    "fact": "178",
+    "category": "records",
+    "question": "De quoi est constituée la collection de plus de 15 000 exemplaires d'Edoardo Flores ?",
+    "correct_answer": "De panneaux \"Ne pas déranger\"",
+    "wrong_answers": [
+      "De menus d'hôtels et de restaurants étoilés",
+      "De savonnettes et flacons de shampoing d'hôtels",
+      "De cartes postales représentant des chambres d'hôtel",
+      "De clés et cartes magnétiques d'hôtels",
+      "De cendriers provenant d'établissements hôteliers"
+    ]
+  },
+  {
+    "fact": "179",
+    "category": "animaux",
+    "question": "Quelles créatures peuvent infester les poissons ?",
+    "correct_answer": "Les poux",
+    "wrong_answers": [
+      "Les tiques",
+      "Les puces",
+      "Les acariens",
+      "Les mites",
+      "Les morpions"
+    ]
+  },
+  {
+    "fact": "180",
+    "category": "kids",
+    "question": "Pour quelle raison les montagnes russes ont-elles été inventées ?",
+    "correct_answer": "Eviter de faire des bêtises",
+    "wrong_answers": [
+      "Remplacer les promenades en traîneau d'hiver",
+      "Tester la résistance des rails en acier",
+      "Transporter des marchandises en ville plus rapidement",
+      "Distraire les ouvriers pendant leur pause déjeuner",
+      "Soigner le mal de mer par exposition progressive"
+    ]
+  },
+  {
+    "fact": "181",
+    "category": "gastronomie",
+    "question": "En quoi le chewing‑gum de l'entreprise Revolymer est-il unique ?",
+    "correct_answer": "Il ne colle pas dans les cheveux",
+    "wrong_answers": [
+      "Il se dissout entièrement dans la bouche sans laisser de résidu",
+      "Il change de couleur en fonction du pH de la salive",
+      "Il conserve son goût pendant plus de 8 heures sans s'affadir",
+      "Il est entièrement biodégradable en moins de 48 heures",
+      "Il ne colle pas aux dents ni aux appareils dentaires"
+    ]
+  },
+  {
+    "fact": "182",
+    "category": "definition",
+    "question": "Qu'est ce que la \"phrénologie\" ?",
+    "correct_answer": "La personnalité via le crâne",
+    "wrong_answers": [
+      "La mémoire via la forme des oreilles",
+      "Les émotions via la couleur des yeux",
+      "L'intelligence via la taille des mains",
+      "Le tempérament via la forme du nez",
+      "La santé via la texture de la peau"
+    ]
+  },
+  {
+    "fact": "183",
+    "category": "histoire",
+    "question": "Quel objet insolite ancien a été retrouvé dans une poubelle à Rueil-Malmaison en 2001?",
+    "correct_answer": "Une momie égyptienne",
+    "wrong_answers": [
+      "Un sarcophage romain en plomb",
+      "Une tête de statue grecque antique",
+      "Un crâne trépané du Néolithique",
+      "Des armures de samouraïs du XVIe siècle",
+      "Un parchemin enluminé du Moyen Âge"
+    ]
+  },
+  {
+    "fact": "184",
+    "category": "sante",
+    "question": "Qu'est-il arrivé à une Russe de 49 ans, le jour de son enterrement ?",
+    "correct_answer": "Elle est morte d'une crise cardiaque",
+    "wrong_answers": [
+      "Elle s'est réveillée dans son cercueil",
+      "Elle a été déclarée morte une seconde fois par erreur médicale",
+      "Elle a reconnu plusieurs visages parmi les personnes présentes à ses funérailles",
+      "Elle a survécu grâce à l'intervention d'un médecin présent dans l'assemblée",
+      "Elle a prononcé quelques mots avant de perdre à nouveau connaissance"
+    ]
+  },
+  {
+    "fact": "185",
+    "category": "definition",
+    "question": "Qu'est-ce que la \"lallation\" ?",
+    "correct_answer": "Balbutiement d'un bébé",
+    "wrong_answers": [
+      "Répétition involontaire d'un mot entendu chez un adulte aphasique",
+      "Trouble du langage causant la confusion entre les lettres L et R",
+      "Chant monotone récité lors de certaines cérémonies religieuses médiévales",
+      "Technique vocale utilisée dans les berceuses traditionnelles slaves",
+      "Phase de mutisme temporaire observée chez les enfants de 2 à 3 ans"
+    ]
+  },
+  {
+    "fact": "186",
+    "category": "lois",
+    "question": "En Floride, qu'est-il interdit aux célibataires le dimanche ?",
+    "correct_answer": "Sauter en parachute",
+    "wrong_answers": [
+      "Conduire une moto",
+      "Acheter de l'alcool",
+      "Se marier",
+      "Jouer aux cartes en public",
+      "Nager dans l'océan"
+    ]
+  },
+  {
+    "fact": "187",
+    "category": "definition",
+    "question": "Qu'appelle-t-on une \"apocope\" ?",
+    "correct_answer": "Un mot raccourci",
+    "wrong_answers": [
+      "Une figure de style qui consiste à répéter le même son en début de mot",
+      "Un mot dont le sens change complètement selon le pays où il est utilisé",
+      "Une lettre muette placée en fin de mot pour des raisons historiques",
+      "Un mot qui s'écrit différemment selon qu'il est masculin ou féminin",
+      "Un terme grammatical désignant la fusion de deux mots en un seul"
+    ]
+  },
+  {
+    "fact": "188",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'ergophobie ?",
+    "correct_answer": "La peur du travail",
+    "wrong_answers": [
+      "La peur des outils et des instruments tranchants",
+      "La peur de l'effort physique et de la fatigue musculaire",
+      "La peur des ergots et des champignons parasites",
+      "La peur des grandes surfaces et des espaces commerciaux",
+      "La peur de l'ergonomie et des postures contraintes"
+    ]
+  },
+  {
+    "fact": "189",
+    "category": "animaux",
+    "question": "Qu'est-ce qui motive les dauphins à se rapprocher des poissons - globes ?",
+    "correct_answer": "Se droguer",
+    "wrong_answers": [
+      "Se nourrir de leur venin pour soigner des infections cutanées",
+      "Utiliser leur gonflement comme jouet lors de jeux sociaux",
+      "Stimuler leur système immunitaire grâce aux toxines cutanées",
+      "Apprendre à leurs petits à identifier les proies dangereuses",
+      "Attirer d'autres poissons en utilisant le poisson-globe comme leurre vivant"
+    ]
+  },
+  {
+    "fact": "190",
+    "category": "geographie",
+    "question": "En Chine, qu'ont en commun 30 millions d'habitants ?",
+    "correct_answer": "Ils vivent dans des grottes",
+    "wrong_answers": [
+      "Ils vivent dans des maisons flottantes sur des rivières artificielles",
+      "Ils vivent dans des tours de béton construites en moins de 48 heures",
+      "Ils n'ont jamais obtenu de numéro d'identité national officiel",
+      "Ils vivent dans des villages entièrement souterrains creusés sous des rizières",
+      "Ils partagent le même nom de famille légalement attribué par l'État"
+    ]
+  },
+  {
+    "fact": "191",
+    "category": "records",
+    "question": "À travers quel objet Daniel Browning Smith est-il passé ?",
+    "correct_answer": "Une raquette de tennis",
+    "wrong_answers": [
+      "Un cerceau de gymnastique",
+      "Une valise de cabine",
+      "Un cadre de vélo",
+      "Un hublot d'avion",
+      "Une boîte aux lettres standard"
+    ]
+  },
+  {
+    "fact": "192",
+    "category": "gastronomie",
+    "question": "Que considère la FDA comme des défauts esthétiques dans certains aliments aux Etats-unis ?",
+    "correct_answer": "Des fragments d'insectes",
+    "wrong_answers": [
+      "Des poils de rongeurs",
+      "Des traces de moisissures microscopiques",
+      "Des résidus de pesticides organiques",
+      "Des particules de sable et de terre",
+      "Des filaments de champignons"
+    ]
+  },
+  {
+    "fact": "193",
+    "category": "kids",
+    "question": "Quel effet secondaire durable a marqué la vie de Paul Karason ?",
+    "correct_answer": "Il est devenu entièrement bleu",
+    "wrong_answers": [
+      "Il est devenu entièrement jaune",
+      "Sa peau est devenue transparente par endroits",
+      "Il a développé une peau couverte d'écailles argentées",
+      "Ses cheveux sont devenus définitivement verts",
+      "Il a perdu toute pigmentation et est devenu blanc comme neige"
+    ]
+  },
+  {
+    "fact": "194",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"zigomar\" ?",
+    "correct_answer": "Une personne extravagante",
+    "wrong_answers": [
+      "Un petit instrument à vent utilisé dans les orchestres de rue au XIXe siècle",
+      "Un type de nœud marin difficile à défaire, réservé aux voiliers de haute mer",
+      "Un tour de prestidigitation consistant à faire disparaître un objet sous un chapeau",
+      "Un ustensile de cuisine servant à découper les légumes en spirale",
+      "Un danseur de bas étage qui se produit dans les cabarets populaires"
+    ]
+  },
+  {
+    "fact": "195",
+    "category": "technologie",
+    "question": "Quelle est la particularité des billets de banque australiens ?",
+    "correct_answer": "Ils sont en plastique",
+    "wrong_answers": [
+      "Ils sont transparents",
+      "Ils sont carrés",
+      "Ils sont parfumés",
+      "Ils sont phosphorescents",
+      "Ils sont comestibles"
+    ]
+  },
+  {
+    "fact": "196",
+    "category": "corps-humain",
+    "question": "Quelle anomalie a rendu Francisco Lentini célèbre ?",
+    "correct_answer": "Il avait plusieurs membres supplémentaires",
+    "wrong_answers": [
+      "Il était né avec deux cœurs fonctionnels battant à des rythmes indépendants",
+      "Il possédait une troisième main parfaitement articulée au centre de son dos",
+      "Il avait deux colonnes vertébrales entièrement distinctes fusionnées à la base",
+      "Il était doté de six doigts à chaque main et chaque pied",
+      "Il avait deux cages thoraciques et une double paire de poumons"
+    ]
+  },
+  {
+    "fact": "197",
+    "category": "corps-humain",
+    "question": "Quelle partie du corps ne peut détecter la douleur ?",
+    "correct_answer": "Le cerveau",
+    "wrong_answers": [
+      "Les os",
+      "Les ongles",
+      "La cornée",
+      "Les cartilages",
+      "Les dents"
+    ]
+  },
+  {
+    "fact": "198",
+    "category": "corps-humain",
+    "question": "Quel est le but du voyage astral ?",
+    "correct_answer": "L'âme quitte le corps physique",
+    "wrong_answers": [
+      "L'esprit explore les souvenirs enfouis du subconscient",
+      "Le corps entre dans un état de mort clinique temporaire",
+      "La conscience fusionne avec une autre entité vivante",
+      "Le cerveau libère une dose massive de DMT endogène",
+      "L'énergie vitale se redistribue dans les chakras du corps"
+    ]
+  },
+  {
+    "fact": "199",
+    "category": "gastronomie",
+    "question": "Qu'est-ce que le foodscapes ?",
+    "correct_answer": "Des paysages faits en nourriture",
+    "wrong_answers": [
+      "Une technique de présentation gastronomique où les aliments sont disposés en cercles concentriques pour guider le regard vers le centre de l'assiette",
+      "Un régime alimentaire basé sur la consommation exclusive d'aliments produits dans un rayon de 50 km autour du domicile",
+      "Une méthode de culture hydroponique développée dans les années 90 permettant de faire pousser des légumes en milieu urbain sans lumière naturelle",
+      "Une discipline culinaire japonaise visant à reproduire des visages humains célèbres avec des ingrédients colorés",
+      "Un procédé de cartographie utilisé par les urbanistes pour identifier les déserts alimentaires dans les grandes métropoles"
+    ]
+  },
+  {
+    "fact": "200",
+    "category": "corps-humain",
+    "question": "Pourquoi est connu \"Halphy\" ?",
+    "correct_answer": "Il a perdu la moitié de son crâne",
+    "wrong_answers": [
+      "Il a survécu avec seulement la moitié de son cerveau fonctionnel",
+      "Il est né avec le côté gauche de son visage entièrement absent",
+      "Il a perdu les deux tiers de sa mâchoire dans un accident industriel",
+      "Il vit sans boîte crânienne depuis une opération neurologique expérimentale",
+      "Il a survécu à l'ablation complète d'un lobe cérébral"
+    ]
+  },
+  {
+    "fact": "201",
+    "category": "technologie",
+    "question": "Qu'est-ce que la NASA peut fabriquer dans l'espace ?",
+    "correct_answer": "Une pizza",
+    "wrong_answers": [
+      "Des pâtes fraîches",
+      "Du pain",
+      "Un burger",
+      "Des sushis",
+      "Une omelette"
+    ]
+  },
+  {
+    "fact": "202",
+    "category": "corps-humain",
+    "question": "Quelle est la compétence musicale exceptionnelle d'Ellen Boudreaux ?",
+    "correct_answer": "Elle peut jouer une chanson après une seule écoute",
+    "wrong_answers": [
+      "Elle peut jouer deux morceaux différents simultanément, un par main",
+      "Elle peut identifier l'instrument, la tonalité et le tempo d'une chanson sans l'avoir jamais entendue",
+      "Elle peut reproduire n'importe quelle chanson en la transposant instantanément dans n'importe quelle tonalité",
+      "Elle mémorise et restitue fidèlement une chanson après l'avoir entendue exactement trois fois",
+      "Elle peut jouer de mémoire l'intégralité d'un album après une seule écoute complète"
+    ]
+  },
+  {
+    "fact": "203",
+    "category": "technologie",
+    "question": "Qu'a déclaré le présentateur de la BBC lors de son émission du 18 avril 1930 ?",
+    "correct_answer": "No news today. (Pas d'informations aujourd'hui)",
+    "wrong_answers": [
+      "The King is resting. (Le Roi se repose)",
+      "Broadcasting will resume tomorrow. (Les émissions reprendront demain)",
+      "Nothing of importance has occurred. (Rien d'important ne s'est produit)",
+      "We apologize for the interruption. (Nous nous excusons pour l'interruption)",
+      "The world is at peace today. (Le monde est en paix aujourd'hui)"
+    ]
+  },
+  {
+    "fact": "204",
+    "category": "sante",
+    "question": "Quel élément inhabituel a causé la mort de Hans Steininger, maire en Autriche en 1567 ?",
+    "correct_answer": "Il est mort après avoir trébuché sur sa barbe",
+    "wrong_answers": [
+      "Il est mort après avoir trébuché sur sa propre cape de cérémonie",
+      "Il est mort après s'être étranglé avec sa chaîne de maire pendant une chute",
+      "Il est mort après avoir trébuché sur ses cheveux qui atteignaient le sol",
+      "Il est mort après avoir été renversé par une charrue qu'il inspectait lors d'une fête du village",
+      "Il est mort après s'être pris les pieds dans ses lacets de bottes lors d'un incendie"
+    ]
+  },
+  {
+    "fact": "205",
+    "category": "corps-humain",
+    "question": "Pourquoi Olivia Farnsworth est-elle surnommée la \"fille bionique\" ?",
+    "correct_answer": "Elle ne ressent ni douleur, ni faim, ni fatigue",
+    "wrong_answers": [
+      "Elle ne ressent ni froid, ni chaleur, ni pression physique",
+      "Elle possède une densité osseuse 4 fois supérieure à la normale, rendant ses os quasi incassables",
+      "Elle ne ressent ni douleur, ni peur, ni tristesse — aucune émotion négative",
+      "Son corps cicatrise les plaies cutanées en moins de 48 heures sans laisser de cicatrice",
+      "Elle ne ressent ni douleur, ni faim, ni le besoin de respirer consciemment — sa respiration est entièrement automatisée"
+    ]
+  },
+  {
+    "fact": "206",
+    "category": "sciences",
+    "question": "Qu'ont en commun les billets de banque américains quelle que soit leur valeur ?",
+    "correct_answer": "90 % sont recouverts de traces de cocaïne",
+    "wrong_answers": [
+      "80 % contiennent des traces d'ADN humain non identifié",
+      "75 % présentent des traces détectables de fèces bactériennes",
+      "Tous contiennent des fibres de coton identiques quelle que soit leur ancienneté",
+      "95 % ont été en contact avec au moins un cadavre lors de leur circulation",
+      "Tous perdent exactement 0,003 grammes de matière à chaque transaction physique"
+    ]
+  },
+  {
+    "fact": "207",
+    "category": "geographie",
+    "question": "Quelle est la conséquence de l'activité tectonique entre la Chine et l'Inde ?",
+    "correct_answer": "Le Mont Everest grandit de 4 mm par an",
+    "wrong_answers": [
+      "Le Mont Everest grandit de 4 cm par an",
+      "Le Mont Everest grandit de 11 mm par an",
+      "Le Mont K2 grandit de 4 mm par an",
+      "Le Mont Everest s'enfonce de 4 mm par an",
+      "Le Mont Everest grandit de 2 mm par an"
+    ]
+  },
+  {
+    "fact": "208",
+    "category": "lois",
+    "question": "Quelle drôle de règle relie un aéroport et les adieux ?",
+    "correct_answer": "Les câlins sont limités à 3 minutes",
+    "wrong_answers": [
+      "Les baisers sont limités à 30 secondes",
+      "Les embrassades sont interdites au-delà de 2 personnes simultanément",
+      "Les pleurs sont limités à 5 minutes",
+      "Les au revoir verbaux sont limités à 10 mots",
+      "Les photos d'adieux sont limitées à 1 par départ"
+    ]
+  },
+  {
+    "fact": "209",
+    "category": "histoire",
+    "question": "Quelle pratique était préalablement réalisée avant la momification des pharaons ?",
+    "correct_answer": "Les embaumeurs retiraient le cerveau par le nez",
+    "wrong_answers": [
+      "Les embaumeurs retiraient le cerveau par l'oreille",
+      "Les embaumeurs vidaient le crâne par une incision à la base du cou",
+      "Les embaumeurs dissolvaient le cerveau avec du natron avant d'ouvrir le crâne",
+      "Les embaumeurs retiraient les yeux pour accéder à la cavité crânienne",
+      "Les embaumeurs pratiquaient une trépanation au sommet du crâne"
+    ]
+  },
+  {
+    "fact": "210",
+    "category": "sciences",
+    "question": "Comment Stan Larkin a survécu pendant 555 jours ?",
+    "correct_answer": "Il avait un cœur artificiel dans un sac à dos",
+    "wrong_answers": [
+      "Il était maintenu en vie par une pompe cardiaque externe portée à la ceinture",
+      "Son cœur natif fonctionnait à 12% grâce à un stimulateur magnétique implanté",
+      "Il dormait 18h par jour relié à une machine de circulation extracorporelle",
+      "Un dispositif de compression thoracique automatique simulait ses battements cardiaques",
+      "Il portait un exosquelette médical qui massait son cœur en continu"
+    ]
+  },
+  {
+    "fact": "211",
+    "category": "lois",
+    "question": "Au Danemark, quelle obligation légale est demandée aux automobilistes au démarrage ?",
+    "correct_answer": "Vérifier sous le véhicule",
+    "wrong_answers": [
+      "Klaxonner deux fois",
+      "Allumer les feux de position",
+      "Vérifier l'état des rétroviseurs extérieurs",
+      "Ouvrir brièvement la fenêtre conducteur",
+      "Actionner les essuie-glaces"
+    ]
+  },
+  {
+    "fact": "212",
+    "category": "corps-humain",
+    "question": "Quelle action a permis à Deepak, un garçon de 8 ans, de survivre à une morsure de serpent ?",
+    "correct_answer": "En mordant le serpent",
+    "wrong_answers": [
+      "En suçant le venin de sa propre plaie",
+      "En immobilisant le serpent avec son autre bras pendant 20 minutes",
+      "En criant suffisamment fort pour paralyser le cobra",
+      "En plongeant son bras mordu dans de l'eau glacée du puits",
+      "En pressant la tête du serpent contre le sol avec son pied"
+    ]
+  },
+  {
+    "fact": "213",
+    "category": "sciences",
+    "question": "Quelle modification génétique a été faite à Séoul en 2011 ?",
+    "correct_answer": "Ils ont créé des chiens qui brillent dans le noir",
+    "wrong_answers": [
+      "Ils ont créé des chats dont la fourrure change de couleur selon la température",
+      "Ils ont créé des lapins qui produisent une soie identique à celle des araignées",
+      "Ils ont créé des poissons rouges translucides dont les organes internes sont visibles à l'œil nu",
+      "Ils ont créé des souris résistantes à tous les virus connus grâce à un gène synthétique",
+      "Ils ont créé des chiens dont le sang contient une protéine humaine utilisable en transfusion"
+    ]
+  },
+  {
+    "fact": "214",
+    "category": "gastronomie",
+    "question": "Quel service inattendu les restaurants Mc Donald's proposent à Hong kong ?",
+    "correct_answer": "On peut se marier",
+    "wrong_answers": [
+      "On peut louer une salle pour organiser des funérailles",
+      "On peut y passer la nuit dans des capsules hôtel intégrées",
+      "On peut y obtenir un certificat de naissance pour les bébés nés prématurément dans le restaurant",
+      "On peut y suivre des cours de cuisine certifiés par l'État",
+      "On peut y célébrer une cérémonie de remise de diplômes scolaires"
+    ]
+  },
+  {
+    "fact": "215",
+    "category": "lois",
+    "question": "Quelle loi a été définitivement abolie en Mauritanie en 2007 ?",
+    "correct_answer": "L'esclavage",
+    "wrong_answers": [
+      "La polygamie",
+      "La peine de mort",
+      "Le travail des enfants",
+      "La traite des personnes",
+      "L'apartheid légal"
+    ]
+  },
+  {
+    "fact": "216",
+    "category": "art",
+    "question": "Quel matériau est utilisé par l'artiste Luxembourgeoise Lucie Mejrus ?",
+    "correct_answer": "Des dents humaines",
+    "wrong_answers": [
+      "Des ongles humains",
+      "Des cheveux humains tressés",
+      "Des os de poulet blanchis",
+      "Des calculs rénaux",
+      "Des vertèbres de souris"
+    ]
+  },
+  {
+    "fact": "217",
+    "category": "geographie",
+    "question": "De quelle manière la ville de Rjukan compense-t-elle l'absence de soleil ?",
+    "correct_answer": "Rjukan utilise des miroirs pour le soleil",
+    "wrong_answers": [
+      "Rjukan utilise des tunnels lumineux creusés dans la montagne",
+      "Rjukan installe des lampes à spectre solaire sur chaque façade",
+      "Rjukan projette de la lumière artificielle depuis des drones en altitude",
+      "Rjukan a construit une plateforme surélevée au-dessus des montagnes",
+      "Rjukan diffuse de la lumière UV via son réseau de fontaines publiques"
+    ]
+  },
+  {
+    "fact": "218",
+    "category": "histoire",
+    "question": "Quel crime a valu à Michel Verdun d'être jugé et exécuté à Besançon en 1521 ?",
+    "correct_answer": "Il se prenait pour un loup garou",
+    "wrong_answers": [
+      "Il affirmait se transformer en ours et attaquer les troupeaux la nuit",
+      "Il prétendait avoir conclu un pacte avec le diable pour voler sans jamais être vu",
+      "Il se disait possédé par l'esprit d'un mort et parlait en langues inconnues",
+      "Il accusait ses voisins d'être des sorciers capables de provoquer la foudre",
+      "Il prétendait pouvoir se rendre invisible grâce à une pommade fabriquée avec des os de pendus"
+    ]
+  },
+  {
+    "fact": "219",
+    "category": "lois",
+    "question": "En Chine, pour quelle raison les chefs tibétains doivent-ils demander un permis ?",
+    "correct_answer": "Pour se réincarner",
+    "wrong_answers": [
+      "Pour organiser une cérémonie funèbre",
+      "Pour nommer un successeur spirituel",
+      "Pour quitter le territoire tibétain",
+      "Pour enseigner les textes sacrés en public",
+      "Pour porter les habits traditionnels du clergé"
+    ]
+  },
+  {
+    "fact": "220",
+    "category": "sport",
+    "question": "Pourquoi certains skieurs ont cru glisser sur Mars en 2018 ?",
+    "correct_answer": "La neige était orange",
+    "wrong_answers": [
+      "La neige était rouge",
+      "La neige était jaune",
+      "Le ciel était entièrement violet",
+      "La neige était rose",
+      "Les pistes étaient recouvertes de poussière grise"
+    ]
+  },
+  {
+    "fact": "221",
+    "category": "records",
+    "question": "Quel record extrême Josef Tödtling a-t-il battu à Milan ?",
+    "correct_answer": "200 m à vélo le corps en feu",
+    "wrong_answers": [
+      "100 m à pied le corps en feu",
+      "200 m à vélo les yeux bandés",
+      "200 m à vélo immergé dans un aquarium",
+      "150 m à vélo suspendu par les pieds",
+      "200 m à moto le corps en feu"
+    ]
+  },
+  {
+    "fact": "222",
+    "category": "technologie",
+    "question": "Quelle est la seule chose à faire dans l'application “Do Nothing for 2 Minutes” ?",
+    "correct_answer": "Rien",
+    "wrong_answers": [
+      "Regarder une bougie virtuelle sans cliquer",
+      "Écouter des sons de nature sans bouger l'écran",
+      "Fixer un point noir au centre de l'écran",
+      "Laisser une animation se dérouler sans l'interrompre",
+      "Maintenir son doigt immobile sur un cercle"
+    ]
+  },
+  {
+    "fact": "223",
+    "category": "sport",
+    "question": "Quel exploit Annie Taylor, âgée de 63 ans, a-t-elle accompli en octobre 1901 ?",
+    "correct_answer": "Elle a survécu à la descente des chutes du Niagara",
+    "wrong_answers": [
+      "Elle a traversé les chutes du Niagara en marchant sur un câble tendu à 50 mètres de hauteur",
+      "Elle a descendu les rapides du Colorado en pirogue, sans pagaie",
+      "Elle a sauté depuis le pont de Brooklyn dans un costume en caoutchouc de sa conception",
+      "Elle a traversé les chutes du Niagara à la nage en moins de 4 heures",
+      "Elle a survécu à une chute libre de 30 mètres dans les gorges de la rivière Hudson, attachée à un cerf-volant"
+    ]
+  },
+  {
+    "fact": "224",
+    "category": "phobies",
+    "question": "Qu'est-ce que la phobophobie ?",
+    "correct_answer": "La peur d'avoir peur",
+    "wrong_answers": [
+      "La peur des phobies des autres, par contagion émotionnelle",
+      "La peur de nommer ses propres peurs à voix haute",
+      "La peur des traitements utilisés contre les phobies",
+      "La peur de développer une nouvelle phobie au cours de sa vie",
+      "La peur d'oublier ce dont on a peur"
+    ]
+  },
+  {
+    "fact": "225",
+    "category": "phobies",
+    "question": "Qu'est-ce que la phronémophobie ?",
+    "correct_answer": "La peur de penser",
+    "wrong_answers": [
+      "La peur de se souvenir",
+      "La peur de rêver",
+      "La peur de prendre des décisions",
+      "La peur de perdre la raison",
+      "La peur du silence"
+    ]
+  },
+  {
+    "fact": "226",
+    "category": "sciences",
+    "question": "Qu'est-ce que \"La Carpuccino\" ?",
+    "correct_answer": "Elle roule grâce aux grains de café",
+    "wrong_answers": [
+      "Elle roule grâce aux résidus de marc de café",
+      "Elle roule grâce à une huile extraite des grains de café",
+      "Elle roule grâce à la vapeur produite par une cafetière intégrée",
+      "Elle roule grâce à un biocarburant mélangé à de la caféine purifiée",
+      "Elle roule grâce à la combustion directe de capsules de café compressées"
+    ]
+  },
+  {
+    "fact": "227",
+    "category": "sante",
+    "question": "Quelle est la capacité exceptionnelle de Jill Price ?",
+    "correct_answer": "Elle se souvient de tous les jours de sa vie",
+    "wrong_answers": [
+      "Elle se souvient de tous les numéros de téléphone qu'elle a jamais lus",
+      "Elle peut mémoriser un jeu de 52 cartes en moins de 90 secondes",
+      "Elle se souvient de chaque mot de chaque livre qu'elle a lu",
+      "Elle peut reproduire n'importe quelle conversation mot pour mot après une seule écoute",
+      "Elle se souvient de chaque visage qu'elle a croisé depuis l'enfance"
+    ]
+  },
+  {
+    "fact": "228",
+    "category": "lois",
+    "question": "Quelle police d'assurance a-t-elle été souscrite par 50 000 Américains ?",
+    "correct_answer": "Une assurance contre l'enlèvement extraterrestre",
+    "wrong_answers": [
+      "Une assurance contre la transformation en zombie",
+      "Une assurance contre la malédiction vaudou",
+      "Une assurance contre la morsure de vampire",
+      "Une assurance contre la possession démoniaque",
+      "Une assurance contre le voyage dans le temps involontaire"
+    ]
+  },
+  {
+    "fact": "229",
+    "category": "art",
+    "question": "Quelle est la particularité de l'œuvre “Girl with Balloon” de Banksy ?",
+    "correct_answer": "Elle s'est autodétruite",
+    "wrong_answers": [
+      "Elle a été peinte à l'envers",
+      "Elle a changé de couleur au contact de l'air",
+      "Elle a été signée par Banksy en direct devant les caméras",
+      "Elle s'est révélée être un faux",
+      "Elle a déclenché une alarme incendie"
+    ]
+  },
+  {
+    "fact": "230",
+    "category": "art",
+    "question": "En 2015, quel incident a suscité de vives réactions suite à l'exposition \"Proportio\" ?",
+    "correct_answer": "Une femme de ménage a jeté une œuvre à la poubelle",
+    "wrong_answers": [
+      "Un agent de sécurité a endommagé une sculpture en s'y appuyant pour dormir",
+      "Un visiteur a mangé une banane faisant partie d'une installation",
+      "Un électricien a démonté une installation lumineuse en pensant réparer une panne",
+      "Un livreur a emporté une toile en la confondant avec un colis retour",
+      "Un stagiaire a effacé une œuvre au sol en la prenant pour des traces de craie"
+    ]
+  },
+  {
+    "fact": "231",
+    "category": "phobies",
+    "question": "Qu'est-ce que la xanthophobie ?",
+    "correct_answer": "La peur du jaune",
+    "wrong_answers": [
+      "La peur du orange",
+      "La peur des étrangers",
+      "La peur du soleil",
+      "La peur du jaune d'œuf",
+      "La peur de la couleur verte"
+    ]
+  },
+  {
+    "fact": "232",
+    "category": "technologie",
+    "question": "Quel exploit Ben Sliney a-t-il réalisé dès son premier jour de travail le 11 septembre 2001 ?",
+    "correct_answer": "Il a immobilisé 4 200 avions simultanément",
+    "wrong_answers": [
+      "Il a redirigé 3 800 avions vers des aéroports militaires en moins d'une heure",
+      "Il a fermé l'espace aérien américain en contactant personnellement 47 tours de contrôle",
+      "Il a coordonné l'atterrissage forcé de 12 avions suspectés de détournement simultanément",
+      "Il a ordonné l'évacuation de 68 aéroports américains en moins de 90 minutes",
+      "Il a intercepté 2 900 avions commerciaux en les déroutant vers le Canada"
+    ]
+  },
+  {
+    "fact": "233",
+    "category": "records",
+    "question": "Quel exploit absurde un homme a-t-il réalisé au sommet du Pikes Peak ?",
+    "correct_answer": "Il a poussé une cacahuète avec le nez",
+    "wrong_answers": [
+      "Il a roulé une bille avec le nez",
+      "Il a gravi le sentier à reculons les yeux bandés",
+      "Il a poussé une noisette avec le menton",
+      "Il a transporté un œuf cru dans sa bouche sans le casser",
+      "Il a monté les 3 000 marches du sentier en sautillant sur un pied"
+    ]
+  },
+  {
+    "fact": "234",
+    "category": "kids",
+    "question": "Avec quoi peut-on produire de l'électricité naturellement ?",
+    "correct_answer": "un citron !",
+    "wrong_answers": [
+      "une pomme de terre !",
+      "une banane !",
+      "un cornichon !",
+      "une orange !",
+      "une tomate !"
+    ]
+  },
+  {
+    "fact": "235",
+    "category": "corps-humain",
+    "question": "Quelle est l'aptitude extraordinaire du foie ?",
+    "correct_answer": "Le foie se régénère même après une partie enlevée",
+    "wrong_answers": [
+      "Le foie continue de fonctionner même séparé du corps pendant plusieurs heures",
+      "Le foie peut changer de couleur en fonction de l'alimentation pour signaler un dysfonctionnement",
+      "Le foie produit sa propre anesthésie locale en cas de blessure",
+      "Le foie peut migrer légèrement dans la cavité abdominale selon la position du corps",
+      "Le foie double sa taille naturellement chaque nuit pendant le sommeil profond"
+    ]
+  },
+  {
+    "fact": "236",
+    "category": "phobies",
+    "question": "Qu'est-ce que la kathisophobie ?",
+    "correct_answer": "La peur de s'asseoir",
+    "wrong_answers": [
+      "La peur de rester immobile",
+      "La peur des chaises et du mobilier en général",
+      "La peur de s'endormir en position assise",
+      "La peur de tomber en arrière",
+      "La peur d'être assis dos à une porte"
+    ]
+  },
+  {
+    "fact": "237",
+    "category": "animaux",
+    "question": "Quelle est la singularité de la méduse \"Turritopsis Dohrnii\" ?",
+    "correct_answer": "Elle est immortelle",
+    "wrong_answers": [
+      "Elle peut se cloner en se divisant en deux individus génétiquement identiques",
+      "Elle est totalement transparente, y compris ses organes internes",
+      "Elle peut survivre hors de l'eau pendant plusieurs heures grâce à sa peau hydratante",
+      "Elle est la seule méduse connue à posséder un cerveau rudimentaire",
+      "Elle change de sexe à chaque cycle lunaire"
+    ]
+  },
+  {
+    "fact": "238",
+    "category": "sport",
+    "question": "Comment Matt Suter a-t-il parcouru 400 mètres de manière insolite ?",
+    "correct_answer": "Il a été projeté par une tornade",
+    "wrong_answers": [
+      "Il a été catapulté par un câble de treuil militaire lors d'un test d'équipement",
+      "Il a été éjecté hors d'un véhicule lors d'un accident de rodéo mécanique",
+      "Il a été projeté par l'explosion d'une citerne de gaz industriel",
+      "Il a été emporté par une crue soudaine dans un canal d'irrigation",
+      "Il a été lancé par la rupture d'un câble de téléphérique lors d'une compétition de ski"
+    ]
+  },
+  {
+    "fact": "239",
+    "category": "kids",
+    "question": "Pourquoi le magenta se fait-il appeler \"magenta impossible\" ?",
+    "correct_answer": "Il n'existe pas vraiment",
+    "wrong_answers": [
+      "Il est impossible à reproduire avec de la peinture",
+      "Il disparaît sous la lumière ultraviolette",
+      "Aucun animal ne peut le percevoir",
+      "Il change de teinte selon la température",
+      "Il ne peut pas s'afficher sur les écrans LED"
+    ]
+  },
+  {
+    "fact": "240",
+    "category": "gastronomie",
+    "question": "Comment les cookies ont-ils été inventés pour la première fois ?",
+    "correct_answer": "Par erreur",
+    "wrong_answers": [
+      "Par imitation d'une recette allemande mal traduite",
+      "En substituant du beurre de cacahuète à la farine dans une recette classique",
+      "En cherchant à recycler des chutes de brownie trop cuites",
+      "En adaptant une recette de gâteau de voyage pour les soldats américains",
+      "En remplaçant le sucre par de la mélasse dans un biscuit traditionnel anglais"
+    ]
+  },
+  {
+    "fact": "241",
+    "category": "kids",
+    "question": "Quelle est la particularité de la naissance en Corée du Sud ?",
+    "correct_answer": "On a 1 an dès la naissance",
+    "wrong_answers": [
+      "On reçoit un numéro d'identité national avant même de naître",
+      "La date de naissance officielle est toujours fixée au 1er janvier",
+      "On choisit son prénom soi-même à l'âge de 3 ans",
+      "Les jumeaux sont légalement considérés comme ayant le même âge exact",
+      "On a 2 ans dès la naissance"
+    ]
+  },
+  {
+    "fact": "242",
+    "category": "sciences",
+    "question": "Quel élément étranger a faussé les résultats des élections en Belgique en 2003 ?",
+    "correct_answer": "Un rayonnement cosmique",
+    "wrong_answers": [
+      "Une interférence magnétique provenant d'une ligne à haute tension adjacente au bureau de vote",
+      "Un bug logiciel introduit par une mise à jour du firmware la nuit précédant le scrutin",
+      "Un pic de tension électrique causé par un orage au-dessus de Bruxelles",
+      "Un signal radio émis par une tour de télécommunication militaire",
+      "Une surtension due à un défaut d'isolation dans le réseau électrique du bâtiment"
+    ]
+  },
+  {
+    "fact": "243",
+    "category": "records",
+    "question": "Quel record est détenu par un couple japonais pendant 20 ans ?",
+    "correct_answer": "Ils n'ont pas échangé un mot en 20 ans",
+    "wrong_answers": [
+      "Ils ont dormi dans des lits séparés sans jamais se croiser pendant 20 ans",
+      "Ils ont mangé à la même table sans jamais se regarder pendant 20 ans",
+      "Ils ne se sont jamais touchés, même accidentellement, pendant 20 ans",
+      "Ils n'ont jamais partagé un repas en tête à tête pendant 20 ans",
+      "Ils ont vécu dans la même maison sans jamais s'asseoir dans la même pièce pendant 20 ans"
+    ]
+  },
+  {
+    "fact": "244",
+    "category": "corps-humain",
+    "question": "Pourquoi l'histoire de Lina Medina est-elle considérée comme unique ?",
+    "correct_answer": "Elle a accouché à l'âge de 5 ans",
+    "wrong_answers": [
+      "Elle a accouché à l'âge de 6 ans",
+      "Elle a donné naissance à des quadruplés à l'âge de 9 ans",
+      "Elle est la première femme à avoir accouché sous anesthésie générale en Amérique du Sud",
+      "Elle a accouché à l'âge de 7 ans d'un enfant en parfaite santé sans assistance médicale",
+      "Elle a survécu à deux grossesses simultanées à l'âge de 11 ans"
+    ]
+  },
+  {
+    "fact": "245",
+    "category": "geographie",
+    "question": "Où habite l'être humain le plus proche du point Némo (pôle maritime d'inaccessibilité) ?",
+    "correct_answer": "Dans la station spatiale internationale",
+    "wrong_answers": [
+      "Sur la base sous-marine américaine la plus reculée du Pacifique Sud",
+      "À bord du brise-glace scientifique russe Akademik Fedorov, en mission permanente",
+      "Sur l'île Ducie, l'atoll inhabité le plus proche du point Némo",
+      "À bord du porte-avions américain le plus éloigné des côtes en patrouille active",
+      "Dans la station de recherche météorologique automatisée la plus proche, habitée en rotation"
+    ]
+  },
+  {
+    "fact": "246",
+    "category": "sciences",
+    "question": "En quoi consiste la théorie de la panspermie ?",
+    "correct_answer": "Elle propose que la vie voyage à travers l'univers",
+    "wrong_answers": [
+      "Elle propose que la vie est née simultanément sur toutes les planètes habitables",
+      "Elle suggère que l'ADN extraterrestre est à l'origine des premières mutations évolutives sur Terre",
+      "Elle postule que les étoiles génèrent des molécules organiques complexes par fusion nucléaire",
+      "Elle affirme que la vie terrestre descend d'un unique ancêtre cosmique transporté par le vent solaire",
+      "Elle soutient que les conditions nécessaires à la vie se forment uniquement autour des étoiles de type G"
+    ]
+  },
+  {
+    "fact": "247",
+    "category": "art",
+    "question": "Quelle est la particularité de la sculpture \"Io sono\", vendue en 2021 pour 15 000€ ?",
+    "correct_answer": "Elle est invisible",
+    "wrong_answers": [
+      "Elle est entièrement sculptée dans de la glace et fondait pendant la vente aux enchères",
+      "Elle ne peut être exposée qu'en l'absence totale de lumière artificielle",
+      "Elle est composée exclusivement d'air comprimé enfermé dans un cube de verre scellé",
+      "Elle change de forme selon la température de la pièce où elle est exposée",
+      "Elle n'appartient légalement à personne, même pas à son acheteur"
+    ]
+  },
+  {
+    "fact": "248",
+    "category": "records",
+    "question": "De quoi est constituée la collection de 6 290 exemplaires de Niek Vermuelen ?",
+    "correct_answer": "Des sacs à vomi",
+    "wrong_answers": [
+      "Des étiquettes de bagages d'avion",
+      "Des cartes d'embarquement de vols commerciaux",
+      "Des menus de plateaux-repas de compagnies aériennes",
+      "Des pochettes de couverts jetables de compagnies aériennes",
+      "Des notices de sécurité d'avion"
+    ]
+  },
+  {
+    "fact": "249",
+    "category": "animaux",
+    "question": "À quoi servent les spiracles du cafard ?",
+    "correct_answer": "À survivre sans tête",
+    "wrong_answers": [
+      "À réguler leur température corporelle par évaporation",
+      "À détecter les variations de pression atmosphérique",
+      "À communiquer des signaux chimiques avec leur colonie",
+      "À filtrer les particules toxiques dans les environnements pollués",
+      "À stocker des réserves d'air lors de plongées prolongées"
+    ]
+  },
+  {
+    "fact": "250",
+    "category": "gastronomie",
+    "question": "Quelle invention a été créée accidentellement par Franck Epperson à 11 ans ?",
+    "correct_answer": "Les glaces sur les bâtonnets",
+    "wrong_answers": [
+      "Les bonbons à la réglisse en forme de bâtonnet",
+      "Le caramel enrobé de chocolat sur un bâton",
+      "La barbe à papa vendue dans les foires",
+      "Le milk-shake glacé servi en gobelet",
+      "Les sucettes au jus de fruit congelé"
+    ]
+  },
+  {
+    "fact": "251",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"boustrophédon\" ?",
+    "correct_answer": "L'écriture alterne de gauche à droite et inverse",
+    "wrong_answers": [
+      "Une technique de tissage où les fils s'entrelacent en sens alternés",
+      "Un procédé de reliure ancienne où les pages se plient en accordéon",
+      "Un système de numération où les chiffres s'écrivent de bas en haut",
+      "Une méthode d'irrigation antique utilisant des canaux creusés en zigzag",
+      "Un style d'ornementation où les motifs se répètent en miroir ligne par ligne"
+    ]
+  },
+  {
+    "fact": "252",
+    "category": "geographie",
+    "question": "Pour quelle raison l'office du tourisme écossais a-t-il investi 125 000 £ ?",
+    "correct_answer": "Pour le nouveau slogan \"Welcom to Scotland\"",
+    "wrong_answers": [
+      "Pour une campagne de promotion du Loch Ness auprès des touristes américains",
+      "Pour financer la traduction officielle du gaélique écossais sur tous les panneaux routiers du pays",
+      "Pour concevoir un logo représentant un mouton portant un kilt, abandonné après des plaintes",
+      "Pour lancer une application mobile de géolocalisation des châteaux écossais",
+      "Pour commander une étude prouvant que l'Écosse est plus belle que l'Angleterre"
+    ]
+  },
+  {
+    "fact": "253",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'hexakosioihexekontahexaphobie ?",
+    "correct_answer": "Peur du nombre 666",
+    "wrong_answers": [
+      "Peur du nombre 999",
+      "Peur des symboles sataniques",
+      "Peur du nombre 13",
+      "Peur des hexagones",
+      "Peur des chiffres répétés"
+    ]
+  },
+  {
+    "fact": "254",
+    "category": "geographie",
+    "question": "Pour quelle raison le projet d'une nouvelle autoroute a été annulé en Islande ?",
+    "correct_answer": "À cause des défenseurs elfiques",
+    "wrong_answers": [
+      "À cause des défenseurs des trolls",
+      "À cause des défenseurs des rennes sacrés",
+      "À cause des défenseurs des sources géothermiques ancestrales",
+      "À cause des défenseurs des pierres runiques",
+      "À cause des défenseurs des renards arctiques"
+    ]
+  },
+  {
+    "fact": "255",
+    "category": "records",
+    "question": "Quelle performance inédite Randy Gardner a-t-il réalisée durant plus de 11 jours ?",
+    "correct_answer": "Il est resté éveillé 11 jours consécutifs",
+    "wrong_answers": [
+      "Il a retenu sa respiration pendant 11 jours en alternant de courtes apnées",
+      "Il a marché en continu sur un tapis roulant pendant 11 jours sans s'arrêter",
+      "Il a gardé les yeux ouverts sans cligner pendant 11 jours grâce à des gouttes",
+      "Il a jeûné intégralement pendant 11 jours sous surveillance médicale constante",
+      "Il est resté immobile debout contre un mur pendant 11 jours consécutifs"
+    ]
+  },
+  {
+    "fact": "256",
+    "category": "records",
+    "question": "Pour quelle raison le corps de l'artiste Lucky Diamond Rich est-il mondialement connu ?",
+    "correct_answer": "Il est tatoué à 100 %",
+    "wrong_answers": [
+      "Il est percé à plus de 500 endroits différents sur le corps",
+      "Il est scarifié sur 95 % de la surface de son corps",
+      "Il a subi plus de 200 opérations de modification corporelle chirurgicale",
+      "Il est couvert de brûlures décoratives sur les deux tiers du corps",
+      "Il a fait implanter des billes sous-cutanées sur l'ensemble du torse et du crâne"
+    ]
+  },
+  {
+    "fact": "257",
+    "category": "definition",
+    "question": "Qu'est-ce une chose \"méphitique\" ?",
+    "correct_answer": "Qui dégage une odeur toxique",
+    "wrong_answers": [
+      "Qui provoque une illusion d'optique",
+      "Qui possède une texture visqueuse et collante",
+      "Qui produit un son strident et pénétrant",
+      "Qui présente une luminescence spontanée dans l'obscurité",
+      "Qui génère une chaleur intense au contact de l'air"
+    ]
+  },
+  {
+    "fact": "258",
+    "category": "records",
+    "question": "Quel phénomène singulier a influencé la vie de Charles Osborne sur une période de 68 ans ?",
+    "correct_answer": "Il a eu le hoquet",
+    "wrong_answers": [
+      "Il a souffert de somnambulisme",
+      "Il a été victime de convulsions incontrôlables",
+      "Il a éternué de façon compulsive",
+      "Il a subi des tremblements chroniques des mains",
+      "Il a eu des spasmes musculaires involontaires"
+    ]
+  },
+  {
+    "fact": "259",
+    "category": "sport",
+    "question": "En juillet 2024, par quel moyen Jaan Roose a-t-il rejoint la Sicile depuis l'Italie ?",
+    "correct_answer": "Il a traversé 3 600 mètres en slackline",
+    "wrong_answers": [
+      "Il a traversé 3 600 mètres en funambule sur un câble d'acier de 4 cm de large",
+      "Il a nagé 3 600 mètres en apnée par étapes successives de 200 mètres",
+      "Il a traversé 3 600 mètres suspendu sous un deltaplane à moteur",
+      "Il a parcouru 3 600 mètres à la rame sur une planche de surf sans pagaie",
+      "Il a traversé 3 600 mètres en tyrolienne inversée, suspendu par les pieds"
+    ]
+  },
+  {
+    "fact": "260",
+    "category": "lois",
+    "question": "Au Japon, pour quelle raison les employés sont-ils autorisés à quitter plus tôt leur travail ?",
+    "correct_answer": "Pour procréer",
+    "wrong_answers": [
+      "Pour aller voter lors des élections locales",
+      "Pour participer à des exercices de préparation aux catastrophes naturelles",
+      "Pour effectuer leur bilan de santé annuel obligatoire",
+      "Pour assister aux réunions scolaires de leurs enfants",
+      "Pour pratiquer une activité physique dans le cadre du programme national de lutte contre l'obésité"
+    ]
+  },
+  {
+    "fact": "261",
+    "category": "records",
+    "question": "Quelle décision Ayanna Williams a-t-elle prise après 30 ans pour simplifier son quotidien ?",
+    "correct_answer": "Elle a coupé 7 mètres d'ongles",
+    "wrong_answers": [
+      "Elle a rasé une barbe de 4 mètres qu'elle cultivait depuis sa jeunesse",
+      "Elle a coupé une natte de 6 mètres de cheveux qu'elle n'avait jamais taillés",
+      "Elle a retiré 12 kilos de bijoux permanents soudés à son corps au fil des années",
+      "Elle a coupé 9 mètres d'ongles de pieds laissés à l'abandon depuis l'enfance",
+      "Elle a taillé une moustache de 3 mètres devenue incontrôlable au quotidien"
+    ]
+  },
+  {
+    "fact": "262",
+    "category": "definition",
+    "question": "Qu'est ce que la \"paréidolie\" ?",
+    "correct_answer": "Voir des visages partout",
+    "wrong_answers": [
+      "Entendre sa propre voix comme si elle venait de l'extérieur",
+      "Confondre involontairement deux souvenirs réels en un seul",
+      "Ressentir une émotion intense face à une œuvre d'art abstraite",
+      "Percevoir des formes géométriques sous l'effet du stress",
+      "Attribuer une personnalité à des objets du quotidien"
+    ]
+  },
+  {
+    "fact": "264",
+    "category": "geographie",
+    "question": "Pour quel motif incongru les tensions entre Israël et l'Égypte se sont-elles exacerbées en 2010 ?",
+    "correct_answer": "L'Egypte accusa Israël de libérer des requins",
+    "wrong_answers": [
+      "L'Égypte accusa Israël de contaminer le Nil avec des poissons-chats génétiquement modifiés",
+      "L'Égypte accusa Israël d'envoyer des cigognes espionnes équipées de caméras miniatures",
+      "L'Égypte accusa Israël de relâcher des méduses venimeuses pour décourager les touristes",
+      "L'Égypte accusa Israël d'introduire des raies pastenagues dans ses eaux territoriales",
+      "L'Égypte accusa Israël d'avoir libéré des dauphins dressés pour saboter ses lignes de pêche"
+    ]
+  },
+  {
+    "fact": "265",
+    "category": "sport",
+    "question": "En 1943, pourquoi les clients du Casino de Bristol ont vécu  un évènement exceptionnel ?",
+    "correct_answer": "Le Rouge est sorti consécutivement 32 fois",
+    "wrong_answers": [
+      "Le Zéro est sorti consécutivement 17 fois",
+      "Le Noir est sorti consécutivement 28 fois",
+      "Le même numéro plein est sorti 7 fois de suite",
+      "Le Rouge est sorti consécutivement 44 fois",
+      "Une bille a réalisé exactement 32 tours complets avant de s'immobiliser"
+    ]
+  },
+  {
+    "fact": "266",
+    "category": "gastronomie",
+    "question": "Quelle expérience culinaire insolite est proposée par certains restaurants au Vietnam ?",
+    "correct_answer": "Un cœur de serpent encore battant",
+    "wrong_answers": [
+      "Un poisson servi vivant, encore frémissant dans l'assiette",
+      "Une soupe préparée avec du venin de cobra dilué",
+      "Un plat de larves de guêpes récoltées directement depuis la ruche apportée à table",
+      "Un œuf de canard fermenté contenant un embryon presque formé",
+      "Un shot de bile de tortue mélangée à de l'alcool de riz"
+    ]
+  },
+  {
+    "fact": "267",
+    "category": "phobies",
+    "question": "Qu'est-ce que la tératophobie ?",
+    "correct_answer": "La peur de donner naissance à un monstre",
+    "wrong_answers": [
+      "La peur des monstres marins et créatures des profondeurs",
+      "La peur de se transformer physiquement en vieillissant",
+      "La peur des malformations et difformités chez autrui",
+      "La peur des mutations génétiques et de la radioactivité",
+      "La peur des figures mythologiques et créatures légendaires"
+    ]
+  },
+  {
+    "fact": "268",
+    "category": "sante",
+    "question": "Quelle situation incroyable a affecté Terry Wallis pendant une période de 19 ans ?",
+    "correct_answer": "Il était dans le coma",
+    "wrong_answers": [
+      "Il souffrait d'amnésie totale, incapable de former de nouveaux souvenirs",
+      "Il était atteint d'un syndrome de veille sans réponse après un AVC",
+      "Il vivait avec un locked-in syndrome complet sans aucune communication possible",
+      "Il était plongé dans un état de somnambulisme chronique non traitable",
+      "Il souffrait d'une aphasie sévère l'empêchant totalement de reconnaître ses proches"
+    ]
+  },
+  {
+    "fact": "269",
+    "category": "phobies",
+    "question": "Qu'est-ce que la triskaïdékaphobie ?",
+    "correct_answer": "La peur du chiffre 13",
+    "wrong_answers": [
+      "La peur du chiffre 3",
+      "La peur des nombres impairs",
+      "La peur du vendredi 13 spécifiquement",
+      "La peur du chiffre 666",
+      "La peur des suites de chiffres identiques"
+    ]
+  },
+  {
+    "fact": "270",
+    "category": "lois",
+    "question": "Pour quelle raison Omar Al Gala a été expulsé d'un festival en Arabie Saoudite ?",
+    "correct_answer": "Il était trop beau",
+    "wrong_answers": [
+      "Il portait un costume de couleur rouge, couleur interdite dans les lieux publics saoudiens",
+      "Il avait posté une photo avec une femme non voilée sur son stand",
+      "Il avait refusé de se soumettre au contrôle d'identité de la police religieuse",
+      "Il souriait trop ostensiblement aux passantes",
+      "Il portait un parfum jugé trop envoûtant par les autorités religieuses"
+    ]
+  },
+  {
+    "fact": "271",
+    "category": "gastronomie",
+    "question": "Comment la colère de Jack Daniel, fondateur de la distillerie éponyme, a-t-elle conduit à sa mort ?",
+    "correct_answer": "Il s'est bléssé le pied en cognant son coffre-fort",
+    "wrong_answers": [
+      "Il s'est brûlé gravement la main en renversant un alambic en cuivre bouillant",
+      "Il a fracturé le poignet en frappant une cuve de fermentation récalcitrante",
+      "Il s'est blessé l'épaule en tentant de déplacer seul un tonneau de chêne de 200 litres",
+      "Il s'est cassé le pouce en essayant de forcer la serrure rouillée de sa cave à whisky",
+      "Il s'est entaillé profondément la jambe en heurtant une rangée de bouteilles en verre épais"
+    ]
+  },
+  {
+    "fact": "272",
+    "category": "lois",
+    "question": "Aux États-Unis, quelle interdiction s'applique aux fugitifs ?",
+    "correct_answer": "De prendre des vacances",
+    "wrong_answers": [
+      "De changer de coiffure",
+      "De vendre leur véhicule",
+      "De modifier leur adresse postale",
+      "D'ouvrir un compte bancaire",
+      "De souscrire une assurance vie"
+    ]
+  },
+  {
+    "fact": "273",
+    "category": "histoire",
+    "question": "Quelle drôle de méthode utilisait-on contre la peste au Moyen Âge ?",
+    "correct_answer": "On inhalait des pets conservés",
+    "wrong_answers": [
+      "On se frottait le corps avec de la graisse de porc ranci",
+      "On portait un masque imbibé d'urine de cheval",
+      "On dormait entouré de cadavres d'animaux pour « absorber » la maladie",
+      "On ingérait de la cendre mélangée à du sang de pigeon",
+      "On se baignait dans de l'eau stagnante pour « habituer » le corps aux miasmes"
+    ]
+  },
+  {
+    "fact": "274",
+    "category": "gastronomie",
+    "question": "En 2011 aux USA, quel produit a causé l'arrestation de Linda Bird par la douane ?",
+    "correct_answer": "Des Kinder Surprise",
+    "wrong_answers": [
+      "Des bonbons Haribo en forme d'ours gélatineux non conformes aux normes FDA",
+      "Des sachets de ketchup Heinz périmés de plus de 6 mois",
+      "Des fromages à pâte molle non pasteurisés importés de France",
+      "Des chips de poulet frites dans de l'huile de palme non certifiée",
+      "Des boîtes de Nutella contenant plus de 200g de sucre ajouté"
+    ]
+  },
+  {
+    "fact": "275",
+    "category": "kids",
+    "question": "Quelle a été l'inspiration pour créer le Pokémon jaune Pikachu ?",
+    "correct_answer": "Un écureuil",
+    "wrong_answers": [
+      "Une souris",
+      "Un hamster",
+      "Un lapin",
+      "Un hérisson",
+      "Un chinchilla"
+    ]
+  },
+  {
+    "fact": "276",
+    "category": "phobies",
+    "question": "Qu'est-ce que la papaphobie ?",
+    "correct_answer": "La peur du pape",
+    "wrong_answers": [
+      "La peur des pommes de terre",
+      "La peur des papillons nocturnes",
+      "La peur des pères de famille",
+      "La peur du papier",
+      "La peur des paparazzi"
+    ]
+  },
+  {
+    "fact": "277",
+    "category": "phobies",
+    "question": "Qu'est-ce que la bromidrosiphobie ?",
+    "correct_answer": "La peur des odeurs corporelles",
+    "wrong_answers": [
+      "La peur de la sueur excessive",
+      "La peur des produits chimiques ménagers",
+      "La peur de transpirer en public",
+      "La peur des déodorants et antisudorifiques",
+      "La peur de la mauvaise haleine"
+    ]
+  },
+  {
+    "fact": "278",
+    "category": "gastronomie",
+    "question": "Quelle spécialité culinaire est servi à la foire de l'Arizona ?",
+    "correct_answer": "Des pommes au caramel avec des vers de farine",
+    "wrong_answers": [
+      "Des pommes au caramel avec des criquets grillés",
+      "Des churros fourrés à la crème de larves de palmier",
+      "Des pommes au caramel enrobées de bacon et de sauterelles",
+      "Des beignets au miel garnis de scorpions confits",
+      "Des pommes au caramel saupoudrées de poudre de grillon"
+    ]
+  },
+  {
+    "fact": "279",
+    "category": "gastronomie",
+    "question": "Que représente le \"Brown Friday\" aux États-Unis ?",
+    "correct_answer": "Le jour le plus chargé pour les plombiers",
+    "wrong_answers": [
+      "Le jour le plus chargé pour les livreurs de fast-food",
+      "Le jour où les Américains consomment le plus de chocolat noir",
+      "Le lendemain de Thanksgiving, dédié aux restes de dinde réchauffés",
+      "Le jour de la plus grande consommation de café aux États-Unis",
+      "Le jour le plus chargé pour les services d'urgence gastro-intestinaux"
+    ]
+  },
+  {
+    "fact": "280",
+    "category": "gastronomie",
+    "question": "Pour quoi est utilisé le liquide d'azote en cuisine ?",
+    "correct_answer": "Pour congeler instantanément",
+    "wrong_answers": [
+      "Pour créer une fumée spectaculaire dans les assiettes",
+      "Pour carboniser la surface des viandes à basse température",
+      "Pour maintenir les sauces à température constante pendant le service",
+      "Pour dégazer les vins et supprimer leurs tanins",
+      "Pour stériliser les ustensiles en salle lors des préparations à table"
+    ]
+  },
+  {
+    "fact": "281",
+    "category": "gastronomie",
+    "question": "Quel aliment courant était prescrit comme remède au XIXe siècle ?",
+    "correct_answer": "Le ketchup était un médicament",
+    "wrong_answers": [
+      "La moutarde était un médicament",
+      "Le vinaigre de cidre était un médicament",
+      "Le bouillon de bœuf était un médicament",
+      "Le sucre de canne était un médicament",
+      "La sauce Worcestershire était un médicament"
+    ]
+  },
+  {
+    "fact": "282",
+    "category": "corps-humain",
+    "question": "Quel changement notable le corps humain traverse-t-il au cours de la journée ?",
+    "correct_answer": "On est plus petit, le soir, que le matin",
+    "wrong_answers": [
+      "On est plus lourd le matin que le soir",
+      "Nos pieds grandissent légèrement au fil de la journée",
+      "Notre crâne se dilate légèrement sous l'effet de la chaleur corporelle",
+      "On est plus grand le soir que le matin",
+      "Notre colonne vertébrale se redresse naturellement au cours de la journée, augmentant notre taille"
+    ]
+  },
+  {
+    "fact": "283",
+    "category": "definition",
+    "question": "Qu'est-ce que \"vaticiner\" ?",
+    "correct_answer": "Prédire l'avenir de façon pompeuse ou floue.",
+    "wrong_answers": [
+      "Parler en dormant de façon cohérente et articulée.",
+      "Traduire un texte sacré en langage populaire.",
+      "Critiquer violemment un texte ou un discours officiel.",
+      "Hésiter longuement avant de prendre une décision importante.",
+      "Réciter des prières en latin avec un accent étranger."
+    ]
+  },
+  {
+    "fact": "284",
+    "category": "kids",
+    "question": "Quelle particularité géographique peut-on rencontrer sur Pluton ?",
+    "correct_answer": "Des volcans de glace",
+    "wrong_answers": [
+      "Des océans de lave",
+      "Des geysers d'eau liquide",
+      "Des montagnes de sel",
+      "Des cratères remplis de sable",
+      "Des rivières de mercure"
+    ]
+  },
+  {
+    "fact": "285",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"caboulot\" ?",
+    "correct_answer": "Petit café ou bistrot de quartier",
+    "wrong_answers": [
+      "Petit théâtre de rue improvisé, souvent installé sous une bâche ou dans une arrière-cour",
+      "Surnom argotique donné à un pickpocket opérant dans les marchés populaires",
+      "Réduit ou débarras aménagé sous un escalier, utilisé comme espace de rangement informel",
+      "Petite embarcation à fond plat utilisée pour la navigation sur les canaux urbains",
+      "Terme désignant un revendeur ambulant de tabac et de journaux dans les quartiers ouvriers"
+    ]
+  },
+  {
+    "fact": "286",
+    "category": "geographie",
+    "question": "Quelle est la particularité de l'île Luçon ?",
+    "correct_answer": "Luçon a un lac avec une île, puis un lac et île",
+    "wrong_answers": [
+      "Luçon contient un lac salé dont l'île centrale abrite elle-même un second lac d'eau douce",
+      "Luçon possède une péninsule qui, à marée haute, devient une île contenant un lac volcanique",
+      "Luçon héberge un lac souterrain accessible uniquement par une grotte sous-marine avec une île intérieure",
+      "Luçon a un lac dont l'île centrale est divisée en deux par un détroit créant deux lacs distincts",
+      "Luçon renferme un lac avec une île volcanique abritant elle-même des sources hydrothermales formant un lagon"
+    ]
+  },
+  {
+    "fact": "287",
+    "category": "animaux",
+    "question": "Quelle particularité anatomique possède la tortue de Fitzroy ?",
+    "correct_answer": "Elle peut respirer par l'anus",
+    "wrong_answers": [
+      "Elle peut retourner sa carapace comme un parapluie pour réguler sa température",
+      "Elle possède deux cœurs fonctionnant en alternance selon la saison",
+      "Elle peut voir en dehors du spectre visible et détecte les ultraviolets",
+      "Elle digère sa nourriture entièrement dans sa tête, sans estomac",
+      "Elle peut inverser le sens de son sang pour refroidir son cerveau en été"
+    ]
+  },
+  {
+    "fact": "288",
+    "category": "art",
+    "question": "Qu'est-ce que la Cymatics Cup ?",
+    "correct_answer": "Un verre qui transforme la boisson en création",
+    "wrong_answers": [
+      "Un bol de thérapie sonore qui sculpte l'eau en formes géométriques par vibrations",
+      "Un récipient en cristal dont la forme amplifie les fréquences de la voix humaine",
+      "Une coupe d'artiste qui enregistre les sons ambiants et les retranscrit en gravures sur le verre",
+      "Un gobelet dont les parois changent de couleur en réponse aux variations sonores environnantes",
+      "Un verre de dégustation conçu pour révéler les arômes par stimulation acoustique des papilles"
+    ]
+  },
+  {
+    "fact": "289",
+    "category": "phobies",
+    "question": "Qu'est-ce que l'aulophobie ?",
+    "correct_answer": "La peur des flûtes",
+    "wrong_answers": [
+      "La peur des miroirs",
+      "La peur des hautbois",
+      "La peur des lumières stroboscopiques",
+      "La peur des sifflements",
+      "La peur des instruments à vent"
+    ]
+  },
+  {
+    "fact": "290",
+    "category": "geographie",
+    "question": "Quel espace de près de 2 millions de Km2 n'est revendiqué par aucun état ?",
+    "correct_answer": "Le 6e continent",
+    "wrong_answers": [
+      "La Zone Internationale des Fonds Marins",
+      "Le Triangle de Marie-Byrd",
+      "La Haute Mer Polaire Arctique",
+      "La Zone de Convergence Intertropicale",
+      "Le Couloir de Ningaloo"
+    ]
+  },
+  {
+    "fact": "291",
+    "category": "corps-humain",
+    "question": "Comment une femme a-t-elle survécu à un tir en pleine poitrine ?",
+    "correct_answer": "Ses implants mammaires ont dévié la balle",
+    "wrong_answers": [
+      "Sa cage thoracique anormalement dense a fait ricocher la balle",
+      "Son corset en acier baleiné a absorbé l'impact du projectile",
+      "Une côte surnuméraire rare a dévié la trajectoire de la balle",
+      "Son sternum présentait une calcification exceptionnelle qui a stoppé le projectile",
+      "Son soutien-gorge à armatures renforcées a défléchi la balle"
+    ]
+  },
+  {
+    "fact": "292",
+    "category": "definition",
+    "question": "Qu'est-ce que \"ratiociner\" ?",
+    "correct_answer": "Chipoter, raisonner à l'excès sur des détails.",
+    "wrong_answers": [
+      "Calculer mentalement une proportion ou un ratio de façon instinctive.",
+      "Répéter machinalement un raisonnement appris par cœur, sans en comprendre le sens.",
+      "Évaluer la crédibilité d'une source avant de la citer dans un débat.",
+      "Reformuler un argument adverse pour en montrer les contradictions internes.",
+      "Hésiter à prendre une décision par excès de prudence ou de scrupules."
+    ]
+  },
+  {
+    "fact": "293",
+    "category": "corps-humain",
+    "question": "Pourquoi Chandre Oraon est considéré comme la réincarnation de Hanuman ?",
+    "correct_answer": "Il a une queue de singe de 36 cm",
+    "wrong_answers": [
+      "Il a une queue de singe de 52 cm",
+      "Il est né avec six doigts à chaque main",
+      "Son visage est couvert d'une fourrure rousse dense et naturelle",
+      "Il peut s'accrocher à des branches avec ses orteils préhensiles",
+      "Il possède une mâchoire inférieure proéminente identique aux représentations du dieu"
+    ]
+  },
+  {
+    "fact": "294",
+    "category": "lois",
+    "question": "Qu'est-ce qui a conduit l'État d'Oklahoma à verser 175 000 $ à Glynn Simmons ?",
+    "correct_answer": "Pour avoir passé injustement 48 ans en prison",
+    "wrong_answers": [
+      "Pour avoir passé injustement 38 ans en prison",
+      "Pour avoir passé injustement 52 ans en prison",
+      "Pour avoir subi une erreur d'identité lors d'une arrestation ayant entraîné 12 ans d'incarcération",
+      "Pour avoir été condamné à mort par erreur et emprisonné 31 ans avant exonération",
+      "Pour avoir passé injustement 48 ans en détention provisoire sans jamais être jugé"
+    ]
+  },
+  {
+    "fact": "295",
+    "category": "definition",
+    "question": "Qu'est-ce qu'une \"scorie\" ?",
+    "correct_answer": "Résidu inutile ou encombrant, rejeté.",
+    "wrong_answers": [
+      "Couche protectrice formée naturellement à la surface d'un métal exposé à l'air",
+      "Fragment de roche arrachée par érosion et transportée par un cours d'eau",
+      "Substance visqueuse sécrétée par certains organismes marins pour se défendre",
+      "Dépôt minéral cristallisé au fond d'une cavité souterraine",
+      "Particule en suspension dans l'atmosphère issue de la combustion incomplète"
+    ]
+  },
+  {
+    "fact": "296",
+    "category": "kids",
+    "question": "En plus des touristes, qu'arrive-t-il à la Tour Eiffel durant l'été ?",
+    "correct_answer": "Elle est plus haute de 15cm",
+    "wrong_answers": [
+      "Elle se penche légèrement vers le soleil",
+      "Elle perd quelques kilos à cause de la corrosion estivale",
+      "Elle est repeinte en partie chaque année",
+      "Elle vibre à une fréquence audible par les pigeons",
+      "Elle s'enfonce de 2cm dans le sol sous le poids des visiteurs"
+    ]
+  },
+  {
+    "fact": "297",
+    "category": "sante",
+    "question": "De quoi est mort le philosophe Chrysippe de Soles ?",
+    "correct_answer": "Il est mort de rire",
+    "wrong_answers": [
+      "Il est mort d'une indigestion après avoir mangé des figues en excès",
+      "Il est mort d'une apoplexie foudroyante en plein discours public",
+      "Il est mort d'une fièvre contractée lors d'un bain froid prescrit par son médecin",
+      "Il est mort étouffé par de la poussière de parchemin en lisant ses propres manuscrits",
+      "Il est mort d'épuisement après avoir dicté sans interruption pendant trois jours"
+    ]
+  },
+  {
+    "fact": "298",
+    "category": "corps-humain",
+    "question": "Quel exploit un yogi indien a-t-il prétendument accompli ?",
+    "correct_answer": "Il aurait vécu sans manger ni boire des décennies",
+    "wrong_answers": [
+      "Il aurait retenu sa respiration pendant plus de 72 heures consécutives en état de méditation",
+      "Il aurait maintenu une température corporelle constante de 42°C pendant plusieurs semaines sans fièvre ni dommage organique",
+      "Il aurait stoppé volontairement son rythme cardiaque pendant plusieurs minutes sous surveillance hospitalière",
+      "Il aurait dormi moins de 30 minutes par nuit pendant plus de quarante ans sans déficit cognitif mesurable",
+      "Il aurait régénéré complètement un rein fonctionnel après ablation chirurgicale selon des médecins ayurvédiques"
+    ]
+  },
+  {
+    "fact": "299",
+    "category": "animaux",
+    "question": "Comment les lézards \"anoles\" communiquent-ils entre eux ?",
+    "correct_answer": "Ils font des pompes",
+    "wrong_answers": [
+      "Ils gonflent une poche colorée sous le cou",
+      "Ils changent rapidement de couleur sur le dos",
+      "Ils frappent le sol avec leur queue",
+      "Ils ouvrent la bouche en grand en silence",
+      "Ils agitent leurs pattes avant alternativement"
+    ]
+  },
+  {
+    "fact": "300",
+    "category": "sante",
+    "question": "En quoi consiste la condition appelée \"nocturnal lagophthalmos\" ?",
+    "correct_answer": "Dormir les yeux ouverts",
+    "wrong_answers": [
+      "Parler couramment une langue étrangère uniquement pendant le sommeil",
+      "Marcher et accomplir des tâches complexes en étant totalement inconscient",
+      "Ressentir une paralysie complète des paupières empêchant de cligner des yeux",
+      "Grincer des dents avec une force suffisante pour fissurer l'émail dentaire",
+      "Produire involontairement des sons articulés cohérents sans se réveiller"
+    ]
+  },
+  {
+    "fact": "301",
+    "category": "definition",
+    "question": "Qu'est-ce que \"rodomontade\" ?",
+    "correct_answer": "Un discours fanfaron",
+    "wrong_answers": [
+      "Une dispute bruyante entre voisins",
+      "Une danse folklorique du sud de l'Italie",
+      "Un fromage affiné à pâte pressée originaire de Lombardie",
+      "Une technique d'escrime consistant à feinter par le bas",
+      "Une période de turbulences politiques dans une cité médiévale"
+    ]
+  },
+  {
+    "fact": "302",
+    "category": "phobies",
+    "question": "Qu'est-ce que la scoptophobie ?",
+    "correct_answer": "La peur d'être observé",
+    "wrong_answers": [
+      "La peur d'être photographié",
+      "La peur de l'obscurité totale",
+      "La peur des miroirs",
+      "La peur d'observer les autres",
+      "La peur des caméras de surveillance"
+    ]
+  },
+  {
+    "fact": "303",
+    "category": "definition",
+    "question": "Qu'est-ce une chose \"immarcescible\" ?",
+    "correct_answer": "Qui ne peut se flétrir",
+    "wrong_answers": [
+      "Qui ne peut être mesuré",
+      "Qui ne peut être traduit dans une autre langue",
+      "Qui ne peut pas être touché sans se briser",
+      "Qui ne peut pas être reproduit à l'identique",
+      "Qui ne peut pas être oublié"
+    ]
+  },
+  {
+    "fact": "304",
+    "category": "kids",
+    "question": "Quel élément naturel est dix fois plus présent sur Terre que les étoiles dans notre galaxie ?",
+    "correct_answer": "Les arbres",
+    "wrong_answers": [
+      "Les grains de sable",
+      "Les flocons de neige",
+      "Les brins d'herbe",
+      "Les fourmis",
+      "Les gouttes de pluie"
+    ]
+  },
+  {
+    "fact": "305",
+    "category": "phobies",
+    "question": "Qu'est-ce que la carminophobie ?",
+    "correct_answer": "La peur de péter",
+    "wrong_answers": [
+      "La peur de roter en public",
+      "La peur des odeurs corporelles",
+      "La peur de perdre le contrôle de sa vessie en public",
+      "La peur de faire du bruit involontaire avec son corps",
+      "La peur de la transpiration excessive en société"
+    ]
+  },
+  {
+    "fact": "306",
+    "category": "histoire",
+    "question": "En 1993 en Suède, quel objet de plus de 9000 ans a été découvert lors de fouilles archéologiques ?",
+    "correct_answer": "Un chewing-gum",
+    "wrong_answers": [
+      "Une brosse à dents en os de renne",
+      "Un bonnet en laine de mouton sauvage",
+      "Une semelle de chaussure en écorce de pin",
+      "Un filet de pêche en fibre végétale tressée",
+      "Un morceau de pain carbonisé aux graines de sésame"
+    ]
+  },
+  {
+    "fact": "307",
+    "category": "phobies",
+    "question": "Qu'est-ce que la bogyphobie ?",
+    "correct_answer": "La peur du croque-mitaine",
+    "wrong_answers": [
+      "La peur des fantômes et des esprits frappeurs",
+      "La peur des cavités nasales et du mucus",
+      "La peur des marécages et des zones humides",
+      "La peur des miroirs dans l'obscurité",
+      "La peur des personnages masqués et des déguisements"
+    ]
+  },
+  {
+    "fact": "308",
+    "category": "geographie",
+    "question": "Quelle donnée insolite concerne la démographie australienne ?",
+    "correct_answer": "Il y a plus de kangourous que d'humains",
+    "wrong_answers": [
+      "Il y a plus de moutons que d'humains",
+      "Il y a plus de koalas que d'humains",
+      "Il y a plus de crocodiles que d'humains",
+      "Il y a plus de chameaux sauvages que d'humains",
+      "Il y a plus de varans que d'humains"
+    ]
+  },
+  {
+    "fact": "309",
+    "category": "lois",
+    "question": "Quelle particularité de mariage peut être célébrée en France ?",
+    "correct_answer": "On peut épouser un mort",
+    "wrong_answers": [
+      "On peut épouser une personne sans jamais l'avoir rencontrée physiquement, par procuration notariée",
+      "On peut se marier avec soi-même devant un officier d'état civil dans une démarche symbolique reconnue",
+      "On peut épouser une personne sous hypnose si un médecin certifie qu'elle est en état de consentement altéré",
+      "On peut célébrer un mariage entièrement silencieux, sans prononcer aucun vœu, par simple signature des registres",
+      "On peut se marier en prison avec un détenu sans présence physique de l'officier d'état civil, par visioconférence officielle"
+    ]
+  },
+  {
+    "fact": "311",
+    "category": "lois",
+    "question": "Qu'est-il interdit de posséder en un seul exemplaire en Suisse ?",
+    "correct_answer": "Un cochon d'Inde",
+    "wrong_answers": [
+      "Un lapin",
+      "Un perroquet",
+      "Un hamster",
+      "Un chinchilla",
+      "Une gerbille"
+    ]
+  },
+  {
+    "fact": "312",
+    "category": "kids",
+    "question": "Qu'est-ce qui n'existait pas à l'origine dans les maths ?",
+    "correct_answer": "Le zéro",
+    "wrong_answers": [
+      "La soustraction",
+      "Les nombres négatifs",
+      "La virgule",
+      "La multiplication",
+      "Les fractions"
+    ]
+  },
+  {
+    "fact": "313",
+    "category": "sante",
+    "question": "Pour quelle raison un Britannique de 47 ans a reçu une intervention chirurgicale pulmonaire ?",
+    "correct_answer": "Il avait un cône Playmobil dans les poumons",
+    "wrong_answers": [
+      "Il avait une pièce de Lego coincée dans une bronche depuis l'enfance",
+      "Il avait un bouchon de stylo Bic obstruant une bronche depuis 30 ans",
+      "Il avait un morceau de coquille de jouet Kinder Surprise dans un poumon",
+      "Il avait une petite roue de voiture Matchbox logée dans ses voies aériennes",
+      "Il avait un dé de jeu de société incrusté dans la paroi bronchique"
+    ]
+  },
+  {
+    "fact": "314",
+    "category": "lois",
+    "question": "Qu'est il interdit de dire dans l'Etat de l'Arkansas ?",
+    "correct_answer": "Mal prononcer le nom \"Arkansas\"",
+    "wrong_answers": [
+      "Jurer en public dans un rayon de 50 mètres d'une église",
+      "Prononcer le mot 'government' avec un accent étranger",
+      "Insulter un élu local par son prénom",
+      "Crier le nom d'un concurrent dans une publicité radio",
+      "Mal prononcer le nom de la capitale, 'Little Rock'"
+    ]
+  },
+  {
+    "fact": "316",
+    "category": "kids",
+    "question": "Pour quelle raison Andi Norton a-t-il eu des problèmes respiratoires pendant 26 ans ?",
+    "correct_answer": "Il avait un Légo coincé dans le nez",
+    "wrong_answers": [
+      "Il avait un grain de raisin séché coincé dans le nez",
+      "Il avait avalé une pièce de monnaie qui s'était logée dans sa gorge",
+      "Il avait un morceau de crayon coincé dans l'oreille",
+      "Il avait un haricot sec coincé dans le nez",
+      "Il avait un petit caillou coincé dans une narine"
+    ]
+  },
+  {
+    "fact": "317",
+    "category": "definition",
+    "question": "Qu'est-ce que l'\"épectase\" ?",
+    "correct_answer": "Mort survenue pendant un grand moment de plaisir.",
+    "wrong_answers": [
+      "Dilatation involontaire de la pupille provoquée par une émotion intense",
+      "Contraction musculaire prolongée survenant à l'approche de la mort",
+      "État de conscience altérée provoqué par une douleur extrême",
+      "Sentiment d'euphorie soudaine ressenti lors d'une chute libre",
+      "Spasme du diaphragme déclenché par un rire incontrôlable"
+    ]
+  },
+  {
+    "fact": "318",
+    "category": "kids",
+    "question": "Quelle est la particularité du Renne Rudolph ?",
+    "correct_answer": "Son nez lumineux peut guider les autres rennes",
+    "wrong_answers": [
+      "Ses bois brillent dans le noir pour éclairer le chemin",
+      "Il peut voler deux fois plus vite que les autres rennes",
+      "Il est le seul renne capable de parler au Père Noël",
+      "Sa fourrure change de couleur selon la météo",
+      "Il est le plus grand de tous les rennes du Père Noël"
+    ]
+  },
+  {
+    "fact": "319",
+    "category": "sante",
+    "question": "Quel phénomène a vécu Luz Milagros Veron ?",
+    "correct_answer": "Luz Milagros, déclarée morte, vivait 12h plus tard",
+    "wrong_answers": [
+      "Luz Milagros, déclarée morte, vivait 24h plus tard",
+      "Luz Milagros, prématurée de 7 mois, survécut sans soins intensifs pendant 3 jours",
+      "Luz Milagros, déclarée en état végétatif, se réveilla spontanément après 48h",
+      "Luz Milagros, née sans battements cardiaques, fut réanimée 2h après sa naissance",
+      "Luz Milagros, diagnostiquée en mort cérébrale, récupéra toutes ses fonctions en 6h"
+    ]
+  },
+  {
+    "fact": "320",
+    "category": "records",
+    "question": "Quel exploit a fait d'Archie Norbury un recordman à 4 ans ?",
+    "correct_answer": "Il devient le plus jeune DJ de club",
+    "wrong_answers": [
+      "Il devient le plus jeune guitariste à jouer dans un festival",
+      "Il devient le plus jeune animateur de radio en direct",
+      "Il devient le plus jeune batteur à se produire en concert payant",
+      "Il devient le plus jeune producteur à sortir un album certifié",
+      "Il devient le plus jeune pianiste à donner un récital solo d'une heure"
+    ]
+  },
+  {
+    "fact": "321",
+    "category": "histoire",
+    "question": "Quelle est la plus ancienne entreprise française encore en activité ?",
+    "correct_answer": "La Monnaie de Paris",
+    "wrong_answers": [
+      "Les Cristalleries de Saint-Louis",
+      "Le Domaine de la Romanée-Conti",
+      "La Manufacture de Sèvres",
+      "La Compagnie des Hospices de Beaune",
+      "Les Papeteries de Thiers"
+    ]
+  },
+  {
+    "fact": "322",
+    "category": "sport",
+    "question": "Pourquoi Fauja Singh a-t-il fait sensation lors du Marathon de Toronto en 2011 ?",
+    "correct_answer": "Il a terminé le marathon centenaire",
+    "wrong_answers": [
+      "Il a terminé le marathon nonagénaire (90 ans) en battant le record mondial de sa catégorie",
+      "Il a couru le marathon pieds nus sur toute la distance",
+      "Il a terminé le marathon avec un temps inférieur à 5 heures, surpassant des coureurs deux fois plus jeunes",
+      "Il a participé à son 100ème marathon consécutif sans blessure",
+      "Il a couru le marathon en portant son turban et ses vêtements traditionnels complets, sans tenue sportive"
+    ]
+  },
+  {
+    "fact": "323",
+    "category": "animaux",
+    "question": "Qu'est-ce qui rend l'anatomie du canard \"colvert\" unique ?",
+    "correct_answer": "Il a un pénis en spirale",
+    "wrong_answers": [
+      "Il a un cloaque double permettant deux voies de reproduction distinctes",
+      "Son cœur bat à l'envers par rapport aux autres anatidés",
+      "Il possède deux uvules dans le gosier pour filtrer l'eau en plongée",
+      "Ses os sont creux mais remplis d'huile plutôt que d'air",
+      "Il a un gésier capable de broyer de l'acier inoxydable"
+    ]
+  },
+  {
+    "fact": "324",
+    "category": "records",
+    "question": "Quel événement, pourtant exceptionnel, a-t-il été vécu 7 fois par Roy Sullivan ?",
+    "correct_answer": "Il a été frappé par la foudre",
+    "wrong_answers": [
+      "Il a survécu à un accident d'avion",
+      "Il a été mordu par un serpent venimeux",
+      "Il a été renversé par une voiture",
+      "Il a survécu à une noyade",
+      "Il a été frappé par la foudre deux fois le même jour"
+    ]
+  },
+  {
+    "fact": "325",
+    "category": "animaux",
+    "question": "Qu'est-ce que le \"pillaging\" ?",
+    "correct_answer": "Le vol de miel entre abeilles",
+    "wrong_answers": [
+      "La pratique d'araignées qui s'emparent du cocon de soie d'autres araignées pour construire leur propre toile",
+      "Le comportement de fourmis qui envahissent le territoire d'une colonie voisine pour capturer ses larves",
+      "Le phénomène par lequel des mouettes volent de la nourriture directement dans le bec d'autres oiseaux en vol",
+      "La stratégie de certains corbeaux qui pillent les caches alimentaires d'autres corbeaux après les avoir observés",
+      "Le vol de matériaux de nidification entre oiseaux voisins, notamment chez les moineaux domestiques"
+    ]
+  },
+  {
+    "fact": "326",
+    "category": "sciences",
+    "question": "Qu'est-ce que la \"Centennial bulb\" ?",
+    "correct_answer": "Une ampoule qui brille depuis plus de 120 ans",
+    "wrong_answers": [
+      "Une ampoule qui change de couleur automatiquement selon la température ambiante",
+      "Une ampoule développée en 1923 par General Electric pour résister aux coupures de courant répétées",
+      "Une ampoule dont le filament est fabriqué à partir de tungstène extrait d'une seule mine au Colorado",
+      "Une ampoule qui brille depuis plus de 80 ans dans un musée de Londres",
+      "Une ampoule conçue pour durer exactement 100 ans avant de s'éteindre automatiquement"
+    ]
+  },
+  {
+    "fact": "327",
+    "category": "technologie",
+    "question": "Pour quelle raison le Post-it a-t-il été inventé à la base ?",
+    "correct_answer": "Pour créer une super colle",
+    "wrong_answers": [
+      "Pour fabriquer un adhésif chirurgical qui ne blesse pas la peau",
+      "Pour coller les composants électroniques sans souder",
+      "Pour remplacer la colle des enveloppes qui rendait les gens malades",
+      "Pour fixer les isolants thermiques dans les fusées NASA",
+      "Pour créer un ruban adhésif repositionnable pour les partitions de musique"
+    ]
+  },
+  {
+    "fact": "328",
+    "category": "art",
+    "question": "Quel créateur a dessiné le logo de Chupa Chups ?",
+    "correct_answer": "Salvador Dali",
+    "wrong_answers": [
+      "Pablo Picasso",
+      "Joan Miró",
+      "René Magritte",
+      "Andy Warhol",
+      "Fernand Léger"
+    ]
+  },
+  {
+    "fact": "329",
+    "category": "geographie",
+    "question": "Quelle est la caractéristique distinctive de la prison de Barbadillo ?",
+    "correct_answer": "C'est une prison pour ex-présidents",
+    "wrong_answers": [
+      "C'est une prison entièrement souterraine",
+      "C'est une prison réservée aux anciens chefs militaires",
+      "C'est une prison sans barreaux ni cellules fermées",
+      "C'est une prison construite à l'intérieur d'un ancien palais présidentiel",
+      "C'est une prison où les détenus élisent eux-mêmes leur directeur"
+    ]
+  },
+  {
+    "fact": "330",
+    "category": "animaux",
+    "question": "Quelle capacité possèdent les corbeaux face aux humains ?",
+    "correct_answer": "Ils se souviennent d'un visage humain menaçant",
+    "wrong_answers": [
+      "Ils imitent la voix humaine pour attirer leurs proies",
+      "Ils reconnaissent leur propre reflet dans un miroir",
+      "Ils ressentent et expriment de l'empathie envers les humains blessés",
+      "Ils anticipent les gestes humains agressifs avant qu'ils se produisent",
+      "Ils transmettent des informations sur les sources de nourriture humaine à leur groupe"
+    ]
+  },
+  {
+    "fact": "331",
+    "category": "lois",
+    "question": "Depuis 1992, à Singapour, quel produit est interdit pour maintenir la propreté publique ?",
+    "correct_answer": "Le chewing-gum",
+    "wrong_answers": [
+      "Les confettis",
+      "Les cigarettes mentholées",
+      "Les bonbons à sucer",
+      "Les autocollants décoratifs",
+      "Le tabac à chiquer"
+    ]
+  },
+  {
+    "fact": "332",
+    "category": "histoire",
+    "question": "Pour quelle raison les Irlandais étaient-ils inhumés sous de lourdes pierres au Moyen Âge ?",
+    "correct_answer": "Pour empêcher les morts de revenir",
+    "wrong_answers": [
+      "Pour protéger les corps des pillages de tombes, très fréquents à l'époque",
+      "Pour éviter que les animaux sauvages ne déterrent les cadavres",
+      "Pour marquer visuellement le rang social du défunt dans la communauté",
+      "Pour stabiliser le sol des cimetières construits en terrain marécageux",
+      "Pour empêcher les corps de remonter à la surface lors des crues saisonnières"
+    ]
+  },
+  {
+    "fact": "333",
+    "category": "kids",
+    "question": "Quel stratagème une école a-t-elle utilisé pour éviter une fermeture de classe ?",
+    "correct_answer": "Elle a inscrit… 15 moutons symboliquement",
+    "wrong_answers": [
+      "Elle a inscrit… 12 chèvres symboliquement",
+      "Elle a inscrit… 8 ânes symboliquement",
+      "Elle a déposé… 20 noms de bébés à naître",
+      "Elle a recruté… 6 retraités du village comme élèves fictifs",
+      "Elle a enregistré… 3 chiens comme auxiliaires de vie scolaire"
+    ]
+  },
+  {
+    "fact": "334",
+    "category": "corps-humain",
+    "question": "Quelle était la particularité physique de Didier Montalvo ?",
+    "correct_answer": "Il avait une tache géante, comme une carapace",
+    "wrong_answers": [
+      "Il avait une peau entièrement recouverte de poils épais, comme une fourrure",
+      "Il avait un excès de peau formant des replis sur tout le corps, comme une carapace",
+      "Il avait une tache géante, comme une toison",
+      "Il avait des plaques osseuses saillantes sous la peau dans le dos",
+      "Il avait une pigmentation totale de la peau, uniformément noire de la tête aux pieds"
+    ]
+  },
+  {
+    "fact": "335",
+    "category": "animaux",
+    "question": "Dans quelle cas un rat peut-il émettre un son ultrasonique ?",
+    "correct_answer": "Quand on le chatouille",
+    "wrong_answers": [
+      "Quand il repère un prédateur à proximité",
+      "Quand il est en train de s'accoupler",
+      "Quand il explore un territoire inconnu",
+      "Quand il ressent une douleur aiguë",
+      "Quand il communique avec ses petits nouveau-nés"
+    ]
+  },
+  {
+    "fact": "336",
+    "category": "lois",
+    "question": "Quelle loi est imposée à tous les Milanais, hors funérailles ?",
+    "correct_answer": "L'obligation de sourire",
+    "wrong_answers": [
+      "L'interdiction de siffler dans la rue",
+      "L'obligation de saluer les forces de l'ordre d'un geste de la main",
+      "L'interdiction de porter du noir en dehors du deuil",
+      "L'obligation de céder son siège aux personnes âgées dans les transports publics",
+      "L'interdiction de manger debout sur la voie publique"
+    ]
+  },
+  {
+    "fact": "337",
+    "category": "histoire",
+    "question": "Pourquoi Tsutomu Yamaguchi est-il considéré comme l'un des plus chanceux japonais ?",
+    "correct_answer": "Il a survécu aux deux bombes atomiques",
+    "wrong_answers": [
+      "Il a survécu à trois crashs d'avion distincts pendant la Seconde Guerre mondiale",
+      "Il a été le seul survivant du naufrage d'un navire militaire japonais en mer de Chine",
+      "Il a survécu à deux séismes majeurs de magnitude supérieure à 7 en moins d'un an",
+      "Il a échappé à deux exécutions ordonnées par l'armée impériale pour désertion",
+      "Il a survécu à l'effondrement de deux usines d'armement bombardées par les Alliés"
+    ]
+  },
+  {
+    "fact": "338",
+    "category": "definition",
+    "question": "Qu'est-ce qu'un \"lacis\" ?",
+    "correct_answer": "Réseau de fils ou de chemins",
+    "wrong_answers": [
+      "Technique de broderie où les fils sont noués à intervalles réguliers pour former un motif géométrique",
+      "Instrument à cordes médiéval, ancêtre du luth, utilisé dans les cours royales du XIIe siècle",
+      "Liquide visqueux sécrété par certains insectes pour piéger leurs proies",
+      "Terme de botanique désignant les racines aériennes des plantes grimpantes tropicales",
+      "Procédé de teinture artisanale consistant à immerger le tissu dans plusieurs bains successifs"
+    ]
+  },
+  {
+    "fact": "339",
+    "category": "phobies",
+    "question": "Qu'est-ce que la coulrophobie ?",
+    "correct_answer": "La peur des clowns",
+    "wrong_answers": [
+      "La peur des couleurs vives et des contrastes visuels intenses",
+      "La peur des miroirs déformants",
+      "La peur des marionnettes et des pantomimes",
+      "La peur du maquillage et des masques de théâtre",
+      "La peur des personnages de carnaval et des déguisements"
+    ]
+  },
+  {
+    "fact": "340",
+    "category": "sciences",
+    "question": "Quelle caractéristique météorologique distingue Jupiter ?",
+    "correct_answer": "Il pleut des diamants",
+    "wrong_answers": [
+      "Il neige des flocons de soufre solide",
+      "Il pleut des gouttes de mercure liquide",
+      "Il grêle des cristaux de glace d'ammoniac compressé",
+      "Il pleut des diamants liquides",
+      "Il tombe une pluie d'acide sulfurique concentré"
+    ]
+  },
+  {
+    "fact": "341",
+    "category": "histoire",
+    "question": "Comment Amar Bharati démontre-t-il sa dévotion au dieu Shiva ?",
+    "correct_answer": "Amar Bharati lève son bras depuis 1973 pour Shiva",
+    "wrong_answers": [
+      "Amar Bharati marche pieds nus sur des charbons ardents chaque vendredi depuis 1971",
+      "Amar Bharati garde les yeux ouverts sans jamais cligner depuis 1969 en hommage à Shiva",
+      "Amar Bharati se tient debout sur une seule jambe sans interruption depuis 1975 pour Shiva",
+      "Amar Bharati porte une pierre de 40 kg autour du cou depuis 1978 pour Shiva",
+      "Amar Bharati lève son bras depuis 1968 pour Shiva"
+    ]
+  },
+  {
+    "fact": "342",
+    "category": "lois",
+    "question": "Qu'est-il interdit de donner à un élan en Alaska ?",
+    "correct_answer": "Interdit de leur donner de l'alcool",
+    "wrong_answers": [
+      "Interdit de leur donner du sel de table",
+      "Interdit de leur donner de la nourriture en hiver",
+      "Interdit de leur donner des médicaments vétérinaires sans prescription",
+      "Interdit de leur donner du lait de vache",
+      "Interdit de leur donner du pain ou des céréales"
+    ]
+  },
+  {
+    "fact": "343",
+    "category": "records",
+    "question": "Quelle capacité de mémorisation exceptionnelle Ravjeer Meena détient-il ?",
+    "correct_answer": "Il a mémorisé 70 000 décimales du nombre Pi",
+    "wrong_answers": [
+      "Il a mémorisé 52 000 décimales du nombre Pi",
+      "Il a mémorisé 70 000 décimales du nombre Phi (le nombre d'or)",
+      "Il a mémorisé 100 000 chiffres de la suite de Fibonacci",
+      "Il a mémorisé 68 000 décimales du nombre Pi",
+      "Il a mémorisé 70 000 décimales du nombre e (constante d'Euler)"
+    ]
+  },
+  {
+    "fact": "344",
+    "category": "animaux",
+    "question": "Quelle singularité biologique unique possède l'hippocampe ?",
+    "correct_answer": "Les mâles portent les bébés",
+    "wrong_answers": [
+      "Les femelles peuvent changer de sexe en l'absence de mâle",
+      "Il possède deux cœurs distincts pour alimenter sa nageoire dorsale",
+      "Son squelette est entièrement composé de cartilage calcifié",
+      "Il peut rester immobile pendant plusieurs jours en mimant une algue",
+      "Les deux parents s'occupent des œufs en alternance dans le même nid"
+    ]
+  },
+  {
+    "fact": "345",
+    "category": "technologie",
+    "question": "Quelle est la fonction principale de \"Pawsense\" ?",
+    "correct_answer": "Ce logiciel détecte les frappes de chat",
+    "wrong_answers": [
+      "Ce logiciel identifie les empreintes de pattes sur un écran tactile",
+      "Ce logiciel surveille les mouvements d'un animal de compagnie via la webcam",
+      "Ce logiciel analyse le comportement de frappe pour détecter un utilisateur stressé",
+      "Ce logiciel bloque l'accès à certains sites web en fonction du profil de l'utilisateur",
+      "Ce logiciel reconnaît la voix d'un animal pour déclencher une alarme"
+    ]
+  },
+  {
+    "fact": "346",
+    "category": "lois",
+    "question": "Qu'est-il interdit de faire sous l'eau dans l'Oregon ?",
+    "correct_answer": "De siffler",
+    "wrong_answers": [
+      "De chanter",
+      "De crier",
+      "De souffler des bulles intentionnellement",
+      "De parler",
+      "De rire"
+    ]
+  },
+  {
+    "fact": "347",
+    "category": "gastronomie",
+    "question": "Quelle est la particularité du \"rôti sans pareil\" ?",
+    "correct_answer": "17 oiseaux imbriqués et rôtis ensemble",
+    "wrong_answers": [
+      "13 viandes différentes superposées en couches concentriques",
+      "24 oiseaux embrochés sur une même broche en éventail",
+      "17 pièces de gibier marinées puis cuites simultanément dans un même bouillon",
+      "9 oiseaux imbriqués et rôtis ensemble",
+      "17 oiseaux désossés, farcis de truffes et cuits dans une vessie de porc"
+    ]
+  },
+  {
+    "fact": "348",
+    "category": "lois",
+    "question": "Pour quelle raison pouvez-vous être puni en Russie ?",
+    "correct_answer": "Avoir une voiture sale",
+    "wrong_answers": [
+      "Laisser son moteur tourner plus de 5 minutes à l'arrêt",
+      "Klaxonner dans un tunnel",
+      "Avoir les vitres teintées sans autocollant officiel",
+      "Stationner face à la circulation",
+      "Circuler avec un rétroviseur manquant"
+    ]
+  },
+  {
+    "fact": "349",
+    "category": "art",
+    "question": "Comment le roman \" Les aventures d'Arthur Gordon Pym\" s'est il fait remarquer ?",
+    "correct_answer": "Il a prédit la mort d'un homme 46 ans avant",
+    "wrong_answers": [
+      "Il a décrit avec précision un naufrage survenu 23 ans plus tard, au même endroit géographique",
+      "Il a inspiré un vrai explorateur à entreprendre l'expédition qu'il décrit, qui a effectivement découvert le territoire prédit",
+      "Il a décrit une tempête magnétique identique à celle qui a paralysé les communications transatlantiques 30 ans après sa publication",
+      "Son manuscrit original a été retrouvé dans l'épave d'un navire naufragé portant le même nom que celui du roman",
+      "Il a prédit la disparition d'un navire en Antarctique, dont l'épave a été localisée 60 ans plus tard à l'endroit exact décrit"
+    ]
+  },
+  {
+    "fact": "350",
+    "category": "kids",
+    "question": "En août 2020, quel phénomène météorologique a eu lieu à Osten en Suisse ?",
+    "correct_answer": "Il a neigé du chocolat",
+    "wrong_answers": [
+      "Il a plu du lait chaud",
+      "Une tempête de sucre glace a recouvert la ville",
+      "Des flocons de vanille sont tombés du ciel",
+      "Il a grêlé des éclats de noisettes",
+      "Une brume de caramel s'est déposée sur les toits"
+    ]
+  }
+]

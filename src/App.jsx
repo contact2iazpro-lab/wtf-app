@@ -388,6 +388,7 @@ export default function App() {
           totalFacts={totalRounds}
           duelContext={duelContext}
           gameMode={gameMode}
+          sessionScore={gameMode === 'duel' ? 0 : sessionScore}
         />
       )}
       {screen === SCREENS.RESULTS && (

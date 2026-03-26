@@ -222,3 +222,24 @@
 .score-pop {
   animation: score-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+/* Stamp wow animation */
+@keyframes stamp-wow {
+  0%   { transform: rotate(-15deg) scale(0); opacity: 0; }
+  50%  { transform: rotate(-15deg) scale(1.15); opacity: 1; }
+  100% { transform: rotate(-15deg) scale(1); opacity: 1; }
+}
+
+.stamp-wow {
+  animation: stamp-wow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Points slide up animation */
+@keyframes points-slide-up {
+  0%   { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-80px); opacity: 0; }
+}
+
+.points-slide {
+  animation: points-slide-up 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}

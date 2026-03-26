@@ -15,6 +15,7 @@ export default function RevelationScreen({
   totalFacts,
   duelContext,
   gameMode,
+  sessionScore,
 }) {
   const [flipped, setFlipped] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -123,6 +124,27 @@ export default function RevelationScreen({
             style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
             onError={(e) => { e.target.style.display = 'none' }}
           />
+          {/* Stamp overlay — solo mode only */}
+          {!isDuel && flipped && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="stamp-wow"
+                style={{
+                  fontSize: '72px',
+                  fontWeight: 900,
+                  color: isCorrect ? '#4CAF50' : '#F44336',
+                  textShadow: `0 4px 12px ${isCorrect ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)'}`,
+                  transform: 'rotate(-15deg)',
+                  border: `4px solid ${isCorrect ? '#4CAF50' : '#F44336'}`,
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  backgroundColor: isCorrect ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
+                  backdropFilter: 'blur(4px)',
+                }}>
+                {isCorrect ? 'FOU' : 'FAUX'}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -133,32 +155,68 @@ export default function RevelationScreen({
       </div>
 
       {/* Score indicator */}
-      <div className="mx-5 mb-6 flex items-center gap-4">
+      <div className="mx-5 mb-6 grid grid-cols-2 gap-3">
         {/* Correct/Incorrect badge */}
         <div
-          className={`flex-1 py-4 rounded-2xl text-center border-2 font-black text-lg${!isDuel ? ' score-pop' : ''}`}
+          className={`py-4 rounded-2xl text-center border-2 font-black text-base${!isDuel ? ' score-pop' : ''}`}
           style={{
             background: isCorrect ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
             borderColor: isCorrect ? '#4CAF50' : '#F44336',
             color: isCorrect ? '#4CAF50' : '#F44336',
             animationDelay: !isDuel ? '0.5s' : '0s',
             opacity: !isDuel ? 0 : 1,
+            gridColumn: isDuel ? 'span 2' : 'span 1',
           }}>
           {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
         </div>
 
-        {/* Points earned */}
-        <div
-          className={`flex-1 py-4 rounded-2xl text-center border-2 font-black text-lg${!isDuel ? ' score-pop' : ''}`}
-          style={{
-            background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
-            borderColor: cat?.color + '60',
-            color: cat?.color,
-            animationDelay: !isDuel ? '0.6s' : '0s',
-            opacity: !isDuel ? 0 : 1,
-          }}>
-          +{pointsEarned} pts
-        </div>
+        {/* Points earned with slide animation — solo only */}
+        {!isDuel && (
+          <div className="relative" style={{ height: '64px' }}>
+            {/* Floating points that slide up and fade */}
+            <div
+              className="points-slide absolute inset-0 py-4 rounded-2xl text-center border-2 font-black text-base"
+              style={{
+                background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
+                borderColor: cat?.color + '60',
+                color: cat?.color,
+                animationDelay: '0.6s',
+              }}>
+              +{pointsEarned} pts
+            </div>
+          </div>
+        )}
+
+        {/* Session total — solo only */}
+        {!isDuel && (
+          <div
+            className="py-4 rounded-2xl text-center border-2 font-black text-base score-pop"
+            style={{
+              background: 'rgba(255, 165, 0, 0.1)',
+              borderColor: '#FFA500',
+              color: '#FFA500',
+              animationDelay: '0.8s',
+              opacity: 0,
+            }}>
+            ⭐ {sessionScore + pointsEarned}
+          </div>
+        )}
+
+        {/* Points earned — duel mode */}
+        {isDuel && (
+          <div
+            className="py-4 rounded-2xl text-center border-2 font-black text-base score-pop"
+            style={{
+              background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
+              borderColor: cat?.color + '60',
+              color: cat?.color,
+              animationDelay: '0.6s',
+              opacity: 0,
+              gridColumn: 'span 2',
+            }}>
+            +{pointsEarned} pts
+          </div>
+        )}
       </div>
 
       {/* Answer comparison */}

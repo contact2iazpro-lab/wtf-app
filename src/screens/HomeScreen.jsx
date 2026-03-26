@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { audio } from '../utils/audio'
 
 const CREATURE_SRCS = [
@@ -6,18 +6,11 @@ const CREATURE_SRCS = [
   '/Montgolfiere.png', '/Nuage.png', '/Princesses.png', '/Terre.png', '/zigomar.png',
 ]
 
-function randomCreatures() {
-  return CREATURE_SRCS.map((src) => ({
-    src,
-    top:  `${Math.random() * 80}%`,
-    left: `${Math.random() * 78}%`,
-    size: 44 + Math.floor(Math.random() * 30),
-    anim: `creature-float-${1 + Math.floor(Math.random() * 6)}`,
-    dur:  `${3.2 + Math.random() * 3.8}s`,
-    delay: `-${Math.random() * 4}s`,
-    opacity: 0.6 + Math.random() * 0.3,
-  }))
-}
+// Static cosmetic data per creature (size, opacity) — computed once
+const CREATURE_META = CREATURE_SRCS.map(() => ({
+  size: 50 + Math.floor(Math.random() * 36),
+  opacity: 0.65 + Math.random() * 0.25,
+}))
 
 const GAME_MODES = [
   { id: 'solo-flash', label: 'Mode Solo Flash', emoji: '⚡', desc: '60s par F*ct', active: true },
@@ -122,7 +115,39 @@ function SettingsModal({ onClose }) {
 
 export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarathon }) {
   const [showSettings, setShowSettings] = useState(false)
-  const [creatures] = useState(randomCreatures)
+  const creatureRefs = useRef([])
+
+  // RAF loop: move each creature across the screen, wrap around edges
+  useEffect(() => {
+    const W = window.innerWidth
+    const H = window.innerHeight
+    const speed = () => (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 1.2)
+    const state = CREATURE_SRCS.map((_, i) => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: speed(),
+      vy: speed(),
+      size: CREATURE_META[i].size,
+    }))
+
+    let rafId
+    const tick = () => {
+      state.forEach((c, i) => {
+        c.x += c.vx
+        c.y += c.vy
+        // Wrap around edges
+        if (c.x > W + c.size)  c.x = -c.size
+        if (c.x < -c.size)     c.x = W + c.size
+        if (c.y > H + c.size)  c.y = -c.size
+        if (c.y < -c.size)     c.y = H + c.size
+        const el = creatureRefs.current[i]
+        if (el) { el.style.left = c.x + 'px'; el.style.top = c.y + 'px' }
+      })
+      rafId = requestAnimationFrame(tick)
+    }
+    rafId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafId)
+  }, [])
 
   const handlePlay = () => { audio.startMusic(); audio.play('click'); onPlay() }
   const handleDuel = () => { audio.startMusic(); audio.play('click'); onDuel() }
@@ -131,22 +156,24 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
   return (
     <div className="flex flex-col h-full w-full overflow-y-auto scrollbar-hide rainbow-bg">
 
-      {/* Floating creatures — fixed to viewport */}
+      {/* Traversing creatures — fixed to viewport, moved by RAF */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-        {creatures.map((c, i) => (
+        {CREATURE_SRCS.map((src, i) => (
           <div
             key={i}
-            className={c.anim}
+            ref={el => creatureRefs.current[i] = el}
             style={{
               position: 'absolute',
-              top: c.top,
-              left: c.left,
-              opacity: c.opacity,
+              opacity: CREATURE_META[i].opacity,
               userSelect: 'none',
-              '--dur': c.dur,
-              '--delay': c.delay,
             }}>
-            <img src={c.src} alt="" width={c.size} height={c.size} style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
+            <img
+              src={src}
+              alt=""
+              width={CREATURE_META[i].size}
+              height={CREATURE_META[i].size}
+              style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }}
+            />
           </div>
         ))}
       </div>

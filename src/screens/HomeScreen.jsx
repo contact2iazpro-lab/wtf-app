@@ -281,7 +281,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
         <button
           onClick={() => {
             audio.play('click')
-            const text = '🤯 What The F*ct! Vrai ou fou ?\n\nTrouve les réponses les plus WTF du web!\n\nhttps://wtf-game.com'
+            const text = '🤯 What The F*ct! Vrai ou fou ?\n\nTrouve les réponses les plus WTF du web!\n\nhttps://wtf-app-livid.vercel.app/'
             if (navigator.share) {
               navigator.share({ text }).catch(() => {})
             } else {

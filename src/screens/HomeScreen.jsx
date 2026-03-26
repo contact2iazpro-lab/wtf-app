@@ -151,8 +151,8 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
         <StarLogo />
 
         {/* Subtitle */}
-        <p className="text-white/50 text-xs font-bold tracking-[0.35em] uppercase -mt-2 mb-5">
-          What The Fact
+        <p className="text-white/60 text-sm font-black tracking-[0.15em] uppercase -mt-2 mb-5">
+          Vrai ou fou ?
         </p>
 
         {/* Stats row */}

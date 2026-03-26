@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { audio } from '../utils/audio'
 
 const CREATURES = [
-  { emoji: '🦄', style: { top: '8%',  left: '6%',  fontSize: 44 }, anim: 'creature-float-1' },
-  { emoji: '🐸', style: { top: '6%',  right: '8%', fontSize: 38 }, anim: 'creature-float-2' },
-  { emoji: '🦊', style: { top: '30%', left: '2%',  fontSize: 34 }, anim: 'creature-float-3' },
-  { emoji: '🦋', style: { top: '28%', right: '3%', fontSize: 36 }, anim: 'creature-float-2' },
-  { emoji: '🐙', style: { top: '55%', left: '4%',  fontSize: 32 }, anim: 'creature-float-1' },
-  { emoji: '⭐', style: { top: '52%', right: '5%', fontSize: 36 }, anim: 'creature-float-3' },
+  { src: '/Dauphin.png',      style: { top: '4%',  left: '3%'  }, size: 58, anim: 'creature-float-1' },
+  { src: '/Etoile.png',       style: { top: '3%',  right: '5%' }, size: 48, anim: 'creature-float-2' },
+  { src: '/Garcon.png',       style: { top: '20%', left: '1%'  }, size: 54, anim: 'creature-float-3' },
+  { src: '/grenouille.png',   style: { top: '18%', right: '3%' }, size: 52, anim: 'creature-float-1' },
+  { src: '/Montgolfiere.png', style: { top: '38%', left: '2%'  }, size: 56, anim: 'creature-float-2' },
+  { src: '/Nuage.png',        style: { top: '36%', right: '4%' }, size: 62, anim: 'creature-float-3' },
+  { src: '/Princesses.png',   style: { top: '56%', left: '3%'  }, size: 54, anim: 'creature-float-1' },
+  { src: '/Terre.png',        style: { top: '54%', right: '3%' }, size: 50, anim: 'creature-float-2' },
+  { src: '/zigomar.png',      style: { top: '72%', left: '2%'  }, size: 56, anim: 'creature-float-3' },
 ]
 
 const GAME_MODES = [
@@ -127,8 +130,8 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
           <div
             key={i}
             className={c.anim}
-            style={{ position: 'absolute', fontSize: c.style.fontSize, opacity: 0.55, userSelect: 'none', ...c.style }}>
-            {c.emoji}
+            style={{ position: 'absolute', opacity: 0.75, userSelect: 'none', ...c.style }}>
+            <img src={c.src} alt="" width={c.size} height={c.size} style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
           </div>
         ))}
       </div>

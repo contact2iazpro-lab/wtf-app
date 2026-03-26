@@ -62,6 +62,7 @@ export default function App() {
   const [duelPlayers, setDuelPlayers] = useState([]) // [{name, score}]
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
+  const [showHowToPlay, setShowHowToPlay] = useState(() => localStorage.getItem('wtf_hide_howtoplay') !== 'true')
 
   const numPlayers = duelPlayers.length || 1
 
@@ -312,10 +313,47 @@ export default function App() {
         />
       )}
       {screen === SCREENS.CATEGORY && (
-        <CategoryScreen
-          onSelectCategory={handleSelectCategory}
-          onBack={() => setScreen(SCREENS.HOME)}
-        />
+        <>
+          {showHowToPlay && gameMode === 'solo' && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
+              <div className="w-full rounded-3xl p-6 border" style={{ background: '#fff', borderColor: 'rgba(0,0,0,0.1)', maxWidth: '420px' }}>
+                <div className="text-4xl text-center mb-4">📚</div>
+                <h2 className="text-xl font-black text-center mb-3" style={{ color: '#1a1a2e' }}>Comment jouer ?</h2>
+                <div className="text-sm mb-5" style={{ color: '#333', lineHeight: '1.6' }}>
+                  <p className="mb-3"><strong>🎯 Le jeu :</strong> Chaque fact vous pose une question sur un sujet aléatoire.</p>
+                  <p className="mb-3"><strong>🧠 Mode ouvert :</strong> Vous trouvez la réponse en 60 secondes. Le questionneur valide. 5, 3 ou 2 pts selon les indices utilisés.</p>
+                  <p className="mb-3"><strong>🎯 Choix multiple :</strong> 4 réponses en 20 secondes. 1 pt si correct.</p>
+                  <p><strong>📊 Score :</strong> Accumulez des points et battez vos records !</p>
+                </div>
+                <div className="flex items-center gap-2 mb-4 p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.03)' }}>
+                  <input
+                    type="checkbox"
+                    id="hideHowToPlay"
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        localStorage.setItem('wtf_hide_howtoplay', 'true')
+                      }
+                    }}
+                    className="w-4 h-4 cursor-pointer"
+                  />
+                  <label htmlFor="hideHowToPlay" className="text-xs cursor-pointer" style={{ color: '#666' }}>
+                    Ne plus afficher ce message
+                  </label>
+                </div>
+                <button
+                  onClick={() => setShowHowToPlay(false)}
+                  className="w-full py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
+                  style={{ background: '#FF6B1A', color: 'white' }}>
+                  C'est parti ! 🚀
+                </button>
+              </div>
+            </div>
+          )}
+          <CategoryScreen
+            onSelectCategory={handleSelectCategory}
+            onBack={() => setScreen(SCREENS.HOME)}
+          />
+        </>
       )}
       {screen === SCREENS.QUESTION && currentFact && (
         <QuestionScreen

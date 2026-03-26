@@ -30,7 +30,7 @@ export default function DuelSetupScreen({ onStart, onBack }) {
       </button>
 
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 pt-12 pb-8">
+      <div className="flex items-center gap-4 px-6 pt-6 pb-4 shrink-0">
         <button
           onClick={onBack}
           className="w-10 h-10 rounded-xl bg-wtf-card border border-wtf-border flex items-center justify-center text-white/70 active:scale-90 transition-transform">
@@ -43,8 +43,8 @@ export default function DuelSetupScreen({ onStart, onBack }) {
       </div>
 
       {/* Player count */}
-      <div className="px-6 mb-6">
-        <div className="text-white/40 text-xs font-bold uppercase tracking-widest mb-3">Nombre de joueurs</div>
+      <div className="px-6 mb-4 shrink-0">
+        <div className="text-white/40 text-xs font-bold uppercase tracking-widest mb-2">Nombre de joueurs</div>
         <div className="flex items-center justify-center gap-6 bg-wtf-card rounded-2xl border border-wtf-border py-5">
           <button
             onClick={() => updateCount(playerCount - 1)}
@@ -71,10 +71,10 @@ export default function DuelSetupScreen({ onStart, onBack }) {
       </div>
 
       {/* Names */}
-      <div className="px-6 flex flex-col gap-3 mb-6">
+      <div className="px-6 flex flex-col gap-2 mb-4 flex-1 overflow-y-auto scrollbar-hide">
         {Array.from({ length: playerCount }).map((_, i) => (
-          <div key={i} className="bg-wtf-card rounded-2xl border border-wtf-border p-4">
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: PLAYER_COLORS[i] }}>
+          <div key={i} className="bg-wtf-card rounded-2xl border border-wtf-border p-3 shrink-0">
+            <div className="text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: PLAYER_COLORS[i] }}>
               {PLAYER_EMOJIS[i]} Joueur {i + 1}
             </div>
             <input
@@ -84,14 +84,14 @@ export default function DuelSetupScreen({ onStart, onBack }) {
               onChange={e => updateName(i, e.target.value)}
               maxLength={16}
               autoComplete="off"
-              className="w-full bg-wtf-bg rounded-xl px-4 py-3 text-white font-bold text-base border border-wtf-border focus:outline-none placeholder:text-white/20"
+              className="w-full bg-wtf-bg rounded-xl px-4 py-2.5 text-white font-bold text-base border border-wtf-border focus:outline-none placeholder:text-white/20"
             />
           </div>
         ))}
       </div>
 
       {/* Rules */}
-      <div className="mx-6 mb-6 rounded-2xl border border-wtf-border p-4" style={{ background: 'rgba(255,255,255,0.03)' }}>
+      <div className="mx-6 mb-3 rounded-2xl border border-wtf-border p-3 shrink-0" style={{ background: 'rgba(255,255,255,0.03)' }}>
         <div className="text-white/40 text-xs font-semibold leading-relaxed space-y-1">
           <div>🎲 10 questions aléatoires toutes catégories</div>
           <div>🙈 Chaque joueur répond à son tour, sans regarder</div>
@@ -100,11 +100,11 @@ export default function DuelSetupScreen({ onStart, onBack }) {
       </div>
 
       {/* Start */}
-      <div className="px-6 pb-10 mt-auto">
+      <div className="px-6 pb-4 shrink-0">
         <button
           onClick={() => canStart && onStart(names.slice(0, playerCount).map(n => n.trim()))}
           disabled={!canStart}
-          className="btn-press w-full py-5 rounded-2xl text-white font-black text-base uppercase tracking-wide transition-all active:scale-95"
+          className="btn-press w-full py-4 rounded-2xl text-white font-black text-base uppercase tracking-wide transition-all active:scale-95"
           style={{
             background: canStart
               ? 'linear-gradient(135deg, #FF5C1A 0%, #D94A10 100%)'

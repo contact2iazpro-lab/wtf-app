@@ -121,13 +121,13 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </button>
 
       {/* Header */}
-      <div className="relative pt-2 pb-1 px-6 flex flex-col items-center shrink-0" style={{ zIndex: 1 }}>
+      <div className="relative pt-1 pb-0 px-6 flex flex-col items-center shrink-0" style={{ zIndex: 1 }}>
 
         {/* Star logo */}
         <StarLogo />
 
         {/* Subtitle */}
-        <p className="text-sm font-black tracking-[0.15em] uppercase -mt-1 mb-3" style={{ color: '#7C3AED' }}>
+        <p className="text-sm font-black tracking-[0.15em] uppercase -mt-1 mb-1.5" style={{ color: '#7C3AED' }}>
           Vrai ou fou ?
         </p>
 
@@ -149,7 +149,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Play button */}
-      <div className="px-6 mb-1.5 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="px-6 py-1 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={handlePlay}
           className="btn-press w-full py-2.5 rounded-2xl text-white text-base font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
@@ -166,13 +166,13 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Game modes grid */}
-      <div className="px-6 pb-1.5 flex-1 overflow-hidden flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="flex items-center gap-2 mb-1 shrink-0">
+      <div className="px-6 pb-0.5 flex-1 overflow-hidden flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="flex items-center gap-2 mb-0.5 shrink-0">
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
           <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Modes de jeu</h2>
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
         </div>
-        <div className="grid grid-cols-2 gap-1">
+        <div className="grid grid-cols-2 gap-0.5">
           {GAME_MODES.map((mode) => (
             <div
               key={mode.id}
@@ -212,7 +212,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
               navigator.clipboard?.writeText(text).catch(() => {})
             }
           }}
-          className="mt-auto pt-1 w-full py-2 rounded-2xl text-white font-black text-xs uppercase transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 shrink-0"
+          className="mt-auto pt-0.5 w-full py-1.5 rounded-2xl text-white font-black text-xs uppercase transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 shrink-0"
           style={{
             background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
             border: '1px solid rgba(255,255,255,0.3)',
@@ -224,7 +224,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Cat president — bottom decoration */}
-      <div className="w-full flex justify-center mt-auto shrink-0" style={{ position: 'relative', zIndex: 1, maxHeight: '120px', overflow: 'hidden' }}>
+      <div className="w-full flex justify-center shrink-0" style={{ position: 'relative', zIndex: 1, maxHeight: '80px', overflow: 'hidden' }}>
         <img
           src="/cat-president.png"
           alt="Cat President"

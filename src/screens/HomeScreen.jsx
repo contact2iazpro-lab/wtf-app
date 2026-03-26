@@ -48,14 +48,23 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
   const [showSettings, setShowSettings] = useState(false)
   const creatureRefs = useRef([])
 
-  // RAF loop: move each creature across the screen, wrap around edges
+  // RAF loop: move each creature across the screen, wrap around edges within allowed vertical zone
   useEffect(() => {
     const W = window.innerWidth
-    const H = window.innerHeight - 100 // Reserve 100px at bottom for share button
-    const speed = () => (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 1.2)
+    const H = window.innerHeight
+
+    // Define forbidden zones
+    const topForbidden = 240 // Logo + "Vrai ou fou?" zone
+    const bottomForbidden = 150 // Share button + cat president zone
+    const allowedMinY = topForbidden
+    const allowedMaxY = H - bottomForbidden
+    const allowedHeight = allowedMaxY - allowedMinY
+
+    // Each creature gets its own persistent, random speed within a controlled range
+    const speed = () => (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random() * 1.2)
     const state = CREATURE_SRCS.map((_, i) => ({
       x: Math.random() * W,
-      y: Math.random() * H,
+      y: allowedMinY + Math.random() * allowedHeight, // Start within allowed zone
       vx: speed(),
       vy: speed(),
       size: CREATURE_META[i].size,
@@ -66,11 +75,12 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       state.forEach((c, i) => {
         c.x += c.vx
         c.y += c.vy
-        // Wrap around edges
+        // Wrap around horizontal edges
         if (c.x > W + c.size)  c.x = -c.size
         if (c.x < -c.size)     c.x = W + c.size
-        if (c.y > H + c.size)  c.y = -c.size
-        if (c.y < -c.size)     c.y = H + c.size
+        // Wrap vertically but stay within allowed zone
+        if (c.y > allowedMaxY + c.size)  c.y = allowedMinY - c.size
+        if (c.y < allowedMinY - c.size)  c.y = allowedMaxY + c.size
         const el = creatureRefs.current[i]
         if (el) { el.style.left = c.x + 'px'; el.style.top = c.y + 'px' }
       })

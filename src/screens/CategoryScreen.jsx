@@ -23,8 +23,8 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
           {/* Random button — first item in grid */}
           <button
             onClick={() => onSelectCategory(null)}
-            className="btn-press rounded-xl py-3 px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center gap-2"
-            style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', border: '1px solid', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
+            style={{ height: '100px', background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', border: '1px solid', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <span className="text-2xl">🎲</span>
             <span className="font-bold text-xs leading-tight">
               20<br />Aléatoires
@@ -36,8 +36,9 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className="btn-press rounded-xl py-3 px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center gap-2"
+              className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
               style={{
+                height: '100px',
                 background: 'rgba(255,255,255,0.6)',
                 borderColor: 'rgba(255,255,255,0.9)',
                 border: '1px solid',

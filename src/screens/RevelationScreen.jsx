@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
@@ -20,6 +20,13 @@ export default function RevelationScreen({
   const [flipped, setFlipped] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
+  const [displayedScore, setDisplayedScore] = useState(sessionScore - pointsEarned)
+  const [showScorePulse, setShowScorePulse] = useState(false)
+
+  const scoreRefTarget = useRef(null)
+  const pointsBadgeRef = useRef(null)
+  const [animation, setAnimation] = useState(null)
+
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext
   const isLast = factIndex + 1 >= totalFacts
@@ -27,10 +34,7 @@ export default function RevelationScreen({
   useEffect(() => {
     const timer = setTimeout(() => setFlipped(true), 300)
     if (!isDuel) {
-      // Play Stamp sound (always)
       setTimeout(() => audio.playFile('Stamp.mp3'), 350)
-
-      // Play approval or refusal sound based on correctness
       if (isCorrect) {
         setTimeout(() => audio.playFile('Stamp Approval.mp3'), 350)
         setTimeout(() => audio.playFile('Coins points.mp3'), 600)
@@ -39,19 +43,46 @@ export default function RevelationScreen({
       }
     }
     return () => clearTimeout(timer)
-  }, [isCorrect, isDuel]) // eslint-disable-line
+  }, [isCorrect, isDuel])
+
+  // Animation: calcul des positions et lancement
+  useEffect(() => {
+    if (!isDuel && flipped && pointsBadgeRef.current && scoreRefTarget.current) {
+      const badgeRect = pointsBadgeRef.current.getBoundingClientRect()
+      const scoreRect = scoreRefTarget.current.getBoundingClientRect()
+
+      const offsetX = scoreRect.left - badgeRect.left
+      const offsetY = scoreRect.top - badgeRect.top
+
+      setAnimation({
+        offsetX,
+        offsetY,
+        duration: 2.5,
+      })
+
+      const scoreTimer = setTimeout(() => {
+        setDisplayedScore((prev) => prev + pointsEarned)
+        setShowScorePulse(true)
+
+        const pulseTimer = setTimeout(() => setShowScorePulse(false), 600)
+        return () => clearTimeout(pulseTimer)
+      }, 2.5 * 1000)
+
+      return () => clearTimeout(scoreTimer)
+    }
+  }, [flipped, isDuel, pointsEarned])
 
   const handleShare = () => {
     onShare()
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+
   const isLastPlayer = isDuel && duelContext.isLastPlayer
   const playerColor = isDuel ? (['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][duelContext.currentPlayerIndex] ?? '#FF5C1A') : null
   const isOpenMode = selectedAnswer === 100 || selectedAnswer === -2
   const isTimeout = selectedAnswer === -1
 
-  // Get selected and correct answer text
   const selectedAnswerText = selectedAnswer >= 0 ? fact.options[selectedAnswer] : 'Pas de réponse'
   const correctAnswerText = fact.options[fact.correctIndex]
 
@@ -88,15 +119,18 @@ export default function RevelationScreen({
     <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}45 0%, ${cat.color}30 50%, ${cat.color}15 100%)` : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
       {quitModal}
 
-      {/* Points animation floating from image to top scoring total */}
+      {/* Badge de points flottant vers le score */}
       {!isDuel && flipped && (
         <div
-          className="points-float-reveal fixed pointer-events-none"
+          ref={pointsBadgeRef}
+          className="fixed pointer-events-none"
           style={{
             left: '50%',
             top: '50%',
             width: '180px',
-            transform: 'translateX(-50%) translateY(-50%)',
+            transform: animation
+              ? `translateX(calc(-50% + ${animation.offsetX}px)) translateY(calc(-50% + ${animation.offsetY}px)) scale(0.6)`
+              : 'translateX(-50%) translateY(-50%) scale(1)',
             zIndex: 50,
             background: `linear-gradient(135deg, ${cat?.color}50 0%, ${cat?.color}30 100%)`,
             border: `3px solid ${cat?.color}`,
@@ -108,11 +142,16 @@ export default function RevelationScreen({
             fontWeight: 900,
             textShadow: `0 4px 12px ${cat?.color}60`,
             boxShadow: `0 12px 32px ${cat?.color}40`,
+            opacity: animation ? 0.3 : 1,
+            transition: animation
+              ? `all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)`
+              : 'none',
           }}>
           +{pointsEarned} pts
         </div>
       )}
-      {/* Header with fact number */}
+
+      {/* Header avec numéro de fait et score */}
       <div className="px-5 pt-4 pb-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           {isDuel && (
@@ -126,8 +165,14 @@ export default function RevelationScreen({
             #{fact.id} · {factIndex + 1} / {totalFacts}
           </div>
           {!isDuel && (
-            <div className="text-xs font-black text-white/70 uppercase tracking-wide px-2.5 py-1 rounded-full" style={{ background: 'rgba(255, 165, 0, 0.15)', color: '#FFA500' }}>
-              ⭐ {sessionScore}
+            <div
+              ref={scoreRefTarget}
+              className={`text-xs font-black text-white/70 uppercase tracking-wide px-2.5 py-1 rounded-full transition-transform${showScorePulse ? ' score-pulse' : ''}`}
+              style={{
+                background: 'rgba(255, 165, 0, 0.15)',
+                color: '#FFA500',
+              }}>
+              ⭐ {displayedScore}
             </div>
           )}
         </div>
@@ -149,7 +194,7 @@ export default function RevelationScreen({
         </div>
       </div>
 
-      {/* Fact Image */}
+      {/* Image du fait */}
       {fact.imageUrl && (
         <div
           className={`mx-5 mb-6 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped ? ' wow-shine wow-glow' : ''}`}
@@ -161,7 +206,7 @@ export default function RevelationScreen({
             style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
             onError={(e) => { e.target.style.display = 'none' }}
           />
-          {/* Stamp overlay — solo mode only */}
+          {/* Tampon — mode solo uniquement */}
           {!isDuel && flipped && (
             <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: '24px' }}>
               <div
@@ -192,9 +237,9 @@ export default function RevelationScreen({
         <div className="text-white font-bold text-base">{fact.question}</div>
       </div>
 
-      {/* Score indicator */}
+      {/* Indicateur de score */}
       <div className="mx-5 mb-6 grid grid-cols-2 gap-3 shrink-0">
-        {/* Correct/Incorrect badge — duel mode only */}
+        {/* Badge correct/incorrect — mode duel uniquement */}
         {isDuel && (
           <div
             className="py-4 rounded-2xl text-center border-2 font-black text-base score-pop"
@@ -210,8 +255,7 @@ export default function RevelationScreen({
           </div>
         )}
 
-
-        {/* Points earned — duel mode */}
+        {/* Points gagnés — mode duel */}
         {isDuel && (
           <div
             className="py-4 rounded-2xl text-center border-2 font-black text-base score-pop"
@@ -228,9 +272,8 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* Answer comparison */}
+      {/* Comparaison des réponses */}
       <div className="mx-5 mb-6 space-y-3 shrink-0">
-        {/* QCM mode: show correct answer only if player answered correctly */}
         {!isOpenMode && !isTimeout && isCorrect && (
           <div className="rounded-2xl p-4 border border-green-500/40" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
             <div className="text-green-500 text-xs font-bold uppercase tracking-wide mb-2">✓ Bonne réponse:</div>
@@ -245,7 +288,6 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Open mode: show correct answer for reference */}
         {isOpenMode && (
           <div className="rounded-2xl p-4 border border-green-500/40" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
             <div className="text-green-500 text-xs font-bold uppercase tracking-wide mb-2">✓ Réponse:</div>
@@ -253,7 +295,6 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Timeout */}
         {isTimeout && (
           <div className="rounded-2xl p-4 border border-orange-500/40" style={{ background: 'rgba(255, 152, 0, 0.1)' }}>
             <div className="text-orange-500 text-xs font-bold uppercase tracking-wide">⏱️ Temps écoulé</div>
@@ -261,57 +302,57 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* Scrollable explanation + scores section */}
+      {/* Section scrollable explication + scores */}
       <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-5 px-5 pt-1">
-        {/* Explanation section — solo mode only, shown when answer is correct */}
+        {/* Section explication — mode solo uniquement */}
         {!isDuel && isCorrect && (
-        <div className="rounded-3xl border p-5" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">🧠</span>
-            <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
+          <div className="rounded-3xl border p-5" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">🧠</span>
+              <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
+            </div>
+            <p className="text-white/80 text-sm leading-relaxed font-medium">{fact.explanation}</p>
+            {fact.sourceUrl && (
+              <a
+                href={fact.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 flex items-center gap-1.5 text-xs font-semibold"
+                style={{ color: cat?.color + 'aa' }}>
+                <span>🔗</span>
+                <span className="underline underline-offset-2 truncate">{fact.sourceUrl.replace(/^https?:\/\//, '').split('/')[0]}</span>
+              </a>
+            )}
           </div>
-          <p className="text-white/80 text-sm leading-relaxed font-medium">{fact.explanation}</p>
-          {fact.sourceUrl && (
-            <a
-              href={fact.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 flex items-center gap-1.5 text-xs font-semibold"
-              style={{ color: cat?.color + 'aa' }}>
-              <span>🔗</span>
-              <span className="underline underline-offset-2 truncate">{fact.sourceUrl.replace(/^https?:\/\//, '').split('/')[0]}</span>
-            </a>
-          )}
-        </div>
         )}
 
-        {/* Multi score (shown after last player answers each round) */}
+        {/* Multi score (affiché après la réponse du dernier joueur) */}
         {isDuel && isLastPlayer && (
-        <div className="bg-wtf-card rounded-2xl border border-wtf-border p-4">
-          <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-3">Scores</div>
-          <div className="flex flex-col gap-2">
-            {[...duelContext.players]
-              .map((p, i) => ({ ...p, color: ['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][i] }))
-              .sort((a, b) => b.score - a.score)
-              .map((p, rank) => (
-                <div key={p.name} className="flex items-center gap-3">
-                  <span className="text-white/30 text-xs w-4">{rank + 1}.</span>
-                  <span className="flex-1 text-white font-bold text-sm truncate">{p.name}</span>
-                  <span className="font-black text-base" style={{ color: p.color }}>{p.score} pts</span>
-                </div>
-              ))}
+          <div className="rounded-2xl border p-4" style={{ background: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-3">Scores</div>
+            <div className="flex flex-col gap-2">
+              {[...duelContext.players]
+                .map((p, i) => ({ ...p, color: ['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][i] }))
+                .sort((a, b) => b.score - a.score)
+                .map((p, rank) => (
+                  <div key={p.name} className="flex items-center gap-3">
+                    <span className="text-white/30 text-xs w-4">{rank + 1}.</span>
+                    <span className="flex-1 text-white font-bold text-sm truncate">{p.name}</span>
+                    <span className="font-black text-base" style={{ color: p.color }}>{p.score} pts</span>
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
         )}
       </div>
 
-      {/* Action buttons */}
+      {/* Boutons d'action */}
       <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
         {!isDuel && (
           <button
             onClick={handleShare}
-            className="btn-press w-full py-4 rounded-2xl border border-wtf-border text-white/70 font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
-            style={{ background: 'rgba(255,255,255,0.05)' }}>
+            className="btn-press w-full py-4 rounded-2xl border text-white/70 font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
+            style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' }}>
             <span>{copied ? '✅' : '📤'}</span>
             {copied ? 'Copié !' : 'Partager ce WTF'}
           </button>

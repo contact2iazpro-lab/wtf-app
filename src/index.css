@@ -234,15 +234,13 @@
   animation: stamp-wow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* Points float and slide animation — moves from image center to top scoring total */
-@keyframes points-float-reveal {
-  0%   { top: 50%; transform: translateX(-50%) translateY(-50%) scale(0.5); opacity: 0; }
-  15%  { top: 50%; transform: translateX(-50%) translateY(-50%) scale(1.15); opacity: 1; }
-  85%  { top: 120px; transform: translateX(-50%) translateY(0) scale(1.05); opacity: 1; }
-  100% { top: 60px; transform: translateX(-50%) translateY(0) scale(0.9); opacity: 0; }
+/* Score pulse animation — when points arrive at target */
+@keyframes score-pulse-animation {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
 }
 
-.points-float-reveal {
-  animation: points-float-reveal 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  animation-delay: 0.2s;
+.score-pulse {
+  animation: score-pulse-animation 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }

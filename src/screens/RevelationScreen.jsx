@@ -180,15 +180,17 @@ export default function RevelationScreen({
 
         {/* Points earned with slide animation — solo only */}
         {!isDuel && (
-          <div className="relative col-span-2" style={{ height: '64px' }}>
+          <div className="relative col-span-2" style={{ height: '80px' }}>
             {/* Floating points that slide up and fade */}
             <div
-              className="points-slide absolute inset-0 py-4 rounded-2xl text-center border-2 font-black text-base"
+              className="points-slide absolute inset-0 py-4 rounded-2xl text-center border-2 font-black flex items-center justify-center"
               style={{
-                background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
-                borderColor: cat?.color + '60',
+                background: `linear-gradient(135deg, ${cat?.color}30 0%, ${cat?.color}15 100%)`,
+                borderColor: cat?.color + '80',
                 color: cat?.color,
                 animationDelay: '0.6s',
+                fontSize: '28px',
+                fontWeight: 900,
               }}>
               +{pointsEarned} pts
             </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import CircularTimer from '../components/CircularTimer'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
@@ -15,11 +15,19 @@ export default function QuestionScreen({
   onQuit,
   category,
   gameMode,
+  difficulty,
   playerName,
   playerColor,
   playerEmoji,
 }) {
   const [answerMode, setAnswerMode] = useState(null) // null | 'open' | 'qcm'
+
+  // En mode solo, aller directement au QCM (pas de choix de mode)
+  useEffect(() => {
+    if (gameMode === 'solo') {
+      setAnswerMode('qcm')
+    }
+  }, [gameMode])
   const [showHint1, setShowHint1] = useState(false)
   const [showHint2, setShowHint2] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -72,7 +80,7 @@ export default function QuestionScreen({
 
   // ── Shared header ──────────────────────────────────────────────────────────
   const header = (
-    <div className="px-5 pt-8 pb-3 shrink-0">
+    <div className="px-5 pt-4 pb-3 shrink-0">
       {/* Top row: counter + player badge + quit */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
@@ -105,7 +113,7 @@ export default function QuestionScreen({
   )
 
   const categoryBadge = cat && (
-    <div className="mx-5 mb-4 rounded-2xl px-5 py-3 flex items-center gap-3 shrink-0"
+    <div className="mx-5 mb-2 rounded-2xl px-5 py-2 flex items-center gap-3 shrink-0"
       style={{ background: 'rgba(0,0,0,0.35)', border: `1.5px solid ${cat.color}80`, backdropFilter: 'blur(8px)' }}>
       <span className="text-2xl">{cat.emoji}</span>
       <span className="font-black text-base tracking-wide" style={{ color: cat.color }}>{cat.label}</span>
@@ -114,8 +122,8 @@ export default function QuestionScreen({
 
   const factImage = (compact = false) => fact.imageUrl && gameMode === 'duel' && (
     <div
-      className={`mx-auto mb-4 rounded-2xl overflow-hidden border shrink-0 ${compact ? 'h-36 w-36' : 'aspect-square w-full mx-5'}`}
-      style={{ borderColor: cat?.color + '40', maxWidth: compact ? '144px' : undefined }}>
+      className={`mx-auto mb-2 rounded-2xl overflow-hidden border shrink-0 ${compact ? 'h-32 w-32' : 'h-48 w-full mx-5'}`}
+      style={{ borderColor: cat?.color + '40', maxWidth: compact ? '128px' : undefined }}>
       <img
         src={fact.imageUrl}
         alt={fact.question}
@@ -128,28 +136,28 @@ export default function QuestionScreen({
 
   const questionCard = (
     <div
-      className="mx-5 mb-4 rounded-3xl p-5 border shrink-0"
+      className="mx-5 mb-2 rounded-3xl p-4 border shrink-0"
       style={{
         background: cardBg,
         borderColor: cat?.color + '70',
         backdropFilter: 'blur(12px)',
         boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
       }}>
-      <h2 className="text-white text-lg font-bold leading-snug">{fact.question}</h2>
+      <h2 className="text-white text-base font-bold leading-snug">{fact.question}</h2>
     </div>
   )
 
   // ── Phase 0 : Mode selection ───────────────────────────────────────────────
   if (!answerMode) {
     return (
-      <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: screenBg }}>
+      <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
         {quitModal}
         {header}
         {categoryBadge}
         {factImage()}
         {questionCard}
 
-        <div className="px-5 pb-8 flex flex-col gap-3 mt-auto shrink-0">
+        <div className="px-5 pb-3 flex flex-col gap-3 mt-auto shrink-0">
           {playerName && (
             <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center mb-1">
               Choisissez votre mode
@@ -207,7 +215,7 @@ export default function QuestionScreen({
         {questionCard}
 
         {/* Hints display */}
-        <div className="flex-1 px-5 flex flex-col gap-3 mb-4 overflow-y-auto scrollbar-hide">
+        <div className="flex-1 px-5 flex flex-col gap-2 mb-3 overflow-y-auto scrollbar-hide">
           {showHint1 && (
             <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.4)' }}>
               <div className="flex items-center gap-2 mb-2">
@@ -229,7 +237,7 @@ export default function QuestionScreen({
         </div>
 
         {/* Buttons */}
-        <div className="px-5 pb-4 flex flex-col gap-3 shrink-0">
+        <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
           {/* Hint buttons — N°1 / N°2 badge style */}
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -287,7 +295,7 @@ export default function QuestionScreen({
       {questionCard}
 
       {/* Hints display */}
-      <div className="flex-1 px-5 flex flex-col gap-3 mb-4 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 px-5 flex flex-col gap-2 mb-3 overflow-y-auto scrollbar-hide">
         {showHint1 && (
           <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.4)' }}>
             <div className="flex items-center gap-2 mb-2">
@@ -308,31 +316,33 @@ export default function QuestionScreen({
         )}
       </div>
 
-      <div className="px-5 pb-4 flex flex-col gap-3 shrink-0">
-        {/* Hint buttons */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            disabled={showHint1}
-            onClick={() => handleShowHint(1)}
-            className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint1 ? 'opacity-40 cursor-not-allowed' : ''}`}
-            style={showHint1
-              ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
-              : { borderColor: '#FBBF24', color: '#FBBF24', background: 'rgba(251,191,36,0.1)' }}>
-            N°1 — Indice
-          </button>
-          <button
-            disabled={showHint2}
-            onClick={() => handleShowHint(2)}
-            className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint2 ? 'opacity-40 cursor-not-allowed' : ''}`}
-            style={showHint2
-              ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
-              : { borderColor: '#F97316', color: '#F97316', background: 'rgba(249,115,22,0.1)' }}>
-            N°2 — Indice
-          </button>
-        </div>
+      <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
+        {/* Hint buttons — only shown if hints are allowed for this difficulty */}
+        {(difficulty?.hintsAllowed !== false) && (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              disabled={showHint1}
+              onClick={() => handleShowHint(1)}
+              className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint1 ? 'opacity-40 cursor-not-allowed' : ''}`}
+              style={showHint1
+                ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
+                : { borderColor: '#FBBF24', color: '#FBBF24', background: 'rgba(251,191,36,0.1)' }}>
+              N°1 — Indice
+            </button>
+            <button
+              disabled={showHint2}
+              onClick={() => handleShowHint(2)}
+              className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint2 ? 'opacity-40 cursor-not-allowed' : ''}`}
+              style={showHint2
+                ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
+                : { borderColor: '#F97316', color: '#F97316', background: 'rgba(249,115,22,0.1)' }}>
+              N°2 — Indice
+            </button>
+          </div>
+        )}
 
         {/* Answer buttons */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className={`grid ${difficulty?.choices === 6 ? 'grid-cols-3' : 'grid-cols-2'} gap-3`}>
           {fact.options.map((option, index) => (
             <button
               key={index}
@@ -349,7 +359,7 @@ export default function QuestionScreen({
         </div>
       </div>
 
-      <CircularTimer duration={20} onTimeout={onTimeout} />
+      <CircularTimer duration={difficulty?.duration || 20} onTimeout={onTimeout} />
     </div>
   )
 }

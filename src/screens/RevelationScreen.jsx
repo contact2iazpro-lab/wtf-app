@@ -85,7 +85,7 @@ export default function RevelationScreen({
   )
 
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide overflow-x-hidden" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}25 0%, ${cat.color}10 50%, #f5f5f5 100%)` : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}25 0%, ${cat.color}10 50%, #f5f5f5 100%)` : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
       {quitModal}
 
       {/* Points animation floating from image to top scoring total */}
@@ -113,7 +113,7 @@ export default function RevelationScreen({
         </div>
       )}
       {/* Header with fact number */}
-      <div className="px-5 pt-8 pb-4 flex items-center justify-between">
+      <div className="px-5 pt-4 pb-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           {isDuel && (
             <div
@@ -163,7 +163,7 @@ export default function RevelationScreen({
           />
           {/* Stamp overlay — solo mode only */}
           {!isDuel && flipped && (
-            <div className="absolute inset-0 flex items-end justify-end" style={{ paddingRight: '12px', paddingBottom: '12px' }}>
+            <div className="absolute inset-0 flex items-end justify-end" style={{ paddingRight: '2px', paddingBottom: '2px', pointerEvents: 'none' }}>
               <div
                 className="stamp-wow"
                 style={{
@@ -172,6 +172,7 @@ export default function RevelationScreen({
                   color: isCorrect ? '#4CAF50' : '#F44336',
                   textShadow: `0 4px 12px ${isCorrect ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)'}`,
                   transform: 'rotate(-15deg)',
+                  transformOrigin: 'right bottom',
                   border: `4px solid ${isCorrect ? '#4CAF50' : '#F44336'}`,
                   borderRadius: '8px',
                   padding: '12px 24px',
@@ -186,13 +187,13 @@ export default function RevelationScreen({
       )}
 
       {/* Question */}
-      <div className="mx-5 mb-4 rounded-2xl p-4 border" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>
+      <div className="mx-5 mb-4 rounded-2xl p-4 border shrink-0" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>
         <div className="text-white/60 text-xs font-semibold mb-2">La question:</div>
         <div className="text-white font-bold text-base">{fact.question}</div>
       </div>
 
       {/* Score indicator */}
-      <div className="mx-5 mb-6 grid grid-cols-2 gap-3">
+      <div className="mx-5 mb-6 grid grid-cols-2 gap-3 shrink-0">
         {/* Correct/Incorrect badge — duel mode only */}
         {isDuel && (
           <div
@@ -228,7 +229,7 @@ export default function RevelationScreen({
       </div>
 
       {/* Answer comparison */}
-      <div className="mx-5 mb-6 space-y-3">
+      <div className="mx-5 mb-6 space-y-3 shrink-0">
         {/* QCM mode: show correct answer and player's answer */}
         {!isOpenMode && !isTimeout && (
           <div className="rounded-2xl p-4 border border-green-500/40" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
@@ -260,29 +261,31 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* Explanation section */}
-      <div className="mx-5 mb-6 rounded-3xl border p-5" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl">🧠</span>
-          <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
+      {/* Scrollable explanation + scores section */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-5 px-5 pt-1">
+        {/* Explanation section */}
+        <div className="rounded-3xl border p-5" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">🧠</span>
+            <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
+          </div>
+          <p className="text-white/80 text-sm leading-relaxed font-medium">{fact.explanation}</p>
+          {fact.sourceUrl && (
+            <a
+              href={fact.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex items-center gap-1.5 text-xs font-semibold"
+              style={{ color: cat?.color + 'aa' }}>
+              <span>🔗</span>
+              <span className="underline underline-offset-2 truncate">{fact.sourceUrl.replace(/^https?:\/\//, '').split('/')[0]}</span>
+            </a>
+          )}
         </div>
-        <p className="text-white/80 text-sm leading-relaxed font-medium">{fact.explanation}</p>
-        {fact.sourceUrl && (
-          <a
-            href={fact.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 flex items-center gap-1.5 text-xs font-semibold"
-            style={{ color: cat?.color + 'aa' }}>
-            <span>🔗</span>
-            <span className="underline underline-offset-2 truncate">{fact.sourceUrl.replace(/^https?:\/\//, '').split('/')[0]}</span>
-          </a>
-        )}
-      </div>
 
-      {/* Multi score (shown after last player answers each round) */}
-      {isDuel && isLastPlayer && (
-        <div className="mx-5 mb-5 bg-wtf-card rounded-2xl border border-wtf-border p-4">
+        {/* Multi score (shown after last player answers each round) */}
+        {isDuel && isLastPlayer && (
+        <div className="bg-wtf-card rounded-2xl border border-wtf-border p-4">
           <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-3">Scores</div>
           <div className="flex flex-col gap-2">
             {[...duelContext.players]
@@ -297,10 +300,11 @@ export default function RevelationScreen({
               ))}
           </div>
         </div>
-      )}
+        )}
+      </div>
 
       {/* Action buttons */}
-      <div className="px-5 pb-8 flex flex-col gap-3 mt-auto">
+      <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
         {!isDuel && (
           <button
             onClick={handleShare}

@@ -161,7 +161,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
   const handleMarathon = () => { audio.startMusic(); audio.play('click'); onMarathon() }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-y-auto scrollbar-hide rainbow-bg">
+    <div className="flex flex-col h-full w-full overflow-hidden scrollbar-hide rainbow-bg">
 
       {/* Traversing creatures — fixed to viewport, moved by RAF */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
@@ -197,7 +197,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </button>
 
       {/* Header */}
-      <div className="relative pt-3 pb-2 px-6 flex flex-col items-center" style={{ zIndex: 1 }}>
+      <div className="relative pt-2 pb-1 px-6 flex flex-col items-center shrink-0" style={{ zIndex: 1 }}>
 
         {/* Star logo */}
         <StarLogo />
@@ -225,10 +225,10 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Play button */}
-      <div className="px-6 mb-2" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="px-6 mb-1.5 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={handlePlay}
-          className="btn-press w-full py-3 rounded-2xl text-white text-lg font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
+          className="btn-press w-full py-2.5 rounded-2xl text-white text-base font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
           style={{
             background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)',
             boxShadow: '0 8px 40px rgba(255, 92, 26, 0.55), 0 2px 8px rgba(0,0,0,0.4)',
@@ -242,13 +242,13 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Game modes grid */}
-      <div className="px-6 pb-2" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="flex items-center gap-2 mb-1.5">
+      <div className="px-6 pb-1.5 flex-1 overflow-hidden flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="flex items-center gap-2 mb-1 shrink-0">
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
           <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Modes de jeu</h2>
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
         </div>
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-2 gap-1">
           {GAME_MODES.map((mode) => (
             <div
               key={mode.id}
@@ -288,7 +288,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
               navigator.clipboard?.writeText(text).catch(() => {})
             }
           }}
-          className="mt-3 w-full py-3 rounded-2xl text-white font-black text-sm uppercase transition-all duration-150 active:scale-95 flex items-center justify-center gap-2"
+          className="mt-auto pt-1 w-full py-2 rounded-2xl text-white font-black text-xs uppercase transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 shrink-0"
           style={{
             background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
             border: '1px solid rgba(255,255,255,0.3)',
@@ -300,11 +300,11 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Cat president — bottom decoration */}
-      <div className="w-full flex justify-center mt-auto" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="w-full flex justify-center mt-auto shrink-0" style={{ position: 'relative', zIndex: 1, maxHeight: '120px', overflow: 'hidden' }}>
         <img
           src="/cat-president.png"
           alt="Cat President"
-          className="w-full max-w-sm object-contain"
+          className="w-full object-contain"
           style={{ maskImage: 'linear-gradient(to top, transparent 0%, black 30%)', WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 30%)' }}
         />
       </div>

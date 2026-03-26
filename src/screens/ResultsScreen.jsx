@@ -26,22 +26,22 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
 
   return (
     <div
-      className="flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide"
+      className="flex flex-col h-full w-full screen-enter overflow-hidden"
       style={{ background: `linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)` }}>
 
       {/* Header */}
-      <div className="flex flex-col items-center pt-12 pb-6 px-6">
-        <div className="text-7xl mb-3 animate-bounce-in">{rank.emoji}</div>
+      <div className="flex flex-col items-center pt-4 pb-2 px-6 shrink-0">
+        <div className="text-5xl mb-1 animate-bounce-in">{rank.emoji}</div>
         <div
-          className="text-2xl font-black mb-1"
+          className="text-lg font-black mb-0.5"
           style={{ color: rank.color }}>
           {rank.label}
         </div>
-        <div className="text-white/50 text-sm font-semibold">Partie terminée !</div>
+        <div className="text-white/50 text-xs font-semibold">Partie terminée !</div>
       </div>
 
       {/* Stars */}
-      <div className="flex justify-center gap-3 mb-8">
+      <div className="flex justify-center gap-2 pb-2 shrink-0">
         {[1, 2, 3].map((s) => (
           <span
             key={s}
@@ -56,16 +56,16 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
       </div>
 
       {/* Score card */}
-      <div className="mx-5 mb-5 rounded-3xl border p-6" style={{ background: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)' }}>
+      <div className="mx-5 mb-3 rounded-3xl border p-4 shrink-0" style={{ background: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)' }}>
         {/* Big score */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-4">
           <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-1">Score final</div>
-          <div className="text-6xl font-black" style={{ color: '#FF5C1A' }}>{score}</div>
-          <div className="text-white/40 text-sm font-semibold">/ {maxScore} points max</div>
+          <div className="text-5xl font-black" style={{ color: '#FF5C1A' }}>{score}</div>
+          <div className="text-white/40 text-xs font-semibold">/ {maxScore} points max</div>
         </div>
 
         {/* Progress bar */}
-        <div className="h-2.5 bg-wtf-border rounded-full overflow-hidden mb-6">
+        <div className="h-2 bg-wtf-border rounded-full overflow-hidden mb-4">
           <div
             className="h-full rounded-full transition-all duration-1000"
             style={{
@@ -78,54 +78,54 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <div className="text-2xl font-black text-white">{correctCount}</div>
+            <div className="text-xl font-black text-white">{correctCount}</div>
             <div className="text-white/40 text-xs font-semibold">Correctes</div>
           </div>
           <div>
-            <div className="text-2xl font-black text-white">{totalFacts - correctCount}</div>
+            <div className="text-xl font-black text-white">{totalFacts - correctCount}</div>
             <div className="text-white/40 text-xs font-semibold">Ratées</div>
           </div>
           <div>
-            <div className="text-2xl font-black" style={{ color: '#FF5C1A' }}>{pct}%</div>
+            <div className="text-xl font-black" style={{ color: '#FF5C1A' }}>{pct}%</div>
             <div className="text-white/40 text-xs font-semibold">Précision</div>
           </div>
         </div>
       </div>
 
       {/* Scoring reminder */}
-      <div className="mx-5 mb-6 rounded-2xl border p-4" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)' }}>
-        <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-3">Rappel scoring</div>
-        <div className="flex justify-between text-xs font-semibold">
+      <div className="mx-5 mb-3 rounded-2xl border p-2 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)' }}>
+        <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2">Rappel scoring</div>
+        <div className="flex justify-between text-2xs gap-1">
           {[
-            { label: 'Correct 0 ind.', pts: '+5 pts', color: '#22C55E' },
-            { label: 'Correct 1 ind.', pts: '+3 pts', color: '#F59E0B' },
-            { label: 'Correct 2 ind.', pts: '+2 pts', color: '#EF4444' },
-            { label: 'Faux', pts: '0 pt', color: '#3B82F6' },
+            { label: '+5', pts: '0 ind', color: '#22C55E' },
+            { label: '+3', pts: '1 ind', color: '#F59E0B' },
+            { label: '+2', pts: '2 ind', color: '#EF4444' },
+            { label: '0', pts: 'Faux', color: '#3B82F6' },
           ].map((item) => (
-            <div key={item.label} className="flex flex-col items-center gap-1">
-              <div className="font-black text-xs" style={{ color: item.color }}>{item.pts}</div>
-              <div className="text-white/40 text-2xs">{item.label}</div>
+            <div key={item.label} className="flex flex-col items-center flex-1">
+              <div className="font-black text-xs" style={{ color: item.color }}>{item.label}</div>
+              <div className="text-white/40 text-2xs font-semibold">{item.pts}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="px-5 pb-10 flex flex-col gap-3 mt-auto">
+      <div className="px-5 pb-3 flex flex-col gap-2 shrink-0">
         <button
           onClick={onReplay}
-          className="btn-press w-full py-5 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
+          className="btn-press w-full py-3 rounded-2xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
           style={{
             background: 'linear-gradient(135deg, #FF5C1A 0%, #D94A10 100%)',
             boxShadow: '0 8px 32px rgba(255, 92, 26, 0.4)',
           }}>
-          🔄  Rejouer
+          🔄 Rejouer
         </button>
         <button
           onClick={onHome}
-          className="btn-press w-full py-4 rounded-2xl border border-wtf-border text-white/70 font-bold text-sm active:scale-95 transition-all"
+          className="btn-press w-full py-3 rounded-2xl border border-wtf-border text-white/70 font-bold text-xs active:scale-95 transition-all"
           style={{ background: 'rgba(255,255,255,0.04)' }}>
-          🏠  Accueil
+          🏠 Accueil
         </button>
       </div>
     </div>

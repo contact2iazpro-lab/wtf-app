@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { getFactsByCategory } from './data/facts'
+import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
+import DifficultyScreen from './screens/DifficultyScreen'
 import CategoryScreen from './screens/CategoryScreen'
 import QuestionScreen from './screens/QuestionScreen'
 import RevelationScreen from './screens/RevelationScreen'
@@ -13,6 +15,7 @@ import { audio } from './utils/audio'
 
 const SCREENS = {
   HOME: 'home',
+  DIFFICULTY: 'difficulty',
   CATEGORY: 'category',
   QUESTION: 'question',
   REVELATION: 'revelation',
@@ -20,6 +23,12 @@ const SCREENS = {
   DUEL_SETUP: 'duel_setup',
   DUEL_PASS: 'duel_pass',
   DUEL_RESULTS: 'duel_results',
+}
+
+const DIFFICULTY_LEVELS = {
+  EXPERT: { id: 'expert', label: 'Parcours Expert', emoji: '⚡', choices: 6, duration: 10, hintsAllowed: false, scoring: { correct: 5, wrong: 0 } },
+  NORMAL: { id: 'normal', label: 'Parcours Normal', emoji: '🧠', choices: 4, duration: 20, hintsAllowed: false, scoring: { correct: 3, wrong: 0 } },
+  EASY:   { id: 'easy',   label: 'Parcours Facile', emoji: '💚', choices: 6, duration: 20, hintsAllowed: true,  scoring: { correct: [3, 2, 1], wrong: 0 } },
 }
 
 function loadStorage() {
@@ -49,6 +58,7 @@ function saveStorage(totalScore, streak) {
 
 export default function App() {
   const [screen, setScreen] = useState(SCREENS.HOME)
+  const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.NORMAL)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [sessionFacts, setSessionFacts] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -82,6 +92,11 @@ export default function App() {
   // Solo flow
   const handlePlay = useCallback(() => {
     setGameMode('solo')
+    setScreen(SCREENS.DIFFICULTY)
+  }, [])
+
+  const handleSelectDifficulty = useCallback((difficulty) => {
+    setSelectedDifficulty(difficulty)
     setScreen(SCREENS.CATEGORY)
   }, [])
 
@@ -95,8 +110,15 @@ export default function App() {
     if (categoryId !== null) {
       facts = facts.slice(0, 10)
     }
+
+    // Apply difficulty configuration to facts (generate options + shuffle)
+    const factsWithOptions = facts.map(fact => ({
+      ...fact,
+      ...getAnswerOptions(fact, selectedDifficulty)
+    }))
+
     setSelectedCategory(categoryId)
-    setSessionFacts(facts)
+    setSessionFacts(factsWithOptions)
     setCurrentIndex(0)
     setSessionScore(0)
     setCorrectCount(0)
@@ -104,13 +126,27 @@ export default function App() {
     setSelectedAnswer(null)
     setIsCorrect(null)
     setScreen(SCREENS.QUESTION)
-  }, [gameMode])
+  }, [gameMode, selectedDifficulty])
 
-  // QCM mode — 5/3/2 pts based on hints used
+  // QCM mode — points based on difficulty + hints used
   const handleSelectAnswer = useCallback((answerIndex) => {
     if (!currentFact) return
     const isAnswerCorrect = answerIndex === currentFact.correctIndex
-    const points = isAnswerCorrect ? (hintsUsed === 0 ? 5 : hintsUsed === 1 ? 3 : 2) : 0
+
+    // Calculate points based on difficulty + correctness + hints
+    let points = 0
+    if (isAnswerCorrect) {
+      if (!selectedDifficulty.hintsAllowed) {
+        // Expert/Normal: fixed points regardless of hints
+        points = selectedDifficulty.scoring.correct
+      } else {
+        // Easy: 3/2/1 based on hints
+        const hintScoring = selectedDifficulty.scoring.correct
+        points = hintScoring[hintsUsed] ?? hintScoring[2]  // 0-hints=3, 1-hint=2, 2-hints=1
+      }
+    } else {
+      points = 0
+    }
 
     setSelectedAnswer(answerIndex)
     setIsCorrect(isAnswerCorrect)
@@ -124,7 +160,7 @@ export default function App() {
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed])
+  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty])
 
   // Open mode — 5/3/2 pts based on hints, validated by questioner
   const handleOpenValidate = useCallback((isCorrect) => {
@@ -317,6 +353,12 @@ export default function App() {
           onMarathon={handleMarathonMode}
         />
       )}
+      {screen === SCREENS.DIFFICULTY && (
+        <DifficultyScreen
+          onSelectDifficulty={handleSelectDifficulty}
+          onBack={() => setScreen(SCREENS.HOME)}
+        />
+      )}
       {screen === SCREENS.CATEGORY && (
         <>
           {showHowToPlay && (
@@ -390,6 +432,7 @@ export default function App() {
           onQuit={handleHome}
           category={selectedCategory}
           gameMode={gameMode}
+          difficulty={gameMode === 'solo' ? selectedDifficulty : null}
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}

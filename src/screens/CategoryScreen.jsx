@@ -2,9 +2,9 @@ import { CATEGORIES } from '../data/facts'
 
 export default function CategoryScreen({ onSelectCategory, onBack }) {
   return (
-    <div className="flex flex-col h-full w-full screen-enter rainbow-bg">
+    <div className="flex flex-col h-full w-full overflow-hidden screen-enter rainbow-bg">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 pt-6 pb-2" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="flex items-center gap-4 px-6 pt-4 pb-2 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={onBack}
           className="w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-transform"

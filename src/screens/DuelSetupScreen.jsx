@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import SettingsModal from '../components/SettingsModal'
+import { audio } from '../utils/audio'
 
 export const PLAYER_COLORS = ['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899']
 export const PLAYER_EMOJIS = ['⚡', '🔥', '🌿', '💜', '⭐', '🌸']
@@ -6,6 +8,7 @@ export const PLAYER_EMOJIS = ['⚡', '🔥', '🌿', '💜', '⭐', '🌸']
 export default function DuelSetupScreen({ onStart, onBack }) {
   const [playerCount, setPlayerCount] = useState(2)
   const [names, setNames] = useState(['', '', '', '', '', ''])
+  const [showSettings, setShowSettings] = useState(false)
 
   const updateName = (i, val) =>
     setNames(n => n.map((v, idx) => (idx === i ? val : v)))
@@ -16,6 +19,16 @@ export default function DuelSetupScreen({ onStart, onBack }) {
 
   return (
     <div className="flex flex-col h-full w-full bg-wtf-bg screen-enter overflow-y-auto scrollbar-hide">
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
+      {/* Settings button — top right */}
+      <button
+        onClick={() => { audio.play('click'); setShowSettings(true) }}
+        className="fixed top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+        style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 40, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        ⚙️
+      </button>
+
       {/* Header */}
       <div className="flex items-center gap-4 px-6 pt-12 pb-8">
         <button

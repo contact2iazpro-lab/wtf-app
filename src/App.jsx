@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { getFactsByCategory } from './data/facts'
 import HomeScreen from './screens/HomeScreen'
 import CategoryScreen from './screens/CategoryScreen'
@@ -260,6 +260,45 @@ export default function App() {
     players: duelPlayers,
     isLastPlayer: duelCurrentPlayerIndex === duelPlayers.length - 1,
   } : null
+
+  // Push a history entry on every screen change so the browser back button
+  // fires popstate instead of exiting the app immediately.
+  useEffect(() => {
+    window.history.pushState(null, '')
+  }, [screen])
+
+  // Handle mobile hardware back button / swipe back
+  useEffect(() => {
+    const handlePopState = () => {
+      // Re-push immediately so the next back press also fires popstate
+      window.history.pushState(null, '')
+
+      switch (screen) {
+        case SCREENS.HOME:
+          break // already home, nothing to do
+        case SCREENS.CATEGORY:
+          setScreen(SCREENS.HOME)
+          setGameMode('solo')
+          break
+        case SCREENS.DUEL_SETUP:
+          setScreen(SCREENS.HOME)
+          break
+        case SCREENS.RESULTS:
+        case SCREENS.DUEL_RESULTS:
+          handleHome()
+          break
+        default:
+          // Mid-game screens (QUESTION, REVELATION, DUEL_PASS)
+          if (gameMode === 'marathon') {
+            if (!window.confirm('Quitter la partie marathon ? Votre score ne sera pas sauvegardé.')) break
+          }
+          handleHome()
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [screen, gameMode, handleHome])
 
   return (
     <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg">

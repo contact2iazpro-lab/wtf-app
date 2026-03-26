@@ -112,7 +112,7 @@ function SettingsModal({ onClose }) {
         <button
           onClick={onClose}
           className="mt-5 w-full py-4 rounded-2xl font-black text-sm tracking-widest uppercase active:scale-95 transition-all"
-          style={{ background: 'rgba(0,0,0,0.07)', color: 'rgba(0,0,0,0.45)', border: '1px solid rgba(0,0,0,0.1)' }}>
+          style={{ background: 'rgba(0,0,0,0.07)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(0,0,0,0.1)' }}>
           ✕ Fermer
         </button>
       </div>
@@ -276,6 +276,27 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
             </div>
           ))}
         </div>
+
+        {/* Share button */}
+        <button
+          onClick={() => {
+            audio.play('click')
+            const text = '🤯 What The F*ct! Vrai ou fou ?\n\nTrouve les réponses les plus WTF du web!\n\nhttps://wtf-game.com'
+            if (navigator.share) {
+              navigator.share({ text }).catch(() => {})
+            } else {
+              navigator.clipboard?.writeText(text).catch(() => {})
+            }
+          }}
+          className="mt-3 w-full py-3 rounded-2xl text-white font-black text-sm uppercase transition-all duration-150 active:scale-95 flex items-center justify-center gap-2"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            backdropFilter: 'blur(8px)',
+          }}>
+          <span className="text-lg">📤</span>
+          Partager l'app
+        </button>
       </div>
 
       {/* Cat president — bottom decoration */}

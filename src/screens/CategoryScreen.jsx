@@ -13,7 +13,7 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
         </button>
         <div>
           <h1 className="text-xl font-black" style={{ color: '#1a1a2e' }}>Choisis une catégorie</h1>
-          <p className="text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>Où se trouve le <strong>F*ct</strong> le plus What The <strong>F*ct</strong> ?</p>
+          <p className="text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>What The <strong>F*ct</strong> ! Vrai ou fou ?</p>
         </div>
       </div>
 

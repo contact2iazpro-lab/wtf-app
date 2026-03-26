@@ -79,8 +79,33 @@ export default function RevelationScreen({
   )
 
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}25 0%, ${cat.color}10 50%, #f5f5f5 100%)` : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
+    <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide overflow-x-hidden" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}25 0%, ${cat.color}10 50%, #f5f5f5 100%)` : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
       {quitModal}
+
+      {/* Points animation floating from image to top scoring total */}
+      {!isDuel && flipped && (
+        <div
+          className="points-float-reveal fixed pointer-events-none"
+          style={{
+            left: '50%',
+            top: '50%',
+            width: '180px',
+            transform: 'translateX(-50%) translateY(-50%)',
+            zIndex: 50,
+            background: `linear-gradient(135deg, ${cat?.color}50 0%, ${cat?.color}30 100%)`,
+            border: `3px solid ${cat?.color}`,
+            borderRadius: '20px',
+            color: cat?.color,
+            padding: '16px',
+            textAlign: 'center',
+            fontSize: '44px',
+            fontWeight: 900,
+            textShadow: `0 4px 12px ${cat?.color}60`,
+            boxShadow: `0 12px 32px ${cat?.color}40`,
+          }}>
+          +{pointsEarned} pts
+        </div>
+      )}
       {/* Header with fact number */}
       <div className="px-5 pt-8 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -175,25 +200,6 @@ export default function RevelationScreen({
               gridColumn: 'span 2',
             }}>
             {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
-          </div>
-        )}
-
-        {/* Points earned with slide animation — solo only */}
-        {!isDuel && (
-          <div className="relative col-span-2" style={{ height: '80px' }}>
-            {/* Floating points that slide up and fade */}
-            <div
-              className="points-slide absolute inset-0 py-4 rounded-2xl text-center border-2 font-black flex items-center justify-center"
-              style={{
-                background: `linear-gradient(135deg, ${cat?.color}30 0%, ${cat?.color}15 100%)`,
-                borderColor: cat?.color + '80',
-                color: cat?.color,
-                animationDelay: '0.6s',
-                fontSize: '28px',
-                fontWeight: 900,
-              }}>
-              +{pointsEarned} pts
-            </div>
           </div>
         )}
 

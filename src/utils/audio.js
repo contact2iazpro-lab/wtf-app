@@ -233,6 +233,16 @@ class AudioManager {
     if (!this._vibrationEnabled) return
     try { navigator.vibrate?.(pattern) } catch (_) {}
   }
+
+  // Play audio files from public directory
+  playFile(filename) {
+    if (!this._sfxEnabled) return
+    try {
+      const audio = new Audio(`/${filename}`)
+      audio.volume = 0.7
+      audio.play().catch(() => {})
+    } catch (_) {}
+  }
 }
 
 export const audio = new AudioManager()

@@ -21,25 +21,31 @@ export default function RevelationScreen({
   const [copied, setCopied] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const cat = getCategoryById(fact.category)
+  const isDuel = !!duelContext
+  const isLast = factIndex + 1 >= totalFacts
 
   useEffect(() => {
     const timer = setTimeout(() => setFlipped(true), 300)
     if (!isDuel) {
-      setTimeout(() => audio.play('reveal'), 150)
-      setTimeout(() => audio.play('stamp'), 350)
-      setTimeout(() => audio.play('points'), 600)
+      // Play Stamp sound (always)
+      setTimeout(() => audio.playFile('Stamp.mp3'), 350)
+
+      // Play approval or refusal sound based on correctness
+      if (isCorrect) {
+        setTimeout(() => audio.playFile('Stamp Approval.mp3'), 350)
+        setTimeout(() => audio.playFile('Coins points.mp3'), 600)
+      } else {
+        setTimeout(() => audio.playFile('Stamp Refusal.mp3'), 350)
+      }
     }
     return () => clearTimeout(timer)
-  }, []) // eslint-disable-line
+  }, [isCorrect, isDuel]) // eslint-disable-line
 
   const handleShare = () => {
     onShare()
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
-
-  const isLast = factIndex + 1 >= totalFacts
-  const isDuel = !!duelContext
   const isLastPlayer = isDuel && duelContext.isLastPlayer
   const playerColor = isDuel ? (['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][duelContext.currentPlayerIndex] ?? '#FF5C1A') : null
   const isOpenMode = selectedAnswer === 100 || selectedAnswer === -2

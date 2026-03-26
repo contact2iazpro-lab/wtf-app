@@ -26,22 +26,22 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
           🎲 Trouve 20 <strong>F*cts</strong> Aléatoires
         </button>
 
-        {/* Categories list — ultra compact rows */}
-        <div className="flex flex-col gap-1">
+        {/* Categories list — 2 per row */}
+        <div className="grid grid-cols-2 gap-2">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className="btn-press rounded-lg px-3 py-1.5 text-left transition-all duration-150 active:scale-95 flex items-center gap-2"
+              className="btn-press rounded-xl py-3 px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center gap-2"
               style={{
-                background: 'rgba(255,255,255,0.55)',
-                borderColor: 'rgba(255,255,255,0.8)',
+                background: 'rgba(255,255,255,0.6)',
+                borderColor: 'rgba(255,255,255,0.9)',
                 border: '1px solid',
                 color: '#1a1a2e',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               }}>
-              <span className="text-lg shrink-0">{cat.emoji}</span>
-              <span className="font-bold text-xs leading-none">
+              <span className="text-2xl">{cat.emoji}</span>
+              <span className="font-bold text-xs leading-tight">
                 {cat.label}
               </span>
             </button>

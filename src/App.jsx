@@ -366,12 +366,18 @@ export default function App() {
               <div className="w-full rounded-3xl p-6 border" style={{ background: '#fff', borderColor: 'rgba(0,0,0,0.1)', maxWidth: '420px', maxHeight: '85vh', overflowY: 'auto' }}>
                 {gameMode === 'solo' ? (
                   <>
-                    <div className="text-4xl text-center mb-4">📚</div>
-                    <h2 className="text-xl font-black text-center mb-3" style={{ color: '#1a1a2e' }}>Comment jouer ?</h2>
+                    <div className="text-4xl text-center mb-4">{selectedDifficulty.emoji}</div>
+                    <h2 className="text-xl font-black text-center mb-3" style={{ color: '#1a1a2e' }}>{selectedDifficulty.label}</h2>
                     <div className="text-sm mb-5" style={{ color: '#333', lineHeight: '1.6' }}>
                       <p className="mb-3"><strong>🎯 Le jeu :</strong> Chaque <strong>F*ct</strong> vous pose une question sur un sujet aléatoire.</p>
-                      <p className="mb-3"><strong>🧠 Mode ouvert :</strong> Vous trouvez la réponse en 60 secondes. Le questionneur valide. 5, 3 ou 2 pts selon les indices utilisés.</p>
-                      <p className="mb-3"><strong>🎯 Choix multiple :</strong> 4 réponses en 20 secondes. 1 pt si correct.</p>
+                      <p className="mb-3"><strong>🎲 Choix :</strong> <strong>{selectedDifficulty.choices} réponses</strong> possibles pour chaque question.</p>
+                      <p className="mb-3"><strong>⏱️ Temps :</strong> Vous avez <strong>{selectedDifficulty.duration} secondes</strong> pour répondre.</p>
+                      {selectedDifficulty.hintsAllowed ? (
+                        <p className="mb-3"><strong>💡 Indices :</strong> Utilisez jusqu'à <strong>2 indices</strong> pour vous aider. <strong>3 pts</strong> sans indice, <strong>2 pts</strong> avec 1 indice, <strong>1 pt</strong> avec 2 indices.</p>
+                      ) : (
+                        <p className="mb-3"><strong>💡 Indices :</strong> Aucun indice disponible dans ce parcours.</p>
+                      )}
+                      <p className="mb-3"><strong>⭐ Points :</strong> <strong>{selectedDifficulty.scoring.correct} points</strong> par réponse correcte.</p>
                       <p><strong>📊 Score :</strong> Accumulez des points et battez vos records !</p>
                     </div>
                   </>

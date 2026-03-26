@@ -69,9 +69,18 @@ class AudioManager {
         this._tone(659, 0.18, 'sine', 0.20, 0.20)
         this._tone(880, 0.45, 'sine', 0.28, 0.32)
         break
+      case 'stamp':
+        // Sharp, crisp stamp hitting paper — percussive square wave burst
+        this._tone(880, 0.04, 'square', 0.45)
+        this._tone(660, 0.06, 'square', 0.35, 0.03)
+        break
       case 'points':
-        this._tone(1047, 0.08, 'sine', 0.22)
-        this._tone(1319, 0.18, 'sine', 0.28, 0.08)
+        // Coins tinkling like a jackpot — ascending ding-ding-ding sequence
+        this._tone(1047, 0.08, 'sine', 0.28)
+        this._tone(1319, 0.10, 'sine', 0.35, 0.08)
+        this._tone(1568, 0.12, 'sine', 0.40, 0.19)
+        this._tone(1760, 0.08, 'sine', 0.38, 0.33)
+        this._tone(1047, 0.06, 'sine', 0.30, 0.43)
         break
       case 'timeout':
         this._tone(330, 0.28, 'square', 0.12)

@@ -263,7 +263,8 @@ export default function RevelationScreen({
 
       {/* Scrollable explanation + scores section */}
       <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-5 px-5 pt-1">
-        {/* Explanation section */}
+        {/* Explanation section — solo mode only, shown when answer is correct */}
+        {!isDuel && isCorrect && (
         <div className="rounded-3xl border p-5" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-2xl">🧠</span>
@@ -282,6 +283,7 @@ export default function RevelationScreen({
             </a>
           )}
         </div>
+        )}
 
         {/* Multi score (shown after last player answers each round) */}
         {isDuel && isLastPlayer && (

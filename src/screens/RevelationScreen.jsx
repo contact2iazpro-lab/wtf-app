@@ -38,7 +38,6 @@ export default function RevelationScreen({
       if (!isDuel) setShowBadge(true)
     }, 300)
     if (!isDuel) {
-      setTimeout(() => audio.playFile('Stamp.mp3'), 350)
       if (isCorrect) {
         setTimeout(() => audio.playFile('What the fact.mp3'), 350)
         setTimeout(() => audio.playFile('Coins points.mp3'), 600)

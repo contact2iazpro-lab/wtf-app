@@ -1,30 +1,36 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 
-export default function SettingsModal({ showSettings, onClose }) {
+export default function SettingsModal({ onClose }) {
   const [musicOn, setMusicOn] = useState(audio.musicEnabled)
   const [sfxOn, setSfxOn] = useState(audio.sfxEnabled)
   const [vibOn, setVibOn] = useState(audio.vibrationEnabled)
 
   const toggleMusic = () => {
-    const next = !musicOn; setMusicOn(next); audio.setMusicEnabled(next)
+    const next = !musicOn
+    setMusicOn(next)
+    audio.setMusicEnabled(next)
   }
+
   const toggleSfx = () => {
-    const next = !sfxOn; setSfxOn(next); audio.setSfxEnabled(next)
+    const next = !sfxOn
+    setSfxOn(next)
+    audio.setSfxEnabled(next)
     if (next) audio.play('click')
   }
+
   const toggleVib = () => {
-    const next = !vibOn; setVibOn(next); audio.setVibrationEnabled(next)
+    const next = !vibOn
+    setVibOn(next)
+    audio.setVibrationEnabled(next)
     if (next) audio.vibrate(40)
   }
 
   const rows = [
-    { label: 'Musique',   emojiOn: '🎵', emojiOff: '🔇', on: musicOn, toggle: toggleMusic },
-    { label: 'Bruitages', emojiOn: '🔔', emojiOff: '🔕', on: sfxOn,   toggle: toggleSfx   },
-    { label: 'Vibreur',   emojiOn: '📳', emojiOff: '📴', on: vibOn,   toggle: toggleVib   },
+    { label: 'Musique', emojiOn: '🎵', emojiOff: '🔇', on: musicOn, toggle: toggleMusic },
+    { label: 'Bruitages', emojiOn: '🔔', emojiOff: '🔕', on: sfxOn, toggle: toggleSfx },
+    { label: 'Vibreur', emojiOn: '📳', emojiOff: '📴', on: vibOn, toggle: toggleVib },
   ]
-
-  if (!showSettings) return null
 
   return (
     <div
@@ -34,14 +40,14 @@ export default function SettingsModal({ showSettings, onClose }) {
       <div
         className="w-full max-w-md rounded-t-3xl p-6 pb-10"
         style={{ background: 'rgba(18,18,28,0.97)', border: '1px solid rgba(255,255,255,0.12)' }}
-        onClick={e => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}>
 
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-white font-black text-lg tracking-wide">⚙️ Paramètres</h2>
         </div>
 
         <div className="flex flex-col gap-3">
-          {rows.map(row => (
+          {rows.map((row) => (
             <button
               key={row.label}
               onClick={row.toggle}
@@ -67,14 +73,6 @@ export default function SettingsModal({ showSettings, onClose }) {
             </button>
           ))}
         </div>
-
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="mt-5 w-full py-4 rounded-2xl font-black text-sm tracking-widest uppercase active:scale-95 transition-all"
-          style={{ background: 'rgba(0,0,0,0.07)', color: 'rgba(0,0,0,0.45)', border: '1px solid rgba(0,0,0,0.1)' }}>
-          ✕ Fermer
-        </button>
       </div>
     </div>
   )

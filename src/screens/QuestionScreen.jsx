@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import CircularTimer from '../components/CircularTimer'
+import SettingsModal from '../components/SettingsModal'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
@@ -31,6 +32,7 @@ export default function QuestionScreen({
   const [showHint1, setShowHint1] = useState(false)
   const [showHint2, setShowHint2] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const cat = getCategoryById(fact.category)
 
   // Dynamic background per category — vivid & bright
@@ -95,12 +97,20 @@ export default function QuestionScreen({
             #{fact.id} · {factIndex + 1} / {totalFacts}
           </div>
         </div>
-        <button
-          onClick={() => setShowQuitConfirm(true)}
-          className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
-          style={{ background: 'rgba(255,255,255,0.08)' }}>
-          ✕
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { audio.play('click'); setShowSettings(true) }}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
+            style={{ background: 'rgba(255,255,255,0.08)' }}>
+            ⚙️
+          </button>
+          <button
+            onClick={() => setShowQuitConfirm(true)}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
+            style={{ background: 'rgba(255,255,255,0.08)' }}>
+            ✕
+          </button>
+        </div>
       </div>
       {/* Progress bar */}
       <div className="h-1 rounded-full w-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
@@ -289,6 +299,7 @@ export default function QuestionScreen({
   return (
     <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: screenBg }}>
       {quitModal}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
       {categoryBadge}
       {factImage(true)}

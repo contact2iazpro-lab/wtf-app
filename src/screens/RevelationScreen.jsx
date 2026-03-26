@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import SettingsModal from '../components/SettingsModal'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
@@ -23,6 +24,7 @@ export default function RevelationScreen({
   const [displayedScore, setDisplayedScore] = useState(sessionScore - pointsEarned)
   const [showScorePulse, setShowScorePulse] = useState(false)
   const [showBadge, setShowBadge] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const scoreRefTarget = useRef(null)
   const pointsBadgeRef = useRef(null)
@@ -122,6 +124,7 @@ export default function RevelationScreen({
   return (
     <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}45 0%, ${cat.color}30 50%, ${cat.color}15 100%)` : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)' }}>
       {quitModal}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* Badge de points flottant vers le score */}
       {!isDuel && showBadge && (
@@ -189,12 +192,20 @@ export default function RevelationScreen({
               <span>{cat.label}</span>
             </div>
           )}
-          <button
-            onClick={() => setShowQuitConfirm(true)}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
-            style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { audio.play('click'); setShowSettings(true) }}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+              ⚙️
+            </button>
+            <button
+              onClick={() => setShowQuitConfirm(true)}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+              ✕
+            </button>
+          </div>
         </div>
       </div>
 

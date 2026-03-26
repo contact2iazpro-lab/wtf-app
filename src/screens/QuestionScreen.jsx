@@ -84,7 +84,7 @@ export default function QuestionScreen({
             </div>
           )}
           <div className="text-xs font-bold text-white/50 uppercase tracking-wide">
-            {factIndex + 1} / {totalFacts}
+            #{fact.id} · {factIndex + 1} / {totalFacts}
           </div>
         </div>
         <button

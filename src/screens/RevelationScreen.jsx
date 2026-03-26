@@ -90,7 +90,7 @@ export default function RevelationScreen({
             </div>
           )}
           <div className="text-xs font-bold text-white/50 uppercase tracking-wide">
-            {factIndex + 1} / {totalFacts}
+            #{fact.id} · {factIndex + 1} / {totalFacts}
           </div>
         </div>
         <div className="flex items-center gap-2">

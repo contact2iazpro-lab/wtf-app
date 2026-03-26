@@ -10,6 +10,7 @@ class AudioManager {
     this._playing = false
     this._musicEnabled = localStorage.getItem('wtf_music') !== 'false'
     this._sfxEnabled = localStorage.getItem('wtf_sfx') !== 'false'
+    this._vibrationEnabled = localStorage.getItem('wtf_vibration') !== 'false'
   }
 
   _ctx_get() {
@@ -200,6 +201,7 @@ class AudioManager {
 
   get musicEnabled() { return this._musicEnabled }
   get sfxEnabled() { return this._sfxEnabled }
+  get vibrationEnabled() { return this._vibrationEnabled }
 
   setMusicEnabled(val) {
     this._musicEnabled = val
@@ -211,6 +213,16 @@ class AudioManager {
   setSfxEnabled(val) {
     this._sfxEnabled = val
     localStorage.setItem('wtf_sfx', String(val))
+  }
+
+  setVibrationEnabled(val) {
+    this._vibrationEnabled = val
+    localStorage.setItem('wtf_vibration', String(val))
+  }
+
+  vibrate(pattern = 30) {
+    if (!this._vibrationEnabled) return
+    try { navigator.vibrate?.(pattern) } catch (_) {}
   }
 }
 

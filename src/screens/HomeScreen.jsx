@@ -34,25 +34,89 @@ function StarLogo() {
   )
 }
 
-export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarathon }) {
+function SettingsModal({ onClose }) {
   const [musicOn, setMusicOn] = useState(audio.musicEnabled)
   const [sfxOn, setSfxOn] = useState(audio.sfxEnabled)
+  const [vibOn, setVibOn] = useState(audio.vibrationEnabled)
+
+  const toggleMusic = () => {
+    const next = !musicOn; setMusicOn(next); audio.setMusicEnabled(next)
+  }
+  const toggleSfx = () => {
+    const next = !sfxOn; setSfxOn(next); audio.setSfxEnabled(next)
+    if (next) audio.play('click')
+  }
+  const toggleVib = () => {
+    const next = !vibOn; setVibOn(next); audio.setVibrationEnabled(next)
+    if (next) audio.vibrate(40)
+  }
+
+  const rows = [
+    { label: 'Musique',   emojiOn: '🎵', emojiOff: '🔇', on: musicOn, toggle: toggleMusic },
+    { label: 'Bruitages', emojiOn: '🔔', emojiOff: '🔕', on: sfxOn,   toggle: toggleSfx   },
+    { label: 'Vibreur',   emojiOn: '📳', emojiOff: '📴', on: vibOn,   toggle: toggleVib   },
+  ]
+
+  return (
+    <div
+      className="fixed inset-0 flex items-end justify-center"
+      style={{ zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-t-3xl p-6 pb-10"
+        style={{ background: 'rgba(18,18,28,0.97)', border: '1px solid rgba(255,255,255,0.12)' }}
+        onClick={e => e.stopPropagation()}>
+
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-white font-black text-lg tracking-wide">⚙️ Paramètres</h2>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {rows.map(row => (
+            <button
+              key={row.label}
+              onClick={row.toggle}
+              className="flex items-center justify-between px-5 py-4 rounded-2xl border transition-all active:scale-95"
+              style={{
+                background: row.on ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)',
+                borderColor: row.on ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)',
+              }}>
+              <span className="flex items-center gap-3">
+                <span className="text-2xl">{row.on ? row.emojiOn : row.emojiOff}</span>
+                <span className="font-bold text-sm" style={{ color: row.on ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)' }}>
+                  {row.label}
+                </span>
+              </span>
+              {/* Toggle pill */}
+              <div
+                className="relative w-12 h-6 rounded-full transition-all duration-200"
+                style={{ background: row.on ? '#FF6B1A' : 'rgba(255,255,255,0.12)' }}>
+                <div
+                  className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200"
+                  style={{ left: row.on ? '26px' : '2px' }} />
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="mt-5 w-full py-4 rounded-2xl font-black text-sm tracking-widest uppercase active:scale-95 transition-all"
+          style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          ✕ Fermer
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarathon }) {
+  const [showSettings, setShowSettings] = useState(false)
 
   const handlePlay = () => { audio.startMusic(); audio.play('click'); onPlay() }
   const handleDuel = () => { audio.startMusic(); audio.play('click'); onDuel() }
   const handleMarathon = () => { audio.startMusic(); audio.play('click'); onMarathon() }
-
-  const toggleMusic = () => {
-    const next = !musicOn
-    setMusicOn(next)
-    audio.setMusicEnabled(next)
-  }
-  const toggleSfx = () => {
-    const next = !sfxOn
-    setSfxOn(next)
-    audio.setSfxEnabled(next)
-    if (next) audio.play('click')
-  }
 
   return (
     <div className="flex flex-col h-full w-full overflow-y-auto scrollbar-hide rainbow-bg">
@@ -68,6 +132,17 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
           </div>
         ))}
       </div>
+
+      {/* Settings modal */}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
+      {/* Gear button — top right */}
+      <button
+        onClick={() => { audio.play('click'); setShowSettings(true) }}
+        className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+        style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)', zIndex: 10, fontSize: 18 }}>
+        ⚙️
+      </button>
 
       {/* Header */}
       <div className="relative pt-8 pb-4 px-6 flex flex-col items-center" style={{ zIndex: 1 }}>
@@ -150,31 +225,8 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
         </div>
       </div>
 
-      {/* Audio controls */}
-      <div className="px-6 pb-8 flex gap-3" style={{ position: 'relative', zIndex: 1 }}>
-        <button
-          onClick={toggleMusic}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border font-bold text-sm transition-all active:scale-95"
-          style={{
-            background: musicOn ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
-            borderColor: musicOn ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
-            color: musicOn ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
-          }}>
-          <span>{musicOn ? '🎵' : '🔇'}</span>
-          <span>Musique</span>
-        </button>
-        <button
-          onClick={toggleSfx}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border font-bold text-sm transition-all active:scale-95"
-          style={{
-            background: sfxOn ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
-            borderColor: sfxOn ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)',
-            color: sfxOn ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
-          }}>
-          <span>{sfxOn ? '🔔' : '🔕'}</span>
-          <span>Bruitages</span>
-        </button>
-      </div>
+      {/* Bottom spacer */}
+      <div className="pb-8" />
     </div>
   )
 }

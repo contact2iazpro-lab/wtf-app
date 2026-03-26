@@ -163,7 +163,7 @@ export default function RevelationScreen({
           />
           {/* Stamp overlay — solo mode only */}
           {!isDuel && flipped && (
-            <div className="absolute inset-0 flex items-end justify-end" style={{ paddingRight: '2px', paddingBottom: '2px', pointerEvents: 'none' }}>
+            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: '24px' }}>
               <div
                 className="stamp-wow"
                 style={{
@@ -171,7 +171,7 @@ export default function RevelationScreen({
                   fontWeight: 900,
                   color: isCorrect ? '#4CAF50' : '#F44336',
                   textShadow: `0 4px 12px ${isCorrect ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)'}`,
-                  transform: 'rotate(-15deg)',
+                  transform: 'rotate(-15deg) scale(1.1)',
                   transformOrigin: 'right bottom',
                   border: `4px solid ${isCorrect ? '#4CAF50' : '#F44336'}`,
                   borderRadius: '8px',

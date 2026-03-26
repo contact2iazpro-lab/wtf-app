@@ -1,17 +1,23 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 
-const CREATURES = [
-  { src: '/Dauphin.png',      style: { top: '4%',  left: '3%'  }, size: 58, anim: 'creature-float-1' },
-  { src: '/Etoile.png',       style: { top: '3%',  right: '5%' }, size: 48, anim: 'creature-float-2' },
-  { src: '/Garcon.png',       style: { top: '20%', left: '1%'  }, size: 54, anim: 'creature-float-3' },
-  { src: '/grenouille.png',   style: { top: '18%', right: '3%' }, size: 52, anim: 'creature-float-1' },
-  { src: '/Montgolfiere.png', style: { top: '38%', left: '2%'  }, size: 56, anim: 'creature-float-2' },
-  { src: '/Nuage.png',        style: { top: '36%', right: '4%' }, size: 62, anim: 'creature-float-3' },
-  { src: '/Princesses.png',   style: { top: '56%', left: '3%'  }, size: 54, anim: 'creature-float-1' },
-  { src: '/Terre.png',        style: { top: '54%', right: '3%' }, size: 50, anim: 'creature-float-2' },
-  { src: '/zigomar.png',      style: { top: '72%', left: '2%'  }, size: 56, anim: 'creature-float-3' },
+const CREATURE_SRCS = [
+  '/Dauphin.png', '/Etoile.png', '/Garcon.png', '/grenouille.png',
+  '/Montgolfiere.png', '/Nuage.png', '/Princesses.png', '/Terre.png', '/zigomar.png',
 ]
+
+function randomCreatures() {
+  return CREATURE_SRCS.map((src) => ({
+    src,
+    top:  `${Math.random() * 80}%`,
+    left: `${Math.random() * 78}%`,
+    size: 44 + Math.floor(Math.random() * 30),
+    anim: `creature-float-${1 + Math.floor(Math.random() * 6)}`,
+    dur:  `${3.2 + Math.random() * 3.8}s`,
+    delay: `-${Math.random() * 4}s`,
+    opacity: 0.6 + Math.random() * 0.3,
+  }))
+}
 
 const GAME_MODES = [
   { id: 'solo-flash', label: 'Mode Solo Flash', emoji: '⚡', desc: '60s par F*ct', active: true },
@@ -116,6 +122,7 @@ function SettingsModal({ onClose }) {
 
 export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarathon }) {
   const [showSettings, setShowSettings] = useState(false)
+  const [creatures] = useState(randomCreatures)
 
   const handlePlay = () => { audio.startMusic(); audio.play('click'); onPlay() }
   const handleDuel = () => { audio.startMusic(); audio.play('click'); onDuel() }
@@ -126,11 +133,19 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
 
       {/* Floating creatures — fixed to viewport */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-        {CREATURES.map((c, i) => (
+        {creatures.map((c, i) => (
           <div
             key={i}
             className={c.anim}
-            style={{ position: 'absolute', opacity: 0.75, userSelect: 'none', ...c.style }}>
+            style={{
+              position: 'absolute',
+              top: c.top,
+              left: c.left,
+              opacity: c.opacity,
+              userSelect: 'none',
+              '--dur': c.dur,
+              '--delay': c.delay,
+            }}>
             <img src={c.src} alt="" width={c.size} height={c.size} style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
           </div>
         ))}

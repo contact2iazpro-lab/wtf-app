@@ -127,7 +127,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
   // RAF loop: move each creature across the screen, wrap around edges
   useEffect(() => {
     const W = window.innerWidth
-    const H = window.innerHeight
+    const H = window.innerHeight - 100 // Reserve 100px at bottom for share button
     const speed = () => (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 1.2)
     const state = CREATURE_SRCS.map((_, i) => ({
       x: Math.random() * W,

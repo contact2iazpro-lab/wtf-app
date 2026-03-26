@@ -4,7 +4,7 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
   return (
     <div className="flex flex-col h-full w-full screen-enter rainbow-bg">
       {/* Header */}
-      <div className="flex items-center gap-4 px-6 pt-12 pb-4" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="flex items-center gap-4 px-6 pt-6 pb-2" style={{ position: 'relative', zIndex: 1 }}>
         <button
           onClick={onBack}
           className="w-10 h-10 rounded-xl border flex items-center justify-center active:scale-90 transition-transform"
@@ -17,17 +17,17 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
         </div>
       </div>
 
-      <div className="flex-1 px-4 pb-8 overflow-y-auto scrollbar-hide" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="flex-1 px-4 pb-3 overflow-y-auto scrollbar-hide" style={{ position: 'relative', zIndex: 1 }}>
         {/* Categories grid — 2 per row, 8 rows total */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1.5">
           {/* Random button — first item in grid */}
           <button
             onClick={() => onSelectCategory(null)}
             className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
-            style={{ height: '100px', background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', border: '1px solid', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            style={{ height: '85px', background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', border: '1px solid', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <span className="text-2xl">🎲</span>
             <span className="font-bold text-xs leading-tight">
-              20<br />Aléatoires
+              Aléatoires
             </span>
           </button>
 
@@ -38,7 +38,7 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
               onClick={() => onSelectCategory(cat.id)}
               className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
               style={{
-                height: '100px',
+                height: '85px',
                 background: 'rgba(255,255,255,0.6)',
                 borderColor: 'rgba(255,255,255,0.9)',
                 border: '1px solid',

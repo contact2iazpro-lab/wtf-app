@@ -504,6 +504,7 @@ export default function App() {
           <CategoryScreen
             onSelectCategory={handleSelectCategory}
             onBack={() => setScreen(SCREENS.HOME)}
+            selectedDifficulty={selectedDifficulty}
           />
         </>
       )}

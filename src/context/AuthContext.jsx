@@ -90,6 +90,14 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }, [])
 
+  const signInWithFacebook = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: { redirectTo: window.location.origin }
+    })
+    if (error) throw error
+  }, [])
+
   const signOut = useCallback(async () => {
     await supabase.auth.signOut()
     setUser(null)
@@ -118,6 +126,7 @@ export function AuthProvider({ children }) {
       signUpWithEmail,
       signInWithEmail,
       signInWithGoogle,
+      signInWithFacebook,
       signOut,
       updateProfile,
       isSupabaseConfigured,

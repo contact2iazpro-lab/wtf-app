@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { getFactsByCategory, VALID_FACTS, CATEGORIES } from './data/facts'
+import { getFactsByCategory, VALID_FACTS, CATEGORIES, PLAYABLE_CATEGORIES } from './data/facts'
 import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
 import DifficultyScreen from './screens/DifficultyScreen'
@@ -94,7 +94,7 @@ export default function App() {
   const handleQuickPlay = useCallback(() => {
     // Future: replace childMode read with userProfile.age < 18 when profile exists
     const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
-    const validCats = CATEGORIES.filter(cat =>
+    const validCats = PLAYABLE_CATEGORIES.filter(cat =>
       VALID_FACTS.some(f => f.category === cat.id) &&
       (childMode || cat.id !== 'kids')
     )
@@ -142,7 +142,7 @@ export default function App() {
       // "Aléatoires" : 1 question aléatoire de 10 catégories distinctes
       // Future: replace childMode read with userProfile.age < 18 when profile exists
       const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
-      const validCategories = CATEGORIES.filter(cat =>
+      const validCategories = PLAYABLE_CATEGORIES.filter(cat =>
         VALID_FACTS.some(f => f.category === cat.id) &&
         (childMode || cat.id !== 'kids')
       )

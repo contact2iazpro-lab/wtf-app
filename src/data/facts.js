@@ -14,14 +14,14 @@ export const CATEGORIES = [
   { id: "sport", label: "Sport", emoji: "⚽", color: "#E84535", bg: "#3A0A05", image: "Carte WTF Sport.png" },
   { id: "technologie", label: "Technologie", emoji: "🤖", color: "#C0C0C0", bg: "#1C1C1C", image: "Carte WTF Technologie.png" },
   { id: "lois", label: "Lois & Règles", emoji: "⚖️", color: "#B0A8D8", bg: "#1A0A35", image: "Carte WTF Lois et regles.png" },
-  { id: "politique", label: "Politique", emoji: "🗳️", color: "#B24B4B", bg: "#2A0A0A", image: "Carte WTF Politique.png" },
+  { id: "politique", label: "Politique", emoji: "🗳️", color: "#B24B4B", bg: "#2A0A0A", image: "Carte WTF Politique.png", disabled: true },
   { id: "cinema", label: "Cinéma", emoji: "🎬", color: "#D4AF37", bg: "#2A2000", image: "Carte WTF Cinema.png" },
-  { id: "crimes", label: "Crimes & Faits Divers", emoji: "🔍", color: "#8B4789", bg: "#2A0A2A", image: "Carte WTF Crimes.png" },
-  { id: "architecture", label: "Architecture", emoji: "🏛️", color: "#A0826D", bg: "#2A1A0F", image: "Carte WTF Architecture.png" },
-  { id: "internet", label: "Internet & Réseaux Sociaux", emoji: "📱", color: "#5B8DBE", bg: "#0A1A35", image: "Carte WTF Internet.png" },
-  { id: "espace", label: "Espace", emoji: "🚀", color: "#2E1A47", bg: "#1A0A2A", image: "Carte WTF Espace.png" },
+  { id: "crimes", label: "Crimes & Faits Divers", emoji: "🔍", color: "#8B4789", bg: "#2A0A2A", image: "Carte WTF Crimes.png", disabled: true },
+  { id: "architecture", label: "Architecture", emoji: "🏛️", color: "#A0826D", bg: "#2A1A0F", image: "Carte WTF Architecture.png", disabled: true },
+  { id: "internet", label: "Internet & Réseaux Sociaux", emoji: "📱", color: "#5B8DBE", bg: "#0A1A35", image: "Carte WTF Internet.png", disabled: true },
+  { id: "espace", label: "Espace", emoji: "🚀", color: "#2E1A47", bg: "#1A0A2A", image: "Carte WTF Espace.png", disabled: true },
   { id: "musique", label: "Musique", emoji: "🎵", color: "#E84B8A", bg: "#2A0A1A", image: "Carte WTF Musique.png" },
-  { id: "psychologie", label: "Psychologie", emoji: "🧠", color: "#8E44AD", bg: "#1A0A2A", image: "Carte WTF Psychologie.png" }
+  { id: "psychologie", label: "Psychologie", emoji: "🧠", color: "#8E44AD", bg: "#1A0A2A", image: "Carte WTF Psychologie.png", disabled: true }
 ]
 
 export const FACTS = [
@@ -13030,6 +13030,9 @@ export const isFactValid = (fact) => {
 }
 
 export const VALID_FACTS = FACTS.filter(isFactValid)
+
+// Categories available for gameplay (disabled: true = hidden until ready)
+export const PLAYABLE_CATEGORIES = CATEGORIES.filter((c) => !c.disabled)
 
 export const getFactsByCategory = (categoryId) =>
   categoryId

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import { CATEGORIES, VALID_FACTS } from '../data/facts'
+import { PLAYABLE_PLAYABLE_CATEGORIES, VALID_FACTS } from '../data/facts'
 import { audio } from '../utils/audio'
 
 // Convert hex color to "r, g, b" string for rgba()
@@ -23,7 +23,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
 
   const selectedCat = selectedCatId === 'random'
     ? { label: 'Aléatoires', emoji: '🎲' }
-    : CATEGORIES.find(c => c.id === selectedCatId)
+    : PLAYABLE_CATEGORIES.find(c => c.id === selectedCatId)
 
   const hasSelection = selectedCatId !== null
 
@@ -142,7 +142,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
           </button>
 
           {/* Category cards */}
-          {CATEGORIES.map((cat) => {
+          {PLAYABLE_CATEGORIES.map((cat) => {
             const hasFacts = categoriesWithFacts.has(cat.id)
             const isSelected = selectedCatId === cat.id
             const dimOpacity = selectedCatId === null ? 1 : isSelected ? 1 : 0.5

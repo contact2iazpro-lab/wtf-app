@@ -85,26 +85,26 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
       </button>
 
       {/* Header */}
-      <div className="px-4 pt-3 pb-2 flex items-center justify-between shrink-0">
+      <div className="px-3 md:px-4 pt-2 md:pt-3 pb-2 md:pb-2 flex items-center justify-between shrink-0">
         <button
           onClick={handleBack}
-          className="w-9 h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
+          className="w-8 md:w-9 h-8 md:h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90 text-base md:text-base"
           style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
           ←
         </button>
-        <h1 className="text-xl font-black text-white">Choisir un parcours</h1>
-        <div className="w-9" />
+        <h1 className="text-lg md:text-xl font-black text-white text-center flex-1">Choisir un parcours</h1>
+        <div className="w-8 md:w-9" />
       </div>
 
       {/* Difficulty Cards */}
-      <div className="px-4 pb-2 flex-1 flex flex-col gap-2 overflow-y-auto scrollbar-hide">
+      <div className="px-3 md:px-4 py-2 md:py-3 flex flex-col gap-2 md:gap-2.5 overflow-y-auto scrollbar-hide">
         {DIFFICULTY_LEVELS.map((difficulty) => {
           const isSelected = selectedId === difficulty.id
           return (
             <button
               key={difficulty.id}
               onClick={() => { audio.play('click'); setSelectedId(difficulty.id) }}
-              className="btn-press rounded-2xl p-4 text-left active:scale-95"
+              className="btn-press rounded-xl md:rounded-2xl p-3 md:p-4 text-left active:scale-95"
               style={{
                 background: difficulty.colorRgba,
                 opacity: isSelected ? 1 : 0.5,
@@ -113,22 +113,22 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
               }}>
 
               {/* Emoji + Title */}
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl shrink-0">{difficulty.emoji}</span>
-                <h2 className="text-white font-black text-base flex-1">
+              <div className="flex items-center gap-2 mb-1.5 md:mb-2">
+                <span className="text-xl md:text-2xl shrink-0">{difficulty.emoji}</span>
+                <h2 className="text-white font-black text-sm md:text-base flex-1">
                   {difficulty.label}
                 </h2>
                 {isSelected && (
-                  <span className="text-white font-black text-lg shrink-0">✓</span>
+                  <span className="text-white font-black text-base md:text-lg shrink-0">✓</span>
                 )}
               </div>
 
               {/* Description */}
               <div className="space-y-0.5">
                 {difficulty.description.map((desc, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
-                    <span className="text-black/50 text-xs shrink-0">•</span>
-                    <span className="text-black font-medium">{desc}</span>
+                  <div key={i} className="flex items-center gap-2 text-xs md:text-sm">
+                    <span className="text-black/50 text-2xs md:text-xs shrink-0">•</span>
+                    <span className="text-black font-medium leading-snug">{desc}</span>
                   </div>
                 ))}
               </div>
@@ -138,10 +138,10 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
       </div>
 
       {/* Start Button */}
-      <div className="px-4 pb-3 shrink-0">
+      <div className="px-3 md:px-4 pb-2 md:pb-3 pt-1 shrink-0">
         <button
           onClick={() => handleSelect(selectedId)}
-          className="btn-press w-full py-3 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
+          className="btn-press w-full py-2.5 md:py-3 rounded-xl md:rounded-2xl text-white font-black text-sm md:text-base uppercase tracking-wide active:scale-95 transition-all"
           style={{
             background: DIFFICULTY_LEVELS.find(d => d.id === selectedId)?.color,
             boxShadow: `0 8px 32px ${DIFFICULTY_LEVELS.find(d => d.id === selectedId)?.color}40`,

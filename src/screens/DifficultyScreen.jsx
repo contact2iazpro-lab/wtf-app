@@ -100,21 +100,14 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
             onClick={() => setSelectedId(difficulty.id)}
             className="btn-press rounded-3xl p-6 border-2 transition-all text-left active:scale-95"
             style={{
-              background: selectedId === difficulty.id
-                ? `${difficulty.color}25`
-                : 'rgba(255,255,255,0.08)',
-              borderColor: selectedId === difficulty.id
-                ? difficulty.color
-                : 'rgba(255,255,255,0.15)',
-              boxShadow: selectedId === difficulty.id
-                ? `0 0 20px ${difficulty.color}40`
-                : 'none',
+              background: difficulty.color,
+              borderWidth: '0',
             }}>
             {/* Emoji + Title */}
             <div className="flex items-center gap-3 mb-3">
               <span className="text-3xl">{difficulty.emoji}</span>
               <div>
-                <h2 className="text-white font-black text-lg" style={{ color: difficulty.color }}>
+                <h2 className="text-white font-black text-lg">
                   {difficulty.label}
                 </h2>
               </div>
@@ -126,7 +119,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
             {/* Description */}
             <div className="space-y-1 text-sm">
               {difficulty.description.map((desc, i) => (
-                <div key={i} className="text-white/70 flex items-center gap-2">
+                <div key={i} className="text-white/80 flex items-center gap-2">
                   <span className="text-xs">•</span>
                   <span>{desc}</span>
                 </div>

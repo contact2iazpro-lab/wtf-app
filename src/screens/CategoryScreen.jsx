@@ -62,12 +62,9 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
                 className={`rounded-xl px-2 text-center transition-all duration-150 flex flex-col items-center justify-center gap-1 ${hasFacts ? 'btn-press active:scale-95 cursor-pointer' : 'cursor-not-allowed opacity-40'}`}
                 style={{
                   height: '85px',
-                  background: hasFacts ? (cat.color + '30') : 'rgba(100, 100, 100, 0.15)',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: hasFacts ? (cat.color + '90') : 'rgba(100, 100, 100, 0.3)',
-                  color: hasFacts ? cat.color : 'rgba(255, 255, 255, 0.3)',
-                  boxShadow: hasFacts ? `0 2px 12px ${cat.color}30` : 'none',
+                  background: hasFacts ? cat.color : 'rgba(100, 100, 100, 0.15)',
+                  borderWidth: '0',
+                  color: hasFacts ? 'white' : 'rgba(255, 255, 255, 0.3)',
                 }}>
                 <span className="text-2xl">{cat.emoji}</span>
                 <span className="font-bold text-xs leading-tight">

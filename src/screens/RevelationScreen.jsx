@@ -213,7 +213,7 @@ export default function RevelationScreen({
       {fact.imageUrl && (
         <div
           className={`mx-5 mb-3 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', height: '240px', background: !isCorrect && !isDuel && flipped ? '#1a1a1a' : 'transparent' }}>
+          style={{ borderColor: cat?.color + '60', aspectRatio: '1 / 1', background: !isCorrect && !isDuel && flipped ? '#1a1a1a' : 'transparent' }}>
           {/* Afficher l'image seulement si bonne réponse */}
           {isCorrect && (
             <img
@@ -238,7 +238,7 @@ export default function RevelationScreen({
                 }}>
                 <img
                   src="/logo-wtf.png"
-                  alt="WTF"
+                  alt="WTF!"
                   style={{
                     width: '100%',
                     height: '100%',
@@ -358,8 +358,8 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* Section scrollable explication + scores */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col gap-3 px-5 pt-1">
+      {/* Explication + scores */}
+      <div className="flex flex-col gap-3 px-5 pb-3 shrink-0">
         {/* Section explication — mode solo uniquement */}
         {!isDuel && isCorrect && (
           <div className="rounded-3xl border p-4" style={{ background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)', borderColor: cat?.color + '70', backdropFilter: 'blur(12px)', boxShadow: `0 4px 32px ${cat?.color || '#000'}25` }}>
@@ -403,14 +403,14 @@ export default function RevelationScreen({
       </div>
 
       {/* Boutons d'action */}
-      <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
+      <div className="px-5 pb-6 flex flex-col gap-3 shrink-0">
         {!isDuel && (
           <button
             onClick={handleShare}
             className="btn-press w-full py-4 rounded-2xl border text-white/70 font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
             style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' }}>
             <span>{copied ? '✅' : '📤'}</span>
-            {copied ? 'Copié !' : 'Partager ce WTF'}
+            {copied ? 'Copié !' : 'Partager ce WTF!'}
           </button>
         )}
         <button

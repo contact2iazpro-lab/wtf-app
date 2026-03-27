@@ -7,7 +7,7 @@ const RANK_LEVELS = [
   { min: 1,  max: 5,  emoji: '😅', label: 'Apprenti',     color: '#3B82F6' },
   { min: 6,  max: 10, emoji: '🧠', label: 'Curieux',      color: '#8B5CF6' },
   { min: 11, max: 17, emoji: '🔥', label: 'Expert',       color: '#F59E0B' },
-  { min: 18, max: 99, emoji: '👑', label: 'GÉNIE WTF',    color: '#FF5C1A' },
+  { min: 18, max: 99, emoji: '👑', label: 'GÉNIE WTF!',   color: '#FF5C1A' },
 ]
 
 function getRank(score) {

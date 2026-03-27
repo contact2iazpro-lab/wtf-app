@@ -26,8 +26,8 @@ const SCREENS = {
 }
 
 const DIFFICULTY_LEVELS = {
-  EXPERT: { id: 'expert', label: 'Parcours Expert', emoji: '⚡', choices: 6, duration: 10, hintsAllowed: false, scoring: { correct: 5, wrong: 0 } },
-  NORMAL: { id: 'normal', label: 'Parcours Normal', emoji: '🧠', choices: 4, duration: 20, hintsAllowed: false, scoring: { correct: 3, wrong: 0 } },
+  EXPERT: { id: 'expert', label: 'Parcours Expert', emoji: '⚡', choices: 6, duration: 30, hintsAllowed: false, scoring: { correct: 5, wrong: 0 } },
+  NORMAL: { id: 'normal', label: 'Parcours Normal', emoji: '🧠', choices: 4, duration: 60, hintsAllowed: false, scoring: { correct: 3, wrong: 0 } },
   EASY:   { id: 'easy',   label: 'Parcours Facile', emoji: '💚', choices: 6, duration: 60, hintsAllowed: true,  scoring: { correct: [3, 2, 1], wrong: 0 } },
 }
 

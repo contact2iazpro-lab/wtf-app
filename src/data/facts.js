@@ -11027,5 +11027,19 @@ export const FACTS = [
 
 export const getCategoryById = (id) => CATEGORIES.find((c) => c.id === id)
 
+export const isFactValid = (fact) =>
+  Boolean(
+    fact &&
+    fact.question &&
+    fact.category &&
+    fact.imageUrl &&
+    Array.isArray(fact.options) && fact.options.length >= 2 &&
+    typeof fact.correctIndex === 'number' && fact.correctIndex >= 0
+  )
+
+export const VALID_FACTS = FACTS.filter(isFactValid)
+
 export const getFactsByCategory = (categoryId) =>
-  categoryId ? FACTS.filter((f) => f.category === categoryId) : FACTS
+  categoryId
+    ? VALID_FACTS.filter((f) => f.category === categoryId)
+    : VALID_FACTS

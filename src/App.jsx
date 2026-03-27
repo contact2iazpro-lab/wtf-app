@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { getFactsByCategory, FACTS, CATEGORIES } from './data/facts'
+import { getFactsByCategory, VALID_FACTS, CATEGORIES } from './data/facts'
 import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
 import DifficultyScreen from './screens/DifficultyScreen'
@@ -111,13 +111,13 @@ export default function App() {
     if (categoryId === null) {
       // "Aléatoires" : 1 question aléatoire de 10 catégories distinctes
       const validCategories = CATEGORIES.filter(cat =>
-        FACTS.some(f => f.category === cat.id)
+        VALID_FACTS.some(f => f.category === cat.id)
       )
 
       if (validCategories.length < 10) {
         // Fallback: si moins de 10 catégories valides, prendre 10 questions aléatoires
         console.warn(`[WARNING] Moins de 10 catégories valides (${validCategories.length}), fallback sur 10 questions aléatoires`)
-        facts = [...FACTS].sort(() => Math.random() - 0.5).slice(0, 10)
+        facts = [...VALID_FACTS].sort(() => Math.random() - 0.5).slice(0, 10)
       } else {
         // Sélectionner 10 catégories aléatoires
         const selectedCats = [...validCategories]
@@ -126,7 +126,7 @@ export default function App() {
 
         // Pour chaque catégorie, tirer 1 question aléatoire
         facts = selectedCats.map(cat => {
-          const catFacts = FACTS.filter(f => f.category === cat.id)
+          const catFacts = VALID_FACTS.filter(f => f.category === cat.id)
           return catFacts[Math.floor(Math.random() * catFacts.length)]
         })
 

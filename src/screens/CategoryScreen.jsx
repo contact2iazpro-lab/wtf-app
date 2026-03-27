@@ -12,7 +12,7 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
     return categoryIds
   }, [])
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden screen-enter" style={{ background: 'linear-gradient(170deg, #0D0D1A 0%, #1A1A2E 100%)' }}>
+    <div className="flex flex-col h-full w-full overflow-hidden screen-enter rainbow-bg">
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* Settings button — top right */}

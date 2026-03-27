@@ -37,7 +37,7 @@ const DIFFICULTY_LEVELS = [
     colorRgba: 'rgba(34, 197, 94, 0.7)',
     description: [
       '4 choix possibles',
-      '20 secondes de réflexion',
+      '60 secondes de réflexion',
       'Avec indices',
       '3/2/1 points selon les indices',
     ],
@@ -55,7 +55,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
       label: difficulty.label,
       emoji: difficulty.emoji,
       choices: difficultyId === 'expert' ? 6 : 4,
-      duration: difficultyId === 'expert' ? 10 : 20,
+      duration: difficultyId === 'expert' ? 10 : difficultyId === 'easy' ? 60 : 20,
       hintsAllowed: difficultyId === 'easy',
       scoring: difficultyId === 'expert'
         ? { correct: 5, wrong: 0 }

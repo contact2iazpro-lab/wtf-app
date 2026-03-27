@@ -82,6 +82,7 @@ export default function App() {
   const [showHowToPlay, setShowHowToPlay] = useState(() => localStorage.getItem('wtf_hide_howtoplay') !== 'true')
   const [showSettings, setShowSettings] = useState(false)
   const [isQuickPlay, setIsQuickPlay] = useState(false)
+  const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
 
   const { user } = useAuth()
 
@@ -123,6 +124,7 @@ export default function App() {
     setHintsUsed(0)
     setSelectedAnswer(null)
     setIsCorrect(null)
+    setSessionCorrectFacts([])
     setScreen(SCREENS.QUESTION)
   }, [])
 
@@ -194,6 +196,7 @@ export default function App() {
     setHintsUsed(0)
     setSelectedAnswer(null)
     setIsCorrect(null)
+    setSessionCorrectFacts([])
     setScreen(SCREENS.QUESTION)
   }, [selectedDifficulty])
 
@@ -221,16 +224,8 @@ export default function App() {
     setIsCorrect(isAnswerCorrect)
     setPointsEarned(points)
 
-    if (isAnswerCorrect && currentFact && !unlockedFacts.has(currentFact.id)) {
-      setStorage(prev => {
-        const newUnlocked = new Set(prev.unlockedFacts)
-        newUnlocked.add(currentFact.id)
-        saveStorage(prev.totalScore, prev.streak, newUnlocked)
-        return { ...prev, unlockedFacts: newUnlocked }
-      })
-      if (!isQuickPlay && user) {
-        updateCollection(user.id, currentFact.category, currentFact.id)
-      }
+    if (isAnswerCorrect && currentFact) {
+      setSessionCorrectFacts(prev => [...prev, currentFact])
     }
 
     if (gameMode === 'duel') {
@@ -241,7 +236,7 @@ export default function App() {
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty, unlockedFacts])
+  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty])
 
   // Open mode — 5/3/2 pts based on hints, validated by questioner
   const handleOpenValidate = useCallback((isCorrect) => {
@@ -251,16 +246,8 @@ export default function App() {
     setIsCorrect(isCorrect)
     setPointsEarned(points)
 
-    if (isCorrect && currentFact && !unlockedFacts.has(currentFact.id)) {
-      setStorage(prev => {
-        const newUnlocked = new Set(prev.unlockedFacts)
-        newUnlocked.add(currentFact.id)
-        saveStorage(prev.totalScore, prev.streak, newUnlocked)
-        return { ...prev, unlockedFacts: newUnlocked }
-      })
-      if (!isQuickPlay && user) {
-        updateCollection(user.id, currentFact.category, currentFact.id)
-      }
+    if (isCorrect && currentFact) {
+      setSessionCorrectFacts(prev => [...prev, currentFact])
     }
 
     if (gameMode === 'duel') {
@@ -271,7 +258,7 @@ export default function App() {
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [hintsUsed, gameMode, duelCurrentPlayerIndex, currentFact, unlockedFacts])
+  }, [hintsUsed, gameMode, duelCurrentPlayerIndex, currentFact])
 
   const handleTimeout = useCallback(() => {
     if (selectedAnswer !== null) return
@@ -309,8 +296,22 @@ export default function App() {
     if (nextIndex >= sessionFacts.length) {
       if (!isQuickPlay) {
         const newStreak = streak + 1
-        saveStorage(totalScore + sessionScore, newStreak, unlockedFacts)
-        setStorage(prev => ({ ...prev, totalScore: totalScore + sessionScore, streak: newStreak }))
+        // Bulk-unlock all correctly answered facts from this session
+        const newUnlocked = new Set(unlockedFacts)
+        const toSync = []
+        for (const fact of sessionCorrectFacts) {
+          if (!newUnlocked.has(fact.id)) {
+            newUnlocked.add(fact.id)
+            toSync.push(fact)
+          }
+        }
+        saveStorage(totalScore + sessionScore, newStreak, newUnlocked)
+        setStorage(prev => ({ ...prev, totalScore: totalScore + sessionScore, streak: newStreak, unlockedFacts: newUnlocked }))
+        if (user) {
+          for (const fact of toSync) {
+            updateCollection(user.id, fact.category, fact.id)
+          }
+        }
       }
       setScreen(SCREENS.RESULTS)
     } else {
@@ -321,7 +322,7 @@ export default function App() {
       setPointsEarned(0)
       setScreen(SCREENS.QUESTION)
     }
-  }, [gameMode, currentIndex, sessionFacts.length, sessionScore, totalScore, streak, isQuickPlay])
+  }, [gameMode, currentIndex, sessionFacts.length, sessionScore, totalScore, streak, isQuickPlay, sessionCorrectFacts, unlockedFacts, user])
 
   // Multi: current player finished → pass to next player
   const handleDuelNextPlayer = useCallback(() => {

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useCollection'
-import { PLAYABLE_CATEGORIES, PARCOURS_FACTS } from '../data/facts'
+import { CATEGORIES, PLAYABLE_CATEGORIES, PARCOURS_FACTS } from '../data/facts'
 import LoginModal from '../components/Auth/LoginModal'
 import { audio } from '../utils/audio'
 
@@ -25,7 +25,7 @@ function ProgressBar({ percentage, color }) {
         ? 'transparent'
         : `rgba(${hexToRgb(color)}, 0.9)`
   return (
-    <div className="w-full rounded-full overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.1)' }}>
+    <div className="w-full rounded-full overflow-hidden" style={{ height: 4, background: '#E5E7EB' }}>
       <div className="h-full rounded-full transition-all duration-700" style={{ width: `${percentage}%`, background: barColor }} />
     </div>
   )
@@ -40,6 +40,9 @@ const DIFF_CONFIG = {
 // ─── Fact detail full-screen view ──────────────────────────────────────────
 
 function FactDetailView({ fact, onClose }) {
+  const catData = CATEGORIES.find(c => c.id === fact.category)
+  const catColor = catData?.color || '#FF6B1A'
+
   const share = () => {
     const text = `🤯 Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct! https://wtf-app-livid.vercel.app/`
     if (navigator.share) navigator.share({ text }).catch(() => {})
@@ -49,61 +52,84 @@ function FactDetailView({ fact, onClose }) {
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ zIndex: 400, background: '#0a0f1e' }}
+      style={{ zIndex: 400, background: '#FAFAF8', overflow: 'hidden' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
         <button
           onClick={onClose}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', fontSize: 16 }}
+          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform shrink-0"
+          style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151', fontSize: 16 }}
         >
           ←
         </button>
-        <span className="font-black text-white text-sm flex-1 truncate">{fact.shortAnswer}</span>
+        <span className="text-base shrink-0">{catData?.emoji}</span>
+        <span className="font-black text-sm flex-1 truncate" style={{ color: '#1a1a2e' }}>{catData?.label}</span>
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Image */}
-        {fact.imageUrl ? (
-          <img
-            src={fact.imageUrl}
-            alt={fact.shortAnswer}
-            className="w-full object-cover"
-            style={{ maxHeight: 280 }}
-          />
-        ) : (
-          <div
-            className="w-full flex items-center justify-center"
-            style={{ height: 160, background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <span className="text-5xl opacity-30">🖼️</span>
-          </div>
-        )}
-
-        {/* Body */}
-        <div className="px-5 py-6">
-          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: '#FF6B1A' }}>
-            Le saviez-vous ?
-          </p>
-          <p className="text-white text-base font-semibold" style={{ lineHeight: '1.7' }}>
-            {fact.explanation}
-          </p>
-          {fact.sourceUrl && (
-            <p className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
-              Source : {fact.sourceUrl}
-            </p>
-          )}
+      {/* Image — hauteur réduite pour tenir en plein écran */}
+      {fact.imageUrl ? (
+        <img
+          src={fact.imageUrl}
+          alt={fact.shortAnswer}
+          className="w-full object-cover shrink-0"
+          style={{ maxHeight: '22vh' }}
+        />
+      ) : (
+        <div
+          className="w-full flex items-center justify-center shrink-0"
+          style={{ height: '12vh', background: '#F3F4F6', borderBottom: '1px solid #E5E7EB' }}
+        >
+          <span className="text-4xl opacity-25">🖼️</span>
         </div>
+      )}
+
+      {/* Body — flex-1, pas de scroll */}
+      <div className="flex-1 min-h-0 px-5 py-4 flex flex-col gap-3">
+
+        {/* Label catégorie coloré */}
+        <p className="text-xs font-black uppercase tracking-widest shrink-0" style={{ color: catColor }}>
+          Le saviez-vous ?
+        </p>
+
+        {/* Question (texte secondaire) + ShortAnswer (texte principal) */}
+        <div className="shrink-0">
+          <p className="text-xs font-semibold mb-1" style={{ color: '#9CA3AF', lineHeight: '1.4' }}>
+            {fact.question}
+          </p>
+          <p className="text-lg font-black" style={{ color: '#1a1a2e', lineHeight: '1.3' }}>
+            {fact.shortAnswer}
+          </p>
+        </div>
+
+        {/* Séparateur */}
+        <div className="shrink-0 h-px" style={{ background: '#E5E7EB' }} />
+
+        {/* Explication */}
+        <p className="text-sm font-semibold flex-1 min-h-0 overflow-hidden" style={{ color: '#374151', lineHeight: '1.6' }}>
+          {fact.explanation}
+        </p>
+
+        {/* Source cliquable */}
+        {fact.sourceUrl && (
+          <a
+            href={fact.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-bold underline shrink-0"
+            style={{ color: catColor }}
+          >
+            Voir la source →
+          </a>
+        )}
       </div>
 
-      {/* Share button */}
-      <div className="px-5 pb-8 pt-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+      {/* Bouton Partager — toujours visible en bas */}
+      <div className="px-5 pb-8 pt-3 shrink-0" style={{ borderTop: '1px solid #E5E7EB' }}>
         <button
           onClick={share}
           className="w-full py-3.5 rounded-2xl font-black text-white text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
-          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06))', border: '1px solid rgba(255,255,255,0.2)' }}
+          style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', boxShadow: '0 4px 16px rgba(255,107,26,0.3)' }}
         >
           <span className="text-lg">📤</span> Partager ce F*ct
         </button>
@@ -122,35 +148,35 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ zIndex: 300, background: '#0a0f1e' }}
+      style={{ zIndex: 300, background: '#FAFAF8' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
         <button
           onClick={onClose}
           className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', fontSize: 16 }}
+          style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151', fontSize: 16 }}
         >
           ←
         </button>
         <span className="text-xl">{cat.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className="font-black text-white text-sm truncate">{cat.label}</p>
+          <p className="font-black text-sm truncate" style={{ color: '#1a1a2e' }}>{cat.label}</p>
           <p className="text-xs font-semibold" style={{ color: diff.color }}>{diff.emoji} Niveau {diff.label}</p>
         </div>
-        <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.4)' }}>{unlockedFacts.length}/{facts.length}</span>
+        <span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>{unlockedFacts.length}/{facts.length}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {unlockedFacts.length === 0 && (
-          <p className="text-center text-sm py-8" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <p className="text-center text-sm py-8" style={{ color: '#9CA3AF' }}>
             Aucun F*ct débloqué à ce niveau.<br />Lance un parcours {diff.label} pour commencer !
           </p>
         )}
 
         {unlockedFacts.length > 0 && (
           <>
-            <p className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <p className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: '#9CA3AF' }}>
               F*cts débloqués — {unlockedFacts.length}
             </p>
             <div className="flex flex-col gap-2 mb-5">
@@ -159,18 +185,18 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                   key={fact.id}
                   onClick={() => { audio.play('click'); onSelectFact(fact) }}
                   className="flex items-center gap-3 p-3 rounded-2xl text-left active:scale-98 transition-all"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(${hexToRgb(cat.color)}, 0.25)` }}
+                  style={{ background: '#F3F4F6', border: `1px solid rgba(${hexToRgb(cat.color)}, 0.3)` }}
                 >
                   {fact.imageUrl ? (
                     <img src={fact.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />
                   ) : (
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl" style={{ background: 'rgba(255,255,255,0.06)' }}>🌟</div>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl" style={{ background: '#E5E7EB' }}>🌟</div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-black text-white text-sm truncate">{fact.shortAnswer}</p>
-                    <p className="text-xs mt-0.5 line-clamp-2" style={{ color: 'rgba(255,255,255,0.45)', lineHeight: '1.4' }}>{fact.explanation}</p>
+                    <p className="font-black text-sm truncate" style={{ color: '#1a1a2e' }}>{fact.shortAnswer}</p>
+                    <p className="text-xs mt-0.5 line-clamp-2" style={{ color: '#6B7280', lineHeight: '1.4' }}>{fact.explanation}</p>
                   </div>
-                  <span className="text-white/30 text-lg shrink-0">›</span>
+                  <span className="text-lg shrink-0" style={{ color: '#D1D5DB' }}>›</span>
                 </button>
               ))}
             </div>
@@ -179,7 +205,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
 
         {lockedFacts.length > 0 && (
           <>
-            <p className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            <p className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: '#D1D5DB' }}>
               Verrouillés — {lockedFacts.length}
             </p>
             <div className="flex flex-col gap-2">
@@ -187,10 +213,10 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                 <div
                   key={fact.id}
                   className="flex items-center gap-3 p-3 rounded-2xl"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+                  style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}
                 >
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>🔒</div>
-                  <p className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>F*ct verrouillé</p>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl" style={{ background: '#E5E7EB' }}>🔒</div>
+                  <p className="text-sm font-bold" style={{ color: '#D1D5DB' }}>F*ct verrouillé</p>
                 </div>
               ))}
             </div>
@@ -297,30 +323,30 @@ export default function CollectionPage() {
 
   // ── Main view ──
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: 'linear-gradient(160deg, #0A1E2E 0%, #0D2540 100%)' }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8' }}>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} message="Connecte-toi pour sauvegarder ta progression dans le cloud ☁️" />}
 
       {/* Header */}
-      <div className="px-4 pt-4 pb-2 shrink-0">
+      <div className="px-4 pt-4 pb-2 shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
         <div className="flex items-center gap-3 mb-3">
           <button
             onClick={() => navigate('/')}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }}
+            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
           >
             ←
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-black text-white">Ma Collection</h1>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              <strong style={{ color: 'white' }}>{overallPercentage}%</strong> des F*cts Débloqués
+            <h1 className="text-lg font-black" style={{ color: '#1a1a2e' }}>Ma Collection</h1>
+            <p className="text-xs" style={{ color: '#9CA3AF' }}>
+              <strong style={{ color: '#FF6B1A' }}>{overallPercentage}%</strong> des F*cts Débloqués
             </p>
           </div>
           {!isConnected && (
             <button
               onClick={() => setShowLogin(true)}
               className="px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 shrink-0"
-              style={{ background: 'rgba(255,107,26,0.2)', border: '1px solid rgba(255,107,26,0.4)', color: '#FF8C4A' }}
+              style={{ background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A' }}
             >
               ☁️ Sync
             </button>
@@ -328,12 +354,12 @@ export default function CollectionPage() {
         </div>
 
         {/* Global progress bar (overall) */}
-        <div className="rounded-2xl p-3 mb-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="rounded-2xl p-3 mb-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-white">Progression globale</span>
-            <span className="text-xs font-bold" style={{ color: '#FCD34D' }}>{overallUnlocked} / {overallTotal} F*cts</span>
+            <span className="text-xs font-bold" style={{ color: '#374151' }}>Progression globale</span>
+            <span className="text-xs font-bold" style={{ color: '#FF6B1A' }}>{overallUnlocked} / {overallTotal} F*cts</span>
           </div>
-          <div className="w-full rounded-full overflow-hidden" style={{ height: 6, background: 'rgba(255,255,255,0.08)' }}>
+          <div className="w-full rounded-full overflow-hidden" style={{ height: 6, background: '#E5E7EB' }}>
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{ width: `${overallPercentage}%`, background: 'linear-gradient(90deg, #FF6B1A, #FF3385)' }}
@@ -351,10 +377,10 @@ export default function CollectionPage() {
                 onClick={() => { audio.play('click'); setActiveTab(key) }}
                 className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
                 style={{
-                  background: isActive ? cfg.color : 'rgba(255,255,255,0.05)',
-                  color: isActive ? 'white' : 'rgba(255,255,255,0.4)',
-                  border: isActive ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: isActive ? `0 4px 12px rgba(0,0,0,0.3)` : 'none',
+                  background: isActive ? cfg.color : '#F3F4F6',
+                  color: isActive ? 'white' : '#9CA3AF',
+                  border: isActive ? 'none' : '1px solid #E5E7EB',
+                  boxShadow: isActive ? `0 4px 12px rgba(0,0,0,0.15)` : 'none',
                 }}
               >
                 {cfg.emoji} {cfg.label}
@@ -365,7 +391,7 @@ export default function CollectionPage() {
 
         {/* Tab progress */}
         <div className="flex items-center justify-between px-1 mb-1">
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          <span className="text-xs" style={{ color: '#9CA3AF' }}>
             {DIFF_CONFIG[activeTab].emoji} Niveau {DIFF_CONFIG[activeTab].label}
           </span>
           <span className="text-xs font-bold" style={{ color: DIFF_CONFIG[activeTab].color }}>
@@ -375,7 +401,7 @@ export default function CollectionPage() {
       </div>
 
       {/* Category list */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-24">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-24 pt-3">
         <div className="flex flex-col gap-2">
           {tabStats.map(({ cat, unlocked, total, percentage, isCompleted }) => {
             const rgb = hexToRgb(cat.color)
@@ -387,12 +413,12 @@ export default function CollectionPage() {
                 onClick={() => { audio.play('click'); setSelectedCatId(cat.id) }}
                 className="rounded-2xl p-3 flex items-center gap-3 text-left w-full active:scale-98 transition-all"
                 style={{
-                  background: percentage > 0 ? `rgba(${rgb}, 0.12)` : 'rgba(255,255,255,0.03)',
+                  background: percentage > 0 ? `rgba(${rgb}, 0.08)` : '#F9FAFB',
                   border: isCompleted
-                    ? '1px solid rgba(255,215,0,0.35)'
+                    ? '1px solid rgba(255,215,0,0.5)'
                     : percentage > 0
                       ? `1px solid rgba(${rgb}, 0.25)`
-                      : '1px solid rgba(255,255,255,0.06)',
+                      : '1px solid #E5E7EB',
                 }}
               >
                 {/* Mini grid */}
@@ -404,7 +430,7 @@ export default function CollectionPage() {
                     <div
                       key={i}
                       style={{
-                        background: i < unlocked ? `rgba(${rgb}, 0.9)` : 'rgba(255,255,255,0.08)',
+                        background: i < unlocked ? `rgba(${rgb}, 0.9)` : '#E5E7EB',
                       }}
                     />
                   ))}
@@ -414,28 +440,28 @@ export default function CollectionPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-base">{cat.emoji}</span>
-                    <span className="font-black text-sm text-white truncate">{cat.label}</span>
+                    <span className="font-black text-sm truncate" style={{ color: '#1a1a2e' }}>{cat.label}</span>
                     {isCompleted && <span className="text-sm shrink-0">🏆</span>}
                   </div>
                   <ProgressBar percentage={percentage} color={cat.color} />
                   <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    <span className="text-xs" style={{ color: '#9CA3AF' }}>
                       {isCompleted
-                        ? <span style={{ color: '#FFD700', fontWeight: 700 }}>✓ Complété !</span>
+                        ? <span style={{ color: '#D97706', fontWeight: 700 }}>✓ Complété !</span>
                         : percentage >= 80
                           ? <span style={{ color: '#FF8C00', fontWeight: 700 }}>Plus que {remaining} !</span>
                           : `${unlocked}/${total} F*cts`
                       }
                     </span>
                     <span className="text-xs font-bold" style={{
-                      color: isCompleted ? '#FFD700' : percentage > 0 ? `rgba(${rgb}, 1)` : 'rgba(255,255,255,0.2)'
+                      color: isCompleted ? '#D97706' : percentage > 0 ? `rgba(${rgb}, 1)` : '#D1D5DB'
                     }}>
                       {percentage}%
                     </span>
                   </div>
                 </div>
 
-                <span className="text-white/30 text-xl shrink-0">›</span>
+                <span className="text-xl shrink-0" style={{ color: '#D1D5DB' }}>›</span>
               </button>
             )
           })}

@@ -144,7 +144,7 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="font-black text-white text-xs">{DIFFICULTY_EMOJIS[difficulty]} {cat?.label || catId} — {DIFFICULTY_LABELS[difficulty]}</div>
-                  <div className="text-yellow-300 text-xs font-semibold mt-0.5">De nouveaux facts arrivent bientôt !</div>
+                  <div className="text-yellow-300 text-xs font-semibold mt-0.5">De nouveaux f*cts arrivent bientôt !</div>
                 </div>
                 <div className="text-2xl">🥇</div>
               </div>

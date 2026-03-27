@@ -8,8 +8,8 @@ const PAGES = [
     content: [
       { icon: '🎯', text: 'Choisis un niveau : **Facile**, **Normal** ou **Expert**.' },
       { icon: '🔀', text: '**10 questions aléatoires** issues de toutes les catégories te sont posées.' },
-      { icon: '🏆', text: 'Les facts que tu trouves rejoignent ta **Collection** uniquement si tu termines la partie jusqu\'à l\'écran de score final.' },
-      { icon: '🚪', text: 'Quitter en cours de partie = aucun fact sauvegardé.' },
+      { icon: '🏆', text: 'Les f*cts que tu trouves rejoignent ta **Collection** uniquement si tu termines la partie jusqu\'à l\'écran de score final.' },
+      { icon: '🚪', text: 'Quitter en cours de partie = aucun f*ct sauvegardé.' },
     ],
   },
   {
@@ -26,10 +26,10 @@ const PAGES = [
     emoji: '📚',
     title: 'Collection',
     content: [
-      { icon: '🗂️', text: 'Tes facts débloqués sont organisés par **catégorie** dans ta Collection.' },
-      { icon: '🔢', text: '**10 facts par niveau** (Facile / Normal / Expert) par catégorie.' },
-      { icon: '🌟', text: 'Complète les 10 facts d\'une catégorie + niveau → reçois une **carte Super WTF** exclusive !' },
-      { icon: '💡', text: 'Un fact déjà débloqué ne réapparaît plus dans le parcours de ce niveau.' },
+      { icon: '🗂️', text: 'Tes f*cts débloqués sont organisés par **catégorie** dans ta Collection.' },
+      { icon: '🔢', text: '**10 f*cts par niveau** (Facile / Normal / Expert) par catégorie.' },
+      { icon: '🌟', text: 'Complète les 10 f*cts d\'une catégorie + niveau → reçois une **carte Super WTF** exclusive !' },
+      { icon: '💡', text: 'Un f*ct déjà débloqué ne réapparaît plus dans le parcours de ce niveau.' },
     ],
   },
   {

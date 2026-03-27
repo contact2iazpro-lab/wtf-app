@@ -1,18 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { audio } from '../utils/audio'
 import SettingsModal from '../components/SettingsModal'
-
-const CREATURE_SRCS = [
-  '/Dauphin.png', '/Etoile.png', '/Garcon.png', '/grenouille.png',
-  '/Montgolfiere.png', '/Nuage.png', '/Princesses.png', '/Terre.png', '/zigomar.png',
-]
-
-// Static cosmetic data per creature (size, opacity) — computed once
-const CREATURE_META = CREATURE_SRCS.map(() => ({
-  size: 50 + Math.floor(Math.random() * 36),
-  opacity: 0.65 + Math.random() * 0.25,
-}))
 
 const GAME_MODES = [
   { id: 'solo-flash', label: 'Mode Parcours', emoji: '⚡', desc: 'Complétez vos Collections', active: true },
@@ -48,50 +37,7 @@ function StarLogo() {
 export default function HomeScreen({ totalScore, streak, onPlay, onQuickPlay, onDuel, onMarathon }) {
   const [showSettings, setShowSettings] = useState(false)
   const [showQuickPlayModal, setShowQuickPlayModal] = useState(false)
-  const creatureRefs = useRef([])
   const navigate = useNavigate()
-
-  // RAF loop: move each creature across the screen, wrap around edges within allowed vertical zone
-  useEffect(() => {
-    const W = window.innerWidth
-    const H = window.innerHeight
-
-    // Define forbidden zones
-    const topForbidden = 240 // Logo + "Vrai ou fou?" zone
-    const bottomForbidden = 150 // Share button + cat president zone
-    const allowedMinY = topForbidden
-    const allowedMaxY = H - bottomForbidden
-    const allowedHeight = allowedMaxY - allowedMinY
-
-    // Each creature gets its own persistent, random speed within a controlled range
-    const speed = () => (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random() * 1.2)
-    const state = CREATURE_SRCS.map((_, i) => ({
-      x: Math.random() * W,
-      y: allowedMinY + Math.random() * allowedHeight, // Start within allowed zone
-      vx: speed(),
-      vy: speed(),
-      size: CREATURE_META[i].size,
-    }))
-
-    let rafId
-    const tick = () => {
-      state.forEach((c, i) => {
-        c.x += c.vx
-        c.y += c.vy
-        // Wrap around horizontal edges
-        if (c.x > W + c.size)  c.x = -c.size
-        if (c.x < -c.size)     c.x = W + c.size
-        // Wrap vertically but stay within allowed zone
-        if (c.y > allowedMaxY + c.size)  c.y = allowedMinY - c.size
-        if (c.y < allowedMinY - c.size)  c.y = allowedMaxY + c.size
-        const el = creatureRefs.current[i]
-        if (el) { el.style.left = c.x + 'px'; el.style.top = c.y + 'px' }
-      })
-      rafId = requestAnimationFrame(tick)
-    }
-    rafId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafId)
-  }, [])
 
   const handlePlay = () => { audio.startMusic(); audio.play('click'); onPlay() }
   const handleDuel = () => { audio.startMusic(); audio.play('click'); onDuel() }
@@ -99,28 +45,6 @@ export default function HomeScreen({ totalScore, streak, onPlay, onQuickPlay, on
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden scrollbar-hide rainbow-bg">
-
-      {/* Traversing creatures — fixed to viewport, moved by RAF */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-        {CREATURE_SRCS.map((src, i) => (
-          <div
-            key={i}
-            ref={el => creatureRefs.current[i] = el}
-            style={{
-              position: 'absolute',
-              opacity: CREATURE_META[i].opacity,
-              userSelect: 'none',
-            }}>
-            <img
-              src={src}
-              alt=""
-              width={CREATURE_META[i].size}
-              height={CREATURE_META[i].size}
-              style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }}
-            />
-          </div>
-        ))}
-      </div>
 
       {/* Settings modal */}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
@@ -133,20 +57,20 @@ export default function HomeScreen({ totalScore, streak, onPlay, onQuickPlay, on
           onClick={() => setShowQuickPlayModal(false)}>
           <div
             className="w-full max-w-md rounded-t-3xl p-6 pb-10"
-            style={{ background: 'rgba(18,18,28,0.97)', border: '1px solid rgba(255,255,255,0.12)' }}
+            style={{ background: '#FAFAF8', border: '1px solid #E5E7EB', borderBottom: 'none' }}
             onClick={(e) => e.stopPropagation()}>
             <div className="text-4xl text-center mb-3">⚡</div>
-            <h2 className="text-white font-black text-lg tracking-wide text-center mb-4">Partie Rapide</h2>
-            <div className="flex flex-col gap-2 mb-6" style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.875rem', lineHeight: '1.6' }}>
-              <p>🎯 Mode <strong style={{ color: 'white' }}>Normal</strong> avec une catégorie aléatoire.</p>
-              <p>⭐ Les points s'affichent en jeu mais <strong style={{ color: 'white' }}>ne sont pas sauvegardés</strong>.</p>
-              <p>🔥 Ton <strong style={{ color: 'white' }}>streak</strong> ne sera pas incrémenté.</p>
+            <h2 className="font-black text-lg tracking-wide text-center mb-4" style={{ color: '#1a1a2e' }}>Partie Rapide</h2>
+            <div className="flex flex-col gap-2 mb-6" style={{ color: '#6B7280', fontSize: '0.875rem', lineHeight: '1.6' }}>
+              <p>🎯 Mode <strong style={{ color: '#1a1a2e' }}>Normal</strong> avec une catégorie aléatoire.</p>
+              <p>⭐ Les points s'affichent en jeu mais <strong style={{ color: '#1a1a2e' }}>ne sont pas sauvegardés</strong>.</p>
+              <p>🔥 Ton <strong style={{ color: '#1a1a2e' }}>streak</strong> ne sera pas incrémenté.</p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowQuickPlayModal(false)}
                 className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
+                style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>
                 Annuler
               </button>
               <button

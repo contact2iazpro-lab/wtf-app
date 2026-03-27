@@ -52,11 +52,11 @@ export default function QuestionScreen({
 
   // ── Quit confirmation modal ─────────────────────────────────────────────────
   const quitModal = showQuitConfirm && (
-    <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
-      <div className="w-full rounded-3xl p-6 border" style={{ background: '#1A1A2E', borderColor: 'rgba(255,255,255,0.1)' }}>
+    <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
+      <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', border: '1px solid #E5E7EB', boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }}>
         <div className="text-2xl text-center mb-3">🏃</div>
-        <h2 className="text-white font-black text-lg text-center mb-2">Quitter la partie ?</h2>
-        <p className="text-white/50 text-sm text-center mb-6 leading-relaxed">
+        <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter la partie ?</h2>
+        <p className="text-sm text-center mb-6 leading-relaxed" style={{ color: '#6B7280' }}>
           {gameMode === 'marathon'
             ? 'Tes points accumulés ne seront pas comptabilisés au classement.'
             : 'Ta progression sera perdue.'
@@ -65,14 +65,14 @@ export default function QuestionScreen({
         <div className="flex gap-3">
           <button
             onClick={() => setShowQuitConfirm(false)}
-            className="flex-1 py-4 rounded-2xl font-black text-base border"
-            style={{ background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
+            className="flex-1 py-4 rounded-2xl font-black text-base"
+            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>
             Annuler
           </button>
           <button
             onClick={onQuit}
-            className="flex-1 py-4 rounded-2xl font-black text-base border"
-            style={{ background: 'rgba(244,67,54,0.15)', borderColor: '#F44336', color: '#F44336' }}>
+            className="flex-1 py-4 rounded-2xl font-black text-base"
+            style={{ background: 'rgba(244,67,54,0.1)', border: '1px solid #F44336', color: '#DC2626' }}>
             Quitter
           </button>
         </div>

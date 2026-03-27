@@ -6,7 +6,7 @@ import { audio } from '../utils/audio'
 export default function CategoryScreen({ onSelectCategory, onBack }) {
   const [showSettings, setShowSettings] = useState(false)
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden screen-enter rainbow-bg">
+    <div className="flex flex-col h-full w-full overflow-hidden screen-enter" style={{ background: 'linear-gradient(170deg, #0D0D1A 0%, #1A1A2E 100%)' }}>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* Settings button — top right */}
@@ -22,12 +22,12 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
         <button
           onClick={onBack}
           className="w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: 'rgba(255,255,255,0.55)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(0,0,0,0.12)', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', color: '#1a1a2e' }}>
+          style={{ background: 'rgba(255,255,255,0.12)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', color: 'white' }}>
           ←
         </button>
         <div>
-          <h1 className="text-xl font-black" style={{ color: '#1a1a2e' }}>Choisis une catégorie</h1>
-          <p className="text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>What The <strong>F*ct</strong> ! Vrai ou fou ?</p>
+          <h1 className="text-xl font-black" style={{ color: 'white' }}>Choisis une catégorie</h1>
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>What The <strong>F*ct</strong> ! Vrai ou fou ?</p>
         </div>
       </div>
 
@@ -53,12 +53,12 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
               className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
               style={{
                 height: '85px',
-                background: cat.color + '22',
+                background: cat.color + '30',
                 borderWidth: '1px',
                 borderStyle: 'solid',
-                borderColor: cat.color + '70',
+                borderColor: cat.color + '90',
                 color: cat.color,
-                boxShadow: `0 2px 8px ${cat.color}20`,
+                boxShadow: `0 2px 12px ${cat.color}30`,
               }}>
               <span className="text-2xl">{cat.emoji}</span>
               <span className="font-bold text-xs leading-tight">

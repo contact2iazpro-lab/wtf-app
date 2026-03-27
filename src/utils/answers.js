@@ -1,6 +1,8 @@
 /**
  * Utility functions for generating and shuffling answer options
- * Handles dynamic generation of 4 or 6 answer choices based on difficulty
+ * Facts store 6 options: 5 wrong answers + 1 correct answer (at correctIndex)
+ * - choices=4 (Normal): pick 3 random wrong answers + correct → shuffle
+ * - choices=6 (Easy/Expert): all 5 wrong answers + correct → shuffle
  */
 
 /**
@@ -11,94 +13,36 @@
  */
 export function getAnswerOptions(fact, difficulty) {
   const { choices } = difficulty
+  const correctAnswer = fact.options[fact.correctIndex]
+  const wrongAnswers = fact.options.filter((_, i) => i !== fact.correctIndex)
 
   if (choices === 4) {
-    // Use pre-existing 4 options, shuffle, return with new correctIndex
-    return shuffleOptions(fact.options, fact.correctIndex)
+    // Pick 3 random wrong answers from the 5 available
+    const shuffledWrong = [...wrongAnswers].sort(() => Math.random() - 0.5)
+    const selected = shuffledWrong.slice(0, 3)
+    return shuffleOptions([...selected, correctAnswer], 3)
   }
 
   if (choices === 6) {
-    // Start with 4 existing, generate 2 plausible wrong answers
-    const wrongAnswers = generateWrongAnswers(fact, 2)
-    const allOptions = [...fact.options, ...wrongAnswers]
-    return shuffleOptions(allOptions, fact.correctIndex)
+    // Use all 5 wrong answers + correct answer
+    return shuffleOptions([...wrongAnswers, correctAnswer], wrongAnswers.length)
   }
 
-  // Default to 4 choices if difficulty not recognized
-  return shuffleOptions(fact.options, fact.correctIndex)
-}
-
-/**
- * Generate plausible wrong answers for a fact
- * @param {Object} fact - The fact object with shortAnswer
- * @param {number} count - Number of wrong answers to generate
- * @returns {string[]} - Array of wrong answer strings
- */
-function generateWrongAnswers(fact, count) {
-  const { shortAnswer } = fact
-
-  // Template variations for wrong answers
-  const templates = [
-    // Generic negations
-    `Pas ${shortAnswer}`,
-    `Aucun ${shortAnswer}`,
-    `Tout sauf ${shortAnswer}`,
-
-    // Variations
-    `Plusieurs ${shortAnswer}`,
-    `Quelques ${shortAnswer}`,
-    `Tous les ${shortAnswer}`,
-
-    // Opposites (basic)
-    `Le contraire de ${shortAnswer}`,
-    `L'inverse de ${shortAnswer}`,
-
-    // Pluralization/singularization
-    shortAnswer.endsWith('s') ? shortAnswer.slice(0, -1) : `${shortAnswer}s`,
-  ]
-
-  // Shuffle and return unique answers (remove duplicates that might occur)
-  const shuffled = [...templates].sort(() => Math.random() - 0.5)
-  const results = []
-  const seen = new Set([...fact.options])
-
-  for (const answer of shuffled) {
-    if (!seen.has(answer) && results.length < count) {
-      results.push(answer)
-      seen.add(answer)
-    }
-  }
-
-  // Ensure we have enough answers (pad with generic ones if needed)
-  while (results.length < count) {
-    const padding = `Autre réponse ${results.length + 1}`
-    if (!seen.has(padding)) {
-      results.push(padding)
-      seen.add(padding)
-    }
-  }
-
-  return results.slice(0, count)
+  // Default fallback: 4 choices with 3 random wrong answers
+  const shuffledWrong = [...wrongAnswers].sort(() => Math.random() - 0.5)
+  const selected = shuffledWrong.slice(0, Math.min(3, wrongAnswers.length))
+  return shuffleOptions([...selected, correctAnswer], selected.length)
 }
 
 /**
  * Shuffle answer options and recalculate the correctIndex
  * @param {string[]} options - Array of answer options
- * @param {number} correctIndex - Index of correct answer in original array
+ * @param {number} correctIndex - Index of correct answer in the input array
  * @returns {Object} - { options: string[], correctIndex: number }
  */
 function shuffleOptions(options, correctIndex) {
-  // Get the correct answer text
   const correctAnswer = options[correctIndex]
-
-  // Shuffle a copy of the options
   const newOptions = [...options].sort(() => Math.random() - 0.5)
-
-  // Find new index of the correct answer
   const newCorrectIndex = newOptions.findIndex(opt => opt === correctAnswer)
-
-  return {
-    options: newOptions,
-    correctIndex: newCorrectIndex,
-  }
+  return { options: newOptions, correctIndex: newCorrectIndex }
 }

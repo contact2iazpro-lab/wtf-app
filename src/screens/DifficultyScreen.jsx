@@ -8,6 +8,7 @@ const DIFFICULTY_LEVELS = [
     label: 'Parcours Expert',
     emoji: '⚡',
     color: '#FF5C1A',
+    colorRgba: 'rgba(255, 92, 26, 0.7)',
     description: [
       '6 choix possibles',
       '10 secondes de réflexion',
@@ -20,6 +21,7 @@ const DIFFICULTY_LEVELS = [
     label: 'Parcours Normal',
     emoji: '🧠',
     color: '#3B82F6',
+    colorRgba: 'rgba(59, 130, 246, 0.7)',
     description: [
       '4 choix possibles',
       '20 secondes de réflexion',
@@ -32,6 +34,7 @@ const DIFFICULTY_LEVELS = [
     label: 'Parcours Facile',
     emoji: '💚',
     color: '#22C55E',
+    colorRgba: 'rgba(34, 197, 94, 0.7)',
     description: [
       '4 choix possibles',
       '20 secondes de réflexion',
@@ -80,57 +83,62 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 40, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         ⚙️
       </button>
+
       {/* Header */}
-      <div className="px-6 pt-4 pb-3 flex items-center justify-between shrink-0">
+      <div className="px-4 pt-3 pb-2 flex items-center justify-between shrink-0">
         <button
           onClick={handleBack}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
+          className="w-9 h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90"
           style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
           ←
         </button>
-        <h1 className="text-2xl font-black text-white">Choisir un parcours</h1>
-        <div className="w-10" />
+        <h1 className="text-xl font-black text-white">Choisir un parcours</h1>
+        <div className="w-9" />
       </div>
 
       {/* Difficulty Cards */}
-      <div className="px-6 pb-3 flex-1 flex flex-col gap-3 overflow-y-auto scrollbar-hide">
-        {DIFFICULTY_LEVELS.map((difficulty) => (
-          <button
-            key={difficulty.id}
-            onClick={() => setSelectedId(difficulty.id)}
-            className="btn-press rounded-3xl p-6 border-2 transition-all text-left active:scale-95"
-            style={{
-              background: difficulty.color,
-              borderWidth: '0',
-            }}>
-            {/* Emoji + Title */}
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-3xl">{difficulty.emoji}</span>
-              <div>
-                <h2 className="text-white font-black text-lg">
+      <div className="px-4 pb-2 flex-1 flex flex-col gap-2 overflow-y-auto scrollbar-hide">
+        {DIFFICULTY_LEVELS.map((difficulty) => {
+          const isSelected = selectedId === difficulty.id
+          return (
+            <button
+              key={difficulty.id}
+              onClick={() => { audio.play('click'); setSelectedId(difficulty.id) }}
+              className="btn-press rounded-2xl p-4 text-left active:scale-95"
+              style={{
+                background: difficulty.colorRgba,
+                opacity: isSelected ? 1 : 0.5,
+                border: isSelected ? '2px solid rgba(255,255,255,0.5)' : '2px solid transparent',
+                transition: 'opacity 0.2s ease, border-color 0.2s ease',
+              }}>
+
+              {/* Emoji + Title */}
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl shrink-0">{difficulty.emoji}</span>
+                <h2 className="text-white font-black text-base flex-1">
                   {difficulty.label}
                 </h2>
+                {isSelected && (
+                  <span className="text-white font-black text-lg shrink-0">✓</span>
+                )}
               </div>
-              {selectedId === difficulty.id && (
-                <div className="ml-auto text-2xl">✓</div>
-              )}
-            </div>
 
-            {/* Description */}
-            <div className="space-y-1 text-sm">
-              {difficulty.description.map((desc, i) => (
-                <div key={i} className="text-white/80 flex items-center gap-2">
-                  <span className="text-xs">•</span>
-                  <span>{desc}</span>
-                </div>
-              ))}
-            </div>
-          </button>
-        ))}
+              {/* Description */}
+              <div className="space-y-0.5">
+                {difficulty.description.map((desc, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm">
+                    <span className="text-black/50 text-xs shrink-0">•</span>
+                    <span className="text-black font-medium">{desc}</span>
+                  </div>
+                ))}
+              </div>
+            </button>
+          )
+        })}
       </div>
 
       {/* Start Button */}
-      <div className="px-6 pb-3 shrink-0">
+      <div className="px-4 pb-3 shrink-0">
         <button
           onClick={() => handleSelect(selectedId)}
           className="btn-press w-full py-3 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"

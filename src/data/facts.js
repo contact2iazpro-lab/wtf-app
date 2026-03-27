@@ -11027,15 +11027,29 @@ export const FACTS = [
 
 export const getCategoryById = (id) => CATEGORIES.find((c) => c.id === id)
 
-export const isFactValid = (fact) =>
-  Boolean(
-    fact &&
-    fact.question &&
-    fact.category &&
-    fact.imageUrl &&
-    Array.isArray(fact.options) && fact.options.length >= 2 &&
-    typeof fact.correctIndex === 'number' && fact.correctIndex >= 0
-  )
+// Extract fact ID from relative imageUrl (e.g., "/assets/facts/365.png" → 365)
+const getImageId = (imageUrl) => {
+  if (!imageUrl || imageUrl.startsWith('http')) return null
+  const match = imageUrl.match(/\/(\d+)\.png$/)
+  return match ? parseInt(match[1]) : null
+}
+
+// Only images 1-350 exist physically in public/assets/facts/
+// Facts 351-850 reference images that don't exist, so they're filtered out
+const EXISTING_IMAGE_IDS = new Set(Array.from({ length: 350 }, (_, i) => i + 1))
+
+export const isFactValid = (fact) => {
+  if (!fact || !fact.question || !fact.category) return false
+  if (!Array.isArray(fact.options) || fact.options.length < 2) return false
+  if (typeof fact.correctIndex !== 'number' || fact.correctIndex < 0) return false
+
+  // imageUrl must exist and image file must physically exist
+  if (!fact.imageUrl) return false
+  const imageId = getImageId(fact.imageUrl)
+  if (imageId === null || !EXISTING_IMAGE_IDS.has(imageId)) return false
+
+  return true
+}
 
 export const VALID_FACTS = FACTS.filter(isFactValid)
 

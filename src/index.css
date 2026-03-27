@@ -243,8 +243,8 @@
 
 @keyframes wrong-answer-desaturate {
   0%   { filter: saturate(1) brightness(1); }
-  50%  { filter: saturate(1) brightness(1); }
-  100% { filter: saturate(0) brightness(0.8); }
+  20%  { filter: saturate(1) brightness(1); }
+  100% { filter: saturate(0) brightness(0.7); }
 }
 
 /* Score pulse animation — when points arrive at target */

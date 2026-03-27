@@ -37,7 +37,7 @@ export default function RevelationScreen({
   useEffect(() => {
     const timer = setTimeout(() => {
       setFlipped(true)
-      if (!isDuel) setShowBadge(true)
+      if (!isDuel && isCorrect) setShowBadge(true)
     }, 300)
     if (!isDuel) {
       if (isCorrect) {
@@ -234,7 +234,7 @@ export default function RevelationScreen({
                   position: 'relative',
                   width: '180px',
                   height: '180px',
-                  animation: 'wrong-answer-zoom 0.6s ease-out forwards, wrong-answer-desaturate 0.6s ease-out forwards',
+                  animation: 'wrong-answer-zoom 0.6s ease-out forwards, wrong-answer-desaturate 3.432s ease-out 0.05s forwards',
                 }}>
                 <img
                   src="/logo-wtf.png"

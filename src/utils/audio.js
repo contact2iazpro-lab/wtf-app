@@ -11,6 +11,71 @@ class AudioManager {
     this._musicEnabled = localStorage.getItem('wtf_music') !== 'false'
     this._sfxEnabled = localStorage.getItem('wtf_sfx') !== 'false'
     this._vibrationEnabled = localStorage.getItem('wtf_vibration') !== 'false'
+
+    // Lifecycle — track state to restore on foreground
+    this._isHidden = false
+    this._wasPlayingBeforeHide = false
+    this._activeFileAudios = new Set() // Track HTML Audio elements from playFile()
+
+    // Register lifecycle listeners (bound once, never leak)
+    this._onVisibilityChange = () => {
+      if (document.hidden) this._handleBackground()
+      else this._handleForeground()
+    }
+    this._onPageHide = () => this._handleBackground()
+    this._onPageShow = () => this._handleForeground()
+
+    document.addEventListener('visibilitychange', this._onVisibilityChange)
+    window.addEventListener('pagehide', this._onPageHide)
+    window.addEventListener('pageshow', this._onPageShow)
+  }
+
+  _handleBackground() {
+    if (this._isHidden) return // Guard against double-firing
+    this._isHidden = true
+
+    // Remember if music was playing so we can restart on foreground
+    this._wasPlayingBeforeHide = this._playing
+
+    // Stop music timers — prevents scheduled notes firing in background
+    if (this._playing) {
+      this._playing = false
+      this._musicTimers.forEach(clearTimeout)
+      this._musicTimers = []
+    }
+
+    // Suspend Web Audio context (stops oscillator output instantly)
+    this._ctx?.suspend?.()
+
+    // Pause all active HTML Audio elements (MP3 files)
+    this._activeFileAudios.forEach(a => {
+      if (!a.paused) {
+        a.pause()
+        a._pausedByLifecycle = true
+      }
+    })
+  }
+
+  _handleForeground() {
+    if (!this._isHidden) return // Guard against double-firing
+    this._isHidden = false
+
+    // Resume Web Audio context
+    this._ctx?.resume?.()
+
+    // Restart music if it was playing before hiding
+    if (this._wasPlayingBeforeHide && this._musicEnabled) {
+      this._wasPlayingBeforeHide = false
+      this.startMusic()
+    }
+
+    // Resume MP3 files that were paused by lifecycle
+    this._activeFileAudios.forEach(a => {
+      if (a._pausedByLifecycle) {
+        a._pausedByLifecycle = false
+        a.play().catch(() => {})
+      }
+    })
   }
 
   _ctx_get() {
@@ -238,20 +303,14 @@ class AudioManager {
   playFile(filename) {
     if (!this._sfxEnabled) return
     try {
-      const audio = new Audio(`/${filename}`)
-      audio.volume = 0.7
-      audio.play().catch(() => {})
+      const a = new Audio(`/${filename}`)
+      a.volume = 0.7
+      this._activeFileAudios.add(a)
+      a.addEventListener('ended', () => this._activeFileAudios.delete(a))
+      a.addEventListener('error', () => this._activeFileAudios.delete(a))
+      a.play().catch(() => {})
     } catch (_) {}
   }
 }
 
 export const audio = new AudioManager()
-
-// Pause music when app goes to background, resume when it comes back
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    if (audio._playing) audio._ctx?.suspend?.()
-  } else {
-    if (audio._playing) audio._ctx?.resume?.()
-  }
-})

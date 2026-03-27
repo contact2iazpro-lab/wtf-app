@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import { CATEGORIES } from '../data/facts'
+import { CATEGORIES, VALID_FACTS } from '../data/facts'
 import { audio } from '../utils/audio'
 
 export default function CategoryScreen({ onSelectCategory, onBack }) {
   const [showSettings, setShowSettings] = useState(false)
+
+  // Compute which categories have at least one valid fact
+  const categoriesWithFacts = useMemo(() => {
+    const categoryIds = new Set(VALID_FACTS.map(f => f.category))
+    return categoryIds
+  }, [])
   return (
     <div className="flex flex-col h-full w-full overflow-hidden screen-enter" style={{ background: 'linear-gradient(170deg, #0D0D1A 0%, #1A1A2E 100%)' }}>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
@@ -46,26 +52,31 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
           </button>
 
           {/* Categories — chaque carte utilise la couleur de sa catégorie */}
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => onSelectCategory(cat.id)}
-              className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
-              style={{
-                height: '85px',
-                background: cat.color + '30',
-                borderWidth: '1px',
-                borderStyle: 'solid',
-                borderColor: cat.color + '90',
-                color: cat.color,
-                boxShadow: `0 2px 12px ${cat.color}30`,
-              }}>
-              <span className="text-2xl">{cat.emoji}</span>
-              <span className="font-bold text-xs leading-tight">
-                {cat.label}
-              </span>
-            </button>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const hasFacts = categoriesWithFacts.has(cat.id)
+            return (
+              <button
+                key={cat.id}
+                onClick={() => hasFacts && onSelectCategory(cat.id)}
+                disabled={!hasFacts}
+                className={`rounded-xl px-2 text-center transition-all duration-150 flex flex-col items-center justify-center gap-1 ${hasFacts ? 'btn-press active:scale-95 cursor-pointer' : 'cursor-not-allowed opacity-40'}`}
+                style={{
+                  height: '85px',
+                  background: hasFacts ? (cat.color + '30') : 'rgba(100, 100, 100, 0.15)',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: hasFacts ? (cat.color + '90') : 'rgba(100, 100, 100, 0.3)',
+                  color: hasFacts ? cat.color : 'rgba(255, 255, 255, 0.3)',
+                  boxShadow: hasFacts ? `0 2px 12px ${cat.color}30` : 'none',
+                }}>
+                <span className="text-2xl">{cat.emoji}</span>
+                <span className="font-bold text-xs leading-tight">
+                  {cat.label}
+                </span>
+                {!hasFacts && <span className="text-xs" style={{ marginTop: '4px' }}>Bientôt</span>}
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>

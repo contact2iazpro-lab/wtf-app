@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getFactsByCategory, VALID_FACTS, CATEGORIES, PLAYABLE_CATEGORIES } from './data/facts'
+import { getFactsByCategory, VALID_FACTS, CATEGORIES, PLAYABLE_CATEGORIES, PARCOURS_FACTS, CATEGORY_LEVEL_FACT_IDS } from './data/facts'
 import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
 import DifficultyScreen from './screens/DifficultyScreen'
@@ -83,6 +83,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
+  const [completedLevels, setCompletedLevels] = useState([])
 
   const { user } = useAuth()
 
@@ -136,8 +137,28 @@ export default function App() {
 
   const handleSelectDifficulty = useCallback((difficulty) => {
     setSelectedDifficulty(difficulty)
-    setScreen(SCREENS.CATEGORY)
-  }, [])
+    // Parcours: pick 10 facts of this difficulty (all categories mixed), excluding already unlocked
+    const available = PARCOURS_FACTS.filter(f =>
+      f.difficulty === difficulty.id && !unlockedFacts.has(f.id) && !f.isSuperWTF
+    )
+    const facts = [...available]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 10)
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+    setIsQuickPlay(false)
+    setGameMode('solo')
+    setSelectedCategory(null)
+    setSessionFacts(facts)
+    setCurrentIndex(0)
+    setSessionScore(0)
+    setCorrectCount(0)
+    setHintsUsed(0)
+    setSelectedAnswer(null)
+    setIsCorrect(null)
+    setSessionCorrectFacts([])
+    setCompletedLevels([])
+    setScreen(SCREENS.QUESTION)
+  }, [unlockedFacts])
 
   const handleMarathonMode = useCallback(() => {
     setGameMode('marathon')
@@ -305,6 +326,19 @@ export default function App() {
             toSync.push(fact)
           }
         }
+        // Detect newly completed category+difficulty levels
+        const newlyCompleted = []
+        for (const fact of toSync) {
+          if (!fact.difficulty) continue
+          const key = `${fact.category}_${fact.difficulty}`
+          const levelFacts = CATEGORY_LEVEL_FACT_IDS[key]
+          if (levelFacts && [...levelFacts].every(id => newUnlocked.has(id))) {
+            if (!newlyCompleted.find(c => c.catId === fact.category && c.difficulty === fact.difficulty)) {
+              newlyCompleted.push({ catId: fact.category, difficulty: fact.difficulty })
+            }
+          }
+        }
+        setCompletedLevels(newlyCompleted)
         saveStorage(totalScore + sessionScore, newStreak, newUnlocked)
         setStorage(prev => ({ ...prev, totalScore: totalScore + sessionScore, streak: newStreak, unlockedFacts: newUnlocked }))
         if (user) {
@@ -585,6 +619,7 @@ export default function App() {
           totalFacts={totalRounds}
           onReplay={handleReplay}
           onHome={handleHome}
+          completedCategoryLevels={completedLevels}
         />
       )}
       {screen === SCREENS.DUEL_SETUP && (

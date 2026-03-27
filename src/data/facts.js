@@ -13038,3 +13038,42 @@ export const getFactsByCategory = (categoryId) =>
   categoryId
     ? VALID_FACTS.filter((f) => f.category === categoryId)
     : VALID_FACTS
+
+// Build deterministic difficulty assignment: first 10 facts per category = easy, next 10 = normal, next 10 = expert
+function buildDifficultyAssignment() {
+  const map = {}
+  const catIds = CATEGORIES.filter(c => !c.disabled).map(c => c.id)
+  for (const catId of catIds) {
+    const catFacts = FACTS
+      .filter(f => f && f.question && f.category === catId && Array.isArray(f.options) && f.options.length >= 2 && typeof f.correctIndex === 'number')
+      .sort((a, b) => a.id - b.id)
+      .slice(0, 30)
+    catFacts.forEach((f, i) => {
+      if (i < 10) map[f.id] = 'easy'
+      else if (i < 20) map[f.id] = 'normal'
+      else map[f.id] = 'expert'
+    })
+  }
+  return map
+}
+export const DIFFICULTY_ASSIGNMENT = buildDifficultyAssignment()
+
+// Parcours facts: relaxed image filter (imageUrl → null if image missing), includes difficulty + isSuperWTF
+export const PARCOURS_FACTS = FACTS
+  .filter(f => f && f.question && f.category && Array.isArray(f.options) && f.options.length >= 2 && typeof f.correctIndex === 'number' && DIFFICULTY_ASSIGNMENT[f.id])
+  .map(f => {
+    let imageUrl = f.imageUrl
+    if (imageUrl !== null && imageUrl !== undefined) {
+      const imageId = getImageId(imageUrl)
+      if (!imageId || !EXISTING_IMAGE_IDS.has(imageId)) imageUrl = null
+    }
+    return { ...f, imageUrl, difficulty: DIFFICULTY_ASSIGNMENT[f.id], isSuperWTF: false }
+  })
+
+// Lookup: category+difficulty → Set of fact IDs (for completion detection)
+export const CATEGORY_LEVEL_FACT_IDS = {}
+PARCOURS_FACTS.forEach(f => {
+  const key = `${f.category}_${f.difficulty}`
+  if (!CATEGORY_LEVEL_FACT_IDS[key]) CATEGORY_LEVEL_FACT_IDS[key] = new Set()
+  CATEGORY_LEVEL_FACT_IDS[key].add(f.id)
+})

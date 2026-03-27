@@ -14,7 +14,7 @@ const CREATURE_META = CREATURE_SRCS.map(() => ({
 }))
 
 const GAME_MODES = [
-  { id: 'solo-flash', label: 'Mode Solo Flash', emoji: '⚡', desc: '60s par F*ct', active: true },
+  { id: 'solo-flash', label: 'Mode Parcours', emoji: '⚡', desc: 'Complétez vos Collections', active: true },
   { id: 'duel', label: 'Multijoueur', emoji: '🎮', desc: '2-6 joueurs', active: true },
   { id: 'marathon', label: 'Marathon', emoji: '🏃', desc: '20 questions', active: true },
   { id: 'blitz', label: 'Blitz', emoji: '🔥', desc: 'Bientôt', active: false },

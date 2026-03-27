@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
+import { CATEGORIES } from '../data/facts'
 
 const RANK_LEVELS = [
   { min: 0,  max: 0,  emoji: '💀', label: 'Catastrophe',  color: '#6B7280' },
@@ -22,7 +23,10 @@ function getStars(correct, total) {
   return 0
 }
 
-export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome }) {
+const DIFFICULTY_LABELS = { easy: 'Facile', normal: 'Normal', expert: 'Expert' }
+const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
+
+export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome, completedCategoryLevels = [] }) {
   const [showSettings, setShowSettings] = useState(false)
   const rank = getRank(score)
   const stars = getStars(correctCount, totalFacts)
@@ -123,6 +127,30 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
           ))}
         </div>
       </div>
+
+      {/* Completion rewards */}
+      {completedCategoryLevels.length > 0 && (
+        <div className="mx-5 mb-3 rounded-2xl border p-4 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
+          <div className="text-white/70 text-xs font-bold uppercase tracking-widest mb-3 text-center">🏆 Niveau complété !</div>
+          {completedCategoryLevels.map(({ catId, difficulty }) => {
+            const cat = CATEGORIES.find(c => c.id === catId)
+            return (
+              <div key={`${catId}_${difficulty}`} className="flex items-center gap-3 mb-2 last:mb-0 p-2 rounded-xl" style={{ background: 'rgba(255,215,0,0.1)' }}>
+                {cat?.image ? (
+                  <img src={cat.image} alt={cat.label} className="w-10 h-10 rounded-lg object-contain" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                ) : (
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl" style={{ background: 'rgba(255,255,255,0.1)' }}>{cat?.emoji || '🌟'}</div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-black text-white text-xs">{DIFFICULTY_EMOJIS[difficulty]} {cat?.label || catId} — {DIFFICULTY_LABELS[difficulty]}</div>
+                  <div className="text-yellow-300 text-xs font-semibold mt-0.5">De nouveaux facts arrivent bientôt !</div>
+                </div>
+                <div className="text-2xl">🥇</div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Actions */}
       <div className="px-5 pb-3 flex flex-col gap-2 shrink-0">

@@ -44,8 +44,9 @@ function StarLogo() {
   )
 }
 
-export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarathon }) {
+export default function HomeScreen({ totalScore, streak, onPlay, onQuickPlay, onDuel, onMarathon }) {
   const [showSettings, setShowSettings] = useState(false)
+  const [showQuickPlayModal, setShowQuickPlayModal] = useState(false)
   const creatureRefs = useRef([])
 
   // RAF loop: move each creature across the screen, wrap around edges within allowed vertical zone
@@ -122,6 +123,41 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       {/* Settings modal */}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
+      {/* Quick play modal */}
+      {showQuickPlayModal && (
+        <div
+          className="fixed inset-0 flex items-end justify-center"
+          style={{ zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setShowQuickPlayModal(false)}>
+          <div
+            className="w-full max-w-md rounded-t-3xl p-6 pb-10"
+            style={{ background: 'rgba(18,18,28,0.97)', border: '1px solid rgba(255,255,255,0.12)' }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="text-4xl text-center mb-3">⚡</div>
+            <h2 className="text-white font-black text-lg tracking-wide text-center mb-4">Partie Rapide</h2>
+            <div className="flex flex-col gap-2 mb-6" style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.875rem', lineHeight: '1.6' }}>
+              <p>🎯 Mode <strong style={{ color: 'white' }}>Normal</strong> avec une catégorie aléatoire.</p>
+              <p>⭐ Les points s'affichent en jeu mais <strong style={{ color: 'white' }}>ne sont pas sauvegardés</strong>.</p>
+              <p>🔥 Ton <strong style={{ color: 'white' }}>streak</strong> ne sera pas incrémenté.</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowQuickPlayModal(false)}
+                className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
+                Annuler
+              </button>
+              <button
+                onClick={() => { audio.play('click'); setShowQuickPlayModal(false); onQuickPlay() }}
+                className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
+                style={{ background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)', color: 'white' }}>
+                C'est parti ! ⚡
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Gear button — top right */}
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
@@ -161,16 +197,16 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       {/* Play button */}
       <div className="px-6 py-1 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
         <button
-          onClick={handlePlay}
-          className="btn-press w-full py-2.5 rounded-2xl text-white text-base font-black tracking-widest uppercase transition-all duration-150 active:scale-95"
+          onClick={() => { audio.play('click'); setShowQuickPlayModal(true) }}
+          className="btn-press w-full py-2.5 rounded-2xl text-white text-sm font-black tracking-wide uppercase transition-all duration-150 active:scale-95"
           style={{
             background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)',
             boxShadow: '0 8px 40px rgba(255, 92, 26, 0.55), 0 2px 8px rgba(0,0,0,0.4)',
             WebkitTextStroke: '0.5px rgba(255,255,255,0.3)',
           }}>
           <span className="flex items-center justify-center gap-3">
-            <span className="text-2xl">▶</span>
-            JOUER
+            <span className="text-xl">⚡</span>
+            Lancer une partie rapide
           </span>
         </button>
       </div>

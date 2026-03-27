@@ -76,6 +76,7 @@ export default function App() {
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
   const [showHowToPlay, setShowHowToPlay] = useState(() => localStorage.getItem('wtf_hide_howtoplay') !== 'true')
   const [showSettings, setShowSettings] = useState(false)
+  const [isQuickPlay, setIsQuickPlay] = useState(false)
 
   const numPlayers = duelPlayers.length || 1
 
@@ -88,6 +89,30 @@ export default function App() {
   const totalRounds = gameMode === 'duel'
     ? Math.floor(sessionFacts.length / numPlayers)
     : sessionFacts.length
+
+  // Quick play — Normal mode, random valid category, no streak/score save
+  const handleQuickPlay = useCallback(() => {
+    const validCats = CATEGORIES.filter(cat => VALID_FACTS.some(f => f.category === cat.id))
+    const randomCat = validCats[Math.floor(Math.random() * validCats.length)]
+    const difficulty = DIFFICULTY_LEVELS.NORMAL
+    const facts = [...VALID_FACTS.filter(f => f.category === randomCat.id)]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 10)
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+
+    setIsQuickPlay(true)
+    setGameMode('solo')
+    setSelectedDifficulty(difficulty)
+    setSelectedCategory(randomCat.id)
+    setSessionFacts(facts)
+    setCurrentIndex(0)
+    setSessionScore(0)
+    setCorrectCount(0)
+    setHintsUsed(0)
+    setSelectedAnswer(null)
+    setIsCorrect(null)
+    setScreen(SCREENS.QUESTION)
+  }, [])
 
   // Solo flow
   const handlePlay = useCallback(() => {
@@ -243,9 +268,11 @@ export default function App() {
 
     // Solo mode
     if (nextIndex >= sessionFacts.length) {
-      const newStreak = streak + 1
-      saveStorage(totalScore + sessionScore, newStreak)
-      setStorage({ totalScore: totalScore + sessionScore, streak: newStreak })
+      if (!isQuickPlay) {
+        const newStreak = streak + 1
+        saveStorage(totalScore + sessionScore, newStreak)
+        setStorage({ totalScore: totalScore + sessionScore, streak: newStreak })
+      }
       setScreen(SCREENS.RESULTS)
     } else {
       setCurrentIndex(nextIndex)
@@ -255,7 +282,7 @@ export default function App() {
       setPointsEarned(0)
       setScreen(SCREENS.QUESTION)
     }
-  }, [gameMode, currentIndex, sessionFacts.length, sessionScore, totalScore, streak])
+  }, [gameMode, currentIndex, sessionFacts.length, sessionScore, totalScore, streak, isQuickPlay])
 
   // Multi: current player finished → pass to next player
   const handleDuelNextPlayer = useCallback(() => {
@@ -312,6 +339,7 @@ export default function App() {
     setCorrectCount(0)
     setDuelPlayers([])
     setDuelCurrentPlayerIndex(0)
+    setIsQuickPlay(false)
   }, [])
 
   const handleShare = useCallback(() => {
@@ -382,6 +410,7 @@ export default function App() {
           totalScore={totalScore}
           streak={streak}
           onPlay={handlePlay}
+          onQuickPlay={handleQuickPlay}
           onDuel={handleDuelMode}
           onMarathon={handleMarathonMode}
         />

@@ -234,6 +234,19 @@
   animation: stamp-wow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+/* Wrong answer animation — WTF logo with red X overlay */
+@keyframes wrong-answer-zoom {
+  0%   { transform: scale(0.3); opacity: 0; }
+  60%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes wrong-answer-desaturate {
+  0%   { filter: saturate(1) brightness(1); }
+  50%  { filter: saturate(1) brightness(1); }
+  100% { filter: saturate(0) brightness(0.8); }
+}
+
 /* Score pulse animation — when points arrive at target */
 @keyframes score-pulse-animation {
   0%   { transform: scale(1); }

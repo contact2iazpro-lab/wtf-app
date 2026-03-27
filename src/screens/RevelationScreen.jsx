@@ -209,28 +209,69 @@ export default function RevelationScreen({
         </div>
       </div>
 
-      {/* Image du fait */}
+      {/* Image du fait ou animation de mauvaise réponse */}
       {fact.imageUrl && (
         <div
-          className={`mx-5 mb-3 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', height: '240px' }}>
-          <img
-            src={fact.imageUrl}
-            alt={fact.question}
-            className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
-            style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
-            onError={(e) => { e.target.style.display = 'none' }}
-          />
-          {/* Tampon — mode solo uniquement */}
-          {!isDuel && flipped && (
+          className={`mx-5 mb-3 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
+          style={{ borderColor: cat?.color + '60', height: '240px', background: !isCorrect && !isDuel && flipped ? '#1a1a1a' : 'transparent' }}>
+          {/* Afficher l'image seulement si bonne réponse */}
+          {isCorrect && (
+            <img
+              src={fact.imageUrl}
+              alt={fact.question}
+              className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
+              style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
+              onError={(e) => { e.target.style.display = 'none' }}
+            />
+          )}
+
+          {/* Animation logo WTF! pour mauvaise réponse */}
+          {!isCorrect && !isDuel && flipped && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              {/* Logo WTF! */}
+              <div
+                style={{
+                  position: 'relative',
+                  width: '180px',
+                  height: '180px',
+                  animation: 'wrong-answer-zoom 0.6s ease-out forwards, wrong-answer-desaturate 0.6s ease-out forwards',
+                }}>
+                <img
+                  src="/logo-wtf.png"
+                  alt="WTF"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+                {/* Cercle rouge avec croix */}
+                <svg
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                  }}
+                  viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" r="95" fill="none" stroke="#F44336" strokeWidth="8" />
+                  <line x1="50" y1="50" x2="150" y2="150" stroke="#F44336" strokeWidth="12" strokeLinecap="round" />
+                  <line x1="150" y1="50" x2="50" y2="150" stroke="#F44336" strokeWidth="12" strokeLinecap="round" />
+                </svg>
+              </div>
+            </div>
+          )}
+
+          {/* Tampon — mode solo uniquement, mauvaise réponse */}
+          {!isDuel && flipped && isCorrect && (
             <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: '24px' }}>
               <div
                 className="stamp-wow"
                 style={{
                   fontSize: '94px',
                   fontWeight: 900,
-                  color: isCorrect ? '#4CAF50' : '#F44336',
-                  textShadow: `0 4px 12px ${isCorrect ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)'}`,
+                  color: '#4CAF50',
+                  textShadow: `0 4px 12px rgba(76, 175, 80, 0.5)`,
                   transform: 'rotate(-15deg) scale(1.1)',
                   transformOrigin: 'right bottom',
                   border: `4px solid ${isCorrect ? '#4CAF50' : '#F44336'}`,

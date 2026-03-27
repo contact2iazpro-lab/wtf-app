@@ -49,35 +49,35 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
       {/* Confirmation modal */}
       {showConfirm && (
         <div
-          className="fixed inset-0 flex items-end justify-center"
-          style={{ zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          className="fixed inset-0 flex items-center justify-center p-6"
+          style={{ zIndex: 100, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
           onClick={() => setShowConfirm(false)}>
           <div
-            className="w-full max-w-md rounded-t-3xl p-6 pb-10"
-            style={{ background: 'rgba(18,18,28,0.97)', border: '1px solid rgba(255,255,255,0.12)' }}
+            className="w-full rounded-3xl p-6 border"
+            style={{ background: '#fff', borderColor: 'rgba(0,0,0,0.1)', maxWidth: '420px' }}
             onClick={(e) => e.stopPropagation()}>
-            <div className="text-3xl text-center mb-3">🚀</div>
-            <h2 className="text-white font-black text-lg text-center mb-5">Confirmer la partie ?</h2>
+            <div className="text-4xl text-center mb-4">🚀</div>
+            <h2 className="text-xl font-black text-center mb-5" style={{ color: '#1a1a2e' }}>Confirmer la partie ?</h2>
 
             <div className="space-y-2 mb-6">
               {selectedDifficulty && (
                 <div
                   className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)' }}>
                   <span className="text-2xl shrink-0">{selectedDifficulty.emoji}</span>
                   <div>
-                    <div className="text-xs font-bold uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.4)' }}>Parcours</div>
-                    <div className="text-white font-black text-sm">{selectedDifficulty.label}</div>
+                    <div className="text-xs font-bold uppercase tracking-wide mb-0.5" style={{ color: 'rgba(0,0,0,0.35)' }}>Parcours</div>
+                    <div className="font-black text-sm" style={{ color: '#1a1a2e' }}>{selectedDifficulty.label}</div>
                   </div>
                 </div>
               )}
               <div
                 className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)' }}>
                 <span className="text-2xl shrink-0">{selectedCat?.emoji}</span>
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.4)' }}>Catégorie</div>
-                  <div className="text-white font-black text-sm">{selectedCat?.label}</div>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-0.5" style={{ color: 'rgba(0,0,0,0.35)' }}>Catégorie</div>
+                  <div className="font-black text-sm" style={{ color: '#1a1a2e' }}>{selectedCat?.label}</div>
                 </div>
               </div>
             </div>
@@ -86,13 +86,13 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
               <button
                 onClick={() => { audio.play('click'); setShowConfirm(false) }}
                 className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}>
+                style={{ background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.45)' }}>
                 Annuler
               </button>
               <button
                 onClick={handleConfirm}
                 className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
-                style={{ background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)', color: 'white' }}>
+                style={{ background: '#FF6B1A', color: 'white' }}>
                 C'est parti ! 🚀
               </button>
             </div>

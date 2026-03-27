@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { audio } from '../utils/audio'
 import SettingsModal from '../components/SettingsModal'
 
@@ -48,6 +49,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onQuickPlay, on
   const [showSettings, setShowSettings] = useState(false)
   const [showQuickPlayModal, setShowQuickPlayModal] = useState(false)
   const creatureRefs = useRef([])
+  const navigate = useNavigate()
 
   // RAF loop: move each creature across the screen, wrap around edges within allowed vertical zone
   useEffect(() => {
@@ -157,6 +159,14 @@ export default function HomeScreen({ totalScore, streak, onPlay, onQuickPlay, on
           </div>
         </div>
       )}
+
+      {/* Collection button — top left */}
+      <button
+        onClick={() => { audio.play('click'); navigate('/collection') }}
+        className="fixed w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+        style={{ zIndex: 40, top: 12, left: 16, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        🏆
+      </button>
 
       {/* Settings button — top right */}
       <button

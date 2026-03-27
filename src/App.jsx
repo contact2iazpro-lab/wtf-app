@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getFactsByCategory, VALID_FACTS, CATEGORIES, PLAYABLE_CATEGORIES } from './data/facts'
 import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
@@ -12,6 +13,8 @@ import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
 import SettingsModal from './components/SettingsModal'
 import { audio } from './utils/audio'
+import { useAuth } from './context/AuthContext'
+import { updateCollection } from './services/collectionService'
 
 const SCREENS = {
   HOME: 'home',
@@ -79,6 +82,8 @@ export default function App() {
   const [showHowToPlay, setShowHowToPlay] = useState(() => localStorage.getItem('wtf_hide_howtoplay') !== 'true')
   const [showSettings, setShowSettings] = useState(false)
   const [isQuickPlay, setIsQuickPlay] = useState(false)
+
+  const { user } = useAuth()
 
   const numPlayers = duelPlayers.length || 1
 
@@ -223,6 +228,9 @@ export default function App() {
         saveStorage(prev.totalScore, prev.streak, newUnlocked)
         return { ...prev, unlockedFacts: newUnlocked }
       })
+      if (!isQuickPlay && user) {
+        updateCollection(user.id, currentFact.category, currentFact.id)
+      }
     }
 
     if (gameMode === 'duel') {
@@ -250,6 +258,9 @@ export default function App() {
         saveStorage(prev.totalScore, prev.streak, newUnlocked)
         return { ...prev, unlockedFacts: newUnlocked }
       })
+      if (!isQuickPlay && user) {
+        updateCollection(user.id, currentFact.category, currentFact.id)
+      }
     }
 
     if (gameMode === 'duel') {

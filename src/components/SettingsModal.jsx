@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 import { useAuth } from '../context/AuthContext'
+import HowToPlayModal from './HowToPlayModal'
 
 // Red diagonal "no" bar overlay
 function NoBar() {
@@ -236,6 +237,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
   const [autoShowRules, setAutoShowRules] = useState(() => localStorage.getItem('wtf_hide_howtoplay') !== 'true')
   const [childMode, setChildMode] = useState(() => localStorage.getItem('wtf_child_mode') !== 'false')
   const [showSaveModal, setShowSaveModal] = useState(false)
+  const [showRulesModal, setShowRulesModal] = useState(false)
 
   const { user, isConnected } = useAuth()
   const connectedProvider = user?.app_metadata?.provider
@@ -250,7 +252,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
     n ? localStorage.removeItem('wtf_hide_howtoplay') : localStorage.setItem('wtf_hide_howtoplay', 'true')
   }
   const toggleChildMode = () => { const n = !childMode; setChildMode(n); localStorage.setItem('wtf_child_mode', String(n)) }
-  const handleViewRules = () => { audio.play('click'); onShowRules?.(); onClose() }
+  const handleViewRules = () => { audio.play('click'); setShowRulesModal(true) }
 
   const iconToggles = [
     { label: 'Musique',   icon: '🎵', on: musicOn, onToggle: toggleMusic },
@@ -262,6 +264,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
   return (
     <>
       {showSaveModal && <SaveProgressModal onClose={() => setShowSaveModal(false)} />}
+      {showRulesModal && <HowToPlayModal onClose={() => setShowRulesModal(false)} />}
 
       <div
         className="fixed inset-0 flex items-end justify-center"

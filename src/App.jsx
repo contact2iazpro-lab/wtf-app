@@ -12,6 +12,7 @@ import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from './screens/DuelSet
 import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
 import SettingsModal from './components/SettingsModal'
+import HowToPlayModal from './components/HowToPlayModal'
 import { audio } from './utils/audio'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
@@ -132,6 +133,9 @@ export default function App() {
   // Solo flow
   const handlePlay = useCallback(() => {
     setGameMode('solo')
+    // Re-read from localStorage at launch time (not from stale state)
+    const shouldShow = localStorage.getItem('wtf_hide_howtoplay') !== 'true'
+    setShowHowToPlay(shouldShow)
     setScreen(SCREENS.DIFFICULTY)
   }, [])
 
@@ -490,10 +494,13 @@ export default function App() {
         />
       )}
       {screen === SCREENS.DIFFICULTY && (
-        <DifficultyScreen
-          onSelectDifficulty={handleSelectDifficulty}
-          onBack={() => setScreen(SCREENS.HOME)}
-        />
+        <>
+          {showHowToPlay && <HowToPlayModal onClose={() => setShowHowToPlay(false)} />}
+          <DifficultyScreen
+            onSelectDifficulty={handleSelectDifficulty}
+            onBack={() => setScreen(SCREENS.HOME)}
+          />
+        </>
       )}
       {screen === SCREENS.CATEGORY && (
         <>

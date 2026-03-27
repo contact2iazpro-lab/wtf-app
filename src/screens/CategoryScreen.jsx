@@ -11,7 +11,7 @@ function hexToRgb(hex) {
   return `${r}, ${g}, ${b}`
 }
 
-export default function CategoryScreen({ onSelectCategory, onBack, selectedDifficulty }) {
+export default function CategoryScreen({ onSelectCategory, onBack, selectedDifficulty, unlockedFacts = new Set() }) {
   const [showSettings, setShowSettings] = useState(false)
   const [selectedCatId, setSelectedCatId] = useState(null) // null = nothing selected, 'random' = aléatoires, else cat.id
   const [showConfirm, setShowConfirm] = useState(false)
@@ -20,6 +20,26 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
     const categoryIds = new Set(VALID_FACTS.map(f => f.category))
     return categoryIds
   }, [])
+
+  // Total facts per category (dynamic — updates automatically if facts are added)
+  const totalPerCategory = useMemo(() => {
+    const counts = {}
+    for (const f of VALID_FACTS) {
+      counts[f.category] = (counts[f.category] || 0) + 1
+    }
+    return counts
+  }, [])
+
+  // Unlocked facts per category
+  const unlockedPerCategory = useMemo(() => {
+    const counts = {}
+    for (const f of VALID_FACTS) {
+      if (unlockedFacts.has(f.id)) {
+        counts[f.category] = (counts[f.category] || 0) + 1
+      }
+    }
+    return counts
+  }, [unlockedFacts])
 
   const selectedCat = selectedCatId === 'random'
     ? { label: 'Aléatoires', emoji: '🎲' }
@@ -146,15 +166,21 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
             const hasFacts = categoriesWithFacts.has(cat.id)
             const isSelected = selectedCatId === cat.id
             const dimOpacity = selectedCatId === null ? 1 : isSelected ? 1 : 0.5
+            const total = totalPerCategory[cat.id] || 0
+            const unlocked = unlockedPerCategory[cat.id] || 0
+            const pct = total > 0 ? unlocked / total : 0
+            const isComplete = pct === 1
+            const isAlmost = pct >= 0.8 && !isComplete
+            const remaining = total - unlocked
 
             return (
               <button
                 key={cat.id}
                 onClick={() => hasFacts && handleCategoryClick(cat.id)}
                 disabled={!hasFacts}
-                className={`rounded-xl px-2 text-center flex flex-col items-center justify-center gap-1 ${hasFacts ? 'btn-press active:scale-95 cursor-pointer' : 'cursor-not-allowed'}`}
+                className={`rounded-xl px-2 pt-2 pb-1.5 text-center flex flex-col items-center gap-0.5 ${hasFacts ? 'btn-press active:scale-95 cursor-pointer' : 'cursor-not-allowed'}`}
                 style={{
-                  height: '78px',
+                  height: '100px',
                   background: hasFacts
                     ? `rgba(${hexToRgb(cat.color)}, 0.7)`
                     : 'rgba(100, 100, 100, 0.15)',
@@ -162,11 +188,40 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                   opacity: hasFacts ? dimOpacity : 0.4,
                   transition: 'opacity 0.2s ease, border-color 0.2s ease',
                 }}>
-                <span className="text-2xl">{cat.emoji}</span>
+                <span className="text-xl leading-none">{cat.emoji}</span>
                 <span className="font-bold text-xs leading-tight" style={{ color: hasFacts ? '#000' : 'rgba(255,255,255,0.3)' }}>
                   {cat.label}
                 </span>
                 {!hasFacts && <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Bientôt</span>}
+                {hasFacts && (
+                  <div className="w-full mt-0.5">
+                    {/* Progress bar */}
+                    <div className="w-full rounded-full overflow-hidden" style={{ height: '5px', background: 'rgba(0,0,0,0.2)' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${pct * 100}%`,
+                          background: isComplete
+                            ? 'linear-gradient(90deg, #FFD700, #FFA500)'
+                            : isAlmost
+                              ? '#FF8C00'
+                              : pct === 0
+                                ? 'transparent'
+                                : 'rgba(255,255,255,0.7)',
+                        }}
+                      />
+                    </div>
+                    {/* Label */}
+                    <div className="text-center mt-0.5" style={{ fontSize: '9px', color: 'rgba(0,0,0,0.6)', lineHeight: 1.2 }}>
+                      {isComplete
+                        ? <span style={{ color: '#7B5800', fontWeight: 800 }}>✓ Complété !</span>
+                        : isAlmost
+                          ? <span style={{ color: '#7B2D00', fontWeight: 700 }}>Plus que {remaining} !</span>
+                          : <span>{unlocked}/{total}</span>
+                      }
+                    </div>
+                  </div>
+                )}
               </button>
             )
           })}

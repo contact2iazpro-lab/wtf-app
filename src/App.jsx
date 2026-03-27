@@ -40,18 +40,20 @@ function loadStorage() {
       : saved.lastDay === new Date(Date.now() - 86400000).toDateString()
         ? saved.streak || 0
         : 0
-    return { totalScore: saved.totalScore || 0, streak }
+    const unlockedFacts = new Set(saved.unlockedFacts || [])
+    return { totalScore: saved.totalScore || 0, streak, unlockedFacts }
   } catch {
-    return { totalScore: 0, streak: 0 }
+    return { totalScore: 0, streak: 0, unlockedFacts: new Set() }
   }
 }
 
-function saveStorage(totalScore, streak) {
+function saveStorage(totalScore, streak, unlockedFacts) {
   try {
     localStorage.setItem('wtf_data', JSON.stringify({
       totalScore,
       streak,
       lastDay: new Date().toDateString(),
+      unlockedFacts: [...unlockedFacts],
     }))
   } catch { /* ignore */ }
 }
@@ -68,7 +70,7 @@ export default function App() {
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [isCorrect, setIsCorrect] = useState(null)
   const [pointsEarned, setPointsEarned] = useState(0)
-  const [{ totalScore, streak }, setStorage] = useState(loadStorage)
+  const [{ totalScore, streak, unlockedFacts }, setStorage] = useState(loadStorage)
 
   // Multiplayer state
   const [duelPlayers, setDuelPlayers] = useState([]) // [{name, score}]
@@ -214,6 +216,15 @@ export default function App() {
     setIsCorrect(isAnswerCorrect)
     setPointsEarned(points)
 
+    if (isAnswerCorrect && currentFact && !unlockedFacts.has(currentFact.id)) {
+      setStorage(prev => {
+        const newUnlocked = new Set(prev.unlockedFacts)
+        newUnlocked.add(currentFact.id)
+        saveStorage(prev.totalScore, prev.streak, newUnlocked)
+        return { ...prev, unlockedFacts: newUnlocked }
+      })
+    }
+
     if (gameMode === 'duel') {
       setDuelPlayers(ps => ps.map((p, i) => i === duelCurrentPlayerIndex ? { ...p, score: p.score + points } : p))
     } else {
@@ -222,7 +233,7 @@ export default function App() {
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty])
+  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty, unlockedFacts])
 
   // Open mode — 5/3/2 pts based on hints, validated by questioner
   const handleOpenValidate = useCallback((isCorrect) => {
@@ -232,6 +243,15 @@ export default function App() {
     setIsCorrect(isCorrect)
     setPointsEarned(points)
 
+    if (isCorrect && currentFact && !unlockedFacts.has(currentFact.id)) {
+      setStorage(prev => {
+        const newUnlocked = new Set(prev.unlockedFacts)
+        newUnlocked.add(currentFact.id)
+        saveStorage(prev.totalScore, prev.streak, newUnlocked)
+        return { ...prev, unlockedFacts: newUnlocked }
+      })
+    }
+
     if (gameMode === 'duel') {
       setDuelPlayers(ps => ps.map((p, i) => i === duelCurrentPlayerIndex ? { ...p, score: p.score + points } : p))
     } else {
@@ -240,7 +260,7 @@ export default function App() {
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [hintsUsed, gameMode, duelCurrentPlayerIndex])
+  }, [hintsUsed, gameMode, duelCurrentPlayerIndex, currentFact, unlockedFacts])
 
   const handleTimeout = useCallback(() => {
     if (selectedAnswer !== null) return
@@ -278,8 +298,8 @@ export default function App() {
     if (nextIndex >= sessionFacts.length) {
       if (!isQuickPlay) {
         const newStreak = streak + 1
-        saveStorage(totalScore + sessionScore, newStreak)
-        setStorage({ totalScore: totalScore + sessionScore, streak: newStreak })
+        saveStorage(totalScore + sessionScore, newStreak, unlockedFacts)
+        setStorage(prev => ({ ...prev, totalScore: totalScore + sessionScore, streak: newStreak }))
       }
       setScreen(SCREENS.RESULTS)
     } else {
@@ -505,6 +525,7 @@ export default function App() {
             onSelectCategory={handleSelectCategory}
             onBack={() => setScreen(SCREENS.HOME)}
             selectedDifficulty={selectedDifficulty}
+            unlockedFacts={unlockedFacts}
           />
         </>
       )}

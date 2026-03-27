@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import { PLAYABLE_PLAYABLE_CATEGORIES, VALID_FACTS } from '../data/facts'
+import { PLAYABLE_CATEGORIES, VALID_FACTS } from '../data/facts'
 import { audio } from '../utils/audio'
 
 // Convert hex color to "r, g, b" string for rgba()

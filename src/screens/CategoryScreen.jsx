@@ -34,18 +34,18 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
       <div className="flex-1 px-4 pb-3 overflow-y-auto scrollbar-hide" style={{ position: 'relative', zIndex: 1 }}>
         {/* Categories grid — 2 per row, 8 rows total */}
         <div className="grid grid-cols-2 gap-1.5">
-          {/* Random button — first item in grid */}
+          {/* Random button — arc-en-ciel uniquement */}
           <button
             onClick={() => onSelectCategory(null)}
             className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
-            style={{ height: '85px', background: 'rgba(255,255,255,0.6)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.9)', color: '#FF6B1A', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            style={{ height: '85px', background: 'linear-gradient(135deg, #FF6B1A 0%, #FF3385 30%, #9B59B6 60%, #3498DB 80%, #2ECC71 100%)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'rgba(255,255,255,0.5)', color: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }}>
             <span className="text-2xl">🎲</span>
             <span className="font-bold text-xs leading-tight">
               Aléatoires
             </span>
           </button>
 
-          {/* Categories */}
+          {/* Categories — chaque carte utilise la couleur de sa catégorie */}
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
@@ -53,12 +53,12 @@ export default function CategoryScreen({ onSelectCategory, onBack }) {
               className="btn-press rounded-xl px-2 text-center transition-all duration-150 active:scale-95 flex flex-col items-center justify-center gap-1"
               style={{
                 height: '85px',
-                background: 'rgba(255,255,255,0.6)',
+                background: cat.color + '22',
                 borderWidth: '1px',
                 borderStyle: 'solid',
-                borderColor: 'rgba(255,255,255,0.9)',
-                color: '#1a1a2e',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                borderColor: cat.color + '70',
+                color: cat.color,
+                boxShadow: `0 2px 8px ${cat.color}20`,
               }}>
               <span className="text-2xl">{cat.emoji}</span>
               <span className="font-bold text-xs leading-tight">

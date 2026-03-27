@@ -6,7 +6,7 @@ export const CATEGORIES = [
   { id: "gastronomie", label: "Gastronomie", emoji: "🍽️", color: "#FFA500", bg: "#3A2000", image: "Carte WTF Gastronomie.png" },
   { id: "geographie", label: "Géographie", emoji: "🌍", color: "#40D9C8", bg: "#003A35", image: "Carte WTF Geographie.png" },
   { id: "histoire", label: "Histoire", emoji: "📜", color: "#E8CFA0", bg: "#2C2010", image: "Carte WTF Histoire.png" },
-  { id: "kids", label: "Enfants", emoji: "🎈", color: "#FFEF60", bg: "#3A3300", image: "Carte WTF Kids.png" },
+  { id: "kids", label: "Kids", emoji: "🎈", color: "#FFEF60", bg: "#3A3300", image: "Carte WTF Kids.png" },
   { id: "phobies", label: "Phobies", emoji: "😱", color: "#A8B8D8", bg: "#0A1020", image: "Carte WTF Phobies.png" },
   { id: "records", label: "Records", emoji: "🏆", color: "#E8B84B", bg: "#2E2000", image: "Carte WTF Records.png" },
   { id: "sante", label: "Santé", emoji: "⚕️", color: "#90F090", bg: "#053A05", image: "Carte WTF Sante.png" },

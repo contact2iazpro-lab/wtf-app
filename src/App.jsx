@@ -92,7 +92,12 @@ export default function App() {
 
   // Quick play — Normal mode, random valid category, no streak/score save
   const handleQuickPlay = useCallback(() => {
-    const validCats = CATEGORIES.filter(cat => VALID_FACTS.some(f => f.category === cat.id))
+    // Future: replace childMode read with userProfile.age < 18 when profile exists
+    const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
+    const validCats = CATEGORIES.filter(cat =>
+      VALID_FACTS.some(f => f.category === cat.id) &&
+      (childMode || cat.id !== 'kids')
+    )
     const randomCat = validCats[Math.floor(Math.random() * validCats.length)]
     const difficulty = DIFFICULTY_LEVELS.NORMAL
     const facts = [...VALID_FACTS.filter(f => f.category === randomCat.id)]
@@ -135,8 +140,11 @@ export default function App() {
 
     if (categoryId === null) {
       // "Aléatoires" : 1 question aléatoire de 10 catégories distinctes
+      // Future: replace childMode read with userProfile.age < 18 when profile exists
+      const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
       const validCategories = CATEGORIES.filter(cat =>
-        VALID_FACTS.some(f => f.category === cat.id)
+        VALID_FACTS.some(f => f.category === cat.id) &&
+        (childMode || cat.id !== 'kids')
       )
 
       if (validCategories.length < 10) {

@@ -8,6 +8,11 @@ export default function SettingsModal({ onClose, onShowRules }) {
   const [autoShowRules, setAutoShowRules] = useState(() =>
     localStorage.getItem('wtf_hide_howtoplay') !== 'true'
   )
+  // childMode: true = Kids category included in random draws (default ON)
+  // Future: replace with userProfile.age < 18 check when profile exists
+  const [childMode, setChildMode] = useState(() =>
+    localStorage.getItem('wtf_child_mode') !== 'false'
+  )
 
   const toggleMusic = () => {
     const next = !musicOn
@@ -27,6 +32,12 @@ export default function SettingsModal({ onClose, onShowRules }) {
     setVibOn(next)
     audio.setVibrationEnabled(next)
     if (next) audio.vibrate(40)
+  }
+
+  const toggleChildMode = () => {
+    const next = !childMode
+    setChildMode(next)
+    localStorage.setItem('wtf_child_mode', String(next))
   }
 
   const toggleAutoShowRules = () => {
@@ -49,6 +60,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
     { label: 'Musique', emojiOn: '🎵', emojiOff: '🔇', on: musicOn, toggle: toggleMusic },
     { label: 'Bruitages', emojiOn: '🔔', emojiOff: '🔕', on: sfxOn, toggle: toggleSfx },
     { label: 'Vibreur', emojiOn: '📳', emojiOff: '📴', on: vibOn, toggle: toggleVib },
+    { label: 'Mode Enfant', emojiOn: '👶', emojiOff: '🔞', on: childMode, toggle: toggleChildMode },
   ]
 
   return (

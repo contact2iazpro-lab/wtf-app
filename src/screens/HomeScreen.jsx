@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { audio } from '../utils/audio'
 import SettingsModal from '../components/SettingsModal'
+import LoginModal from '../components/Auth/LoginModal'
+import UserMenu from '../components/Auth/UserMenu'
+import { useAuth } from '../context/AuthContext'
 
 const CREATURE_SRCS = [
   '/Dauphin.png', '/Etoile.png', '/Garcon.png', '/grenouille.png',
@@ -47,7 +50,9 @@ function StarLogo() {
 export default function HomeScreen({ totalScore, streak, onPlay, onQuickPlay, onDuel, onMarathon }) {
   const [showSettings, setShowSettings] = useState(false)
   const [showQuickPlayModal, setShowQuickPlayModal] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
   const creatureRefs = useRef([])
+  const { isConnected } = useAuth()
 
   // RAF loop: move each creature across the screen, wrap around edges within allowed vertical zone
   useEffect(() => {
@@ -158,13 +163,28 @@ export default function HomeScreen({ totalScore, streak, onPlay, onQuickPlay, on
         </div>
       )}
 
-      {/* Gear button — top right */}
-      <button
-        onClick={() => { audio.play('click'); setShowSettings(true) }}
-        className="fixed top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
-        style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 40, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        ⚙️
-      </button>
+      {/* Auth modal */}
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+
+      {/* Top bar: settings left, auth right */}
+      <div className="fixed top-3 left-4 right-4 flex items-center justify-between" style={{ zIndex: 40 }}>
+        <button
+          onClick={() => { audio.play('click'); setShowSettings(true) }}
+          className="w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+          style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+          ⚙️
+        </button>
+        {isConnected ? (
+          <UserMenu />
+        ) : (
+          <button
+            onClick={() => setShowLogin(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl font-bold text-xs active:scale-95 transition-all"
+            style={{ background: '#FF6B1A', color: 'white', boxShadow: '0 2px 8px rgba(255,107,26,0.4)' }}>
+            🔥 Se connecter
+          </button>
+        )}
+      </div>
 
       {/* Header */}
       <div className="relative pt-1 pb-0 px-6 flex flex-col items-center shrink-0" style={{ zIndex: 1 }}>

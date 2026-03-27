@@ -89,21 +89,21 @@ export default function HowToPlayModal({ onClose }) {
     >
       <div
         className="w-full rounded-3xl overflow-hidden flex flex-col"
-        style={{ maxWidth: 380, maxHeight: '85vh', background: '#0f172a', border: '2px solid rgba(255,255,255,0.12)' }}
+        style={{ maxWidth: 380, maxHeight: '85vh', background: '#FAFAF8', boxShadow: '0 24px 64px rgba(0,0,0,0.22)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 shrink-0" style={{ background: 'rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <span className="text-white/50 text-xs font-bold">{page + 1} / {PAGES.length}</span>
-          <span className="font-black text-white text-sm">{current.emoji} {current.title}</span>
+        <div className="flex items-center justify-between px-5 py-3 shrink-0" style={{ background: '#FFF7ED', borderBottom: '1px solid #FED7AA' }}>
+          <span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>{page + 1} / {PAGES.length}</span>
+          <span className="font-black text-sm" style={{ color: '#1a1a2e' }}>{current.emoji} {current.title}</span>
           <button
             onClick={() => { audio.play('click'); onClose() }}
             className="w-7 h-7 rounded-full flex items-center justify-center font-black text-white active:scale-90 text-xs"
-            style={{ background: '#EF4444' }}
+            style={{ background: '#FF6B1A' }}
           >✕</button>
         </div>
 
         {/* Progress bar */}
-        <div className="h-1 shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }}>
+        <div className="h-1 shrink-0" style={{ background: '#E5E7EB' }}>
           <div
             className="h-full transition-all duration-300"
             style={{ width: `${((page + 1) / PAGES.length) * 100}%`, background: 'linear-gradient(90deg, #FF6B1A, #FF9F1A)' }}
@@ -114,15 +114,15 @@ export default function HowToPlayModal({ onClose }) {
         <div className="flex-1 overflow-y-auto p-5">
           <div className="text-5xl text-center mb-4">{current.emoji}</div>
           {current.soon && (
-            <div className="text-center mb-4 py-2 px-4 rounded-2xl" style={{ background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)' }}>
+            <div className="text-center mb-4 py-2 px-4 rounded-2xl" style={{ background: 'rgba(255,107,26,0.08)', border: '1px solid rgba(255,107,26,0.25)' }}>
               <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#FF6B1A' }}>🚧 Bientôt disponible</span>
             </div>
           )}
           <div className="flex flex-col gap-3">
             {current.content.filter(c => !c.text.startsWith('**Bientôt')).map((item, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div key={i} className="flex items-start gap-3 p-3 rounded-2xl" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
                 <span className="text-xl shrink-0">{item.icon}</span>
-                <p className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.8)', lineHeight: '1.55' }}>
+                <p className="text-sm font-semibold" style={{ color: '#374151', lineHeight: '1.55' }}>
                   {renderText(item.text)}
                 </p>
               </div>
@@ -131,12 +131,12 @@ export default function HowToPlayModal({ onClose }) {
         </div>
 
         {/* Footer nav */}
-        <div className="px-5 pb-5 pt-3 flex gap-3 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="px-5 pb-5 pt-3 flex gap-3 shrink-0" style={{ borderTop: '1px solid #E5E7EB' }}>
           {page > 0 && (
             <button
               onClick={prev}
               className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}
+              style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280' }}
             >
               ← Précédent
             </button>

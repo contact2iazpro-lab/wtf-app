@@ -276,13 +276,13 @@ export default function QuestionScreen({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => { audio.play('wrong'); onOpenValidate(false) }}
+              onClick={() => { audio.play('wrong'); audio.vibrate([120]); onOpenValidate(false) }}
               className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
               style={{ background: 'rgba(244,67,54,0.1)', borderColor: '#F44336', color: '#F44336' }}>
               ✗ Incorrect
             </button>
             <button
-              onClick={() => { audio.play('correct'); onOpenValidate(true) }}
+              onClick={() => { audio.play('correct'); audio.vibrate([40,20,40]); onOpenValidate(true) }}
               className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
               style={{ background: 'rgba(76,175,80,0.1)', borderColor: '#4CAF50', color: '#4CAF50' }}>
               ✓ Correct !
@@ -357,7 +357,7 @@ export default function QuestionScreen({
           {fact.options.map((option, index) => (
             <button
               key={index}
-              onClick={() => { audio.play(index === fact.correctIndex ? 'correct' : 'wrong'); onSelectAnswer(index) }}
+              onClick={() => { const correct = index === fact.correctIndex; audio.play(correct ? 'correct' : 'wrong'); audio.vibrate(correct ? [40,20,40] : [120]); onSelectAnswer(index) }}
               className="btn-press py-4 rounded-2xl text-white font-bold text-sm transition-all active:scale-95 border"
               style={{
                 background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,

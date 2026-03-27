@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 import { CATEGORIES } from '../data/facts'
@@ -28,6 +28,7 @@ const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
 
 export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome, completedCategoryLevels = [] }) {
   const [showSettings, setShowSettings] = useState(false)
+  useEffect(() => { audio.vibrate([50, 30, 100]) }, [])
   const rank = getRank(score)
   const stars = getStars(correctCount, totalFacts)
   const maxScore = totalFacts * 5

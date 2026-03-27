@@ -176,12 +176,13 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Game modes grid */}
-      <div className="px-6 pb-0.5 flex-1 overflow-y-auto flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="px-6 pb-0.5 flex-1 overflow-hidden flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
         <div className="flex items-center gap-2 mb-0.5 shrink-0">
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
           <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Modes de jeu</h2>
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
         </div>
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="grid grid-cols-2 gap-0.5">
           {GAME_MODES.map((mode) => (
             <div
@@ -210,8 +211,9 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
             </div>
           ))}
         </div>
+        </div>
 
-        {/* Share button */}
+        {/* Share button — anchored below cards, always visible */}
         <button
           onClick={() => {
             audio.play('click')
@@ -222,7 +224,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
               navigator.clipboard?.writeText(text).catch(() => {})
             }
           }}
-          className="mt-auto pt-0.5 w-full py-1.5 rounded-2xl text-white font-black text-xs uppercase transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 shrink-0"
+          className="mt-1 pt-0.5 w-full py-1.5 rounded-2xl text-white font-black text-xs uppercase transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 shrink-0"
           style={{
             background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
             border: '1px solid rgba(255,255,255,0.3)',

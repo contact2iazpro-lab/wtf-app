@@ -49,31 +49,89 @@ function IconToggle({ label, icon, on, onToggle }) {
   )
 }
 
+function resetLocalProgress() {
+  try {
+    localStorage.setItem('wtf_data', JSON.stringify({
+      totalScore: 0, streak: 0,
+      lastDay: new Date().toDateString(),
+      unlockedFacts: [],
+    }))
+  } catch { /* ignore */ }
+}
+
 // Save progression modal
 function SaveProgressModal({ onClose }) {
   const { user, isConnected, signInWithGoogle, signInWithFacebook, signOut } = useAuth()
   const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(null) // 'google' | 'facebook' | null
+  const [loading, setLoading] = useState(null) // 'google' | 'facebook' | 'signout' | null
+  const [pendingProvider, setPendingProvider] = useState(null) // 'google' | 'facebook' | null
 
   const provider = user?.app_metadata?.provider
+  const email = user?.email ?? ''
+  const isGoogleUser = isConnected && provider === 'google'
   const isFacebookUser = isConnected && provider === 'facebook'
 
-  const handleFacebook = async () => {
-    setError(null)
-    if (isFacebookUser) {
-      setLoading('facebook')
-      await signOut()
-      onClose()
-      return
-    }
-    setLoading('facebook')
-    try { await signInWithFacebook() } catch (e) { setError(e.message) } finally { setLoading(null) }
+  const handleSignOut = async () => {
+    setLoading('signout')
+    await signOut()
+    setLoading(null)
+    onClose()
   }
 
-  const handleGoogle = async () => {
+  const confirmSignIn = async () => {
+    resetLocalProgress()
     setError(null)
-    setLoading('google')
-    try { await signInWithGoogle() } catch (e) { setError(e.message); setLoading(null) }
+    setLoading(pendingProvider)
+    setPendingProvider(null)
+    try {
+      if (pendingProvider === 'google') await signInWithGoogle()
+      else await signInWithFacebook()
+    } catch (e) { setError(e.message); setLoading(null) }
+  }
+
+  // Warning confirmation step
+  if (pendingProvider) {
+    const providerLabel = pendingProvider === 'google' ? 'Google' : 'Facebook'
+    return (
+      <div
+        className="fixed inset-0 flex items-center justify-center p-5"
+        style={{ zIndex: 200, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}
+      >
+        <div
+          className="w-full rounded-3xl overflow-hidden"
+          style={{ maxWidth: 340, background: '#0f2035', border: '2px solid rgba(239,68,68,0.4)' }}
+        >
+          <div className="flex items-center justify-between px-5 py-3" style={{ background: '#7f1d1d' }}>
+            <span className="font-black text-white text-base">⚠️ Attention</span>
+            <button onClick={() => setPendingProvider(null)} className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90" style={{ background: '#EF4444' }}>✕</button>
+          </div>
+          <div className="p-5">
+            <p className="text-sm mb-5 font-bold text-center" style={{ color: 'rgba(255,255,255,0.85)', lineHeight: '1.6' }}>
+              La connexion à un compte {providerLabel} réinitialisera ta progression locale actuelle
+              <span style={{ color: '#FCA5A5' }}> (streak, points, facts débloqués)</span>.
+              <br /><br />
+              Cette action est <strong style={{ color: '#EF4444' }}>irréversible</strong>. Continuer ?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPendingProvider(null)}
+                className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmSignIn}
+                className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
+                style={{ background: '#EF4444', color: 'white' }}
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -89,46 +147,72 @@ function SaveProgressModal({ onClose }) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3" style={{ background: '#1a4a2e' }}>
-          <span className="font-black text-white text-base">Enregistrer la progression</span>
+          <span className="font-black text-white text-base">Progression</span>
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90" style={{ background: '#EF4444' }}>✕</button>
         </div>
 
         {/* Body */}
         <div className="p-5">
-          <p className="text-center text-sm mb-5 font-bold" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            Connectez-vous pour enregistrer<br />votre progression !
-          </p>
+          {/* Already connected */}
+          {isConnected ? (
+            <>
+              <div className="flex flex-col items-center gap-2 mb-5 p-4 rounded-2xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                <span className="text-3xl">{isGoogleUser ? '🔵' : '🔷'}</span>
+                <span className="font-black text-white text-sm">
+                  Connecté avec {isGoogleUser ? 'Google' : 'Facebook'}
+                </span>
+                {email && (
+                  <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>{email}</span>
+                )}
+                <span className="text-xs font-bold" style={{ color: '#22C55E' }}>✅ Progression sauvegardée</span>
+              </div>
+              <button
+                onClick={handleSignOut}
+                disabled={loading === 'signout'}
+                className="w-full py-3.5 rounded-2xl font-black text-white active:scale-95 transition-all"
+                style={{ background: loading === 'signout' ? '#6B7280' : '#EF4444' }}
+              >
+                {loading === 'signout' ? '...' : 'Se déconnecter'}
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-center text-sm mb-5 font-bold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Connectez-vous pour enregistrer<br />votre progression !
+              </p>
 
-          {/* Facebook */}
-          <button
-            onClick={handleFacebook}
-            disabled={!!loading}
-            className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-black text-white mb-3 active:scale-95 transition-all"
-            style={{ background: loading === 'facebook' ? '#1565c0' : '#1877F2', opacity: loading && loading !== 'facebook' ? 0.5 : 1 }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            {isFacebookUser ? 'Déconnexion' : 'Se connecter avec Facebook'}
-          </button>
+              {/* Facebook */}
+              <button
+                onClick={() => { setError(null); setPendingProvider('facebook') }}
+                disabled={!!loading}
+                className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-black text-white mb-3 active:scale-95 transition-all"
+                style={{ background: '#1877F2', opacity: loading ? 0.5 : 1 }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Se connecter avec Facebook
+              </button>
 
-          {/* Google */}
-          <button
-            onClick={handleGoogle}
-            disabled={!!loading}
-            className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-black text-white active:scale-95 transition-all"
-            style={{ background: loading === 'google' ? '#e65c00' : '#FF8C00', opacity: loading && loading !== 'google' ? 0.5 : 1 }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Se connecter avec Google
-          </button>
+              {/* Google */}
+              <button
+                onClick={() => { setError(null); setPendingProvider('google') }}
+                disabled={!!loading}
+                className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-black text-white active:scale-95 transition-all"
+                style={{ background: '#FF8C00', opacity: loading ? 0.5 : 1 }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                  <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Se connecter avec Google
+              </button>
 
-          {error && <p className="text-xs text-center mt-3" style={{ color: '#EF4444' }}>{error}</p>}
+              {error && <p className="text-xs text-center mt-3" style={{ color: '#EF4444' }}>{error}</p>}
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -153,7 +237,9 @@ export default function SettingsModal({ onClose, onShowRules }) {
   const [childMode, setChildMode] = useState(() => localStorage.getItem('wtf_child_mode') !== 'false')
   const [showSaveModal, setShowSaveModal] = useState(false)
 
-  const { isConnected } = useAuth()
+  const { user, isConnected } = useAuth()
+  const connectedProvider = user?.app_metadata?.provider
+  const connectedEmail = user?.email ?? ''
 
   const toggleMusic = () => { const n = !musicOn; setMusicOn(n); audio.setMusicEnabled(n) }
   const toggleSfx = () => { const n = !sfxOn; setSfxOn(n); audio.setSfxEnabled(n); if (n) audio.play('click') }
@@ -201,7 +287,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
           {/* Save progression */}
           <button
             onClick={() => setShowSaveModal(true)}
-            className="w-full flex items-center justify-center gap-2 px-5 py-4 rounded-2xl border transition-all active:scale-95 mb-3"
+            className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl border transition-all active:scale-95 mb-3"
             style={{
               background: isConnected ? 'rgba(34,197,94,0.12)' : 'rgba(59,130,246,0.12)',
               borderColor: isConnected ? 'rgba(34,197,94,0.35)' : 'rgba(59,130,246,0.35)',
@@ -209,8 +295,15 @@ export default function SettingsModal({ onClose, onShowRules }) {
             }}
           >
             <span className="text-lg">{isConnected ? '✅' : '💾'}</span>
-            <span className="font-bold text-sm">
-              {isConnected ? 'Progression sauvegardée' : 'Enregistrer votre progression'}
+            <span className="flex flex-col items-start min-w-0">
+              <span className="font-bold text-sm">
+                {isConnected
+                  ? `Connecté — ${connectedProvider === 'google' ? 'Google' : 'Facebook'}`
+                  : 'Enregistrer votre progression'}
+              </span>
+              {isConnected && connectedEmail && (
+                <span className="text-xs truncate w-full" style={{ color: 'rgba(255,255,255,0.5)' }}>{connectedEmail}</span>
+              )}
             </span>
           </button>
 

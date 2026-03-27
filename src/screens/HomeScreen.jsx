@@ -176,7 +176,7 @@ export default function HomeScreen({ totalScore, streak, onPlay, onDuel, onMarat
       </div>
 
       {/* Game modes grid */}
-      <div className="px-6 pb-0.5 flex-1 overflow-hidden flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="px-6 pb-0.5 flex-1 overflow-y-auto flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
         <div className="flex items-center gap-2 mb-0.5 shrink-0">
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
           <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Modes de jeu</h2>

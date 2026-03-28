@@ -3,8 +3,9 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { logout } from '../lib/auth'
 
 const NAV = [
-  { to: '/',      label: 'Dashboard', icon: '📊' },
-  { to: '/facts', label: 'Facts',     icon: '📋' },
+  { to: '/',         label: 'Dashboard', icon: '📊' },
+  { to: '/facts',    label: 'Facts',     icon: '📋' },
+  { to: '/archived', label: 'Supprimés', icon: '🗑' },
 ]
 
 export default function Layout({ toast }) {

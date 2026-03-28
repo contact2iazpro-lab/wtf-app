@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"C:/Users/sauve/Documents/wtf-app/.claude/worktrees/condescending-mendeleev\" && git add -A && if ! git diff --staged --quiet; then git commit -m \"chore: auto-deploy admin-tool changes\" && git push origin HEAD:master && echo '{\"systemMessage\": \"✓ Changements committé et pushé sur master → déploiement Vercel déclenché\"}' ; fi",
+            "timeout": 60,
+            "statusMessage": "Déploiement sur Vercel…"
+          }
+        ]
+      }
+    ]
+  }
+}

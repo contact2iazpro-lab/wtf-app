@@ -3,6 +3,20 @@
 -- 1. Add vip_usage column to facts
 ALTER TABLE facts ADD COLUMN IF NOT EXISTS vip_usage TEXT DEFAULT 'available';
 
+-- 2. Add difficulty column to facts
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS difficulty TEXT DEFAULT 'Normal';
+
+-- 3. Distribute existing facts evenly across difficulties (run once)
+-- This assigns Facile / Normal / Expert in round-robin by ID order
+UPDATE facts
+SET difficulty = CASE ((ROW_NUMBER() OVER (ORDER BY id) - 1) % 3)
+  WHEN 0 THEN 'Facile'
+  WHEN 1 THEN 'Normal'
+  ELSE 'Expert'
+END
+WHERE difficulty IS NULL OR difficulty = 'Normal';
+-- Note: comment out the WHERE clause above if you want to re-run the distribution
+
 -- 2. Create edit_history table for audit log
 CREATE TABLE IF NOT EXISTS edit_history (
   id        BIGSERIAL PRIMARY KEY,

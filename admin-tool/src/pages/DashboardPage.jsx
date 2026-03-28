@@ -48,6 +48,7 @@ export default function DashboardPage({ toast }) {
   const [stats, setStats] = useState(null)
   const [categoryData, setCategoryData] = useState([])
   const [vipByUsage, setVipByUsage] = useState([])
+  const [difficultyData, setDifficultyData] = useState([])
   const [recentEdits, setRecentEdits] = useState([])
   const [loading, setLoading] = useState(true)
   const [migrating, setMigrating] = useState(false)
@@ -72,7 +73,7 @@ export default function DashboardPage({ toast }) {
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_published', true),
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_published', false),
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_vip', true),
-        supabase.from('facts').select('category, is_published, vip_usage, is_vip'),
+        supabase.from('facts').select('category, is_published, vip_usage, is_vip, difficulty'),
         supabase.from('edit_history').select('*').order('edited_at', { ascending: false }).limit(5),
       ])
 
@@ -98,6 +99,19 @@ export default function DashboardPage({ toast }) {
       setVipByUsage(
         VIP_USAGES.map(u => ({ ...u, count: usageCounts[u.value] || 0 }))
       )
+
+      // Difficulty distribution
+      const diffCounts = { Facile: 0, Normal: 0, Expert: 0 }
+      for (const f of allFacts || []) {
+        const d = f.difficulty || 'Normal'
+        if (diffCounts[d] !== undefined) diffCounts[d]++
+      }
+      const totalFacts = (allFacts || []).length || 1
+      setDifficultyData([
+        { value: 'Facile', count: diffCounts.Facile, color: '#22C55E', pct: Math.round((diffCounts.Facile / totalFacts) * 100) },
+        { value: 'Normal', count: diffCounts.Normal, color: '#3B82F6', pct: Math.round((diffCounts.Normal / totalFacts) * 100) },
+        { value: 'Expert', count: diffCounts.Expert, color: '#EF4444', pct: Math.round((diffCounts.Expert / totalFacts) * 100) },
+      ])
 
       setRecentEdits(history || [])
     } catch (err) {
@@ -148,6 +162,37 @@ export default function DashboardPage({ toast }) {
         <StatCard label="Publiés" value={stats?.published} color="#22C55E" />
         <StatCard label="Non publiés" value={stats?.unpublished} color="#EF4444" />
         <StatCard label="Facts VIP ⭐" value={stats?.vipTotal} color="#FFD700" />
+      </div>
+
+      {/* Difficulty distribution */}
+      <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
+        <h2 className="text-base font-black text-white mb-4">🎯 Répartition par difficulté</h2>
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          {difficultyData.map(d => (
+            <div key={d.value} className="text-center p-3 rounded-xl" style={{ background: `${d.color}18`, border: `1px solid ${d.color}40` }}>
+              <div className="text-2xl font-black mb-1" style={{ color: d.color }}>{d.count}</div>
+              <div className="text-sm font-bold" style={{ color: d.color }}>{d.value}</div>
+              <div className="text-xs text-slate-500 mt-0.5">{d.pct}%</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
+          {difficultyData.map(d => (
+            d.pct > 0 && (
+              <div
+                key={d.value}
+                title={`${d.value} : ${d.pct}%`}
+                style={{ width: `${d.pct}%`, background: d.color }}
+                className="transition-all rounded-sm"
+              />
+            )
+          ))}
+        </div>
+        {difficultyData.some(d => Math.abs(d.pct - 33) > 10) && (
+          <p className="text-amber-400 text-xs mt-2 font-semibold">
+            ⚠ Répartition déséquilibrée — utilisez "Changer difficulté" en lot pour rééquilibrer
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

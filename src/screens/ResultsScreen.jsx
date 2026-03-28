@@ -26,11 +26,18 @@ function getStars(correct, total) {
 const DIFFICULTY_LABELS = { easy: 'Facile', normal: 'Normal', expert: 'Expert' }
 const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
 
-export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome, completedCategoryLevels = [], coinsEarned = 0, sessionType = 'parcours' }) {
+export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome, completedCategoryLevels = [], coinsEarned = 0, sessionType = 'parcours', difficulty = null }) {
   const [showSettings, setShowSettings] = useState(false)
   const rank = getRank(score)
   const stars = getStars(correctCount, totalFacts)
-  const maxScore = totalFacts * 5
+
+  // Calculate maxScore based on difficulty level
+  // For open questions (duel mode), always assume 5 pts max per question
+  const pointsPerQuestion =
+    difficulty?.scoring?.correct === 5 ? 5 :           // EXPERT or FLASH
+    difficulty?.scoring?.correct === 3 ? 3 :           // NORMAL or EASY
+    Array.isArray(difficulty?.scoring?.correct) ? difficulty.scoring.correct[0] : 5  // Array form, use best case
+  const maxScore = totalFacts * pointsPerQuestion
   const pct = Math.round((score / maxScore) * 100)
 
   return (

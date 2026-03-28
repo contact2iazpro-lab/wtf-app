@@ -792,6 +792,7 @@ export default function App() {
           totalFacts={totalRounds}
           coinsEarned={coinsEarnedLastSession}
           sessionType={sessionType}
+          difficulty={selectedDifficulty}
           onReplay={handleReplay}
           onHome={handleHome}
           completedCategoryLevels={completedLevels}

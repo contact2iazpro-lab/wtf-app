@@ -242,6 +242,8 @@ export default function FactsListPage({ toast }) {
   const [newFact, setNewFact] = useState(emptyFact())
   const [addErrors, setAddErrors] = useState({})
   const [addLoading, setAddLoading] = useState(false)
+  const [addImageUploading, setAddImageUploading] = useState(false)
+  const addImageInputRef = useRef(null)
 
   // Generate modal
   const [showGenerateModal, setShowGenerateModal] = useState(false)
@@ -428,6 +430,34 @@ export default function FactsListPage({ toast }) {
     })
   }
 
+  async function handleAddImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAddImageUploading(true)
+    try {
+      // Ensure bucket exists (ignore "already exists" error)
+      await supabase.storage.createBucket('fact-images', { public: true }).catch(() => {})
+
+      const ext = file.name.split('.').pop().toLowerCase()
+      const path = `facts/new-${Date.now()}.${ext}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('fact-images')
+        .upload(path, file, { upsert: true, contentType: file.type })
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage.from('fact-images').getPublicUrl(path)
+      setNewFactField('image_url', publicUrl)
+      toast?.('✓ Image uploadée')
+    } catch (err) {
+      console.error(err)
+      toast?.('Erreur upload : ' + (err.message || ''), 'error')
+    } finally {
+      setAddImageUploading(false)
+      if (addImageInputRef.current) addImageInputRef.current.value = ''
+    }
+  }
+
   function validateNewFact() {
     const e = {}
     if (!newFact.question?.trim()) e.question = 'Obligatoire'
@@ -522,7 +552,7 @@ export default function FactsListPage({ toast }) {
         source_url: f.source_url || null,
         options: options.length > 0 ? options : null,
         correct_index: f.correct_index ?? 0,
-        image_url: null,
+        image_url: f.image_url || null,
         is_vip: false,
         is_published: false,
         pack_id: f.pack_id || 'free',
@@ -693,7 +723,33 @@ export default function FactsListPage({ toast }) {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">URL Image</label>
-                  <input value={newFact.image_url} onChange={e => setNewFactField('image_url', e.target.value)} className={inputCls} placeholder="https://…" />
+                  <div className="flex gap-2">
+                    <input
+                      value={newFact.image_url}
+                      onChange={e => setNewFactField('image_url', e.target.value)}
+                      className={`${inputCls} flex-1`}
+                      placeholder="https://… ou importer →"
+                    />
+                    <label
+                      className="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-700 text-slate-200 text-xs font-bold hover:bg-slate-600 transition-all select-none shrink-0"
+                      style={{ opacity: addImageUploading ? 0.5 : 1, pointerEvents: addImageUploading ? 'none' : 'auto' }}
+                    >
+                      {addImageUploading ? <span className="animate-spin">⟳</span> : '📁'}
+                      <span className="hidden sm:inline">{addImageUploading ? 'Upload…' : 'Importer'}</span>
+                      <input
+                        ref={addImageInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAddImageUpload}
+                      />
+                    </label>
+                  </div>
+                  {newFact.image_url && (
+                    <div className="mt-2 rounded-xl overflow-hidden border border-slate-700 bg-slate-900/80 flex items-center justify-center" style={{ height: 72 }}>
+                      <img src={newFact.image_url} alt="aperçu" style={{ height: '100%', objectFit: 'contain' }} onError={e => e.target.style.display='none'} />
+                    </div>
+                  )}
                 </div>
               </div>
 

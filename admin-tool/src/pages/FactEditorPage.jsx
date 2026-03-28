@@ -98,8 +98,10 @@ export default function FactEditorPage({ toast }) {
   const [history, setHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
   const [imageStatus, setImageStatus] = useState(null) // null | 'loading' | 'ok' | 'error'
+  const [imageUploading, setImageUploading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const imageTimerRef = useRef(null)
+  const imageInputRef = useRef(null)
 
   useEffect(() => { load() }, [id])
 
@@ -167,6 +169,41 @@ export default function FactEditorPage({ toast }) {
       opts[index] = value
       return { ...prev, options: opts }
     })
+  }
+
+  async function handleImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageUploading(true)
+    setImageStatus('loading')
+    try {
+      // Ensure bucket exists (ignore "already exists" error)
+      await supabase.storage.createBucket('fact-images', { public: true }).catch(() => {})
+
+      const ext = file.name.split('.').pop().toLowerCase()
+      const path = `facts/${id}-${Date.now()}.${ext}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('fact-images')
+        .upload(path, file, { upsert: true, contentType: file.type })
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage.from('fact-images').getPublicUrl(path)
+
+      set('image_url', publicUrl)
+      checkImage(publicUrl)
+
+      // Save to DB immediately so URL is persisted without needing to click Sauvegarder
+      await supabase.from('facts').update({ image_url: publicUrl, updated_at: new Date().toISOString() }).eq('id', id)
+      toast?.('✓ Image uploadée et sauvegardée')
+    } catch (err) {
+      console.error(err)
+      setImageStatus('error')
+      toast?.('Erreur upload : ' + (err.message || ''), 'error')
+    } finally {
+      setImageUploading(false)
+      if (imageInputRef.current) imageInputRef.current.value = ''
+    }
   }
 
   function isOverLimit(field, value) {
@@ -572,10 +609,25 @@ export default function FactEditorPage({ toast }) {
                 className={`${inputCls} flex-1`}
                 placeholder="https://…"
               />
-              <div className="flex items-center px-3">
+              <div className="flex items-center gap-2 shrink-0">
                 {imageStatus === 'loading' && <span className="text-slate-400 text-sm animate-spin">⟳</span>}
                 {imageStatus === 'ok' && <span className="text-green-400 text-sm">●</span>}
                 {imageStatus === 'error' && <span className="text-red-400 text-sm">✕</span>}
+                <label
+                  className="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-700 text-slate-200 text-xs font-bold hover:bg-slate-600 transition-all select-none"
+                  title="Importer une image depuis votre disque"
+                  style={{ opacity: imageUploading ? 0.5 : 1, pointerEvents: imageUploading ? 'none' : 'auto' }}
+                >
+                  {imageUploading ? <span className="animate-spin">⟳</span> : '📁'}
+                  <span className="hidden sm:inline">{imageUploading ? 'Upload…' : 'Importer'}</span>
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                </label>
               </div>
             </div>
           </Field>

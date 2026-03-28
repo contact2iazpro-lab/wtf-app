@@ -1,19 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { audio } from '../utils/audio'
 import SettingsModal from '../components/SettingsModal'
 import { getCategoryById } from '../data/facts'
 import { getDeviceId } from '../config/devConfig'
-
-const CREATURE_SRCS = [
-  '/Dauphin.png', '/Etoile.png', '/Garcon.png', '/grenouille.png',
-  '/Montgolfiere.png', '/Nuage.png', '/Princesses.png', '/Terre.png', '/zigomar.png',
-]
-
-const CREATURE_META = CREATURE_SRCS.map(() => ({
-  size: 50 + Math.floor(Math.random() * 36),
-  opacity: 0.65 + Math.random() * 0.25,
-}))
 
 // Streak flame visual evolution
 function getStreakFlame(streak) {
@@ -46,7 +36,6 @@ export default function HomeScreen({
 }) {
   const [showSettings, setShowSettings] = useState(false)
   const [showQuickPlayModal, setShowQuickPlayModal] = useState(false)
-  const creatureRefs = useRef([])
   const navigate = useNavigate()
   const tapCountRef = useRef(0)
   const tapTimerRef = useRef(null)
@@ -64,55 +53,11 @@ export default function HomeScreen({
 
   const flame = getStreakFlame(streak)
 
-  // RAF loop: move creatures across screen
-  useEffect(() => {
-    const W = window.innerWidth
-    const H = window.innerHeight
-    const topForbidden = 240
-    const bottomForbidden = 150
-    const allowedMinY = topForbidden
-    const allowedMaxY = H - bottomForbidden
-    const allowedHeight = allowedMaxY - allowedMinY
-    const speed = () => (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random() * 1.2)
-    const state = CREATURE_SRCS.map((_, i) => ({
-      x: Math.random() * W,
-      y: allowedMinY + Math.random() * allowedHeight,
-      vx: speed(),
-      vy: speed(),
-      size: CREATURE_META[i].size,
-    }))
-
-    let rafId
-    const tick = () => {
-      state.forEach((c, i) => {
-        c.x += c.vx; c.y += c.vy
-        if (c.x > W + c.size)  c.x = -c.size
-        if (c.x < -c.size)     c.x = W + c.size
-        if (c.y > allowedMaxY + c.size)  c.y = allowedMinY - c.size
-        if (c.y < allowedMinY - c.size)  c.y = allowedMaxY + c.size
-        const el = creatureRefs.current[i]
-        if (el) { el.style.left = c.x + 'px'; el.style.top = c.y + 'px' }
-      })
-      rafId = requestAnimationFrame(tick)
-    }
-    rafId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafId)
-  }, [])
-
   const handleDuel = () => { audio.startMusic(); audio.play('click'); onDuel() }
   const handleMarathon = () => { audio.startMusic(); audio.play('click'); onMarathon() }
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden scrollbar-hide rainbow-bg">
-
-      {/* Traversing creatures */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-        {CREATURE_SRCS.map((src, i) => (
-          <div key={i} ref={el => creatureRefs.current[i] = el} style={{ position: 'absolute', opacity: CREATURE_META[i].opacity, userSelect: 'none' }}>
-            <img src={src} alt="" width={CREATURE_META[i].size} height={CREATURE_META[i].size} style={{ objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }} />
-          </div>
-        ))}
-      </div>
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 

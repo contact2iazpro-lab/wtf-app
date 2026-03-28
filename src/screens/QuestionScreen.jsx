@@ -142,9 +142,17 @@ export default function QuestionScreen({
   // ── Shared header ────────────────────────────────────────────────────────
   const header = (
     <div className="px-5 pt-4 pb-3 shrink-0">
-      {/* Top row: counter + player badge + quit */}
+      {/* Top row: back + counter + player badge | settings */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
+          {/* Back button — left side, same style as Settings */}
+          <button
+            onClick={() => setShowQuitConfirm(true)}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
+            style={{ background: 'rgba(255,255,255,0.08)' }}
+            title="Retour">
+            ←
+          </button>
           {playerName && (
             <div
               className="px-2.5 py-1 rounded-full text-xs font-black"
@@ -157,17 +165,12 @@ export default function QuestionScreen({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Settings button — right side */}
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}
             className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
             style={{ background: 'rgba(255,255,255,0.08)' }}>
             ⚙️
-          </button>
-          <button
-            onClick={() => setShowQuitConfirm(true)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
-            style={{ background: 'rgba(255,255,255,0.08)' }}>
-            ✕
           </button>
         </div>
       </div>

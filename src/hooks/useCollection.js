@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { loadUserCollections, mergeCollections, FACTS_PER_CATEGORY } from '../services/collectionService'
-import { VALID_FACTS } from '../data/facts'
+import { loadUserCollections, mergeCollections } from '../services/collectionService'
+import { getValidFacts } from '../data/factsService'
 
 /**
  * Returns per-category progress computed from:
@@ -34,9 +34,13 @@ export function useCollection(localUnlockedFacts) {
  * Compute summary stats per category.
  */
 export function getCategoryStats(unlockedByCategory) {
+  const validFacts = getValidFacts()
+  const factsPerCategory = {}
+  for (const f of validFacts) factsPerCategory[f.category] = (factsPerCategory[f.category] || 0) + 1
+
   const stats = {}
   for (const [cat, ids] of Object.entries(unlockedByCategory)) {
-    const total = FACTS_PER_CATEGORY[cat] || 0
+    const total = factsPerCategory[cat] || 0
     const unlocked = ids.size
     stats[cat] = {
       unlocked,
@@ -46,11 +50,11 @@ export function getCategoryStats(unlockedByCategory) {
     }
   }
   // Fill in categories with 0 progress
-  for (const f of VALID_FACTS) {
+  for (const f of validFacts) {
     if (!stats[f.category]) {
       stats[f.category] = {
         unlocked: 0,
-        total: FACTS_PER_CATEGORY[f.category] || 0,
+        total: factsPerCategory[f.category] || 0,
         percentage: 0,
         isCompleted: false,
       }

@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useCollection'
-import { PLAYABLE_CATEGORIES, PARCOURS_FACTS } from '../data/facts'
+import { PLAYABLE_CATEGORIES } from '../data/facts'
+import { getParcoursFacts } from '../data/factsService'
 import LoginModal from '../components/Auth/LoginModal'
 import { audio } from '../utils/audio'
 
@@ -180,17 +181,36 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
         {lockedFacts.length > 0 && (
           <>
             <p className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
-              Verrouillés — {lockedFacts.length}
+              À découvrir — {lockedFacts.length}
             </p>
             <div className="flex flex-col gap-2">
               {lockedFacts.map(fact => (
                 <div
                   key={fact.id}
-                  className="flex items-center gap-3 p-3 rounded-2xl"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+                  className="flex items-center gap-3 p-3 rounded-2xl overflow-hidden relative"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>🔒</div>
-                  <p className="text-sm font-bold" style={{ color: 'rgba(255,255,255,0.2)' }}>F*ct verrouillé</p>
+                  {/* Silhouette image (blurred + greyscale) */}
+                  <div className="w-12 h-12 rounded-xl shrink-0 overflow-hidden relative" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    {fact.imageUrl ? (
+                      <img
+                        src={fact.imageUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        style={{ filter: 'grayscale(1) brightness(0.35) blur(2px)', transform: 'scale(1.1)' }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center" style={{ color: 'rgba(255,255,255,0.15)', fontSize: 20 }}>?</div>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center text-white/30 text-sm font-black">🔒</div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {/* Masked text bars (Panini silhouette effect) */}
+                    <div className="h-3 rounded-full mb-1.5" style={{ background: 'rgba(255,255,255,0.1)', width: '70%' }} />
+                    <div className="h-2 rounded-full mb-1" style={{ background: 'rgba(255,255,255,0.06)', width: '90%' }} />
+                    <div className="h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.06)', width: '55%' }} />
+                  </div>
+                  <span className="text-white/20 text-xs font-bold shrink-0">#{fact.id}</span>
                 </div>
               ))}
             </div>
@@ -230,10 +250,10 @@ export default function CollectionPage() {
     return ids
   }, [localUnlocked, unlockedByCategory])
 
-  // PARCOURS_FACTS indexed by difficulty+category
+  // getParcoursFacts() indexed by difficulty+category
   const factsIndex = useMemo(() => {
     const idx = {}
-    for (const f of PARCOURS_FACTS) {
+    for (const f of getParcoursFacts()) {
       const key = `${f.difficulty}_${f.category}`
       if (!idx[key]) idx[key] = []
       idx[key].push(f)
@@ -270,8 +290,8 @@ export default function CollectionPage() {
   const tabPercentage = Math.round((tabTotalUnlocked / tabTotalAvailable) * 100)
 
   // Global overall progress (all difficulties)
-  const overallUnlocked = PARCOURS_FACTS.filter(f => allUnlockedIds.has(f.id)).length
-  const overallTotal = PARCOURS_FACTS.length // 510
+  const overallUnlocked = getParcoursFacts().filter(f => allUnlockedIds.has(f.id)).length
+  const overallTotal = getParcoursFacts().length // 510
   const overallPercentage = Math.round((overallUnlocked / overallTotal) * 100)
 
   // Selected category for fact list

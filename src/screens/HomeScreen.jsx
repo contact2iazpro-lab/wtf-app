@@ -116,14 +116,14 @@ export default function HomeScreen({
         </p>
 
         {/* Stats row: streak + coins */}
-        <div className="flex gap-2 w-full justify-center">
-          <div className="flex-1 max-w-32 rounded-2xl p-2 text-center border"
+        <div className="flex gap-3 w-full justify-center">
+          <div className="flex-1 max-w-36 rounded-2xl p-3 text-center border"
             style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: `0 4px 16px ${flame.glow}` }}>
             <div className="text-2xl mb-0.5">{flame.emoji}</div>
             <div className="text-xl font-black" style={{ color: '#1a1a2e' }}>{streak}</div>
             <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>Streak</div>
           </div>
-          <div className="flex-1 max-w-32 rounded-2xl p-2 text-center border"
+          <div className="flex-1 max-w-36 rounded-2xl p-3 text-center border"
             style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
             <div className="text-2xl mb-0.5">🪙</div>
             <div className="text-xl font-black" style={{ color: '#1a1a2e' }}>{wtfCoins}</div>
@@ -133,7 +133,7 @@ export default function HomeScreen({
       </div>
 
       {/* Main CTA — WTF du Jour or Flash Solo */}
-      <div className="px-6 py-1.5 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="px-6 py-2 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
         {!wtfDuJourFait ? (
           /* WTF du Jour not done yet — primary CTA */
           <button
@@ -172,15 +172,15 @@ export default function HomeScreen({
       </div>
 
       {/* Game modes grid */}
-      <div className="px-6 pb-0.5 flex-1 overflow-hidden flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="flex items-center gap-2 mb-0.5 shrink-0">
+      <div className="px-6 pb-2 flex-1 overflow-hidden flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="flex items-center gap-2 mb-2 shrink-0">
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Autres modes</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Modes de jeu</h2>
           <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
         </div>
 
         <div className="flex-1 overflow-y-auto scrollbar-hide">
-          <div className="grid grid-cols-2 gap-0.5">
+          <div className="grid grid-cols-2 gap-2">
             {[
               { id: 'parcours', label: 'Mode Parcours', emoji: '🎯', desc: 'Complétez vos Collections', action: () => { audio.startMusic(); audio.play('click'); onPlay() }, active: true },
               { id: 'duel', label: 'Multijoueur', emoji: '🎮', desc: '2-6 joueurs', action: handleDuel, active: false },
@@ -190,7 +190,7 @@ export default function HomeScreen({
               <div
                 key={mode.id}
                 onClick={mode.active ? mode.action : undefined}
-                className={`rounded-2xl p-2 border transition-all duration-150 ${mode.active ? 'cursor-pointer active:scale-95' : 'opacity-40 cursor-not-allowed'}`}
+                className={`rounded-2xl p-3 border transition-all duration-150 ${mode.active ? 'cursor-pointer active:scale-95' : 'opacity-40 cursor-not-allowed'}`}
                 style={mode.active ? {
                   background: 'rgba(255,255,255,0.6)',
                   borderColor: 'rgba(255,255,255,0.9)',
@@ -201,34 +201,16 @@ export default function HomeScreen({
                   borderColor: 'rgba(255,255,255,0.5)',
                   backdropFilter: 'blur(8px)',
                 }}>
-                <div className="text-2xl mb-1">{mode.emoji}</div>
+                <div className="text-3xl mb-1.5">{mode.emoji}</div>
                 <div className="font-black text-xs" style={{ color: '#1a1a2e' }}>{mode.label}</div>
                 {mode.active
-                  ? <div className="text-xs mt-0.5 font-bold" style={{ color: '#FF6B1A' }}>{mode.desc}</div>
-                  : <div className="text-xs mt-0.5 font-bold px-1.5 py-0.5 rounded-full inline-block" style={{ background: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.35)' }}>Bientôt disponible</div>
+                  ? <div className="text-xs mt-1 font-bold" style={{ color: '#FF6B1A' }}>{mode.desc}</div>
+                  : <div className="text-xs mt-1 font-bold px-1.5 py-0.5 rounded-full inline-block" style={{ background: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.35)' }}>Bientôt</div>
                 }
               </div>
             ))}
           </div>
         </div>
-
-        {/* Share app button */}
-        <button
-          onClick={() => {
-            audio.play('click')
-            const text = '🤯 What The F*ct! Vrai ou fou ?\n\nTrouve les réponses les plus WTF! du web\n\nhttps://wtf-app-livid.vercel.app/'
-            if (navigator.share) navigator.share({ text }).catch(() => {})
-            else navigator.clipboard?.writeText(text).catch(() => {})
-          }}
-          className="mt-1 pt-0.5 w-full py-1.5 rounded-2xl text-white font-black text-xs uppercase transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 shrink-0"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
-            border: '1px solid rgba(255,255,255,0.3)',
-            backdropFilter: 'blur(8px)',
-          }}>
-          <span className="text-lg">📤</span>
-          Partager l'app
-        </button>
       </div>
 
       {/* Cat president decoration */}

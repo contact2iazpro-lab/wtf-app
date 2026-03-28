@@ -339,6 +339,21 @@ export default function SettingsModal({ onClose, onShowRules }) {
             <span className="font-bold text-sm">Voir les règles</span>
           </button>
 
+          {/* Share app */}
+          <button
+            onClick={() => {
+              audio.play('click')
+              const text = '🤯 What The F*ct! Vrai ou fou ?\n\nTrouve les réponses les plus WTF! du web\n\nhttps://wtf-app-livid.vercel.app/'
+              if (navigator.share) navigator.share({ text }).catch(() => {})
+              else navigator.clipboard?.writeText(text).catch(() => {})
+            }}
+            className="w-full flex items-center justify-center gap-2 px-5 py-4 rounded-2xl border transition-all active:scale-95 mb-3"
+            style={{ background: 'rgba(255,107,26,0.07)', borderColor: 'rgba(255,107,26,0.3)', color: '#1a1a2e' }}
+          >
+            <span className="text-lg">📤</span>
+            <span className="font-bold text-sm">Partager l'app</span>
+          </button>
+
           {/* Show welcome screen toggle */}
           <button
             onClick={toggleShowWelcome}

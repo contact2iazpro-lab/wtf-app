@@ -100,16 +100,16 @@ function SaveProgressModal({ onClose }) {
       >
         <div
           className="w-full rounded-3xl overflow-hidden"
-          style={{ maxWidth: 340, background: '#0f2035', border: '2px solid rgba(239,68,68,0.4)' }}
+          style={{ maxWidth: 340, background: '#FAFAF8', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}
         >
-          <div className="flex items-center justify-between px-5 py-3" style={{ background: '#7f1d1d' }}>
-            <span className="font-black text-white text-base">⚠️ Attention</span>
+          <div className="flex items-center justify-between px-5 py-3" style={{ background: '#FEE2E2' }}>
+            <span className="font-black text-base" style={{ color: '#1a1a2e' }}>⚠️ Attention</span>
             <button onClick={() => setPendingProvider(null)} className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90" style={{ background: '#EF4444' }}>✕</button>
           </div>
           <div className="p-5">
-            <p className="text-sm mb-5 font-bold text-center" style={{ color: 'rgba(255,255,255,0.85)', lineHeight: '1.6' }}>
+            <p className="text-sm mb-5 font-bold text-center" style={{ color: '#374151', lineHeight: '1.6' }}>
               La connexion à un compte {providerLabel} réinitialisera ta progression locale actuelle
-              <span style={{ color: '#FCA5A5' }}> (streak, points, facts débloqués)</span>.
+              <span style={{ color: '#EF4444' }}> (streak, points, facts débloqués)</span>.
               <br /><br />
               Cette action est <strong style={{ color: '#EF4444' }}>irréversible</strong>. Continuer ?
             </p>
@@ -117,7 +117,7 @@ function SaveProgressModal({ onClose }) {
               <button
                 onClick={() => setPendingProvider(null)}
                 className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}
+                style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280' }}
               >
                 Annuler
               </button>
@@ -143,12 +143,12 @@ function SaveProgressModal({ onClose }) {
     >
       <div
         className="w-full rounded-3xl overflow-hidden"
-        style={{ maxWidth: 340, background: '#0f2035', border: '2px solid rgba(255,255,255,0.12)' }}
+        style={{ maxWidth: 340, background: '#FAFAF8', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3" style={{ background: '#1a4a2e' }}>
-          <span className="font-black text-white text-base">Progression</span>
+        <div className="flex items-center justify-between px-5 py-3" style={{ background: '#D1FAE5', borderBottom: '1px solid #A7F3D0' }}>
+          <span className="font-black text-base" style={{ color: '#1a1a2e' }}>Progression</span>
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90" style={{ background: '#EF4444' }}>✕</button>
         </div>
 
@@ -159,11 +159,11 @@ function SaveProgressModal({ onClose }) {
             <>
               <div className="flex flex-col items-center gap-2 mb-5 p-4 rounded-2xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}>
                 <span className="text-3xl">{isGoogleUser ? '🔵' : '🔷'}</span>
-                <span className="font-black text-white text-sm">
+                <span className="font-black text-sm" style={{ color: '#1a1a2e' }}>
                   Connecté avec {isGoogleUser ? 'Google' : 'Facebook'}
                 </span>
                 {email && (
-                  <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>{email}</span>
+                  <span className="text-xs font-semibold" style={{ color: '#6B7280' }}>{email}</span>
                 )}
                 <span className="text-xs font-bold" style={{ color: '#22C55E' }}>✅ Progression sauvegardée</span>
               </div>
@@ -178,7 +178,7 @@ function SaveProgressModal({ onClose }) {
             </>
           ) : (
             <>
-              <p className="text-center text-sm mb-5 font-bold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              <p className="text-center text-sm mb-5 font-bold" style={{ color: '#374151' }}>
                 Connectez-vous pour enregistrer<br />votre progression !
               </p>
 
@@ -223,7 +223,7 @@ function SaveProgressModal({ onClose }) {
 // Toggle pill (reusable)
 function TogglePill({ on }) {
   return (
-    <div className="relative w-12 h-6 rounded-full transition-all duration-200" style={{ background: on ? '#FF6B1A' : 'rgba(255,255,255,0.12)' }}>
+    <div className="relative w-12 h-6 rounded-full transition-all duration-200" style={{ background: on ? '#FF6B1A' : '#D1D5DB' }}>
       <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200" style={{ left: on ? '26px' : '2px' }} />
     </div>
   )
@@ -273,11 +273,11 @@ export default function SettingsModal({ onClose, onShowRules }) {
       >
         <div
           className="w-full max-w-md rounded-t-3xl p-6 pb-10"
-          style={{ background: 'rgba(18,18,28,0.97)', border: '1px solid rgba(255,255,255,0.12)' }}
+          style={{ background: '#FAFAF8', border: '1px solid rgba(0,0,0,0.08)' }}
           onClick={e => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-white font-black text-lg tracking-wide">⚙️ Paramètres</h2>
+            <h2 className="font-black text-lg tracking-wide" style={{ color: '#1a1a2e' }}>⚙️ Paramètres</h2>
           </div>
 
           {/* 4 circular icon toggles */}
@@ -285,16 +285,16 @@ export default function SettingsModal({ onClose, onShowRules }) {
             {iconToggles.map(t => <IconToggle key={t.label} {...t} />)}
           </div>
 
-          <div className="h-px mb-4" style={{ background: 'rgba(255,255,255,0.1)' }} />
+          <div className="h-px mb-4" style={{ background: 'rgba(0,0,0,0.08)' }} />
 
           {/* Save progression */}
           <button
             onClick={() => setShowSaveModal(true)}
             className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl border transition-all active:scale-95 mb-3"
             style={{
-              background: isConnected ? 'rgba(34,197,94,0.12)' : 'rgba(59,130,246,0.12)',
-              borderColor: isConnected ? 'rgba(34,197,94,0.35)' : 'rgba(59,130,246,0.35)',
-              color: 'white',
+              background: isConnected ? 'rgba(34,197,94,0.08)' : 'rgba(59,130,246,0.07)',
+              borderColor: isConnected ? 'rgba(34,197,94,0.4)' : 'rgba(59,130,246,0.3)',
+              color: '#1a1a2e',
             }}
           >
             <span className="text-lg">{isConnected ? '✅' : '💾'}</span>
@@ -305,7 +305,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
                   : 'Enregistrer votre progression'}
               </span>
               {isConnected && connectedEmail && (
-                <span className="text-xs truncate w-full" style={{ color: 'rgba(255,255,255,0.5)' }}>{connectedEmail}</span>
+                <span className="text-xs truncate w-full" style={{ color: '#6B7280' }}>{connectedEmail}</span>
               )}
             </span>
           </button>
@@ -315,13 +315,13 @@ export default function SettingsModal({ onClose, onShowRules }) {
             onClick={toggleChildMode}
             className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all active:scale-95 mb-3"
             style={{
-              background: childMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)',
-              borderColor: childMode ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)',
+              background: childMode ? 'rgba(251,191,36,0.08)' : '#F9FAFB',
+              borderColor: childMode ? 'rgba(251,191,36,0.4)' : '#E5E7EB',
             }}
           >
             <span className="flex items-center gap-3">
               <span className="text-2xl">{childMode ? '👶' : '🔞'}</span>
-              <span className="font-bold text-sm" style={{ color: childMode ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)' }}>
+              <span className="font-bold text-sm" style={{ color: childMode ? '#92400E' : '#9CA3AF' }}>
                 Mode Enfant
               </span>
             </span>
@@ -332,7 +332,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
           <button
             onClick={handleViewRules}
             className="w-full flex items-center justify-center gap-2 px-5 py-4 rounded-2xl border transition-all active:scale-95 mb-3"
-            style={{ background: 'rgba(100,200,255,0.1)', borderColor: 'rgba(100,200,255,0.3)', color: 'rgba(255,255,255,0.9)' }}
+            style={{ background: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.3)', color: '#1a1a2e' }}
           >
             <span className="text-lg">📖</span>
             <span className="font-bold text-sm">Voir les règles</span>
@@ -343,13 +343,13 @@ export default function SettingsModal({ onClose, onShowRules }) {
             onClick={toggleAutoShowRules}
             className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all active:scale-95 mb-3"
             style={{
-              background: autoShowRules ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)',
-              borderColor: autoShowRules ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)',
+              background: autoShowRules ? 'rgba(255,107,26,0.06)' : '#F9FAFB',
+              borderColor: autoShowRules ? 'rgba(255,107,26,0.3)' : '#E5E7EB',
             }}
           >
             <span className="flex items-center gap-3">
               <span className="text-2xl">{autoShowRules ? '✓' : '○'}</span>
-              <span className="font-bold text-sm" style={{ color: autoShowRules ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)' }}>
+              <span className="font-bold text-sm" style={{ color: autoShowRules ? '#C2410C' : '#9CA3AF' }}>
                 Afficher les règles au lancement
               </span>
             </span>
@@ -360,7 +360,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
           <button
             onClick={() => { audio.play('click'); localStorage.removeItem('wtf_tutorial_done'); onClose() }}
             className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border transition-all active:scale-95"
-            style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}
+            style={{ background: '#F9FAFB', borderColor: '#E5E7EB', color: '#9CA3AF' }}
           >
             <span className="text-base">🎓</span>
             <span className="font-bold text-xs">Revoir le tutoriel</span>

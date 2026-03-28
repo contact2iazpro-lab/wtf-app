@@ -71,7 +71,6 @@ function buildDifficultyFrom(facts) {
         Array.isArray(f.options) && f.options.length >= 2 &&
         typeof f.correctIndex === 'number')
       .sort((a, b) => a.id - b.id)
-      .slice(0, 30)
     catFacts.forEach((f, i) => {
       map[f.id] = i < 10 ? 'easy' : i < 20 ? 'normal' : 'expert'
     })

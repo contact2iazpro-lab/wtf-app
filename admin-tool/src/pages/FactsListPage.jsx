@@ -218,7 +218,9 @@ export default function FactsListPage({ toast }) {
   // Filters
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [filterCategories, setFilterCategories] = useState([])
+  const [filterCategories, setFilterCategories] = useState(() => {
+    try { const s = localStorage.getItem('selectedCategories'); return s ? JSON.parse(s) : [] } catch { return [] }
+  })
   const [filterVip, setFilterVip] = useState('all')
   const [filterPublished, setFilterPublished] = useState('all')
   const [filterPack, setFilterPack] = useState('all')
@@ -253,12 +255,41 @@ export default function FactsListPage({ toast }) {
   const [acceptingIndex, setAcceptingIndex] = useState(null)
 
   const searchRef = useRef(null)
+  const catDropdownRef = useRef(null)
+  const prevCatCountRef = useRef(filterCategories.length)
 
   // Debounce search
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(0) }, 300)
     return () => clearTimeout(t)
   }, [search])
+
+  // Persist category filter to localStorage
+  useEffect(() => {
+    localStorage.setItem('selectedCategories', JSON.stringify(filterCategories))
+  }, [filterCategories])
+
+  // Auto-sort alphabetically when first category is selected
+  useEffect(() => {
+    const prev = prevCatCountRef.current
+    prevCatCountRef.current = filterCategories.length
+    if (prev === 0 && filterCategories.length > 0) {
+      setSortField('question')
+      setSortDir('asc')
+    }
+  }, [filterCategories])
+
+  // Close category dropdown on outside click
+  useEffect(() => {
+    if (!showCatDropdown) return
+    function handler(e) {
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target)) {
+        setShowCatDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showCatDropdown])
 
   // Reset page on filter change
   useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterPack, filterDifficulty])
@@ -887,7 +918,7 @@ export default function FactsListPage({ toast }) {
         </div>
 
         {/* Category dropdown */}
-        <div className="relative">
+        <div className="relative" ref={catDropdownRef}>
           <button
             onClick={() => setShowCatDropdown(v => !v)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 hover:bg-slate-700 transition-all"
@@ -913,6 +944,11 @@ export default function FactsListPage({ toast }) {
                   <span>{c.emoji} {c.label}</span>
                 </label>
               ))}
+              <div className="p-2 border-t border-slate-700">
+                <button onClick={() => setShowCatDropdown(false)} className="w-full text-xs text-center text-slate-400 hover:text-white py-1 rounded hover:bg-slate-700 transition-colors">
+                  ▲ Fermer
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -1010,7 +1046,9 @@ export default function FactsListPage({ toast }) {
               <th className="px-3 py-3 text-left cursor-pointer text-slate-400 hover:text-white" onClick={() => handleSort('category')}>
                 Catégorie<SortIcon field="category" current={sortField} dir={sortDir} />
               </th>
-              <th className="px-3 py-3 text-left text-slate-400">Question</th>
+              <th className="px-3 py-3 text-left cursor-pointer text-slate-400 hover:text-white" onClick={() => handleSort('question')}>
+                Question<SortIcon field="question" current={sortField} dir={sortDir} />
+              </th>
               <th className="px-3 py-3 text-left cursor-pointer text-slate-400 hover:text-white" onClick={() => handleSort('difficulty')}>
                 Difficulté<SortIcon field="difficulty" current={sortField} dir={sortDir} />
               </th>

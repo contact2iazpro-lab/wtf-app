@@ -199,7 +199,12 @@ export default function FactEditorPage({ toast }) {
     } catch (err) {
       console.error(err)
       setImageStatus('error')
-      toast?.('Erreur upload : ' + (err.message || ''), 'error')
+      const msg = err.message || ''
+      if (msg.includes('row-level security') || msg.includes('policy') || msg.includes('Bucket')) {
+        toast?.('Bucket "fact-images" manquant ou sans politique. Créez-le dans Supabase → Storage (Public ✓)', 'error')
+      } else {
+        toast?.('Erreur upload : ' + msg, 'error')
+      }
     } finally {
       setImageUploading(false)
       if (imageInputRef.current) imageInputRef.current.value = ''

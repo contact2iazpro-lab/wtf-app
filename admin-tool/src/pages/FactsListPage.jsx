@@ -451,7 +451,12 @@ export default function FactsListPage({ toast }) {
       toast?.('✓ Image uploadée')
     } catch (err) {
       console.error(err)
-      toast?.('Erreur upload : ' + (err.message || ''), 'error')
+      const msg = err.message || ''
+      if (msg.includes('row-level security') || msg.includes('policy') || msg.includes('Bucket')) {
+        toast?.('Bucket "fact-images" manquant ou sans politique. Créez-le dans Supabase → Storage (Public ✓)', 'error')
+      } else {
+        toast?.('Erreur upload : ' + msg, 'error')
+      }
     } finally {
       setAddImageUploading(false)
       if (addImageInputRef.current) addImageInputRef.current.value = ''

@@ -494,6 +494,7 @@ export default function FactsListPage({ toast }) {
       const payload = {
         id: newId,
         ...newFact,
+        answer: newFact.short_answer || '',   // answer is NOT NULL in DB
         options: options.length > 0 ? options : null,
         is_published: false,
         updated_at: new Date().toISOString(),
@@ -553,6 +554,7 @@ export default function FactsListPage({ toast }) {
         hint1: f.hint1 || null,
         hint2: f.hint2 || null,
         short_answer: f.short_answer,
+        answer: f.short_answer || '',   // answer is NOT NULL in DB
         explanation: f.explanation || null,
         source_url: f.source_url || null,
         options: options.length > 0 ? options : null,

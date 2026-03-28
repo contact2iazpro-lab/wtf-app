@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import FactsListPage from './pages/FactsListPage'
 import FactEditorPage from './pages/FactEditorPage'
+import ArchivedFactsPage from './pages/ArchivedFactsPage'
 
 export default function App() {
   const { toasts, toast, dismiss } = useToast()
@@ -27,6 +28,7 @@ export default function App() {
           <Route index element={<DashboardPage toast={toast} />} />
           <Route path="facts" element={<FactsListPage toast={toast} />} />
           <Route path="facts/:id" element={<FactEditorPage toast={toast} />} />
+          <Route path="archived" element={<ArchivedFactsPage toast={toast} />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

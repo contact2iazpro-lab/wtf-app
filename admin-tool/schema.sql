@@ -17,6 +17,12 @@ END
 WHERE difficulty IS NULL OR difficulty = 'Normal';
 -- Note: comment out the WHERE clause above if you want to re-run the distribution
 
+-- 4. Add duplicate tracking columns
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS duplicate_of INTEGER DEFAULT NULL;
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS archived_reason TEXT DEFAULT NULL;
+-- duplicate_of: ID of the original fact this is a duplicate of
+-- archived_reason: 'doublon', 'obsolete', etc.
+
 -- 2. Create edit_history table for audit log
 CREATE TABLE IF NOT EXISTS edit_history (
   id        BIGSERIAL PRIMARY KEY,

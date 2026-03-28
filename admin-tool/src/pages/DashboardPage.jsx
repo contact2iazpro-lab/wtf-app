@@ -190,7 +190,9 @@ export default function DashboardPage({ toast }) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="Facts total" value={stats?.total} color="#FF6B1A" />
         <StatCard label="Publiés" value={stats?.published} color="#22C55E" />
-        <StatCard label="Non publiés" value={stats?.unpublished} color="#EF4444" />
+        <Link to="/archived" className="hover:ring-2 ring-red-500/30 rounded-2xl transition-all">
+          <StatCard label="Non publiés / Archivés" value={stats?.unpublished} color="#EF4444" sub="Cliquer pour voir →" />
+        </Link>
         <StatCard label="Facts VIP ⭐" value={stats?.vipTotal} color="#FFD700" />
       </div>
 

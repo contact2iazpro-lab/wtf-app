@@ -184,11 +184,24 @@ function esc(v) {
   return JSON.stringify(String(v))
 }
 
+/** Normalize French/mixed difficulty values → English lowercase for facts.js */
+function normalizeDifficulty(d) {
+  if (!d) return null
+  switch (d.toLowerCase()) {
+    case 'facile': case 'easy':   return 'easy'
+    case 'normal':                return 'normal'
+    case 'expert': case 'hard':   return 'expert'
+    default:                      return null
+  }
+}
+
 /** Serialize one Supabase fact row into the facts.js object literal format */
 function factToJs(f) {
   const options = Array.isArray(f.options)
     ? `[${f.options.map(esc).join(',')}]`
     : 'null'
+
+  const difficulty = normalizeDifficulty(f.difficulty)
 
   return `  {
     id: ${f.id},
@@ -202,6 +215,7 @@ function factToJs(f) {
     options: ${options},
     correctIndex: ${f.correct_index ?? 0},
     imageUrl: ${esc(f.image_url)},
+    difficulty: ${difficulty ? `'${difficulty}'` : 'null'},
   },`
 }
 

@@ -48,6 +48,18 @@ function fromRow(row) {
     options,
     correctIndex: row.correct_index,
     imageUrl:     row.image_url    || null,
+    difficulty:   row.difficulty   || null,   // ← stocker la difficulté définie dans l'admin
+  }
+}
+
+// ─── Normalise les valeurs de difficulté (FR ou EN) → 'easy'|'normal'|'expert' ─
+function normalizeDifficulty(d) {
+  if (!d) return null
+  switch (d.toLowerCase()) {
+    case 'facile': case 'easy':            return 'easy'
+    case 'normal':                         return 'normal'
+    case 'expert': case 'hard':            return 'expert'
+    default:                               return null
   }
 }
 
@@ -64,12 +76,20 @@ function getImageId(url) {
 
 function buildDifficultyFrom(facts) {
   const map = {}
+
+  // Priorité 1 : utiliser la difficulté définie dans l'admin (Supabase)
+  for (const f of facts) {
+    const d = normalizeDifficulty(f.difficulty)
+    if (d) map[f.id] = d
+  }
+
+  // Priorité 2 : calcul positionnel pour les facts sans difficulté stockée (fallback)
   const catIds = CATEGORIES.filter(c => !c.disabled).map(c => c.id)
   for (const catId of catIds) {
     const catFacts = facts
       .filter(f => f && f.question && f.category === catId &&
         Array.isArray(f.options) && f.options.length >= 2 &&
-        typeof f.correctIndex === 'number')
+        typeof f.correctIndex === 'number' && !map[f.id])
       .sort((a, b) => a.id - b.id)
     catFacts.forEach((f, i) => {
       map[f.id] = i < 10 ? 'easy' : i < 20 ? 'normal' : 'expert'
@@ -132,7 +152,7 @@ export async function initFacts() {
     try {
       const { data, error } = await supabase
         .from('facts')
-        .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url')
+        .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty')
         .eq('is_published', true)
         .order('id')
 

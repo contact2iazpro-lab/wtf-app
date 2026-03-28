@@ -12938,13 +12938,27 @@ export const getFactsByCategory = (categoryId) =>
     ? VALID_FACTS.filter((f) => f.category === categoryId)
     : VALID_FACTS
 
-// Build deterministic difficulty assignment: first 10 facts per category = easy, next 10 = normal, next 10 = expert
+// Build difficulty assignment:
+//   Priority 1 — use stored difficulty field (set in admin, synced from Supabase)
+//   Priority 2 — positional fallback (first 10 per category = easy, next 10 = normal, rest = expert)
 function buildDifficultyAssignment() {
   const map = {}
+
+  // Priority 1: use stored difficulty where available
+  for (const f of FACTS) {
+    if (!f || !f.difficulty) continue
+    switch (f.difficulty.toLowerCase()) {
+      case 'facile': case 'easy':   map[f.id] = 'easy';   break
+      case 'normal':                map[f.id] = 'normal'; break
+      case 'expert': case 'hard':   map[f.id] = 'expert'; break
+    }
+  }
+
+  // Priority 2: positional fallback for facts without stored difficulty
   const catIds = CATEGORIES.filter(c => !c.disabled).map(c => c.id)
   for (const catId of catIds) {
     const catFacts = FACTS
-      .filter(f => f && f.question && f.category === catId && Array.isArray(f.options) && f.options.length >= 2 && typeof f.correctIndex === 'number')
+      .filter(f => f && f.question && f.category === catId && Array.isArray(f.options) && f.options.length >= 2 && typeof f.correctIndex === 'number' && !map[f.id])
       .sort((a, b) => a.id - b.id)
     catFacts.forEach((f, i) => {
       if (i < 10) map[f.id] = 'easy'

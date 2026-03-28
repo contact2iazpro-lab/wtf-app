@@ -219,9 +219,18 @@ export default function DashboardPage({ toast }) {
           ))}
         </div>
         {difficultyData.some(d => Math.abs(d.pct - 33) > 10) && (
-          <p className="text-amber-400 text-xs mt-2 font-semibold">
-            ⚠ Répartition déséquilibrée — utilisez "Changer difficulté" en lot pour rééquilibrer
-          </p>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-amber-400 text-xs font-semibold flex-1">
+              ⚠ Répartition déséquilibrée — sélectionnez des facts dans la liste puis utilisez "🎯 Difficulté" dans la barre d'actions en bas
+            </p>
+            <Link
+              to="/facts"
+              className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
+              style={{ background: '#FF6B1A' }}
+            >
+              Gérer les facts →
+            </Link>
+          </div>
         )}
       </div>
 

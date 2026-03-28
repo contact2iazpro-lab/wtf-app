@@ -51,10 +51,8 @@ export default function DashboardPage({ toast }) {
   const [difficultyData, setDifficultyData] = useState([])
   const [recentEdits, setRecentEdits] = useState([])
   const [loading, setLoading] = useState(true)
-  const [migrating, setMigrating] = useState(false)
-  const [migrationDone, setMigrationDone] = useState(() =>
-    localStorage.getItem('wtf_admin_migration_done') === 'true'
-  )
+  const [syncStatus, setSyncStatus] = useState(null) // null | 'running' | 'done' | 'error'
+  const [syncMessage, setSyncMessage] = useState('')
 
   useEffect(() => { load() }, [])
 
@@ -122,13 +120,45 @@ export default function DashboardPage({ toast }) {
     }
   }
 
-  async function runMigration() {
-    setMigrating(true)
+  async function runSync() {
+    if (syncStatus === 'running') return
+    setSyncStatus('running')
+    setSyncMessage('⏳ Récupération des facts depuis Supabase...')
+
+    const STEPS = [
+      '⏳ Récupération des facts depuis Supabase...',
+      '⚙️ Génération du fichier facts.js...',
+      '📤 Push vers GitHub...',
+    ]
+    let stepIdx = 0
+    const interval = setInterval(() => {
+      stepIdx = Math.min(stepIdx + 1, STEPS.length - 1)
+      setSyncMessage(STEPS[stepIdx])
+    }, 2000)
+
     try {
-      // Read facts from the local facts.js bundle (dev only) or via a known endpoint
-      toast?.('Migration non disponible depuis cet outil — utilisez le script Node.js', 'warn', 5000)
-    } finally {
-      setMigrating(false)
+      const resp = await fetch('/api/sync-facts', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      clearInterval(interval)
+      const data = await resp.json()
+
+      if (!resp.ok) {
+        setSyncStatus('error')
+        setSyncMessage(`❌ Erreur : ${data.error || resp.statusText}`)
+      } else {
+        setSyncStatus('done')
+        setSyncMessage(`✅ Synchronisation terminée — ${data.count} facts · Commit : ${data.commit}`)
+        load() // refresh stats
+      }
+    } catch (err) {
+      clearInterval(interval)
+      setSyncStatus('error')
+      setSyncMessage(`❌ Erreur réseau : ${err.message}`)
     }
   }
 
@@ -242,22 +272,53 @@ export default function DashboardPage({ toast }) {
         <BarChart data={categoryData} />
       </div>
 
-      {/* Migration button */}
+      {/* Sync button */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-        <h2 className="text-base font-black text-white mb-2">🔄 Migration Supabase</h2>
+        <h2 className="text-base font-black text-white mb-2">🔄 Sync Supabase → GitHub</h2>
         <p className="text-slate-400 text-sm mb-4">
-          Pour migrer les facts de <code className="text-orange-DEFAULT bg-slate-900 px-1 rounded">facts.js</code> vers Supabase,
-          utilisez le script Node.js :<br />
-          <code className="text-green-400 text-xs">node --env-file=.env.local scripts/migrate_facts_to_supabase.js</code>
+          Régénère <code className="text-orange-400 bg-slate-900 px-1 rounded">src/data/facts.js</code> depuis
+          les facts <span className="text-green-400 font-semibold">publiés</span> dans Supabase,
+          puis pousse le fichier sur GitHub — Vercel redéploie automatiquement.
         </p>
-        <button
-          disabled={migrationDone || migrating}
-          onClick={runMigration}
-          className="px-4 py-2 rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          style={{ background: migrationDone ? '#374151' : '#FF6B1A', color: 'white' }}
-        >
-          {migrationDone ? '✓ Migration effectuée' : migrating ? 'En cours…' : 'Lancer la migration'}
-        </button>
+
+        {syncMessage && (
+          <div
+            className="mb-4 px-4 py-3 rounded-xl text-sm font-semibold border"
+            style={{
+              background: syncStatus === 'error' ? 'rgba(239,68,68,0.1)' : syncStatus === 'done' ? 'rgba(34,197,94,0.1)' : 'rgba(255,107,26,0.1)',
+              borderColor: syncStatus === 'error' ? 'rgba(239,68,68,0.3)' : syncStatus === 'done' ? 'rgba(34,197,94,0.3)' : 'rgba(255,107,26,0.3)',
+              color: syncStatus === 'error' ? '#EF4444' : syncStatus === 'done' ? '#22C55E' : '#FF6B1A',
+            }}
+          >
+            {syncStatus === 'running' && (
+              <span className="inline-block animate-spin mr-2">⟳</span>
+            )}
+            {syncMessage}
+          </div>
+        )}
+
+        <div className="flex gap-3 flex-wrap">
+          <button
+            disabled={syncStatus === 'running'}
+            onClick={runSync}
+            className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
+          >
+            {syncStatus === 'running' ? 'Synchronisation…' : '🔄 Lancer la synchronisation'}
+          </button>
+          {syncStatus === 'error' && (
+            <button
+              onClick={runSync}
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all"
+            >
+              ↺ Réessayer
+            </button>
+          )}
+        </div>
+
+        <p className="text-xs text-slate-600 mt-3">
+          Requiert <code className="text-slate-500">GITHUB_TOKEN</code> + <code className="text-slate-500">ADMIN_PASSWORD</code> dans les variables Vercel.
+        </p>
       </div>
     </div>
   )

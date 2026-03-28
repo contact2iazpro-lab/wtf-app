@@ -54,6 +54,7 @@ export default function DashboardPage({ toast }) {
   const [syncStatus, setSyncStatus] = useState(null) // null | 'running' | 'done' | 'error'
   const [syncMessage, setSyncMessage] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all') // 'all' | 'published' | 'unpublished' | 'doublon'
+  const [difficultyFilter, setDifficultyFilter] = useState('published') // 'all' | 'published' | 'unpublished' | 'doublon'
   const [allFactsForFilter, setAllFactsForFilter] = useState([])
 
   useEffect(() => { load() }, [])
@@ -93,18 +94,8 @@ export default function DashboardPage({ toast }) {
         VIP_USAGES.map(u => ({ ...u, count: usageCounts[u.value] || 0 }))
       )
 
-      // Difficulty distribution
-      const diffCounts = { Facile: 0, Normal: 0, Expert: 0 }
-      for (const f of allFacts || []) {
-        const d = f.difficulty || 'Normal'
-        if (diffCounts[d] !== undefined) diffCounts[d]++
-      }
-      const totalFacts = (allFacts || []).length || 1
-      setDifficultyData([
-        { value: 'Facile', count: diffCounts.Facile, color: '#22C55E', pct: Math.round((diffCounts.Facile / totalFacts) * 100) },
-        { value: 'Normal', count: diffCounts.Normal, color: '#3B82F6', pct: Math.round((diffCounts.Normal / totalFacts) * 100) },
-        { value: 'Expert', count: diffCounts.Expert, color: '#EF4444', pct: Math.round((diffCounts.Expert / totalFacts) * 100) },
-      ])
+      // Difficulty distribution (will be recalculated via filter)
+      updateDifficultyData(allFacts || [], 'all')
 
       setRecentEdits(history || [])
     } catch (err) {
@@ -141,6 +132,36 @@ export default function DashboardPage({ toast }) {
   function handleCategoryFilterChange(newFilter) {
     setCategoryFilter(newFilter)
     updateCategoryData(allFactsForFilter, newFilter)
+  }
+
+  // ── Filter difficulty data by publication status ────────────────────────
+  function updateDifficultyData(facts, filter) {
+    let filtered = facts
+    if (filter === 'published') {
+      filtered = facts.filter(f => f.is_published === true)
+    } else if (filter === 'unpublished') {
+      filtered = facts.filter(f => f.is_published === false)
+    } else if (filter === 'doublon') {
+      filtered = facts.filter(f => f.archived_reason === 'doublon')
+    }
+    // filter === 'all' uses all facts
+
+    const diffCounts = { Facile: 0, Normal: 0, Expert: 0 }
+    for (const f of filtered) {
+      const d = f.difficulty || 'Normal'
+      if (diffCounts[d] !== undefined) diffCounts[d]++
+    }
+    const totalFacts = filtered.length || 1
+    setDifficultyData([
+      { value: 'Facile', count: diffCounts.Facile, color: '#22C55E', pct: Math.round((diffCounts.Facile / totalFacts) * 100) },
+      { value: 'Normal', count: diffCounts.Normal, color: '#3B82F6', pct: Math.round((diffCounts.Normal / totalFacts) * 100) },
+      { value: 'Expert', count: diffCounts.Expert, color: '#EF4444', pct: Math.round((diffCounts.Expert / totalFacts) * 100) },
+    ])
+  }
+
+  function handleDifficultyFilterChange(newFilter) {
+    setDifficultyFilter(newFilter)
+    updateDifficultyData(allFactsForFilter, newFilter)
   }
 
   async function runSync() {
@@ -221,7 +242,33 @@ export default function DashboardPage({ toast }) {
 
       {/* Difficulty distribution */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
-        <h2 className="text-base font-black text-white mb-4">🎯 Répartition par difficulté</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h2 className="text-base font-black text-white">🎯 Répartition par difficulté</h2>
+        </div>
+
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-2">
+          {[
+            { id: 'all', label: 'Tous', color: '#94A3B8' },
+            { id: 'published', label: 'Publiés', color: '#22C55E' },
+            { id: 'unpublished', label: 'Non-publiés', color: '#F59E0B' },
+            { id: 'doublon', label: 'Doublons', color: '#EF4444' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => handleDifficultyFilterChange(tab.id)}
+              className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                difficultyFilter === tab.id
+                  ? 'text-white shadow-lg'
+                  : 'bg-slate-700 text-slate-400 hover:text-slate-200'
+              }`}
+              style={difficultyFilter === tab.id ? { background: tab.color } : {}}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           {difficultyData.map(d => (
             <div key={d.value} className="text-center p-3 rounded-xl" style={{ background: `${d.color}18`, border: `1px solid ${d.color}40` }}>

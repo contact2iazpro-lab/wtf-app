@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 import { CATEGORIES } from '../data/facts'
@@ -28,6 +28,67 @@ const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
 
 export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome, completedCategoryLevels = [], coinsEarned = 0, sessionType = 'parcours', difficulty = null }) {
   const [showSettings, setShowSettings] = useState(false)
+  const [coinAnimActive, setCoinAnimActive] = useState(false)
+  const [audioDuration, setAudioDuration] = useState(2.5) // fallback duration
+
+  // ── Coin fly animation: synced with "Stamp Approval.mp3" ─────────────────
+  useEffect(() => {
+    if (coinsEarned <= 0) return
+
+    // Inject CSS keyframes (idempotent)
+    const styleId = '__coin-fly-style'
+    if (!document.getElementById(styleId)) {
+      const s = document.createElement('style')
+      s.id = styleId
+      s.textContent = `
+        @keyframes coinFlyUp {
+          0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+          8%   { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+          16%  { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
+          100% { transform: translate(-50%, calc(-50% - 52vh)) scale(0.1); opacity: 0; }
+        }
+      `
+      document.head.appendChild(s)
+    }
+
+    let cleanT
+
+    const startAnim = (dur) => {
+      setAudioDuration(dur)
+      setCoinAnimActive(true)
+      audio.playFile('Stamp Approval.mp3')
+      // Auto-hide overlay after all coins have finished
+      const lastCoinEnd = dur * 1000 + 1800 // last coin delay + animation duration
+      cleanT = setTimeout(() => setCoinAnimActive(false), lastCoinEnd)
+    }
+
+    // Detect exact audio duration via HTML Audio metadata
+    let metaLoaded = false
+    const a = new Audio('/Stamp Approval.mp3')
+    a.addEventListener('loadedmetadata', () => {
+      if (metaLoaded) return
+      metaLoaded = true
+      clearTimeout(fallbackT)
+      startAnim(a.duration && !isNaN(a.duration) ? a.duration : 2.5)
+    })
+    a.load()
+
+    // Fallback: start after 700ms with 2.5s default if metadata is unavailable
+    const fallbackT = setTimeout(() => {
+      if (!metaLoaded) {
+        metaLoaded = true
+        startAnim(2.5)
+      }
+    }, 700)
+
+    return () => {
+      clearTimeout(fallbackT)
+      clearTimeout(cleanT)
+      const el = document.getElementById(styleId)
+      if (el) el.remove()
+    }
+  }, [coinsEarned])
+
   const rank = getRank(score)
   const stars = getStars(correctCount, totalFacts)
 
@@ -44,6 +105,54 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
     <div
       className="flex flex-col h-full w-full screen-enter overflow-hidden"
       style={{ background: `linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)` }}>
+
+      {/* ── Coin fly animation overlay ───────────────────────────────────── */}
+      {coinAnimActive && coinsEarned > 0 && (() => {
+        const totalMs = audioDuration * 1000
+        // Spread coins across 55% of audio duration so all arrive before audio ends
+        const spreadMs = totalMs * 0.55
+        // Each coin animation: min 700ms, max 1200ms, proportional to audio
+        const durMs = Math.min(Math.max(Math.round(totalMs * 0.45), 700), 1200)
+
+        return (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              pointerEvents: 'none',
+              zIndex: 300,
+              overflow: 'hidden',
+            }}
+          >
+            {Array.from({ length: coinsEarned }, (_, i) => {
+              // Stagger each coin evenly over spreadMs
+              const delayMs = coinsEarned > 1
+                ? Math.round((i / (coinsEarned - 1)) * spreadMs)
+                : 0
+              return (
+                <span
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    fontSize: 32,
+                    lineHeight: 1,
+                    userSelect: 'none',
+                    animation: `coinFlyUp ${durMs}ms cubic-bezier(0.4, 0, 0.2, 1) ${delayMs}ms both`,
+                    willChange: 'transform, opacity',
+                    zIndex: 300 + i,
+                  }}
+                >
+                  🪙
+                </span>
+              )
+            })}
+          </div>
+        )
+      })()}
+
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* Settings button — top right */}
@@ -117,7 +226,7 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
         </div>
       </div>
 
-      {/* WTF Coins earned (Flash Solo) */}
+      {/* WTF Coins earned */}
       {coinsEarned > 0 && (
         <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0 flex items-center gap-3" style={{ background: 'rgba(255,215,0,0.1)', borderColor: 'rgba(255,215,0,0.35)', backdropFilter: 'blur(8px)' }}>
           <span className="text-3xl">🪙</span>

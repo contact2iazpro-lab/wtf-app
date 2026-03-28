@@ -66,13 +66,13 @@ function FactDetailView({ fact, onClose }) {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        {/* Image */}
+        {/* Image — object-contain so nothing is cropped */}
         {fact.imageUrl ? (
           <img
             src={fact.imageUrl}
             alt={fact.shortAnswer}
-            className="w-full object-cover"
-            style={{ maxHeight: 280 }}
+            className="w-full"
+            style={{ maxHeight: 280, objectFit: 'contain', background: '#F3F4F6' }}
           />
         ) : (
           <div
@@ -92,9 +92,18 @@ function FactDetailView({ fact, onClose }) {
             {fact.explanation}
           </p>
           {fact.sourceUrl && (
-            <p className="text-xs mt-4" style={{ color: '#9CA3AF' }}>
-              Source : {fact.sourceUrl}
-            </p>
+            <div className="mt-4 flex items-start gap-2">
+              <span style={{ color: '#9CA3AF', fontSize: 13, lineHeight: '1.6' }}>🔗</span>
+              <a
+                href={fact.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs break-all"
+                style={{ color: '#FF6B1A', textDecoration: 'underline', lineHeight: '1.6' }}
+              >
+                {fact.sourceUrl}
+              </a>
+            </div>
           )}
         </div>
       </div>
@@ -163,7 +172,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                   style={{ background: '#F3F4F6', border: `1px solid rgba(${hexToRgb(cat.color)}, 0.3)` }}
                 >
                   {fact.imageUrl ? (
-                    <img src={fact.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />
+                    <img src={fact.imageUrl} alt="" className="w-12 h-12 rounded-xl object-contain shrink-0" style={{ background: '#E5E7EB' }} />
                   ) : (
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl" style={{ background: '#E5E7EB' }}>🌟</div>
                   )}
@@ -196,8 +205,8 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                       <img
                         src={fact.imageUrl}
                         alt=""
-                        className="w-full h-full object-cover"
-                        style={{ filter: 'grayscale(1) brightness(0.35) blur(2px)', transform: 'scale(1.1)' }}
+                        className="w-full h-full object-contain"
+                        style={{ filter: 'grayscale(1) brightness(0.35) blur(2px)' }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center" style={{ color: '#D1D5DB', fontSize: 20 }}>?</div>
@@ -276,11 +285,9 @@ export default function CollectionPage() {
         isCompleted: facts.length > 0 && unlockedCount === facts.length,
       }
     }).sort((a, b) => {
-      if (a.isCompleted && !b.isCompleted) return 1
-      if (!a.isCompleted && b.isCompleted) return -1
-      if (a.unlocked > 0 && b.unlocked === 0) return -1
-      if (a.unlocked === 0 && b.unlocked > 0) return 1
-      return b.percentage - a.percentage
+      // Most complete first (descending percentage), then alphabetical
+      if (b.percentage !== a.percentage) return b.percentage - a.percentage
+      return a.cat.label.localeCompare(b.cat.label, 'fr', { sensitivity: 'base' })
     })
   }, [activeTab, allUnlockedIds, factsIndex])
 
@@ -333,7 +340,7 @@ export default function CollectionPage() {
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-black" style={{ color: '#1a1a2e' }}>Ma Collection</h1>
             <p className="text-xs" style={{ color: '#9CA3AF' }}>
-              <strong style={{ color: '#1a1a2e' }}>{overallPercentage}%</strong> des F*cts Débloqués
+              <strong style={{ color: '#1a1a2e' }}>{overallUnlocked} / {overallTotal}</strong> F*cts débloqués
             </p>
           </div>
           {!isConnected && (

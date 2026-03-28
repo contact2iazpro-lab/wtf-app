@@ -275,7 +275,7 @@ export default function FactEditorPage({ toast }) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-6">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
       {/* Delete confirmation modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowDeleteConfirm(false)}>
@@ -307,11 +307,11 @@ export default function FactEditorPage({ toast }) {
       )}
 
       {/* Top bar */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link to="/facts" className="text-slate-400 hover:text-white transition-colors text-sm">← Liste</Link>
+      <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <Link to="/facts" className="text-slate-400 hover:text-white transition-colors text-sm shrink-0">← Liste</Link>
           <span className="text-slate-600">/</span>
-          <h1 className="text-xl font-black text-white">
+          <h1 className="text-lg sm:text-xl font-black text-white truncate">
             Fact #{id}
             {isDirty && <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>modifié</span>}
           </h1>
@@ -336,7 +336,7 @@ export default function FactEditorPage({ toast }) {
       <div className="space-y-4">
         {/* IDENTIFICATION */}
         <Section title="🆔 Identification">
-          <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">ID</label>
               <div className="px-3 py-2.5 rounded-xl bg-slate-900/50 border border-slate-700 text-slate-500 font-mono text-sm">
@@ -359,7 +359,7 @@ export default function FactEditorPage({ toast }) {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">
                 Catégorie {errors.category && <span className="text-red-400 normal-case">— {errors.category}</span>}
@@ -401,7 +401,7 @@ export default function FactEditorPage({ toast }) {
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field
               label={`Indice 1 (20 max)${errors.hint1 ? ' — ' + errors.hint1 : ''}`}
               hint={<CharCounter value={fact.hint1} max={CHAR_LIMITS.hint1.max} />}
@@ -484,7 +484,7 @@ export default function FactEditorPage({ toast }) {
 
         {/* OPTIONS (QCM) */}
         <Section title="🔢 Options QCM">
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             {fact.options.map((opt, i) => (
               <div key={i} className="flex items-center gap-2">
                 <input
@@ -640,7 +640,7 @@ export default function FactEditorPage({ toast }) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-2 pb-8 flex-wrap">
+        <div className="flex gap-3 pt-2 pb-8 flex-wrap sm:flex-nowrap">
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="px-5 py-3.5 rounded-2xl font-black text-sm text-red-400 bg-red-900/20 border border-red-800/40 hover:bg-red-900/40 transition-all"

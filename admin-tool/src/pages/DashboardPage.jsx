@@ -141,7 +141,7 @@ export default function DashboardPage({ toast }) {
   }
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-8 max-w-5xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -167,7 +167,7 @@ export default function DashboardPage({ toast }) {
       {/* Difficulty distribution */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
         <h2 className="text-base font-black text-white mb-4">🎯 Répartition par difficulté</h2>
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           {difficultyData.map(d => (
             <div key={d.value} className="text-center p-3 rounded-xl" style={{ background: `${d.color}18`, border: `1px solid ${d.color}40` }}>
               <div className="text-2xl font-black mb-1" style={{ color: d.color }}>{d.count}</div>

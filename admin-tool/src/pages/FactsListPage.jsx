@@ -527,12 +527,12 @@ export default function FactsListPage({ toast }) {
   const inputClsErr = "w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-red-500 text-white text-sm focus:outline-none placeholder-slate-500 resize-none"
 
   return (
-    <div className="p-6 flex flex-col h-full" style={{ minHeight: 0 }}>
+    <div className="p-3 sm:p-6 flex flex-col h-full" style={{ minHeight: 0 }}>
 
       {/* ── Add fact modal ───────────────────────────────────────────── */}
       {showAddModal && (
-        <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/70 overflow-y-auto py-6" onClick={() => setShowAddModal(false)}>
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/70 overflow-y-auto py-0 sm:py-6" onClick={() => setShowAddModal(false)}>
+          <div className="bg-slate-800 sm:rounded-2xl border-y sm:border border-slate-700 w-full max-w-2xl mx-0 sm:mx-4 shadow-2xl min-h-screen sm:min-h-0" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-700">
               <h2 className="text-lg font-black text-white">➕ Ajouter un fact manuellement</h2>
               <button onClick={() => setShowAddModal(false)} className="text-slate-500 hover:text-white text-xl">✕</button>
@@ -820,25 +820,25 @@ export default function FactsListPage({ toast }) {
       )}
 
       {/* ── Header ────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-5 shrink-0 flex-wrap gap-3">
+      <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-black text-white">Facts</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-white">Facts</h1>
           <p className="text-slate-400 text-sm">{total} facts au total</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => { setShowGenerateModal(true) }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-95"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all hover:opacity-90 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
           >
-            ⚡ Générer des facts
+            ⚡<span className="hidden sm:inline"> Générer des facts</span><span className="sm:hidden"> Générer</span>
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90 active:scale-95"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all hover:opacity-90 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
           >
-            ➕ Ajouter un fact
+            ➕<span className="hidden sm:inline"> Ajouter un fact</span><span className="sm:hidden"> Ajouter</span>
           </button>
         </div>
       </div>
@@ -998,7 +998,7 @@ export default function FactsListPage({ toast }) {
 
       {/* ── Table ─────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-auto rounded-xl border border-slate-700">
-        <table className="w-full text-sm border-collapse">
+        <table className="w-full text-sm border-collapse min-w-[700px]">
           <thead className="sticky top-0 bg-slate-900 z-10">
             <tr className="border-b border-slate-700">
               <th className="w-10 px-3 py-3">
@@ -1087,7 +1087,7 @@ export default function FactsListPage({ toast }) {
       </div>
 
       {/* ── Pagination ────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mt-4 shrink-0">
+      <div className="flex items-center justify-between mt-3 shrink-0 flex-wrap gap-2">
         <span className="text-sm text-slate-400">
           Page {page + 1} / {totalPages || 1} · {total} facts
         </span>

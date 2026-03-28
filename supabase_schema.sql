@@ -16,6 +16,47 @@ CREATE TABLE facts (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- =============================================
+-- Migration 1A — Enrichissement table facts
+-- À exécuter dans l'éditeur SQL Supabase
+-- (idempotent — IF NOT EXISTS sur chaque colonne)
+-- =============================================
+
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS short_answer  TEXT;
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS source_url    TEXT;
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS options       JSONB;
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS correct_index INTEGER;
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS image_url     TEXT;
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS is_vip        BOOLEAN DEFAULT false;
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS is_published  BOOLEAN DEFAULT true;
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS pack_id       TEXT    DEFAULT 'free';
+ALTER TABLE facts ADD COLUMN IF NOT EXISTS updated_at    TIMESTAMP DEFAULT NOW();
+
+-- is_exceptional reste en place comme alias legacy de is_vip
+-- (pas de DROP pour éviter de casser des requêtes existantes)
+
+-- Index pour les requêtes fréquentes
+CREATE INDEX IF NOT EXISTS idx_facts_category    ON facts (category);
+CREATE INDEX IF NOT EXISTS idx_facts_is_published ON facts (is_published);
+CREATE INDEX IF NOT EXISTS idx_facts_is_vip      ON facts (is_vip);
+
+-- =============================================
+-- RLS — facts (lecture publique, écriture interdite côté client)
+-- =============================================
+
+ALTER TABLE facts ENABLE ROW LEVEL SECURITY;
+
+-- Supprimer l'ancienne policy trop permissive
+DROP POLICY IF EXISTS "Anyone can read facts" ON facts;
+
+-- Lecture : n'importe qui peut lire les facts publiés (anon inclus)
+CREATE POLICY "Public read published facts"
+  ON facts FOR SELECT
+  USING (is_published = true);
+
+-- Pas de policy INSERT/UPDATE/DELETE : seul le service_role
+-- (clé côté serveur/script) peut écrire. La service_role bypasse RLS par défaut.
+
 -- Table des profils utilisateurs
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id),

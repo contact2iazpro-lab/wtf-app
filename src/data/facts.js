@@ -13077,3 +13077,30 @@ PARCOURS_FACTS.forEach(f => {
   if (!CATEGORY_LEVEL_FACT_IDS[key]) CATEGORY_LEVEL_FACT_IDS[key] = new Set()
   CATEGORY_LEVEL_FACT_IDS[key].add(f.id)
 })
+
+// ─── WTF du Jour — daily game loop ─────────────────────────────────────────
+
+// VIP Fact IDs — manually curated selection of the most "What The Fact!" facts
+export const VIP_FACT_IDS = new Set([
+  2, 4, 7, 10, 14, 17, 20, 24, 29, 30, 35, 38, 42, 47, 51, 56, 60, 65, 70, 75,
+  80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200,
+  210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350,
+])
+
+// Generate a masked teaser title — reveals first ~40% of words to build curiosity
+export function getTitrePartiel(fact) {
+  const answer = fact.shortAnswer || ''
+  const words = answer.split(' ')
+  if (words.length <= 1) return `${words[0] || '...'} [masqué] 🔒`
+  const revealCount = Math.max(1, Math.floor(words.length * 0.4))
+  return `${words.slice(0, revealCount).join(' ')}... [masqué] 🔒`
+}
+
+// Get today's WTF du Jour fact — deterministic per calendar day, same for all users
+export function getDailyFact() {
+  const dateStr = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+  const seed = dateStr.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  const pool = VALID_FACTS.filter(f => VIP_FACT_IDS.has(f.id))
+  const facts = pool.length > 0 ? pool : VALID_FACTS
+  return facts[seed % facts.length]
+}

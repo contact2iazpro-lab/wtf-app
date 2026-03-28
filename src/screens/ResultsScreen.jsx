@@ -26,7 +26,7 @@ function getStars(correct, total) {
 const DIFFICULTY_LABELS = { easy: 'Facile', normal: 'Normal', expert: 'Expert' }
 const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
 
-export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome, completedCategoryLevels = [] }) {
+export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome, completedCategoryLevels = [], coinsEarned = 0, sessionType = 'parcours' }) {
   const [showSettings, setShowSettings] = useState(false)
   const rank = getRank(score)
   const stars = getStars(correctCount, totalFacts)
@@ -109,6 +109,19 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
           </div>
         </div>
       </div>
+
+      {/* WTF Coins earned (Flash Solo) */}
+      {coinsEarned > 0 && (
+        <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0 flex items-center gap-3" style={{ background: 'rgba(255,215,0,0.1)', borderColor: 'rgba(255,215,0,0.35)', backdropFilter: 'blur(8px)' }}>
+          <span className="text-3xl">🪙</span>
+          <div className="flex-1">
+            <div className="text-yellow-300 font-black text-base">+{coinsEarned} WTF Coins</div>
+            <div className="text-white/50 text-xs font-semibold">
+              {sessionType === 'flash_solo' && coinsEarned >= 25 ? 'Session parfaite ! 🎯' : 'Ajoutés à ton solde'}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Scoring reminder */}
       <div className="mx-5 mb-3 rounded-2xl border p-2 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)' }}>

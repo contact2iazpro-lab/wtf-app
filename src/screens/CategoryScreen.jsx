@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import { PLAYABLE_CATEGORIES, VALID_FACTS } from '../data/facts'
+import { PLAYABLE_CATEGORIES } from '../data/facts'
+import { getValidFacts } from '../data/factsService'
 import { audio } from '../utils/audio'
 
 // Convert hex color to "r, g, b" string for rgba()
@@ -17,14 +18,14 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
   const [showConfirm, setShowConfirm] = useState(false)
 
   const categoriesWithFacts = useMemo(() => {
-    const categoryIds = new Set(VALID_FACTS.map(f => f.category))
+    const categoryIds = new Set(getValidFacts().map(f => f.category))
     return categoryIds
   }, [])
 
   // Total facts per category (dynamic — updates automatically if facts are added)
   const totalPerCategory = useMemo(() => {
     const counts = {}
-    for (const f of VALID_FACTS) {
+    for (const f of getValidFacts()) {
       counts[f.category] = (counts[f.category] || 0) + 1
     }
     return counts
@@ -33,7 +34,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
   // Unlocked facts per category
   const unlockedPerCategory = useMemo(() => {
     const counts = {}
-    for (const f of VALID_FACTS) {
+    for (const f of getValidFacts()) {
       if (unlockedFacts.has(f.id)) {
         counts[f.category] = (counts[f.category] || 0) + 1
       }

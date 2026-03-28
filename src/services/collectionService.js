@@ -1,12 +1,12 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import { VALID_FACTS } from '../data/facts'
+import { getValidFacts } from '../data/factsService'
 
-// Total facts per category — computed once from actual data
-export const FACTS_PER_CATEGORY = (() => {
+// Total facts per category — computed lazily so it uses the loaded facts (Supabase or local)
+function getFactsPerCategory() {
   const counts = {}
-  for (const f of VALID_FACTS) counts[f.category] = (counts[f.category] || 0) + 1
+  for (const f of getValidFacts()) counts[f.category] = (counts[f.category] || 0) + 1
   return counts
-})()
+}
 
 /**
  * Record a correct answer in the collection.
@@ -29,7 +29,7 @@ export async function updateCollection(userId, category, factId) {
     if (factsCompleted.includes(factId)) return { alreadyCompleted: true }
 
     const newFactsCompleted = [...factsCompleted, factId]
-    const total = FACTS_PER_CATEGORY[category] || 1
+    const total = getFactsPerCategory()[category] || 1
     const percentage = Math.round((newFactsCompleted.length / total) * 100)
     const isCompleted = percentage === 100
 
@@ -89,7 +89,7 @@ export function mergeCollections(supabaseCollections, localUnlockedFacts) {
   const merged = {}
 
   // Start from local
-  for (const f of VALID_FACTS) {
+  for (const f of getValidFacts()) {
     if (localUnlockedFacts.has(f.id)) {
       if (!merged[f.category]) merged[f.category] = new Set()
       merged[f.category].add(f.id)

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
@@ -22,6 +22,7 @@ import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
 import SettingsModal from './components/SettingsModal'
 import HowToPlayModal from './components/HowToPlayModal'
+import TutorialOverlay from './components/TutorialOverlay'
 import { audio } from './utils/audio'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
@@ -126,7 +127,10 @@ export default function App() {
   const [duelPlayers, setDuelPlayers] = useState([])
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
-  const [showHowToPlay, setShowHowToPlay] = useState(() => localStorage.getItem('wtf_hide_howtoplay') !== 'true')
+  // Tutorial (first visit — mandatory) + auto-show rules (once per session)
+  const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem('wtf_tutorial_done') !== 'true')
+  const [showHowToPlay, setShowHowToPlay] = useState(false)
+  const rulesAutoShownRef = useRef(false)
   const [showSettings, setShowSettings] = useState(false)
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
@@ -235,8 +239,6 @@ export default function App() {
   const handlePlay = useCallback(() => {
     setGameMode('solo')
     setSessionType('parcours')
-    const shouldShow = localStorage.getItem('wtf_hide_howtoplay') !== 'true'
-    setShowHowToPlay(shouldShow)
     setScreen(SCREENS.DIFFICULTY)
   }, [])
 
@@ -495,7 +497,6 @@ export default function App() {
   const handleDuelMode = useCallback(() => {
     setGameMode('duel')
     setSessionType('duel')
-    setShowHowToPlay(localStorage.getItem('wtf_hide_howtoplay') !== 'true')
     setScreen(SCREENS.DUEL_SETUP)
   }, [])
 
@@ -558,6 +559,12 @@ export default function App() {
   }, [effectiveDailyFact])
 
   const handleShowRules = useCallback(() => setShowHowToPlay(true), [])
+
+  const handleTutorialComplete = useCallback(() => {
+    setShowTutorial(false)
+    // Don't auto-show rules right after tutorial (tutorial covered them)
+    rulesAutoShownRef.current = true
+  }, [])
 
   // ─── Dev Panel helpers ────────────────────────────────────────────────────
 
@@ -622,6 +629,17 @@ export default function App() {
     })
   }, [])
 
+  // Auto-show rules once per session (if toggle is ON and tutorial not showing)
+  useEffect(() => {
+    if (!factsReady) return
+    if (showTutorial) return
+    if (rulesAutoShownRef.current) return
+    rulesAutoShownRef.current = true
+    if (localStorage.getItem('wtf_hide_howtoplay') !== 'true') {
+      setShowHowToPlay(true)
+    }
+  }, [factsReady, showTutorial])
+
   // Push history entry on screen change (back button support)
   useEffect(() => {
     window.history.pushState(null, '')
@@ -667,6 +685,14 @@ export default function App() {
 
   return (
     <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg">
+      {/* First-visit tutorial (mandatory, no skip) */}
+      {showTutorial && <TutorialOverlay onComplete={handleTutorialComplete} />}
+
+      {/* Auto-show rules on HOME (once per session, if toggle is ON) */}
+      {showHowToPlay && screen === SCREENS.HOME && !showTutorial && (
+        <HowToPlayModal onClose={() => setShowHowToPlay(false)} />
+      )}
+
       {screen === SCREENS.HOME && (
         <HomeScreen
           totalScore={totalScore}
@@ -708,58 +734,19 @@ export default function App() {
       )}
 
       {screen === SCREENS.DIFFICULTY && (
-        <>
-          {showHowToPlay && <HowToPlayModal onClose={() => setShowHowToPlay(false)} />}
-          <DifficultyScreen
-            onSelectDifficulty={handleSelectDifficulty}
-            onBack={() => setScreen(SCREENS.HOME)}
-          />
-        </>
+        <DifficultyScreen
+          onSelectDifficulty={handleSelectDifficulty}
+          onBack={() => setScreen(SCREENS.HOME)}
+        />
       )}
 
       {screen === SCREENS.CATEGORY && (
-        <>
-          {showHowToPlay && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
-              <div className="w-full rounded-3xl p-6 border" style={{ background: '#fff', borderColor: 'rgba(0,0,0,0.1)', maxWidth: '420px', maxHeight: '85vh', overflowY: 'auto' }}>
-                {gameMode === 'marathon' ? (
-                  <>
-                    <div className="text-4xl text-center mb-4">🏃</div>
-                    <h2 className="text-xl font-black text-center mb-3" style={{ color: '#1a1a2e' }}>Marathon</h2>
-                    <div className="text-sm mb-5" style={{ color: '#333', lineHeight: '1.6' }}>
-                      <p className="mb-3"><strong>🎯 Le jeu :</strong> Testez vos limites avec une série de <strong>20 questions</strong> sur des sujets variés.</p>
-                      <p className="mb-3"><strong>⏱️ Temps :</strong> <strong>20 secondes</strong> par question.</p>
-                      <p><strong>⭐ Points :</strong> <strong>3 points</strong> par réponse correcte.</p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-4xl text-center mb-4">{selectedDifficulty.emoji}</div>
-                    <h2 className="text-xl font-black text-center mb-3" style={{ color: '#1a1a2e' }}>{selectedDifficulty.label}</h2>
-                    <div className="text-sm mb-5" style={{ color: '#333', lineHeight: '1.6' }}>
-                      <p className="mb-3"><strong>🎲 Choix :</strong> <strong>{selectedDifficulty.choices} réponses</strong> possibles.</p>
-                      <p className="mb-3"><strong>⏱️ Temps :</strong> <strong>{selectedDifficulty.duration} secondes</strong> par question.</p>
-                      <p><strong>⭐ Points :</strong> <strong>{selectedDifficulty.scoring.correct} pt(s)</strong> par bonne réponse.</p>
-                    </div>
-                  </>
-                )}
-                <div className="flex items-center gap-2 mb-4 p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.03)' }}>
-                  <input type="checkbox" id="hideHowToPlay" onChange={(e) => { if (e.target.checked) localStorage.setItem('wtf_hide_howtoplay', 'true') }} className="w-4 h-4 cursor-pointer" />
-                  <label htmlFor="hideHowToPlay" className="text-xs cursor-pointer" style={{ color: '#666' }}>Ne plus afficher</label>
-                </div>
-                <button onClick={() => setShowHowToPlay(false)} className="w-full py-3 rounded-2xl font-black text-sm active:scale-95 transition-all" style={{ background: '#FF6B1A', color: 'white' }}>
-                  C'est parti ! 🚀
-                </button>
-              </div>
-            </div>
-          )}
-          <CategoryScreen
-            onSelectCategory={handleSelectCategory}
-            onBack={() => setScreen(SCREENS.HOME)}
-            selectedDifficulty={selectedDifficulty}
-            unlockedFacts={unlockedFacts}
-          />
-        </>
+        <CategoryScreen
+          onSelectCategory={handleSelectCategory}
+          onBack={() => setScreen(SCREENS.HOME)}
+          selectedDifficulty={selectedDifficulty}
+          unlockedFacts={unlockedFacts}
+        />
       )}
 
       {screen === SCREENS.QUESTION && currentFact && (

@@ -341,7 +341,7 @@ export default function SettingsModal({ onClose, onShowRules }) {
           {/* Auto show rules */}
           <button
             onClick={toggleAutoShowRules}
-            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all active:scale-95"
+            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all active:scale-95 mb-3"
             style={{
               background: autoShowRules ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)',
               borderColor: autoShowRules ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)',
@@ -350,10 +350,20 @@ export default function SettingsModal({ onClose, onShowRules }) {
             <span className="flex items-center gap-3">
               <span className="text-2xl">{autoShowRules ? '✓' : '○'}</span>
               <span className="font-bold text-sm" style={{ color: autoShowRules ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)' }}>
-                Afficher les règles automatiquement
+                Afficher les règles au lancement
               </span>
             </span>
             <TogglePill on={autoShowRules} />
+          </button>
+
+          {/* Replay tutorial */}
+          <button
+            onClick={() => { audio.play('click'); localStorage.removeItem('wtf_tutorial_done'); onClose() }}
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border transition-all active:scale-95"
+            style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}
+          >
+            <span className="text-base">🎓</span>
+            <span className="font-bold text-xs">Revoir le tutoriel</span>
           </button>
         </div>
       </div>

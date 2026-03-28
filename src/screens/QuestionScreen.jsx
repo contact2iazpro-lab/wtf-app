@@ -4,6 +4,71 @@ import SettingsModal from '../components/SettingsModal'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
+// ── Hint flip card button ────────────────────────────────────────────────────
+// Fixed size pill button that flips (scaleY squish) to reveal the hint text.
+// Cannot be re-clicked after flipping. Text auto-sizes to fit.
+function HintFlipButton({ num, hint, color, onReveal }) {
+  const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
+
+  const handleClick = () => {
+    if (phase !== 'front') return
+    setPhase('flip')
+    onReveal()
+    // Switch to back content once squished flat, then expand
+    setTimeout(() => setPhase('back'), 160)
+  }
+
+  // Adaptive font size based on hint length
+  const hintLen = hint?.length || 0
+  const hintFs = hintLen > 55 ? 9 : hintLen > 38 ? 11 : 12
+
+  return (
+    <button
+      onClick={handleClick}
+      style={{
+        height: 52,
+        width: '100%',
+        borderRadius: 26,
+        border: `2px solid ${phase === 'back' ? color + '80' : color}`,
+        background: phase === 'back' ? `${color}18` : `${color}1a`,
+        transform: phase === 'flip' ? 'scaleY(0.08)' : 'scaleY(1)',
+        transition: 'transform 0.15s ease, background 0.3s, border-color 0.3s',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '4px 14px',
+        cursor: phase !== 'front' ? 'default' : 'pointer',
+        pointerEvents: phase !== 'front' ? 'none' : 'auto',
+      }}
+    >
+      {phase !== 'back' ? (
+        <span style={{ fontWeight: 900, fontSize: 14, color, whiteSpace: 'nowrap' }}>
+          N°{num} — Indice
+        </span>
+      ) : (
+        <span
+          style={{
+            fontSize: hintFs,
+            fontWeight: 700,
+            color: 'white',
+            textAlign: 'center',
+            lineHeight: 1.35,
+            wordBreak: 'break-word',
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
+          {hint || '—'}
+        </span>
+      )}
+    </button>
+  )
+}
+
+// ── Main QuestionScreen ──────────────────────────────────────────────────────
 export default function QuestionScreen({
   fact,
   factIndex,
@@ -29,8 +94,7 @@ export default function QuestionScreen({
       setAnswerMode('qcm')
     }
   }, [gameMode])
-  const [showHint1, setShowHint1] = useState(false)
-  const [showHint2, setShowHint2] = useState(false)
+
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const cat = getCategoryById(fact.category)
@@ -45,12 +109,7 @@ export default function QuestionScreen({
     ? `linear-gradient(135deg, ${cat.color}35 0%, ${cat.color}18 100%)`
     : 'rgba(0,0,0,0.4)'
 
-  const handleShowHint = (hintNum) => {
-    if (hintNum === 1 && !showHint1) { setShowHint1(true); onUseHint(1); audio.play('click') }
-    else if (hintNum === 2 && !showHint2) { setShowHint2(true); onUseHint(2); audio.play('click') }
-  }
-
-  // ── Quit confirmation modal ─────────────────────────────────────────────────
+  // ── Quit confirmation modal ──────────────────────────────────────────────
   const quitModal = showQuitConfirm && (
     <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
       <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', border: '1px solid #E5E7EB', boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }}>
@@ -80,7 +139,7 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Shared header ──────────────────────────────────────────────────────────
+  // ── Shared header ────────────────────────────────────────────────────────
   const header = (
     <div className="px-5 pt-4 pb-3 shrink-0">
       {/* Top row: counter + player badge + quit */}
@@ -157,7 +216,7 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Phase 0 : Mode selection ───────────────────────────────────────────────
+  // ── Phase 0 : Mode selection ──────────────────────────────────────────────
   if (!answerMode) {
     return (
       <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
@@ -214,7 +273,7 @@ export default function QuestionScreen({
     )
   }
 
-  // ── Phase 1 : Open question ────────────────────────────────────────────────
+  // ── Phase 1 : Open question ───────────────────────────────────────────────
   if (answerMode === 'open') {
     return (
       <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: screenBg }}>
@@ -224,50 +283,25 @@ export default function QuestionScreen({
         {factImage(true)}
         {questionCard}
 
-        {/* Hints display */}
-        <div className="flex-1 px-5 flex flex-col gap-2 mb-3 overflow-y-auto scrollbar-hide">
-          {showHint1 && (
-            <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.4)' }}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2 py-0.5 rounded-full text-xs font-black border" style={{ color: '#FBBF24', borderColor: '#FBBF24', background: 'rgba(251,191,36,0.15)' }}>N°1</span>
-                <span className="text-xs font-bold uppercase tracking-wide text-white/50">Indice</span>
-              </div>
-              <p className="text-white font-bold text-lg">{fact.hint1}</p>
-            </div>
-          )}
-          {showHint2 && (
-            <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(249,115,22,0.08)', borderColor: 'rgba(249,115,22,0.4)' }}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2 py-0.5 rounded-full text-xs font-black border" style={{ color: '#F97316', borderColor: '#F97316', background: 'rgba(249,115,22,0.15)' }}>N°2</span>
-                <span className="text-xs font-bold uppercase tracking-wide text-white/50">Indice</span>
-              </div>
-              <p className="text-white font-bold text-lg">{fact.hint2}</p>
-            </div>
-          )}
-        </div>
+        {/* Spacer pushes buttons to bottom */}
+        <div className="flex-1" />
 
         {/* Buttons */}
         <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
-          {/* Hint buttons — N°1 / N°2 badge style */}
+          {/* Hint flip cards */}
           <div className="grid grid-cols-2 gap-3">
-            <button
-              disabled={showHint1}
-              onClick={() => handleShowHint(1)}
-              className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint1 ? 'opacity-40 cursor-not-allowed' : ''}`}
-              style={showHint1
-                ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
-                : { borderColor: '#FBBF24', color: '#FBBF24', background: 'rgba(251,191,36,0.1)' }}>
-              N°1 — Indice
-            </button>
-            <button
-              disabled={showHint2}
-              onClick={() => handleShowHint(2)}
-              className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint2 ? 'opacity-40 cursor-not-allowed' : ''}`}
-              style={showHint2
-                ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
-                : { borderColor: '#F97316', color: '#F97316', background: 'rgba(249,115,22,0.1)' }}>
-              N°2 — Indice
-            </button>
+            <HintFlipButton
+              num={1}
+              hint={fact.hint1}
+              color="#FBBF24"
+              onReveal={() => { onUseHint(1); audio.play('click') }}
+            />
+            <HintFlipButton
+              num={2}
+              hint={fact.hint2}
+              color="#F97316"
+              onReveal={() => { onUseHint(2); audio.play('click') }}
+            />
           </div>
 
           {/* Validation buttons (pressed by questioner) */}
@@ -295,7 +329,7 @@ export default function QuestionScreen({
     )
   }
 
-  // ── Phase 2 : QCM ─────────────────────────────────────────────────────────
+  // ── Phase 2 : QCM ────────────────────────────────────────────────────────
   return (
     <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: screenBg }}>
       {quitModal}
@@ -305,50 +339,25 @@ export default function QuestionScreen({
       {factImage(true)}
       {questionCard}
 
-      {/* Hints display — flex-1 only when hints are visible to avoid empty space */}
-      <div className={`px-5 flex flex-col gap-2 mb-3 overflow-y-auto scrollbar-hide ${showHint1 || showHint2 ? 'flex-1' : ''}`}>
-        {showHint1 && (
-          <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.4)' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded-full text-xs font-black border" style={{ color: '#FBBF24', borderColor: '#FBBF24', background: 'rgba(251,191,36,0.15)' }}>N°1</span>
-              <span className="text-xs font-bold uppercase tracking-wide text-white/50">Indice</span>
-            </div>
-            <p className="text-white font-bold text-lg">{fact.hint1}</p>
-          </div>
-        )}
-        {showHint2 && (
-          <div className="rounded-2xl p-4 border animate-fade-up" style={{ background: 'rgba(249,115,22,0.08)', borderColor: 'rgba(249,115,22,0.4)' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded-full text-xs font-black border" style={{ color: '#F97316', borderColor: '#F97316', background: 'rgba(249,115,22,0.15)' }}>N°2</span>
-              <span className="text-xs font-bold uppercase tracking-wide text-white/50">Indice</span>
-            </div>
-            <p className="text-white font-bold text-lg">{fact.hint2}</p>
-          </div>
-        )}
-      </div>
+      {/* Spacer pushes buttons to bottom */}
+      <div className="flex-1" />
 
       <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
-        {/* Hint buttons — only shown if hints are allowed for this difficulty */}
+        {/* Hint flip cards — only shown if hints are allowed for this difficulty */}
         {(difficulty?.hintsAllowed !== false) && (
           <div className="grid grid-cols-2 gap-3">
-            <button
-              disabled={showHint1}
-              onClick={() => handleShowHint(1)}
-              className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint1 ? 'opacity-40 cursor-not-allowed' : ''}`}
-              style={showHint1
-                ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
-                : { borderColor: '#FBBF24', color: '#FBBF24', background: 'rgba(251,191,36,0.1)' }}>
-              N°1 — Indice
-            </button>
-            <button
-              disabled={showHint2}
-              onClick={() => handleShowHint(2)}
-              className={`btn-press py-3 rounded-full border-2 font-black text-sm transition-all ${showHint2 ? 'opacity-40 cursor-not-allowed' : ''}`}
-              style={showHint2
-                ? { borderColor: '#2C2A50', color: 'rgba(255,255,255,0.3)', background: 'transparent' }
-                : { borderColor: '#F97316', color: '#F97316', background: 'rgba(249,115,22,0.1)' }}>
-              N°2 — Indice
-            </button>
+            <HintFlipButton
+              num={1}
+              hint={fact.hint1}
+              color="#FBBF24"
+              onReveal={() => { onUseHint(1); audio.play('click') }}
+            />
+            <HintFlipButton
+              num={2}
+              hint={fact.hint2}
+              color="#F97316"
+              onReveal={() => { onUseHint(2); audio.play('click') }}
+            />
           </div>
         )}
 
@@ -357,7 +366,12 @@ export default function QuestionScreen({
           {fact.options.map((option, index) => (
             <button
               key={index}
-              onClick={() => { const correct = index === fact.correctIndex; audio.play(correct ? 'correct' : 'wrong'); audio.vibrate(correct ? [40,20,40] : [120]); onSelectAnswer(index) }}
+              onClick={() => {
+                const correct = index === fact.correctIndex
+                audio.play(correct ? 'correct' : 'wrong')
+                audio.vibrate(correct ? [40, 20, 40] : [120])
+                onSelectAnswer(index)
+              }}
               className="btn-press py-4 rounded-2xl text-white font-bold text-sm transition-all active:scale-95 border"
               style={{
                 background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,

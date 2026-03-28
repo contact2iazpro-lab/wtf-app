@@ -234,8 +234,8 @@ export default function SettingsModal({ onClose, onShowRules }) {
   const [sfxOn, setSfxOn] = useState(audio.sfxEnabled)
   const [vibOn, setVibOn] = useState(audio.vibrationEnabled)
   const [hintsOn, setHintsOn] = useState(() => localStorage.getItem('wtf_hints_enabled') !== 'false')
-  const [autoShowRules, setAutoShowRules] = useState(() => localStorage.getItem('wtf_hide_howtoplay') !== 'true')
   const [childMode, setChildMode] = useState(() => localStorage.getItem('wtf_child_mode') !== 'false')
+  const [showWelcome, setShowWelcome] = useState(() => localStorage.getItem('hideWelcomeScreen') !== 'true')
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [showRulesModal, setShowRulesModal] = useState(false)
 
@@ -247,11 +247,12 @@ export default function SettingsModal({ onClose, onShowRules }) {
   const toggleSfx = () => { const n = !sfxOn; setSfxOn(n); audio.setSfxEnabled(n); if (n) audio.play('click') }
   const toggleVib = () => { const n = !vibOn; setVibOn(n); audio.setVibrationEnabled(n); if (n) audio.vibrate(40) }
   const toggleHints = () => { const n = !hintsOn; setHintsOn(n); localStorage.setItem('wtf_hints_enabled', String(n)) }
-  const toggleAutoShowRules = () => {
-    const n = !autoShowRules; setAutoShowRules(n)
-    n ? localStorage.removeItem('wtf_hide_howtoplay') : localStorage.setItem('wtf_hide_howtoplay', 'true')
-  }
   const toggleChildMode = () => { const n = !childMode; setChildMode(n); localStorage.setItem('wtf_child_mode', String(n)) }
+  const toggleShowWelcome = () => {
+    audio.play('click')
+    const n = !showWelcome; setShowWelcome(n)
+    n ? localStorage.removeItem('hideWelcomeScreen') : localStorage.setItem('hideWelcomeScreen', 'true')
+  }
   const handleViewRules = () => { audio.play('click'); setShowRulesModal(true) }
 
   const iconToggles = [
@@ -338,32 +339,22 @@ export default function SettingsModal({ onClose, onShowRules }) {
             <span className="font-bold text-sm">Voir les règles</span>
           </button>
 
-          {/* Auto show rules */}
+          {/* Show welcome screen toggle */}
           <button
-            onClick={toggleAutoShowRules}
-            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all active:scale-95 mb-3"
+            onClick={toggleShowWelcome}
+            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all active:scale-95"
             style={{
-              background: autoShowRules ? 'rgba(255,107,26,0.06)' : '#F9FAFB',
-              borderColor: autoShowRules ? 'rgba(255,107,26,0.3)' : '#E5E7EB',
+              background: showWelcome ? 'rgba(255,107,26,0.06)' : '#F9FAFB',
+              borderColor: showWelcome ? 'rgba(255,107,26,0.3)' : '#E5E7EB',
             }}
           >
             <span className="flex items-center gap-3">
-              <span className="text-2xl">{autoShowRules ? '✓' : '○'}</span>
-              <span className="font-bold text-sm" style={{ color: autoShowRules ? '#C2410C' : '#9CA3AF' }}>
-                Afficher les règles au lancement
+              <span className="text-2xl">⭐</span>
+              <span className="font-bold text-sm" style={{ color: showWelcome ? '#C2410C' : '#9CA3AF' }}>
+                Afficher l'écran de bienvenue
               </span>
             </span>
-            <TogglePill on={autoShowRules} />
-          </button>
-
-          {/* Replay tutorial */}
-          <button
-            onClick={() => { audio.play('click'); localStorage.removeItem('wtf_tutorial_done'); onClose() }}
-            className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border transition-all active:scale-95"
-            style={{ background: '#F9FAFB', borderColor: '#E5E7EB', color: '#9CA3AF' }}
-          >
-            <span className="text-base">🎓</span>
-            <span className="font-bold text-xs">Revoir le tutoriel</span>
+            <TogglePill on={showWelcome} />
           </button>
         </div>
       </div>

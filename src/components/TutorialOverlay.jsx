@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { audio } from '../utils/audio'
 
 const STEPS = [
   {
     gradient: 'linear-gradient(170deg, #0A0F1E 0%, #2A0A45 60%, #0E1A2E 100%)',
     accent: '#FF6B1A',
-    emoji: '🤯',
+    emoji: '⭐',
     title: 'What The\nF*ct !',
     subtitle: 'Le quiz des facts impossibles',
     bullets: null,
@@ -182,9 +182,53 @@ export default function TutorialOverlay({ onComplete }) {
   const [step, setStep] = useState(0)
   const [fading, setFading] = useState(false)
   const touchStartX = useRef(null)
+
+  // Progress bar for first slide
+  const [barWidth, setBarWidth] = useState(0)
+  const barRafRef = useRef(null)
+  const barStartRef = useRef(null)
+
+  // "Ne plus afficher" checkbox — synced with localStorage
+  const [hideWelcome, setHideWelcome] = useState(() => localStorage.getItem('hideWelcomeScreen') === 'true')
+
   const current = STEPS[step]
   const isFirst = step === 0
   const isLast = step === STEPS.length - 1
+
+  // Animate progress bar when on first slide
+  useEffect(() => {
+    if (step === 0) {
+      setBarWidth(0)
+      barStartRef.current = null
+      const timeout = setTimeout(() => {
+        const animate = (ts) => {
+          if (!barStartRef.current) barStartRef.current = ts
+          const elapsed = ts - barStartRef.current
+          const pct = Math.min(100, (elapsed / 4000) * 100)
+          setBarWidth(pct)
+          if (pct < 100) {
+            barRafRef.current = requestAnimationFrame(animate)
+          }
+        }
+        barRafRef.current = requestAnimationFrame(animate)
+      }, 50)
+      return () => {
+        clearTimeout(timeout)
+        cancelAnimationFrame(barRafRef.current)
+      }
+    } else {
+      cancelAnimationFrame(barRafRef.current)
+    }
+  }, [step])
+
+  const handleHideWelcomeChange = useCallback((checked) => {
+    setHideWelcome(checked)
+    if (checked) {
+      localStorage.setItem('hideWelcomeScreen', 'true')
+    } else {
+      localStorage.removeItem('hideWelcomeScreen')
+    }
+  }, [])
 
   const changeStep = useCallback((newStep) => {
     if (fading) return
@@ -199,7 +243,7 @@ export default function TutorialOverlay({ onComplete }) {
   const handleNext = useCallback(() => {
     if (isLast) {
       audio.play('click')
-      localStorage.setItem('wtf_tutorial_done', 'true')
+      localStorage.setItem('hideWelcomeScreen', 'true')
       onComplete()
     } else {
       changeStep(step + 1)
@@ -316,8 +360,43 @@ export default function TutorialOverlay({ onComplete }) {
 
       {/* Bottom nav */}
       <div className="px-6 pb-8 pt-4 shrink-0">
+
+        {/* Progress bar (first slide only) */}
+        {step === 0 && (
+          <div
+            style={{
+              marginBottom: 16,
+              height: 26,
+              borderRadius: 13,
+              background: 'rgba(255,255,255,0.12)',
+              overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${barWidth}%`,
+                background: `linear-gradient(90deg, ${current.accent}cc, ${current.accent})`,
+                borderRadius: 13,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                paddingRight: barWidth > 8 ? 8 : 0,
+                minWidth: 0,
+              }}
+            >
+              {barWidth > 8 && (
+                <span style={{ fontSize: 11, fontWeight: 900, color: 'white', whiteSpace: 'nowrap' }}>
+                  {Math.round(barWidth)}%
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Progress dots */}
-        <div className="flex justify-center gap-2 mb-5">
+        <div className="flex justify-center gap-2 mb-4">
           {STEPS.map((_, i) => (
             <div
               key={i}
@@ -331,6 +410,28 @@ export default function TutorialOverlay({ onComplete }) {
             />
           ))}
         </div>
+
+        {/* "Ne plus afficher" checkbox */}
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            marginBottom: 14,
+            cursor: 'pointer',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={hideWelcome}
+            onChange={e => handleHideWelcomeChange(e.target.checked)}
+            style={{ width: 16, height: 16, cursor: 'pointer', accentColor: current.accent }}
+          />
+          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
+            Ne plus afficher
+          </span>
+        </label>
 
         {/* Buttons */}
         <div className="flex gap-3">

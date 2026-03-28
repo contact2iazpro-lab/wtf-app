@@ -128,7 +128,13 @@ export default function App() {
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
   // Tutorial (first visit — mandatory) + auto-show rules (once per session)
-  const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem('wtf_tutorial_done') !== 'true')
+  const [showTutorial, setShowTutorial] = useState(() => {
+    // Migration: transfer old key to new key so existing users don't see tutorial again
+    if (localStorage.getItem('wtf_tutorial_done') === 'true' && !localStorage.getItem('hideWelcomeScreen')) {
+      localStorage.setItem('hideWelcomeScreen', 'true')
+    }
+    return localStorage.getItem('hideWelcomeScreen') !== 'true'
+  })
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const rulesAutoShownRef = useRef(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -629,16 +635,7 @@ export default function App() {
     })
   }, [])
 
-  // Auto-show rules once per session (if toggle is ON and tutorial not showing)
-  useEffect(() => {
-    if (!factsReady) return
-    if (showTutorial) return
-    if (rulesAutoShownRef.current) return
-    rulesAutoShownRef.current = true
-    if (localStorage.getItem('wtf_hide_howtoplay') !== 'true') {
-      setShowHowToPlay(true)
-    }
-  }, [factsReady, showTutorial])
+  // Auto-show rules removed — rules accessible manually via Settings > "Voir les règles"
 
   // Push history entry on screen change (back button support)
   useEffect(() => {

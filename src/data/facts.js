@@ -37,6 +37,7 @@ export const FACTS = [
     options: ["Elles prennent la forme du trou","Elles deviennent carrées","Elles explosent plus vite","Elles se divisent en deux","Elles sont plus fragiles","Elles sont toujours rondes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/1.png",
+    difficulty: 'normal',
   },
   {
     id: 2,
@@ -50,6 +51,7 @@ export const FACTS = [
     options: ["Il envoyait une carte de condoléances","Il appelait la police anonymement","Il publiait un poème sur Facebook","Il commandait une pizza après","Il envoyait des fleurs aux familles","Un commentaire Amazon sur les armes de son crime"],
     correctIndex: 5,
     imageUrl: "/assets/facts/2.png",
+    difficulty: 'normal',
   },
   {
     id: 3,
@@ -63,6 +65,7 @@ export const FACTS = [
     options: ["Elle court à reculons comme un crabe","Elle tisse des toiles en entonnoir","Elle marche sur l'eau sans couler","Elle mord deux fois plus fort","Elle a des pinces comme un crabe","Elle peut être invisible et se camoufler"],
     correctIndex: 5,
     imageUrl: "/assets/facts/3.png",
+    difficulty: 'normal',
   },
   {
     id: 4,
@@ -76,6 +79,7 @@ export const FACTS = [
     options: ["Un virus a bloqué tous les GPS","Une voiture volante a été testée","La ville a interdit les voitures","Un robot a dirigé la circulation","Un bus automatique a déraillé","Un embouteillage a duré 12 jours"],
     correctIndex: 5,
     imageUrl: "/assets/facts/4.png",
+    difficulty: 'normal',
   },
   {
     id: 5,
@@ -89,6 +93,7 @@ export const FACTS = [
     options: ["Des rondelles de bois sculpté","Des pierres plates taillées","Des morceaux de glace taillés","Des pommes de pin gelées","Des boules de neige durcie","Des bouses de vache congelées"],
     correctIndex: 5,
     imageUrl: "/assets/facts/5.png",
+    difficulty: 'normal',
   },
   {
     id: 6,
@@ -102,6 +107,7 @@ export const FACTS = [
     options: ["Un jet militaire hypersonique","Une balle de fusil de sniper","La fusée la plus rapide de la NASA","Une Ferrari à pleine vitesse","Un missile balistique","Le traîneau du Père Noël"],
     correctIndex: 5,
     imageUrl: "/assets/facts/6.png",
+    difficulty: 'normal',
   },
   {
     id: 7,
@@ -115,6 +121,7 @@ export const FACTS = [
     options: ["Rivière souterraine dans la Bible","Technique de calligraphie orientale","Transe mystique dans le soufisme","Sorte de petit arbre sacré","Petite divinité grecque","Lieu de souffrance extrême"],
     correctIndex: 5,
     imageUrl: "/assets/facts/7.png",
+    difficulty: 'normal',
   },
   {
     id: 8,
@@ -128,6 +135,7 @@ export const FACTS = [
     options: ["Inventé par un dentiste daltonien","D'après la couleur des premiers câbles","Un nom choisi au hasard par loterie","Acronyme d'un protocole anglais","Inspiré d'une baie nordique danoise","En hommage à un roi Viking aux dents bleues"],
     correctIndex: 5,
     imageUrl: "/assets/facts/8.png",
+    difficulty: 'normal',
   },
   {
     id: 9,
@@ -141,6 +149,7 @@ export const FACTS = [
     options: ["Elle peint uniquement avec ses pieds","Elle crée de la musique avec sa peinture","Elle mélange musique et parfums rares","Elle vend ses peintures en tant que sons","Elle dessine à l'aveugle en rythme","Elle peint la musique qu'elle écoute"],
     correctIndex: 5,
     imageUrl: "/assets/facts/9.png",
+    difficulty: 'normal',
   },
   {
     id: 10,
@@ -154,6 +163,7 @@ export const FACTS = [
     options: ["La sève de coco cristallisée","Une variété d'herbe médicinale","Un lichen comestible des forêts","Une infusion de racine amère","Un type d'algue verte aquatique","Un champignon hallucinogène"],
     correctIndex: 5,
     imageUrl: "/assets/facts/10.png",
+    difficulty: 'normal',
   },
   {
     id: 11,
@@ -167,6 +177,7 @@ export const FACTS = [
     options: ["La peur de l'altitude","La peur des tunnels","La peur de traverser la rue","La peur des rivières profondes","La peur de l'eau courante","La peur des ponts"],
     correctIndex: 5,
     imageUrl: "/assets/facts/11.png",
+    difficulty: 'normal',
   },
   {
     id: 12,
@@ -180,6 +191,7 @@ export const FACTS = [
     options: ["Jackie Chan","Sylvester Stallone","Bruce Willis","Arnold Schwarzenegger","Chuck Norris","Le pape François"],
     correctIndex: 5,
     imageUrl: "/assets/facts/12.png",
+    difficulty: 'normal',
   },
   {
     id: 13,
@@ -193,6 +205,7 @@ export const FACTS = [
     options: ["Il a plu des poissons rouges","Il a plu des méduses vivantes","Il a plu des pommes et des poires","Il a plu des cailloux de sel","Il a plu des fourmis ailées","Il a plu des grenouilles"],
     correctIndex: 5,
     imageUrl: "/assets/facts/13.png",
+    difficulty: 'normal',
   },
   {
     id: 14,
@@ -206,6 +219,7 @@ export const FACTS = [
     options: ["Du graphite et de la pression","De la cendre volcanique","Du carbone et de l'azote","Des déchets industriels","Du sel gemme compressé","De la téquila"],
     correctIndex: 5,
     imageUrl: "/assets/facts/14.png",
+    difficulty: 'normal',
   },
   {
     id: 15,
@@ -219,6 +233,7 @@ export const FACTS = [
     options: ["Il a tiré un avion avec son oreille","Il a poussé une voiture avec sa langue","Il a porté 5 personnes sur sa tête","Il a mangé 50 piments en 1 minute","Il a fait 1000 pompes en 30 minutes","Il a soulevé 62 kg avec son oreille"],
     correctIndex: 5,
     imageUrl: "/assets/facts/15.png",
+    difficulty: 'normal',
   },
   {
     id: 16,
@@ -232,6 +247,7 @@ export const FACTS = [
     options: ["Un désir compulsif de boire du sang","Une allergie sévère aux protéines","Une sensibilité extrême à la lumière","Un manque de pigments dans la peau","Une maladie qui donne l'air d'un mort","La porphyrie qui provoque des cloques au soleil"],
     correctIndex: 5,
     imageUrl: "/assets/facts/16.png",
+    difficulty: 'normal',
   },
   {
     id: 17,
@@ -245,6 +261,7 @@ export const FACTS = [
     options: ["La peur d'être observé par des caméras","La peur de son reflet dans l'eau","La peur d'avoir les yeux ouverts","La peur des photos de soi","La peur de vieillir en se voyant","La peur des miroirs ou de se voir dedans"],
     correctIndex: 5,
     imageUrl: "/assets/facts/17.png",
+    difficulty: 'normal',
   },
   {
     id: 18,
@@ -258,6 +275,7 @@ export const FACTS = [
     options: ["Interdit de klaxonner après 22h","Interdit de manger au volant","Interdit de conduire nu","Interdit de stationner devant une église","Interdit de conduire en sandales","Interdit de conduire les yeux bandés"],
     correctIndex: 5,
     imageUrl: "/assets/facts/18.png",
+    difficulty: 'normal',
   },
   {
     id: 19,
@@ -271,6 +289,7 @@ export const FACTS = [
     options: ["Une caisse de téléphones portables","Un filet de pêche entier","Un container de marchandises","Un kayak avec son équipage","Un plongeur avec sa bouteille","Un pêcheur de homards"],
     correctIndex: 5,
     imageUrl: "/assets/facts/19.png",
+    difficulty: 'normal',
   },
   {
     id: 20,
@@ -284,6 +303,7 @@ export const FACTS = [
     options: ["Interdit de nourrir les élans en ville","Interdit de faire des selfies avec un élan","Interdit de chasser les élans le dimanche","Interdit d'attacher un élan à son véhicule","Interdit de vendre les bois d'élan","Interdit de pousser un élan d'un avion en vol"],
     correctIndex: 5,
     imageUrl: "/assets/facts/20.png",
+    difficulty: 'normal',
   },
   {
     id: 21,
@@ -297,6 +317,7 @@ export const FACTS = [
     options: ["Le cœur en plein effort physique","Les deux reins ensemble","Les muscles d'un sportif en action","Le foie après un repas copieux","Les poumons lors d'une respiration","Un cerveau, même au repos"],
     correctIndex: 5,
     imageUrl: "/assets/facts/21.png",
+    difficulty: 'normal',
   },
   {
     id: 22,
@@ -310,6 +331,7 @@ export const FACTS = [
     options: ["Elle a donné naissance à des quadruplés","Elle avait deux groupes sanguins à la fois","Elle a accouché de jumeaux en dormant","Elle avait deux utérus fonctionnels","Elle a eu des bébés à 60 ans naturellement","Elle a eu des jumeaux de deux pères différents"],
     correctIndex: 5,
     imageUrl: "/assets/facts/22.png",
+    difficulty: 'normal',
   },
   {
     id: 23,
@@ -323,6 +345,7 @@ export const FACTS = [
     options: ["Le ver de terre commun","Le poisson-clown","Le poulpe de l'océan Pacifique","La pieuvre commune des mers","Le bernard-l'ermite géant","Un escargot"],
     correctIndex: 5,
     imageUrl: "/assets/facts/23.png",
+    difficulty: 'normal',
   },
   {
     id: 24,
@@ -336,6 +359,7 @@ export const FACTS = [
     options: ["Qui mange avec excès et sans hygiène","Qui souffre de maux d'estomac chroniques","Qui a mauvaise mine mais bonne santé","Qui évite les maladies en s'isolant","Qui est allergique à tout médicament","Faible, fatigué, en mauvaise santé générale."],
     correctIndex: 5,
     imageUrl: "/assets/facts/24.png",
+    difficulty: 'normal',
   },
   {
     id: 25,
@@ -349,6 +373,7 @@ export const FACTS = [
     options: ["Il peut changer de couleur en 1 seconde","Il voit les couleurs comme les humains","Il peut voir dans l'obscurité totale","Il peut zoomer sur sa proie à distance","Il voit trois fois mieux que l'aigle","Il peut voir dans deux directions simultanément"],
     correctIndex: 5,
     imageUrl: "/assets/facts/25.png",
+    difficulty: 'normal',
   },
   {
     id: 26,
@@ -362,6 +387,7 @@ export const FACTS = [
     options: ["La disparition d'un lac entier","Le vol d'une colline entière","Le vol de sable d'une île","La disparition d'une forêt","Le vol d'une cascade entière","Le vol d'une plage"],
     correctIndex: 5,
     imageUrl: "/assets/facts/26.png",
+    difficulty: 'normal',
   },
   {
     id: 27,
@@ -375,6 +401,7 @@ export const FACTS = [
     options: ["Le pingouin","L'éléphant","Le cheval","Le chien","Le mouton","La vache"],
     correctIndex: 5,
     imageUrl: "/assets/facts/27.png",
+    difficulty: 'normal',
   },
   {
     id: 28,
@@ -388,6 +415,7 @@ export const FACTS = [
     options: ["La peur des enfants bruyants","La peur des clowns et des marionnettes","La peur des jouets qui se déplacent","La peur des bébés","La peur des masques de carnaval","La peur des poupées"],
     correctIndex: 5,
     imageUrl: "/assets/facts/28.png",
+    difficulty: 'normal',
   },
   {
     id: 29,
@@ -401,6 +429,7 @@ export const FACTS = [
     options: ["Le cercueil était trop petit pour lui","Sa couronne a roulé jusqu'au public","Les assistants se sont battus entre eux","Son cercueil a pris feu","Le cheval funèbre s'est emballé","L'estomac de Guillaume le Conquérant a explosé"],
     correctIndex: 5,
     imageUrl: "/assets/facts/29.png",
+    difficulty: 'normal',
   },
   {
     id: 30,
@@ -414,6 +443,7 @@ export const FACTS = [
     options: ["Elle perçoit les couleurs par le toucher","Elle distingue les formes par l'ouïe","Elle récupère la vue sous hypnose","Elle voit uniquement en noir et blanc","Elle voit pendant ses crises","Elle voit avec certaines personnalités"],
     correctIndex: 5,
     imageUrl: "/assets/facts/30.png",
+    difficulty: 'normal',
   },
   {
     id: 31,
@@ -427,6 +457,7 @@ export const FACTS = [
     options: ["La peur des numéros inconnus","La peur des téléphones qui sonnent","La peur d'être suivi par son téléphone","La peur des notifications","La peur de perdre ses données","La peur d'être sans téléphone mobile"],
     correctIndex: 5,
     imageUrl: "/assets/facts/31.png",
+    difficulty: 'normal',
   },
   {
     id: 32,
@@ -440,6 +471,7 @@ export const FACTS = [
     options: ["Elles changent de taille selon les films","Elles sont plus grandes que la tête","Elles bougent selon les émotions","Elles sont rondes depuis l'origine","Elles pointent toujours vers le haut","Elles sont toujours dessinées de face"],
     correctIndex: 5,
     imageUrl: "/assets/facts/32.png",
+    difficulty: 'normal',
   },
   {
     id: 33,
@@ -453,6 +485,7 @@ export const FACTS = [
     options: ["La peur des hippopotames","La peur de ne pas trouver ses mots","La peur de mal prononcer les mots","La peur des textes trop longs","La peur de parler en public","La peur des mots longs (36 lettres)"],
     correctIndex: 5,
     imageUrl: "/assets/facts/33.png",
+    difficulty: 'normal',
   },
   {
     id: 34,
@@ -466,6 +499,7 @@ export const FACTS = [
     options: ["Interdit de chasser en ski","Interdit de chasser sans casque","Interdit de chasser le dimanche soir","Interdit de chasser avec un arc","Interdit de chasser avec un téléphone","Il est interdit de tuer Bigfoot"],
     correctIndex: 5,
     imageUrl: "/assets/facts/34.png",
+    difficulty: 'normal',
   },
   {
     id: 35,
@@ -479,6 +513,7 @@ export const FACTS = [
     options: ["Il guérit toutes les blessures","Il est produit sans les abeilles","Il est plus sucré que le sucre","Il durcit si on y ajoute de l'eau","Il se conserve mieux que le vin","Il ne périme jamais"],
     correctIndex: 5,
     imageUrl: "/assets/facts/35.png",
+    difficulty: 'normal',
   },
   {
     id: 36,
@@ -492,6 +527,7 @@ export const FACTS = [
     options: ["Envie de dormir en plein repas","Envie irrésistible de s'allonger","Addiction aux somnifères","Peur de sortir de sa zone de confort","Tendance à tomber souvent de son lit","Désir excessif de rester au lit"],
     correctIndex: 5,
     imageUrl: "/assets/facts/36.png",
+    difficulty: 'normal',
   },
   {
     id: 37,
@@ -505,6 +541,7 @@ export const FACTS = [
     options: ["Un poulpe vivant","Une chenille électrique","Une anguille électrique","Un crapaud sonore","Un serpent à sonnette","Un chat"],
     correctIndex: 5,
     imageUrl: "/assets/facts/37.png",
+    difficulty: 'normal',
   },
   {
     id: 38,
@@ -518,6 +555,7 @@ export const FACTS = [
     options: ["La peur des perruques","La peur de perdre ses cheveux","La peur des hommes aux crânes rasés","La peur d'avoir les cheveux blancs","La peur des crânes en général","La peur des chauves"],
     correctIndex: 5,
     imageUrl: "/assets/facts/38.png",
+    difficulty: 'normal',
   },
   {
     id: 39,
@@ -531,6 +569,7 @@ export const FACTS = [
     options: ["Des verres de lunettes broyés","Du cristal de roche compressé","De l'or en feuille ultra fine","Des fibres de carbone optiques","Du plastique transparent spécial","De la soie d'araignée"],
     correctIndex: 5,
     imageUrl: "/assets/facts/39.png",
+    difficulty: 'normal',
   },
   {
     id: 40,
@@ -544,6 +583,7 @@ export const FACTS = [
     options: ["Il a couru un marathon pieds nus","Il a nagé 200 km dans la mer","Il a couru 300 km sous la pluie","Il a fait 40 marathons en 40 jours","Il a escaladé l'Everest deux fois","Il a couru 563 km sans s'arrêter"],
     correctIndex: 5,
     imageUrl: "/assets/facts/40.png",
+    difficulty: 'normal',
   },
   {
     id: 41,
@@ -557,6 +597,7 @@ export const FACTS = [
     options: ["Il a été momifié et exposé en galerie","Son portrait a été revendu à Hollywood","Il a été enterré avec ses œuvres d'art","Son costume a été porté par un acteur","Sa silhouette a inspiré un film célèbre","Sa dépouille a servi de mannequin aux studios TV"],
     correctIndex: 5,
     imageUrl: "/assets/facts/41.png",
+    difficulty: 'normal',
   },
   {
     id: 42,
@@ -570,6 +611,7 @@ export const FACTS = [
     options: ["La peur des plumes en général","La peur des œufs","La peur des basses-cours","La peur du bruit des coqs","La peur des volailles","La peur des poulets"],
     correctIndex: 5,
     imageUrl: "/assets/facts/42.png",
+    difficulty: 'normal',
   },
   {
     id: 43,
@@ -583,6 +625,7 @@ export const FACTS = [
     options: ["Un logiciel d'analyse moléculaire","Un vaccin contre une maladie rare","Une réaction chimique inédite","Un cristal inconnu en laboratoire","Un élément du tableau périodique","Une nouvelle molécule"],
     correctIndex: 5,
     imageUrl: "/assets/facts/43.png",
+    difficulty: 'normal',
   },
   {
     id: 44,
@@ -596,6 +639,7 @@ export const FACTS = [
     options: ["L'île de Malte entière","Monaco pour une journée","Une île privée aux Maldives","Le Palais de Versailles","L'archipel des Bermudes","Le Liechtenstein"],
     correctIndex: 5,
     imageUrl: "/assets/facts/44.png",
+    difficulty: 'normal',
   },
   {
     id: 45,
@@ -609,6 +653,7 @@ export const FACTS = [
     options: ["Le plus grand nombre de buts en finale","Le match le plus long de l'histoire","Le premier penalty contre la VAR","Le stade le plus plein de l'histoire","Le plus de cartons rouges en un match","Un record d'audience mondiale"],
     correctIndex: 5,
     imageUrl: "/assets/facts/45.png",
+    difficulty: 'normal',
   },
   {
     id: 46,
@@ -622,6 +667,7 @@ export const FACTS = [
     options: ["Elle grave avec des acides","Elle dessine avec des bactéries","Elle sculpte avec de l'ADN","Elle peint avec son propre sang","Elle tisse avec des moisissures","Elle peint avec des microbes vivants"],
     correctIndex: 5,
     imageUrl: "/assets/facts/46.png",
+    difficulty: 'normal',
   },
   {
     id: 47,
@@ -635,6 +681,7 @@ export const FACTS = [
     options: ["L'extinction des dinosaures à cette heure","L'invention de l'écriture","Le début de l'ère industrielle","L'arrivée des Romains en Europe","La naissance des premières villes","C'est l'apparition des premiers humains sur Terre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/47.png",
+    difficulty: 'normal',
   },
   {
     id: 48,
@@ -648,6 +695,7 @@ export const FACTS = [
     options: ["Elle a survécu à un éclair en plein salon","Un satellite lui a atterri sur la maison","Elle a survécu à une explosion de gaz","Un avion lui a atterri sur sa voiture","Elle a survécu à deux séismes","Elle a été frappée par une météorite et survécu"],
     correctIndex: 5,
     imageUrl: "/assets/facts/48.png",
+    difficulty: 'normal',
   },
   {
     id: 49,
@@ -661,6 +709,7 @@ export const FACTS = [
     options: ["Plante qui fleurit la nuit","Animal actif uniquement la nuit","Phase lunaire de 24 heures","Période de transition jour/nuit","Cycle de sommeil profond de l'humain","Cycle de 24 heures, jour et nuit"],
     correctIndex: 5,
     imageUrl: "/assets/facts/49.png",
+    difficulty: 'normal',
   },
   {
     id: 50,
@@ -674,6 +723,7 @@ export const FACTS = [
     options: ["Le carpaccio de dauphin","Le foie gras de perroquet","Le consommé d'éléphant","Le blanc de baleine grillé","Le steak de rhinocéros rôti","Le ragoût de tortue"],
     correctIndex: 5,
     imageUrl: "/assets/facts/50.png",
+    difficulty: 'normal',
   },
   {
     id: 51,
@@ -687,6 +737,7 @@ export const FACTS = [
     options: ["Ils pensent être des moutons","Ils pensent être des chevaux","Ils mangent de l'herbe","Ils beuglent comme des bœufs","Ils refusent de parler aux humains","Ils pensent être des vaches"],
     correctIndex: 5,
     imageUrl: "/assets/facts/51.png",
+    difficulty: 'normal',
   },
   {
     id: 52,
@@ -700,6 +751,7 @@ export const FACTS = [
     options: ["Il a été écrit avec les pieds des deux auteurs","Il a été écrit avec un pinceau japonais","Il a été écrit en une seule nuit sans s'arrêter","Il a été écrit à l'envers","Il a été dicté par un perroquet","Il a été écrit avec le pied gauche"],
     correctIndex: 5,
     imageUrl: "/assets/facts/52.png",
+    difficulty: 'normal',
   },
   {
     id: 53,
@@ -713,6 +765,7 @@ export const FACTS = [
     options: ["Il a commandé 50 pizzas pour ses amis","Il a fugué vers Disneyland Paris","Il a acheté tout le stock d'une boutique","Il a essayé de conduire un camion","Il a construit une cabane sur le toit","Il a pris la voiture pour acheter une Lamborghini"],
     correctIndex: 5,
     imageUrl: "/assets/facts/53.png",
+    difficulty: 'normal',
   },
   {
     id: 54,
@@ -726,6 +779,7 @@ export const FACTS = [
     options: ["Un festival de sauce tomate géant","Une course de tomates roulantes","Un championnat de lancer de tomates","Un concours de soupe froide","Un marché de tomates centenaires","Une gigantesque bataille de tomates"],
     correctIndex: 5,
     imageUrl: "/assets/facts/54.png",
+    difficulty: 'normal',
   },
   {
     id: 55,
@@ -739,6 +793,7 @@ export const FACTS = [
     options: ["La fraise","La pomme de terre","Le riz","Le maïs","L'avocat","La banane"],
     correctIndex: 5,
     imageUrl: "/assets/facts/55.png",
+    difficulty: 'normal',
   },
   {
     id: 56,
@@ -752,6 +807,7 @@ export const FACTS = [
     options: ["Elle avale ses pattes de devant","Elle retient ses proies sous l'eau","Elle aspire sa proie d'un coup","Elle paralyse sa proie avant d'avaler","Elle digère ses proies en marchant","Ses yeux"],
     correctIndex: 5,
     imageUrl: "/assets/facts/56.png",
+    difficulty: 'normal',
   },
   {
     id: 57,
@@ -765,6 +821,7 @@ export const FACTS = [
     options: ["Interdit de fumer à l'intérieur","Interdit de chanter en buvant","Interdit de se bagarrer avec un verre","Interdit d'amener son chien","Interdit de téléphoner au comptoir","Se saouler"],
     correctIndex: 5,
     imageUrl: "/assets/facts/57.png",
+    difficulty: 'normal',
   },
   {
     id: 58,
@@ -778,6 +835,7 @@ export const FACTS = [
     options: ["Un ver dans ses globes oculaires","Un parasite qui ronge le nez","Un champignon dans sa cornée","Une larve dans sa peau","Un insecte logé dans son oreille","Le Loa Loa"],
     correctIndex: 5,
     imageUrl: "/assets/facts/58.png",
+    difficulty: 'normal',
   },
   {
     id: 59,
@@ -791,6 +849,7 @@ export const FACTS = [
     options: ["Il a empilé cinq raisins","Il a fait tenir 10 billes sur une pièce","Il a équilibré 3 couteaux sur un doigt","Il a empilé 12 pièces en spirale","Il a fait tenir un œuf debout","Il a empilé quatre œufs l'un sur l'autre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/59.png",
+    difficulty: 'normal',
   },
   {
     id: 60,
@@ -804,6 +863,7 @@ export const FACTS = [
     options: ["En buvant des herbes médicinales","En faisant une thérapie par le sport","En prenant un médicament expérimental","En pratiquant l'hypnose profonde","En suivant un régime strict","En se tirant une balle dans la tête"],
     correctIndex: 5,
     imageUrl: "/assets/facts/60.png",
+    difficulty: 'normal',
   },
   {
     id: 61,
@@ -817,6 +877,7 @@ export const FACTS = [
     options: ["Une chute de 5 km en parachute défectueux","Une plongée à 800 m de profondeur","Une chute de 3 km depuis un avion","Une chute depuis un pont de 200 m","Une chute en rappel de 2 km","Une chute de 10 km sans parachute"],
     correctIndex: 5,
     imageUrl: "/assets/facts/61.png",
+    difficulty: 'normal',
   },
   {
     id: 62,
@@ -830,6 +891,7 @@ export const FACTS = [
     options: ["Il a gravi l'Everest les yeux bandés","Il a escaladé en hiver sans équipement","Il a battu le record de vitesse mondial","Il a grimpé en courant","Il a escaladé deux sommets en un jour","Il a escaladé le Kilimandjaro sans bras ni jambes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/62.png",
+    difficulty: 'normal',
   },
   {
     id: 63,
@@ -843,6 +905,7 @@ export const FACTS = [
     options: ["Des chiens renifleurs de bombes","Des robots sous-marins pilotés","Des chats espions miniaturisés","Des corbeaux dressés au combat","Des pigeons voyageurs armés","Des dauphins"],
     correctIndex: 5,
     imageUrl: "/assets/facts/63.png",
+    difficulty: 'normal',
   },
   {
     id: 64,
@@ -856,6 +919,7 @@ export const FACTS = [
     options: ["La peur des cercueils","La peur de la mort","La peur du noir total","La peur d'être seul dans la nuit","La peur des cimetières","La peur d'être enterré vivant"],
     correctIndex: 5,
     imageUrl: "/assets/facts/64.png",
+    difficulty: 'normal',
   },
   {
     id: 65,
@@ -869,6 +933,7 @@ export const FACTS = [
     options: ["Un troupeau de moutons","12 singes","3 chèvres naines","Un chien de race rare","8 lapins blancs","14 écureuils"],
     correctIndex: 5,
     imageUrl: "/assets/facts/65.png",
+    difficulty: 'normal',
   },
   {
     id: 66,
@@ -882,6 +947,7 @@ export const FACTS = [
     options: ["Pour le faire parler d'un meurtre","Pour lui voler ses plumes dorées","Pour le bénir avant la saison","Pour lui interdire de chanter la nuit","Pour le soigner de la grippe","Pour assister à son jugement et son exécution"],
     correctIndex: 5,
     imageUrl: "/assets/facts/66.png",
+    difficulty: 'normal',
   },
   {
     id: 67,
@@ -895,6 +961,7 @@ export const FACTS = [
     options: ["Un filet de sécurité tendu","Le toit d'une voiture","La cime d'un arbre","L'auvent d'un magasin","Un balcon avec des coussins","Le vent"],
     correctIndex: 5,
     imageUrl: "/assets/facts/67.png",
+    difficulty: 'normal',
   },
   {
     id: 68,
@@ -908,6 +975,7 @@ export const FACTS = [
     options: ["La peur des grandes tablées","La peur des repas trop épicés","La peur d'avaler de travers","La peur de manger en public","La peur des restaurants bondés","La peur des conversations au cours des repas"],
     correctIndex: 5,
     imageUrl: "/assets/facts/68.png",
+    difficulty: 'normal',
   },
   {
     id: 69,
@@ -921,6 +989,7 @@ export const FACTS = [
     options: ["Petit insecte nocturne au vol silencieux","Plante grimpante à fleurs rouges","Tourbillon d'eau sous-marine","Tache de lumière sur un mur","Vibration grave dans un instrument","Jeune homme élégant de manière excessive"],
     correctIndex: 5,
     imageUrl: "/assets/facts/69.png",
+    difficulty: 'normal',
   },
   {
     id: 70,
@@ -934,6 +1003,7 @@ export const FACTS = [
     options: ["Résidu inutile ou encombrant","Langue morte jamais traduite","Erreur grammaticale codifiée","Terme utilisé dans une seule région","Mot ou expression n'apparaissant qu'une fois"],
     correctIndex: 5,
     imageUrl: "/assets/facts/70.png",
+    difficulty: 'normal',
   },
   {
     id: 71,
@@ -947,6 +1017,7 @@ export const FACTS = [
     options: ["1874","1906","1887","1895","1882"],
     correctIndex: 5,
     imageUrl: "/assets/facts/71.png",
+    difficulty: 'normal',
   },
   {
     id: 72,
@@ -960,6 +1031,7 @@ export const FACTS = [
     options: ["Elle a vécu 20 ans sans jamais manger","Elle a prédit sa propre mort à l'heure","Elle a dormi 40 jours sans se réveiller","Elle voyait à travers les murs","Elle entendait les pensées des autres","Elle a décrit son opération du cœur et du cerveau"],
     correctIndex: 5,
     imageUrl: "/assets/facts/72.png",
+    difficulty: 'normal',
   },
   {
     id: 73,
@@ -973,6 +1045,7 @@ export const FACTS = [
     options: ["Il a nagé 200 km avec des chaînes","Il a traversé un lac gelé en apnée","Il a nagé à reculons pendant 5h","Il a fait 100 longueurs sans respirer","Il a nagé les yeux bandés sous l'eau","Les pieds et mains liés, enfermés dans un sac"],
     correctIndex: 5,
     imageUrl: "/assets/facts/73.png",
+    difficulty: 'normal',
   },
   {
     id: 74,
@@ -986,6 +1059,7 @@ export const FACTS = [
     options: ["Un immeuble entier a été soufflé","Des voitures ont volé à 500 m","Le nuage a atteint la stratosphère","Des milliers de personnes ont été blessées","Une ville entière a été évacuée","Un homme est mort frappé par un couvercle à 2,5 km"],
     correctIndex: 5,
     imageUrl: "/assets/facts/74.png",
+    difficulty: 'normal',
   },
   {
     id: 75,
@@ -999,6 +1073,7 @@ export const FACTS = [
     options: ["Il a atterri sur le toit d'un immeuble","Un passager a piloté en urgence","Il a flotté grâce au gilet de sauvetage","Il s'est accroché à une aile d'avion","La soute à bagages l'a protégé","Il a été éjecté du cockpit… et a survécu"],
     correctIndex: 5,
     imageUrl: "/assets/facts/75.png",
+    difficulty: 'normal',
   },
   {
     id: 76,
@@ -1012,6 +1087,7 @@ export const FACTS = [
     options: ["Les écrans pendant plus de 3h","L'air conditionné en continu","Le café à haute dose","La sédentarité complète","Le manque de sommeil chronique","La solitude est aussi nocive que fumer"],
     correctIndex: 5,
     imageUrl: "/assets/facts/76.png",
+    difficulty: 'normal',
   },
   {
     id: 77,
@@ -1025,6 +1101,7 @@ export const FACTS = [
     options: ["Un plan pour coloniser Mars","Un protocole anti-cyberattaque","Un guide de survie nucléaire","Un manuel contre les terroristes","Un plan contre une invasion d'OVNI","Un plan militaire pour contrer les zombies"],
     correctIndex: 5,
     imageUrl: "/assets/facts/77.png",
+    difficulty: 'normal',
   },
   {
     id: 78,
@@ -1038,6 +1115,7 @@ export const FACTS = [
     options: ["Pour que ça tienne sur une étagère standard","Pour coûter moins cher à fabriquer","Parce que les premières lasers lisaient 74 min","Pour éviter les problèmes de copyright","Parce que 74 minutes est l'optimum sonore","Pour contenir la Neuvième Symphonie de Beethoven"],
     correctIndex: 5,
     imageUrl: "/assets/facts/78.png",
+    difficulty: 'normal',
   },
   {
     id: 79,
@@ -1051,6 +1129,7 @@ export const FACTS = [
     options: ["Un adulte a 300 os, un enfant en a 100","Les os des enfants sont deux fois plus durs","Les enfants ont des os plus denses","Un enfant n'a pas de rotule","Les os des enfants ne peuvent pas se casser","Les enfants ont plus d'os que les adultes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/79.png",
+    difficulty: 'normal',
   },
   {
     id: 80,
@@ -1064,6 +1143,7 @@ export const FACTS = [
     options: ["La Grande Muraille de Chine","Le Sahara depuis l'espace","La forêt amazonienne de nuit","Les lumières des villes la nuit","Les routes d'Europe depuis l'espace","La Grande Barrière de Corail en Australie"],
     correctIndex: 5,
     imageUrl: "/assets/facts/80.png",
+    difficulty: 'normal',
   },
   {
     id: 81,
@@ -1077,6 +1157,7 @@ export const FACTS = [
     options: ["Ils mangent tous ensemble en silence","Ils s'inclinent 30 fois par jour","Ils portent tous le même uniforme","Ils chantent l'hymne chaque matin","Ils méditent 1h avant les cours","Ils nettoient eux-mêmes leurs classes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/81.png",
+    difficulty: 'normal',
   },
   {
     id: 82,
@@ -1090,6 +1171,7 @@ export const FACTS = [
     options: ["Grotte naturelle dans une montagne","Corde utilisée par les marins","Capsule temporelle enterrée","Nœud décoratif dans les tapisseries","Petit sac de charme porté sur soi","Une bulle de BD"],
     correctIndex: 5,
     imageUrl: "/assets/facts/82.png",
+    difficulty: 'normal',
   },
   {
     id: 83,
@@ -1103,6 +1185,7 @@ export const FACTS = [
     options: ["Discours court et efficace","Jeu de mots involontaire","Traduction littérale absurde","Anecdote hors de propos","Explication inutilement longue","Discours confus, incompréhensible, du charabia."],
     correctIndex: 5,
     imageUrl: "/assets/facts/83.png",
+    difficulty: 'normal',
   },
   {
     id: 84,
@@ -1116,6 +1199,7 @@ export const FACTS = [
     options: ["Elle avait un réseau d'écoute illégal","Elle avait espionné des ambassades","Elle avait volé des documents secrets","Elle avait infiltré une école","Elle avait planté un micro dans un bus","Elle a oublié un explosif dans un bus scolaire"],
     correctIndex: 5,
     imageUrl: "/assets/facts/84.png",
+    difficulty: 'normal',
   },
   {
     id: 85,
@@ -1129,6 +1213,7 @@ export const FACTS = [
     options: ["Il dormait les yeux grand ouverts","Il avait besoin de 20h de sommeil","Il rêvait toujours debout","Il s'endormait en marchant","Il avait deux cycles de sommeil par nuit","Il ne dormait jamais"],
     correctIndex: 5,
     imageUrl: "/assets/facts/85.png",
+    difficulty: 'normal',
   },
   {
     id: 86,
@@ -1142,6 +1227,7 @@ export const FACTS = [
     options: ["Elles ont 10 bras au lieu de 5","Elles peuvent nager à reculons","Elles changent de sexe chaque saison","Elles peuvent se détacher une branche","Elles voient uniquement les couleurs chaudes","Elles n'ont pas de cerveau"],
     correctIndex: 5,
     imageUrl: "/assets/facts/86.png",
+    difficulty: 'normal',
   },
   {
     id: 87,
@@ -1155,6 +1241,7 @@ export const FACTS = [
     options: ["Elles livrent des repas aux personnes âgées","Elles font des vaccinations à domicile","Elles distribuent des médicaments gratuitement","Elles proposent du yoga en ambulance","Elles ont des médecins robots embarqués","Elles interviennent pour les arbres malades"],
     correctIndex: 5,
     imageUrl: "/assets/facts/87.png",
+    difficulty: 'normal',
   },
   {
     id: 88,
@@ -1168,6 +1255,7 @@ export const FACTS = [
     options: ["Il permet aux plantes de repousser plus vite","Il transforme le sol en compost naturel","Il filtre l'eau de pluie sous terre","Il stocke le carbone dans les racines","Il crée de l'oxygène pour les insectes","Il permet aux arbres de communiquer entre eux"],
     correctIndex: 5,
     imageUrl: "/assets/facts/88.png",
+    difficulty: 'normal',
   },
   {
     id: 89,
@@ -1181,6 +1269,7 @@ export const FACTS = [
     options: ["Un court-circuit dans le four","Une fuite de gaz non détectée","Un bouquet de fleurs qui a pris feu","Un cercueil trop humide","Un câble électrique surchauffé","La graisse d'un corps obèse de 225 kg"],
     correctIndex: 5,
     imageUrl: "/assets/facts/89.png",
+    difficulty: 'normal',
   },
   {
     id: 90,
@@ -1194,6 +1283,7 @@ export const FACTS = [
     options: ["Avoir le même prénom que toi","Être né le même mois","Avoir les mêmes empreintes digitales","Partager le même groupe sanguin","Avoir les mêmes lignes de la main","La date d'anniversaire"],
     correctIndex: 5,
     imageUrl: "/assets/facts/90.png",
+    difficulty: 'normal',
   },
   {
     id: 91,
@@ -1207,6 +1297,7 @@ export const FACTS = [
     options: ["Une prise de judo interdite","Un coup de pied volant en karaté","Une figure de lutte bretonne","Une technique de boxe thai","Une clé d'épaule en jiu-jitsu","Un nœud marin"],
     correctIndex: 5,
     imageUrl: "/assets/facts/91.png",
+    difficulty: 'normal',
   },
   {
     id: 92,
@@ -1220,6 +1311,7 @@ export const FACTS = [
     options: ["Il a mangé 200 kg de piment","Il a avalé 100 m de corde","Il a ingéré 50 kg de terre","Il a bu 300 litres d'eau","Il a mangé 80 kilos de glace","Il a mangé un avion"],
     correctIndex: 5,
     imageUrl: "/assets/facts/92.png",
+    difficulty: 'normal',
   },
   {
     id: 93,
@@ -1233,6 +1325,7 @@ export const FACTS = [
     options: ["Il sculpte avec des dents humaines","Il sculpte dans des os de baleine","Il modèle avec des fientes d'oiseaux","Il grave sur des pierres précieuses","Il façonne avec des plumes d'autruche","Il sculpte principalement sur des crânes d'animaux"],
     correctIndex: 5,
     imageUrl: "/assets/facts/93.png",
+    difficulty: 'normal',
   },
   {
     id: 94,
@@ -1246,6 +1339,7 @@ export const FACTS = [
     options: ["Il change de sexe chaque saison","Il peut voler sur de courtes distances","Il se camoufle en caillou","Il marche sur l'eau sans couler","Il peut respirer par la peau","Il tire du sang de ses yeux pour se défendre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/94.png",
+    difficulty: 'normal',
   },
   {
     id: 95,
@@ -1259,6 +1353,7 @@ export const FACTS = [
     options: ["Ils sont trop petits","Ils contiennent trop de sel","Ils changent de couleur à la cuisson","Ils sentent trop fort","Ils ne peuvent pas être vendus entiers","Ils ne rebondissent pas"],
     correctIndex: 5,
     imageUrl: "/assets/facts/95.png",
+    difficulty: 'normal',
   },
   {
     id: 96,
@@ -1272,6 +1367,7 @@ export const FACTS = [
     options: ["Dans une boîte de céréales géante","Dans un congélateur industriel","Sur un float de parade","Dans son propre musée","Dans une boîte de chocolats","Dans une boîte de Pringles"],
     correctIndex: 5,
     imageUrl: "/assets/facts/96.png",
+    difficulty: 'normal',
   },
   {
     id: 97,
@@ -1285,6 +1381,7 @@ export const FACTS = [
     options: ["De la résine de bouleau","De l'extrait d'orchidée sauvage","De la sève de vanillier artificielle","Du jus de noix de coco fermenté","De la poudre de racine de yam","De sécrétion de castor"],
     correctIndex: 5,
     imageUrl: "/assets/facts/97.png",
+    difficulty: 'normal',
   },
   {
     id: 98,
@@ -1298,6 +1395,7 @@ export const FACTS = [
     options: ["Il a acheté sa propre voiture","Il a signé un contrat de foot","Il a marqué un but sur un corner","Il a gagné une course de pigeons","Il a remporté un championnat de surf","Il a parcouru 5 m en trottinette"],
     correctIndex: 5,
     imageUrl: "/assets/facts/98.png",
+    difficulty: 'normal',
   },
   {
     id: 99,
@@ -1311,6 +1409,7 @@ export const FACTS = [
     options: ["Pour remplacer les câbles réseau","Pour indiquer la force du signal","Pour montrer la marque de l'appareil","Pour attirer de nouveaux clients","Pour différencier les réseaux","Pour faire joli"],
     correctIndex: 5,
     imageUrl: "/assets/facts/99.png",
+    difficulty: 'normal',
   },
   {
     id: 100,
@@ -1324,6 +1423,7 @@ export const FACTS = [
     options: ["Elle traverse 5 pays différents","Elle est entièrement souterraine","Elle est la plus large du monde","Elle a été construite en un an","Elle est fermée la nuit","Elle mesure 57 km de long"],
     correctIndex: 5,
     imageUrl: "/assets/facts/100.png",
+    difficulty: 'normal',
   },
   {
     id: 101,
@@ -1337,6 +1437,7 @@ export const FACTS = [
     options: ["La peur des rues à sens unique","La peur de croiser des voitures","La peur de traverser en voiture","La peur des zebras piétons","La peur des grandes routes","La peur de traverser la rue"],
     correctIndex: 5,
     imageUrl: "/assets/facts/101.png",
+    difficulty: 'normal',
   },
   {
     id: 102,
@@ -1350,6 +1451,7 @@ export const FACTS = [
     options: ["Un gratte-ciel tournant sur lui-même","Un immeuble flottant en mer","Une ville entière sur un glacier","Une tour creuse remplie d'eau","Un pont habité de 100 km","Un immeuble de 65 étages sous terre à Mexico"],
     correctIndex: 5,
     imageUrl: "/assets/facts/102.png",
+    difficulty: 'normal',
   },
   {
     id: 103,
@@ -1363,6 +1465,7 @@ export const FACTS = [
     options: ["Une vieille chaussure dépareillée","Un ticket de métro usagé","Une serviette en papier griffonnée","Une boîte d'allumettes vide","Une enveloppe déchirée","Un sandwich grillé au fromage"],
     correctIndex: 5,
     imageUrl: "/assets/facts/103.png",
+    difficulty: 'normal',
   },
   {
     id: 104,
@@ -1376,6 +1479,7 @@ export const FACTS = [
     options: ["Elle peut changer de sexe","Elle peut se régénérer entièrement","Elle peut voler sur de courtes distances","Elle peut se camoufler en rocher","Elle peut survivre sans eau 1 an","Elle a trois cœurs"],
     correctIndex: 5,
     imageUrl: "/assets/facts/104.png",
+    difficulty: 'normal',
   },
   {
     id: 105,
@@ -1389,6 +1493,7 @@ export const FACTS = [
     options: ["Un téléphone portable","Une chaussure entière","Un sachet de billes","Une bouteille de plastique","Un stylo bille","Un ténia de 25 mètres"],
     correctIndex: 5,
     imageUrl: "/assets/facts/105.png",
+    difficulty: 'normal',
   },
   {
     id: 106,
@@ -1402,6 +1507,7 @@ export const FACTS = [
     options: ["Au sommet de l'Himalaya","Dans la forêt amazonienne","En Antarctique sous la glace","Au cœur du Sahara","Dans les alpes suisses","Sous la mer"],
     correctIndex: 5,
     imageUrl: "/assets/facts/106.png",
+    difficulty: 'normal',
   },
   {
     id: 107,
@@ -1415,6 +1521,7 @@ export const FACTS = [
     options: ["Il a peint depuis le sommet d'un mât","Il a flotté sur un radeau pendant 3 jours","Il a contemplé un naufrage depuis le rivage","Il a été frappé par la foudre en peignant","Il a peint depuis un sous-marin","Il s'est attaché à un mât pendant une tempête"],
     correctIndex: 5,
     imageUrl: "/assets/facts/107.png",
+    difficulty: 'normal',
   },
   {
     id: 108,
@@ -1428,6 +1535,7 @@ export const FACTS = [
     options: ["Musée des instruments de torture","Musée du poil humain","Musée des rêves et cauchemars","Musée de la flatulence","Musée des pieds","Musée des toilettes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/108.png",
+    difficulty: 'normal',
   },
   {
     id: 109,
@@ -1441,6 +1549,7 @@ export const FACTS = [
     options: ["Il change de coquille chaque semaine","Il produit un venin mortel","Il est capable de voler sur 10 mètres","Il peut vivre 10 ans sans manger","Il produit deux types de bave différents","Il est hermaphrodite"],
     correctIndex: 5,
     imageUrl: "/assets/facts/109.png",
+    difficulty: 'normal',
   },
   {
     id: 110,
@@ -1454,6 +1563,7 @@ export const FACTS = [
     options: ["Le record de penaltys ratés","Le record de matchs joués en carrière","Le plus de buts contre son camp","Le plus jeune buteur en finale","Le plus vieux buteur en carrière","Le record de buts marqués par un gardien"],
     correctIndex: 5,
     imageUrl: "/assets/facts/110.png",
+    difficulty: 'normal',
   },
   {
     id: 111,
@@ -1467,6 +1577,7 @@ export const FACTS = [
     options: ["Il avait oublié ses chaussures","Son cheval l'avait désarçonné","Il avait triché pendant la course","Il était monté sur le mauvais cheval","Il était arrivé 10 fois dernier avant","Il est mort pendant la course"],
     correctIndex: 5,
     imageUrl: "/assets/facts/111.png",
+    difficulty: 'normal',
   },
   {
     id: 112,
@@ -1480,6 +1591,7 @@ export const FACTS = [
     options: ["La peur des belles-filles","La peur des beaux-parents","La peur du mariage","La peur de sa propre mère","La peur des oncles","La peur de la belle-mère"],
     correctIndex: 5,
     imageUrl: "/assets/facts/112.png",
+    difficulty: 'normal',
   },
   {
     id: 113,
@@ -1493,6 +1605,7 @@ export const FACTS = [
     options: ["Elle peut être blanche et jaune","Elle peut peser 150 kg","Elle peut servir de casque","Elle peut être triangulaire","Elle contient une substance toxique","Elle peut être carrée"],
     correctIndex: 5,
     imageUrl: "/assets/facts/113.png",
+    difficulty: 'normal',
   },
   {
     id: 114,
@@ -1506,6 +1619,7 @@ export const FACTS = [
     options: ["Il a dormi 30 jours dans un musée","Il a fait un tatouage devant le public","Il a passé 3 mois sous l'eau","Il a mangé toutes ses œuvres d'art","Il a peint en lévitant sur scène","Il a passé 13 jours dans un ours"],
     correctIndex: 5,
     imageUrl: "/assets/facts/114.png",
+    difficulty: 'normal',
   },
   {
     id: 115,
@@ -1519,6 +1633,7 @@ export const FACTS = [
     options: ["Elle n'a pas de maire","Elle est entièrement sous l'eau","Elle est construite sur un arbre","Elle flotte sur un lac","Elle est interdite aux touristes","La ville a une seule résidente"],
     correctIndex: 5,
     imageUrl: "/assets/facts/115.png",
+    difficulty: 'normal',
   },
   {
     id: 116,
@@ -1532,6 +1647,7 @@ export const FACTS = [
     options: ["La peur des mains gauches","La peur des couleurs chaudes","La peur du côté droit de son corps","La peur des objets qui tournent","La peur de tourner à droite","La peur des objets à droite"],
     correctIndex: 5,
     imageUrl: "/assets/facts/116.png",
+    difficulty: 'normal',
   },
   {
     id: 117,
@@ -1545,6 +1661,7 @@ export const FACTS = [
     options: ["Kim Jong-un","Mouammar Kadhafi","Adolf Hitler","Pol Pot","Idi Amin Dada","Saddam Hussein"],
     correctIndex: 5,
     imageUrl: "/assets/facts/117.png",
+    difficulty: 'normal',
   },
   {
     id: 118,
@@ -1558,6 +1675,7 @@ export const FACTS = [
     options: ["Il perd ses poils","Il arrête de courir","Il mange ses petits","Il chante en dormant","Il devient agressif envers ses alliés","Il mange ses bébés"],
     correctIndex: 5,
     imageUrl: "/assets/facts/118.png",
+    difficulty: 'normal',
   },
   {
     id: 119,
@@ -1571,6 +1689,7 @@ export const FACTS = [
     options: ["Un congé pour rupture amoureuse","Un congé pour la fête d'Halloween","Un congé pour allergie saisonnière","Un congé pour anniversaire de son animal","Un congé pour mauvais résultats sportifs","Un congé pour gueule de bois"],
     correctIndex: 5,
     imageUrl: "/assets/facts/119.png",
+    difficulty: 'normal',
   },
   {
     id: 120,
@@ -1584,6 +1703,7 @@ export const FACTS = [
     options: ["Au fond des océans sur le plancher marin","Dans les météorites tombées sur Terre","Dans le noyau de la Terre en fusion","Dans les cristaux de quartz des montagnes","Dans les plantes à croissance rapide","Dans le corps humain"],
     correctIndex: 5,
     imageUrl: "/assets/facts/120.png",
+    difficulty: 'normal',
   },
   {
     id: 121,
@@ -1597,6 +1717,7 @@ export const FACTS = [
     options: ["Des billets de train","Des affiches électorales","Des symboles religieux","Des épingles à linge","Des timbres-poste","Des billets de banque"],
     correctIndex: 5,
     imageUrl: "/assets/facts/121.png",
+    difficulty: 'normal',
   },
   {
     id: 122,
@@ -1610,6 +1731,7 @@ export const FACTS = [
     options: ["À cause des trous noirs voisins","À cause des marées lunaires","À cause des éruptions solaires","À cause des tremblements de terre","À cause des variations de pression","À cause de la rotation de la Terre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/122.png",
+    difficulty: 'normal',
   },
   {
     id: 123,
@@ -1623,6 +1745,7 @@ export const FACTS = [
     options: ["Vache !","Merde !","Arkansas !","Zut alors !","Sacré bleu !","Bingo !"],
     correctIndex: 5,
     imageUrl: "/assets/facts/123.png",
+    difficulty: 'normal',
   },
   {
     id: 124,
@@ -1636,6 +1759,7 @@ export const FACTS = [
     options: ["Un cocktail avec un crocodile séché","Un verre avec un scorpion vivant","Une boisson avec un insecte géant","Un shot avec un ver de tequila entier","Un mojito avec une araignée","Un cocktail contenant un orteil humain momifié"],
     correctIndex: 5,
     imageUrl: "/assets/facts/124.png",
+    difficulty: 'normal',
   },
   {
     id: 125,
@@ -1649,6 +1773,7 @@ export const FACTS = [
     options: ["Elle flotte sur l'eau","Elle roule à l'énergie solaire","Elle est en or massif","Elle est blindée comme un char","Elle roule à l'hydrogène pur","Elle roule au vin et au fromage"],
     correctIndex: 5,
     imageUrl: "/assets/facts/125.png",
+    difficulty: 'normal',
   },
   {
     id: 126,
@@ -1662,6 +1787,7 @@ export const FACTS = [
     options: ["Elle a grandi à une vitesse record","Elle est née avec deux cœurs","Elle a eu la mémoire parfaite dès la naissance","Elle a survécu à une allergie mortelle","Elle a refusé de vieillir pendant 5 ans","Elle est née deux fois grâce à une opération"],
     correctIndex: 5,
     imageUrl: "/assets/facts/126.png",
+    difficulty: 'normal',
   },
   {
     id: 127,
@@ -1675,6 +1801,7 @@ export const FACTS = [
     options: ["Sa voiture de sport","Sa montre en or","Son appartement à Las Vegas","Sa carte bancaire","Son chien de compagnie","Sa femme"],
     correctIndex: 5,
     imageUrl: "/assets/facts/127.png",
+    difficulty: 'normal',
   },
   {
     id: 128,
@@ -1688,6 +1815,7 @@ export const FACTS = [
     options: ["Une ceinture oubliée dans le cockpit","Un oiseau aspiré dans le moteur","Un dé à jouer dans le tableau de bord","Une fumée de cigarette dans les instruments","Une fissure dans le hublot","Le pilote a parié pouvoir atterrir les yeux bandés"],
     correctIndex: 5,
     imageUrl: "/assets/facts/128.png",
+    difficulty: 'normal',
   },
   {
     id: 129,
@@ -1701,6 +1829,7 @@ export const FACTS = [
     options: ["Crier sans raison apparente","Rire de façon incontrôlable","Bégayer sous l'effet du stress","Éternuer plusieurs fois d'affilée","Soupirer de soulagement","Avoir des gargouillis de ventre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/129.png",
+    difficulty: 'normal',
   },
   {
     id: 130,
@@ -1714,6 +1843,7 @@ export const FACTS = [
     options: ["Pour voir un défilé de cirque","Pour fuir une explosion de gaz","Pour assister à un match de boxe","Pour attraper un criminel fugitif","Pour voir une éclipse de soleil","Pour goûter une inondation de chocolat"],
     correctIndex: 5,
     imageUrl: "/assets/facts/130.png",
+    difficulty: 'normal',
   },
   {
     id: 131,
@@ -1727,6 +1857,7 @@ export const FACTS = [
     options: ["Pour retrouver un tableau volé","Pour découvrir une épave de navire","Pour identifier une espèce inconnue","Pour retrouver un objet de l'espace","Pour filmer un phénomène météo rare","Pour prouver l'existence de Nessie"],
     correctIndex: 5,
     imageUrl: "/assets/facts/131.png",
+    difficulty: 'normal',
   },
   {
     id: 132,
@@ -1740,6 +1871,7 @@ export const FACTS = [
     options: ["Des grenouilles volantes","Des serpents de mer","Des méduses transparentes","Des crabes géants","Des étoiles de mer","Des poissons d'eau douce"],
     correctIndex: 5,
     imageUrl: "/assets/facts/132.png",
+    difficulty: 'normal',
   },
   {
     id: 133,
@@ -1753,6 +1885,7 @@ export const FACTS = [
     options: ["Interdit de les mettre dans un hôtel","Interdit de les photographier en ville","Interdit de les conduire en voiture","Interdit de les nourrir dans la rue","Interdit de les garder seuls chez soi","Il est interdit de dormir dans une baignoire"],
     correctIndex: 5,
     imageUrl: "/assets/facts/133.png",
+    difficulty: 'normal',
   },
   {
     id: 134,
@@ -1766,6 +1899,7 @@ export const FACTS = [
     options: ["Il fait des pompes pour impressionner","Il construit un nid très élaboré","Il offre de la nourriture à la femelle","Il change de couleur pour séduire","Il imite le chant d'un autre animal","Elle chante pour draguer"],
     correctIndex: 5,
     imageUrl: "/assets/facts/134.png",
+    difficulty: 'normal',
   },
   {
     id: 135,
@@ -1779,6 +1913,7 @@ export const FACTS = [
     options: ["Elle a brûlé dans un incendie mystérieux","Elle a été fondée puis abandonnée","Elle a été décimée par une épidémie","Elle a été détruite par un cyclone","Elle a été envahie et pillée","Elle a disparu mystérieusement au 16e siècle"],
     correctIndex: 5,
     imageUrl: "/assets/facts/135.png",
+    difficulty: 'normal',
   },
   {
     id: 136,
@@ -1792,6 +1927,7 @@ export const FACTS = [
     options: ["Cuisine créative sans recette fixe","Danse traditionnelle de Bretagne","Tissu coloré fait main","Instrument de musique à vent","Animal hybride imaginaire","Dispute ou querelle"],
     correctIndex: 5,
     imageUrl: "/assets/facts/136.png",
+    difficulty: 'normal',
   },
   {
     id: 137,
@@ -1805,6 +1941,7 @@ export const FACTS = [
     options: ["Comme armes de guerre catapultées","Comme espions dressés à l'écoute","Comme filets pour attraper des insectes","Comme réveils pour les soldats","Comme capteurs météo vivants","Des instruments de musique"],
     correctIndex: 5,
     imageUrl: "/assets/facts/137.png",
+    difficulty: 'normal',
   },
   {
     id: 138,
@@ -1818,6 +1955,7 @@ export const FACTS = [
     options: ["Écouter de la musique au volant","Griller un feu rouge la nuit","Doubler sur l'autoroute","Rouler sans ceinture en ville","Stationner sur le trottoir","Conduire nu"],
     correctIndex: 5,
     imageUrl: "/assets/facts/138.png",
+    difficulty: 'normal',
   },
   {
     id: 139,
@@ -1831,6 +1969,7 @@ export const FACTS = [
     options: ["Copier une œuvre sans le savoir","Apprendre par cœur sans comprendre","Répéter des erreurs du passé","Se souvenir d'un rêve trop vivace","Trouver une solution logique","Découvrir par hasard ce qu'on ne cherchait pas."],
     correctIndex: 5,
     imageUrl: "/assets/facts/139.png",
+    difficulty: 'normal',
   },
   {
     id: 140,
@@ -1844,6 +1983,7 @@ export const FACTS = [
     options: ["L'œuvre a été volée par un visiteur","L'œuvre a été couverte de peinture","Un gardien a marché dessus","L'œuvre a été brûlée par accident","L'artiste l'a réclamée en urgence","Il est resté accroché à l'envers pendant 47 jours"],
     correctIndex: 5,
     imageUrl: "/assets/facts/140.png",
+    difficulty: 'normal',
   },
   {
     id: 141,
@@ -1857,6 +1997,7 @@ export const FACTS = [
     options: ["Elles avaient caché les trésors du château","Elles avaient construit un tunnel secret","Elles avaient négocié une rançon","Elles avaient mis le feu aux douves","Elles avaient habillé les soldats en femmes","Les femmes les ont portées sur leur dos"],
     correctIndex: 5,
     imageUrl: "/assets/facts/141.png",
+    difficulty: 'normal',
   },
   {
     id: 142,
@@ -1870,6 +2011,7 @@ export const FACTS = [
     options: ["Il a entendu une voix inconnue","Il a reçu un appel de son double","Il a entendu un message de l'au-delà","Il a reçu un appel de lui-même","Il a entendu une conversation de la NSA","Il a été frappé par la foudre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/142.png",
+    difficulty: 'normal',
   },
   {
     id: 143,
@@ -1883,6 +2025,7 @@ export const FACTS = [
     options: ["Il se mit à chanter parfaitement","Il se souvint de tout son passé","Il pouvait lire les pensées","Il parla toutes les langues","Il vit l'avenir en rêve","Il parlait couramment le mandarin"],
     correctIndex: 5,
     imageUrl: "/assets/facts/143.png",
+    difficulty: 'normal',
   },
   {
     id: 144,
@@ -1896,6 +2039,7 @@ export const FACTS = [
     options: ["Ils ont tous survécu à un accident d'avion","Ils sont tous nés le même jour","Ils ont tous le même groupe sanguin","Ils ont tous 6 doigts à chaque main","Ils n'ont jamais été malades","Ils sont milliardaires"],
     correctIndex: 5,
     imageUrl: "/assets/facts/144.png",
+    difficulty: 'normal',
   },
   {
     id: 145,
@@ -1909,6 +2053,7 @@ export const FACTS = [
     options: ["Un incendie dans la salle d'opération","Un tremblement de terre local","Une panne de courant générale","Une fuite de gaz dans les couloirs","Un patient en crise dans le couloir","Pour opérer un homme avec un obus dans le rectum"],
     correctIndex: 5,
     imageUrl: "/assets/facts/145.png",
+    difficulty: 'normal',
   },
   {
     id: 146,
@@ -1922,6 +2067,7 @@ export const FACTS = [
     options: ["Lever un sourcil seul","Bouger ses oreilles","Toucher son nez avec sa langue","Rouler la langue en tube","Croiser les yeux volontairement","Se lécher le coude"],
     correctIndex: 5,
     imageUrl: "/assets/facts/146.png",
+    difficulty: 'normal',
   },
   {
     id: 147,
@@ -1935,6 +2081,7 @@ export const FACTS = [
     options: ["Elle change de peau en hiver","Elle nage à reculons sous la glace","Elle hiberne 9 mois par an","Elle mange sa propre peau pour se nourrir","Elle peut respirer sous la neige","Elle peut \"ressusciter\" au printemps"],
     correctIndex: 5,
     imageUrl: "/assets/facts/147.png",
+    difficulty: 'normal',
   },
   {
     id: 148,
@@ -1948,6 +2095,7 @@ export const FACTS = [
     options: ["Il est tatoué à 100%","Il a les ongles les plus longs","Il a la plus grande bouche","Il a les plus grandes mains","Il est le plus lourd du monde","Il est l'homme le plus poilu du monde"],
     correctIndex: 5,
     imageUrl: "/assets/facts/148.png",
+    difficulty: 'normal',
   },
   {
     id: 149,
@@ -1961,6 +2109,7 @@ export const FACTS = [
     options: ["Marmonner sans raison","Courir très vite en zigzag","Sauter à plusieurs reprises","Taper des pieds en rythme","Renifler fort sous l'effort","S'étirer en bâillant"],
     correctIndex: 5,
     imageUrl: "/assets/facts/149.png",
+    difficulty: 'normal',
   },
   {
     id: 150,
@@ -1974,6 +2123,7 @@ export const FACTS = [
     options: ["Elle la protège des prédateurs","Elle lui sert à nager plus vite","Elle lui permet de se camoufler","Elle lui sert à communiquer","Elle stocke de la nourriture","Elle permet un seul accouplement pour toute sa vie"],
     correctIndex: 5,
     imageUrl: "/assets/facts/150.png",
+    difficulty: 'normal',
   },
   {
     id: 151,
@@ -1987,6 +2137,7 @@ export const FACTS = [
     options: ["Le 6e continent découvert en 1900","Un fond marin inexploré","Une chaîne de montagnes sous-marine","Une forêt tropicale submergée","Un glacier de 2 millions de km2","Un supercontinent"],
     correctIndex: 5,
     imageUrl: "/assets/facts/151.png",
+    difficulty: 'normal',
   },
   {
     id: 152,
@@ -2000,6 +2151,7 @@ export const FACTS = [
     options: ["Qui parle sans s'arrêter","Qui déteste les couleurs vives","Qui mange en faisant du bruit","Qui refuse de dormir","Qui critique tout le monde","Quelqu'un qui ne rit jamais"],
     correctIndex: 5,
     imageUrl: "/assets/facts/152.png",
+    difficulty: 'normal',
   },
   {
     id: 153,
@@ -2013,6 +2165,7 @@ export const FACTS = [
     options: ["Elle n'a pas de pont pour y accéder","Elle change de pays chaque année","Elle est interdite aux femmes","Elle est sous une bulle de verre","Elle n'a pas de nom officiel","C'est la plus petit île habitée du monde"],
     correctIndex: 5,
     imageUrl: "/assets/facts/153.png",
+    difficulty: 'normal',
   },
   {
     id: 154,
@@ -2026,6 +2179,7 @@ export const FACTS = [
     options: ["Il ne pleut que la nuit","Il neige en été","Il n'y a aucun vent","Il y fait plus froid qu'en Antarctique","La terre y est entièrement rouge","Il fleurit après la pluie"],
     correctIndex: 5,
     imageUrl: "/assets/facts/154.png",
+    difficulty: 'normal',
   },
   {
     id: 155,
@@ -2039,6 +2193,7 @@ export const FACTS = [
     options: ["Obsession de tout organiser","Tendance à parler sans réfléchir","Habitude de tout répéter deux fois","Peur des nouveaux environnements","Envie de tout contrôler","Incapacité à se décider ou à passer à l'action."],
     correctIndex: 5,
     imageUrl: "/assets/facts/155.png",
+    difficulty: 'normal',
   },
   {
     id: 156,
@@ -2052,6 +2207,7 @@ export const FACTS = [
     options: ["Il a soudoyé le juge","Il a fait pleurer le jury","Il a caché des preuves","Il a fait fuir le témoin principal","Il a invoquer un vice de procédure","En se suicidant"],
     correctIndex: 5,
     imageUrl: "/assets/facts/156.png",
+    difficulty: 'normal',
   },
   {
     id: 157,
@@ -2065,6 +2221,7 @@ export const FACTS = [
     options: ["Il a survécu à deux balles dans la tête","Il a survécu à une bombe en dessous de lui","Il a survécu à 3 jours sous les décombres","Il a survécu à une noyade de 10 minutes","Il a survécu à une chute de 8 étages","Il a survécu à une barre traversant son crâne"],
     correctIndex: 5,
     imageUrl: "/assets/facts/157.png",
+    difficulty: 'normal',
   },
   {
     id: 158,
@@ -2078,6 +2235,7 @@ export const FACTS = [
     options: ["Elle s'était préparée pendant 10 ans","Elle portait des chaussures de sprint","Elle avait pris un taxi une partie du trajet","Elle avait le dossard d'une autre coureuse","Elle était arrivée la veille sur le parcours","Elle est arrivée trop tôt en trichant"],
     correctIndex: 5,
     imageUrl: "/assets/facts/158.png",
+    difficulty: 'normal',
   },
   {
     id: 159,
@@ -2091,6 +2249,7 @@ export const FACTS = [
     options: ["Personne ne savait nager à la cour","Le fleuve était considéré sacré","Les gardes avaient peur d'être punis","La reine voulait mourir en paix","Les serviteurs étaient tous attachés","Il était interdit de toucher la royauté"],
     correctIndex: 5,
     imageUrl: "/assets/facts/159.png",
+    difficulty: 'normal',
   },
   {
     id: 160,
@@ -2104,6 +2263,7 @@ export const FACTS = [
     options: ["Pour éviter de se lever pour changer de chaîne","Pour allumer la télé depuis le lit","Pour contrôler le volume sans se lever","Pour zapper depuis la salle de bain","Pour éteindre la télé sans se déranger","Par flemme"],
     correctIndex: 5,
     imageUrl: "/assets/facts/160.png",
+    difficulty: 'normal',
   },
   {
     id: 161,
@@ -2117,6 +2277,7 @@ export const FACTS = [
     options: ["De calcium pur cristallisé","D'eau salée sous pression","De minéraux issus des comètes","De lumière solaire fossilisée","D'atomes d'or en suspension","De poussière d'étoiles"],
     correctIndex: 5,
     imageUrl: "/assets/facts/161.png",
+    difficulty: 'normal',
   },
   {
     id: 162,
@@ -2130,6 +2291,7 @@ export const FACTS = [
     options: ["Napoléon Bonaparte","Abraham Lincoln","Sherlock Holmes","Batman","Harry Potter","Dark Vador"],
     correctIndex: 5,
     imageUrl: "/assets/facts/162.png",
+    difficulty: 'normal',
   },
   {
     id: 163,
@@ -2143,6 +2305,7 @@ export const FACTS = [
     options: ["Ils ont mangé leurs chaussures en cuir","Ils ont mangé les racines des arbres","Ils ont bu l'eau des radiateurs","Ils ont mangé leur ceinture","Ils ont fait bouillir de l'herbe sèche","Ils ont mangé du papier peint"],
     correctIndex: 5,
     imageUrl: "/assets/facts/163.png",
+    difficulty: 'normal',
   },
   {
     id: 164,
@@ -2156,6 +2319,7 @@ export const FACTS = [
     options: ["La peur de manger du beurre de cacahuète","La peur des arachides en général","La peur des beurres épais","La peur de s'étouffer en mangeant","La peur des pâtes à tartiner","La peur que le beurre de cacahuète colle au palais"],
     correctIndex: 5,
     imageUrl: "/assets/facts/164.png",
+    difficulty: 'normal',
   },
   {
     id: 165,
@@ -2169,6 +2333,7 @@ export const FACTS = [
     options: ["Courir plus vite que les lions","Nager sous l'eau 5 minutes","Manger à l'envers","Dormir debout sur ses 4 pattes","Voir derrière elle sans tourner la tête","Parler ou tousser"],
     correctIndex: 5,
     imageUrl: "/assets/facts/165.png",
+    difficulty: 'normal',
   },
   {
     id: 166,
@@ -2182,6 +2347,7 @@ export const FACTS = [
     options: ["Il est tombé de son cheval en compétition","Il a plongé dans une piscine vide","Il a été frappé par la foudre","Il s'est noyé en traversant une rivière","Un rocher lui est tombé dessus","Il a glissé sur une peau de banane"],
     correctIndex: 5,
     imageUrl: "/assets/facts/166.png",
+    difficulty: 'normal',
   },
   {
     id: 167,
@@ -2195,6 +2361,7 @@ export const FACTS = [
     options: ["Un nuage de glace sur Mars","Une tempête de sable au Sahara","Un banc de nuages d'orage","Une aurore boréale en hiver","Un cyclone de catégorie 5","Un cumulus"],
     correctIndex: 5,
     imageUrl: "/assets/facts/167.png",
+    difficulty: 'normal',
   },
   {
     id: 168,
@@ -2208,6 +2375,7 @@ export const FACTS = [
     options: ["Titanic","Retour vers le futur","Jurassic Park","Le Roi Lion","Forrest Gump","Retour vers le futur"],
     correctIndex: 5,
     imageUrl: "/assets/facts/168.png",
+    difficulty: 'normal',
   },
   {
     id: 169,
@@ -2221,6 +2389,7 @@ export const FACTS = [
     options: ["Plongeur sous-marin","Pilote de chasse","Archéologue de terrain","Chirurgien cardiaque","Alpiniste professionnel","Astronaute"],
     correctIndex: 5,
     imageUrl: "/assets/facts/169.png",
+    difficulty: 'normal',
   },
   {
     id: 170,
@@ -2234,6 +2403,7 @@ export const FACTS = [
     options: ["Il avait une peau transparente","Il n'avait pas de pigments dans la peau","Il avait des écailles au lieu d'ongles","Il avait des membranes entre les doigts","Il avait une peau qui brillait dans le noir","Il a des écorces d'arbre sur la peau"],
     correctIndex: 5,
     imageUrl: "/assets/facts/170.png",
+    difficulty: 'normal',
   },
   {
     id: 171,
@@ -2247,6 +2417,7 @@ export const FACTS = [
     options: ["Le numéro 7","Le numéro 0","Le numéro 666","Le numéro 4","Le numéro 8","Il n'y a jamais de numéro 13."],
     correctIndex: 5,
     imageUrl: "/assets/facts/171.png",
+    difficulty: 'normal',
   },
   {
     id: 172,
@@ -2260,6 +2431,7 @@ export const FACTS = [
     options: ["Il peut vivre 10 ans sans manger","Il peut changer de sexe chaque saison","Il peut respirer dans l'air et sous l'eau","Il peut se camoufler parfaitement","Il peut survivre à -200°C","Il peut régénérer tout son corps"],
     correctIndex: 5,
     imageUrl: "/assets/facts/172.png",
+    difficulty: 'normal',
   },
   {
     id: 173,
@@ -2273,6 +2445,7 @@ export const FACTS = [
     options: ["Il sculpte avec des cheveux humains","Il grave sur des os d'animaux","Il peint avec de la boue volcanique","Il tisse avec des fils d'or","Il crée avec des cendres humaines","Son propre sang"],
     correctIndex: 5,
     imageUrl: "/assets/facts/173.png",
+    difficulty: 'normal',
   },
   {
     id: 174,
@@ -2286,6 +2459,7 @@ export const FACTS = [
     options: ["La rivière la plus courte du monde","Le soleil de minuit","Un glacier qui parle","Un lac sans fond connu","Une avalanche en plein été","Le maire était un chat"],
     correctIndex: 5,
     imageUrl: "/assets/facts/174.png",
+    difficulty: 'normal',
   },
   {
     id: 175,
@@ -2299,6 +2473,7 @@ export const FACTS = [
     options: ["Elles les voient avec leurs antennes","Elles les détectent par leur parfum","Elles les repèrent à leur couleur","Elles les entendent depuis 1 km","Elles les ressentent par vibration","Ils goûtent avec leurs pieds"],
     correctIndex: 5,
     imageUrl: "/assets/facts/175.png",
+    difficulty: 'normal',
   },
   {
     id: 176,
@@ -2312,6 +2487,7 @@ export const FACTS = [
     options: ["Des algues vertes séchées","Un cachalot échoué","De l'huile de poisson ramenée","Des coquillages broyés","Des poissons morts dans les filets","Il a survécu avec une bouteille de ketchup."],
     correctIndex: 5,
     imageUrl: "/assets/facts/176.png",
+    difficulty: 'normal',
   },
   {
     id: 177,
@@ -2325,6 +2501,7 @@ export const FACTS = [
     options: ["Interdit d'utiliser son téléphone","Interdit de marcher sur la pelouse","Interdit de klaxonner la nuit","Interdit de sortir après 22h","Interdit de jouer de la musique en plein air","Il est interdit de mourir les week-ends"],
     correctIndex: 5,
     imageUrl: "/assets/facts/177.png",
+    difficulty: 'normal',
   },
   {
     id: 178,
@@ -2338,6 +2515,7 @@ export const FACTS = [
     options: ["De tickets de cinéma","De capsules de bière","De cartes postales","De gommes à mâcher usagées","D'étiquettes de bagages","De panneaux \"Ne pas déranger\""],
     correctIndex: 5,
     imageUrl: "/assets/facts/178.png",
+    difficulty: 'normal',
   },
   {
     id: 179,
@@ -2351,6 +2529,7 @@ export const FACTS = [
     options: ["Des vers intestinaux géants","Des araignées microscopiques","Des champignons parasites","Des bactéries fluorescentes","Des algues filamenteuses","Les poux"],
     correctIndex: 5,
     imageUrl: "/assets/facts/179.png",
+    difficulty: 'normal',
   },
   {
     id: 180,
@@ -2364,6 +2543,7 @@ export const FACTS = [
     options: ["Pour s'amuser entre amis","Pour tester les moteurs de vapeur","Pour simuler les montagnes des Alpes","Pour faire voyager sans bouger","Pour transporter du charbon en ville","Eviter de faire des bêtises"],
     correctIndex: 5,
     imageUrl: "/assets/facts/180.png",
+    difficulty: 'normal',
   },
   {
     id: 181,
@@ -2377,6 +2557,7 @@ export const FACTS = [
     options: ["Il change de couleur selon l'humeur","Il gonfle quand on le mouille","Il rétrécit à la chaleur","Il change de goût au bout de 5 minutes","Il reste mâché pour toujours","Il ne colle pas dans les cheveux"],
     correctIndex: 5,
     imageUrl: "/assets/facts/181.png",
+    difficulty: 'normal',
   },
   {
     id: 182,
@@ -2390,6 +2571,7 @@ export const FACTS = [
     options: ["L'art de lire les pensées","Le langage des signes médiéval","La prédiction par les rêves","La mémoire des traumatismes","L'étude des maladies de l'âme","La personnalité via le crâne"],
     correctIndex: 5,
     imageUrl: "/assets/facts/182.png",
+    difficulty: 'normal',
   },
   {
     id: 183,
@@ -2403,6 +2585,7 @@ export const FACTS = [
     options: ["Un casque de chevalier médiéval","Un vase de l'Antiquité grecque","La perruque de Marie-Antoinette","Un fragment de météorite","Une momie égyptienne"],
     correctIndex: 5,
     imageUrl: "/assets/facts/183.png",
+    difficulty: 'normal',
   },
   {
     id: 184,
@@ -2416,6 +2599,7 @@ export const FACTS = [
     options: ["Elle avait prédit sa mort dans son journal","Elle a chanté en se réveillant","Elle a frappé le cercueil de l'intérieur","Elle a souri pendant la cérémonie","Elle a demandé à rentrer à la maison","Elle est morte d'une crise cardiaque"],
     correctIndex: 5,
     imageUrl: "/assets/facts/184.png",
+    difficulty: 'normal',
   },
   {
     id: 185,
@@ -2429,6 +2613,7 @@ export const FACTS = [
     options: ["Phrase sans queue ni tête","Discours ampoulé et pompeux","Texte écrit à l'envers","Longue liste de mots difficiles","Silence prolongé pendant un discours","Balbutiement d'un bébé"],
     correctIndex: 5,
     imageUrl: "/assets/facts/185.png",
+    difficulty: 'normal',
   },
   {
     id: 186,
@@ -2442,6 +2627,7 @@ export const FACTS = [
     options: ["Manger un burger","Conduire sans permis","Dormir sur la plage","Appeler un inconnu","Chanter dans la rue","Sauter en parachute"],
     correctIndex: 5,
     imageUrl: "/assets/facts/186.png",
+    difficulty: 'normal',
   },
   {
     id: 187,
@@ -2455,6 +2641,7 @@ export const FACTS = [
     options: ["Mot inventé par un enfant","Erreur de traduction célèbre","Phrase coupée au début","Exclamation populaire","Expression figée idiomatique","Un mot raccourci"],
     correctIndex: 5,
     imageUrl: "/assets/facts/187.png",
+    difficulty: 'normal',
   },
   {
     id: 188,
@@ -2468,6 +2655,7 @@ export const FACTS = [
     options: ["La peur des horloges","La peur des patrons","La peur des réunions longues","La peur des collègues bruyants","La peur des heures supplémentaires","La peur du travail"],
     correctIndex: 5,
     imageUrl: "/assets/facts/188.png",
+    difficulty: 'normal',
   },
   {
     id: 189,
@@ -2481,6 +2669,7 @@ export const FACTS = [
     options: ["Pour les chasser de leur territoire","Pour manger leurs parasites","Pour jouer avec eux","Pour les utiliser comme boucliers","Pour se camoufler parmi eux","Se droguer"],
     correctIndex: 5,
     imageUrl: "/assets/facts/189.png",
+    difficulty: 'normal',
   },
   {
     id: 190,
@@ -2494,6 +2683,7 @@ export const FACTS = [
     options: ["Ils ont tous le même prénom","Ils ont tous la même voiture","Ils vivent tous sur le même lac","Ils sont tous jumeaux","Ils ont tous le même employeur","Ils vivent dans des grottes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/190.png",
+    difficulty: 'normal',
   },
   {
     id: 191,
@@ -2507,6 +2697,7 @@ export const FACTS = [
     options: ["Un cercle de hula-hoop","Une bouteille d'un litre","Un tuyau de 30 cm","Un panier de basket","Un anneau de 50 cm","Une raquette de tennis"],
     correctIndex: 5,
     imageUrl: "/assets/facts/191.png",
+    difficulty: 'normal',
   },
   {
     id: 192,
@@ -2520,6 +2711,7 @@ export const FACTS = [
     options: ["Des traces de médicaments","Des résidus de plastique","Des particules de métal","Des traces de peinture","Des restes de sol industriel","Des fragments d'insectes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/192.png",
+    difficulty: 'normal',
   },
   {
     id: 193,
@@ -2533,6 +2725,7 @@ export const FACTS = [
     options: ["Il était devenu entièrement vert","Il avait perdu toute sa peau","Il avait les cheveux qui repoussaient blancs","Il voyait tout en rose","Il avait des dents qui brillaient","Il est devenu entièrement bleu"],
     correctIndex: 5,
     imageUrl: "/assets/facts/193.png",
+    difficulty: 'normal',
   },
   {
     id: 194,
@@ -2546,6 +2739,7 @@ export const FACTS = [
     options: ["Petite erreur grammaticale répandue","Style vestimentaire baroque","Instrument à vent improvisé","Animal imaginaire des Pyrénées","Jeu de cartes régional","Une personne extravagante"],
     correctIndex: 5,
     imageUrl: "/assets/facts/194.png",
+    difficulty: 'normal',
   },
   {
     id: 195,
@@ -2559,6 +2753,7 @@ export const FACTS = [
     options: ["Ils sont comestibles en cas de survie","Ils changent de couleur à l'humidité","Ils émettent un son sous UV","Ils peuvent se déchirer sans se décoller","Ils flottent sur l'eau","Ils sont en plastique"],
     correctIndex: 5,
     imageUrl: "/assets/facts/195.png",
+    difficulty: 'normal',
   },
   {
     id: 196,
@@ -2572,6 +2767,7 @@ export const FACTS = [
     options: ["Il avait deux visages distincts","Il avait des branchies dans le cou","Il n'avait pas d'oreilles","Il avait les pieds retournés","Il avait deux cœurs qui battaient","Il avait plusieurs membres supplémentaires"],
     correctIndex: 5,
     imageUrl: "/assets/facts/196.png",
+    difficulty: 'normal',
   },
   {
     id: 197,
@@ -2585,6 +2781,7 @@ export const FACTS = [
     options: ["Les ongles","Les dents","Les os du crâne","Les cartilages des oreilles","Les poils","Le cerveau"],
     correctIndex: 5,
     imageUrl: "/assets/facts/197.png",
+    difficulty: 'normal',
   },
   {
     id: 198,
@@ -2598,6 +2795,7 @@ export const FACTS = [
     options: ["Se souvenir de ses vies passées","Guérir ses maladies par la pensée","Voyager dans le temps en dormant","Lire les pensées des autres","Percevoir les événements futurs","L'âme quitte le corps physique"],
     correctIndex: 5,
     imageUrl: "/assets/facts/198.png",
+    difficulty: 'normal',
   },
   {
     id: 199,
@@ -2611,6 +2809,7 @@ export const FACTS = [
     options: ["Cuisine moléculaire spectaculaire","Art de décorer les gâteaux","Cuisine préparée en 3D","Aliments imprimés par laser","Nourriture comestible à base de pixels","Des paysages faits en nourriture"],
     correctIndex: 5,
     imageUrl: "/assets/facts/199.png",
+    difficulty: 'normal',
   },
   {
     id: 200,
@@ -2624,6 +2823,7 @@ export const FACTS = [
     options: ["Il avait deux cerveaux fonctionnels","Il pouvait lire à l'envers","Il avait un troisième œil","Il avait une mémoire photographique","Il n'avait pas de douleur","Il a perdu la moitié de son crâne"],
     correctIndex: 5,
     imageUrl: "/assets/facts/200.png",
+    difficulty: 'normal',
   },
   {
     id: 201,
@@ -2637,6 +2837,7 @@ export const FACTS = [
     options: ["Des vaccins contre les virus","Des pièces de moteur spatial","Des cristaux de météorite","Du carburant liquide","Des vêtements en nanofibre","Une pizza"],
     correctIndex: 5,
     imageUrl: "/assets/facts/201.png",
+    difficulty: 'normal',
   },
   {
     id: 202,
@@ -2650,6 +2851,7 @@ export const FACTS = [
     options: ["Elle improvisait des opéras en entier","Elle composait de la musique en dormant","Elle jouait plusieurs instruments à la fois","Elle percevait la musique comme des couleurs","Elle battait les pianistes professionnels","Elle peut jouer une chanson après une seule écoute"],
     correctIndex: 5,
     imageUrl: "/assets/facts/202.png",
+    difficulty: 'normal',
   },
   {
     id: 203,
@@ -2663,6 +2865,7 @@ export const FACTS = [
     options: ["\"Bonne nuit à tous les auditeurs\"","\"Nous interrompons cette émission\"","\"Ceci est un message d'urgence\"","\"Le gouvernement est tombé ce soir\"","\"Une catastrophe vient de se produire\"","No news today. (Pas d'informations aujourd'hui)"],
     correctIndex: 5,
     imageUrl: "/assets/facts/203.png",
+    difficulty: 'normal',
   },
   {
     id: 204,
@@ -2676,6 +2879,7 @@ export const FACTS = [
     options: ["Il est mort en mangeant trop vite","Il est tombé de son cheval royal","Il est mort d'un fou rire en public","Il a été frappé par sa propre épée","Il a été étranglé par son écharpe","Il est mort après avoir trébuché sur sa barbe"],
     correctIndex: 5,
     imageUrl: "/assets/facts/204.png",
+    difficulty: 'normal',
   },
   {
     id: 205,
@@ -2689,6 +2893,7 @@ export const FACTS = [
     options: ["Elle court plus vite que les autres enfants","Elle a une mémoire absolument parfaite","Elle parle 10 langues depuis l'enfance","Elle ne dort que 2 heures par nuit","Elle soulève 3 fois son poids","Elle ne ressent ni douleur, ni faim, ni fatigue"],
     correctIndex: 5,
     imageUrl: "/assets/facts/205.png",
+    difficulty: 'normal',
   },
   {
     id: 206,
@@ -2702,6 +2907,7 @@ export const FACTS = [
     options: ["80% portent des traces d'urine","50% ont été volés au moins une fois","75% contiennent des germes d'hôpital","60% ont des traces de larmes","95% sont faux dans le monde","90 % sont recouverts de traces de cocaïne"],
     correctIndex: 5,
     imageUrl: "/assets/facts/206.png",
+    difficulty: 'normal',
   },
   {
     id: 207,
@@ -2715,6 +2921,7 @@ export const FACTS = [
     options: ["Le Pacifique se rétrécit chaque année","L'Afrique se divise en deux lentement","La Méditerranée se ferme progressivement","L'Atlantique s'élargit de 5 cm par an","L'Australie dérive vers l'Asie","Le Mont Everest grandit de 4 mm par an"],
     correctIndex: 5,
     imageUrl: "/assets/facts/207.png",
+    difficulty: 'normal',
   },
   {
     id: 208,
@@ -2728,6 +2935,7 @@ export const FACTS = [
     options: ["Les chaussures doivent être enlevées","Il est interdit de courir dans le terminal","Les adieux sont filmés obligatoirement","Les chiens sont interdits dans les halls","Les cadeaux doivent être déclarés","Les câlins sont limités à 3 minutes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/208.png",
+    difficulty: 'normal',
   },
   {
     id: 209,
@@ -2741,6 +2949,7 @@ export const FACTS = [
     options: ["On leur enlevait le cœur en dernier","On leur injectait du sable chaud","On leur brûlait les extrémités","On leur brisait les os des membres","On leur retirait les dents","Les embaumeurs retiraient le cerveau par le nez"],
     correctIndex: 5,
     imageUrl: "/assets/facts/209.png",
+    difficulty: 'normal',
   },
   {
     id: 210,
@@ -2754,6 +2963,7 @@ export const FACTS = [
     options: ["Il portait un deuxième squelette","Ses poumons fonctionnaient par machine","Son cerveau était partiellement artificiel","Il vivait dans une bulle stérile","Sa circulation sanguine était externe","Il avait un cœur artificiel dans un sac à dos"],
     correctIndex: 5,
     imageUrl: "/assets/facts/210.png",
+    difficulty: 'normal',
   },
   {
     id: 211,
@@ -2767,6 +2977,7 @@ export const FACTS = [
     options: ["Attacher sa ceinture de sécurité","Allumer les phares avant de démarrer","Signaler sa direction avant de partir","Vérifier le niveau d'huile","Activer le GPS avant de rouler","Vérifier sous le véhicule"],
     correctIndex: 5,
     imageUrl: "/assets/facts/211.png",
+    difficulty: 'normal',
   },
   {
     id: 212,
@@ -2780,6 +2991,7 @@ export const FACTS = [
     options: ["Il a sucé le venin lui-même","Il a appliqué de la boue sur la plaie","Il a immergé son bras dans de l'eau froide","Il a couru pour accélérer son sang","Il a fait un garrot avec sa ceinture","En mordant le serpent"],
     correctIndex: 5,
     imageUrl: "/assets/facts/212.png",
+    difficulty: 'normal',
   },
   {
     id: 213,
@@ -2793,6 +3005,7 @@ export const FACTS = [
     options: ["Ils ont créé des rats invisibles","Ils ont fabriqué des chats robots","Ils ont cloné un tigre blanc","Ils ont cultivé des plantes sans eau","Ils ont créé des poissons volants","Ils ont créé des chiens qui brillent dans le noir"],
     correctIndex: 5,
     imageUrl: "/assets/facts/213.png",
+    difficulty: 'normal',
   },
   {
     id: 214,
@@ -2806,6 +3019,7 @@ export const FACTS = [
     options: ["Un buffet à volonté","Un bar à sushis dès 7h","Un massage offert pendant le repas","Une garde d'enfants pendant le dîner","Un concert live tous les soirs","On peut se marier"],
     correctIndex: 5,
     imageUrl: "/assets/facts/214.png",
+    difficulty: 'normal',
   },
   {
     id: 215,
@@ -2819,6 +3033,7 @@ export const FACTS = [
     options: ["La peine de mort","L'interdiction de vote","La ségrégation raciale","La polygamie forcée","L'emprisonnement sans jugement","L'esclavage"],
     correctIndex: 5,
     imageUrl: "/assets/facts/215.png",
+    difficulty: 'normal',
   },
   {
     id: 216,
@@ -2832,6 +3047,7 @@ export const FACTS = [
     options: ["Ses propres larmes","Du sable de plage","Des ailes d'insectes","De la cire d'abeilles","Des grains de poussière","Des dents humaines"],
     correctIndex: 5,
     imageUrl: "/assets/facts/216.png",
+    difficulty: 'normal',
   },
   {
     id: 217,
@@ -2845,6 +3061,7 @@ export const FACTS = [
     options: ["Elle a déplacé les habitants en altitude","Elle a creusé un tunnel vers le soleil","Elle a peint le sol en blanc","Elle a planté des arbres lumineux","Elle a installé des lampes en bordure","Rjukan utilise des miroirs pour le soleil"],
     correctIndex: 5,
     imageUrl: "/assets/facts/217.png",
+    difficulty: 'normal',
   },
   {
     id: 218,
@@ -2858,6 +3075,7 @@ export const FACTS = [
     options: ["Il avait tué un baron local","Il avait volé dans la cathédrale","Il avait prédit la mort du roi","Il avait sorcellé des paysans","Il avait violé la loi sur les moulins","Il se prenait pour un loup garou"],
     correctIndex: 5,
     imageUrl: "/assets/facts/218.png",
+    difficulty: 'normal',
   },
   {
     id: 219,
@@ -2871,6 +3089,7 @@ export const FACTS = [
     options: ["Pour acheter une propriété","Pour ouvrir un temple","Pour changer de nom","Pour faire un voyage à l'étranger","Pour publier un livre sacré","Pour se réincarner"],
     correctIndex: 5,
     imageUrl: "/assets/facts/219.png",
+    difficulty: 'normal',
   },
   {
     id: 220,
@@ -2884,6 +3103,7 @@ export const FACTS = [
     options: ["La montagne était trop éclairée","Des yeux rouges apparaissaient dans la neige","La brume rendait tout violet","Les skis laissaient des traces blanches","La neige était couverte de sable doré","La neige était orange"],
     correctIndex: 5,
     imageUrl: "/assets/facts/220.png",
+    difficulty: 'normal',
   },
   {
     id: 221,
@@ -2897,6 +3117,7 @@ export const FACTS = [
     options: ["Il a sauté d'un avion en feu","Il a nageé dans de la lave froide","Il s'est fait frapper 200 fois","Il a traversé un champ de mines","Il a conduit une moto à travers un mur","200 m à vélo le corps en feu"],
     correctIndex: 5,
     imageUrl: "/assets/facts/221.png",
+    difficulty: 'normal',
   },
   {
     id: 222,
@@ -2910,6 +3131,7 @@ export const FACTS = [
     options: ["Respirer profondément","Regarder un point fixe","Fermer les yeux et compter","Écrire une liste de tâches","Écouter une musique douce","Rien"],
     correctIndex: 5,
     imageUrl: "/assets/facts/222.png",
+    difficulty: 'normal',
   },
   {
     id: 223,
@@ -2923,6 +3145,7 @@ export const FACTS = [
     options: ["Elle a sauté d'un avion sans parachute","Elle a traversé l'Atlantique à la nage","Elle a nagé sous un iceberg en hiver","Elle a traversé le Niagara en kayak","Elle a plongé depuis une falaise de 60m","Elle a survécu à la descente des chutes du Niagara"],
     correctIndex: 5,
     imageUrl: "/assets/facts/223.png",
+    difficulty: 'normal',
   },
   {
     id: 224,
@@ -2936,6 +3159,7 @@ export const FACTS = [
     options: ["La peur des cauchemars","La peur des mauvais présages","La peur de l'avenir","La peur des phobies des autres","La peur d'être effrayé en public","La peur d'avoir peur"],
     correctIndex: 5,
     imageUrl: "/assets/facts/224.png",
+    difficulty: 'normal',
   },
   {
     id: 225,
@@ -2949,6 +3173,7 @@ export const FACTS = [
     options: ["La peur de la philosophie","La peur des intellectuels","La peur des bibliothèques","La peur des livres trop denses","La peur des questions sans réponse","La peur de penser"],
     correctIndex: 5,
     imageUrl: "/assets/facts/225.png",
+    difficulty: 'normal',
   },
   {
     id: 226,
@@ -2962,6 +3187,7 @@ export const FACTS = [
     options: ["Elle roule grâce à l'énergie éolienne","Elle roule avec du lait de vache","Elle fonctionne au méthane animal","Elle avance avec de la levure de bière","Elle roule à l'huile de friture","Elle roule grâce aux grains de café"],
     correctIndex: 5,
     imageUrl: "/assets/facts/226.png",
+    difficulty: 'normal',
   },
   {
     id: 227,
@@ -2975,6 +3201,7 @@ export const FACTS = [
     options: ["Elle peut prédire les maladies","Elle parle 40 langues couramment","Elle calcule mentalement comme un ordinateur","Elle entend les conversations à 2 km","Elle reconnaît 10 000 visages différents","Elle se souvient de tous les jours de sa vie"],
     correctIndex: 5,
     imageUrl: "/assets/facts/227.png",
+    difficulty: 'normal',
   },
   {
     id: 228,
@@ -2988,6 +3215,7 @@ export const FACTS = [
     options: ["Une assurance contre les accidents de ski","Une assurance contre les morsures de requin","Une assurance contre les chutes d'astéroïde","Une assurance contre la possession démoniaque","Une assurance contre les cataclysmes naturels","Une assurance contre l'enlèvement extraterrestre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/228.png",
+    difficulty: 'normal',
   },
   {
     id: 229,
@@ -3001,6 +3229,7 @@ export const FACTS = [
     options: ["Elle a disparu en pleine nuit","Elle a été copiée 1000 fois","Elle a été brûlée par un acheteur","Elle a été refusée par tous les musées","Elle a causé un scandale mondial","Elle s'est autodétruite"],
     correctIndex: 5,
     imageUrl: "/assets/facts/229.png",
+    difficulty: 'normal',
   },
   {
     id: 230,
@@ -3014,6 +3243,7 @@ export const FACTS = [
     options: ["L'artiste a refusé de la vendre","Elle a été volée pendant la nuit","Elle a été détruite par un visiteur","Un galeriste l'a accrochée à l'envers","Elle a changé de valeur 100 fois en un jour","Une femme de ménage a jeté une œuvre à la poubelle"],
     correctIndex: 5,
     imageUrl: "/assets/facts/230.png",
+    difficulty: 'normal',
   },
   {
     id: 231,
@@ -3027,6 +3257,7 @@ export const FACTS = [
     options: ["La peur des citrons","La peur du soleil","La peur des cheveux blonds","La peur de l'or","La peur des fleurs jaunes","La peur du jaune"],
     correctIndex: 5,
     imageUrl: "/assets/facts/231.png",
+    difficulty: 'normal',
   },
   {
     id: 232,
@@ -3040,6 +3271,7 @@ export const FACTS = [
     options: ["Il a évacué le Pentagone","Il a détourné des satellites","Il a lancé une frappe militaire","Il a fermé une frontière nationale","Il a arrêté un réseau terroriste","Il a immobilisé 4 200 avions simultanément"],
     correctIndex: 5,
     imageUrl: "/assets/facts/232.png",
+    difficulty: 'normal',
   },
   {
     id: 233,
@@ -3053,6 +3285,7 @@ export const FACTS = [
     options: ["Il a mangé un kilo de neige","Il a dormi debout 3 jours","Il a chanté 50 chansons d'affilée","Il a fait 500 selfies en 1 minute","Il a porté un chapeau pendant 10 ans","Il a poussé une cacahuète avec le nez"],
     correctIndex: 5,
     imageUrl: "/assets/facts/233.png",
+    difficulty: 'normal',
   },
   {
     id: 234,
@@ -3066,6 +3299,7 @@ export const FACTS = [
     options: ["Une patate douce","Un concombre","Une pierre volcanique","Un champignon","Une carotte fraîche","un citron !"],
     correctIndex: 5,
     imageUrl: "/assets/facts/234.png",
+    difficulty: 'normal',
   },
   {
     id: 235,
@@ -3079,6 +3313,7 @@ export const FACTS = [
     options: ["Il produit de l'insuline tout seul","Il filtre le sang en continu","Il stocke toute l'eau du corps","Il commande tous les mouvements","Il régule la température du corps","Le foie se régénère même après une partie enlevée"],
     correctIndex: 5,
     imageUrl: "/assets/facts/235.png",
+    difficulty: 'normal',
   },
   {
     id: 236,
@@ -3092,6 +3327,7 @@ export const FACTS = [
     options: ["La peur des fauteuils hauts","La peur des surfaces molles","La peur de s'endormir assis","La peur des escaliers","La peur des transports assis","La peur de s'asseoir"],
     correctIndex: 5,
     imageUrl: "/assets/facts/236.png",
+    difficulty: 'normal',
   },
   {
     id: 237,
@@ -3105,6 +3341,7 @@ export const FACTS = [
     options: ["Elle peut survivre à -200°C","Elle peut vivre sans eau 100 ans","Elle peut se cloner par simple contact","Elle peut respirer à la fois air et eau","Elle peut résister à un acide fort","Elle est immortelle"],
     correctIndex: 5,
     imageUrl: "/assets/facts/237.png",
+    difficulty: 'normal',
   },
   {
     id: 238,
@@ -3118,6 +3355,7 @@ export const FACTS = [
     options: ["Il s'est fait propulser par une explosion","Il a sauté depuis un avion supersonic","Il a été éjecté d'une voiture à 200 km/h","Il a été frappé par une vague géante","Il a été lancé par un tremplin géant","Il a été projeté par une tornade"],
     correctIndex: 5,
     imageUrl: "/assets/facts/238.png",
+    difficulty: 'normal',
   },
   {
     id: 239,
@@ -3131,6 +3369,7 @@ export const FACTS = [
     options: ["Il était trop sombre à reproduire","Il a été interdit par les artistes peintres","Il n'a pas de longueur d'onde précise","Il a été inventé après les autres couleurs","Il ne peut pas être vu en lumière vive","Il n'existe pas vraiment"],
     correctIndex: 5,
     imageUrl: "/assets/facts/239.png",
+    difficulty: 'normal',
   },
   {
     id: 240,
@@ -3144,6 +3383,7 @@ export const FACTS = [
     options: ["On a oublié le sucre dans la pâte","Une recette a été écrite à l'envers","Un chef a renversé de la vanille","La farine a été brûlée par erreur","Un four a mal réglé la température","Par erreur"],
     correctIndex: 5,
     imageUrl: "/assets/facts/240.png",
+    difficulty: 'normal',
   },
   {
     id: 241,
@@ -3157,6 +3397,7 @@ export const FACTS = [
     options: ["Les bébés marchent dès 3 mois","Les enfants choisissent leur prénom","L'école commence à 3 ans","On fête les anniversaires en avance","On ne célèbre pas les anniversaires","On a 1 an dès la naissance"],
     correctIndex: 5,
     imageUrl: "/assets/facts/241.png",
+    difficulty: 'normal',
   },
   {
     id: 242,
@@ -3170,6 +3411,7 @@ export const FACTS = [
     options: ["Une panne nationale d'électricité","Une erreur de logiciel de vote","Un séisme pendant le dépouillement","Un virus informatique dans les urnes","Une fraude massive aux bulletins","Un rayonnement cosmique"],
     correctIndex: 5,
     imageUrl: "/assets/facts/242.png",
+    difficulty: 'normal',
   },
   {
     id: 243,
@@ -3183,6 +3425,7 @@ export const FACTS = [
     options: ["Ils portent le même vêtement depuis 20 ans","Ils ont la même empreinte digitale","Ils lisent le même livre depuis 20 ans","Ils prennent les mêmes repas depuis 20 ans","Ils n'ont pas de miroir chez eux","Ils n'ont pas échangé un mot en 20 ans"],
     correctIndex: 5,
     imageUrl: "/assets/facts/243.png",
+    difficulty: 'normal',
   },
   {
     id: 244,
@@ -3196,6 +3439,7 @@ export const FACTS = [
     options: ["Elle a accouché sous anesthésie générale","Elle a eu des sextuplés","Elle est morte pendant l'accouchement","Elle a été la plus vieille mère du monde","Elle a accouché de deux bébés en 2 jours","Elle a accouché à l'âge de 5 ans"],
     correctIndex: 5,
     imageUrl: "/assets/facts/244.png",
+    difficulty: 'normal',
   },
   {
     id: 245,
@@ -3209,6 +3453,7 @@ export const FACTS = [
     options: ["Dans une ferme isolée en Islande","Au fond d'une mine en Sibérie","Dans un bunker au Groenland","Dans un phare automatisé","Dans un observatoire polaire","Dans la station spatiale internationale"],
     correctIndex: 5,
     imageUrl: "/assets/facts/245.png",
+    difficulty: 'normal',
   },
   {
     id: 246,
@@ -3222,6 +3467,7 @@ export const FACTS = [
     options: ["La vie est apparue avant les étoiles","La Terre est la seule planète vivante","L'univers est trop vieux pour la vie","La vie vient exclusivement des océans","Dieu a créé les organismes vivants","Elle propose que la vie voyage à travers l'univers"],
     correctIndex: 5,
     imageUrl: "/assets/facts/246.png",
+    difficulty: 'normal',
   },
   {
     id: 247,
@@ -3235,6 +3481,7 @@ export const FACTS = [
     options: ["Elle pèse 50 tonnes","Elle parle quand on l'approche","Elle change de couleur selon la lumière","Elle est composée de 1000 matériaux","Elle se déplace lentement","Elle est invisible"],
     correctIndex: 5,
     imageUrl: "/assets/facts/247.png",
+    difficulty: 'normal',
   },
   {
     id: 248,
@@ -3248,6 +3495,7 @@ export const FACTS = [
     options: ["De calendriers de banques","De cure-dents usagés","De billets de trains périmés","De sachets de sucre vides","De cartes de visite froissées","Des sacs à vomi"],
     correctIndex: 5,
     imageUrl: "/assets/facts/248.png",
+    difficulty: 'normal',
   },
   {
     id: 249,
@@ -3261,6 +3509,7 @@ export const FACTS = [
     options: ["À détruire les insectes ennemis","À produire du venin concentré","À détecter les odeurs à distance","À aspirer l'eau dans les mares","À émettre des sons ultrasoniques","À survivre sans tête"],
     correctIndex: 5,
     imageUrl: "/assets/facts/249.png",
+    difficulty: 'normal',
   },
   {
     id: 250,
@@ -3274,6 +3523,7 @@ export const FACTS = [
     options: ["Par accident en testant un congélateur","En voulant faire du pain glacé","En cherchant à congeler de la crème","En laissant un verre à l'air froid","En oubliant une soupe au balcon","Les glaces sur les bâtonnets"],
     correctIndex: 5,
     imageUrl: "/assets/facts/250.png",
+    difficulty: 'normal',
   },
   {
     id: 251,
@@ -3287,6 +3537,7 @@ export const FACTS = [
     options: ["Écriture codée utilisée par les espions","Technique de calligraphie indienne","Style de dessin en spirale","Langue parlée par une seule tribu","Système de chiffrement informatique","L'écriture alterne de gauche à droite et inverse"],
     correctIndex: 5,
     imageUrl: "/assets/facts/251.png",
+    difficulty: 'normal',
   },
   {
     id: 252,
@@ -3300,6 +3551,7 @@ export const FACTS = [
     options: ["Un château hanté en Écosse","Une plage introuvable sur les cartes","Un village fantôme dans les highlands","Le lac Ness et son monstre","Un festival de cornemuse annuel","Pour le nouveau slogan \"Welcom to Scotland\""],
     correctIndex: 5,
     imageUrl: "/assets/facts/252.png",
+    difficulty: 'normal',
   },
   {
     id: 253,
@@ -3313,6 +3565,7 @@ export const FACTS = [
     options: ["Peur du numéro 13","Peur du numéro 0","Peur des chiffres en général","Peur du numéro 13 le vendredi","Peur des suites mathématiques","Peur du nombre 666"],
     correctIndex: 5,
     imageUrl: "/assets/facts/253.png",
+    difficulty: 'normal',
   },
   {
     id: 254,
@@ -3326,6 +3579,7 @@ export const FACTS = [
     options: ["Des habitants avaient envahi le tracé","Des maisons bloquaient le passage","Le coût était trop élevé","Un vestige romain avait été découvert","Un lac souterrain était sur le trajet","À cause des défenseurs elfiques"],
     correctIndex: 5,
     imageUrl: "/assets/facts/254.png",
+    difficulty: 'normal',
   },
   {
     id: 255,
@@ -3339,6 +3593,7 @@ export const FACTS = [
     options: ["Il a dormi sans rêver pendant 11 jours","Il a parlé pendant 11 jours sans pause","Il a couru pendant 11 jours d'affilée","Il a chanté pendant 11 jours","Il n'a pas bougé pendant 11 jours","Il est resté éveillé 11 jours consécutifs"],
     correctIndex: 5,
     imageUrl: "/assets/facts/255.png",
+    difficulty: 'normal',
   },
   {
     id: 256,
@@ -3352,6 +3607,7 @@ export const FACTS = [
     options: ["Il est le plus poilu du monde","Il a les ongles les plus longs","Il est le plus grand au monde","Il pèse le moins au monde","Il est le plus petit du monde","Il est tatoué à 100 %"],
     correctIndex: 5,
     imageUrl: "/assets/facts/256.png",
+    difficulty: 'normal',
   },
   {
     id: 257,
@@ -3365,6 +3621,7 @@ export const FACTS = [
     options: ["Qui brille dans l'obscurité totale","Qui change de texture selon la chaleur","Qui est doux comme de la soie","Qui est parfaitement transparent","Qui a un goût sucré naturel","Qui dégage une odeur toxique"],
     correctIndex: 5,
     imageUrl: "/assets/facts/257.png",
+    difficulty: 'normal',
   },
   {
     id: 258,
@@ -3378,6 +3635,7 @@ export const FACTS = [
     options: ["Il a éternué sans arrêt","Il a pleuré pendant 68 ans","Il a dormi en position assise","Il a ri involontairement pendant des années","Il a été paralysé des bras","Il a eu le hoquet"],
     correctIndex: 5,
     imageUrl: "/assets/facts/258.png",
+    difficulty: 'normal',
   },
   {
     id: 259,
@@ -3391,6 +3649,7 @@ export const FACTS = [
     options: ["Il a nagé en tenant une corde","Il a traversé à bord d'un jet-ski","Il a flottté sur un radeau de fortune","Il a traversé en planche de surf","Il a nagé sous l'eau sur 30 km","Il a traversé 3 600 mètres en slackline"],
     correctIndex: 5,
     imageUrl: "/assets/facts/259.png",
+    difficulty: 'normal',
   },
   {
     id: 260,
@@ -3404,6 +3663,7 @@ export const FACTS = [
     options: ["Pour aller déjeuner en dehors","Pour récupérer leurs enfants à l'école","Pour se rendre à un rendez-vous médical","Pour éviter les transports bondés","Pour prendre du repos après un examen","Pour procréer"],
     correctIndex: 5,
     imageUrl: "/assets/facts/260.png",
+    difficulty: 'normal',
   },
   {
     id: 261,
@@ -3417,6 +3677,7 @@ export const FACTS = [
     options: ["Elle a vendu ses ongles aux enchères","Elle a offert ses ongles à un musée","Elle les a encadrés comme des œuvres d'art","Elle les a données à la science","Elle les a transformées en bijoux","Elle a coupé 7 mètres d'ongles"],
     correctIndex: 5,
     imageUrl: "/assets/facts/261.png",
+    difficulty: 'normal',
   },
   {
     id: 262,
@@ -3430,6 +3691,7 @@ export const FACTS = [
     options: ["Entendre les sons comme des formes","Ressentir la douleur comme une couleur","Compter les objets en musique","Confondre des chiffres et des lettres","Voir des nombres en couleur","Voir des visages partout"],
     correctIndex: 5,
     imageUrl: "/assets/facts/262.png",
+    difficulty: 'normal',
   },
   {
     id: 263,
@@ -3443,6 +3705,7 @@ export const FACTS = [
     options: ["La peur du rasage","La peur des hommes âgés","La peur des poils longs","La peur des visages couverts","La peur des barbes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/263.png",
+    difficulty: 'normal',
   },
   {
     id: 264,
@@ -3456,6 +3719,7 @@ export const FACTS = [
     options: ["Israël avait vendu des armes à l'Égypte","Israël avait espionné des généraux","Israël avait capturé un pêcheur égyptien","Israël n'avait pas payé une dette","Israël avait construit un mur frontalier","L'Egypte accusa Israël de libérer des requins"],
     correctIndex: 5,
     imageUrl: "/assets/facts/264.png",
+    difficulty: 'normal',
   },
   {
     id: 265,
@@ -3469,6 +3733,7 @@ export const FACTS = [
     options: ["Un spectacle de magie impressionnant","Une attaque aérienne à proximité","Un cambriolage en plein casino","Un tremblement de terre sous la salle","Un blackout total pendant 3 heures","Le Rouge est sorti consécutivement 32 fois"],
     correctIndex: 5,
     imageUrl: "/assets/facts/265.png",
+    difficulty: 'normal',
   },
   {
     id: 266,
@@ -3482,6 +3747,7 @@ export const FACTS = [
     options: ["On mange assis dans une piscine","On cuisine soi-même à table","On mange dans l'obscurité totale","On dîne en suspendus dans les airs","On mange dans un cercueil ouvert","Un cœur de serpent encore battant"],
     correctIndex: 5,
     imageUrl: "/assets/facts/266.png",
+    difficulty: 'normal',
   },
   {
     id: 267,
@@ -3495,6 +3761,7 @@ export const FACTS = [
     options: ["La peur des démons","La peur des cicatrices","La peur d'être incompris","La peur du regard des autres","La peur de l'inconnu","La peur de donner naissance à un monstre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/267.png",
+    difficulty: 'normal',
   },
   {
     id: 268,
@@ -3508,6 +3775,7 @@ export const FACTS = [
     options: ["Il s'était enfui dans la forêt","Il avait perdu la mémoire totalement","Il avait dormi sans s'arrêter","Il était paralysé des deux jambes","Il avait perdu l'usage de la parole","Il était dans le coma"],
     correctIndex: 5,
     imageUrl: "/assets/facts/268.png",
+    difficulty: 'normal',
   },
   {
     id: 269,
@@ -3521,6 +3789,7 @@ export const FACTS = [
     options: ["La peur du chiffre 3","La peur des nombres impairs","La peur du chiffre 7","La peur de compter à voix haute","La peur des calendriers","La peur du chiffre 13"],
     correctIndex: 5,
     imageUrl: "/assets/facts/269.png",
+    difficulty: 'normal',
   },
   {
     id: 270,
@@ -3534,6 +3803,7 @@ export const FACTS = [
     options: ["Il avait insulté la famille royale","Il avait chanté trop fort","Il n'avait pas de visa valide","Il avait refusé de payer un droit d'entrée","Il avait photographié des gardes","Il était trop beau"],
     correctIndex: 5,
     imageUrl: "/assets/facts/270.png",
+    difficulty: 'normal',
   },
   {
     id: 271,
@@ -3547,6 +3817,7 @@ export const FACTS = [
     options: ["Il a explosé en dégustant son whisky","Il a été empoisonné par ses tonneaux","Il a été renversé par un cheval ivre","Il s'est noyé dans une cuve de distillation","Il est mort d'une intoxication alcoolique","Il s'est bléssé le pied en cognant son coffre-fort"],
     correctIndex: 5,
     imageUrl: "/assets/facts/271.png",
+    difficulty: 'normal',
   },
   {
     id: 272,
@@ -3560,6 +3831,7 @@ export const FACTS = [
     options: ["Interdit de fuir vers un autre pays","Interdit de changer de nom en fuite","Interdit de se faire aider par des amis","Interdit de contacter un avocat","Interdit de fuir par voie maritime","De prendre des vacances"],
     correctIndex: 5,
     imageUrl: "/assets/facts/272.png",
+    difficulty: 'normal',
   },
   {
     id: 273,
@@ -3573,6 +3845,7 @@ export const FACTS = [
     options: ["On brûlait des herbes odorantes","On se baignait dans du vinaigre","On mangeait de l'ail à chaque repas","On portait des amulettes spéciales","On priait 10 fois par jour","On inhalait des pets conservés"],
     correctIndex: 5,
     imageUrl: "/assets/facts/273.png",
+    difficulty: 'normal',
   },
   {
     id: 274,
@@ -3586,6 +3859,7 @@ export const FACTS = [
     options: ["Des cacahuètes non déclarées","Un saucisson artisanal","Du fromage fait maison","Des graines de tournesol","Une bouteille d'eau non étiquetée","Des Kinder Surprise"],
     correctIndex: 5,
     imageUrl: "/assets/facts/274.png",
+    difficulty: 'normal',
   },
   {
     id: 275,
@@ -3599,6 +3873,7 @@ export const FACTS = [
     options: ["Une cacahuète","Un chat orange","Un raton laveur","Une souris jaune","Un lapin électrique","Un écureuil"],
     correctIndex: 5,
     imageUrl: "/assets/facts/275.png",
+    difficulty: 'normal',
   },
   {
     id: 276,
@@ -3612,6 +3887,7 @@ export const FACTS = [
     options: ["La peur des prêtres","La peur des icônes religieuses","La peur des confessions","La peur des bénédictions","La peur du Vatican","La peur du pape"],
     correctIndex: 5,
     imageUrl: "/assets/facts/276.png",
+    difficulty: 'normal',
   },
   {
     id: 277,
@@ -3625,6 +3901,7 @@ export const FACTS = [
     options: ["La peur des bouteilles de parfum","La peur de la transpiration","La peur des vestiaires","La peur des déodorants","La peur de sentir bon","La peur des odeurs corporelles"],
     correctIndex: 5,
     imageUrl: "/assets/facts/277.png",
+    difficulty: 'normal',
   },
   {
     id: 278,
@@ -3638,6 +3915,7 @@ export const FACTS = [
     options: ["Des beignets de cactus","Des tartes aux insectes","Des glaces à la moutarde","Des brochettes de ver de terre","Des bonbons au piment brûlant","Des pommes au caramel avec des vers de farine"],
     correctIndex: 5,
     imageUrl: "/assets/facts/278.png",
+    difficulty: 'normal',
   },
   {
     id: 279,
@@ -3651,6 +3929,7 @@ export const FACTS = [
     options: ["Le jour le plus froid de l'année","Le jour de la grande purge des frigos","Le jour du plus grand match de NFL","Le jour où tous les Américains déménagent","Le jour de la plus longue file à Walmart","Le jour le plus chargé pour les plombiers"],
     correctIndex: 5,
     imageUrl: "/assets/facts/279.png",
+    difficulty: 'normal',
   },
   {
     id: 280,
@@ -3664,6 +3943,7 @@ export const FACTS = [
     options: ["Pour colorer les plats","Pour parfumer les préparations","Pour faire mousser les sauces","Pour décorer les assiettes","Pour attendrir la viande","Pour congeler instantanément"],
     correctIndex: 5,
     imageUrl: "/assets/facts/280.png",
+    difficulty: 'normal',
   },
   {
     id: 281,
@@ -3677,6 +3957,7 @@ export const FACTS = [
     options: ["Le miel","La fraise des bois","Le sel de mer","Le jus de citron","L'ail séché","Le ketchup était un médicament"],
     correctIndex: 5,
     imageUrl: "/assets/facts/281.png",
+    difficulty: 'normal',
   },
   {
     id: 282,
@@ -3690,6 +3971,7 @@ export const FACTS = [
     options: ["On perd du poids en dormant","Le cerveau grossit le soir","Les ongles poussent deux fois plus vite","Le sang devient plus rouge la nuit","La température du corps monte de 2°C","On est plus petit, le soir, que le matin"],
     correctIndex: 5,
     imageUrl: "/assets/facts/282.png",
+    difficulty: 'normal',
   },
   {
     id: 283,
@@ -3703,6 +3985,7 @@ export const FACTS = [
     options: ["Chercher des poux dans les cheveux","Tricoter très rapidement sans s'arrêter","Parler fort en marchant","Nager comme une grenouille","Siffler en expirant par le nez","Prédire l'avenir de façon pompeuse ou floue."],
     correctIndex: 5,
     imageUrl: "/assets/facts/283.png",
+    difficulty: 'normal',
   },
   {
     id: 284,
@@ -3716,6 +3999,7 @@ export const FACTS = [
     options: ["Des mers d'eau liquide","Des forêts de cristaux de glace","Des déserts de sable noir","Des lacs de méthane","Des montagnes de soufre","Des volcans de glace"],
     correctIndex: 5,
     imageUrl: "/assets/facts/284.png",
+    difficulty: 'normal',
   },
   {
     id: 285,
@@ -3729,6 +4013,7 @@ export const FACTS = [
     options: ["Rivière souterraine de l'Amazonie","Grande salle de bal du XVIIe siècle","Monnaie médiévale de cuivre","Instrument à cordes artisanal","Peuple nomade du Maghreb","Petit café ou bistrot de quartier"],
     correctIndex: 5,
     imageUrl: "/assets/facts/285.png",
+    difficulty: 'normal',
   },
   {
     id: 286,
@@ -3742,6 +4027,7 @@ export const FACTS = [
     options: ["Elle appartient à deux pays différents","Elle est la plus grande île d'Asie","Elle n'a pas de côte maritime","Elle est entièrement artificielle","Elle est couverte à 90% de forêt vierge","Luçon a un lac avec une île, puis un lac et île"],
     correctIndex: 5,
     imageUrl: "/assets/facts/286.png",
+    difficulty: 'normal',
   },
   {
     id: 287,
@@ -3755,6 +4041,7 @@ export const FACTS = [
     options: ["Elle peut retourner sa carapace","Elle respire par les branchies et les poumons","Elle peut nager en marche arrière","Elle dort les yeux ouverts","Elle peut se mettre en boule","Elle peut respirer par l'anus"],
     correctIndex: 5,
     imageUrl: "/assets/facts/287.png",
+    difficulty: 'normal',
   },
   {
     id: 288,
@@ -3768,6 +4055,7 @@ export const FACTS = [
     options: ["Un verre qui change de couleur","Un verre qui joue de la musique","Un verre qui filtre l'alcool","Un verre qui indique l'heure","Un verre qui se remplit seul","Un verre qui transforme la boisson en création"],
     correctIndex: 5,
     imageUrl: "/assets/facts/288.png",
+    difficulty: 'normal',
   },
   {
     id: 289,
@@ -3781,6 +4069,7 @@ export const FACTS = [
     options: ["La peur des oiseaux chanteurs","La peur des concerts de musique","La peur des instruments à cordes","La peur des sifflets","La peur des orchestres","La peur des flûtes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/289.png",
+    difficulty: 'normal',
   },
   {
     id: 290,
@@ -3794,6 +4083,7 @@ export const FACTS = [
     options: ["L'espace entre la Lune et la Terre","Le fond de l'océan Pacifique","La calotte polaire de l'Arctique","Le désert du Sahara central","Le 6e continent"],
     correctIndex: 5,
     imageUrl: "/assets/facts/290.png",
+    difficulty: 'normal',
   },
   {
     id: 291,
@@ -3807,6 +4097,7 @@ export const FACTS = [
     options: ["Sa veste en cuir épais a résisté","Elle portait un gilet pare-balles","Un livre dans sa poche a dévié la balle","Son téléphone a absorbé l'impact","Un bracelet en métal a redirigé la balle","Ses implants mammaires ont dévié la balle"],
     correctIndex: 5,
     imageUrl: "/assets/facts/291.png",
+    difficulty: 'normal',
   },
   {
     id: 292,
@@ -3820,6 +4111,7 @@ export const FACTS = [
     options: ["Inventer des explications improbables","Parler en regardant le sol","Répéter les mots des autres","Critiquer sans proposer de solution","Faire semblant de comprendre","Chipoter, raisonner à l'excès sur des détails."],
     correctIndex: 5,
     imageUrl: "/assets/facts/292.png",
+    difficulty: 'normal',
   },
   {
     id: 293,
@@ -3833,6 +4125,7 @@ export const FACTS = [
     options: ["Il avait un deuxième visage dans la nuque","Il n'avait pas d'yeux","Il pouvait retourner ses bras","Il avait six doigts de chaque côté","Il marchait sur les mains naturellement","Il a une queue de singe de 36 cm"],
     correctIndex: 5,
     imageUrl: "/assets/facts/293.png",
+    difficulty: 'normal',
   },
   {
     id: 294,
@@ -3846,6 +4139,7 @@ export const FACTS = [
     options: ["Il avait été blessé par un policier","Il avait été victime d'une fraude","Il avait perdu ses économies en prison","Il avait souffert de mauvais traitements","Il avait été condamné pour un crime mineur","Pour avoir passé injustement 48 ans en prison"],
     correctIndex: 5,
     imageUrl: "/assets/facts/294.png",
+    difficulty: 'normal',
   },
   {
     id: 295,
@@ -3859,6 +4153,7 @@ export const FACTS = [
     options: ["Plante grimpante à fleurs rouges","Sauce pimentée d'Amérique du Sud","Minéral brillant des volcans","Tissu rugueux utilisé en poterie","Technique de pêche à la main","Résidu inutile ou encombrant, rejeté."],
     correctIndex: 5,
     imageUrl: "/assets/facts/295.png",
+    difficulty: 'normal',
   },
   {
     id: 296,
@@ -3872,6 +4167,7 @@ export const FACTS = [
     options: ["Elle attire plus de 10 millions de pigeons","Elle génère plus d'éclairs que la normale","Elle reçoit plus de photos qu'Instagram","Elle vibre légèrement à cause du vent","Elle diffuse de la musique par ses structures","Elle est plus haute de 15cm"],
     correctIndex: 5,
     imageUrl: "/assets/facts/296.png",
+    difficulty: 'normal',
   },
   {
     id: 297,
@@ -3885,6 +4181,7 @@ export const FACTS = [
     options: ["Il a avalé un poison accidentellement","Il s'est étouffé avec une arête de poisson","Il a été frappé par la foudre","Il a coulé dans une rivière gelée","Il a bu de l'eau en dormant","Il est mort de rire"],
     correctIndex: 5,
     imageUrl: "/assets/facts/297.png",
+    difficulty: 'normal',
   },
   {
     id: 298,
@@ -3898,6 +4195,7 @@ export const FACTS = [
     options: ["Il ne dormait que 5 minutes par nuit","Il ne respirait que par la bouche","Il courrait 50 km chaque matin","Il méditait sous l'eau 2 heures par jour","Il ne parlait qu'à ses élèves","Il aurait vécu sans manger ni boire des décennies"],
     correctIndex: 5,
     imageUrl: "/assets/facts/298.png",
+    difficulty: 'normal',
   },
   {
     id: 299,
@@ -3911,6 +4209,7 @@ export const FACTS = [
     options: ["Ils changent de couleur en rythme","Ils produisent des ultrasons musicaux","Ils laissent des traces parfumées","Ils dansent pour se reconnaître","Ils gonflent leur gorge pour crier","Ils font des pompes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/299.png",
+    difficulty: 'normal',
   },
   {
     id: 300,
@@ -3924,6 +4223,7 @@ export const FACTS = [
     options: ["Dormir sans bouger du tout","Parler dans son sommeil","Ronfler très fort","Se gratter la nuit","Avoir des apnées fréquentes","Dormir les yeux ouverts"],
     correctIndex: 5,
     imageUrl: "/assets/facts/300.png",
+    difficulty: 'normal',
   },
   {
     id: 301,
@@ -3937,6 +4237,7 @@ export const FACTS = [
     options: ["Long texte indéchiffrable","Déclaration solennelle officielle","Trait d'humour subtil","Erreur de français répandue","Formule magique ancienne","Un discours fanfaron"],
     correctIndex: 5,
     imageUrl: "/assets/facts/301.png",
+    difficulty: 'normal',
   },
   {
     id: 302,
@@ -3950,6 +4251,7 @@ export const FACTS = [
     options: ["La peur des regards dans les miroirs","La peur de se voir en photo","La peur des regards intenses","La peur de regarder en bas","La peur de regarder en haut","La peur d'être observé"],
     correctIndex: 5,
     imageUrl: "/assets/facts/302.png",
+    difficulty: 'normal',
   },
   {
     id: 303,
@@ -3963,6 +4265,7 @@ export const FACTS = [
     options: ["Qui brûle facilement","Qui se décompose vite","Qui absorbe l'eau","Qui résiste au froid","Qui attire les parasites","Qui ne peut se flétrir"],
     correctIndex: 5,
     imageUrl: "/assets/facts/303.png",
+    difficulty: 'normal',
   },
   {
     id: 304,
@@ -3976,6 +4279,7 @@ export const FACTS = [
     options: ["Les nuages","Les montagnes","Les rivières","Les glaciers","Les volcans","Les arbres"],
     correctIndex: 5,
     imageUrl: "/assets/facts/304.png",
+    difficulty: 'normal',
   },
   {
     id: 305,
@@ -3989,6 +4293,7 @@ export const FACTS = [
     options: ["La peur des bruits de ventre","La peur de se lâcher en public","La peur des odeurs","La peur des toilettes publiques","La peur d'avoir besoin d'aller aux WC","La peur de péter"],
     correctIndex: 5,
     imageUrl: "/assets/facts/305.png",
+    difficulty: 'normal',
   },
   {
     id: 306,
@@ -4002,6 +4307,7 @@ export const FACTS = [
     options: ["Une épée en bronze","Un vase celtique","Un fragment de rune gravée","Un jouet en argile","Un crâne humain peint","Un chewing-gum"],
     correctIndex: 5,
     imageUrl: "/assets/facts/306.png",
+    difficulty: 'normal',
   },
   {
     id: 307,
@@ -4015,6 +4321,7 @@ export const FACTS = [
     options: ["La peur des fantômes","La peur des sorcières","La peur du diable","La peur des zombies","La peur du Père Fouettard","La peur du croque-mitaine"],
     correctIndex: 5,
     imageUrl: "/assets/facts/307.png",
+    difficulty: 'normal',
   },
   {
     id: 308,
@@ -4028,6 +4335,7 @@ export const FACTS = [
     options: ["Il y a plus de brebis que de vaches","Il y a plus de méduses que de poissons","Il y a plus de crocodiles que d'humains","Il y a plus de serpents que d'habitants","Il y a plus de chauves-souris que de moutons","Il y a plus de kangourous que d'humains"],
     correctIndex: 5,
     imageUrl: "/assets/facts/308.png",
+    difficulty: 'normal',
   },
   {
     id: 309,
@@ -4041,19 +4349,7 @@ export const FACTS = [
     options: ["On peut se marier à 14 ans","On peut se marier sans cérémonie","On peut se marier sous l'eau","On peut se marier en prison","On peut se marier en avion","On peut épouser un mort"],
     correctIndex: 5,
     imageUrl: "/assets/facts/309.png",
-  },
-  {
-    id: 310,
-    category: "phobies",
-    question: "Qu'est-ce que la nomophobie ?",
-    hint1: "Téléphone",
-    hint2: "Mobile absent",
-    shortAnswer: "La peur d'être sans téléphone mobile",
-    explanation: "La nomophobie (de l'anglais 'no-mobile-phone phobia') est la peur anxieuse d'être sans son téléphone mobile ou sans couverture réseau. C'est une phobie moderne qui touche particulièrement les jeunes adultes qui dépendent fortement de leurs appareils.",
-    sourceUrl: "https://www.britannica.com/topic/nomophobia",
-    options: ["La peur d'être sans téléphone mobile","La peur des numéros","La peur de l'électricité","La peur des nombres pairs"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/310.png",
+    difficulty: 'normal',
   },
   {
     id: 311,
@@ -4067,6 +4363,7 @@ export const FACTS = [
     options: ["Un seul arbre en pot","Un seul couteau de cuisine","Un seul chien de compagnie","Un seul aquarium chez soi","Un seul vélo par adulte","Un cochon d'Inde"],
     correctIndex: 5,
     imageUrl: "/assets/facts/311.png",
+    difficulty: 'normal',
   },
   {
     id: 312,
@@ -4080,6 +4377,7 @@ export const FACTS = [
     options: ["La multiplication","La division","La racine carrée","Les fractions","La géométrie","Le zéro"],
     correctIndex: 5,
     imageUrl: "/assets/facts/312.png",
+    difficulty: 'normal',
   },
   {
     id: 313,
@@ -4093,6 +4391,7 @@ export const FACTS = [
     options: ["Un os coincé dans la gorge","Un insecte dans le sinus","Un fragment de verre dans les poumons","Un calcaire dans les bronches","Un grain de sable dans la plèvre","Il avait un cône Playmobil dans les poumons"],
     correctIndex: 5,
     imageUrl: "/assets/facts/313.png",
+    difficulty: 'normal',
   },
   {
     id: 314,
@@ -4106,6 +4405,7 @@ export const FACTS = [
     options: ["Damn it !","I love you !","Holy cow !","Oh my god !","Son of a gun !","Mal prononcer le nom \"Arkansas\""],
     correctIndex: 5,
     imageUrl: "/assets/facts/314.png",
+    difficulty: 'normal',
   },
   {
     id: 315,
@@ -4119,6 +4419,7 @@ export const FACTS = [
     options: ["FORTRAN (1957)","COBOL (1959)","ALGOL (1958)","Lisp (1958)"],
     correctIndex: 0,
     imageUrl: "/assets/facts/315.png",
+    difficulty: 'normal',
   },
   {
     id: 316,
@@ -4132,6 +4433,7 @@ export const FACTS = [
     options: ["Il avait des champignons dans le nez","Il avait une balle coincée","Il avait de la colle dans les poumons","Il avait une écharpe dans les bronches","Il avait de la mousse dans les sinus","Il avait un Légo coincé dans le nez"],
     correctIndex: 5,
     imageUrl: "/assets/facts/316.png",
+    difficulty: 'normal',
   },
   {
     id: 317,
@@ -4145,6 +4447,7 @@ export const FACTS = [
     options: ["Mort en tombant d'un arbre","Mort par un excès de sommeil","Mort en pleine baignade","Mort en courant un marathon","Mort en pleine nuit sans raison","Mort survenue pendant un grand moment de plaisir."],
     correctIndex: 5,
     imageUrl: "/assets/facts/317.png",
+    difficulty: 'normal',
   },
   {
     id: 318,
@@ -4158,6 +4461,7 @@ export const FACTS = [
     options: ["Il peut parler aux autres rennes","Il vole plus vite que les autres","Il connaît toutes les maisons du monde","Il ne se fatigue jamais","Il peut voir dans le noir total","Son nez lumineux peut guider les autres rennes"],
     correctIndex: 5,
     imageUrl: "/assets/facts/318.png",
+    difficulty: 'normal',
   },
   {
     id: 319,
@@ -4171,6 +4475,7 @@ export const FACTS = [
     options: ["Elle a vécu 100 ans en parfaite santé","Elle a eu des triplés à 80 ans","Elle s'est réveillée d'un coma de 50 ans","Elle a été ressuscitée par choc électrique","Elle a survécu à deux noyades","Luz Milagros, déclarée morte, vivait 12h plus tard"],
     correctIndex: 5,
     imageUrl: "/assets/facts/319.png",
+    difficulty: 'normal',
   },
   {
     id: 320,
@@ -4184,6 +4489,7 @@ export const FACTS = [
     options: ["Il a nagé 500 m à l'âge de 4 ans","Il a marché 10 km seul","Il a mémorisé 1000 mots en un jour","Il a résolu un Rubik's Cube","Il a sauté à la corde 500 fois","Il devient le plus jeune DJ de club"],
     correctIndex: 5,
     imageUrl: "/assets/facts/320.png",
+    difficulty: 'normal',
   },
   {
     id: 321,
@@ -4197,6 +4503,7 @@ export const FACTS = [
     options: ["La Banque de France","L'Opéra de Paris","La Cave du Louvre","Les Cristalleries de Saint-Louis","Les Hospices de Beaune","La Monnaie de Paris"],
     correctIndex: 5,
     imageUrl: "/assets/facts/321.png",
+    difficulty: 'normal',
   },
   {
     id: 322,
@@ -4210,6 +4517,7 @@ export const FACTS = [
     options: ["Il a couru pieds nus sur de la glace","Il a terminé sans jamais s'arrêter","Il a battu le record du monde à 90 ans","Il a couru en portant son dossard à l'envers","Il a terminé en chantant","Il a terminé le marathon centenaire"],
     correctIndex: 5,
     imageUrl: "/assets/facts/322.png",
+    difficulty: 'normal',
   },
   {
     id: 323,
@@ -4223,6 +4531,7 @@ export const FACTS = [
     options: ["Il pond sans jamais s'accoupler","Il peut nager à reculons","Il peut changer de couleur du plumage","Il peut voler à 200 km/h","Il chante de nuit comme un rossignol","Il a un pénis en spirale"],
     correctIndex: 5,
     imageUrl: "/assets/facts/323.png",
+    difficulty: 'normal',
   },
   {
     id: 324,
@@ -4236,6 +4545,7 @@ export const FACTS = [
     options: ["Il a été mordu par le même serpent","Il a survécu à 7 naufrages","Il a gagné à la loterie 7 fois","Il a survécu à 7 accidents de voiture","Il a été opéré 7 fois du même organe","Il a été frappé par la foudre"],
     correctIndex: 5,
     imageUrl: "/assets/facts/324.png",
+    difficulty: 'normal',
   },
   {
     id: 325,
@@ -4249,6 +4559,7 @@ export const FACTS = [
     options: ["Vol de nid dans les arbres","Vol de pollen entre fleurs","Vol de proies entre prédateurs","Vol de nourriture entre singes","Vol de territoire entre fourmis","Le vol de miel entre abeilles"],
     correctIndex: 5,
     imageUrl: "/assets/facts/325.png",
+    difficulty: 'normal',
   },
   {
     id: 326,
@@ -4262,6 +4573,7 @@ export const FACTS = [
     options: ["Un phare côtier actif depuis 200 ans","Une bougie qui brûle sans s'éteindre","Une batterie fonctionnant depuis 150 ans","Un moulin à vent du Moyen Âge","Un four alimenté au bois sans interruption","Une ampoule qui brille depuis plus de 120 ans"],
     correctIndex: 5,
     imageUrl: "/assets/facts/326.png",
+    difficulty: 'normal',
   },
   {
     id: 327,
@@ -4275,6 +4587,7 @@ export const FACTS = [
     options: ["Pour coller des notes dans les bureaux","Pour marquer les pages d'un livre","Pour noter les courses au supermarché","Pour fixer des photos sur un frigo","Pour décorer les cahiers d'écoliers","Pour créer une super colle"],
     correctIndex: 5,
     imageUrl: "/assets/facts/327.png",
+    difficulty: 'normal',
   },
   {
     id: 328,
@@ -4288,6 +4601,7 @@ export const FACTS = [
     options: ["Pablo Picasso","Joan Miró","Andy Warhol","René Magritte","Marc Chagall","Salvador Dali"],
     correctIndex: 5,
     imageUrl: "/assets/facts/328.png",
+    difficulty: 'normal',
   },
   {
     id: 329,
@@ -4301,6 +4615,7 @@ export const FACTS = [
     options: ["Elle est construite sur l'eau","Elle est dirigée par des prisonniers","Elle est entourée de mines terrestres","Elle est creusée dans une falaise","Elle est invisible depuis la route","C'est une prison pour ex-présidents"],
     correctIndex: 5,
     imageUrl: "/assets/facts/329.png",
+    difficulty: 'normal',
   },
   {
     id: 330,
@@ -4314,6 +4629,7 @@ export const FACTS = [
     options: ["Ils imitent la voix humaine parfaitement","Ils retournent des cadeaux à leurs ennemis","Ils jouent des tours aux passants","Ils se suicident collectivement","Ils plient des brindilles en formes géométriques","Ils se souviennent d'un visage humain menaçant"],
     correctIndex: 5,
     imageUrl: "/assets/facts/330.png",
+    difficulty: 'normal',
   },
   {
     id: 331,
@@ -4327,6 +4643,7 @@ export const FACTS = [
     options: ["Les chaussures à talons","Les casquettes de baseball","Les stylos bille","Les bonbons en sachet","Les parapluies colorés","Le chewing-gum"],
     correctIndex: 5,
     imageUrl: "/assets/facts/331.png",
+    difficulty: 'normal',
   },
   {
     id: 332,
@@ -4340,6 +4657,7 @@ export const FACTS = [
     options: ["Pour éviter que les animaux ne les déterrent","Pour économiser le bois de cercueil","Pour marquer leur territoire familial","Pour indiquer le rang social du défunt","Pour faire tenir les fleurs dessus","Pour empêcher les morts de revenir"],
     correctIndex: 5,
     imageUrl: "/assets/facts/332.png",
+    difficulty: 'normal',
   },
   {
     id: 333,
@@ -4353,6 +4671,7 @@ export const FACTS = [
     options: ["Elle a payé une taxe spéciale","Elle a bricolé les cahiers des élèves","Elle a embauché des acteurs","Elle a construit une classe fictive","Elle a déplacé l'école dans un autre bâtiment","Elle a inscrit… 15 moutons symboliquement"],
     correctIndex: 5,
     imageUrl: "/assets/facts/333.png",
+    difficulty: 'normal',
   },
   {
     id: 334,
@@ -4366,6 +4685,7 @@ export const FACTS = [
     options: ["Il avait des cornes qui poussaient","Il avait la peau qui brillait la nuit","Il avait des dents qui ne tombaient jamais","Il avait des oreilles comme un animal","Il avait le corps recouvert de plumes","Il avait une tache géante, comme une carapace"],
     correctIndex: 5,
     imageUrl: "/assets/facts/334.png",
+    difficulty: 'normal',
   },
   {
     id: 335,
@@ -4379,6 +4699,7 @@ export const FACTS = [
     options: ["Quand il voit un prédateur","Quand il cherche sa nourriture","Quand il protège ses petits","Quand il marque son territoire","Quand il rencontre un rival","Quand on le chatouille"],
     correctIndex: 5,
     imageUrl: "/assets/facts/335.png",
+    difficulty: 'normal',
   },
   {
     id: 336,
@@ -4392,6 +4713,7 @@ export const FACTS = [
     options: ["L'obligation de voter","L'obligation de porter un chapeau","L'obligation de saluer ses voisins","L'obligation de s'excuser après un bruit","L'obligation de cirer ses chaussures","L'obligation de sourire"],
     correctIndex: 5,
     imageUrl: "/assets/facts/336.png",
+    difficulty: 'normal',
   },
   {
     id: 337,
@@ -4405,6 +4727,7 @@ export const FACTS = [
     options: ["Il a survécu à un séisme de magnitude 9","Il a survécu à 3 tsunamis consécutifs","Il a survécu à un tir de missile","Il a survécu à une éruption volcanique","Il a survécu à un effondrement de mine","Il a survécu aux deux bombes atomiques"],
     correctIndex: 5,
     imageUrl: "/assets/facts/337.png",
+    difficulty: 'normal',
   },
   {
     id: 338,
@@ -4418,6 +4741,7 @@ export const FACTS = [
     options: ["Style d'écriture médiéval décoratif","Type de dentelle aux fuseaux","Coupe de viande en boucherie","Mélodie répétée en boucle","Ancienne mesure de longueur","Réseau de fils ou de chemins"],
     correctIndex: 5,
     imageUrl: "/assets/facts/338.png",
+    difficulty: 'normal',
   },
   {
     id: 339,
@@ -4431,6 +4755,7 @@ export const FACTS = [
     options: ["La peur des masques de carnaval","La peur du maquillage excessif","La peur des acteurs de théâtre","La peur des déguisements","La peur des personnages de cirque","La peur des clowns"],
     correctIndex: 5,
     imageUrl: "/assets/facts/339.png",
+    difficulty: 'normal',
   },
   {
     id: 340,
@@ -4444,6 +4769,7 @@ export const FACTS = [
     options: ["Sa lune est faite de glace pure","Son noyau est entièrement liquide","Ses aurores sont permanentes","Sa surface est entièrement couverte d'eau","Ses anneaux sont solides comme du béton","Il pleut des diamants"],
     correctIndex: 5,
     imageUrl: "/assets/facts/340.png",
+    difficulty: 'normal',
   },
   {
     id: 341,
@@ -4457,6 +4783,7 @@ export const FACTS = [
     options: ["Il a jeûné pendant 50 ans","Il a récité des prières 10 000 fois","Il a marché pieds nus sur des braises","Il a médité au fond d'une rivière froide","Il a porté des chaînes pendant 30 ans","Amar Bharati lève son bras depuis 1973 pour Shiva"],
     correctIndex: 5,
     imageUrl: "/assets/facts/341.png",
+    difficulty: 'normal',
   },
   {
     id: 342,
@@ -4470,6 +4797,7 @@ export const FACTS = [
     options: ["Interdit de le faire courir en ville","Interdit de lui faire traverser la rue","Interdit de l'amener dans un avion","Interdit de lui faire porter un harnais","Interdit de l'approcher à moins de 10m","Interdit de leur donner de l'alcool"],
     correctIndex: 5,
     imageUrl: "/assets/facts/342.png",
+    difficulty: 'normal',
   },
   {
     id: 343,
@@ -4483,6 +4811,7 @@ export const FACTS = [
     options: ["Il a appris 200 langues","Il a lu 10 000 livres en un an","Il a mémorisé tous les codes postaux","Il a retenu les paroles de 5000 chansons","Il a mémorisé chaque visage vu en 30 ans","Il a mémorisé 70 000 décimales du nombre Pi"],
     correctIndex: 5,
     imageUrl: "/assets/facts/343.png",
+    difficulty: 'normal',
   },
   {
     id: 344,
@@ -4496,6 +4825,7 @@ export const FACTS = [
     options: ["Les femelles pondent sans se reproduire","Ils changent de sexe selon la saison","Ils peuvent vivre 50 ans sans manger","Ils flottent sans nager","Ils vivent collés deux à deux à vie","Les mâles portent les bébés"],
     correctIndex: 5,
     imageUrl: "/assets/facts/344.png",
+    difficulty: 'normal',
   },
   {
     id: 345,
@@ -4509,6 +4839,7 @@ export const FACTS = [
     options: ["Ce logiciel prédit les crises d'épilepsie","Ce logiciel traduit les aboiements","Ce logiciel analyse les rêves enregistrés","Ce logiciel contrôle l'humeur du chien","Ce logiciel identifie les aboiements","Ce logiciel détecte les frappes de chat"],
     correctIndex: 5,
     imageUrl: "/assets/facts/345.png",
+    difficulty: 'normal',
   },
   {
     id: 346,
@@ -4522,6 +4853,7 @@ export const FACTS = [
     options: ["Interdit de nager sans bonnet","Interdit de plonger tête la première","Interdit de nager trop vite","Interdit de rester plus d'1h","Interdit de toucher le fond","De siffler"],
     correctIndex: 5,
     imageUrl: "/assets/facts/346.png",
+    difficulty: 'normal',
   },
   {
     id: 347,
@@ -4535,6 +4867,7 @@ export const FACTS = [
     options: ["Un canard farci dans une oie","Un lapin farci dans un cochon","Un poulet farci dans un cochon de lait","Une pintade farcie dans un canard","Un faisan farci dans une dinde","17 oiseaux imbriqués et rôtis ensemble"],
     correctIndex: 5,
     imageUrl: "/assets/facts/347.png",
+    difficulty: 'normal',
   },
   {
     id: 348,
@@ -4548,6 +4881,7 @@ export const FACTS = [
     options: ["Pour avoir critiqué le gouvernement","Pour avoir un tatouage visible","Pour avoir refusé de voter","Pour avoir porté un symbole étranger","Pour avoir chanté dans la rue","Avoir une voiture sale"],
     correctIndex: 5,
     imageUrl: "/assets/facts/348.png",
+    difficulty: 'normal',
   },
   {
     id: 349,
@@ -4561,6 +4895,7 @@ export const FACTS = [
     options: ["Il a été écrit en une seule nuit","Il a été lu par un président américain","Il a été brûlé puis réécrit de mémoire","Il a été volé et retrouvé 50 ans après","Il a inspiré 20 films différents","Il a prédit la mort d'un homme 46 ans avant"],
     correctIndex: 5,
     imageUrl: "/assets/facts/349.png",
+    difficulty: 'normal',
   },
   {
     id: 350,
@@ -4574,6 +4909,7 @@ export const FACTS = [
     options: ["Il a plu des poissons du lac voisin","Il est tombé de la grêle rose","Il est tombé de la foudre en boule","Il a plu des grenouilles bleues","Il a neigé du sable du Sahara","Il a neigé du chocolat"],
     correctIndex: 5,
     imageUrl: "/assets/facts/350.png",
+    difficulty: 'normal',
   },
   {
     id: 351,
@@ -4587,6 +4923,7 @@ export const FACTS = [
     options: ["La méduse-boîte","L'holothurie","Le nautile","L'étoile de mer"],
     correctIndex: 3,
     imageUrl: "/assets/facts/351.png",
+    difficulty: 'normal',
   },
   {
     id: 352,
@@ -4600,6 +4937,7 @@ export const FACTS = [
     options: ["L'urubu à tête rouge des plaines d'Amérique du Nord","Le grand corbeau des forêts boréales du Canada","Le vautour africain des savanes d'Afrique subsaharienne","Le milans et faucons pyromanes d'Australie"],
     correctIndex: 3,
     imageUrl: "/assets/facts/352.png",
+    difficulty: 'normal',
   },
   {
     id: 353,
@@ -4613,6 +4951,7 @@ export const FACTS = [
     options: ["La gerbille de Mongolie, isolée de sa colonie","Le cochon d'Inde, séparé de ses congénères","Le lapin nain, séparé de ses congénères","Le rat domestique, privé de contact avec ses congénères"],
     correctIndex: 1,
     imageUrl: "/assets/facts/353.png",
+    difficulty: 'normal',
   },
   {
     id: 355,
@@ -4626,6 +4965,7 @@ export const FACTS = [
     options: ["Le poulpe commun, capable de distinguer jusqu'à 40 visages humains distincts en captivité","La pieuvre mimétique Thaumoctopus mimicus, en reproduisant les expressions faciales de ses observateurs","Le pigeon voyageur Columbia livia, entraîné par la NASA pour identifier des survivants en mer","La guêpe paper wasp, avec une mémoire faciale unique"],
     correctIndex: 3,
     imageUrl: "/assets/facts/355.png",
+    difficulty: 'normal',
   },
   {
     id: 356,
@@ -4639,6 +4979,7 @@ export const FACTS = [
     options: ["L'étoile de mer","Le poulpe à anneaux bleus","La méduse immortelle","L'holothurie des abysses"],
     correctIndex: 0,
     imageUrl: "/assets/facts/356.png",
+    difficulty: 'normal',
   },
   {
     id: 357,
@@ -4652,6 +4993,7 @@ export const FACTS = [
     options: ["Le scarabée rhinocéros, jusqu'à 10 jours sans tête","La punaise de lit, jusqu'à 3 semaines sans tête","Le cafard, jusqu'à 3 semaines sans tête","Le criquet migrateur, jusqu'à 5 semaines sans tête"],
     correctIndex: 2,
     imageUrl: "/assets/facts/357.png",
+    difficulty: 'normal',
   },
   {
     id: 358,
@@ -4665,6 +5007,7 @@ export const FACTS = [
     options: ["Le cachalot, grâce au sommeil vertical synchronisé","Le narval, grâce au sommeil hémisphérique alterné","Le béluga, grâce au sommeil par rotation cérébrale","Le dauphin, grâce au sommeil unihémisphérique"],
     correctIndex: 3,
     imageUrl: "/assets/facts/358.png",
+    difficulty: 'normal',
   },
   {
     id: 359,
@@ -4678,6 +5021,7 @@ export const FACTS = [
     options: ["Le tapir d'Amérique du Sud, dont une sécrétion cutanée orangée se mélange à son lait lors de l'allaitement","L'orque femelle, dont le lait très concentré en graisses oxydées prend une teinte rosée au contact de l'air","Le flamant rose, dont le lait tire sa couleur des pigments caroténoïdes de son régime alimentaire","L'hippopotame, via une sécrétion rouge sang"],
     correctIndex: 3,
     imageUrl: "/assets/facts/359.png",
+    difficulty: 'normal',
   },
   {
     id: 360,
@@ -4691,6 +5035,7 @@ export const FACTS = [
     options: ["Le Loriot émeraude, un passereau arboricole des îles Salomon","Le Calao bicorne, un oiseau à bec démesuré d'Asie du Sud-Est","Le Pitohui à capuchon, un passereau toxique de Papouasie","Le Sclater, une perruche de Nouvelle-Guinée"],
     correctIndex: 3,
     imageUrl: "/assets/facts/360.png",
+    difficulty: 'normal',
   },
   {
     id: 361,
@@ -4704,6 +5049,7 @@ export const FACTS = [
     options: ["L'étoile de mer commune (Asterias rubens), deux individus complets","Le ver de terre (lombric), deux individus complets","Le ver plat (planaire), deux individus complets","L'hydre d'eau douce (Hydra vulgaris), deux individus complets"],
     correctIndex: 2,
     imageUrl: "/assets/facts/361.png",
+    difficulty: 'normal',
   },
   {
     id: 362,
@@ -4717,6 +5063,7 @@ export const FACTS = [
     options: ["Le cafard, jusqu'à 3 semaines décapité","La blatte orientale, jusqu'à 5 semaines décapitée","La mante religieuse, jusqu'à 4 semaines décapitée","Le scarabée rhinocéros, jusqu'à 10 jours décapité"],
     correctIndex: 0,
     imageUrl: "/assets/facts/362.png",
+    difficulty: 'normal',
   },
   {
     id: 364,
@@ -4730,6 +5077,7 @@ export const FACTS = [
     options: ["Le pigeon, champ visuel de 340 degrés","La chouette effraie, champ visuel de 330 degrés","Le maquereau, champ visuel de 350 degrés","Le cheval, champ visuel de 340 degrés"],
     correctIndex: 0,
     imageUrl: "/assets/facts/364.png",
+    difficulty: 'normal',
   },
   {
     id: 365,
@@ -4743,6 +5091,7 @@ export const FACTS = [
     options: ["La pieuvre géante du Pacifique","Le nautile à coquille chambrée","Le crabe fer à cheval","L'étoile de mer"],
     correctIndex: 3,
     imageUrl: "/assets/facts/365.png",
+    difficulty: 'normal',
   },
   {
     id: 366,
@@ -4756,6 +5105,7 @@ export const FACTS = [
     options: ["Le scarabée rhinocéros, jusqu'à 2 semaines","La mante religieuse, jusqu'à 4 semaines","Le phasme bâton, jusqu'à 10 jours","Le cafard, jusqu'à 3 semaines"],
     correctIndex: 3,
     imageUrl: "/assets/facts/366.png",
+    difficulty: 'normal',
   },
   {
     id: 367,
@@ -4769,6 +5119,7 @@ export const FACTS = [
     options: ["Le dauphin, sommeil unihémisphérique","Le béluga, sommeil alternant","Le phoque de Weddell, sommeil sous-glaciaire","L'orque, sommeil hémisphérique"],
     correctIndex: 0,
     imageUrl: "/assets/facts/367.png",
+    difficulty: 'normal',
   },
   {
     id: 368,
@@ -4782,6 +5133,7 @@ export const FACTS = [
     options: ["Le faucon d'Australie, pyromane intentionnel","L'aigle bateleur d'Afrique australe, pyromane intentionnel","Le faucon de Tasmanie, pyromane opportuniste","Le grand cormoran de Nouvelle-Zélande, pêcheur à la torche"],
     correctIndex: 0,
     imageUrl: "/assets/facts/368.png",
+    difficulty: 'normal',
   },
   {
     id: 369,
@@ -4795,6 +5147,7 @@ export const FACTS = [
     options: ["Le rotifère bdelloïde en état de dessiccation prolongée","Le tardigrade en état de cryptobiose","La méduse turritopsis dohrnii en phase de dormance cellulaire","Le scorpion des déserts en état de thanatose métabolique"],
     correctIndex: 1,
     imageUrl: "/assets/facts/369.png",
+    difficulty: 'normal',
   },
   {
     id: 370,
@@ -4808,6 +5161,7 @@ export const FACTS = [
     options: ["Le poisson-clown, avec 88% de précision","La carpe koï, avec 74% de précision","Le poisson-globe, avec 81% de précision","Le poisson archer, avec 81% de précision"],
     correctIndex: 3,
     imageUrl: "/assets/facts/370.png",
+    difficulty: 'normal',
   },
   {
     id: 371,
@@ -4821,6 +5175,7 @@ export const FACTS = [
     options: ["Le hérisson pygmée africain, grâce à l'hibernation cellulaire qui neutralise les cellules précancéreuses","Le rat-taupe nu, grâce à l'acide hyaluronique","Le rat-taupe nu, grâce à une concentration exceptionnelle de mélatonine produite en l'absence de lumière","Le porc-épic, grâce à la kératine renforcée de ses piquants qui régule la division cellulaire"],
     correctIndex: 1,
     imageUrl: "/assets/facts/371.png",
+    difficulty: 'normal',
   },
   {
     id: 372,
@@ -4834,6 +5189,7 @@ export const FACTS = [
     options: ["Certains marlins, comme le marlin bleu du Pacifique","Certains dauphins, comme le dauphin à bec commun","Certains requins, comme le requin-marteau halicorne","Certains requins, comme le grand requin blanc"],
     correctIndex: 3,
     imageUrl: "/assets/facts/372.png",
+    difficulty: 'normal',
   },
   {
     id: 373,
@@ -4847,6 +5203,7 @@ export const FACTS = [
     options: ["Le césium, en 2 heures à température ambiante","Le bismuth fondu, en 3 heures à température ambiante","Le gallium, en 1 heure à température ambiante","Le gallium, en 6 heures à température ambiante"],
     correctIndex: 2,
     imageUrl: "/assets/facts/373.png",
+    difficulty: 'normal',
   },
   {
     id: 374,
@@ -4860,6 +5217,7 @@ export const FACTS = [
     options: ["Environ 30 secondes avant de perdre conscience","Environ 45 secondes, grâce à l'oxygène résiduel dans les poumons","Environ 20 secondes, le temps que la pression artérielle s'effondre complètement","Environ 15 secondes avant de perdre conscience"],
     correctIndex: 3,
     imageUrl: "/assets/facts/374.png",
+    difficulty: 'normal',
   },
   {
     id: 375,
@@ -4873,6 +5231,7 @@ export const FACTS = [
     options: ["La colonne vertébrale adopte une position naturellement plus droite sans la courbure induite par la bipédie terrestre","La microgravité relâche les muscles posturaux qui maintiennent la courbure lombaire","L'absence de gravité dilate les disques intervertébraux","La déshydratation partielle des tissus mous libère de l'espace entre les vertèbres cervicales et thoraciques"],
     correctIndex: 2,
     imageUrl: "/assets/facts/375.png",
+    difficulty: 'normal',
   },
   {
     id: 376,
@@ -4886,6 +5245,7 @@ export const FACTS = [
     options: ["L'eau chaude gèle toujours par le centre alors que l'eau froide gèle par les bords","L'eau chaude gèle parfois plus vite que l'eau froide","L'eau chaude libère une lumière infrarouge mesurable juste avant de se solidifier","L'eau chaude nécessite exactement deux fois plus de temps pour geler que l'eau froide"],
     correctIndex: 1,
     imageUrl: "/assets/facts/376.png",
+    difficulty: 'normal',
   },
   {
     id: 377,
@@ -4899,19 +5259,7 @@ export const FACTS = [
     options: ["Environ 52% de nos gènes sont identiques","Environ 60% de nos gènes sont identiques","Environ 15% de nos gènes sont identiques","Environ 78% de nos gènes sont identiques"],
     correctIndex: 1,
     imageUrl: "/assets/facts/377.png",
-  },
-  {
-    id: 378,
-    category: "sciences",
-    question: "Quelle propriété bizarre possède l'eau chaude face à l'eau froide ?",
-    hint1: "Congélateur",
-    hint2: "Paradoxe",
-    shortAnswer: "Elle gèle plus vite dans certaines conditions",
-    explanation: "C'est l'effet Mpemba : dans certaines conditions, l'eau chaude peut geler plus vite que l'eau froide. Ce paradoxe a été nommé après qu'Erasto Mpemba, un écolier tanzanien, l'a signalé à son professeur en 1963. Les scientifiques débattent encore des mécanismes exacts, impliquant l'évaporation, la convection et les liaisons hydrogène. Une étude de 2016 de l'Université de Stanford a confirmé le phénomène sous certaines conditions précises.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Mpemba_effect",
-    options: ["Elle évapore moins vite en milieu humide saturé","Elle gèle plus vite dans certaines conditions","Elle absorbe davantage les ondes sonores basses fréquences","Elle résiste mieux aux chocs thermiques que l'eau froide"],
-    correctIndex: 1,
-    imageUrl: "/assets/facts/378.png",
+    difficulty: 'normal',
   },
   {
     id: 379,
@@ -4925,6 +5273,7 @@ export const FACTS = [
     options: ["Environ 20 secondes de conscience","Environ 15 secondes de conscience","Environ 8 secondes de conscience","Environ 45 secondes avant perte de conscience totale"],
     correctIndex: 1,
     imageUrl: "/assets/facts/379.png",
+    difficulty: 'normal',
   },
   {
     id: 380,
@@ -4938,6 +5287,7 @@ export const FACTS = [
     options: ["Neptune seul, dont le manteau de glace génère des pressions de 6 millions d'atmosphères","Neptune et Uranus, sous pression extrême","Jupiter seul, grâce à la compression de son noyau de carbone liquide","Saturne uniquement, dont les anneaux contiennent du carbone cristallisé en chute libre"],
     correctIndex: 1,
     imageUrl: "/assets/facts/380.png",
+    difficulty: 'normal',
   },
   {
     id: 381,
@@ -4951,6 +5301,7 @@ export const FACTS = [
     options: ["La moelle épinière, pendant 15 à 30 secondes","Le cerveau, pendant 45 à 60 secondes","Les yeux, pendant 15 à 30 secondes","Le cerveau, pendant 15 à 30 secondes"],
     correctIndex: 3,
     imageUrl: "/assets/facts/381.png",
+    difficulty: 'normal',
   },
   {
     id: 382,
@@ -4964,6 +5315,7 @@ export const FACTS = [
     options: ["Sans gravité, la pression intracrânienne augmentée pousse légèrement sur la base du crâne","Sans gravité, la colonne vertébrale se redresse complètement, effaçant la courbure lombaire","Sans gravité, les os longs des jambes absorbent du liquide et s'allongent","Sans gravité, les disques intervertébraux se dilatent"],
     correctIndex: 3,
     imageUrl: "/assets/facts/382.png",
+    difficulty: 'normal',
   },
   {
     id: 383,
@@ -4977,19 +5329,7 @@ export const FACTS = [
     options: ["Le francium, qui fond à 30,15°C","Le gallium, qui fond à 29,76°C","Le rubidium, qui fond à 31,07°C","L'indium, qui fond à 27,93°C"],
     correctIndex: 1,
     imageUrl: "/assets/facts/383.png",
-  },
-  {
-    id: 384,
-    category: "sciences",
-    question: "Pourquoi les astronautes grandissent-ils dans l'espace ?",
-    hint1: "Colonne",
-    hint2: "Flottement",
-    shortAnswer: "La colonne vertébrale s'étire sans gravité, +5 cm",
-    explanation: "En microgravité, les disques intervertébraux de la colonne vertébrale ne sont plus comprimés par le poids du corps. Résultat : les astronautes grandissent de 3 à 5 centimètres pendant leur séjour dans l'espace. Scott Kelly, après un an à bord de l'ISS, était temporairement 5 cm plus grand que son frère jumeau Mark resté sur Terre. À leur retour sur Terre, la gravité recomprime les vertèbres et ils retrouvent leur taille normale en quelques semaines.",
-    sourceUrl: "https://www.nasa.gov/missions/station/iss-research/the-scott-kelly-twins-study/",
-    options: ["La colonne vertébrale s'étire sans gravité, +5 cm","Les fluides corporels remontent vers le haut du corps et gonflent les cartilages, +4 cm","Les os longs des jambes continuent de croître sans la pression gravitationnelle, +6 cm","L'absence de pression atmosphérique dilate légèrement chaque vertèbre individuelle, +3 cm"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/384.png",
+    difficulty: 'normal',
   },
   {
     id: 385,
@@ -5003,6 +5343,7 @@ export const FACTS = [
     options: ["Le clavier d'ordinateur, 5 fois plus de bactéries","Le menu plastifié d'un restaurant, 12 fois plus de bactéries","Le téléphone portable, 10 fois plus de bactéries","La télécommande de télévision, 8 fois plus de bactéries"],
     correctIndex: 2,
     imageUrl: "/assets/facts/385.png",
+    difficulty: 'normal',
   },
   {
     id: 386,
@@ -5016,6 +5357,7 @@ export const FACTS = [
     options: ["La Mimosa pudica reconnaît et ignore les stimuli répétés après apprentissage","L'Acacia senegal transmet des signaux d'alerte chimiques mémorisés sur 28 jours","La Mimosa pudica détecte et comptabilise les vibrations sonores environnantes","La Mimosa pudica ressent et mémorise les chocs"],
     correctIndex: 3,
     imageUrl: "/assets/facts/386.png",
+    difficulty: 'normal',
   },
   {
     id: 387,
@@ -5029,6 +5371,7 @@ export const FACTS = [
     options: ["Le francium, qui fond à 30,1°C","L'indium, qui fond à 31,2°C","Le rubidium, qui fond à 27,9°C","Le gallium, qui fond à 29,8°C"],
     correctIndex: 3,
     imageUrl: "/assets/facts/387.png",
+    difficulty: 'normal',
   },
   {
     id: 388,
@@ -5042,6 +5385,7 @@ export const FACTS = [
     options: ["Du cyanure d'hydrogène, dans les intestins","Du monoxyde de carbone, dans les poumons","De l'arsine, dans les intestins","Du cyanure d'hydrogène, dans les poumons"],
     correctIndex: 0,
     imageUrl: "/assets/facts/388.png",
+    difficulty: 'normal',
   },
   {
     id: 389,
@@ -5055,6 +5399,7 @@ export const FACTS = [
     options: ["La microgravité réhydrate les disques intervertébraux asséchés","L'absence de pression atmosphérique dilate les espaces articulaires vertébraux","La microgravité allonge les tendons rachidiens comprimés par la posture bipède","La microgravité décompresse les disques intervertébraux"],
     correctIndex: 3,
     imageUrl: "/assets/facts/389.png",
+    difficulty: 'normal',
   },
   {
     id: 390,
@@ -5068,6 +5413,7 @@ export const FACTS = [
     options: ["Un mégacéros géant, ADN extrait du permafrost","Un cheval de Przewalski primitif, ADN extrait du permafrost","Un mammouth laineux, ADN extrait du permafrost","Un rhinocéros laineux, ADN extrait du permafrost"],
     correctIndex: 2,
     imageUrl: "/assets/facts/390.png",
+    difficulty: 'normal',
   },
   {
     id: 391,
@@ -5081,6 +5427,7 @@ export const FACTS = [
     options: ["WASP-43b, où le fer se condense en grêle métallique sur la face nocturne","CoRoT-2b, où la pluie de fer est détectée par le spectrographe HARPS depuis 2019","WASP-76b, où le fer se vaporise et retombe","Kepler-7b, où le fer fondu remonte en geysers avant de retomber"],
     correctIndex: 2,
     imageUrl: "/assets/facts/391.png",
+    difficulty: 'normal',
   },
   {
     id: 392,
@@ -5094,6 +5441,7 @@ export const FACTS = [
     options: ["Le rubidium, qui dissout l'aluminium par réaction électrochimique spontanée à température ambiante","Le gallium, qui dissout l'aluminium en quelques minutes","L'indium, qui s'infiltre dans les joints cristallins de l'aluminium et le fragmente progressivement","Le bismuth fondu, qui décompose l'aluminium en pénétrant ses couches atomiques superficielles"],
     correctIndex: 1,
     imageUrl: "/assets/facts/392.png",
+    difficulty: 'normal',
   },
   {
     id: 393,
@@ -5107,6 +5455,7 @@ export const FACTS = [
     options: ["Mercure, rotation rétrograde complète","Pluton, rotation rétrograde complète","Mars, rotation rétrograde partielle","Vénus, rotation rétrograde complète"],
     correctIndex: 3,
     imageUrl: "/assets/facts/393.png",
+    difficulty: 'normal',
   },
   {
     id: 394,
@@ -5120,6 +5469,7 @@ export const FACTS = [
     options: ["Vénus : rotation de 243 jours, orbite de 225 jours","Pluton : rotation de 153 jours, orbite de 248 ans","Mars : rotation de 24h37, orbite de 687 jours","Jupiter : rotation de 10 heures, orbite de 4 333 jours"],
     correctIndex: 0,
     imageUrl: "/assets/facts/394.png",
+    difficulty: 'normal',
   },
   {
     id: 395,
@@ -5133,6 +5483,7 @@ export const FACTS = [
     options: ["L'armée polonaise avec l'ours Wojtek","L'armée tchécoslovaque avec l'ours Medvěd","L'armée soviétique avec l'ours Mishka","L'armée canadienne avec l'ours Winnipeg"],
     correctIndex: 0,
     imageUrl: "/assets/facts/395.png",
+    difficulty: 'normal',
   },
   {
     id: 396,
@@ -5146,6 +5497,7 @@ export const FACTS = [
     options: ["Néron a incendié Rome pour construire son palais","Caligula a incendié Rome pour éliminer les rats qui envahissaient les greniers impériaux","Néron a incendié Rome pour se débarrasser des archives du Sénat qui documentaient ses crimes","Domitien a brûlé Rome pour effacer les dettes de l'État envers les marchands grecs"],
     correctIndex: 0,
     imageUrl: "/assets/facts/396.png",
+    difficulty: 'normal',
   },
   {
     id: 397,
@@ -5159,6 +5511,7 @@ export const FACTS = [
     options: ["La Prusse, sur ordre du chancelier Otto von Bismarck","La France, sur ordre de Napoléon III","L'Angleterre, sur ordre de la reine Victoria","L'Australie, par décret du gouverneur général Sir Henry Young"],
     correctIndex: 1,
     imageUrl: "/assets/facts/397.png",
+    difficulty: 'normal',
   },
   {
     id: 398,
@@ -5172,6 +5525,7 @@ export const FACTS = [
     options: ["Le pharaon Ménès, fondateur de l'Égypte unifiée","Le pharaon Djoser, commanditaire de la première pyramide à degrés","Le pharaon Seqenenrê Taâ II, dont le crâne fracassé trahit une mort violente au combat","Le pharaon Narmer, unificateur présumé des Deux Terres d'Égypte"],
     correctIndex: 0,
     imageUrl: "/assets/facts/398.png",
+    difficulty: 'normal',
   },
   {
     id: 399,
@@ -5185,6 +5539,7 @@ export const FACTS = [
     options: ["Napoléon, battu à Waterloo… et dans un jeu vidéo en 2015","Custer, battu à Little Bighorn… et dans un wargame organisé par l'académie militaire de West Point en 1976","Wellington, vainqueur à Waterloo… et recalé à un quiz télévisé sur Waterloo en 1915","Napoléon, battu à Waterloo… et lors d'une simulation par ordinateur commandée par l'armée française en 1915"],
     correctIndex: 0,
     imageUrl: "/assets/facts/399.png",
+    difficulty: 'normal',
   },
   {
     id: 400,
@@ -5198,6 +5553,7 @@ export const FACTS = [
     options: ["Léguer 10 000 francs à l'assassin de Wellington","Exiger que son cheval Marengo soit enterré debout face à Londres","Ordonner que son cœur soit bouilli dans du vin de Bourgogne et envoyé à Joséphine","Léguer 10 000 francs à quiconque giflerait publiquement le tsar de Russie"],
     correctIndex: 0,
     imageUrl: "/assets/facts/400.png",
+    difficulty: 'normal',
   },
   {
     id: 401,
@@ -5211,6 +5567,7 @@ export const FACTS = [
     options: ["Ménès, premier pharaon d'Égypte, tué par un hippopotame","Snéfrou, fondateur de la IVe dynastie et père de Khéops, tué par un hippopotame après 24 ans d'un règne sans guerre","Narmer, successeur présumé de Ménès, tué par un hippopotame lors d'une cérémonie d'inauguration des canaux d'irrigation","Amenhotep II, pharaon conquérant réputé pour sa force physique, tué par un hippopotame lors d'une expédition en Nubie"],
     correctIndex: 0,
     imageUrl: "/assets/facts/401.png",
+    difficulty: 'normal',
   },
   {
     id: 402,
@@ -5224,6 +5581,7 @@ export const FACTS = [
     options: ["Six défaites électorales entre 1834 et 1856","Sept défaites électorales entre 1832 et 1858","Cinq défaites électorales entre 1833 et 1856","Neuf défaites électorales entre 1830 et 1858"],
     correctIndex: 1,
     imageUrl: "/assets/facts/402.png",
+    difficulty: 'normal',
   },
   {
     id: 403,
@@ -5237,6 +5595,7 @@ export const FACTS = [
     options: ["L'empire de Gengis Khan, conquérant ailurophobe","L'empire Napoléonien, dont le fondateur était documenté comme ailurophobe","L'empire Romain, dont Jules César souffrait d'ainophobie aiguë","L'empire Ottoman, fondé par Osman Ier, cliniquement ophidiophobe"],
     correctIndex: 0,
     imageUrl: "/assets/facts/403.png",
+    difficulty: 'normal',
   },
   {
     id: 404,
@@ -5250,6 +5609,7 @@ export const FACTS = [
     options: ["La guerre des Deux-Cent-Soixante-Dix Ans entre le Portugal et le Duché de Courlande","La guerre des Quatre-Cent-Seize Ans entre l'Espagne et les Îles Féroé","La guerre des Cent-Cinquante-Huit Ans entre la Suède et la Ville libre de Brême","La guerre des Trois-Cent-Trente-Cinq Ans entre les Pays-Bas et les Îles Scilly"],
     correctIndex: 3,
     imageUrl: "/assets/facts/404.png",
+    difficulty: 'normal',
   },
   {
     id: 405,
@@ -5263,6 +5623,7 @@ export const FACTS = [
     options: ["Aucune — ses uniformes le trahissaient","Aucune — ses cartes de navigation le trahissaient","Aucune — ses chaussures le trahissaient","Aucune — sa poudre à canon le trahissait"],
     correctIndex: 0,
     imageUrl: "/assets/facts/405.png",
+    difficulty: 'normal',
   },
   {
     id: 406,
@@ -5276,6 +5637,7 @@ export const FACTS = [
     options: ["L'empire d'Othon, proclamé et vaincu en 69 ap. J.-C.","L'empire de Didius Julianus, acheté aux enchères et annulé en 193 ap. J.-C.","L'empire de Quintilius, proclamé et renversé en 270 ap. J.-C.","L'empire de Sponsien, proclamé par acclamation et dissous en 260 ap. J.-C."],
     correctIndex: 0,
     imageUrl: "/assets/facts/406.png",
+    difficulty: 'normal',
   },
   {
     id: 407,
@@ -5289,19 +5651,7 @@ export const FACTS = [
     options: ["Pour détruire les réserves de pétrole souterraines en Birmanie occupée","Pour incendier les forêts de bambou servant de couverture aux troupes japonaises","Pour incendier les villes japonaises en papier et bois","Pour perturber les communications radar japonaises en émettant des ultrasons synchronisés"],
     correctIndex: 2,
     imageUrl: "/assets/facts/407.png",
-  },
-  {
-    id: 408,
-    category: "histoire",
-    question: "Quel pays a officiellement déclaré la guerre à… des lapins en 1861 ?",
-    hint1: "Chasse",
-    hint2: "Impérial",
-    shortAnswer: "La France, sous Napoléon III lors d'une chasse catastrophique",
-    explanation: "En juin 1861, Napoléon III organisa une grande chasse au château de Compiègne. Son grand chambellan, le comte de Nieuwerkerke, fit lâcher environ 2 500 lapins domestiques pour l'occasion. Problème : contrairement aux lapins sauvages, les lapins d'élevage n'avaient aucune peur des humains et se précipitèrent directement vers les chasseurs pour quémander de la nourriture. La chasse impériale se transforma en chaos total, les lapins envahissant les jambes des dignitaires. Napoléon III dut battre en retraite.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Napoleon_III",
-    options: ["L'Espagne, sous Isabelle II lors d'une chasse officielle à El Escorial envahie par les rongeurs","L'Angleterre, sous la reine Victoria lors d'une battue royale à Windsor devenue incontrôlable","La Prusse, sous Frédéric-Guillaume IV lors d'un encerclement militaire à Potsdam","La France, sous Napoléon III lors d'une chasse catastrophique"],
-    correctIndex: 3,
-    imageUrl: "/assets/facts/408.png",
+    difficulty: 'normal',
   },
   {
     id: 409,
@@ -5315,6 +5665,7 @@ export const FACTS = [
     options: ["Corfou, pillée par la flotte croisée et transférée à Venise en paiement des frais d'armement naval","Zara (Zadar), vendue par les croisés à Venise","Trieste, saccagée par les croisés et annexée par Venise suite à un accord de transport naval en 1202","Spalato (Split), livrée par les chevaliers francs à Venise en échange du passage vers la Terre Sainte"],
     correctIndex: 1,
     imageUrl: "/assets/facts/409.png",
+    difficulty: 'normal',
   },
   {
     id: 410,
@@ -5328,6 +5679,7 @@ export const FACTS = [
     options: ["Des lapins, lâchés en masse sur ses soldats","Des poulets, lâchés en masse sur ses soldats","Des chèvres, lâchées en masse sur ses généraux","Des canards, lâchés en masse sur ses officiers"],
     correctIndex: 0,
     imageUrl: "/assets/facts/410.png",
+    difficulty: 'normal',
   },
   {
     id: 411,
@@ -5341,6 +5693,7 @@ export const FACTS = [
     options: ["Les bijoux en jade et en ivoire personnels","Les miroirs en argent poli et en bronze","Les monnaies d'or et d'argent étrangères frappées","La vaisselle en or et en argent personnelle"],
     correctIndex: 3,
     imageUrl: "/assets/facts/411.png",
+    difficulty: 'normal',
   },
   {
     id: 412,
@@ -5354,6 +5707,7 @@ export const FACTS = [
     options: ["L'Australie, contre des émeus","Le Canada, contre des oies bernaches","La Nouvelle-Zélande, contre des kiwis","L'Afrique du Sud, contre des autruches"],
     correctIndex: 0,
     imageUrl: "/assets/facts/412.png",
+    difficulty: 'normal',
   },
   {
     id: 413,
@@ -5367,6 +5721,7 @@ export const FACTS = [
     options: ["Pour intimider l'URSS pendant la Guerre Froide","Pour créer un cratère visible servant de repère de navigation aux missiles intercontinentaux","Pour détruire une base secrète soviétique suspectée d'être installée sur la face cachée de la Lune","Pour célébrer le 4 juillet 1958 avec une explosion visible depuis le territoire américain"],
     correctIndex: 0,
     imageUrl: "/assets/facts/413.png",
+    difficulty: 'normal',
   },
   {
     id: 414,
@@ -5380,6 +5735,7 @@ export const FACTS = [
     options: ["L'empereur carolingien Louis le Bègue, exhumé et jugé par ses propres évêques","Le roi lombard Grimoald IV, exhumé et jugé coupable de simonie post-mortem","Le pape Formose, déterré et mis en procès","Le roi wisigoth Wamba, déterré et condamné pour trahison envers l'Église"],
     correctIndex: 2,
     imageUrl: "/assets/facts/414.png",
+    difficulty: 'normal',
   },
   {
     id: 415,
@@ -5393,6 +5749,7 @@ export const FACTS = [
     options: ["Un troupeau de chèvres militaires qui envahit son quartier général de Tilsit","Une nuée de poulets enragés lâchés par erreur lors d'un banquet de victoire","Une battue de lapins domestiques qui l'a mis en fuite","Une charge de dindons domestiques qui bloqua sa calèche pendant deux heures"],
     correctIndex: 2,
     imageUrl: "/assets/facts/415.png",
+    difficulty: 'normal',
   },
   {
     id: 416,
@@ -5406,6 +5763,7 @@ export const FACTS = [
     options: ["Une opération de guerre psychologique visant à démoraliser les troupes ennemies avec des animaux domestiques","Un projet de l'armée utilisant des chats comme détecteurs biologiques de gaz chimiques en terrain hostile","Un projet CIA utilisant des chats comme espions vivants","Un programme militaire testant des chats équipés de caméras miniatures pour la reconnaissance aérienne"],
     correctIndex: 2,
     imageUrl: "/assets/facts/416.png",
+    difficulty: 'normal',
   },
   {
     id: 417,
@@ -5419,6 +5777,7 @@ export const FACTS = [
     options: ["Le salak, banni pour ses sécrétions acides et son fumet de vinaigre","Le jackfruit, banni pour ses émanations de fermentation incontrôlée","Le mangoustan, banni pour ses taches indélébiles et son arôme sulfureux","Le durian, banni pour son odeur pestilentielle"],
     correctIndex: 3,
     imageUrl: "/assets/facts/417.png",
+    difficulty: 'normal',
   },
   {
     id: 418,
@@ -5432,6 +5791,7 @@ export const FACTS = [
     options: ["La cochenille, insecte broyé par millions","Le kermès, puceron séché extrait de chênes méditerranéens","La canthaxanthine, crustacé microscopique filtré en eau douce","La laque de gomme, coléoptère broyé issu de forêts tropicales"],
     correctIndex: 0,
     imageUrl: "/assets/facts/418.png",
+    difficulty: 'normal',
   },
   {
     id: 419,
@@ -5445,6 +5805,7 @@ export const FACTS = [
     options: ["Le fugu, poisson contenant une toxine mortelle","Le fugu, poisson contenant une bactérie à croissance ultra-rapide","Le fugu, crustacé dont la carapace renferme une enzyme paralysante","Le mochi, gâteau de riz gluant qui provoque des étouffements fatals"],
     correctIndex: 0,
     imageUrl: "/assets/facts/419.png",
+    difficulty: 'normal',
   },
   {
     id: 420,
@@ -5458,6 +5819,7 @@ export const FACTS = [
     options: ["Le Roquefort, affiné dans les caves de Cambalou","Le Fourme d'Ambert, affiné dans les tunnels de lave du Massif Central","Le Gorgonzola Piccante, affiné dans les grottes volcaniques de Lombardie","Le Cabrales, vieilli uniquement dans les cavernes calcaires des Asturies"],
     correctIndex: 0,
     imageUrl: "/assets/facts/420.png",
+    difficulty: 'normal',
   },
   {
     id: 421,
@@ -5471,6 +5833,7 @@ export const FACTS = [
     options: ["Prescrit contre les migraines et les vertiges","Prescrit contre la fièvre jaune et le scorbut","Recommandé contre les rhumatismes et les douleurs articulaires","Prescrit contre la diarrhée et l'indigestion"],
     correctIndex: 3,
     imageUrl: "/assets/facts/421.png",
+    difficulty: 'normal',
   },
   {
     id: 422,
@@ -5484,6 +5847,7 @@ export const FACTS = [
     options: ["Le fruit du pain, jusqu'à 12 kg sous pression","Le jacquier, jusqu'à 30 kg sous pression","La papaye géante, jusqu'à 18 kg sous pression","Le jacquier, jusqu'à 55 kg sous pression"],
     correctIndex: 3,
     imageUrl: "/assets/facts/422.png",
+    difficulty: 'normal',
   },
   {
     id: 423,
@@ -5497,6 +5861,7 @@ export const FACTS = [
     options: ["La bière, ordonnée contre la fièvre en Égypte","Le vinaigre, ordonné contre les maux de ventre à Rome","Le miel, prescrit contre la mélancolie dans la Grèce antique","Le pain rassis, ordonné contre les infections en Égypte"],
     correctIndex: 0,
     imageUrl: "/assets/facts/423.png",
+    difficulty: 'normal',
   },
   {
     id: 424,
@@ -5510,6 +5875,7 @@ export const FACTS = [
     options: ["Comme remède contre la diarrhée et l'indigestion","Comme fortifiant recommandé aux enfants souffrant d'anémie","Comme purgatif naturel prescrit en cure de désintoxication","Comme antiseptique pour désinfecter les plaies légères et les coupures"],
     correctIndex: 0,
     imageUrl: "/assets/facts/424.png",
+    difficulty: 'normal',
   },
   {
     id: 425,
@@ -5523,6 +5889,7 @@ export const FACTS = [
     options: ["L'époisses, banni par la SNCF et déconseillé en cabine","Le munster alsacien, interdit par la Deutsche Bahn et signalé par Interpol comme 'arme olfactive'","Le vieux-boulogne, classé par une étude de Cranfield University comme le fromage le plus malodorant du monde et formellement déconseillé en cabine","Le limburger belge, banni des transports Eurostar depuis 1998 suite à une évacuation d'urgence"],
     correctIndex: 0,
     imageUrl: "/assets/facts/425.png",
+    difficulty: 'normal',
   },
   {
     id: 426,
@@ -5536,6 +5903,7 @@ export const FACTS = [
     options: ["Les tomates cerises, jusqu'à 70 mg par kilo","Les poires, jusqu'à 60 mg par kilo","Les raisins blancs, jusqu'à 55 mg par kilo","Les carottes, jusqu'à 80 mg par kilo"],
     correctIndex: 1,
     imageUrl: "/assets/facts/426.png",
+    difficulty: 'normal',
   },
   {
     id: 427,
@@ -5549,6 +5917,7 @@ export const FACTS = [
     options: ["La moutarde, prescrite contre les douleurs articulaires en 1841","Le ketchup, prescrit contre les migraines chroniques en 1834","Le ketchup, prescrit contre la diarrhée en 1834","Le vinaigre de cidre, commercialisé en pharmacie contre la fièvre typhoïde en 1829"],
     correctIndex: 2,
     imageUrl: "/assets/facts/427.png",
+    difficulty: 'normal',
   },
   {
     id: 428,
@@ -5562,6 +5931,7 @@ export const FACTS = [
     options: ["Le limburger, fromage belge dont l'odeur est officiellement comparée à des pieds non lavés","Le surströmming, hareng suédois fermenté classé substance odorante dangereuse","Le vieux-boulogne, fromage français élu fromage le plus malodorant du monde par une université britannique","Le durian, fruit si malodorant qu'il est banni"],
     correctIndex: 3,
     imageUrl: "/assets/facts/428.png",
+    difficulty: 'normal',
   },
   {
     id: 429,
@@ -5575,6 +5945,7 @@ export const FACTS = [
     options: ["Il contenait de la cocaïne et était vendu comme remède","Il contenait de l'opium et était vendu comme remède","Il contenait du cannabis et était vendu comme sédatif","Il contenait de la morphine et était vendu comme analgésique"],
     correctIndex: 0,
     imageUrl: "/assets/facts/429.png",
+    difficulty: 'normal',
   },
   {
     id: 430,
@@ -5588,6 +5959,7 @@ export const FACTS = [
     options: ["De la gélatine extraite de crêtes de coq, appelée gallicolle","De la colle de poisson, appelée ichtyocolle","De l'albumine de sang de bœuf séché, appelée hématocolle","Des protéines de soie de ver à soie, appelée séricine de filtration"],
     correctIndex: 1,
     imageUrl: "/assets/facts/430.png",
+    difficulty: 'normal',
   },
   {
     id: 431,
@@ -5601,6 +5973,7 @@ export const FACTS = [
     options: ["L'ambre gris, vomi de cachalot vendu comme épice","Le musc de marsouin, bile séchée vendu comme exhausteur de goût","L'adipocire de dauphin, graisse intestinale affinée utilisée comme beurre de luxe","La castoreum, sécrétion anale de castor utilisée comme arôme vanille"],
     correctIndex: 0,
     imageUrl: "/assets/facts/431.png",
+    difficulty: 'normal',
   },
   {
     id: 432,
@@ -5614,6 +5987,7 @@ export const FACTS = [
     options: ["Le Roquefort, premier AOP de l'histoire","Le Munster, dont l'abbaye éponyme obtint un monopole de fabrication reconnu par le Saint-Empire romain germanique en 1415","Le Bleu d'Auvergne, premier fromage à pâte persillée protégé par une bulle pontificale d'Avignon datant de 1409","Le Cantal, dont une ordonnance du roi Jean II interdit dès 1380 toute imitation hors des monts d'Auvergne"],
     correctIndex: 0,
     imageUrl: "/assets/facts/432.png",
+    difficulty: 'normal',
   },
   {
     id: 433,
@@ -5627,6 +6001,7 @@ export const FACTS = [
     options: ["Des grains digérés et déféqués par une civette","Des grains régurgités et séchés par un calao à casque rond","Des grains prédigérés par une chauve-souris frugivore de Sumatra","Des grains fermentés dans l'estomac d'un éléphant pygmée de Bornéo"],
     correctIndex: 0,
     imageUrl: "/assets/facts/433.png",
+    difficulty: 'normal',
   },
   {
     id: 434,
@@ -5640,6 +6015,7 @@ export const FACTS = [
     options: ["Le cacao valait plus que l'or pour eux","Les fèves servaient aussi de médicament contre la fièvre des dieux","Les fèves étaient bénies par les prêtres avant chaque transaction commerciale","Le cacao était impossible à contrefaire contrairement à l'or"],
     correctIndex: 0,
     imageUrl: "/assets/facts/434.png",
+    difficulty: 'normal',
   },
   {
     id: 435,
@@ -5653,6 +6029,7 @@ export const FACTS = [
     options: ["La pomme de terre, cultivée comme fleur d'ornement dans les jardins royaux","La tomate, plantée comme plante ornementale","L'aubergine, portée en broche décorative par les nobles italiens","La courgette, tressée en couronne florale lors des banquets aristocratiques"],
     correctIndex: 1,
     imageUrl: "/assets/facts/435.png",
+    difficulty: 'normal',
   },
   {
     id: 436,
@@ -5666,19 +6043,7 @@ export const FACTS = [
     options: ["La glace sur bâtonnet, oubliée dehors par un enfant","La guimauve industrielle, née d'un pot de pâte sucrée oublié dans la chambre froide d'un boucher de Chicago","La barbe à papa, dont le sucre en filaments fut obtenu en renversant un chaudron sur un ventilateur de forge","Le caramel soufflé, découvert quand un pâtissier de Boston oublia son sucre chauffé près d'une bouche de vapeur"],
     correctIndex: 0,
     imageUrl: "/assets/facts/436.png",
-  },
-  {
-    id: 437,
-    category: "gastronomie",
-    question: "Quel fruit était interdit dans les hôtels de Singapour à cause de son odeur ?",
-    hint1: "Odeur",
-    hint2: "Épines",
-    shortAnswer: "Le durian, banni dans les transports et hôtels",
-    explanation: "Le durian, surnommé le 'roi des fruits' en Asie du Sud-Est, est interdit dans les hôtels, les transports en commun et de nombreux espaces publics à Singapour. Son odeur est décrite comme un mélange de chaussettes sales, d'oignons pourris et de gaz. Des amendes allant jusqu'à 500 dollars singapouriens peuvent être infligées. Pourtant, ce fruit est considéré comme un véritable délice gastronomique et se vend parfois plus de 50€ pièce.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Durian",
-    options: ["Le salak, banni dans les transports et hôtels","Le noni, banni dans les transports et hôtels","Le mangoustan, banni dans les transports et hôtels","Le durian, banni dans les transports et hôtels"],
-    correctIndex: 3,
-    imageUrl: "/assets/facts/437.png",
+    difficulty: 'normal',
   },
   {
     id: 438,
@@ -5692,6 +6057,7 @@ export const FACTS = [
     options: ["Du cuivre dissous pour lui donner une couleur dorée","De l'arsenic en poudre pour masquer son acidité","Du soufre volcanique pour accentuer son arôme","Du plomb fondu pour le sucrer"],
     correctIndex: 3,
     imageUrl: "/assets/facts/438.png",
+    difficulty: 'normal',
   },
   {
     id: 439,
@@ -5705,6 +6071,7 @@ export const FACTS = [
     options: ["La tauromachie artistique… non : le tir à la corde","La marche en canard synchronisée… non : le marathon de tandem à vélo","La lutte en boue froide… non : la natation avec obstacles (nage avec poteaux et tonneaux dans le bassin)","Le golf sous-marin… non : le saut en longueur à reculons"],
     correctIndex: 0,
     imageUrl: "/assets/facts/439.png",
+    difficulty: 'normal',
   },
   {
     id: 440,
@@ -5718,6 +6085,7 @@ export const FACTS = [
     options: ["Jamais, malgré 23 ans de carrière","Deux fois, dont une à titre posthume","Une seule fois, disqualifié après l'arrivée","Une seule fois, mort en selle"],
     correctIndex: 3,
     imageUrl: "/assets/facts/440.png",
+    difficulty: 'normal',
   },
   {
     id: 441,
@@ -5731,6 +6099,7 @@ export const FACTS = [
     options: ["Protocole victorien interdisant de déclarer forfait, abandonné faute de balles neuves","Pluie tropicale répétée rallongeant les délais, repris jusqu'à épuisement des équipes","Aucun arbitre disponible le week-end, chaque interruption relançait le compteur officiel","Pas de limite de temps fixée, arrêté pour attraper le bateau"],
     correctIndex: 3,
     imageUrl: "/assets/facts/441.png",
+    difficulty: 'normal',
   },
   {
     id: 442,
@@ -5744,6 +6113,7 @@ export const FACTS = [
     options: ["Il était champion olympique imbattu 5 fois","Il était recordman du monde du 200 mètres papillon","Il était champion olympique imbattu 3 fois","Il avait remporté 5 médailles dont 3 en or et 2 en argent"],
     correctIndex: 0,
     imageUrl: "/assets/facts/442.png",
+    difficulty: 'normal',
   },
   {
     id: 443,
@@ -5757,6 +6127,7 @@ export const FACTS = [
     options: ["La Côte d'Ivoire, avec un skieur en 2002","Le Sénégal, avec un fondeur en 2006","Le Ghana, avec un skieur en 2010","Le Nigeria, avec un skieur en 2014"],
     correctIndex: 2,
     imageUrl: "/assets/facts/443.png",
+    difficulty: 'normal',
   },
   {
     id: 444,
@@ -5770,6 +6141,7 @@ export const FACTS = [
     options: ["Le tir à la corde, retiré en 1920","Le golf, retiré en 1908","Le cricket, retiré en 1904","La crosse, retirée en 1908"],
     correctIndex: 0,
     imageUrl: "/assets/facts/444.png",
+    difficulty: 'normal',
   },
   {
     id: 445,
@@ -5783,6 +6155,7 @@ export const FACTS = [
     options: ["Roy Gilchrist, frappé deux fois en 1959","Garfield Sobers, frappé deux fois en 1963","Colin Bland, frappé deux fois en 1962","Conrad Hunte, frappé deux fois en 1960"],
     correctIndex: 0,
     imageUrl: "/assets/facts/445.png",
+    difficulty: 'normal',
   },
   {
     id: 446,
@@ -5796,6 +6169,7 @@ export const FACTS = [
     options: ["Zéro fois officiellement, car la IAAF ne reconnaît pas la célébration anticipée comme motif de disqualification","Une fois, aux Championnats du Monde d'Osaka en 2007, avant même ses débuts olympiques","Une fois, aux JO de Pékin en 2008","Trois fois, mais uniquement lors de courses de relais où ses coéquipiers ont terminé sans lui"],
     correctIndex: 2,
     imageUrl: "/assets/facts/446.png",
+    difficulty: 'normal',
   },
   {
     id: 447,
@@ -5809,6 +6183,7 @@ export const FACTS = [
     options: ["Le décathlon, dont une version féminine a été interdite en 1934 par le CIO au motif que les femmes 'dominaient trop nettement les hommes dans plusieurs épreuves combinées'","Le triathlon olympique, interdit aux femmes jusqu'en 1996 après trois victoires féminines consécutives aux championnats du monde","Le marathon olympique, interdit aux femmes jusqu'en 1984","Le 800m olympique, réintroduit pour les femmes en 1960 après avoir été supprimé en 1928 suite aux malaises de coureuses à l'arrivée"],
     correctIndex: 2,
     imageUrl: "/assets/facts/447.png",
+    difficulty: 'normal',
   },
   {
     id: 448,
@@ -5822,6 +6197,7 @@ export const FACTS = [
     options: ["Un photographe de presse à Marseille en 1997, but refusé après protest officielle de la FIFA","Un ramasseur de balle du FC Séville en 2005, but validé et comptabilisé en Coupe UEFA","Un supporter de Newcastle en 1999, but officiellement homologué pendant 48h avant annulation","Un supporter d'Aston Villa en 2002, but validé puis annulé"],
     correctIndex: 3,
     imageUrl: "/assets/facts/448.png",
+    difficulty: 'normal',
   },
   {
     id: 449,
@@ -5835,6 +6211,7 @@ export const FACTS = [
     options: ["Le lancer de poulets vivants","La chasse au lapin en enclos","Le tir aux poissons rouges vivants","Le tir aux pigeons vivants"],
     correctIndex: 3,
     imageUrl: "/assets/facts/449.png",
+    difficulty: 'normal',
   },
   {
     id: 450,
@@ -5848,6 +6225,7 @@ export const FACTS = [
     options: ["53 minutes à 0 point lors d'un Test Match","63 minutes à 0 point lors d'un Test Match","101 minutes à 0 point lors d'un Test Match","77 minutes à 0 point lors d'un Test Match"],
     correctIndex: 3,
     imageUrl: "/assets/facts/450.png",
+    difficulty: 'normal',
   },
   {
     id: 451,
@@ -5861,6 +6239,7 @@ export const FACTS = [
     options: ["La gymnastique, avec une enfant de 10 ans comme juge de ligne","Le tir à l'arc, avec un enfant de 10 ans comme ramasseur de flèches officiel","L'aviron, avec un enfant de 10 ans comme barreur","La natation, avec un enfant de 10 ans comme vigie de couloir"],
     correctIndex: 2,
     imageUrl: "/assets/facts/451.png",
+    difficulty: 'normal',
   },
   {
     id: 452,
@@ -5874,19 +6253,7 @@ export const FACTS = [
     options: ["Un seul ravitaillement en eau pour 40 km de course","Des officiels qui aspergaient les coureurs de talc pour mesurer leur transpiration","Un seul médecin pour 32 coureurs, positionné uniquement à l'arrivée","Le parcours traversait une décharge industrielle par 40°C de chaleur"],
     correctIndex: 0,
     imageUrl: "/assets/facts/452.png",
-  },
-  {
-    id: 453,
-    category: "sport",
-    question: "Quel footballeur professionnel a marqué un but contre son propre camp… depuis les tribunes ?",
-    hint1: "Filet",
-    hint2: "Erreur",
-    shortAnswer: "Un supporter a dévié le ballon et marqué un but officiel",
-    explanation: "En 2012, lors d'un match de la ligue amateur panaméenne, un supporter envahissant la touche a involontairement dévié un tir et envoyé le ballon dans les filets. L'arbitre, après consultation, a validé le but contre son camp. Ce cas est cité dans les annales du football comme l'un des buts les plus absurdes jamais accordés. La FIFA a depuis clarifié ses règles concernant les interférences extérieures sur le terrain.",
-    sourceUrl: "https://www.guinnessworldrecords.com/news/2012/9/weirdest-own-goals-in-football-history",
-    options: ["Un supporter a dévié le ballon et marqué un but officiel","Un joueur suspendu, assis en tribune, a lancé un objet qui a redirigé le tir vers ses propres filets","Un médecin soignant un blessé en bord de terrain a bloqué le ballon avec sa mallette, le renvoyant dans le but","Un entraîneur expulsé, encore présent en zone technique, a dévié involontairement le ballon qui est entré dans son propre but"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/453.png",
+    difficulty: 'normal',
   },
   {
     id: 454,
@@ -5900,6 +6267,7 @@ export const FACTS = [
     options: ["Le tir aux lapins vivants","Le tir aux pigeons vivants","Le lancer de pigeon (distance)","Le tir aux colombes vivantes"],
     correctIndex: 1,
     imageUrl: "/assets/facts/454.png",
+    difficulty: 'normal',
   },
   {
     id: 455,
@@ -5913,6 +6281,7 @@ export const FACTS = [
     options: ["Isaak Hayik, gardien israélien en 2016","Isaak Hayik, gardien israélien en 2019","Ladislao Mazurkiewicz, gardien uruguayen en 2021","Robert Carmichael, attaquant écossais en 2017"],
     correctIndex: 1,
     imageUrl: "/assets/facts/455.png",
+    difficulty: 'normal',
   },
   {
     id: 456,
@@ -5926,6 +6295,7 @@ export const FACTS = [
     options: ["11 heures et 5 minutes sur 3 jours","8 heures et 47 minutes sur 2 jours","10 heures et 14 minutes sur 3 jours","9 heures et 58 minutes sur 3 jours"],
     correctIndex: 0,
     imageUrl: "/assets/facts/456.png",
+    difficulty: 'normal',
   },
   {
     id: 457,
@@ -5939,6 +6309,7 @@ export const FACTS = [
     options: ["Kálmán Takács, pour une épreuve de tir abandonnée en 1936","Shizo Kanakuri, pour un marathon inachevé en 1912","Carlo Airoldi, pour une course à pied disqualifiée en 1896 à Athènes","Félix Carvajal, pour un marathon inachevé en 1904 à Saint-Louis"],
     correctIndex: 1,
     imageUrl: "/assets/facts/457.png",
+    difficulty: 'normal',
   },
   {
     id: 458,
@@ -5952,6 +6323,7 @@ export const FACTS = [
     options: ["Le hockey sur glace, à cause de la Coupe Stanley","La Formule 1, à cause du trophée du Grand Prix de Monaco en verre soufflé, cassé et source de coupures lors de 9 podiums consécutifs","Le football américain, à cause du Super Bowl Trophy dont les bords dorés ont lacéré les mains de 12 quarterbacks","Le cricket, à cause de l'Urn des Ashes dont les éclats de céramique ont hospitalisé trois capitaines australiens"],
     correctIndex: 0,
     imageUrl: "/assets/facts/458.png",
+    difficulty: 'normal',
   },
   {
     id: 459,
@@ -5965,6 +6337,7 @@ export const FACTS = [
     options: ["La lutte gréco-romaine à la corde, retirée en 1924","Le tir à la corde, retiré en 1920","La nage en rivière en courant, retirée en 1904","Le lancer de marteau féminin, retiré en 1912"],
     correctIndex: 1,
     imageUrl: "/assets/facts/459.png",
+    difficulty: 'normal',
   },
   {
     id: 460,
@@ -5978,6 +6351,7 @@ export const FACTS = [
     options: ["Les 4 premiers, dont Maurice Garin","Le peloton entier, sauf un seul coureur resté sur son vélo","Les 3 premiers, dont Hippolyte Aucouturier","Le seul vainqueur, Maurice Garin, pris en flagrant délit à la gare de Lyon"],
     correctIndex: 0,
     imageUrl: "/assets/facts/460.png",
+    difficulty: 'normal',
   },
   {
     id: 461,
@@ -5991,6 +6365,7 @@ export const FACTS = [
     options: ["La Jeune Fille à la perle de Johannes Vermeer, volée à La Haye et récupérée suite à une dénonciation postale","Le Sourire de Beatrice de Raphaël, subtilisé au Vatican et retrouvé dans une pension romaine en 1913","La Joconde de Léonard de Vinci","La Dame à l'hermine de Léonard de Vinci, dérobée au Louvre en 1910 et retrouvée enveloppée dans un journal milanais"],
     correctIndex: 2,
     imageUrl: "/assets/facts/461.png",
+    difficulty: 'normal',
   },
   {
     id: 462,
@@ -6004,6 +6379,7 @@ export const FACTS = [
     options: ["John Baldessari avec ses Pure Paintings","Robert Rauschenberg avec ses White Paintings","Ad Reinhardt avec ses Ultimate White Canvases","Lucio Fontana avec ses Concetti Spaziali Bianchi"],
     correctIndex: 1,
     imageUrl: "/assets/facts/462.png",
+    difficulty: 'normal',
   },
   {
     id: 463,
@@ -6017,6 +6393,7 @@ export const FACTS = [
     options: ["Hermann Nitsch, actionniste autrichien, en 1973","Marina Abramović, performeuse serbe, en 1976","Vito Acconci, artiste new-yorkais, en 1975","Joseph Beuys, performeur allemand, en 1974"],
     correctIndex: 3,
     imageUrl: "/assets/facts/463.png",
+    difficulty: 'normal',
   },
   {
     id: 464,
@@ -6030,6 +6407,7 @@ export const FACTS = [
     options: ["Campbell's Soup Cans d'Andy Warhol, autodétruit en 2015","Girl with Balloon de Banksy, autodétruite en 2018","Sunflowers de Van Gogh, autodétruit en 2019","Le Cri de Munch, autodétruit en 2016"],
     correctIndex: 1,
     imageUrl: "/assets/facts/464.png",
+    difficulty: 'normal',
   },
   {
     id: 465,
@@ -6043,6 +6421,7 @@ export const FACTS = [
     options: ["Le peintre surréaliste Salvador Dalí","Le peintre expressionniste Egon Schiele","Le peintre symboliste Gustave Moreau","Le peintre post-impressionniste Paul Gauguin"],
     correctIndex: 0,
     imageUrl: "/assets/facts/465.png",
+    difficulty: 'normal',
   },
   {
     id: 466,
@@ -6056,6 +6435,7 @@ export const FACTS = [
     options: ["«Bloodlines» de Damien Hirst, une série de toiles réalisées avec son propre sang mélangé à de la résine époxy","«Vital Signs» de Tracey Emin, une installation de toiles brodées imprégnées de son sang menstruel conservées sous vide","«Haemograph #1» de Francis Bacon, réalisé en mélangeant son sang à l'huile de lin pour intensifier les tons rouges de ses figures","«Self» de Marc Quinn, un autoportrait en sang congelé"],
     correctIndex: 3,
     imageUrl: "/assets/facts/466.png",
+    difficulty: 'normal',
   },
   {
     id: 467,
@@ -6069,6 +6449,7 @@ export const FACTS = [
     options: ["Maurizio Cattelan, avec «Comedian» en 2017","Maurizio Cattelan, avec «Perishable Asset» en 2021","Stefano Arienti, avec «Comedian» en 2019","Maurizio Cattelan, avec «Comedian» en 2019"],
     correctIndex: 3,
     imageUrl: "/assets/facts/467.png",
+    difficulty: 'normal',
   },
   {
     id: 468,
@@ -6082,6 +6463,7 @@ export const FACTS = [
     options: ["Des peintures de Congo le chimpanzé, vendues 14 000 $ en 1999","Des peintures de Nim le chimpanzé du projet Nim, vendues 29 500 $ en 2011","Des peintures de Cheetah le chimpanzé de Tarzan, vendues 18 500 $ en 1998","Des peintures de Congo le chimpanzé, vendues 26 000 $ en 2005"],
     correctIndex: 3,
     imageUrl: "/assets/facts/468.png",
+    difficulty: 'normal',
   },
   {
     id: 469,
@@ -6095,6 +6477,7 @@ export const FACTS = [
     options: ["«Untitled Breath» de Damien Hirst, une performance d'expiration unique conservée dans un contrat notarié","«Niente» de Maurizio Cattelan, un piédestal invisible accompagné d'un certificat de non-existence","«Lo Spazio» de Lucio Fontana, une installation de vide certifié délimitée par une lumière ultraviolette","«Io Sono» de Salvatore Garau, une sculpture en «vide immatériel»"],
     correctIndex: 3,
     imageUrl: "/assets/facts/469.png",
+    difficulty: 'normal',
   },
   {
     id: 470,
@@ -6108,6 +6491,7 @@ export const FACTS = [
     options: ["Salvador Dalí, avec sa série «Metamorphosis Organiques» à base d'urine sur parchemin doré","Andy Warhol, avec sa série «Oxidation Paintings» à base d'urine sur cuivre","Keith Haring, avec sa série «Chemical Reactions» à base d'urine sur ardoise phosphorescente","Francis Bacon, avec sa série «Bodily Compositions» à base d'urine sur panneau de verre"],
     correctIndex: 1,
     imageUrl: "/assets/facts/470.png",
+    difficulty: 'normal',
   },
   {
     id: 471,
@@ -6121,6 +6505,7 @@ export const FACTS = [
     options: ["La Joconde par Léonard de Vinci, qui n'avait reçu aucune formation académique officielle","Les Noces de Cana par Henri Rousseau, douanier autodidacte","La Liberté guidant le peuple par Eugène Delacroix, autodidacte formé dans les rues de Paris","Le Radeau de la Méduse par Théodore Géricault, ancien marin reconverti"],
     correctIndex: 1,
     imageUrl: "/assets/facts/471.png",
+    difficulty: 'normal',
   },
   {
     id: 472,
@@ -6134,6 +6519,7 @@ export const FACTS = [
     options: ["Le Cri de Munch au Musée National d'Oslo","Les Tournesols de Van Gogh à la National Gallery de Londres","La Joconde de Léonard de Vinci au Musée du Louvre de Paris","Les Tournesols de Van Gogh au Rijksmuseum d'Amsterdam"],
     correctIndex: 1,
     imageUrl: "/assets/facts/472.png",
+    difficulty: 'normal',
   },
   {
     id: 473,
@@ -6147,6 +6533,7 @@ export const FACTS = [
     options: ["Un seul tableau vendu de son vivant","Deux tableaux vendus de son vivant","Dix-neuf tableaux vendus de son vivant","Onze tableaux vendus de son vivant"],
     correctIndex: 0,
     imageUrl: "/assets/facts/473.png",
+    difficulty: 'normal',
   },
   {
     id: 474,
@@ -6160,19 +6547,7 @@ export const FACTS = [
     options: ["Puente Hills, Los Angeles, recouvert d'une installation artistique permanente","Fresh Kills, New York, transformé en parc-sculpture géant","Mount Trashmore, Virginia Beach, aménagé en parc de loisirs sculpté","Merzbau II, Hanovre, reconstruit sur une ancienne décharge industrielle"],
     correctIndex: 1,
     imageUrl: "/assets/facts/474.png",
-  },
-  {
-    id: 475,
-    category: "art",
-    question: "Quel artiste a vendu une œuvre entièrement invisible pour 18 000 euros ?",
-    hint1: "Vide",
-    hint2: "Certificat",
-    shortAnswer: "Salvatore Garau avec 'Io Sono' — sculpture d'air certifiée",
-    explanation: "En 2021, l'artiste italien Salvatore Garau a vendu aux enchères une sculpture entièrement invisible intitulée Io Sono ('Je suis') pour 15 000 euros, soit environ 18 000 dollars. L'acheteur a reçu un certificat d'authenticité et des instructions précises : exposer l'œuvre dans un espace de 150x150 cm, vide et sans obstacles. Garau a défendu son concept en affirmant que 'le vide n'est rien d'autre qu'une forme d'énergie condensée.' L'œuvre peut être revendue à condition de transmettre le certificat.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Salvatore_Garau",
-    options: ["Salvatore Garau avec 'Io Sono' — sculpture d'air certifiée","Damien Hirst avec 'Nothing' — installation d'obscurité totale sous copyright","Banksy avec 'The Void' — cadre vide certifié par destruction volontaire","Ai Weiwei avec 'Zero Form' — sculpture conceptuelle sans matière ni ombre"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/475.png",
+    difficulty: 'normal',
   },
   {
     id: 476,
@@ -6186,6 +6561,7 @@ export const FACTS = [
     options: ["Ses mains gauche et droite, qu'elle peignait avec six doigts sans jamais s'en apercevoir","La veine de son front, qu'elle accentuait inconsciemment sur chaque portrait jusqu'à en faire un motif reconnaissable","Sa propre moustache et ses sourcils fusionnés","Ses cicatrices de colonne vertébrale, qu'elle représentait systématiquement plus longues que dans la réalité"],
     correctIndex: 2,
     imageUrl: "/assets/facts/476.png",
+    difficulty: 'normal',
   },
   {
     id: 477,
@@ -6199,6 +6575,7 @@ export const FACTS = [
     options: ["Munch avait mélangé du sang de bœuf à ses pigments pour obtenir cette teinte organique caractéristique","Munch souffrait d'érythropsie, une anomalie visuelle rare qui teinte en rouge certaines zones du champ visuel","Le coucher de ciel rouge était dû à une aurore boréale exceptionnelle observée à Oslo","Le coucher de ciel rouge était dû à l'éruption du Krakatoa"],
     correctIndex: 3,
     imageUrl: "/assets/facts/477.png",
+    difficulty: 'normal',
   },
   {
     id: 478,
@@ -6212,6 +6589,7 @@ export const FACTS = [
     options: ["Andy Warhol dans ses 'Body Cans' en 1966","Yves Klein dans ses 'Substance d'artiste' en 1958","Marcel Duchamp dans ses 'Matière corporelle' en 1959","Piero Manzoni dans ses 'Merda d'artista' en 1961"],
     correctIndex: 3,
     imageUrl: "/assets/facts/478.png",
+    difficulty: 'normal',
   },
   {
     id: 479,
@@ -6225,6 +6603,7 @@ export const FACTS = [
     options: ["Yoko Ono a recouvert de peinture noire une aquarelle de Kandinsky pour créer 'Silence No. 7'","Banksy a détruit à moitié sa propre toile 'Girl with Balloon' en la passant à la déchiqueteuse lors d'une vente aux enchères","Andy Warhol a découpé une toile de Picasso pour en faire une sérigraphie intitulée 'Cut Blue Period'","Marcel Duchamp a rayé la Joconde pour en faire 'L.H.O.O.Q.'"],
     correctIndex: 3,
     imageUrl: "/assets/facts/479.png",
+    difficulty: 'normal',
   },
   {
     id: 480,
@@ -6238,6 +6617,7 @@ export const FACTS = [
     options: ["Luca Vitone, avec 'Spazio Libero' en 2021","Maurizio Cattelan, avec 'Niente' en 2019","Banksy, avec 'Empty Canvas' en 2020","Salvatore Garau, avec 'Io Sono' en 2021"],
     correctIndex: 3,
     imageUrl: "/assets/facts/480.png",
+    difficulty: 'normal',
   },
   {
     id: 481,
@@ -6251,6 +6631,7 @@ export const FACTS = [
     options: ["Son propre sang et urine cristallisés","Son propre sang et sperme congelés","Ses larmes et cheveux brûlés réduits en encre","Son sperme et lait maternel prélevé sur sa femme"],
     correctIndex: 1,
     imageUrl: "/assets/facts/481.png",
+    difficulty: 'normal',
   },
   {
     id: 482,
@@ -6264,6 +6645,7 @@ export const FACTS = [
     options: ["Un Picasso de 1,1 million €, retrouvé plié sous un lavabo de vestiaire","Un Warhol de 600 000 €, glissé derrière un miroir de salle de bains","Un Rembrandt de 1,2 million €, dissimulé dans les WC du personnel","Un Picasso de 900 000 €, caché dans des WC"],
     correctIndex: 3,
     imageUrl: "/assets/facts/482.png",
+    difficulty: 'normal',
   },
   {
     id: 484,
@@ -6277,6 +6659,7 @@ export const FACTS = [
     options: ["Le cheval, seulement 3 à 4 minutes par nuit","L'éléphant, seulement 4 à 5 minutes par nuit","Le rhinocéros, seulement 5 à 6 minutes par nuit","La girafe, seulement 4 à 5 minutes par nuit"],
     correctIndex: 3,
     imageUrl: "/assets/facts/484.png",
+    difficulty: 'normal',
   },
   {
     id: 485,
@@ -6290,6 +6673,7 @@ export const FACTS = [
     options: ["Ils deviennent roses en mangeant des crevettes","Leur maman leur transmet la couleur rose en les couvant plus longtemps","Ils absorbent la couleur rose des fleurs qu'ils frôlent en marchant","Ils deviennent roses grâce au soleil, comme un coup de soleil permanent"],
     correctIndex: 0,
     imageUrl: "/assets/facts/485.png",
+    difficulty: 'normal',
   },
   {
     id: 486,
@@ -6303,6 +6687,7 @@ export const FACTS = [
     options: ["Le concombre explosif, à 100 km/h","Le potiron éjecteur, à 95 km/h","La tomate sauteuse, à 120 km/h","Le concombre explosif, à 60 km/h"],
     correctIndex: 0,
     imageUrl: "/assets/facts/486.png",
+    difficulty: 'normal',
   },
   {
     id: 487,
@@ -6316,6 +6701,7 @@ export const FACTS = [
     options: ["Le scorpion des déserts, pendant plusieurs heures","La blatte américaine, pendant quelques minutes","Le rotifère géant, pendant plusieurs semaines","Le tardigrade, pendant plusieurs jours"],
     correctIndex: 3,
     imageUrl: "/assets/facts/487.png",
+    difficulty: 'normal',
   },
   {
     id: 488,
@@ -6329,6 +6715,7 @@ export const FACTS = [
     options: ["Le poisson, sans paupières","Le crocodile, dont les paupières restent bloquées ouvertes sous l'eau","La girafe, dont les paupières sont trop lourdes à soulever","Le dauphin, qui garde un œil ouvert pendant son sommeil"],
     correctIndex: 0,
     imageUrl: "/assets/facts/488.png",
+    difficulty: 'normal',
   },
   {
     id: 489,
@@ -6342,19 +6729,7 @@ export const FACTS = [
     options: ["Jusqu'à 25 000 poils sensoriels","Jusqu'à 12 000 dents microscopiques","Jusqu'à 25 000 dents microscopiques","Jusqu'à 50 000 dents microscopiques"],
     correctIndex: 2,
     imageUrl: "/assets/facts/489.png",
-  },
-  {
-    id: 490,
-    category: "kids",
-    question: "De quelle couleur est le sang d'une pieuvre ?",
-    hint1: "Cuivre",
-    hint2: "Cœurs",
-    shortAnswer: "Bleu, grâce à l'hémocyanine",
-    explanation: "Contrairement aux humains dont le sang est rouge grâce à l'hémoglobine contenant du fer, le sang des pieuvres est bleu. Cette couleur vient de l'hémocyanine, une protéine contenant du cuivre. Ce sang bleu est particulièrement efficace pour transporter l'oxygène dans les eaux froides et peu oxygénées. Les pieuvres ont même trois cœurs pour faire circuler ce précieux liquide azuré.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Octopus#Circulation",
-    options: ["Bleu, grâce à l'hémocyanine","Violet, grâce à la mélanocyanine","Rouge, grâce à l'hémoglobine comme les humains","Incolore, car elles n'ont pas besoin de transporter l'oxygène"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/490.png",
+    difficulty: 'normal',
   },
   {
     id: 491,
@@ -6368,6 +6743,7 @@ export const FACTS = [
     options: ["Le kiwi, oiseau néo-zélandais sans ailes","Le lychee, nom populaire d'un hamster sauvage de Mongolie","Le kumquat, petit mammifère nocturne d'Indonésie à museau arrondi","La mangue, surnom affectueux d'un rongeur amazonien à fourrure orange"],
     correctIndex: 0,
     imageUrl: "/assets/facts/491.png",
+    difficulty: 'normal',
   },
   {
     id: 492,
@@ -6381,6 +6757,7 @@ export const FACTS = [
     options: ["Le concombre de mer, qui crache ses organes pour se défendre","Le poulpe, qui retourne ses tentacules pour expulser sa nourriture","L'étoile de mer, qui digère hors de son corps","La pieuvre, qui digère hors de son manteau"],
     correctIndex: 2,
     imageUrl: "/assets/facts/492.png",
+    difficulty: 'normal',
   },
   {
     id: 494,
@@ -6394,6 +6771,7 @@ export const FACTS = [
     options: ["Probablement bleu, comme celui des pieuvres","Probablement vert, comme la chlorophylle des plantes","Probablement orange, d'après l'analyse des écailles fossilisées","Probablement rouge, comme le nôtre"],
     correctIndex: 3,
     imageUrl: "/assets/facts/494.png",
+    difficulty: 'normal',
   },
   {
     id: 495,
@@ -6407,6 +6785,7 @@ export const FACTS = [
     options: ["Autant qu'elle veut, elle apprend du premier coup","Trois fois maximum, ensuite ses ventouses se fatiguent","Seulement une fois, elle oublie entre chaque tentative","Une seule fois, mais uniquement si elle a déjà vu un humain le faire"],
     correctIndex: 0,
     imageUrl: "/assets/facts/495.png",
+    difficulty: 'normal',
   },
   {
     id: 496,
@@ -6420,6 +6799,7 @@ export const FACTS = [
     options: ["L'éléphant, qui dort en phase REM debout et oublie ses rêves à cause de la pression sanguine dans sa trompe","La vache, qui dort debout grâce à un verrouillage naturel de ses genoux et n'entre jamais en phase REM","Le cheval, qui dort en phase REM allongé seulement","La girafe, qui dort debout car son cou est trop long pour se relever rapidement en cas de danger"],
     correctIndex: 2,
     imageUrl: "/assets/facts/496.png",
+    difficulty: 'normal',
   },
   {
     id: 497,
@@ -6433,6 +6813,7 @@ export const FACTS = [
     options: ["Du cresson de fontaine, récolté et consommé à bord de l'ISS","De la laitue rouge feuille de chêne, cultivée et mangée en orbite","De la laitue rouge romaine, cultivée et mangée en orbite","Des pousses de moutarde rouge, cultivées et mangées en orbite"],
     correctIndex: 2,
     imageUrl: "/assets/facts/497.png",
+    difficulty: 'normal',
   },
   {
     id: 498,
@@ -6446,6 +6827,7 @@ export const FACTS = [
     options: ["La girafe, grâce à un système de verrouillage des genoux","Le cheval, grâce à un système de verrouillage des genoux","L'éléphant, grâce à des tendons qui se bloquent automatiquement sous son poids","Le bœuf, grâce à un système de verrouillage des hanches"],
     correctIndex: 1,
     imageUrl: "/assets/facts/498.png",
+    difficulty: 'normal',
   },
   {
     id: 499,
@@ -6459,6 +6841,7 @@ export const FACTS = [
     options: ["Un gris légèrement verdâtre","Une teinte jaune-brun terne","Une nuance de bleu pâle délavé","Une couleur beige rosé clair"],
     correctIndex: 1,
     imageUrl: "/assets/facts/499.png",
+    difficulty: 'normal',
   },
   {
     id: 500,
@@ -6472,6 +6855,7 @@ export const FACTS = [
     options: ["Elle se reconnaît parfaitement, comme les dauphins et les grands singes","Elle se reconnaît uniquement si le miroir est placé à moins de 30 cm de son bec","Elle confond son reflet avec un congénère, comme la plupart des oiseaux chanteurs","Elle reconnaît sa silhouette mais pas son visage, comme les pigeons entraînés en laboratoire"],
     correctIndex: 0,
     imageUrl: "/assets/facts/500.png",
+    difficulty: 'normal',
   },
   {
     id: 501,
@@ -6485,19 +6869,7 @@ export const FACTS = [
     options: ["Violet, vert, rose, orange et bleu selon les éditions","Vert et violet uniquement, testés en édition limitée","Vert, jaune, bleu, orange et noir selon les éditions","Bleu, jaune, vert et argenté selon les éditions"],
     correctIndex: 0,
     imageUrl: "/assets/facts/501.png",
-  },
-  {
-    id: 502,
-    category: "kids",
-    question: "Pourquoi les flamants roses sont-ils… roses ?",
-    hint1: "Alimentation",
-    hint2: "Crevette",
-    shortAnswer: "À cause des pigments des crevettes et algues qu'ils mangent",
-    explanation: "Les flamants roses naissent gris et blanc. Leur couleur emblématique vient entièrement de leur alimentation : les crevettes, algues et crustacés qu'ils consomment contiennent des caroténoïdes, des pigments naturels roses et orangés. Si un flamant arrête de manger ces aliments, il pâlit progressivement et redevient blanc. Les flamants dans les zoos reçoivent des compléments alimentaires spéciaux pour conserver leur belle couleur rose.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Flamingo#Coloration",
-    options: ["À cause des pigments des crevettes et algues qu'ils mangent","À cause d'un pigment naturel présent dans leurs plumes dès la naissance","Parce que leur sang très proche de la surface de leur peau transparente colore leurs plumes","Parce qu'ils passent beaucoup de temps dans l'eau chaude et salée des lagunes"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/502.png",
+    difficulty: 'normal',
   },
   {
     id: 503,
@@ -6511,6 +6883,7 @@ export const FACTS = [
     options: ["Le requin","La grenouille","Le pélican","Le crocodile"],
     correctIndex: 0,
     imageUrl: "/assets/facts/503.png",
+    difficulty: 'normal',
   },
   {
     id: 504,
@@ -6524,6 +6897,7 @@ export const FACTS = [
     options: ["La pastèque dynamite (Citrullus burstii)","Le cornichon fou (Cucumis explosivus)","Le pois sauteur mexicain (Sebastiania pavoniana)","Le concombre de mer fou (Ecballium elaterium)"],
     correctIndex: 3,
     imageUrl: "/assets/facts/504.png",
+    difficulty: 'normal',
   },
   {
     id: 506,
@@ -6537,6 +6911,7 @@ export const FACTS = [
     options: ["La nomatophobie, peur des noms propres","La pronophobie, peur de prononcer","L'identonymphobie, peur d'identité","L'onymophobie, peur des appellations"],
     correctIndex: 0,
     imageUrl: "/assets/facts/506.png",
+    difficulty: 'normal',
   },
   {
     id: 507,
@@ -6550,6 +6925,7 @@ export const FACTS = [
     options: ["La météorophobie, peur du beau temps","La céranophobie, peur du tonnerre","La photophobie, peur de la lumière","La calophobie, peur des journées claires"],
     correctIndex: 0,
     imageUrl: "/assets/facts/507.png",
+    difficulty: 'normal',
   },
   {
     id: 508,
@@ -6563,6 +6939,7 @@ export const FACTS = [
     options: ["La koumpounophobie, peur des boutons","La boutonnophobie, peur des attaches","La vestiphobie, peur des vêtements","La haphtophobie, peur des petits objets"],
     correctIndex: 0,
     imageUrl: "/assets/facts/508.png",
+    difficulty: 'normal',
   },
   {
     id: 509,
@@ -6576,6 +6953,7 @@ export const FACTS = [
     options: ["La lépidoptérophobie, peur des papillons","La mélittophobie, peur des insectes","La chrysalidophobie, peur des cocons","La rhopalocérophobie, peur des lépidoptères"],
     correctIndex: 0,
     imageUrl: "/assets/facts/509.png",
+    difficulty: 'normal',
   },
   {
     id: 510,
@@ -6589,32 +6967,7 @@ export const FACTS = [
     options: ["La genuphophobie, peur des genoux","La gonuphophobie, peur des rotules","La rotulophophobie, peur des jambes","La flexophobie, peur des membres fléchis"],
     correctIndex: 0,
     imageUrl: "/assets/facts/510.png",
-  },
-  {
-    id: 511,
-    category: "phobies",
-    question: "Qu'est-ce que l'arachibutyrophobie ?",
-    hint1: "Cuisine",
-    hint2: "Palais",
-    shortAnswer: "L'arachibutyrophobie, colle au palais",
-    explanation: "L'arachibutyrophobie est la peur que le beurre de cacahuète reste collé au palais. Popularisé dès 1988, des cas cliniques réels ont été documentés depuis. Les personnes atteintes ressentent une anxiété anticipatoire sévère à la simple odeur du produit.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Arachibutyrophobia",
-    options: ["L'arachibutyrophobie, colle au palais","L'arachibutyrophobie, obstrue les narines","L'arachidophobie, provoque suffocation","L'arachidophobie, peur d'avaler"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/511.png",
-  },
-  {
-    id: 512,
-    category: "phobies",
-    question: "Qu'est-ce que l'hippopotomonstrosesquipédaliophobie ?",
-    hint1: "Langage",
-    hint2: "Longueur",
-    shortAnswer: "L'hippopotomonstrosesquipédaliophobie",
-    explanation: "L'hippopotomonstrosesquipédaliophobie est la peur irrationnelle des mots longs. Son nom compte 36 lettres, ce qui est considéré comme une cruauté envers ceux qui en souffrent. Les individus concernés paniquent à la lecture de textes médicaux ou juridiques complexes.",
-    sourceUrl: "https://www.healthline.com/health/hippopotomonstrosesquippedaliophobia",
-    options: ["L'hippopotomonstrosesquipédaliophobie","La verbomégallophobie, mots longs","La polysyllabophobie, mots complexes","La lexicophobie, peur des dictionnaires"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/512.png",
+    difficulty: 'normal',
   },
   {
     id: 513,
@@ -6628,6 +6981,7 @@ export const FACTS = [
     options: ["La phéboréophobie, peur du jour","La photoastrophobie, peur du soleil","L'héliophophobie, peur du soleil","La solarigraphophobie, peur des UV"],
     correctIndex: 2,
     imageUrl: "/assets/facts/513.png",
+    difficulty: 'normal',
   },
   {
     id: 514,
@@ -6641,6 +6995,7 @@ export const FACTS = [
     options: ["La ptysiophobie, blocage de déglutition","La sialofolie, rejet de salive","La sialophobie, peur de la salive","La phagophobie, peur d'avaler"],
     correctIndex: 3,
     imageUrl: "/assets/facts/514.png",
+    difficulty: 'normal',
   },
   {
     id: 515,
@@ -6654,19 +7009,7 @@ export const FACTS = [
     options: ["La catoptrophobie, peur des reflets","La scophydrophobie, peur des surfaces","L'eisoptrophobie aquatique","La narcissophobie, peur de son image"],
     correctIndex: 0,
     imageUrl: "/assets/facts/515.png",
-  },
-  {
-    id: 516,
-    category: "phobies",
-    question: "Qu'est-ce que la xanthophobie ?",
-    hint1: "Couleur",
-    hint2: "Soleil",
-    shortAnswer: "La xanthophobie, peur du jaune",
-    explanation: "La xanthophobie est la peur médicalement reconnue de la couleur jaune. Les personnes atteintes peuvent paniquer face au soleil, aux bananes ou aux fleurs jaunes. Dans les cas extrêmes, les patients redécorent leur domicile pour supprimer toute trace de cette couleur.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Xanthophobia",
-    options: ["La luteïnophobie, peur du jaune","La xanthophobie, peur du jaune","La citriophobie, peur du citron","La flavophobie, peur du jaune vif"],
-    correctIndex: 1,
-    imageUrl: "/assets/facts/516.png",
+    difficulty: 'normal',
   },
   {
     id: 518,
@@ -6680,58 +7023,7 @@ export const FACTS = [
     options: ["La porphyrophobie, peur du violet","La chromophobie violacée, peur du mauve","La purpurophobie, peur du pourpre","La ianthinophobie, peur des teintes mauves"],
     correctIndex: 0,
     imageUrl: "/assets/facts/518.png",
-  },
-  {
-    id: 519,
-    category: "phobies",
-    question: "Qu'est-ce que la koumpounophobie ?",
-    hint1: "Vêtement",
-    hint2: "Couture",
-    shortAnswer: "La koumpounophobie, peur des boutons",
-    explanation: "La koumpounophobie est la peur intense des boutons de vêtements, en particulier en plastique. Steve Jobs en souffrait selon plusieurs biographies. Les personnes atteintes ne peuvent pas porter de chemises boutonnées. Cette phobie toucherait 1 personne sur 75 000.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Koumpounophobia",
-    options: ["La raptophobie, peur des coutures","La fibulonophobie, peur des boutons nacre","La vestiophobie, peur des fermetures","La koumpounophobie, peur des boutons"],
-    correctIndex: 3,
-    imageUrl: "/assets/facts/519.png",
-  },
-  {
-    id: 520,
-    category: "phobies",
-    question: "Qu'est-ce que la pogonophobie ?",
-    hint1: "Barbe",
-    hint2: "Poil",
-    shortAnswer: "La pogonophobie, peur des barbes",
-    explanation: "La pogonophobie est la peur pathologique des barbes. Elle peut déclencher des crises de panique au simple contact visuel d'un visage barbu. Des Pères Noël rasés ont même été employés dans certains hôpitaux pédiatriques pour ne pas déclencher de crises chez les enfants.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Pogonophobia",
-    options: ["La pogonophobie, peur des barbes","La trichophobie, peur des cheveux","La piliophobie, peur des poils blancs","La neophobie, peur des déguisements"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/520.png",
-  },
-  {
-    id: 521,
-    category: "phobies",
-    question: "Qu'est-ce que la genuphophobie ?",
-    hint1: "Articulation",
-    hint2: "Pantalon",
-    shortAnswer: "La genuphophobie, peur des genoux",
-    explanation: "La genuphophobie est une phobie reconnue : peur intense des genoux. Certains patients portent des pantalons longs en toutes circonstances, même par 40°C. Cette phobie peut s'étendre à la simple évocation du mot genou et est classifiée parmi les phobies spécifiques.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Genuphobia",
-    options: ["La genuphophobie, peur des genoux","La rotulophophobie, peur des rotules","La gonuphophobie, peur des jambes","La genuphophobie, peur des coudes"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/521.png",
-  },
-  {
-    id: 522,
-    category: "phobies",
-    question: "Qu'est-ce que la koumpounophobie ?",
-    hint1: "Chemise",
-    hint2: "Couture",
-    shortAnswer: "La koumpounophobie, peur des boutons",
-    explanation: "La koumpounophobie est la peur pathologique des boutons de vêtements. Steve Jobs aimait les cols roulés sans boutons. Environ 1 personne sur 75 000 souffre de cette phobie. Certains patients ne peuvent pas toucher un vêtement boutonné sans ressentir une nausée intense.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Koumpounophobia",
-    options: ["La raptophobie, peur des coutures","La boutonnophobie, peur des attaches","La koumbanophobie, peur des disques","La koumpounophobie, peur des boutons"],
-    correctIndex: 3,
-    imageUrl: "/assets/facts/522.png",
+    difficulty: 'normal',
   },
   {
     id: 523,
@@ -6745,6 +7037,7 @@ export const FACTS = [
     options: ["La cherophobie, peur du bonheur","La macréphobie, peur du succès","La félicophobie, peur du contentement","L'euphophobie, peur des émotions positives"],
     correctIndex: 0,
     imageUrl: "/assets/facts/523.png",
+    difficulty: 'normal',
   },
   {
     id: 524,
@@ -6758,6 +7051,7 @@ export const FACTS = [
     options: ["L'hélophobie, peur de la lumière solaire","La photodermophobie, peur de la lumière","La lumenophobie, peur des sources de lumière","La nyctalophobie, peur des UV"],
     correctIndex: 0,
     imageUrl: "/assets/facts/524.png",
+    difficulty: 'normal',
   },
   {
     id: 525,
@@ -6771,6 +7065,7 @@ export const FACTS = [
     options: ["La fromagophobie, peur des textures molles","La crustophobia, peur des croûtes","La turophobia, peur du fromage","La casiphobia, peur des odeurs fortes"],
     correctIndex: 2,
     imageUrl: "/assets/facts/525.png",
+    difficulty: 'normal',
   },
   {
     id: 526,
@@ -6784,6 +7079,7 @@ export const FACTS = [
     options: ["La articulophobia, peur des genoux","La patellaphobia, peur des rotules","La genuphobia, peur des genoux","La gonyphobia, peur des jambes"],
     correctIndex: 2,
     imageUrl: "/assets/facts/526.png",
+    difficulty: 'normal',
   },
   {
     id: 527,
@@ -6797,6 +7093,7 @@ export const FACTS = [
     options: ["Peur irrationnelle du papier","Peur irrationnelle d'écrire en public","Peur irrationnelle des journaux et magazines imprimés","Peur irrationnelle du bruit de froissement"],
     correctIndex: 0,
     imageUrl: "/assets/facts/527.png",
+    difficulty: 'normal',
   },
   {
     id: 528,
@@ -6810,6 +7107,7 @@ export const FACTS = [
     options: ["La peur excessive de manquer un message urgent pendant son sommeil","La peur de ne plus avoir de réseau ou de batterie","La peur d'utiliser un téléphone appartenant à quelqu'un d'autre","La peur pathologique d'être photographié sans consentement par un inconnu"],
     correctIndex: 1,
     imageUrl: "/assets/facts/528.png",
+    difficulty: 'normal',
   },
   {
     id: 529,
@@ -6823,6 +7121,7 @@ export const FACTS = [
     options: ["Croire qu'on est un oiseau capable de voler","Croire qu'on est un cheval ou un poulain","Croire qu'on est une vache ou un bœuf","Croire qu'on est un chien ou un loup"],
     correctIndex: 2,
     imageUrl: "/assets/facts/529.png",
+    difficulty: 'normal',
   },
   {
     id: 530,
@@ -6836,6 +7135,7 @@ export const FACTS = [
     options: ["Vouloir sans jamais agir ni décider","Agir sans jamais réfléchir ni planifier","Décider impulsivement sous l'effet des émotions","Imiter les désirs d'autrui sans en avoir conscience"],
     correctIndex: 0,
     imageUrl: "/assets/facts/530.png",
+    difficulty: 'normal',
   },
   {
     id: 531,
@@ -6849,6 +7149,7 @@ export const FACTS = [
     options: ["Une épidémie de convulsions musculaires incontrôlables et mortelles","Un délire collectif de rires incontrôlables et parfois fatal","Une frénésie collective de chants liturgiques pouvant durer plusieurs jours","Une épidémie de danse incontrôlable et mortelle"],
     correctIndex: 3,
     imageUrl: "/assets/facts/531.png",
+    difficulty: 'normal',
   },
   {
     id: 532,
@@ -6862,6 +7163,7 @@ export const FACTS = [
     options: ["Son âge approximatif et les maladies fongiques contractées au fil des saisons","Son âge exact et les guerres, famines, sécheresses vécues","La vitesse de croissance annuelle et les espèces d'insectes ayant colonisé son écorce","Son âge exact et les variations de composition chimique du sol environnant"],
     correctIndex: 1,
     imageUrl: "/assets/facts/532.png",
+    difficulty: 'normal',
   },
   {
     id: 533,
@@ -6875,6 +7177,7 @@ export const FACTS = [
     options: ["Vos secrets : les dormeurs parlent clairement en dormant","Vos mensonges : les dormeurs trahissent leurs contradictions du quotidien","Vos rêves : les dormeurs décrivent leurs aventures nocturnes en temps réel","Vos désirs : les dormeurs murmurent leurs envies les plus profondes"],
     correctIndex: 0,
     imageUrl: "/assets/facts/533.png",
+    difficulty: 'normal',
   },
   {
     id: 534,
@@ -6888,6 +7191,7 @@ export const FACTS = [
     options: ["Une épidémie de danse incontrôlable ayant duré un mois","Une épidémie de tremblements incontrôlables ayant duré quarante jours","Une procession religieuse spontanée ayant paralysé la ville pendant six jours","Une épidémie de rires incontrôlables ayant duré deux semaines"],
     correctIndex: 0,
     imageUrl: "/assets/facts/534.png",
+    difficulty: 'normal',
   },
   {
     id: 535,
@@ -6901,6 +7205,7 @@ export const FACTS = [
     options: ["Certaines femmes détectent des couleurs hors spectre visible inaccessibles aux autres humains","Certaines femmes voient 99 millions de couleurs de plus que vous","Certaines femmes distinguent les ultrasons visuels invisibles à l'œil nu","Certains daltoniens compensent en percevant 50 millions de teintes supplémentaires dans l'infrarouge"],
     correctIndex: 1,
     imageUrl: "/assets/facts/535.png",
+    difficulty: 'normal',
   },
   {
     id: 536,
@@ -6914,6 +7219,7 @@ export const FACTS = [
     options: ["54% des adultes de moins de 40 ans, anxieux dès que leur batterie passe sous les 20%","66% des humains, terrifiés à l'idée de perdre leur téléphone","58% des adolescents, incapables de dormir sans leur téléphone à portée de main","1 utilisateur de smartphone sur 3, convaincu qu'il entend son téléphone vibrer dans sa poche"],
     correctIndex: 1,
     imageUrl: "/assets/facts/536.png",
+    difficulty: 'normal',
   },
   {
     id: 537,
@@ -6927,6 +7233,7 @@ export const FACTS = [
     options: ["Gonflement pathologique des tissus dû à une rétention d'eau","Distension anormale de la vessie par rétention urinaire","Accumulation excessive de gaz dans l'intestin","Accumulation excessive de liquide dans les poumons"],
     correctIndex: 2,
     imageUrl: "/assets/facts/537.png",
+    difficulty: 'normal',
   },
   {
     id: 538,
@@ -6940,6 +7247,7 @@ export const FACTS = [
     options: ["Hypersensibilité douloureuse aux lumières artificielles","Capacité à voir parfaitement dans le noir","Incapacité totale à voir dans le noir","Capacité à voir les ultraviolets en lumière naturelle"],
     correctIndex: 1,
     imageUrl: "/assets/facts/538.png",
+    difficulty: 'normal',
   },
   {
     id: 539,
@@ -6953,6 +7261,7 @@ export const FACTS = [
     options: ["Écrire un texte entier sans utiliser deux fois le même mot","Écrire un texte entier sans utiliser de ponctuation","Écrire un texte entier sans utiliser un mot de plus d'une syllabe","Écrire un texte entier sans utiliser une lettre"],
     correctIndex: 3,
     imageUrl: "/assets/facts/539.png",
+    difficulty: 'normal',
   },
   {
     id: 540,
@@ -6966,6 +7275,7 @@ export const FACTS = [
     options: ["Sensation physique d'être regardé dans le dos","Sentiment irrationnel d'avoir déjà vécu un rêve avant de le faire","Impression persistante que ses propres mains appartiennent à quelqu'un d'autre","Incapacité soudaine à reconnaître un visage familier dans un miroir"],
     correctIndex: 0,
     imageUrl: "/assets/facts/540.png",
+    difficulty: 'normal',
   },
   {
     id: 541,
@@ -6979,6 +7289,7 @@ export const FACTS = [
     options: ["Sentiment de nostalgie pour un lieu où l'on n'a jamais vécu mais qu'on reconnaît comme sien","Regard partagé entre deux personnes désirant la même chose sans oser le dire","Frisson provoqué par une musique entendue pour la première fois mais qui semble déjà connue","Geste de la main pour inviter l'autre à parler en premier quand personne ne veut commencer"],
     correctIndex: 1,
     imageUrl: "/assets/facts/541.png",
+    difficulty: 'normal',
   },
   {
     id: 542,
@@ -6992,6 +7303,7 @@ export const FACTS = [
     options: ["La peur panique de répondre lorsqu'on est appelé par son nom","La peur panique d'être nommé à voix haute","La peur panique de porter le même prénom qu'une autre personne dans son entourage","La peur panique de voir son nom écrit sur un document officiel"],
     correctIndex: 1,
     imageUrl: "/assets/facts/542.png",
+    difficulty: 'normal',
   },
   {
     id: 544,
@@ -7005,6 +7317,7 @@ export const FACTS = [
     options: ["La peur irrationnelle des chiffres et des cadrans numérotés","La peur irrationnelle des horloges et montres","La peur irrationnelle du bruit de tic-tac en général","La peur irrationnelle de manquer de temps ou d'être en retard"],
     correctIndex: 1,
     imageUrl: "/assets/facts/544.png",
+    difficulty: 'normal',
   },
   {
     id: 546,
@@ -7018,6 +7331,7 @@ export const FACTS = [
     options: ["Un fou rire incontrôlable annonciateur d'un AVC","Un bâillement compulsif et incontrôlable précédant une crise épileptique","Un fou rire incontrôlable survenant pendant la phase de récupération post-AVC","Une grimace involontaire du visage indiquant un AVC en cours"],
     correctIndex: 0,
     imageUrl: "/assets/facts/546.png",
+    difficulty: 'normal',
   },
   {
     id: 547,
@@ -7031,6 +7345,7 @@ export const FACTS = [
     options: ["La peur obsessionnelle de recevoir de mauvaises nouvelles par téléphone","La peur panique d'être sans téléphone portable","La dépendance compulsive à consulter ses notifications toutes les cinq minutes","La panique ressentie lorsqu'on réalise avoir oublié son téléphone dans une autre pièce"],
     correctIndex: 1,
     imageUrl: "/assets/facts/547.png",
+    difficulty: 'normal',
   },
   {
     id: 548,
@@ -7044,6 +7359,7 @@ export const FACTS = [
     options: ["L'odeur caractéristique des sous-bois après la pluie, identifiée en 1958","L'odeur de la pluie sur la terre sèche, nommée en 1964","L'odeur des pierres calcaires chauffées par le soleil avant l'averse, répertoriée en 1969","L'odeur de l'herbe fraîchement coupée mêlée à l'humidité, nommée en 1961"],
     correctIndex: 1,
     imageUrl: "/assets/facts/548.png",
+    difficulty: 'normal',
   },
   {
     id: 549,
@@ -7057,6 +7373,7 @@ export const FACTS = [
     options: ["500 milliards, concentrées à 90% dans l'intestin grêle","38 milliards, exactement autant que nos propres cellules à quelques millions près","38 000 milliards, plus que nos propres cellules","15 000 milliards, soit la moitié du nombre de nos propres cellules"],
     correctIndex: 2,
     imageUrl: "/assets/facts/549.png",
+    difficulty: 'normal',
   },
   {
     id: 550,
@@ -7070,6 +7387,7 @@ export const FACTS = [
     options: ["Les oreilles et le nez, jamais en pause","Les ongles des orteils et les genoux, jamais en pause","Les sourcils et les cils, jamais en pause","Les lèvres et le lobe du menton, jamais en pause"],
     correctIndex: 0,
     imageUrl: "/assets/facts/550.png",
+    difficulty: 'normal',
   },
   {
     id: 551,
@@ -7083,6 +7401,7 @@ export const FACTS = [
     options: ["160 km/h et 40 000 gouttelettes projetées","140 km/h et 35 000 gouttelettes projetées","180 km/h et 40 000 gouttelettes projetées","200 km/h et 50 000 gouttelettes projetées"],
     correctIndex: 0,
     imageUrl: "/assets/facts/551.png",
+    difficulty: 'normal',
   },
   {
     id: 552,
@@ -7096,6 +7415,7 @@ export const FACTS = [
     options: ["Assez pour remplir deux piscines olympiques","Assez pour remplir une piscine olympique et demie","Assez pour remplir 80 baignoires de taille réglementaire","Assez pour remplir un réservoir de château d'eau standard"],
     correctIndex: 0,
     imageUrl: "/assets/facts/552.png",
+    difficulty: 'normal',
   },
   {
     id: 553,
@@ -7109,6 +7429,7 @@ export const FACTS = [
     options: ["Jusqu'à 100 grammes, soit le poids d'une pomme","Jusqu'à 60 grammes, soit le poids d'un œuf de poule","Jusqu'à 200 grammes, soit le poids d'une balle de tennis","Jusqu'à 150 grammes, soit le poids d'un citron"],
     correctIndex: 0,
     imageUrl: "/assets/facts/553.png",
+    difficulty: 'normal',
   },
   {
     id: 554,
@@ -7122,6 +7443,7 @@ export const FACTS = [
     options: ["La cornée de l'œil se renouvelle tous les 2 à 3 jours","La muqueuse buccale se renouvelle complètement tous les 3 à 4 jours","L'intestin grêle se renouvelle tous les 2 à 4 jours","La peau du cuir chevelu se renouvelle intégralement tous les 3 à 5 jours"],
     correctIndex: 2,
     imageUrl: "/assets/facts/554.png",
+    difficulty: 'normal',
   },
   {
     id: 555,
@@ -7135,6 +7457,7 @@ export const FACTS = [
     options: ["L'intestin grêle digère grâce à son propre système nerveux entérique","Le cœur bat grâce à son propre système électrique","Les reins filtrent le sang grâce à leur propre système hormonal autonome","La rate régule les globules rouges grâce à ses propres impulsions bioélectriques"],
     correctIndex: 1,
     imageUrl: "/assets/facts/555.png",
+    difficulty: 'normal',
   },
   {
     id: 556,
@@ -7148,6 +7471,7 @@ export const FACTS = [
     options: ["Environ 100 000 kilomètres, soit 2,5 fois le tour de la Terre","Environ 60 000 kilomètres, soit 1,5 fois le tour de la Terre","Environ 150 000 kilomètres, soit presque la distance Terre-Lune","Environ 40 000 kilomètres, soit exactement un tour de la Terre"],
     correctIndex: 0,
     imageUrl: "/assets/facts/556.png",
+    difficulty: 'normal',
   },
   {
     id: 557,
@@ -7161,6 +7485,7 @@ export const FACTS = [
     options: ["La cornée et le cristallin, dont les cellules se renouvellent et s'épaississent progressivement sans jamais être éliminées","La langue et les lèvres, dont les tissus musculo-muqueux s'hypertrophient légèrement sous l'effet de la gravité avec l'âge","Les oreilles et le nez, grâce au cartilage","Le menton et les pommettes, dont les os faciaux continuent de se densifier et de s'allonger tout au long de la vie adulte"],
     correctIndex: 2,
     imageUrl: "/assets/facts/557.png",
+    difficulty: 'normal',
   },
   {
     id: 558,
@@ -7174,6 +7499,7 @@ export const FACTS = [
     options: ["264 heures et 40 minutes, par Robert McDonald lors d'un record Guinness supervisé en 1986","11 jours et 25 minutes, par Tony Wright, un horticulteur britannique en 2007","11 jours et 12 heures, par Peter Tripp, un animateur radio new-yorkais en 1959","11 jours et 25 minutes, par Randy Gardner en 1964"],
     correctIndex: 3,
     imageUrl: "/assets/facts/558.png",
+    difficulty: 'normal',
   },
   {
     id: 559,
@@ -7187,6 +7513,7 @@ export const FACTS = [
     options: ["La kératine des ongles, le polymère biologique le plus résistant du corps","L'émail dentaire, le tissu le plus dur du corps","Les calculs rénaux, les cristaux les plus durs produits par le corps","La cornée de l'œil, la membrane transparente la plus compacte du corps"],
     correctIndex: 1,
     imageUrl: "/assets/facts/559.png",
+    difficulty: 'normal',
   },
   {
     id: 560,
@@ -7200,6 +7527,7 @@ export const FACTS = [
     options: ["Environ 19 000 kilomètres par jour chacun","Environ 27 500 kilomètres par jour chacun","Environ 12 000 kilomètres par jour chacun","Environ 8 400 kilomètres par jour chacun"],
     correctIndex: 0,
     imageUrl: "/assets/facts/560.png",
+    difficulty: 'normal',
   },
   {
     id: 561,
@@ -7213,6 +7541,7 @@ export const FACTS = [
     options: ["Jusqu'à 10 millions de bactéries par cm²","Jusqu'à 100 000 bactéries par cm²","Jusqu'à 1 milliard de bactéries par cm²","Jusqu'à 50 000 bactéries par cm²"],
     correctIndex: 1,
     imageUrl: "/assets/facts/561.png",
+    difficulty: 'normal',
   },
   {
     id: 562,
@@ -7226,6 +7555,7 @@ export const FACTS = [
     options: ["Aucun, mais le fémur génère sa propre force de 1 700 kg uniquement après 30 ans","Aucun, mais le fémur génère sa propre force de 1 700 kg","Aucun, mais le tibia génère sa propre force de 1 700 kg lors des impacts","Aucun, mais le sternum supporte une pression de 2 400 kg grâce à sa structure en grille"],
     correctIndex: 1,
     imageUrl: "/assets/facts/562.png",
+    difficulty: 'normal',
   },
   {
     id: 563,
@@ -7239,6 +7569,7 @@ export const FACTS = [
     options: ["Environ 3 200 km de vaisseaux","Environ 960 km de vaisseaux","Environ 4 500 km de vaisseaux","Environ 2 400 km de vaisseaux"],
     correctIndex: 3,
     imageUrl: "/assets/facts/563.png",
+    difficulty: 'normal',
   },
   {
     id: 564,
@@ -7252,6 +7583,7 @@ export const FACTS = [
     options: ["L'urine, source d'urée hydratante","Le sébum, source de squalène régénérant","La sueur, source de lactate apaisant","Les larmes, source de lysozyme antibactérien"],
     correctIndex: 0,
     imageUrl: "/assets/facts/564.png",
+    difficulty: 'normal',
   },
   {
     id: 565,
@@ -7265,6 +7597,7 @@ export const FACTS = [
     options: ["Entre 1 et 3 milliards de bactéries","Entre 8 et 12 milliards de bactéries","Entre 15 et 20 milliards de bactéries","Entre 6 et 10 milliards de bactéries"],
     correctIndex: 3,
     imageUrl: "/assets/facts/565.png",
+    difficulty: 'normal',
   },
   {
     id: 566,
@@ -7278,6 +7611,7 @@ export const FACTS = [
     options: ["L'os est 3 fois plus résistant que la fibre de verre","L'os est 4 fois plus résistant que le béton","L'os est 2 fois plus résistant que l'acier","L'os est 6 fois plus résistant que le granite"],
     correctIndex: 1,
     imageUrl: "/assets/facts/566.png",
+    difficulty: 'normal',
   },
   {
     id: 567,
@@ -7291,6 +7625,7 @@ export const FACTS = [
     options: ["Jusqu'à 4 minutes après la décapitation","Jusqu'à 7 secondes après la décapitation","Jusqu'à 2 minutes après la décapitation","Jusqu'à 29 secondes après la décapitation"],
     correctIndex: 3,
     imageUrl: "/assets/facts/567.png",
+    difficulty: 'normal',
   },
   {
     id: 568,
@@ -7304,6 +7639,7 @@ export const FACTS = [
     options: ["L'équivalent d'un terrain de tennis entier","L'équivalent d'une salle de classe standard","L'équivalent d'un appartement parisien de trois pièces","L'équivalent de deux places de parking côte à côte"],
     correctIndex: 0,
     imageUrl: "/assets/facts/568.png",
+    difficulty: 'normal',
   },
   {
     id: 569,
@@ -7317,6 +7653,7 @@ export const FACTS = [
     options: ["Plus de 1 200 espèces différentes, 50 milliards d'individus","Plus de 500 espèces différentes, 20 milliards d'individus","Plus de 400 espèces différentes, 6 milliards d'individus","Plus de 700 espèces différentes, 20 milliards d'individus"],
     correctIndex: 3,
     imageUrl: "/assets/facts/569.png",
+    difficulty: 'normal',
   },
   {
     id: 570,
@@ -7330,6 +7667,7 @@ export const FACTS = [
     options: ["Environ 200 millions de bactéries","Plusieurs dizaines de milliards de bactéries","Plus d'un milliard de bactéries","Exactement 847 millions de bactéries"],
     correctIndex: 2,
     imageUrl: "/assets/facts/570.png",
+    difficulty: 'normal',
   },
   {
     id: 571,
@@ -7343,6 +7681,7 @@ export const FACTS = [
     options: ["Les lobes du cerveau, qui développent de nouveaux replis jusqu'à l'âge de 80 ans","Le lobe des oreilles uniquement, sous l'effet de la gravité sur le tissu adipeux","La langue, dont la surface s'épaissit progressivement tout au long de la vie adulte","Le nez et les oreilles, indéfiniment"],
     correctIndex: 3,
     imageUrl: "/assets/facts/571.png",
+    difficulty: 'normal',
   },
   {
     id: 572,
@@ -7356,6 +7695,7 @@ export const FACTS = [
     options: ["L'argyrie, due à l'ingestion d'argent","La nitrilose, due à une exposition prolongée aux engrais azotés","La méthémoglobinémie héréditaire, due à une mutation du gène HBB-17","La cuprose, due à une accumulation de cuivre dans les tissus cutanés"],
     correctIndex: 0,
     imageUrl: "/assets/facts/572.png",
+    difficulty: 'normal',
   },
   {
     id: 573,
@@ -7369,6 +7709,7 @@ export const FACTS = [
     options: ["Environ 13 jours, record mondial établi en 1968","Environ 11 jours, record mondial établi en 1964","Environ 11 jours, record mondial établi en 1972","Environ 9 jours, record mondial établi en 1967"],
     correctIndex: 1,
     imageUrl: "/assets/facts/573.png",
+    difficulty: 'normal',
   },
   {
     id: 574,
@@ -7382,6 +7723,7 @@ export const FACTS = [
     options: ["Ils développent les goûts et souvenirs du donneur","Ils peuvent ressentir physiquement les émotions intenses vécues par le donneur au moment du décès","Ils adoptent involontairement certains tics de langage ou expressions propres au donneur","Ils perçoivent temporairement les battements de leur propre cœur comme un son extérieur audible"],
     correctIndex: 0,
     imageUrl: "/assets/facts/574.png",
+    difficulty: 'normal',
   },
   {
     id: 575,
@@ -7395,6 +7737,7 @@ export const FACTS = [
     options: ["Le coccyx terminal, détaché de la colonne","Le vomer, isolé au centre du crâne","L'os hyoïde, flottant dans la gorge","Le sésamoïde du pouce, suspendu dans le tendon"],
     correctIndex: 2,
     imageUrl: "/assets/facts/575.png",
+    difficulty: 'normal',
   },
   {
     id: 576,
@@ -7408,6 +7751,7 @@ export const FACTS = [
     options: ["Réaligner les organes internes déplacés chez les femmes «à constitution fragile»","Traiter «l'hystérie» féminine par orgasme médical","Stimuler la circulation sanguine utérine contre la «mélancolie menstruelle»","Déclencher les contractions lors d'accouchements difficiles par stimulation réflexe"],
     correctIndex: 1,
     imageUrl: "/assets/facts/576.png",
+    difficulty: 'normal',
   },
   {
     id: 577,
@@ -7421,6 +7765,7 @@ export const FACTS = [
     options: ["L'urine fermentée contenant de l'ammoniac","Le sang menstruel traité à la chaleur sèche","Le cérumen dissous dans de l'alcool de grain","Le lait maternel mélangé à de la cire d'abeille"],
     correctIndex: 0,
     imageUrl: "/assets/facts/577.png",
+    difficulty: 'normal',
   },
   {
     id: 578,
@@ -7434,6 +7779,7 @@ export const FACTS = [
     options: ["Autant qu'une pizza entière : environ 680 calories","Autant qu'un jogging de 10 km : environ 620 calories","Autant qu'une barre chocolatée : environ 250 calories","Autant qu'une heure de natation : environ 520 calories"],
     correctIndex: 0,
     imageUrl: "/assets/facts/578.png",
+    difficulty: 'normal',
   },
   {
     id: 579,
@@ -7447,6 +7793,7 @@ export const FACTS = [
     options: ["Le PGAD, trouble de l'excitation génitale persistante","Le CSAS, syndrome d'activation sexuelle compulsive spontanée","Le PSSD, syndrome de dysfonction sexuelle post-ISRS","Le HSDD, trouble du désir sexuel hyperactif persistant"],
     correctIndex: 0,
     imageUrl: "/assets/facts/579.png",
+    difficulty: 'normal',
   },
   {
     id: 580,
@@ -7460,6 +7807,7 @@ export const FACTS = [
     options: ["Le cœur, jusqu'à 4 heures après l'extraction","Le cœur, jusqu'à 2 heures après l'extraction","Le cœur, jusqu'à 6 heures après l'extraction","Le pancréas, jusqu'à 3 heures après l'extraction"],
     correctIndex: 0,
     imageUrl: "/assets/facts/580.png",
+    difficulty: 'normal',
   },
   {
     id: 581,
@@ -7473,6 +7821,7 @@ export const FACTS = [
     options: ["Une délétion du gène ITGA3, syndrome d'Anonymodactylie congénitale","Une surexpression du gène KRT14, kératodermie palmoplantaire lisse","Une mutation du gène SMARCAD1, maladie d'Adermatoglyphie","Une mutation du gène LMNA4, syndrome de Naegeli-Franceschetti"],
     correctIndex: 2,
     imageUrl: "/assets/facts/581.png",
+    difficulty: 'normal',
   },
   {
     id: 582,
@@ -7486,6 +7835,7 @@ export const FACTS = [
     options: ["Les spermatozoïdes, indéfiniment dans l'azote liquide","Les embryons au stade blastocyste, indéfiniment dans l'azote liquide","Les cellules souches de la moelle osseuse, indéfiniment dans l'azote liquide","Les ovocytes, indéfiniment dans l'azote liquide"],
     correctIndex: 0,
     imageUrl: "/assets/facts/582.png",
+    difficulty: 'normal',
   },
   {
     id: 583,
@@ -7499,6 +7849,7 @@ export const FACTS = [
     options: ["La Dysplasie ostéomusculaire envahissante, touchant 1 personne sur 1,5 million","La Calcification musculaire progressive de Münchmeyer, touchant 1 personne sur 3 millions","La Fibrodysplasie ossifiante progressive, touchant 1 personne sur 2 millions","La Myosite ossifiante généralisée, touchant 1 personne sur 1,8 million"],
     correctIndex: 2,
     imageUrl: "/assets/facts/583.png",
+    difficulty: 'normal',
   },
   {
     id: 584,
@@ -7512,6 +7863,7 @@ export const FACTS = [
     options: ["Le foie, qui continue de filtrer le sang résiduel","Les reins, qui continuent de produire de l'urine","Les pupilles, qui continuent de se dilater et se contracter","La peau, qui continue de pousser"],
     correctIndex: 3,
     imageUrl: "/assets/facts/584.png",
+    difficulty: 'normal',
   },
   {
     id: 585,
@@ -7525,6 +7877,7 @@ export const FACTS = [
     options: ["La calcification musculaire héréditaire (CMH)","La dystrophie ostéogénique progressive (DOP)","La pétrification myofasciale systémique (PMS)","La fibrodysplasie ossifiante progressive (FOP)"],
     correctIndex: 3,
     imageUrl: "/assets/facts/585.png",
+    difficulty: 'normal',
   },
   {
     id: 586,
@@ -7538,6 +7891,7 @@ export const FACTS = [
     options: ["La rate, organe interne sans innervation nociceptive directe contrairement au foie","Le cerveau lui-même, sans récepteurs à douleur","L'émail dentaire, tissu minéralisé acellulaire ne contenant aucune fibre nerveuse","Les cartilages articulaires, totalement avasculaires et sans récepteurs à la douleur"],
     correctIndex: 1,
     imageUrl: "/assets/facts/586.png",
+    difficulty: 'normal',
   },
   {
     id: 587,
@@ -7551,6 +7905,7 @@ export const FACTS = [
     options: ["L'aquaphilie paradoxale, réaction immunitaire où les molécules H2O activent les mastocytes dermiques","L'hypersensibilité hydrique diffuse, éruption vasculaire causée par l'absorption transcutanée de l'eau","La xérose réactive aquatique, desquamation sévère provoquée par la pénétration de l'eau dans l'épiderme","L'urticaire aquagénique, éruption cutanée au contact de l'eau"],
     correctIndex: 3,
     imageUrl: "/assets/facts/587.png",
+    difficulty: 'normal',
   },
   {
     id: 588,
@@ -7564,6 +7919,7 @@ export const FACTS = [
     options: ["Perforation possible du sinus frontal ou d'une membrane cérébrale","Fracture possible des cartilages nasaux ou de la cloison","Rupture possible de vaisseaux sanguins ou du tympan","Déchirure possible des ligaments du cou ou d'un muscle intercostal"],
     correctIndex: 2,
     imageUrl: "/assets/facts/588.png",
+    difficulty: 'normal',
   },
   {
     id: 589,
@@ -7577,6 +7933,7 @@ export const FACTS = [
     options: ["Environ 14 jours, puis mort cérébrale certaine","Environ 7 jours, puis défaillance cardiaque irréversible","Environ 11 jours, puis mort cérébrale certaine","Environ 11 jours, puis coma végétatif permanent"],
     correctIndex: 2,
     imageUrl: "/assets/facts/589.png",
+    difficulty: 'normal',
   },
   {
     id: 590,
@@ -7590,6 +7947,7 @@ export const FACTS = [
     options: ["La fibrodysplasie ossifiante progressive (FOP)","La calciphylaxie musculaire progressive (CMP)","La métaplasie ostéogénique musculaire héréditaire (MOMH)","La sclérose musculaire endochondrale diffuse (SMED)"],
     correctIndex: 0,
     imageUrl: "/assets/facts/590.png",
+    difficulty: 'normal',
   },
   {
     id: 591,
@@ -7603,6 +7961,7 @@ export const FACTS = [
     options: ["Le diaphragme, pendant 15 à 45 minutes","Le cœur, pendant 4 à 6 heures","Le cœur, pendant 30 à 60 minutes","Le foie, pendant 20 à 40 minutes"],
     correctIndex: 2,
     imageUrl: "/assets/facts/591.png",
+    difficulty: 'normal',
   },
   {
     id: 592,
@@ -7616,6 +7975,7 @@ export const FACTS = [
     options: ["Les yeux, taille quasi identique dès la naissance","Les ongles, dont la matrice est complète dès la naissance","Les dents de sagesse, formées entièrement avant l'éruption","Le cervelet, dont le volume est fixé dès les premières semaines de vie"],
     correctIndex: 0,
     imageUrl: "/assets/facts/592.png",
+    difficulty: 'normal',
   },
   {
     id: 593,
@@ -7629,6 +7989,7 @@ export const FACTS = [
     options: ["Une vraie mite collée dans un relais du Harvard Mark II","Un vrai scarabée fossilisé dans un relais du UNIVAC I","Un vrai moustique écrasé dans un circuit du MIT Whirlwind","Une vraie fourmi carbonisée dans un transistor de l'ENIAC"],
     correctIndex: 0,
     imageUrl: "/assets/facts/593.png",
+    difficulty: 'normal',
   },
   {
     id: 594,
@@ -7642,6 +8003,7 @@ export const FACTS = [
     options: ["Plus de 95 000 gigaoctets par seconde","Plus de 75 000 gigaoctets par seconde","Plus de 150 000 gigaoctets par seconde","Plus de 280 000 gigaoctets par seconde"],
     correctIndex: 2,
     imageUrl: "/assets/facts/594.png",
+    difficulty: 'normal',
   },
   {
     id: 595,
@@ -7655,6 +8017,7 @@ export const FACTS = [
     options: ["Pour forcer les opérateurs à regarder leurs doigts et réduire les erreurs de frappe","Pour ralentir les dactylos et éviter les blocages mécaniques","Pour équilibrer l'usure mécanique entre les touches gauches et droites de la machine","Pour permettre aux vendeurs de taper le mot TYPEWRITER sur la rangée du haut lors des démonstrations"],
     correctIndex: 1,
     imageUrl: "/assets/facts/595.png",
+    difficulty: 'normal',
   },
   {
     id: 596,
@@ -7668,6 +8031,7 @@ export const FACTS = [
     options: ["Il fut envoyé en 1992, mais personne ne pouvait répondre","Il fut envoyé en 1992, mais il contenait une faute de frappe impossible à corriger","Il fut envoyé en 1994, mais le réseau factура l'équivalent de 12 euros par caractère","Il mit 7 secondes à s'envoyer, ce qui était alors considéré comme un exploit technique"],
     correctIndex: 0,
     imageUrl: "/assets/facts/596.png",
+    difficulty: 'normal',
   },
   {
     id: 597,
@@ -7681,6 +8045,7 @@ export const FACTS = [
     options: ["L'Éthiopie, à cause d'une commande erronée exécutée lors d'une maintenance BGP","La Syrie, à cause d'une erreur de configuration routeur","Le Bangladesh, après une mise à jour logicielle mal appliquée sur un nœud central","La Libye, après la suppression accidentelle de la table de routage nationale"],
     correctIndex: 1,
     imageUrl: "/assets/facts/597.png",
+    difficulty: 'normal',
   },
   {
     id: 598,
@@ -7694,6 +8059,7 @@ export const FACTS = [
     options: ["L'Allemagne, 350 000 soldats contactés","Les États-Unis, 1,3 million de soldats contactés","La France, 270 000 soldats contactés","Le Royaume-Uni, 180 000 soldats contactés"],
     correctIndex: 1,
     imageUrl: "/assets/facts/598.png",
+    difficulty: 'normal',
   },
   {
     id: 599,
@@ -7707,6 +8073,7 @@ export const FACTS = [
     options: ["7 ans, de 1985 à 1992","9 ans, de 1983 à 1992","6 ans, de 1986 à 1992","4 ans, de 1988 à 1992"],
     correctIndex: 0,
     imageUrl: "/assets/facts/599.png",
+    difficulty: 'normal',
   },
   {
     id: 600,
@@ -7720,6 +8087,7 @@ export const FACTS = [
     options: ["Pour sceller les connecteurs exposés à l'humidité dans les salles de contrôle du MIT","Pour maintenir en place les cartes mémoire qui vibraient lors des simulations de décollage","Pour étiqueter manuellement les lignes de code imprimées sur papier perforé","Pour couvrir physiquement les circuits défectueux sur les cartes"],
     correctIndex: 3,
     imageUrl: "/assets/facts/600.png",
+    difficulty: 'normal',
   },
   {
     id: 601,
@@ -7733,6 +8101,7 @@ export const FACTS = [
     options: ["Une tonne de smartphones, 300g d'or extraits","Une tonne d'ordinateurs portables, 420g d'or extraits","Une tonne de smartphones, 300g d'argent extraits","Une tonne de smartphones, 180g d'or extraits"],
     correctIndex: 0,
     imageUrl: "/assets/facts/601.png",
+    difficulty: 'normal',
   },
   {
     id: 602,
@@ -7746,6 +8115,7 @@ export const FACTS = [
     options: ["Une mise à jour défectueuse de 40 Ko du logiciel CrowdStrike","Une mise à jour défectueuse de 45 Ko du module de détection Sophos Intercept X","Un patch de sécurité corrompu de 42 Ko déployé par le pare-feu Palo Alto Networks","Un certificat SSL expiré de 41 Ko poussé automatiquement par le service Microsoft Defender"],
     correctIndex: 0,
     imageUrl: "/assets/facts/602.png",
+    difficulty: 'normal',
   },
   {
     id: 603,
@@ -7759,6 +8129,7 @@ export const FACTS = [
     options: ["Le système a planté après seulement 2 lettres","La bande magnétique d'enregistrement était saturée après 2 caractères","La limite de caractères du réseau était fixée à 2 à des fins de test","L'opérateur a appuyé sur Entrée trop tôt par nervosité"],
     correctIndex: 0,
     imageUrl: "/assets/facts/603.png",
+    difficulty: 'normal',
   },
   {
     id: 604,
@@ -7772,6 +8143,7 @@ export const FACTS = [
     options: ["Exactement 7 fois — code Morse interne indiquant l'expiration de la puce mémoire","Exactement 1 fois — un clignotement long réglementaire avant désactivation automatique","Exactement 0 fois — elle s'arrête selon une puce programmée","Exactement 3 fois — un signal visuel légalement requis avant toute coupure DRM"],
     correctIndex: 2,
     imageUrl: "/assets/facts/604.png",
+    difficulty: 'normal',
   },
   {
     id: 605,
@@ -7785,6 +8157,7 @@ export const FACTS = [
     options: ["La poignée intérieure d'une portière de voiture","Un clavier d'ordinateur de bureau","Le plateau d'un chariot de supermarché","Un écran de smartphone tactile"],
     correctIndex: 1,
     imageUrl: "/assets/facts/605.png",
+    difficulty: 'normal',
   },
   {
     id: 606,
@@ -7798,6 +8171,7 @@ export const FACTS = [
     options: ["Texte bleu sur fond blanc, copié du modèle imposé par le gouvernement américain","Entièrement vert fluo, héritage des terminaux informatiques de mission Apollo","Fond noir avec des étoiles en points blancs fixes, seul élément graphique autorisé","Entièrement gris, sans aucune image"],
     correctIndex: 3,
     imageUrl: "/assets/facts/606.png",
+    difficulty: 'normal',
   },
   {
     id: 607,
@@ -7811,19 +8185,7 @@ export const FACTS = [
     options: ["Environ 80 millions de lignes de code","Environ 200 millions de lignes de code","Environ 65 millions de lignes de code","Environ 35 millions de lignes de code"],
     correctIndex: 0,
     imageUrl: "/assets/facts/607.png",
-  },
-  {
-    id: 608,
-    category: "technologie",
-    question: "Quel bug informatique historique a été causé par un vrai insecte ?",
-    hint1: "Insecte",
-    hint2: "Harvard",
-    shortAnswer: "Une mite coincée dans un relais du Harvard Mark II en 1947",
-    explanation: "Le 9 septembre 1947, les ingénieurs du Harvard Mark II ont trouvé une mite coincée dans le relais n°70 du calculateur, provoquant une panne. La technicienne Grace Hopper a collé l'insecte dans le journal de bord avec la note : 'First actual case of bug being found'. C'est littéralement l'origine du mot 'bug' informatique. L'insecte original est conservé au Smithsonian Institution à Washington.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Software_bug#Etymology",
-    options: ["Une mite coincée dans un relais du Harvard Mark I en 1944","Une mouche piégée dans un circuit imprimé de l'IBM 701 en 1952","Une mite coincée dans un relais du Harvard Mark II en 1947","Un scarabée coincé dans un relais de l'UNIVAC I en 1951"],
-    correctIndex: 2,
-    imageUrl: "/assets/facts/608.png",
+    difficulty: 'normal',
   },
   {
     id: 609,
@@ -7837,6 +8199,7 @@ export const FACTS = [
     options: ["6 ans — avec 'Despacito' de Luis Fonsi en 2013","5 ans — avec 'Gangnam Style' en 2012","5 ans — avec 'Charlie Bit My Finger' en 2012","7 ans — avec 'Gangnam Style' en 2014"],
     correctIndex: 1,
     imageUrl: "/assets/facts/609.png",
+    difficulty: 'normal',
   },
   {
     id: 610,
@@ -7850,6 +8213,7 @@ export const FACTS = [
     options: ["Pour protéger les tendons des dactylographes professionnels, jugés trop rapides par les syndicats de l'époque","Pour éviter que les touches des machines à écrire ne se bloquent","Pour ralentir la cadence des télégrammes et permettre aux opérateurs de facturer plus d'heures de travail","Pour que les vendeurs puissent taper le mot TYPEWRITER entier sur la rangée du haut lors des démonstrations"],
     correctIndex: 1,
     imageUrl: "/assets/facts/610.png",
+    difficulty: 'normal',
   },
   {
     id: 611,
@@ -7863,6 +8227,7 @@ export const FACTS = [
     options: ["Aucun — c'est le bogue de l'an 2000 qui a corrompu les files d'attente SMS stockées depuis décembre 1999","La Finlande — Nokia avait programmé une mise à jour firmware qui a déclenché l'envoi en masse","Aucun — c'est le protocole SS7 qui a automatiquement généré des messages de test à minuit","Aucun — c'est le réseau mondial GSM qui a saturé simultanément"],
     correctIndex: 3,
     imageUrl: "/assets/facts/611.png",
+    difficulty: 'normal',
   },
   {
     id: 612,
@@ -7876,6 +8241,7 @@ export const FACTS = [
     options: ["La démonstration entière — l'appareil était un prototype instable","Le déverrouillage tactile — un technicien envoyait les signaux depuis une tablette cachée","L'appel téléphonique en direct — le réseau était simulé par un technicien en coulisses","La messagerie SMS — les messages affichés avaient été programmés à l'avance sur un serveur interne"],
     correctIndex: 0,
     imageUrl: "/assets/facts/612.png",
+    difficulty: 'normal',
   },
   {
     id: 613,
@@ -7889,19 +8255,7 @@ export const FACTS = [
     options: ["Les États-Unis et le Royaume-Uni, via Stuxnet","Les États-Unis et Israël, via Stuxnet","La Corée du Nord, via le malware AtomStrike","Israël et la France, via l'opération NuclearFox"],
     correctIndex: 1,
     imageUrl: "/assets/facts/613.png",
-  },
-  {
-    id: 614,
-    category: "technologie",
-    question: "Combien de temps le premier message SMS de l'histoire a-t-il mis à être envoyé ?",
-    hint1: "Texto",
-    hint2: "Noël",
-    shortAnswer: "Aucun délai : le réseau n'était pas prévu pour ça",
-    explanation: "Le tout premier SMS de l'histoire a été envoyé le 3 décembre 1992 par l'ingénieur britannique Neil Papworth depuis un ordinateur vers le téléphone de Richard Jarvis, cadre chez Vodafone. Le message disait simplement 'Merry Christmas'. Le plus ironique : les téléphones de l'époque ne permettaient pas encore de répondre par SMS, car personne n'avait prévu que la technologie deviendrait un moyen de communication de masse. Il a fallu attendre 1993 pour qu'un SMS soit envoyé de téléphone à téléphone.",
-    sourceUrl: "https://en.wikipedia.org/wiki/SMS",
-    options: ["Aucun délai : le réseau n'était pas prévu pour ça","2,4 secondes exactement, le temps que le signal rebondisse sur le satellite de relais","Moins d'une seconde, mais il est arrivé le lendemain à cause d'un bug d'horodatage","4 heures : le réseau était saturé par les appels de Noël ce soir-là"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/614.png",
+    difficulty: 'normal',
   },
   {
     id: 615,
@@ -7915,6 +8269,7 @@ export const FACTS = [
     options: ["Le Brésil, avec 12 pays frontaliers","La Chine, avec 14 pays frontaliers","La Chine, avec 16 pays frontaliers","La Russie, avec 16 pays frontaliers"],
     correctIndex: 1,
     imageUrl: "/assets/facts/615.png",
+    difficulty: 'normal',
   },
   {
     id: 616,
@@ -7928,6 +8283,7 @@ export const FACTS = [
     options: ["La Pologne, absente des cartes de 1795 à 1918","La Slovaquie, absente des cartes de 1867 à 1893","La Finlande, absente des cartes de 1809 à 1835","La Bohême, absente des cartes de 1620 à 1646"],
     correctIndex: 0,
     imageUrl: "/assets/facts/616.png",
+    difficulty: 'normal',
   },
   {
     id: 617,
@@ -7941,6 +8297,7 @@ export const FACTS = [
     options: ["Le fleuve Ucayali alimente simultanément le bassin atlantique et le bassin pacifique au Pérou","Le canal du Magdalena bifurque naturellement vers deux océans différents en Amérique du Sud","Le fleuve Okavango se divise en deux courants de direction opposée dans le désert du Kalahari","Le fleuve Casiquiare relie deux bassins opposés"],
     correctIndex: 3,
     imageUrl: "/assets/facts/617.png",
+    difficulty: 'normal',
   },
   {
     id: 618,
@@ -7954,6 +8311,7 @@ export const FACTS = [
     options: ["Le Vatican, enclavé entièrement dans la France","Le Liechtenstein, enclavé entièrement dans la Suisse","Le Lesotho, enclavé entièrement dans l'Afrique du Sud","Saint-Marin, enclavé entièrement dans l'Espagne"],
     correctIndex: 2,
     imageUrl: "/assets/facts/618.png",
+    difficulty: 'normal',
   },
   {
     id: 619,
@@ -7967,6 +8325,7 @@ export const FACTS = [
     options: ["Derby Line, Vermont, coupée en deux par la frontière Canada-USA","Pembina, Dakota du Nord, coupée en deux par la frontière Canada-USA","Blaine, Washington, coupée en deux par la frontière Canada-USA","International Falls, Minnesota, coupée en deux par la frontière Canada-USA"],
     correctIndex: 0,
     imageUrl: "/assets/facts/619.png",
+    difficulty: 'normal',
   },
   {
     id: 620,
@@ -7980,19 +8339,7 @@ export const FACTS = [
     options: ["La Malaisie, avec Kuala Lumpur en version complète","La Thaïlande, avec Bangkok en version complète","Le Myanmar, avec Naypyidaw en version complète","L'Indonésie, avec Jakarta en version complète"],
     correctIndex: 1,
     imageUrl: "/assets/facts/620.png",
-  },
-  {
-    id: 621,
-    category: "geographie",
-    question: "Quel pays est entièrement entouré par un seul autre pays ?",
-    hint1: "Enclave",
-    hint2: "Montagne",
-    shortAnswer: "Le Lesotho, enclave totale dans l'Afrique du Sud",
-    explanation: "Le Lesotho est l'un des trois seuls pays au monde à être complètement enclavés dans un unique autre pays : il est entièrement entouré par l'Afrique du Sud. Avec ses 30 355 km², ce petit royaume montagneux d'Afrique australe est aussi remarquable par son altitude : c'est le seul pays dont la totalité du territoire dépasse les 1 000 mètres. Son point le plus bas, à 1 400 mètres, est le plus haut 'point le plus bas' de tous les pays du monde. Les deux autres enclaves similaires sont le Vatican et Saint-Marin, tous deux dans l'Italie.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Lesotho",
-    options: ["Le Lesotho, enclave totale dans l'Afrique du Sud","Le Swaziland, enclave totale dans l'Afrique du Sud","Le Malawi, enclave totale dans le Mozambique","Le Burundi, enclave totale dans la République Démocratique du Congo"],
-    correctIndex: 0,
-    imageUrl: "/assets/facts/621.png",
+    difficulty: 'normal',
   },
   {
     id: 622,
@@ -8006,6 +8353,7 @@ export const FACTS = [
     options: ["La Belgique, via ses enclaves néerlandaises de Baarle-Hertog sur 278 km","La France, via son enclave andorrane de Font Romeu sur 189 km","Le Portugal, via son enclave espagnole d'Olivença","L'Espagne, via ses enclaves portugaises de Juromenha et Olivença"],
     correctIndex: 2,
     imageUrl: "/assets/facts/622.png",
+    difficulty: 'normal',
   },
   {
     id: 623,
@@ -8019,6 +8367,7 @@ export const FACTS = [
     options: ["Newtok en Alaska, submergée à 60% depuis les années 1990","Tangier Island en Virginie, qui a perdu la moitié de sa surface depuis 1850","Isle de Jean Charles en Louisiane, dont 98% du territoire est déjà sous les eaux","Kivalina en Alaska, désormais engloutie à 40%"],
     correctIndex: 3,
     imageUrl: "/assets/facts/623.png",
+    difficulty: 'normal',
   },
   {
     id: 624,
@@ -8032,6 +8381,7 @@ export const FACTS = [
     options: ["Le Canada, avec 620 000 lacs recensés","Le Canada, avec 879 000 lacs recensés","L'Alaska (États-Unis), avec 3 000 000 lacs recensés","La Suède, avec 945 000 lacs recensés"],
     correctIndex: 1,
     imageUrl: "/assets/facts/624.png",
+    difficulty: 'normal',
   },
   {
     id: 625,
@@ -8045,6 +8395,7 @@ export const FACTS = [
     options: ["L'Indonésie, avec Yogyakarta","Le Myanmar, avec Naypyidaw","La Thaïlande, avec Bangkok","La Malaisie, avec Kuala Lumpur"],
     correctIndex: 2,
     imageUrl: "/assets/facts/625.png",
+    difficulty: 'normal',
   },
   {
     id: 626,
@@ -8058,6 +8409,7 @@ export const FACTS = [
     options: ["L'Arabie Saoudite, zéro fleuve permanent","La Libye, zéro fleuve permanent","Oman, zéro fleuve permanent","Le Qatar, zéro fleuve permanent"],
     correctIndex: 0,
     imageUrl: "/assets/facts/626.png",
+    difficulty: 'normal',
   },
   {
     id: 627,
@@ -8071,6 +8423,7 @@ export const FACTS = [
     options: ["La frontière Suisse-Autriche coupe le lac de Constance en trois parts égales","La frontière Estonie-Lettonie traverse le lac Peipous en suivant son axe nord-sud depuis 1920","La frontière USA-Canada coupe le lac des Bois","La frontière Bolivie-Pérou coupe le lac Titicaca exactement sur la ligne du tropique du Capricorne"],
     correctIndex: 2,
     imageUrl: "/assets/facts/627.png",
+    difficulty: 'normal',
   },
   {
     id: 628,
@@ -8084,6 +8437,7 @@ export const FACTS = [
     options: ["Athènes, à cheval sur l'Europe et l'Asie","Istanbul, à cheval sur l'Europe et l'Asie","Moscou, à cheval sur l'Europe et l'Asie","Le Caire, à cheval sur l'Afrique et l'Asie"],
     correctIndex: 1,
     imageUrl: "/assets/facts/628.png",
+    difficulty: 'normal',
   },
   {
     id: 629,
@@ -8097,6 +8451,7 @@ export const FACTS = [
     options: ["Saint-Marin, enclavé à 100% dans l'Italie","Le Swaziland, enclavé à 100% dans l'Afrique du Sud","Le Monaco, enclavé à 100% dans la France","Le Lesotho, enclavé à 100% dans l'Afrique du Sud"],
     correctIndex: 3,
     imageUrl: "/assets/facts/629.png",
+    difficulty: 'normal',
   },
   {
     id: 630,
@@ -8110,6 +8465,7 @@ export const FACTS = [
     options: ["L'Islande, avec la ville Þ","La Norvège, avec la ville Å","L'Estonie, avec la ville Õ","La Finlande, avec la ville Y"],
     correctIndex: 1,
     imageUrl: "/assets/facts/630.png",
+    difficulty: 'normal',
   },
   {
     id: 631,
@@ -8123,6 +8479,7 @@ export const FACTS = [
     options: ["La France, via l'enclave de Mont-Louis en Andorre","L'Allemagne, via l'enclave de Büsingen am Hochrhein en Suisse","L'Espagne, via l'enclave de Llívia en France","L'Italie, via l'enclave de Campione d'Italia en Suisse"],
     correctIndex: 2,
     imageUrl: "/assets/facts/631.png",
+    difficulty: 'normal',
   },
   {
     id: 632,
@@ -8136,6 +8493,7 @@ export const FACTS = [
     options: ["Le Casiquiare relie deux bassins versants distincts","Le Casiquiare forme une boucle fermée qui fait circuler l'eau en circuit autonome","Le Casiquiare alimente deux océans différents en fonction des précipitations annuelles","Le Casiquiare partage ses eaux entre deux continents via un couloir souterrain naturel"],
     correctIndex: 0,
     imageUrl: "/assets/facts/632.png",
+    difficulty: 'normal',
   },
   {
     id: 633,
@@ -8149,6 +8507,7 @@ export const FACTS = [
     options: ["Le Bangladesh : 31% du territoire sous le niveau marin","Le Danemark : 18% du territoire sous le niveau marin","La Belgique : 22% du territoire sous le niveau marin","Les Pays-Bas : 26% du territoire sous le niveau marin"],
     correctIndex: 3,
     imageUrl: "/assets/facts/633.png",
+    difficulty: 'normal',
   },
   {
     id: 634,
@@ -8162,6 +8521,7 @@ export const FACTS = [
     options: ["Hong Kong, construite sur 80+ îles de béton corallien recyclé","Shanghai, construite sur 200+ îles de limon du fleuve Yangtze","Singapour, construite sur 120+ îles de sédiments drainés","Tokyo, construite sur 100+ îles de terre remblayée"],
     correctIndex: 3,
     imageUrl: "/assets/facts/634.png",
+    difficulty: 'normal',
   },
   {
     id: 635,
@@ -8175,6 +8535,7 @@ export const FACTS = [
     options: ["Nogales, à cheval sur USA et Mexique","Blaine, à cheval sur USA et Canada","International Falls, à cheval sur USA et Canada","Derby Line, à cheval sur USA et Canada"],
     correctIndex: 3,
     imageUrl: "/assets/facts/635.png",
+    difficulty: 'normal',
   },
   {
     id: 636,
@@ -8188,6 +8549,7 @@ export const FACTS = [
     options: ["La Russie, dont le territoire couvre 11 fuseaux et 2 continents","L'Azerbaïdjan, dont le territoire continental est en Asie mais dont l'enclave du Nakhitchevan est officiellement reconnue comme territoire européen","Le Chili, dont Santiago est la capitale continentale américaine et dont l'île de Pâques constitue une capitale administrative rattachée à l'Océanie","L'Égypte, dont Le Caire administre l'Afrique du Nord et dont la ville de Charm el-Cheikh est officiellement classée en Asie par l'ONU"],
     correctIndex: 0,
     imageUrl: "/assets/facts/636.png",
+    difficulty: 'normal',
   },
   {
     id: 637,
@@ -8201,6 +8563,7 @@ export const FACTS = [
     options: ["Timecode de Mike Figgis en 2000","Victoria de Sebastian Schipper en 2015","1917 de Sam Mendes en 2019","Russian Ark d'Alexandre Sokourov en 2002"],
     correctIndex: 3,
     imageUrl: "/assets/facts/637.png",
+    difficulty: 'normal',
   },
   {
     id: 638,
@@ -8214,6 +8577,7 @@ export const FACTS = [
     options: ["Sylvester Stallone, câble sectionné à 5 cm de sa tête","Tom Cruise, câble de sécurité sectionné à 3 cm de sa gorge","Jean-Claude Van Damme, câble de grue rompu à 6 cm de son visage","Harrison Ford, poutre métallique à 8 cm de sa nuque"],
     correctIndex: 0,
     imageUrl: "/assets/facts/638.png",
+    difficulty: 'normal',
   },
   {
     id: 639,
@@ -8227,6 +8591,7 @@ export const FACTS = [
     options: ["569 fois, record mondial au cinéma","506 fois, record mondial au cinéma","612 fois, record mondial au cinéma","569 fois, record pour un film américain uniquement"],
     correctIndex: 0,
     imageUrl: "/assets/facts/639.png",
+    difficulty: 'normal',
   },
   {
     id: 640,
@@ -8240,6 +8605,7 @@ export const FACTS = [
     options: ["Eraserhead de David Lynch, via détournements de subventions du American Film Institute sur quatre ans","Clerks de Kevin Smith, partiellement financé par le braquage d'une caisse d'épargne du New Jersey","El Topo d'Alejandro Jodorowsky, financé par deux hold-up de banques mexicaines en 1969","Sátántangó de Béla Tarr, via fonds détournés en Hongrie communiste"],
     correctIndex: 3,
     imageUrl: "/assets/facts/640.png",
+    difficulty: 'normal',
   },
   {
     id: 641,
@@ -8253,6 +8619,7 @@ export const FACTS = [
     options: ["Vic Morrow, décapité par un hélicoptère sur le plateau en 1982","Roy Kinnear, décédé d'une chute de cheval pendant une cascade sur le tournage de La Quatrième Étoile en 1988","Paul Mantz, pilote cascadeur dont l'avion s'est désintégré à l'atterrissage lors du tournage de Flight of the Phoenix en 1965","Jon-Erik Hexum, tué par l'onde de choc d'un pistolet à blanc appuyé contre sa tempe en 1984"],
     correctIndex: 0,
     imageUrl: "/assets/facts/641.png",
+    difficulty: 'normal',
   },
   {
     id: 642,
@@ -8266,6 +8633,7 @@ export const FACTS = [
     options: ["Arnold Schwarzenegger, sur Predator, poumon perforé par un câble de cascade mal fixé","Jean-Claude Van Damme, sur Bloodsport, vertèbre cervicale fissurée par son partenaire de combat Donald Gibb","Bruce Willis, sur Die Hard, rupture de rate après une chute réelle de trois mètres sur béton","Sylvester Stallone, sur Rocky IV, fracture des côtes par Dolph Lundgren"],
     correctIndex: 3,
     imageUrl: "/assets/facts/642.png",
+    difficulty: 'normal',
   },
   {
     id: 643,
@@ -8279,6 +8647,7 @@ export const FACTS = [
     options: ["Poltergeist (1982) avec de vrais squelettes dans la piscine","The Exorcist (1973) avec de vrais crânes humains dans la scène du grenier","The Texas Chain Saw Massacre (1974) avec de vraies dents humaines incrustées dans le décor de la maison","The Shining (1980) avec de vrais crânes utilisés comme éléments décoratifs dans le hall de l'Overlook Hotel"],
     correctIndex: 0,
     imageUrl: "/assets/facts/643.png",
+    difficulty: 'normal',
   },
   {
     id: 644,
@@ -8292,6 +8661,7 @@ export const FACTS = [
     options: ["James Cameron, arrêté pour vol à l'étalage à 15 ans","Peter Jackson, arrêté pour vol à l'étalage à 17 ans","Steven Spielberg, arrêté pour vol à l'étalage à 14 ans","James Cameron, arrêté pour vol à l'étalage à 17 ans"],
     correctIndex: 3,
     imageUrl: "/assets/facts/644.png",
+    difficulty: 'normal',
   },
   {
     id: 645,
@@ -8305,6 +8675,7 @@ export const FACTS = [
     options: ["Salo, interdit en Italie par le studio Produzioni Europee Associati après la mort de Pasolini sur pression de sa famille","A Clockwork Orange, interdit au Royaume-Uni par Stanley Kubrick lui-même","Straw Dogs, interdit au Royaume-Uni par Sam Peckinpah lui-même après avoir reçu des menaces du Parlement britannique","The Exorcist, interdit aux États-Unis par William Friedkin lui-même après une projection qui aurait provoqué trois infarctus"],
     correctIndex: 1,
     imageUrl: "/assets/facts/645.png",
+    difficulty: 'normal',
   },
   {
     id: 646,
@@ -8318,19 +8689,7 @@ export const FACTS = [
     options: ["Daniel Day-Lewis dans There Will Be Blood : la tirade finale 'I'm finished !' hurlée à pleins poumons était improvisée, Day-Lewis ayant réellement pété les plombs après 14 heures de tournage","Dustin Hoffman dans Marathon Man : la phrase 'Is it safe ?' répétée en boucle lors de la scène de torture dentaire était une improvisation qui a mis mal à l'aise toute l'équipe technique","Heath Ledger dans The Dark Knight : la scène où le Joker fait exploser l'hôpital en ajustant sa télécommande était entièrement improvisée après un vrai dysfonctionnement des explosifs","Jack Nicholson dans Shining : 'Here's Johnny !' était entièrement improvisé"],
     correctIndex: 3,
     imageUrl: "/assets/facts/646.png",
-  },
-  {
-    id: 647,
-    category: "cinema",
-    question: "Quel acteur hollywoodien a failli mourir étouffé pendant le tournage d'une scène ?",
-    hint1: "Ring",
-    hint2: "Coeur",
-    shortAnswer: "Sylvester Stallone, étranglé pour de vrai par Dolph Lundgren",
-    explanation: "Pendant le tournage de Rocky IV en 1985, Dolph Lundgren a frappé Sylvester Stallone si fort à la poitrine que son cœur a heurté sa cage thoracique. Stallone a dû être hospitalisé en soins intensifs pendant 9 jours. Les médecins ont comparé son état à celui d'un accidenté de voiture à haute vitesse. Il avait lui-même demandé à Lundgren de le frapper 'pour de vrai' afin que la scène soit plus réaliste.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Rocky_IV",
-    options: ["Bruce Willis, étranglé pour de vrai par Vin Diesel lors d'une prise de catch improvisée sur Fast & Furious 6","Jackie Chan, étranglé pour de vrai par un cascadeur remplaçant lors d'une scène de combat sur Rumble in the Bronx","Mel Gibson, étranglé pour de vrai par un figurant trop zélé sur le tournage de Braveheart","Sylvester Stallone, étranglé pour de vrai par Dolph Lundgren"],
-    correctIndex: 3,
-    imageUrl: "/assets/facts/647.png",
+    difficulty: 'normal',
   },
   {
     id: 648,
@@ -8344,6 +8703,7 @@ export const FACTS = [
     options: ["2001 L'Odyssée de l'Espace rejeté par tous les studios sauf un","Retour vers le Futur refusé par tous les studios sauf un","Star Wars refusé par tous les studios sauf un","Jurassic Park rejeté par 12 studios à cause d'un budget jugé absurde"],
     correctIndex: 2,
     imageUrl: "/assets/facts/648.png",
+    difficulty: 'normal',
   },
   {
     id: 649,
@@ -8357,6 +8717,7 @@ export const FACTS = [
     options: ["Marlon Brando dans Superman (1978)","Robert De Niro dans Le Parrain 2 (1974)","Marlon Brando dans Le Parrain (1972)","Al Pacino dans Dick Tracy (1990)"],
     correctIndex: 0,
     imageUrl: "/assets/facts/649.png",
+    difficulty: 'normal',
   },
   {
     id: 650,
@@ -8370,6 +8731,7 @@ export const FACTS = [
     options: ["Salo filmé avec de vrais acteurs non professionnels recrutés dans la rue","Heaven's Gate produit avec de vraies batailles reconstituées","The Deer Hunter réalisé avec un vrai fusil chargé à la roulette russe","Apocalypse Now filmé pendant une vraie descente psychologique"],
     correctIndex: 3,
     imageUrl: "/assets/facts/650.png",
+    difficulty: 'normal',
   },
   {
     id: 651,
@@ -8383,6 +8745,7 @@ export const FACTS = [
     options: ["Les Dents de la Mer, avec sacs à vomir distribués à l'entrée des salles","Rosemary's Baby, avec prêtres bénissant les salles entre chaque projection","L'Exorciste, avec ambulances postées devant les salles","Carrie, avec infirmières en uniforme postées dans les couloirs"],
     correctIndex: 2,
     imageUrl: "/assets/facts/651.png",
+    difficulty: 'normal',
   },
   {
     id: 652,
@@ -8396,6 +8759,7 @@ export const FACTS = [
     options: ["Tom Cruise, qui exigeait que Neo soit présenté comme le seul élu dès la première scène","Nicolas Cage, qui a décliné pour se consacrer à 8MM avec David Fincher","Brad Pitt, qui a préféré tourner Fight Club la même année","Will Smith, qui a préféré tourner Wild Wild West"],
     correctIndex: 3,
     imageUrl: "/assets/facts/652.png",
+    difficulty: 'normal',
   },
   {
     id: 653,
@@ -8409,6 +8773,7 @@ export const FACTS = [
     options: ["Mad Max : George Miller visé par un engin explosif en Australie","Aguirre : Werner Herzog blessé par une explosion au Venezuela","Apocalypse Now : Francis Ford Coppola visé par une grenade aux Philippines","Fitzcarraldo : Werner Herzog visé par une bombe au Pérou"],
     correctIndex: 3,
     imageUrl: "/assets/facts/653.png",
+    difficulty: 'normal',
   },
   {
     id: 654,
@@ -8422,6 +8787,7 @@ export const FACTS = [
     options: ["Intolerance (1916) : momies achetées à des antiquaires pour garnir les décors babyloniens","Les Dix Commandements (1923) : momies enterrées sur le tournage","Cléopâtre (1963) : momies louées au Musée du Caire comme accessoires de plateau","Frankenstein (1931) : bandages authentiques de momies utilisés pour le maquillage du monstre"],
     correctIndex: 1,
     imageUrl: "/assets/facts/654.png",
+    difficulty: 'normal',
   },
   {
     id: 655,
@@ -8435,6 +8801,7 @@ export const FACTS = [
     options: ["Scarlett Johansson, terrifiée par les papillons depuis son enfance à New York","Cate Blanchett, diagnostiquée lépidoptérophobie après un malaise sur scène à Sydney","Nicole Kidman, terrifiée par les papillons depuis l'enfance","Brad Pitt, incapable de tourner en extérieur lorsque des papillons sont présents selon ses contrats"],
     correctIndex: 2,
     imageUrl: "/assets/facts/655.png",
+    difficulty: 'normal',
   },
   {
     id: 656,
@@ -8448,6 +8815,7 @@ export const FACTS = [
     options: ["Following, tourné en 6 semaines pour 6 000 $ par Christopher Nolan le week-end entre ses gardes de nuit","Pi, tourné en 3 semaines pour 9 000 $ par Darren Aronofsky en revendant ses affaires personnelles","Tangerine, tourné en 4 jours pour 8 500 $ par Sean Baker intégralement filmé sur iPhone 5S","Reefer Madness… non : Mad Max, tourné en 12 jours pour 350 000 $... Non : Primer, tourné en 4 jours pour 7 000 $"],
     correctIndex: 3,
     imageUrl: "/assets/facts/656.png",
+    difficulty: 'normal',
   },
   {
     id: 657,
@@ -8461,6 +8829,7 @@ export const FACTS = [
     options: ["Keanu Reeves pour Speed 2 en 1997","Will Smith pour Matrix en 1999","Jim Carrey pour Matrix en 1999","Will Smith pour Independence Day 2 en 2013"],
     correctIndex: 1,
     imageUrl: "/assets/facts/657.png",
+    difficulty: 'normal',
   },
   {
     id: 658,
@@ -8474,6 +8843,7 @@ export const FACTS = [
     options: ["Napoleon (1927) avec un budget 9x dépassé","Spartacus (1960) avec un budget 7x dépassé","Heaven's Gate (1980) avec un budget 5x dépassé","Cleopatra (1963) avec un budget 10x dépassé"],
     correctIndex: 3,
     imageUrl: "/assets/facts/658.png",
+    difficulty: 'normal',
   },
   {
     id: 659,
@@ -8487,6 +8857,7 @@ export const FACTS = [
     options: ["John Lennon, pour 19 800 dollars","Elvis Presley, pour 31 200 dollars","Keith Richards, pour 27 000 dollars","John Lennon, pour 31 200 dollars"],
     correctIndex: 3,
     imageUrl: "/assets/facts/659.png",
+    difficulty: 'normal',
   },
   {
     id: 660,
@@ -8500,6 +8871,7 @@ export const FACTS = [
     options: ["Beethoven, en collant son oreille ouverte directement sur le bois du clavier","Beethoven, en mordant sa baguette de piano","Beethoven, en appuyant sa mâchoire contre la caisse de résonance du piano","Beethoven, en tenant sa main sur le plancher pendant que son assistant jouait"],
     correctIndex: 1,
     imageUrl: "/assets/facts/660.png",
+    difficulty: 'normal',
   },
   {
     id: 661,
@@ -8513,6 +8885,7 @@ export const FACTS = [
     options: ["The Rolling Stones, lors d'un concert à Prague en 1978","David Bowie, lors d'un concert à Berlin-Est en 1987","Bruce Springsteen, lors d'un concert à Leipzig en 1984","The Clash, lors d'un concert à Berlin-Est en 1982"],
     correctIndex: 3,
     imageUrl: "/assets/facts/661.png",
+    difficulty: 'normal',
   },
   {
     id: 662,
@@ -8526,6 +8899,7 @@ export const FACTS = [
     options: ["La clarinette basse, à cause de micro-organismes pathogènes logés dans le barillet en ébène","Le didgeridoo, à cause de spores fongiques accumulées dans le tube en bois creux","Le hautbois, à cause de champignons microscopiques se développant dans le anche en roseau","La cornemuse, à cause de moisissures mortelles internes"],
     correctIndex: 3,
     imageUrl: "/assets/facts/662.png",
+    difficulty: 'normal',
   },
   {
     id: 663,
@@ -8539,6 +8913,7 @@ export const FACTS = [
     options: ["Little Richard, par le FBI américain en 1957","Chuck Berry, par le gouvernement fédéral américain en 1958","Jim Morrison, par le FBI américain en 1969","Elvis Presley, par le FBI américain en 1956"],
     correctIndex: 3,
     imageUrl: "/assets/facts/663.png",
+    difficulty: 'normal',
   },
   {
     id: 664,
@@ -8552,6 +8927,7 @@ export const FACTS = [
     options: ["Les Jan and Dean","Les Beach Boys","Les Eagles","Les Surfaris"],
     correctIndex: 1,
     imageUrl: "/assets/facts/664.png",
+    difficulty: 'normal',
   },
   {
     id: 665,
@@ -8565,6 +8941,7 @@ export const FACTS = [
     options: ["Beethoven, sourd à 44 ans, a composé sa 9e Symphonie","Beethoven, sourd à 39 ans, a composé sa 8e Symphonie","Smetana, sourd à 50 ans, a composé son opéra La Fiancée vendue","Dvorak, sourd à 58 ans, a composé sa Symphonie du Nouveau Monde"],
     correctIndex: 0,
     imageUrl: "/assets/facts/665.png",
+    difficulty: 'normal',
   },
   {
     id: 666,
@@ -8578,6 +8955,7 @@ export const FACTS = [
     options: ["David Bowie, brevet US n°5123034 en 1991","Elvis Presley, brevet US n°4782602 en 1977","James Brown, brevet US n°4918936 en 1989","Michael Jackson, brevet US n°5255452 en 1992"],
     correctIndex: 3,
     imageUrl: "/assets/facts/666.png",
+    difficulty: 'normal',
   },
   {
     id: 667,
@@ -8591,6 +8969,7 @@ export const FACTS = [
     options: ["Les autorités américaines leur avaient interdit les tournées après leurs déclarations sur Jésus-Christ","George Harrison refusait de jouer sur des scènes orientées vers l'ouest pour des raisons spirituelles","Ils ne s'entendaient plus eux-mêmes jouer à cause des cris","Ringo Starr souffrait de vertiges chroniques causés par les vibrations des basses dans les grands stades"],
     correctIndex: 2,
     imageUrl: "/assets/facts/667.png",
+    difficulty: 'normal',
   },
   {
     id: 668,
@@ -8604,6 +8983,7 @@ export const FACTS = [
     options: ["'Happy Birthday' et le générique de Télétubbies utilisés en Irak","'Baby Shark' et 'Barney' utilisés à Guantánamo","'It's a Small World' de Disney utilisé à Abu Ghraib","'Macarena' et 'Who Let The Dogs Out' diffusés en boucle à Guantánamo"],
     correctIndex: 1,
     imageUrl: "/assets/facts/668.png",
+    difficulty: 'normal',
   },
   {
     id: 669,
@@ -8617,6 +8997,7 @@ export const FACTS = [
     options: ["Erik Satie, avec 'Musique d'Ameublement No. 7'","Pierre Boulez, avec 'Structures pour Ondes Hertziennes'","Karlheinz Stockhausen, avec 'Telemusik Landscape II'","John Cage, avec 'Imaginary Landscape No. 4'"],
     correctIndex: 3,
     imageUrl: "/assets/facts/669.png",
+    difficulty: 'normal',
   },
   {
     id: 670,
@@ -8630,6 +9011,7 @@ export const FACTS = [
     options: ["Les Beatles, hésitant entre plusieurs noms absurdes","Les Rolling Stones, hésitant entre plusieurs noms absurdes","Les Kinks, hésitant entre plusieurs noms absurdes","Les Beach Boys, hésitant entre plusieurs noms absurdes"],
     correctIndex: 0,
     imageUrl: "/assets/facts/670.png",
+    difficulty: 'normal',
   },
   {
     id: 671,
@@ -8643,6 +9025,7 @@ export const FACTS = [
     options: ["'Enter Sandman' de Metallica et chansons de Barney","'We Are the World' de USA for Africa et berceuses de Sesame Street","'Friday' de Rebecca Black et génériques de dessins animés japonais","'It's a Small World' de Disney et chansons des Teletubbies"],
     correctIndex: 0,
     imageUrl: "/assets/facts/671.png",
+    difficulty: 'normal',
   },
   {
     id: 672,
@@ -8656,6 +9039,7 @@ export const FACTS = [
     options: ["Exactement 48 grains, triés par taille","Exactement 64 grains, comptés deux fois","Exactement 32 grains, comptés en fredonnant","Exactement 60 grains, comptés un par un"],
     correctIndex: 3,
     imageUrl: "/assets/facts/672.png",
+    difficulty: 'normal',
   },
   {
     id: 673,
@@ -8669,6 +9053,7 @@ export const FACTS = [
     options: ["Aucune note, mais le mot 'si' (B) est censuré oralement","La note fa (F), jugée phonétiquement trop proche d'un slogan contre-révolutionnaire","Aucune note, mais le do dièse (C#) est banni des partitions officielles depuis 1967","Le ré (D), officiellement retiré des gammes enseignées dans les conservatoires publics en 2003"],
     correctIndex: 0,
     imageUrl: "/assets/facts/673.png",
+    difficulty: 'normal',
   },
   {
     id: 674,
@@ -8682,6 +9067,7 @@ export const FACTS = [
     options: ["Les Beatles, refusés par Decca Records en 1962","Les Rolling Stones, refusés par EMI Records en 1963","The Who, refusés par Decca Records en 1963","Les Beatles, refusés par Pye Records en 1962"],
     correctIndex: 0,
     imageUrl: "/assets/facts/674.png",
+    difficulty: 'normal',
   },
   {
     id: 675,
@@ -8695,6 +9081,7 @@ export const FACTS = [
     options: ["Jimi Hendrix, analphabète musical total","Johnny Cash, analphabète musical total","Chuck Berry, analphabète musical total","Elvis Presley, analphabète musical total"],
     correctIndex: 3,
     imageUrl: "/assets/facts/675.png",
+    difficulty: 'normal',
   },
   {
     id: 676,
@@ -8708,6 +9095,7 @@ export const FACTS = [
     options: ["18,23 Hz, la vibration subsonique causant désorientation et hallucinations auditives légères","18,98 Hz, l'infrason provoquant terreur et malaise","16,67 Hz, la fréquence dite 'fantôme' créant anxiété et distorsion de la perception spatiale","19,14 Hz, l'infrason déclenchant panique et vision périphérique floue"],
     correctIndex: 1,
     imageUrl: "/assets/facts/676.png",
+    difficulty: 'normal',
   },
   {
     id: 677,
@@ -8721,6 +9109,7 @@ export const FACTS = [
     options: ["Gaucher, il retournait une guitare droitière sans la recorder","Ambidextre, il alternait les deux sens selon le morceau pour créer des harmoniques asymétriques","Droitier, il jouait à l'envers pour compenser une blessure au poignet droit jamais soignée","Gaucher contraint, il retournait la guitare ET recorderait systématiquement chaque corde à la main"],
     correctIndex: 0,
     imageUrl: "/assets/facts/677.png",
+    difficulty: 'normal',
   },
   {
     id: 678,
@@ -8734,6 +9123,7 @@ export const FACTS = [
     options: ["La Biélorussie, scandalisée par un remix de son hymne joué à l'envers lors d'une cérémonie officielle en 2014","Le Kazakhstan, humilié par le faux hymne de Borat en 2012","La Macédoine du Nord, offensée par un DJ qui a mixé son hymne avec un tube de Pitbull en pleine cérémonie d'ouverture en 2015","La Moldavie, offensée par une reprise techno de son hymne diffusée lors des JO de 2008"],
     correctIndex: 1,
     imageUrl: "/assets/facts/678.png",
+    difficulty: 'normal',
   },
   {
     id: 679,
@@ -8747,6 +9137,7 @@ export const FACTS = [
     options: ["John Cage, en 1952","Pierre Boulez, en 1955","Morton Feldman, en 1952","John Cage, en 1948"],
     correctIndex: 0,
     imageUrl: "/assets/facts/679.png",
+    difficulty: 'normal',
   },
   {
     id: 680,
@@ -8760,6 +9151,7 @@ export const FACTS = [
     options: ["Les Beach Boys ont protégé le son 'Good Vibrations'","Kurt Cobain a breveté le son 'grunge saturé' de Nevermind avant sa sortie en 1991","The Edge de U2 a déposé un brevet sur sa signature sonore de delay en cascade dès 1987","Jimmy Page a protégé juridiquement l'accord d'ouverture de 'Stairway to Heaven' en 1972"],
     correctIndex: 0,
     imageUrl: "/assets/facts/680.png",
+    difficulty: 'normal',
   },
   {
     id: 681,
@@ -8773,6 +9165,7 @@ export const FACTS = [
     options: ["Moins de 10 secondes : les larmes sont immédiatement absorbées par la peau","Indéfiniment, mais uniquement en pleurant des deux yeux simultanément","Pas plus de 30 secondes : les larmes remontent vers le cerveau","Jamais : les larmes ne coulent pas"],
     correctIndex: 3,
     imageUrl: "/assets/facts/681.png",
+    difficulty: 'normal',
   },
   {
     id: 682,
@@ -8786,6 +9179,7 @@ export const FACTS = [
     options: ["Un jour vénusien dure plus qu'une année vénusienne","Un jour vénusien dure deux fois plus longtemps qu'une année vénusienne","Un jour vénusien dure la moitié d'une année vénusienne","Un jour vénusien dure exactement la même durée qu'une année vénusienne"],
     correctIndex: 0,
     imageUrl: "/assets/facts/682.png",
+    difficulty: 'normal',
   },
   {
     id: 683,
@@ -8799,6 +9193,7 @@ export const FACTS = [
     options: ["Noix de coco et rhum","Fraise et vin blanc","Cerise et alcool de grain","Framboise et rhum"],
     correctIndex: 3,
     imageUrl: "/assets/facts/683.png",
+    difficulty: 'normal',
   },
   {
     id: 684,
@@ -8812,6 +9207,7 @@ export const FACTS = [
     options: ["Ils les limaient jusqu'à la peau pour éviter les accrocs dans les gants","Ils les renforcent avec des capsules en kératine synthétique thermoformées","Ils les vernissent avec un composé pressurisé pour éviter les décollements","Ils les arrachent volontairement"],
     correctIndex: 3,
     imageUrl: "/assets/facts/684.png",
+    difficulty: 'normal',
   },
   {
     id: 685,
@@ -8825,6 +9221,7 @@ export const FACTS = [
     options: ["Olympus Mons : aussi large que la France entière","Olympus Mons : aussi vaste que la mer Méditerranée","Olympus Mons : aussi large que l'Europe entière","Olympus Mons : aussi haut que la distance Paris-Lyon"],
     correctIndex: 0,
     imageUrl: "/assets/facts/685.png",
+    difficulty: 'normal',
   },
   {
     id: 686,
@@ -8838,6 +9235,7 @@ export const FACTS = [
     options: ["Environ 50 millions d'années","Environ 300 millions d'années","Environ 1 milliard d'années","Environ 100 millions d'années"],
     correctIndex: 3,
     imageUrl: "/assets/facts/686.png",
+    difficulty: 'normal',
   },
   {
     id: 687,
@@ -8851,6 +9249,7 @@ export const FACTS = [
     options: ["Neptune et Uranus","Uranus et Pluton","Saturne et Jupiter","Neptune et Saturne"],
     correctIndex: 0,
     imageUrl: "/assets/facts/687.png",
+    difficulty: 'normal',
   },
   {
     id: 688,
@@ -8864,6 +9263,7 @@ export const FACTS = [
     options: ["Le Grand Mur d'Hercule-Couronne Boréale, 10 milliards d'années-lumière","Le Filament de Piscis-Austrinus, 8,3 milliards d'années-lumière","Le Réseau de Perseus-Pégase, 9,7 milliards d'années-lumière","La Grande Muraille de Sloan, 1,37 milliard d'années-lumière"],
     correctIndex: 0,
     imageUrl: "/assets/facts/688.png",
+    difficulty: 'normal',
   },
   {
     id: 689,
@@ -8877,6 +9277,7 @@ export const FACTS = [
     options: ["Des volcans de glace en éruption sur Hypérion","Une atmosphère d'oxygène pur sur Encelade","Des geysers d'eau liquide sur Encelade","Des geysers de méthane liquide sur Titan"],
     correctIndex: 2,
     imageUrl: "/assets/facts/689.png",
+    difficulty: 'normal',
   },
   {
     id: 690,
@@ -8890,6 +9291,7 @@ export const FACTS = [
     options: ["Un Ré bémol, 57 octaves sous le do médian","Un Sol, 62 octaves sous le do médian","Un Do, 57 octaves sous le la médian","Un Si bémol, 57 octaves sous le do médian"],
     correctIndex: 3,
     imageUrl: "/assets/facts/690.png",
+    difficulty: 'normal',
   },
   {
     id: 691,
@@ -8903,6 +9305,7 @@ export const FACTS = [
     options: ["Seulement 16 heures","Seulement 18 heures","À peine 14 heures","Environ 23 heures"],
     correctIndex: 1,
     imageUrl: "/assets/facts/691.png",
+    difficulty: 'normal',
   },
   {
     id: 692,
@@ -8916,6 +9319,7 @@ export const FACTS = [
     options: ["Viande grillée et poudre à canon","Ozone et huile de moteur","Ammoniaque et fer chaud","Métal rouillé et caoutchouc chauffé"],
     correctIndex: 0,
     imageUrl: "/assets/facts/692.png",
+    difficulty: 'normal',
   },
   {
     id: 693,
@@ -8929,6 +9333,7 @@ export const FACTS = [
     options: ["Elle peut exister depuis 11 milliards d'années","Elle peut exister depuis 4 milliards d'années","Elle peut exister depuis 13 milliards d'années","Elle peut exister depuis 15 milliards d'années"],
     correctIndex: 2,
     imageUrl: "/assets/facts/693.png",
+    difficulty: 'normal',
   },
   {
     id: 694,
@@ -8942,6 +9347,7 @@ export const FACTS = [
     options: ["Voyager 1, révélant une Terre d'1 pixel","New Horizons, révélant une Terre d'1 pixel","Voyager 1, révélant une Terre de 3 pixels","Pioneer 10, révélant une Terre de 2 pixels"],
     correctIndex: 0,
     imageUrl: "/assets/facts/694.png",
+    difficulty: 'normal',
   },
   {
     id: 695,
@@ -8955,19 +9361,7 @@ export const FACTS = [
     options: ["Acier trempé, noix de coco grillée et fumée de cigarette","Métal rouillé, soufre et caoutchouc chauffé","Caramel brûlé, plastique chaud et essence de kérosène","Steak grillé, métal chaud et fumée de soudure"],
     correctIndex: 3,
     imageUrl: "/assets/facts/695.png",
-  },
-  {
-    id: 696,
-    category: "espace",
-    question: "Combien de temps dure un jour sur Vénus comparé à son année ?",
-    hint1: "Calendrier",
-    hint2: "Paradoxe",
-    shortAnswer: "Un jour vénusien est plus long qu'une année vénusienne",
-    explanation: "Sur Vénus, une rotation complète sur elle-même prend 243 jours terrestres. Mais Vénus fait le tour du Soleil en seulement 225 jours terrestres. Cela signifie qu'un jour sur Vénus est littéralement plus long qu'une année vénusienne. De plus, Vénus tourne dans le sens inverse des autres planètes, donc sur Vénus, le Soleil se lève à l'ouest et se couche à l'est.",
-    sourceUrl: "https://en.wikipedia.org/wiki/Venus#Rotation",
-    options: ["Un jour vénusien est plus long qu'une année terrestre, mais plus court qu'une année vénusienne","Un jour vénusien est plus court qu'un jour terrestre en raison de sa rotation rapide","Un jour vénusien est exactement deux fois plus long qu'une année vénusienne","Un jour vénusien est plus long qu'une année vénusienne"],
-    correctIndex: 3,
-    imageUrl: "/assets/facts/696.png",
+    difficulty: 'normal',
   },
   {
     id: 697,
@@ -8981,6 +9375,7 @@ export const FACTS = [
     options: ["La sueur, mais elle forme des bulles sur la peau au lieu de couler","Les larmes, mais elles coulent vers le haut en suivant la dépression atmosphérique","Les larmes, mais elles s'évaporent instantanément au contact de l'air recyclé","Les larmes, mais elles forment des bulles sur le visage"],
     correctIndex: 3,
     imageUrl: "/assets/facts/697.png",
+    difficulty: 'normal',
   },
   {
     id: 698,
@@ -8994,6 +9389,7 @@ export const FACTS = [
     options: ["Les os longs des jambes continuent de croître sous l'effet des rayonnements cosmiques","La colonne vertébrale se détend sans gravité pour comprimer","Les muscles du dos, en se relâchant dans le vide, étirent mécaniquement la cage thoracique vers le haut","Les tendons vertébraux se décompressent et reprennent leur longueur naturelle sans la charge du poids corporel"],
     correctIndex: 1,
     imageUrl: "/assets/facts/698.png",
+    difficulty: 'normal',
   },
   {
     id: 699,
@@ -9007,6 +9403,7 @@ export const FACTS = [
     options: ["HAT-P-7b, où il pleut du fer en fusion à 2 500°C","WASP-76b, où il pleut du fer en fusion à 2 400°C","HD 189733b, où il pleut du fer en fusion à 2 100°C","CoRoT-2b, où il pleut du fer en fusion à 1 900°C"],
     correctIndex: 1,
     imageUrl: "/assets/facts/699.png",
+    difficulty: 'normal',
   },
   {
     id: 700,
@@ -9020,6 +9417,7 @@ export const FACTS = [
     options: ["Plus de 10 millions de degrés Fahrenheit","Plus de 10 millions de degrés Celsius","Environ 8 millions de degrés Celsius","Près de 15 millions de degrés Celsius"],
     correctIndex: 1,
     imageUrl: "/assets/facts/700.png",
+    difficulty: 'normal',
   },
   {
     id: 701,
@@ -9033,6 +9431,7 @@ export const FACTS = [
     options: ["Acide, poussière de béton et fumée de cigarette froide","Steak grillé, métal chaud et fumée de soudure","Fer chaud, carbone carbonisé et résine de pin","Viande fumée, câbles électriques brûlés et ozone"],
     correctIndex: 1,
     imageUrl: "/assets/facts/701.png",
+    difficulty: 'normal',
   },
   {
     id: 702,
@@ -9046,6 +9445,7 @@ export const FACTS = [
     options: ["Ozone électrique et fer oxydé","Café torréfié et fumée de soudure","Essence de moteur et caoutchouc brûlé","Bifteck grillé et métal chaud"],
     correctIndex: 3,
     imageUrl: "/assets/facts/702.png",
+    difficulty: 'normal',
   },
   {
     id: 703,
@@ -9059,6 +9459,7 @@ export const FACTS = [
     options: ["Il perçoit instantanément la santé génétique","Il calcule inconsciemment le potentiel de coopération tribale","Il calibre automatiquement son niveau de confiance sociale","Il active une réponse de soumission dans son cerveau reptilien"],
     correctIndex: 0,
     imageUrl: "/assets/facts/703.png",
+    difficulty: 'normal',
   },
   {
     id: 704,
@@ -9072,6 +9473,7 @@ export const FACTS = [
     options: ["Rend autrui perçu comme plus généreux et chaleureux","Rend autrui perçu comme plus compétent et fiable","Augmente notre tendance à percevoir les visages neutres comme souriants","Diminue notre capacité à détecter le mensonge chez notre interlocuteur"],
     correctIndex: 0,
     imageUrl: "/assets/facts/704.png",
+    difficulty: 'normal',
   },
   {
     id: 705,
@@ -9085,6 +9487,7 @@ export const FACTS = [
     options: ["Délire persistant nié par leur propre cerveau","Dissociation temporelle figée au dernier souvenir de combat","Boucle neurologique rejouant l'état d'alerte en continu","Amnésie sélective effaçant toute information post-conflit"],
     correctIndex: 0,
     imageUrl: "/assets/facts/705.png",
+    difficulty: 'normal',
   },
   {
     id: 706,
@@ -9098,6 +9501,7 @@ export const FACTS = [
     options: ["Bloque temporairement la production de cortisol","Déclenche de vraies hormones de stress","Trompe le système immunitaire en augmentant les globules blancs","Déclenche de vraies hormones de bonheur"],
     correctIndex: 3,
     imageUrl: "/assets/facts/706.png",
+    difficulty: 'normal',
   },
   {
     id: 707,
@@ -9111,6 +9515,7 @@ export const FACTS = [
     options: ["S'active même en état de coma profond","Déclenche une micro-contraction involontaire des muscles du visage détectable en électromyographie","Active les mêmes zones cérébrales que lors d'un orgasme selon une étude de l'UCLA","Réduit temporairement l'activité du cortex préfrontal, zone du jugement critique"],
     correctIndex: 0,
     imageUrl: "/assets/facts/707.png",
+    difficulty: 'normal',
   },
   {
     id: 708,
@@ -9124,6 +9529,7 @@ export const FACTS = [
     options: ["Simule l'empathie comme écouter un ami en détresse","Réduit le stress comme parler à un étranger","Déclenche une légère dissociation comme sous hypnose légère","Active le mode créatif comme résoudre un problème pour autrui"],
     correctIndex: 1,
     imageUrl: "/assets/facts/708.png",
+    difficulty: 'normal',
   },
   {
     id: 709,
@@ -9137,6 +9543,7 @@ export const FACTS = [
     options: ["Des odeurs de vanille diffusées en rayon font dépenser 42% de plus","Des allées légèrement inclinées vers le fond font dépenser 35% de plus","Une musique lente fait dépenser 38% de plus","Un éclairage légèrement tamisé fait dépenser 31% de plus"],
     correctIndex: 2,
     imageUrl: "/assets/facts/709.png",
+    difficulty: 'normal',
   },
   {
     id: 710,
@@ -9150,6 +9557,7 @@ export const FACTS = [
     options: ["La mémoire auditive embellit rétroactivement chaque souvenir de sa propre voix","Le cerveau supprime activement les aigus lors de la parole pour ne pas se distraire","Les cordes vocales vibrent différemment quand elles savent être écoutées","Le crâne filtre des basses que seul soi entend"],
     correctIndex: 3,
     imageUrl: "/assets/facts/710.png",
+    difficulty: 'normal',
   },
   {
     id: 711,
@@ -9163,6 +9571,7 @@ export const FACTS = [
     options: ["L'effet Dunning-Kruger au volant : 93% s'estiment au-dessus","Le biais d'auto-évaluation positive au volant : 91% s'estiment au-dessus","Le biais de supériorité illusoire au volant : 96% s'estiment au-dessus","L'effet Lake Wobegon au volant : 87% s'estiment au-dessus"],
     correctIndex: 0,
     imageUrl: "/assets/facts/711.png",
+    difficulty: 'normal',
   },
   {
     id: 712,
@@ -9176,6 +9585,7 @@ export const FACTS = [
     options: ["L'excitation du pont suspendu transférée comme attirance sexuelle","La tension d'un saut à l'élastique réinterprétée comme une attirance pour le moniteur","L'anxiété d'un examen oral convertie en fascination pour l'examinateur","La décharge de cortisol d'une alarme incendie confondue avec une attraction physique"],
     correctIndex: 0,
     imageUrl: "/assets/facts/712.png",
+    difficulty: 'normal',
   },
   {
     id: 713,
@@ -9189,6 +9599,7 @@ export const FACTS = [
     options: ["Une réduction mesurable de la fréquence cardiaque","Une accélération du traitement des informations visuelles","Une légère augmentation de la production de salive","Une amélioration mesurable de l'humeur"],
     correctIndex: 3,
     imageUrl: "/assets/facts/713.png",
+    difficulty: 'normal',
   },
   {
     id: 714,
@@ -9202,6 +9613,7 @@ export const FACTS = [
     options: ["La pression chirurgicale sur le lobe temporal active des mémoires linguistiques enfouies","L'anesthésie partielle libère des langues apprises en rêve","Le stress opératoire force le cerveau à basculer vers sa langue maternelle profonde","La stimulation électrique réveille des langues oubliées"],
     correctIndex: 3,
     imageUrl: "/assets/facts/714.png",
+    difficulty: 'normal',
   },
   {
     id: 715,
@@ -9215,6 +9627,7 @@ export const FACTS = [
     options: ["Le syndrome de Cotard, ou délire des 'zombies'","Le syndrome d'Ondine, ou délire des 'non-vivants'","Le trouble de Capgras, ou délire des 'fantômes'","Le syndrome de Cotard inversé, ou délire des 'immortels'"],
     correctIndex: 0,
     imageUrl: "/assets/facts/715.png",
+    difficulty: 'normal',
   },
   {
     id: 716,
@@ -9228,6 +9641,7 @@ export const FACTS = [
     options: ["Elle diminue le taux d'erreurs de comptage des instruments chirurgicaux de 14% en structurant l'attention temporelle","Elle augmente la concentration et réduit la fatigue des gestes de 9%","Elle réduit les infections post-opératoires de 12% en masquant les bactéries aéroportées sensibles aux vibrations sonores","Elle augmente la précision et la vitesse des gestes de 7%"],
     correctIndex: 3,
     imageUrl: "/assets/facts/716.png",
+    difficulty: 'normal',
   },
   {
     id: 717,
@@ -9241,6 +9655,7 @@ export const FACTS = [
     options: ["La 'peste dansante', une hystérie collective documentée en 1518","Le 'mal dansant', une hystérie collective documentée en 1278","Le 'délire chorégique', une hystérie collective documentée en 1399","La 'frénésie tarentine', une hystérie collective documentée en 1484"],
     correctIndex: 0,
     imageUrl: "/assets/facts/717.png",
+    difficulty: 'normal',
   },
   {
     id: 718,
@@ -9254,6 +9669,7 @@ export const FACTS = [
     options: ["Réduction de la perception du temps et ralentissement subjectif des événements","Libération accrue d'adrénaline entraînant une légère hausse de la vigilance","Amélioration significative de la tolérance au froid et à la douleur physique","Réduction mesurable du stress et de la douleur ressentie"],
     correctIndex: 3,
     imageUrl: "/assets/facts/718.png",
+    difficulty: 'normal',
   },
   {
     id: 719,
@@ -9267,6 +9683,7 @@ export const FACTS = [
     options: ["Le syndrome de Stockholm, attachement émotionnel à son agresseur","Le complexe de Lima, attachement inconscient envers son oppresseur","Le syndrome de Vienne, loyauté paradoxale envers son capteur","Le syndrome d'Oslo, dépendance affective envers son ravisseur"],
     correctIndex: 0,
     imageUrl: "/assets/facts/719.png",
+    difficulty: 'normal',
   },
   {
     id: 720,
@@ -9280,6 +9697,7 @@ export const FACTS = [
     options: ["Leur système limbique libère de la substance P, le même neurotransmetteur que lors d'une blessure directe","Leurs fibres C nociceptives s'activent par résonance émotionnelle avec la personne blessée","Leur cortex insulaire confond la mémoire d'une ancienne blessure avec la scène observée","Leurs neurones miroirs produisent une douleur physique réelle"],
     correctIndex: 3,
     imageUrl: "/assets/facts/720.png",
+    difficulty: 'normal',
   },
   {
     id: 721,
@@ -9293,6 +9711,7 @@ export const FACTS = [
     options: ["La kleptomanie, compulsion à voler sans intérêt pour l'objet","La pyromanie acquisitive, déviation comportementale liée à l'accumulation secrète d'objets dérobés","La larcénose impulsive, trouble du DSM-5 caractérisé par des épisodes de vol suivis d'une amnésie partielle de l'acte","La kleptoïdie compulsive, dysrégulation dopaminergique poussant à voler uniquement dans des espaces publics bondés"],
     correctIndex: 0,
     imageUrl: "/assets/facts/721.png",
+    difficulty: 'normal',
   },
   {
     id: 722,
@@ -9306,6 +9725,7 @@ export const FACTS = [
     options: ["L'effet Peter-Principle, montée hiérarchique jusqu'au seuil d'incompétence perçue comme talent","L'effet Kruger-Dunning, excès de confiance dû à un manque de feedback externe correctif","L'effet Barnum-Forer, illusion de compétence renforcée par les compliments génériques reçus","L'effet Dunning-Kruger, incompétence qui empêche de se voir incompétent"],
     correctIndex: 3,
     imageUrl: "/assets/facts/722.png",
+    difficulty: 'normal',
   },
   {
     id: 723,
@@ -9319,6 +9739,7 @@ export const FACTS = [
     options: ["Il trompe le cerveau et réduit réellement le stress","Il force le cerveau à libérer de l'ocytocine, l'hormone du lien social, même en l'absence de contact humain","Il active involontairement le nerf vague et ralentit le rythme cardiaque en moins de 8 secondes","Il crée une confusion cognitive qui améliore temporairement les capacités de mémorisation à court terme"],
     correctIndex: 0,
     imageUrl: "/assets/facts/723.png",
+    difficulty: 'normal',
   },
   {
     id: 724,
@@ -9332,6 +9753,7 @@ export const FACTS = [
     options: ["Leur système nerveux autonome déclenche une réponse de stress identique à celle de la victime","Leurs neurones miroirs activent les mêmes zones que leur propre douleur","Leurs récepteurs de douleur cutanée réagissent aux micro-expressions faciales de souffrance","Leur cerveau confond le stimulus visuel avec un souvenir traumatique personnel refoulé"],
     correctIndex: 1,
     imageUrl: "/assets/facts/724.png",
+    difficulty: 'normal',
   },
   {
     id: 725,
@@ -9345,6 +9767,7 @@ export const FACTS = [
     options: ["Non, c'est interdit par la loi","Non, il en faut au minimum trois, la loi considérant que deux animaux peuvent tout de même souffrir de jalousie sociale","Oui, mais uniquement si l'animal dispose d'un espace de vie supérieur à 2 m²","Non, sauf dérogation médicale accordée par un vétérinaire cantonal agréé"],
     correctIndex: 0,
     imageUrl: "/assets/facts/725.png",
+    difficulty: 'normal',
   },
   {
     id: 726,
@@ -9358,6 +9781,7 @@ export const FACTS = [
     options: ["Tuer un Gallois avec un arc à Chester après minuit","Tuer un Écossais avec une arbalète à York après le coucher du soleil","Tuer un Gallois avec un arc à Shrewsbury dans l'enceinte des remparts après minuit","Tuer un Gallois avec une épée à Hereford le dimanche après vêpres"],
     correctIndex: 0,
     imageUrl: "/assets/facts/726.png",
+    difficulty: 'normal',
   },
   {
     id: 727,
@@ -9371,6 +9795,7 @@ export const FACTS = [
     options: ["Jouer aux dominos le dimanche","Élever des lapins le dimanche","Pratiquer le bowling le dimanche","Jouer aux dés le dimanche"],
     correctIndex: 0,
     imageUrl: "/assets/facts/727.png",
+    difficulty: 'normal',
   },
   {
     id: 728,
@@ -9384,6 +9809,7 @@ export const FACTS = [
     options: ["Vérifier sous le véhicule qu'aucun enfant ne dort","Notifier verbalement ses passagers de la destination prévue avant d'enclencher la première vitesse","Apposer une vignette journalière sur le tableau de bord indiquant l'heure de départ prévue","Vérifier sous le véhicule qu'aucun animal domestique ne dort"],
     correctIndex: 0,
     imageUrl: "/assets/facts/728.png",
+    difficulty: 'normal',
   },
   {
     id: 729,
@@ -9397,6 +9823,7 @@ export const FACTS = [
     options: ["Chanter dans un lieu public le samedi après-midi","Nager dans l'océan le mercredi après-midi","Conduire une voiture le lundi matin","Sauter en parachute le dimanche"],
     correctIndex: 3,
     imageUrl: "/assets/facts/729.png",
+    difficulty: 'normal',
   },
   {
     id: 730,
@@ -9410,6 +9837,7 @@ export const FACTS = [
     options: ["Mourir dans la Tour de Londres est illégal","Mourir au palais de Buckingham est illégal","Mourir dans l'abbaye de Westminster est illégal","Mourir au Parlement de Westminster est illégal"],
     correctIndex: 3,
     imageUrl: "/assets/facts/730.png",
+    difficulty: 'normal',
   },
   {
     id: 731,
@@ -9423,6 +9851,7 @@ export const FACTS = [
     options: ["Remonter le mécanisme d'une pendule à coucou après 22h en appartement","Tirer la chasse d'eau après 22h en appartement","Claquer la porte du réfrigérateur après 22h en appartement","Tirer la chasse d'eau après 23h en appartement"],
     correctIndex: 1,
     imageUrl: "/assets/facts/731.png",
+    difficulty: 'normal',
   },
   {
     id: 732,
@@ -9436,6 +9865,7 @@ export const FACTS = [
     options: ["S'assurer qu'aucun vélo n'est appuyé contre le pare-chocs arrière","Vérifier sous le véhicule qu'aucun enfant ne s'y cache","Klaxonner deux fois pour signaler aux piétons son intention de démarrer","Vérifier que les phares sont allumés même en plein jour avant de mettre le contact"],
     correctIndex: 1,
     imageUrl: "/assets/facts/732.png",
+    difficulty: 'normal',
   },
   {
     id: 733,
@@ -9449,6 +9879,7 @@ export const FACTS = [
     options: ["Conduire une tondeuse à gazon sur une autoroute le samedi pour les célibataires","Porter un maillot de bain rayé sur la voie publique le vendredi pour les célibataires","Pêcher en short dans un parc municipal le mercredi pour les célibataires","Sauter en parachute le dimanche pour les célibataires"],
     correctIndex: 3,
     imageUrl: "/assets/facts/733.png",
+    difficulty: 'normal',
   },
   {
     id: 734,
@@ -9462,6 +9893,7 @@ export const FACTS = [
     options: ["Il est illégal d'appeler son cochon Austerlitz en France","Il est illégal d'appeler son cochon César en France","Il est illégal d'appeler son cochon Joséphine en France","Il est illégal d'appeler son cochon Napoléon en France"],
     correctIndex: 3,
     imageUrl: "/assets/facts/734.png",
+    difficulty: 'normal',
   },
   {
     id: 735,
@@ -9475,6 +9907,7 @@ export const FACTS = [
     options: ["Oui, c'est officiellement illégal d'y mourir","Non, c'est une rumeur populaire sans aucun fondement juridique réel","Non, c'est légal mais fortement déconseillé par le règlement intérieur","Oui, tout comme y manger du poisson sans le déclarer à l'entrée"],
     correctIndex: 0,
     imageUrl: "/assets/facts/735.png",
+    difficulty: 'normal',
   },
   {
     id: 736,
@@ -9488,6 +9921,7 @@ export const FACTS = [
     options: ["Non, mais une loi obsolète limitait les coups à trois par semaine","Oui, une loi obsolète exigeait une permission hebdomadaire","Oui, une loi obsolète exigeait une permission mensuelle","Non, mais une loi obsolète imposait la présence d'un témoin masculin"],
     correctIndex: 2,
     imageUrl: "/assets/facts/736.png",
+    difficulty: 'normal',
   },
   {
     id: 737,
@@ -9501,6 +9935,7 @@ export const FACTS = [
     options: ["Non, c'est légal mais soumis à une taxe municipale symbolique de 0,25$","Oui, une ordonnance locale l'interdit formellement","Oui, mais uniquement dans les bâtiments publics climatisés","Non, la loi a été officiellement abrogée en 1987 après une plainte collective"],
     correctIndex: 1,
     imageUrl: "/assets/facts/737.png",
+    difficulty: 'normal',
   },
   {
     id: 738,
@@ -9514,6 +9949,7 @@ export const FACTS = [
     options: ["Non, cette vérification est seulement recommandée par le code de bonne conduite danois","Oui, pour s'assurer qu'aucun animal domestique ne s'y repose","Non, mais une loi suédoise l'exige pour les véhicules garés plus de 2 heures","Oui, pour s'assurer qu'aucun enfant ne s'y cache"],
     correctIndex: 3,
     imageUrl: "/assets/facts/738.png",
+    difficulty: 'normal',
   },
   {
     id: 739,
@@ -9527,6 +9963,7 @@ export const FACTS = [
     options: ["Talons hauts interdits lors des cérémonies religieuses orthodoxes","Talons hauts interdits sur les plages classées patrimoine naturel","Talons hauts interdits dans les zones piétonnes historiques","Talons hauts interdits sur les sites archéologiques"],
     correctIndex: 3,
     imageUrl: "/assets/facts/739.png",
+    difficulty: 'normal',
   },
   {
     id: 740,
@@ -9540,6 +9977,7 @@ export const FACTS = [
     options: ["Une loi du Tennessee exige un bain obligatoire avant chaque vote aux élections locales","Une loi de Virginie impose une douche hebdomadaire sous peine d'une amende de 5 dollars","Une loi du Kentucky impose un bain hebdomadaire obligatoire","Une loi du Missouri oblige les citoyens à se laver les mains avant d'entrer dans un bâtiment public le dimanche"],
     correctIndex: 2,
     imageUrl: "/assets/facts/740.png",
+    difficulty: 'normal',
   },
   {
     id: 741,
@@ -9553,6 +9991,7 @@ export const FACTS = [
     options: ["En Italie, mourir dans certaines communes est passible d'une amende administrative","Au Royaume-Uni, mourir dans l'enceinte du Parlement est techniquement illégal selon une loi médiévale","Au Japon, mourir dans certaines villes est interdit par règlement","En Norvège, mourir à Longyearbyen est interdit par décret municipal depuis 1950"],
     correctIndex: 2,
     imageUrl: "/assets/facts/741.png",
+    difficulty: 'normal',
   },
   {
     id: 743,
@@ -9566,6 +10005,7 @@ export const FACTS = [
     options: ["Un fouet de cocher rangé sous le siège conducteur","Un fer à cheval de rechange en cas de crevaison","Une lanterne à huile pour éclairer la route de nuit","Une botte de foin pour nourrir un cheval"],
     correctIndex: 3,
     imageUrl: "/assets/facts/743.png",
+    difficulty: 'normal',
   },
   {
     id: 744,
@@ -9579,6 +10019,7 @@ export const FACTS = [
     options: ["Les chapeaux à voilette dans les tribunaux fédéraux, loi de 1914","Les chapeaux à fleurs artificielles dans les restaurants de plus de 50 couverts, loi de 1913","Les chapeaux dépassant 30 cm de hauteur dans les transports en commun, loi de 1908","Les chapeaux qui bloquent la vue au cinéma, loi de 1912"],
     correctIndex: 3,
     imageUrl: "/assets/facts/744.png",
+    difficulty: 'normal',
   },
   {
     id: 745,
@@ -9592,6 +10033,7 @@ export const FACTS = [
     options: ["En Allemagne, où le bureau d'état civil peut rejeter tout prénom ne permettant pas d'identifier le sexe de l'enfant","Au Danemark, via une liste officielle de 7 000 prénoms approuvés","En Islande, via un registre national de 5 200 prénoms validés par le Comité de langue islandaise","En Nouvelle-Zélande, où un tribunal peut forcer les parents à renommer leur enfant après un signalement de l'école"],
     correctIndex: 1,
     imageUrl: "/assets/facts/745.png",
+    difficulty: 'normal',
   },
   {
     id: 746,
@@ -9605,6 +10047,7 @@ export const FACTS = [
     options: ["23 maris légitimes et successifs","23 maris légitimes dont 3 remariages avec le même homme","19 maris légitimes et successifs","27 maris légitimes et successifs"],
     correctIndex: 0,
     imageUrl: "/assets/facts/746.png",
+    difficulty: 'normal',
   },
   {
     id: 747,
@@ -9618,6 +10061,7 @@ export const FACTS = [
     options: ["54 ans, 8 mois et 6 jours","54 ans, 2 mois et 19 jours","32 ans, 11 mois et 28 jours","47 ans, 3 mois et 12 jours"],
     correctIndex: 0,
     imageUrl: "/assets/facts/747.png",
+    difficulty: 'normal',
   },
   {
     id: 748,
@@ -9631,6 +10075,7 @@ export const FACTS = [
     options: ["41 heures coincé dans un ascenseur vitré en pleine rue","34 heures coincé seul entre deux étages","53 heures coincé seul dans une cabine","41 heures coincé seul dans une cabine"],
     correctIndex: 3,
     imageUrl: "/assets/facts/748.png",
+    difficulty: 'normal',
   },
   {
     id: 749,
@@ -9644,6 +10089,7 @@ export const FACTS = [
     options: ["823 mots dans une seule phrase de Faulkner","823 mots dans une seule phrase de Hemingway","823 mots dans une seule phrase de Joyce","1 047 mots dans une seule phrase de Proust"],
     correctIndex: 0,
     imageUrl: "/assets/facts/749.png",
+    difficulty: 'normal',
   },
   {
     id: 750,
@@ -9657,6 +10103,7 @@ export const FACTS = [
     options: ["311 noix de coco brisées en une minute avec la tête","254 noix de coco brisées en une minute avec la tête","217 noix de coco brisées en une minute avec la tête","254 noix de coco brisées en trente secondes avec le coude"],
     correctIndex: 1,
     imageUrl: "/assets/facts/750.png",
+    difficulty: 'normal',
   },
   {
     id: 751,
@@ -9670,6 +10117,7 @@ export const FACTS = [
     options: ["2 450 mètres, soit presque 2,5 kilomètres","1 930 mètres, soit presque 2 kilomètres","1 730 mètres, soit presque 2 kilomètres","1 595 mètres, soit presque un mile et demi"],
     correctIndex: 1,
     imageUrl: "/assets/facts/751.png",
+    difficulty: 'normal',
   },
   {
     id: 752,
@@ -9683,6 +10131,7 @@ export const FACTS = [
     options: ["112 crêpes empilées, soit 83 cm de haut","101 crêpes empilées, soit 76 cm de haut","101 crêpes empilées, soit 89 cm de haut","124 crêpes empilées, soit 94 cm de haut"],
     correctIndex: 1,
     imageUrl: "/assets/facts/752.png",
+    difficulty: 'normal',
   },
   {
     id: 753,
@@ -9696,6 +10145,7 @@ export const FACTS = [
     options: ["72 ans, de 1918 à 1990","68 ans, de 1922 à 1990, avec une pause de 3 semaines en 1944","45 ans, de 1951 à 1996","68 ans, de 1922 à 1990"],
     correctIndex: 3,
     imageUrl: "/assets/facts/753.png",
+    difficulty: 'normal',
   },
   {
     id: 754,
@@ -9709,6 +10159,7 @@ export const FACTS = [
     options: ["260 T-shirts enfilés en même temps","247 T-shirts enfilés en même temps","231 T-shirts enfilés en même temps","312 T-shirts enfilés en même temps"],
     correctIndex: 0,
     imageUrl: "/assets/facts/754.png",
+    difficulty: 'normal',
   },
   {
     id: 755,
@@ -9722,6 +10173,7 @@ export const FACTS = [
     options: ["0,0275 km/h, soit 2 minutes pour 33 cm","0,0275 km/h, soit 2 minutes 20 secondes pour 50 cm","0,0198 km/h, soit 3 minutes 12 pour 33 cm","0,0312 km/h, soit 1 minute 45 pour 33 cm"],
     correctIndex: 0,
     imageUrl: "/assets/facts/755.png",
+    difficulty: 'normal',
   },
   {
     id: 756,
@@ -9735,6 +10187,7 @@ export const FACTS = [
     options: ["Plus de 600 tattoos de logos Guinness sur le corps, certifiés un par un","Plus de 600 records Guinness battus par une seule personne","Détenteur simultané de 600 cartes de membre dans des clubs de records différents","Avoir regardé en boucle les archives Guinness pendant plus de 600 heures consécutives"],
     correctIndex: 1,
     imageUrl: "/assets/facts/756.png",
+    difficulty: 'normal',
   },
   {
     id: 757,
@@ -9748,19 +10201,7 @@ export const FACTS = [
     options: ["Le sanglot continu le plus long : 68 ans sans s'arrêter","Le hoquet continu le plus long : 71 ans sans s'arrêter","Le hoquet continu le plus long : 68 ans sans s'arrêter","Le bâillement continu le plus long : 68 ans sans s'arrêter"],
     correctIndex: 2,
     imageUrl: "/assets/facts/757.png",
-  },
-  {
-    id: 758,
-    category: "records",
-    question: "Quel record fou détient la pizza la plus longue jamais réalisée en 2017 ?",
-    hint1: "Mozzarella",
-    hint2: "Kilomètre",
-    shortAnswer: "1 930 mètres de long, soit presque 2 kilomètres",
-    explanation: "En juin 2017, à Fontana en Californie, une équipe de pizzaïolos a réalisé la pizza la plus longue du monde : 1 930,39 mètres, soit presque deux kilomètres. Il a fallu 100 chefs, 17 600 kg de pâte, 4 900 kg de sauce tomate et 2 200 kg de fromage pour la réaliser. La pizza a été cuite par sections grâce à un four mobile roulant le long de la préparation. L'événement a été certifié par le Guinness World Records et la totalité de la pizza a ensuite été distribuée aux sans-abri de la région.",
-    sourceUrl: "https://www.guinnessworldrecords.com/world-records/longest-pizza",
-    options: ["2 046 mètres de long, soit la longueur approximative de la Grande Muraille de Chine... divisée par 3 000","1 930 mètres de long, soit presque 2 kilomètres","1 595 mètres de long, soit presque un mile et demi","2 180 mètres de long, soit plus de deux kilomètres"],
-    correctIndex: 1,
-    imageUrl: "/assets/facts/758.png",
+    difficulty: 'normal',
   },
   {
     id: 759,
@@ -9774,6 +10215,7 @@ export const FACTS = [
     options: ["La plus grande exposition de canards en plastique arrangés en mosaïque","La plus grande course de canards en plastique au monde","Le plus long défilé de canards en plastique tirés par des bénévoles","La plus grande sculpture flottante jamais assemblée sur une rivière"],
     correctIndex: 1,
     imageUrl: "/assets/facts/759.png",
+    difficulty: 'normal',
   },
   {
     id: 760,
@@ -9787,6 +10229,7 @@ export const FACTS = [
     options: ["68 ans de hoquet continu","68 ans de hoquet intermittent","68 ans de hoquet continu avec pauses nocturnes","41 ans de hoquet continu"],
     correctIndex: 0,
     imageUrl: "/assets/facts/760.png",
+    difficulty: 'normal',
   },
   {
     id: 761,
@@ -9800,6 +10243,7 @@ export const FACTS = [
     options: ["6,83 secondes seulement","13,55 secondes seulement","11,27 secondes seulement","8,41 secondes seulement"],
     correctIndex: 3,
     imageUrl: "/assets/facts/761.png",
+    difficulty: 'normal',
   },
   {
     id: 762,
@@ -9813,6 +10257,7 @@ export const FACTS = [
     options: ["189 t-shirts portés en même temps","247 t-shirts portés en même temps","260 t-shirts portés en même temps","312 t-shirts portés en même temps"],
     correctIndex: 2,
     imageUrl: "/assets/facts/762.png",
+    difficulty: 'normal',
   },
   {
     id: 763,
@@ -9826,6 +10271,7 @@ export const FACTS = [
     options: ["909,6 cm d'ongle sur une seule main","727,4 cm d'ongle sur une seule main","1 043,2 cm d'ongle sur une seule main","865,9 cm d'ongle sur une seule main"],
     correctIndex: 0,
     imageUrl: "/assets/facts/763.png",
+    difficulty: 'normal',
   },
   {
     id: 764,
@@ -9839,6 +10285,7 @@ export const FACTS = [
     options: ["18 674 zombies rassemblés à Pittsburgh","9 804 zombies rassemblés à Asbury Park","21 306 zombies rassemblés à Atlanta","15 458 zombies rassemblés à Minneapolis"],
     correctIndex: 3,
     imageUrl: "/assets/facts/764.png",
+    difficulty: 'normal',
   },
   {
     id: 765,
@@ -9852,6 +10299,7 @@ export const FACTS = [
     options: ["1 200 tentatives de records Guinness effectuées en une seule année civile","547 records Guinness battus consécutivement sans aucun échec enregistré","300 records Guinness détenus simultanément dans 40 pays distincts","600 records Guinness détenus par une seule personne"],
     correctIndex: 3,
     imageUrl: "/assets/facts/765.png",
+    difficulty: 'normal',
   },
   {
     id: 766,
@@ -9865,6 +10313,7 @@ export const FACTS = [
     options: ["Plus de 700 records Guinness battus par une seule personne","Plus de 700 records Guinness battus, tous réalisés en patins à roulettes","Plus de 700 apparitions dans le livre Guinness en tant que juge certifié de records","Plus de 700 victoires consécutives au jeu de chaises musicales en compétition officielle"],
     correctIndex: 0,
     imageUrl: "/assets/facts/766.png",
+    difficulty: 'normal',
   },
   {
     id: 767,
@@ -9878,6 +10327,7 @@ export const FACTS = [
     options: ["Plus de 82 000 ans de visionnage continu","Plus de 120 000 ans de visionnage continu","Plus de 47 000 ans de visionnage continu","Plus de 31 000 ans de visionnage continu"],
     correctIndex: 0,
     imageUrl: "/assets/facts/767.png",
+    difficulty: 'normal',
   },
   {
     id: 768,
@@ -9891,6 +10341,7 @@ export const FACTS = [
     options: ["La Syrie, pour son brevet national","L'Inde, pour ses examens de la fonction publique","L'Algérie, pour son baccalauréat","L'Égypte, pour son baccalauréat"],
     correctIndex: 2,
     imageUrl: "/assets/facts/768.png",
+    difficulty: 'normal',
   },
   {
     id: 769,
@@ -9904,6 +10355,7 @@ export const FACTS = [
     options: ["Snapchat, né d'un site notant des camarades de campus","Tinder, né d'un site notant des étudiantes","MySpace, né d'un site notant des étudiantes","Facebook, né d'un site notant des étudiantes"],
     correctIndex: 3,
     imageUrl: "/assets/facts/769.png",
+    difficulty: 'normal',
   },
   {
     id: 770,
@@ -9917,6 +10369,7 @@ export const FACTS = [
     options: ["Près de 500 millions de comptes fantômes","Plus de 800 millions de comptes fantômes","Plus de 1,1 milliard de comptes fantômes","Plus de 1,5 milliard de comptes fantômes"],
     correctIndex: 3,
     imageUrl: "/assets/facts/770.png",
+    difficulty: 'normal',
   },
   {
     id: 771,
@@ -9930,6 +10383,7 @@ export const FACTS = [
     options: ["L'ensemble du site : 70 modifications par minute","La version anglophone uniquement : 52 modifications par minute","L'ensemble du site : 70 modifications par heure","La page d'accueil : 85 modifications par minute"],
     correctIndex: 0,
     imageUrl: "/assets/facts/771.png",
+    difficulty: 'normal',
   },
   {
     id: 772,
@@ -9943,6 +10397,7 @@ export const FACTS = [
     options: ["596 heures, soit presque 25 jours","840 heures, soit exactement 35 jours","1 024 heures, soit environ 42 jours et demi","372 heures, soit un peu plus de 15 jours"],
     correctIndex: 0,
     imageUrl: "/assets/facts/772.png",
+    difficulty: 'normal',
   },
   {
     id: 773,
@@ -9956,6 +10411,7 @@ export const FACTS = [
     options: ["La Turquie, en tentant de bloquer Wikipedia pour un article sur Atatürk","Le Bangladesh, en voulant censurer Facebook après des émeutes religieuses","Le Pakistan, en voulant censurer YouTube","Le Myanmar, en tentant de bloquer Instagram après un coup d'état militaire"],
     correctIndex: 2,
     imageUrl: "/assets/facts/773.png",
+    difficulty: 'normal',
   },
   {
     id: 774,
@@ -9969,6 +10425,7 @@ export const FACTS = [
     options: ["Une simple pomme de terre photographiée","Une feuille de salade fanée dans une assiette","Un simple oignon photographié sur un fond blanc","Une chaussette trouée posée sur un carrelage"],
     correctIndex: 0,
     imageUrl: "/assets/facts/774.png",
+    difficulty: 'normal',
   },
   {
     id: 775,
@@ -9982,6 +10439,7 @@ export const FACTS = [
     options: ["Facebook, lancé comme 'FaceMash' en 2003","Tinder, lancé comme 'FaceGame' en 2011","Instagram, lancé comme 'HotOrNot Campus' en 2009","Twitter, lancé comme 'RateMyFace' en 2005"],
     correctIndex: 0,
     imageUrl: "/assets/facts/775.png",
+    difficulty: 'normal',
   },
   {
     id: 776,
@@ -9995,6 +10453,7 @@ export const FACTS = [
     options: ["Le bouton 'Awesome' prévu a été jugé trop enfantin","Le bouton 'Smile' prévu a été jugé trop ambigu émotionnellement","Le bouton 'Thumbs Up' original a été abandonné pour éviter un conflit de brevet","Le bouton 'Approve' envisagé a été jugé trop autoritaire par les testeurs"],
     correctIndex: 0,
     imageUrl: "/assets/facts/776.png",
+    difficulty: 'normal',
   },
   {
     id: 777,
@@ -10008,6 +10467,7 @@ export const FACTS = [
     options: ["Plus de 500 millions de photos par jour","Plus de 50 millions de photos par jour","Plus de 75 millions de photos par jour","Plus de 100 millions de photos par jour"],
     correctIndex: 3,
     imageUrl: "/assets/facts/777.png",
+    difficulty: 'normal',
   },
   {
     id: 778,
@@ -10021,6 +10481,7 @@ export const FACTS = [
     options: ["Le Pakistan, de 2017 à 2020","L'Inde, de 2018 à 2021","La Russie, de 2015 à 2018","La Turquie, de 2017 à 2020"],
     correctIndex: 3,
     imageUrl: "/assets/facts/778.png",
+    difficulty: 'normal',
   },
   {
     id: 779,
@@ -10034,6 +10495,7 @@ export const FACTS = [
     options: ["Environ 78% du trafic internet total","Environ 62% du trafic internet total","Environ 31% du trafic internet total","Environ 47% du trafic internet total"],
     correctIndex: 3,
     imageUrl: "/assets/facts/779.png",
+    difficulty: 'normal',
   },
   {
     id: 780,
@@ -10047,6 +10509,7 @@ export const FACTS = [
     options: ["Tumblr a supprimé 18 ans de blogs et journaux intimes","Friendster a effacé 8 ans de photos de profil","MySpace a supprimé 12 ans de musique","SoundCloud a effacé 6 ans de podcasts amateurs"],
     correctIndex: 2,
     imageUrl: "/assets/facts/780.png",
+    difficulty: 'normal',
   },
   {
     id: 781,
@@ -10060,6 +10523,7 @@ export const FACTS = [
     options: ["« Facebook » — les gens googlisent Facebook","« YouTube » — les gens googlisent YouTube","« Google » — les gens googlisent Google sur Google","« Amazon » — les gens googlisent Amazon"],
     correctIndex: 1,
     imageUrl: "/assets/facts/781.png",
+    difficulty: 'normal',
   },
   {
     id: 782,
@@ -10073,6 +10537,7 @@ export const FACTS = [
     options: ["\"password\", le plus piraté au monde","\"123456\", le plus piraté au monde","\"123456789\", le plus piraté au monde","\"000000\", le plus piraté au monde"],
     correctIndex: 1,
     imageUrl: "/assets/facts/782.png",
+    difficulty: 'normal',
   },
   {
     id: 783,
@@ -10086,6 +10551,7 @@ export const FACTS = [
     options: ["\"Baby\" de Justin Bieber a fait planter l'algorithme de recommandation YouTube pendant 72 heures","\"Despacito\" a forcé YouTube à créer une nouvelle catégorie de stockage dédiée aux vidéos dépassant 500 millions de vues","\"Uptown Funk\" a corrompu les métadonnées de milliers de vidéos liées lors du passage du compteur à 10 chiffres","\"Gangnam Style\" a crashé le compteur YouTube"],
     correctIndex: 3,
     imageUrl: "/assets/facts/783.png",
+    difficulty: 'normal',
   },
   {
     id: 784,
@@ -10099,6 +10565,7 @@ export const FACTS = [
     options: ["1,6 million de dollars comme NFT","2,9 millions de dollars revendus à son propre musée numérique","3,7 millions de dollars comme NFT","2,9 millions de dollars comme NFT"],
     correctIndex: 3,
     imageUrl: "/assets/facts/784.png",
+    difficulty: 'normal',
   },
   {
     id: 785,
@@ -10112,6 +10579,7 @@ export const FACTS = [
     options: ["MIT, mais il ralentit volontairement les serveurs pour décourager les bots","Carnegie Mellon, mais il mesure en réalité votre temps de réaction pour détecter l'anxiété","Stanford, mais chaque résolution finance un fonds de recherche en cybersécurité","Carnegie Mellon, mais il entraîne une IA en retour"],
     correctIndex: 3,
     imageUrl: "/assets/facts/785.png",
+    difficulty: 'normal',
   },
   {
     id: 786,
@@ -10125,6 +10593,7 @@ export const FACTS = [
     options: ["596,5 heures, soit presque 25 jours","1 032 heures, soit 43 jours consécutifs de lecture","571,3 heures, soit près de 23 jours et demi","48,5 heures, soit deux jours complets en boucle"],
     correctIndex: 0,
     imageUrl: "/assets/facts/786.png",
+    difficulty: 'normal',
   },
   {
     id: 787,
@@ -10138,6 +10607,7 @@ export const FACTS = [
     options: ["La Finlande, dès 2010","La Suède, dès 2011","L'Islande, dès 2008","La Norvège, dès 2014"],
     correctIndex: 0,
     imageUrl: "/assets/facts/787.png",
+    difficulty: 'normal',
   },
   {
     id: 788,
@@ -10151,6 +10621,7 @@ export const FACTS = [
     options: ["Theodore Roosevelt, à Washington en 1903","Andrew Johnson, à Washington en 1867","Ulysses S. Grant, à Philadelphie en 1874","Ulysses S. Grant, à Washington en 1872"],
     correctIndex: 3,
     imageUrl: "/assets/facts/788.png",
+    difficulty: 'normal',
   },
   {
     id: 789,
@@ -10164,6 +10635,7 @@ export const FACTS = [
     options: ["Les États-Unis ont déclaré la guerre à la Bohême en 1917","Le Royaume-Uni a déclaré la guerre à la Mésopotamie en 1914","La France a déclaré la guerre à la Transylvanie en 1916","Les États-Unis ont déclaré la guerre à la Prusse rhénane en 1917"],
     correctIndex: 0,
     imageUrl: "/assets/facts/789.png",
+    difficulty: 'normal',
   },
   {
     id: 790,
@@ -10177,6 +10649,7 @@ export const FACTS = [
     options: ["Depuis 1962, soit plus de 60 ans","Depuis 1953, soit plus de 70 ans","Depuis 1948, soit plus de 75 ans","Depuis 1936, soit plus de 85 ans"],
     correctIndex: 2,
     imageUrl: "/assets/facts/790.png",
+    difficulty: 'normal',
   },
   {
     id: 791,
@@ -10190,6 +10663,7 @@ export const FACTS = [
     options: ["Benito Mussolini, en 1923","Francisco Franco, en 1928","Benito Mussolini, en 1921","Adolf Hitler, en 1931"],
     correctIndex: 0,
     imageUrl: "/assets/facts/791.png",
+    difficulty: 'normal',
   },
   {
     id: 792,
@@ -10203,6 +10677,7 @@ export const FACTS = [
     options: ["La Slovaquie a élu Zuzana Čaputová après qu'un producteur de télé-réalité ait été président pendant six ans","Le Kazakhstan a élu Dariga Nazarbaïeva après qu'un animateur de jeu télévisé ait remporté l'élection précédente","La Serbie a élu Ana Brnabić après qu'un acteur de sitcom ait dirigé le pays suite à une élection surprise","La Géorgie a élu Salomé Zourabichvili après une longue tradition similaire"],
     correctIndex: 3,
     imageUrl: "/assets/facts/792.png",
+    difficulty: 'normal',
   },
   {
     id: 793,
@@ -10216,6 +10691,7 @@ export const FACTS = [
     options: ["Mao Zedong, en 1958","Kim Il-sung, en 1961","Mao Zedong, en 1953","Staline, en 1948"],
     correctIndex: 0,
     imageUrl: "/assets/facts/793.png",
+    difficulty: 'normal',
   },
   {
     id: 794,
@@ -10229,6 +10705,7 @@ export const FACTS = [
     options: ["Abraham Lincoln, seul président-inventeur","Thomas Jefferson, seul président-inventeur","Theodore Roosevelt, seul président-inventeur","Benjamin Franklin, seul président-inventeur"],
     correctIndex: 0,
     imageUrl: "/assets/facts/794.png",
+    difficulty: 'normal',
   },
   {
     id: 795,
@@ -10242,6 +10719,7 @@ export const FACTS = [
     options: ["La Bolivie, à Cochabamba","Le Brésil, à Minas Gerais","Le Mexique, à Chiapas","Le Pérou, à Cajamarca"],
     correctIndex: 2,
     imageUrl: "/assets/facts/795.png",
+    difficulty: 'normal',
   },
   {
     id: 796,
@@ -10255,6 +10733,7 @@ export const FACTS = [
     options: ["Lire à voix haute le règlement intérieur aux nouveaux fonctionnaires fédéraux","Saluer officiellement leurs adversaires politiques avant chaque vote parlementaire","Justifier par écrit leurs décisions devant un comité de citoyens tirés au sort","Informer les cochons avant de les abattre"],
     correctIndex: 3,
     imageUrl: "/assets/facts/796.png",
+    difficulty: 'normal',
   },
   {
     id: 797,
@@ -10268,6 +10747,7 @@ export const FACTS = [
     options: ["La Roumanie a déclaré la guerre au Canada en 1942","La Croatie a déclaré la guerre au Royaume-Uni en 1943","La Bulgarie a déclaré la guerre au Canada en 1942","La Bulgarie a déclaré la guerre aux USA en 1944"],
     correctIndex: 3,
     imageUrl: "/assets/facts/797.png",
+    difficulty: 'normal',
   },
   {
     id: 798,
@@ -10281,6 +10761,7 @@ export const FACTS = [
     options: ["Une amende de 15$ pour sourire à une femme entre 22h et 6h du matin","Une amende de 30$ pour suivre une femme sur plus de deux pâtés de maisons","Une amende de 50$ pour siffler une femme dans la rue","Une amende de 25$ pour regarder une femme «de façon suggestive»"],
     correctIndex: 3,
     imageUrl: "/assets/facts/798.png",
+    difficulty: 'normal',
   },
   {
     id: 799,
@@ -10294,6 +10775,7 @@ export const FACTS = [
     options: ["Aucun — c'est l'Indiana qui a exonéré d'impôts les familles livrant au moins 50 scalps par an en 1812","Aucun — l'Ohio a payé ses citoyens pour les tuer en 1807","Aucun — c'est la Pennsylvanie qui a organisé des battues officielles financées par l'État en 1793","Aucun — c'est Andrew Jackson, mais en tant que gouverneur du Tennessee, pas comme président, en 1801"],
     correctIndex: 1,
     imageUrl: "/assets/facts/799.png",
+    difficulty: 'normal',
   },
   {
     id: 800,
@@ -10307,6 +10789,7 @@ export const FACTS = [
     options: ["La Colombie, à Ciénaga, un singe capucin nommé «Toto»","Le Venezuela, à Maracaibo, un singe capucin nommé «Coco» qui recevait officiellement les plaintes des habitants lors d'audiences hebdomadaires","Le Mexique, à Oaxaca, un singe araignée surnommé «El Presidente» porté en triomphe par ses partisans dans les rues","Le Pérou, à Iquitos, un singe laineux baptisé «Don Simón» dont le portrait fut imprimé sur des bulletins de vote distribués en 1988"],
     correctIndex: 0,
     imageUrl: "/assets/facts/800.png",
+    difficulty: 'normal',
   },
   {
     id: 801,
@@ -10320,6 +10803,7 @@ export const FACTS = [
     options: ["L'Argentine en 2001, le président De la Rúa par fax au Sénat depuis l'ambassade américaine","Le Venezuela en 2002, le président Chávez par fax à l'Assemblée Nationale depuis une base militaire","Le Pérou en 2000, le président Fujimori par fax au Congrès depuis le Japon","La Bolivie en 2003, le président Sánchez de Lozada par fax au Congrès"],
     correctIndex: 3,
     imageUrl: "/assets/facts/801.png",
+    difficulty: 'normal',
   },
   {
     id: 802,
@@ -10333,6 +10817,7 @@ export const FACTS = [
     options: ["Nicolae Ceaușescu, Conducător roumain, selon la propagande officielle","Mouammar Kadhafi, Guide de la Révolution libyenne, selon la propagande officielle","Saparmyrat Nyýazow, Président du Turkménistan, selon la propagande officielle","Kim Jong-il, dictateur nord-coréen, selon la propagande officielle"],
     correctIndex: 3,
     imageUrl: "/assets/facts/802.png",
+    difficulty: 'normal',
   },
   {
     id: 803,
@@ -10346,6 +10831,7 @@ export const FACTS = [
     options: ["L'Australie — Darwin, Territoire du Nord","Le Royaume-Uni — Hartlepool, Angleterre","Les États-Unis — Nome, Alaska","Les États-Unis — Sunol, Californie"],
     correctIndex: 3,
     imageUrl: "/assets/facts/803.png",
+    difficulty: 'normal',
   },
   {
     id: 804,
@@ -10359,6 +10845,7 @@ export const FACTS = [
     options: ["Dwight D. Eisenhower pour un album de discours militaires","John F. Kennedy pour un album de discours","Richard Nixon pour un album de débats télévisés","Franklin D. Roosevelt pour un album de discours radiodiffusés"],
     correctIndex: 1,
     imageUrl: "/assets/facts/804.png",
+    difficulty: 'normal',
   },
   {
     id: 805,
@@ -10372,6 +10859,7 @@ export const FACTS = [
     options: ["La Grande-Bretagne contre les étourneaux","La Nouvelle-Zélande contre les kiwis","L'Afrique du Sud contre les autruches","L'Australie contre les émeus"],
     correctIndex: 3,
     imageUrl: "/assets/facts/805.png",
+    difficulty: 'normal',
   },
   {
     id: 806,
@@ -10385,6 +10873,7 @@ export const FACTS = [
     options: ["Aucun — mais l'Iran a inscrit son Coran entier sur 30 grains","Aucun — mais un artiste nord-coréen a gravé les 10 principes du Juche sur un unique grain de maïs, exposé à Pyongyang","Aucun — mais Singapour conserve officiellement sa charte d'indépendance de 1965 en version micro-gravée sur 5 grains de riz dans ses archives nationales","Aucun — mais le Vatican a fait graver ses 9 articles constitutionnels sur un grain d'ivoire en 1929"],
     correctIndex: 0,
     imageUrl: "/assets/facts/806.png",
+    difficulty: 'normal',
   },
   {
     id: 807,
@@ -10398,6 +10887,7 @@ export const FACTS = [
     options: ["Theodore Roosevelt, pour un système de stabilisation de selle de cheval","Abraham Lincoln, pour un système de flottaison de bateaux","James Garfield, pour un appareil de mesure des crues fluviales","Benjamin Franklin, pour une pompe à eau actionnée par énergie éolienne"],
     correctIndex: 1,
     imageUrl: "/assets/facts/807.png",
+    difficulty: 'normal',
   },
   {
     id: 808,
@@ -10411,6 +10901,7 @@ export const FACTS = [
     options: ["Le Premier ministre britannique Winston Churchill","Le 38ème président américain Gerald Ford","Le 35ème président américain John F. Kennedy","Le 37ème président américain Richard Nixon"],
     correctIndex: 2,
     imageUrl: "/assets/facts/808.png",
+    difficulty: 'normal',
   },
   {
     id: 809,
@@ -10424,6 +10915,7 @@ export const FACTS = [
     options: ["La Tour Agronomique de Dubaï, dont les panneaux solaires réfléchissants ont carbonisé plusieurs nids de martinets sur la face sud","Le Crystals Mall de Las Vegas, dont l'architecture en losange concentre la chaleur en un point précis au niveau du trottoir ouest","Le Guangzhou Opera House, dont les surfaces en titane poli ont brûlé les ailes de plusieurs centaines de pigeons lors de l'inauguration","Le Vdara Hotel de Las Vegas, miroir solaire géant"],
     correctIndex: 3,
     imageUrl: "/assets/facts/809.png",
+    difficulty: 'normal',
   },
   {
     id: 810,
@@ -10437,6 +10929,7 @@ export const FACTS = [
     options: ["La Gate Tower de Dubaï, inclinée à 17 degrés","La Infinity Tower de Shanghai, inclinée à 9 degrés","La Leaning Tower of Suurhusen en Allemagne, inclinée à 21 degrés","La Capital Gate d'Abu Dhabi, inclinée à 18 degrés"],
     correctIndex: 3,
     imageUrl: "/assets/facts/810.png",
+    difficulty: 'normal',
   },
   {
     id: 811,
@@ -10450,6 +10943,7 @@ export const FACTS = [
     options: ["La Russie, avec le LEDYANOY HOTEL de Mourmansk, bâti chaque hiver depuis 1994","La Finlande, avec le SNOWHOTEL d'Rovaniemi construit sur le lac Syväjärvi","La Norvège, avec le SNOWCASTLE de Kirkenes","La Suède, avec l'ICEHOTEL de Jukkasjärvi"],
     correctIndex: 3,
     imageUrl: "/assets/facts/811.png",
+    difficulty: 'normal',
   },
   {
     id: 812,
@@ -10463,6 +10957,7 @@ export const FACTS = [
     options: ["Son mortier incorpore du sang de bœuf fermenté qui agit comme un liant organique imperméabilisant sur le long terme","Ses murs contiennent des fibres de crin de cheval qui absorbent les vibrations sismiques et préviennent les fissures","Ses briques sont cuites à une température si précise qu'elles créent un réseau de microcavités qui dissipent l'humidité sans dégradation","Son béton contient de la cendre volcanique auto-réparatrice"],
     correctIndex: 3,
     imageUrl: "/assets/facts/812.png",
+    difficulty: 'normal',
   },
   {
     id: 813,
@@ -10476,6 +10971,7 @@ export const FACTS = [
     options: ["Le One World Trade Center, défaut structurel découvert en 1977","Le Lever House, défaut structurel découvert en 1974","Le MetLife Tower, défaut structurel découvert en 1969","Le Citicorp Center, défaut structurel découvert en 1978"],
     correctIndex: 3,
     imageUrl: "/assets/facts/813.png",
+    difficulty: 'normal',
   },
   {
     id: 814,
@@ -10489,6 +10985,7 @@ export const FACTS = [
     options: ["La Apple Tower de Cupertino, cylindre réfléchissant qui aveugle et tue les oiseaux","La Fondation Louis Vuitton à Paris, miroir géant dévastateur pour la faune ailée","Le musée Guggenheim de Bilbao, bouclier de titane fatal aux oiseaux de passage","Le Vessel de New York, miroir mortel pour les oiseaux"],
     correctIndex: 3,
     imageUrl: "/assets/facts/814.png",
+    difficulty: 'normal',
   },
   {
     id: 815,
@@ -10502,6 +10999,7 @@ export const FACTS = [
     options: ["Son architecte Bonanno Pisano avait volontairement épaissi les murs du côté incliné de 40 cm pour anticiper l'affaissement du terrain","Les 294 colonnes extérieures forment un réseau de contreforts invisibles qui redistribuent le poids vers le centre de gravité","Sa base en marbre de Carrare crée une friction naturelle qui compense exactement la pression latérale exercée par l'inclinaison","Un sol mou l'a paradoxalement stabilisée en absorbant les vibrations"],
     correctIndex: 3,
     imageUrl: "/assets/facts/815.png",
+    difficulty: 'normal',
   },
   {
     id: 816,
@@ -10515,6 +11013,7 @@ export const FACTS = [
     options: ["L'Arc de Triomphe, érigé comme décoration provisoire pour le sacre de Napoléon en 1804","La Pyramide du Louvre, installée comme chantier expérimental provisoire en 1989","La Colonne Vendôme, élevée comme monument commémoratif provisoire en 1810","La Tour Eiffel, construite comme installation temporaire en 1889"],
     correctIndex: 3,
     imageUrl: "/assets/facts/816.png",
+    difficulty: 'normal',
   },
   {
     id: 817,
@@ -10528,6 +11027,7 @@ export const FACTS = [
     options: ["Le Walkie-Talkie, dont la façade concave concentrait les rayons solaires","Le Boomerang, dont la courbure asymétrique créait un point focal thermique de 65°C sur le bitume environnant","Le Shard, dont les panneaux vitrés triangulaires agissaient comme des prismes concentrant la chaleur au sol","Le Scalpel, dont les vitres antireflets paradoxalement amplifiaient la radiation solaire sur la chaussée"],
     correctIndex: 0,
     imageUrl: "/assets/facts/817.png",
+    difficulty: 'normal',
   },
   {
     id: 818,
@@ -10541,6 +11041,7 @@ export const FACTS = [
     options: ["Venise, posée sur 10 millions de troncs d'arbres immergés","Bangkok, construite sur 4 millions de bambous géants tressés et ancrés dans le delta du Chao Phraya au XVe siècle","Saint-Pétersbourg, érigée sur 11 millions de troncs de pin sibérien immergés dans le delta de la Neva sur ordre de Pierre le Grand","Venise, reposant sur 10 millions de pieux en mélèze alpin traité à la chaux, enfoncés à la main sur une profondeur de 12 mètres"],
     correctIndex: 0,
     imageUrl: "/assets/facts/818.png",
+    difficulty: 'normal',
   },
   {
     id: 819,
@@ -10554,6 +11055,7 @@ export const FACTS = [
     options: ["Le Turning Torso de Malmö, surnommé « le rayon de la mort »","Le Vdara Hotel de Las Vegas, surnommé « le rayon de la mort »","Le Fontainebleau Hotel de Las Vegas, surnommé « le rayon de la mort »","La Tour Vdara de Dubaï, surnommée « le rayon de la mort »"],
     correctIndex: 1,
     imageUrl: "/assets/facts/819.png",
+    difficulty: 'normal',
   },
   {
     id: 820,
@@ -10567,6 +11069,7 @@ export const FACTS = [
     options: ["La tour de Bedum, inclinée à 5,07°, contre 3,97° pour Pise","La tour de Grinsted, inclinée à 4,61°, contre 3,97° pour Pise","La tour de Suurhusen, inclinée à 5,19°, contre 3,97° pour Pise","La tour de Zons, inclinée à 5,44°, contre 3,97° pour Pise"],
     correctIndex: 2,
     imageUrl: "/assets/facts/820.png",
+    difficulty: 'normal',
   },
   {
     id: 821,
@@ -10580,6 +11083,7 @@ export const FACTS = [
     options: ["L'Empire State Building, avec le code ZIP 10118","Le Chrysler Building, avec le code ZIP 10153","Le Flatiron Building, avec le code ZIP 10010","Le 30 Rockefeller Plaza, avec le code ZIP 10141"],
     correctIndex: 0,
     imageUrl: "/assets/facts/821.png",
+    difficulty: 'normal',
   },
   {
     id: 822,
@@ -10593,6 +11097,7 @@ export const FACTS = [
     options: ["Les blocs de travertin de ses murs absorbent l'humidité ambiante et cristallisent en surface, formant une couche protectrice naturelle","L'oculus central de 9 mètres régule intentionnellement la pression intérieure du dôme, empêchant toute accumulation de contraintes mécaniques","Son dôme contient des chambres d'air disposées en spirale qui redistribuent les pressions atmosphériques vers les fondations","Son béton contient de la cendre volcanique qui se renforce avec l'eau"],
     correctIndex: 3,
     imageUrl: "/assets/facts/822.png",
+    difficulty: 'normal',
   },
   {
     id: 823,
@@ -10606,6 +11111,7 @@ export const FACTS = [
     options: ["Le Canada, avec l'Hôtel de Glace de Québec, démoli et rebâti chaque saison depuis 1991","La Suède, avec l'Icehotel de Jukkasjärvi","L'Islande, avec le Frosthotel de Reykjavik, entièrement refait chaque automne depuis 1993","La Finlande, avec le SnowCastle de Kemi"],
     correctIndex: 1,
     imageUrl: "/assets/facts/823.png",
+    difficulty: 'normal',
   },
   {
     id: 824,
@@ -10619,6 +11125,7 @@ export const FACTS = [
     options: ["La Bastille de Paris, devenue symbole de liberté","La Conciergerie de Paris, transformée en palais de justice médiéval","Le Palais du Louvre à Paris, reconverti en musée en 1793","La Tour de Londres, transformée en musée de la Couronne britannique"],
     correctIndex: 0,
     imageUrl: "/assets/facts/824.png",
+    difficulty: 'normal',
   },
   {
     id: 825,
@@ -10632,6 +11139,7 @@ export const FACTS = [
     options: ["Le Flatiron Building, poursuivi pour nuisance climatique en 1903","Le Singer Building, attaqué en justice pour avoir rendu le brouillard « intentionnellement dense » en 1908","Le Times Tower, menacé de démolition pour avoir créé des rafales jugées « hostiles à la circulation » en 1906","Le Woolworth Building, condamné pour « agression solaire » par un tribunal de Manhattan en 1915"],
     correctIndex: 0,
     imageUrl: "/assets/facts/825.png",
+    difficulty: 'normal',
   },
   {
     id: 826,
@@ -10645,6 +11153,7 @@ export const FACTS = [
     options: ["La Torrazzo de Crémone, condamnée à la démolition car son ombre couvrait un édifice fasciste nouvellement construit","La Tour des Asinelli à Bologne, jugée trop bancale et démontée à moitié avant l'armistice","La Tour de Pise, sauvée in extremis grâce à une pétition signée par 40 000 écoliers italiens","La Tour de Pise, condamnée puis épargnée par la guerre"],
     correctIndex: 3,
     imageUrl: "/assets/facts/826.png",
+    difficulty: 'normal',
   },
   {
     id: 827,
@@ -10658,6 +11167,7 @@ export const FACTS = [
     options: ["Le Palais du Quirinal à Rome avec 1 200 pièces officiellement recensées","Le Château de Windsor avec 812 pièces officiellement recensées","Le Palais Royal de Madrid avec 870 pièces officiellement recensées","Buckingham Palace avec 775 pièces officiellement recensées"],
     correctIndex: 3,
     imageUrl: "/assets/facts/827.png",
+    difficulty: 'normal',
   },
   {
     id: 828,
@@ -10671,6 +11181,7 @@ export const FACTS = [
     options: ["Le Vdara Hotel, surnommé 'death ray' par ses victimes","Le Harrah's Curved Tower, surnommé 'glass furnace' par les techniciens de maintenance","Le Aria Resort, surnommé 'the melter' après avoir fondu les pare-brises du parking en 2011","Le Palazzo Tower North, surnommé 'death mirror' par les assureurs suite à trois incidents déclarés"],
     correctIndex: 0,
     imageUrl: "/assets/facts/828.png",
+    difficulty: 'normal',
   },
   {
     id: 829,
@@ -10684,6 +11195,7 @@ export const FACTS = [
     options: ["Le Gherkin de Londres, en 2015","La Torre Agbar de Barcelone, en 2009","Le Walkie-Talkie de Londres, en 2013","Le One World Trade Center de New York, en 2014"],
     correctIndex: 2,
     imageUrl: "/assets/facts/829.png",
+    difficulty: 'normal',
   },
   {
     id: 830,
@@ -10697,6 +11209,7 @@ export const FACTS = [
     options: ["Paul John Knowles, tueur en série de Géorgie","Todd Kohlhepp, tueur en série de Caroline du Sud","Dennis Rader, le tueur BTK du Kansas","John Edward Robinson, tueur en série du Missouri"],
     correctIndex: 1,
     imageUrl: "/assets/facts/830.png",
+    difficulty: 'normal',
   },
   {
     id: 831,
@@ -10710,6 +11223,7 @@ export const FACTS = [
     options: ["Pretty Boy Floyd, repéré grâce à sa chemise bordeaux à carreaux","John Dillinger, repéré grâce à sa chemise rouge vif","Bonnie Parker, repérée grâce à sa chemise rose pâle","John Dillinger, repéré grâce à sa chemise orange"],
     correctIndex: 3,
     imageUrl: "/assets/facts/831.png",
+    difficulty: 'normal',
   },
   {
     id: 832,
@@ -10723,6 +11237,7 @@ export const FACTS = [
     options: ["Vol de 100 millions d'euros de diamants à Anvers via la séduction","Vol de 65 millions d'euros d'or à Amsterdam via la séduction d'une employée de banque","Vol de 100 millions d'euros de bijoux à Bruxelles via la séduction d'un directeur de coffre","Vol de 85 millions d'euros de diamants à Anvers via une fausse société de nettoyage"],
     correctIndex: 0,
     imageUrl: "/assets/facts/832.png",
+    difficulty: 'normal',
   },
   {
     id: 833,
@@ -10736,6 +11251,7 @@ export const FACTS = [
     options: ["Gerald Gallego, tueur en série californien des années 1970","William Bonin, le 'Freeway Killer' californien des années 1980","Harvey Glatman, tueur photographe des années 1950","John Edward Robinson, tueur en série du Kansas des années 1990"],
     correctIndex: 2,
     imageUrl: "/assets/facts/833.png",
+    difficulty: 'normal',
   },
   {
     id: 834,
@@ -10749,6 +11265,7 @@ export const FACTS = [
     options: ["Un homme a dormi chaque nuit dans une chambre d'hôtel du parc en changeant de réservation","Un homme s'est fait passer pendant 5 ans pour un employé technique du parc","Un homme a survécu en volant nourriture et vêtements dans le parc","Un homme a convaincu le personnel qu'il était un inspecteur Disney envoyé depuis les États-Unis"],
     correctIndex: 2,
     imageUrl: "/assets/facts/834.png",
+    difficulty: 'normal',
   },
   {
     id: 835,
@@ -10762,6 +11279,7 @@ export const FACTS = [
     options: ["El Mayo Zambada, via une application de livraison géolocalisée","Amado Carrillo Fuentes, via un chauffeur-livreur infiltré par la DEA","Joaquín 'El Chapo' Guzmán, via une commande tracée","Chapo Isidro Meza Flores, via une commande livrée à son bunker de Sinaloa"],
     correctIndex: 2,
     imageUrl: "/assets/facts/835.png",
+    difficulty: 'normal',
   },
   {
     id: 836,
@@ -10775,6 +11293,7 @@ export const FACTS = [
     options: ["Victor Lustig, en 1925, à deux ferrailleurs différents","Joseph Weil, en 1928, à deux promoteurs immobiliers différents","Gregor MacGregor, en 1925, à deux collectionneurs britanniques différents","Victor Lustig, en 1925, à un ferrailleur et un banquier suisse"],
     correctIndex: 0,
     imageUrl: "/assets/facts/836.png",
+    difficulty: 'normal',
   },
   {
     id: 837,
@@ -10788,6 +11307,7 @@ export const FACTS = [
     options: ["Recouvert de boue séchée pour se fondre dans le mur d'enceinte en béton","Vêtu en officier de police avec un uniforme reconstitué à partir de draps teints","Habillé en prêtre avec une soutane et une bible volée à l'aumônerie","Habillé en femme avec une perruque et du maquillage"],
     correctIndex: 3,
     imageUrl: "/assets/facts/837.png",
+    difficulty: 'normal',
   },
   {
     id: 838,
@@ -10801,6 +11321,7 @@ export const FACTS = [
     options: ["Ted Bundy, via des anagrammes de noms de victimes glissés dans ses lettres d'appel","Le Zodiac Killer, via des lettres chiffrées non résolues","John Wayne Gacy, via des rébus dessinés à la main joints à ses aveux contradictoires","Le BTK Killer, via des mots croisés partiellement remplis envoyés au FBI"],
     correctIndex: 1,
     imageUrl: "/assets/facts/838.png",
+    difficulty: 'normal',
   },
   {
     id: 839,
@@ -10814,6 +11335,7 @@ export const FACTS = [
     options: ["Marcus Deleon, dont le tatouage représentait l'incendie criminel avec l'adresse exacte de l'entrepôt brûlé","Anthony Garcia, dont le tatouage reproduisait le meurtre en détail","Jose Luis Roca, dont le tatouage reproduisait le cambriolage avec le visage des deux complices encore recherchés","Danny Trejo Jr., dont le tatouage montrait l'embuscade en détail, y compris les plaques d'immatriculation des véhicules impliqués"],
     correctIndex: 1,
     imageUrl: "/assets/facts/839.png",
+    difficulty: 'normal',
   },
   {
     id: 840,
@@ -10827,6 +11349,7 @@ export const FACTS = [
     options: ["Le tueur en série Randy Kraft","Le tueur en série Todd Kohlhepp","Le tueur en série John Edward Robinson","Le braqueur en série Richard Marquette"],
     correctIndex: 1,
     imageUrl: "/assets/facts/840.png",
+    difficulty: 'normal',
   },
   {
     id: 841,
@@ -10840,6 +11363,7 @@ export const FACTS = [
     options: ["Un CV avec sa photo, son casier judiciaire joint en annexe","Un CV avec photo, références et disponibilités immédiates","Un CV complet avec nom, adresse et son précédent employeur cambriolé","Un CV complet avec nom, adresse et photo"],
     correctIndex: 3,
     imageUrl: "/assets/facts/841.png",
+    difficulty: 'normal',
   },
   {
     id: 842,
@@ -10853,6 +11377,7 @@ export const FACTS = [
     options: ["Al Capone, reconnu par ses chaussettes à rayures rouges","Lucky Luciano, reconnu par ses chaussettes violettes brodées à ses initiales","Meyer Lansky, trahi par ses chaussettes blanches immaculées portées avec un costume sombre","James 'Whitey' Bulger, reconnu par ses chaussettes vertes"],
     correctIndex: 3,
     imageUrl: "/assets/facts/842.png",
+    difficulty: 'normal',
   },
   {
     id: 843,
@@ -10866,6 +11391,7 @@ export const FACTS = [
     options: ["Safia Lakhani, sans aucun diplôme médical","Carmen Villanueva, qui avait simplement imprimé ses diplômes sur internet","Linda Doukouré, repérée uniquement parce qu'elle refusait de signer les ordonnances","Nadia Petrovska, qui utilisait les diplômes de sa sœur gynécologue décédée"],
     correctIndex: 0,
     imageUrl: "/assets/facts/843.png",
+    difficulty: 'normal',
   },
   {
     id: 844,
@@ -10879,6 +11405,7 @@ export const FACTS = [
     options: ["Un homme en Californie pour demander une escorte policière jusqu'à sa voiture garée trop loin","Un homme au Michigan pour dénoncer un autre braqueur qui lui avait volé son butin","Un homme en Floride pour se plaindre que le caissier lui avait rendu trop peu d'argent","Un homme en Ohio pour se plaindre des témoins"],
     correctIndex: 3,
     imageUrl: "/assets/facts/844.png",
+    difficulty: 'normal',
   },
   {
     id: 845,
@@ -10892,6 +11419,7 @@ export const FACTS = [
     options: ["Dennis Rader, le tueur BTK","John Edward Robinson, le Slavemaster","Israel Keyes, le tueur nomade","Edgar Pearce, l'empoisonneur Mardi Gras"],
     correctIndex: 3,
     imageUrl: "/assets/facts/845.png",
+    difficulty: 'normal',
   },
   {
     id: 846,
@@ -10905,6 +11433,7 @@ export const FACTS = [
     options: ["Un cambrioleur arrêté après 15 éternuements consécutifs","Un cambrioleur arrêté après 9 éternuements ayant déclenché l'alarme sonore","Un cambrioleur repéré après avoir éternué sur le miroir qu'il tentait de voler","Un cambrioleur arrêté après une série de hoquets répétés pendant 20 minutes"],
     correctIndex: 0,
     imageUrl: "/assets/facts/846.png",
+    difficulty: 'normal',
   },
   {
     id: 847,
@@ -10918,6 +11447,7 @@ export const FACTS = [
     options: ["Joaquín 'El Chapo' Guzmán, chef du cartel de Sinaloa au Mexique","James 'Whitey' Bulger, parrain de la mafia de Boston","John 'Junior' Gotti, héritier de la famille Gotti de New York","Henry Hill, informateur de la mafia de New York ayant inspiré Les Affranchis"],
     correctIndex: 1,
     imageUrl: "/assets/facts/847.png",
+    difficulty: 'normal',
   },
   {
     id: 848,
@@ -10931,6 +11461,7 @@ export const FACTS = [
     options: ["Un voleur qui a écrit sa demande au dos de son propre chèque","Un malfaiteur qui avait rédigé ses exigences sur le verso d'une contravention de stationnement reçue à son nom deux jours plus tôt","Un braqueur qui avait transmis sa note au caissier accompagnée par inadvertance de son permis de conduire glissé dans le même sac","Un voleur qui avait écrit sa demande sur sa carte de fidélité de supermarché, laquelle contenait ses coordonnées complètes dans la base de données"],
     correctIndex: 0,
     imageUrl: "/assets/facts/848.png",
+    difficulty: 'normal',
   },
   {
     id: 849,
@@ -10944,6 +11475,7 @@ export const FACTS = [
     options: ["Dean Corll, le 'Candy Man', qui distribuait des bonbons gratuits aux enfants dans son usine de confiserie de Houston","Ted Bundy, qui se déguisait en magicien lors de fêtes d'anniversaire dans l'État de Washington sous le pseudonyme 'Mr. Magic'","Jerry Brudos, le 'Lollipop Killer', qui se produisait comme jongleur et acrobate lors de foires itinérantes en Oregon","John Wayne Gacy, le 'Clown Killer'"],
     correctIndex: 3,
     imageUrl: "/assets/facts/849.png",
+    difficulty: 'normal',
   },
   {
     id: 850,
@@ -10957,6 +11489,7 @@ export const FACTS = [
     options: ["John Edward Robinson, le \"Slavemaster\"","Gary Ridgway, le 'Green River Killer'","Dean Corll, le 'Candy Man'","Israel Keyes, le 'Ghost Killer'"],
     correctIndex: 0,
     imageUrl: "/assets/facts/850.png",
+    difficulty: 'normal',
   },
   {
     id: 851,
@@ -10970,6 +11503,7 @@ export const FACTS = [
     options: ["Instagram","TikTok","Twitter/X","Snapchat","YouTube","Facebook"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 852,
@@ -10983,6 +11517,7 @@ export const FACTS = [
     options: ["1er mars 2005","15 janvier 2005","22 septembre 2005","31 décembre 2004","8 novembre 2005","14 février 2005"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 853,
@@ -10996,6 +11531,7 @@ export const FACTS = [
     options: ["HELLO","TEST","CONNECTED","ONLINE","PING","LO"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 854,
@@ -11009,6 +11545,7 @@ export const FACTS = [
     options: ["500 millions","1 milliard","3 milliards","5 milliards","7 milliards","Plus de 8,5 milliards"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 855,
@@ -11022,6 +11559,7 @@ export const FACTS = [
     options: ["casino.com","poker.com","loan.com","business.com","web.com","sex.com"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 856,
@@ -11035,6 +11573,7 @@ export const FACTS = [
     options: ["FaceBook","The Network","College Connect","HarvardLink","Social Book","TheFacebook"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 857,
@@ -11048,6 +11587,7 @@ export const FACTS = [
     options: ["1970","1974","1980","1985","1990","1978"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 858,
@@ -11061,6 +11601,7 @@ export const FACTS = [
     options: ["2019","2020","2022","2023","2018","2021"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 859,
@@ -11074,6 +11615,7 @@ export const FACTS = [
     options: ["Instagram","Hashtag","TikTok","Tweet","Emoji","Selfie"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 860,
@@ -11087,6 +11629,7 @@ export const FACTS = [
     options: ["20%","40%","60%","70%","80%","Environ 90%"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 861,
@@ -11100,6 +11643,7 @@ export const FACTS = [
     options: ["5 millions","10 millions","20 millions","35 millions","50 millions","Plus de 55 millions"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 862,
@@ -11113,6 +11657,7 @@ export const FACTS = [
     options: ["Faux","Environ égal","Seulement en Asie","Seulement 50%","Pas encore","Vrai"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 863,
@@ -11126,6 +11671,7 @@ export const FACTS = [
     options: ["Inde","USA","Japon","Russie","Brésil","La Chine"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 864,
@@ -11139,6 +11685,7 @@ export const FACTS = [
     options: ["Streaming","Cinéma","TV câblée","VOD","Abonnement musique","Location de DVD par courrier"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 865,
@@ -11152,6 +11699,7 @@ export const FACTS = [
     options: ["YouTube.com","Facebook.com","Wikipedia.org","Amazon.com","Reddit.com","Google.com"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 866,
@@ -11165,6 +11713,7 @@ export const FACTS = [
     options: ["Python","PHP","Java","C++","Ruby","JavaScript"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 867,
@@ -11178,6 +11727,7 @@ export const FACTS = [
     options: ["MySpace","Orkut","Friendster","LinkedIn","Hi5","Facebook en 2008"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 868,
@@ -11191,6 +11741,7 @@ export const FACTS = [
     options: ["High Text Transfer Path","Home Typing Tool Protocol","Hyper Terminal Tool Protocol","Host Transfer Tracking Protocol","Hyper Text Tool Program","HyperText Transfer Protocol"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 869,
@@ -11204,6 +11755,7 @@ export const FACTS = [
     options: ["30 minutes","1 heure","1h30","2 heures","3 heures","Environ 2h30 par jour"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 870,
@@ -11217,6 +11769,7 @@ export const FACTS = [
     options: ["Monaco","Nauru","Tuvalu","San Marin","Andorre","Le Vatican"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 871,
@@ -11230,6 +11783,7 @@ export const FACTS = [
     options: ["1944","1952","1960","1965","1968","1971"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 872,
@@ -11243,6 +11797,7 @@ export const FACTS = [
     options: ["1919","1923","1925","1928","1930","1932 seulement"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 873,
@@ -11256,6 +11811,7 @@ export const FACTS = [
     options: ["Reagan","Ford","Nixon","LBJ","Truman","Jimmy Carter en 1979"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 874,
@@ -11269,6 +11825,7 @@ export const FACTS = [
     options: ["2000","2005","2010","2012","2020","2015"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 875,
@@ -11282,6 +11839,7 @@ export const FACTS = [
     options: ["2 candidats","3 partis","Vote à main levée","5 candidats","Pas d'élections","Un seul candidat"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 876,
@@ -11295,6 +11853,7 @@ export const FACTS = [
     options: ["Sans perte","Avec plus d'armes","Sans avoir combattu","Avec un prisonnier","Deux fois plus vite","L'armée est rentrée avec un homme de plus"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 877,
@@ -11308,6 +11867,7 @@ export const FACTS = [
     options: ["200 jours","300 jours","400 jours","450 jours","500 jours","541 jours"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 878,
@@ -11321,6 +11881,7 @@ export const FACTS = [
     options: ["Des abeilles","Des chevaux","Des chiens","Des corbeaux","Des loups","Des lapins"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 879,
@@ -11334,6 +11895,7 @@ export const FACTS = [
     options: ["Une fois","Trois fois","Une fois, pas à l'unanimité","Quatre fois","Jamais à l'unanimité","Deux fois à l'unanimité"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 880,
@@ -11347,6 +11909,7 @@ export const FACTS = [
     options: ["Jamais","2 fois/semaine","2 fois/mois","4 fois/mois","Une fois/an","Une fois par mois"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 881,
@@ -11360,6 +11923,7 @@ export const FACTS = [
     options: ["Liberté","Justice","Union","Peuple","Droit","Démocratie"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 882,
@@ -11373,6 +11937,7 @@ export const FACTS = [
     options: ["Algérie","Mauritanie","Tunisie","Maroc","Égypte","La Libye"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 883,
@@ -11386,6 +11951,7 @@ export const FACTS = [
     options: ["50 pays","75 pays","100 pays","120 pays","193 pays","Plus de 140 pays"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 884,
@@ -11399,6 +11965,7 @@ export const FACTS = [
     options: ["Oui, 5000 soldats","Oui, marine seulement","Oui, petite milice","Partagée avec le Danemark","En cours de création","Non, aucune armée"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 885,
@@ -11412,6 +11979,7 @@ export const FACTS = [
     options: ["Lincoln","Eisenhower","Wilson","Taft","Hoover","Franklin D. Roosevelt"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 886,
@@ -11425,6 +11993,7 @@ export const FACTS = [
     options: ["Norvège","Suisse","Islande","Danemark","Grèce","Le Royaume-Uni"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 887,
@@ -11438,6 +12007,7 @@ export const FACTS = [
     options: ["Un","Deux","Trois","Quatre","Six","Cinq présidents"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 888,
@@ -11451,6 +12021,7 @@ export const FACTS = [
     options: ["Chute de Paris","Révolution française","Traité de Paris","Restauration monarchique","Campagne d'Égypte","Les Cent-Jours de Napoléon"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 889,
@@ -11464,6 +12035,7 @@ export const FACTS = [
     options: ["2 cm","5 cm","8 cm","10 cm","20 cm","15 cm"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 890,
@@ -11477,6 +12049,7 @@ export const FACTS = [
     options: ["Non jamais","Seulement partiellement","Pour les animaux","Pour nettoyer","Pour les jeux","Oui, pour simuler des batailles navales"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 891,
@@ -11490,6 +12063,7 @@ export const FACTS = [
     options: ["Oui, clairement","Oui, par temps clair","Seulement en orbite basse","Seulement depuis l'ISS","Avec des lunettes","Non, c'est un mythe"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 892,
@@ -11503,6 +12077,7 @@ export const FACTS = [
     options: ["Une seule","Deux","Quatre","Cinq","Aucune","Au moins 3 couleurs"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 893,
@@ -11516,6 +12091,7 @@ export const FACTS = [
     options: ["50 ans","100 ans","150 ans","200 ans","300 ans","344 ans"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 894,
@@ -11529,6 +12105,7 @@ export const FACTS = [
     options: ["50","200","400","700","1 000","Plus de 1 400 fontaines"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 895,
@@ -11542,6 +12119,7 @@ export const FACTS = [
     options: ["Oui, beaucoup","Oui, entre grandes pierres","Mortier naturel","Argile","Résine végétale","Non, sans mortier du tout"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 896,
@@ -11555,6 +12133,7 @@ export const FACTS = [
     options: ["Depuis 1900","Depuis 1910","Depuis 1920","Depuis 1940","Depuis 1960","Depuis 1882"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 897,
@@ -11568,6 +12147,7 @@ export const FACTS = [
     options: ["Un seul","Trois","Quatre","Cinq","Aucun","Deux couchers de soleil"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 898,
@@ -11581,6 +12161,7 @@ export const FACTS = [
     options: ["Erreur d'architecte","Pour les visiteurs","En cas de panne","Pour les urgences","Double capacité","Construit sous ségrégation raciale"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 899,
@@ -11594,6 +12175,7 @@ export const FACTS = [
     options: ["50 ans","80 ans","100 ans","120 ans","150 ans","182 ans (1163-1345)"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 900,
@@ -11607,6 +12189,7 @@ export const FACTS = [
     options: ["Non","Aussi grand","Seulement une île","Comparable à Hong Kong","Grande comme Luxembourg","Oui, plus grand que Bahreïn"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 901,
@@ -11620,6 +12203,7 @@ export const FACTS = [
     options: ["1 million","3 millions","5 millions","7 millions","15 millions","Environ 9 millions"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 902,
@@ -11633,6 +12217,7 @@ export const FACTS = [
     options: ["10 îles","30 îles","60 îles","100 îles","500 îles","177 îles reliées par 400 ponts"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 903,
@@ -11646,6 +12231,7 @@ export const FACTS = [
     options: ["Non","Peintes en or","Recouvertes de sable","Enduites d'argile","Noires à l'origine","Oui, recouvertes de calcaire blanc poli"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 904,
@@ -11659,6 +12245,7 @@ export const FACTS = [
     options: ["Moscou","Shanghai","Tokyo","Paris","Londres","Arsenalna à Kiev (105 m)"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 905,
@@ -11672,6 +12259,7 @@ export const FACTS = [
     options: ["Pentagone","Maison Blanche","Chrysler Building","Rockefeller Center","One World Trade","L'Empire State Building (10118)"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 906,
@@ -11685,6 +12273,7 @@ export const FACTS = [
     options: ["5 000","10 000","20 000","35 000","50 000","Jusqu'à 80 000 spectateurs"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 907,
@@ -11698,6 +12287,7 @@ export const FACTS = [
     options: ["Vendue","Gagnée en guerre","Construite par les USA","Échangée","Prêtée","Offerte par la France en 1886"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 908,
@@ -11711,6 +12301,7 @@ export const FACTS = [
     options: ["Oui en 1975","Oui en 1980","Retrouvé mort","Capturé en 2020","Identifié au Canada","Non, jamais officiellement"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 909,
@@ -11724,6 +12315,7 @@ export const FACTS = [
     options: ["Meurtre","Trafic d'alcool","Corruption","Extorsion","Trafic d'armes","Évasion fiscale"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 910,
@@ -11737,6 +12329,7 @@ export const FACTS = [
     options: ["Ted Bundy","Charles Manson","John Wayne Gacy","Jeffrey Dahmer","Ted Cruz","Luis Garavito avec 138+ victimes"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 911,
@@ -11750,6 +12343,7 @@ export const FACTS = [
     options: ["Oui en 1889","Oui récemment par ADN","Mort en fuite","Suspecté mais non prouvé","Retrouvé 50 ans après","Non, toujours anonyme"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 912,
@@ -11763,6 +12357,7 @@ export const FACTS = [
     options: ["Non","Oui une fois","Trois fois","Jamais incarcéré avant capture","Via tunnel","Oui, deux fois"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 913,
@@ -11776,6 +12371,7 @@ export const FACTS = [
     options: ["1895","1900","1915","1920","1930","1908"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 914,
@@ -11789,6 +12385,7 @@ export const FACTS = [
     options: ["Faux, 3 ont réussi","Faux, 1 a réussi","5 ont réussi","Impossible à vérifier","Faux, en 1962","Vrai — aucune officiellement réussie"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 915,
@@ -11802,6 +12399,7 @@ export const FACTS = [
     options: ["Aveu","Témoin","Caméra","Fingerprint","Informateur","Via l'ADN et la généalogie en ligne"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 916,
@@ -11815,6 +12413,7 @@ export const FACTS = [
     options: ["10%","5%","3%","2%","0.5%","Moins de 1%"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 917,
@@ -11828,6 +12427,7 @@ export const FACTS = [
     options: ["1 milliard","5 milliards","10 milliards","30 milliards","50 milliards","65 milliards de dollars"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 918,
@@ -11841,6 +12441,7 @@ export const FACTS = [
     options: ["Non","Elle était déjà célèbre","Elle est restée inconnue","Le vol l'a abîmée","Personne n'en a parlé","Oui, paradoxalement"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 919,
@@ -11854,6 +12455,7 @@ export const FACTS = [
     options: ["100$","500$","1 000$","5 000$","10 000$","2 500 dollars par mois"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 920,
@@ -11867,6 +12469,7 @@ export const FACTS = [
     options: ["John Gotti","Lucky Luciano","Al Capone","Meyer Lansky","Jimmy Hoffa","Whitey Bulger"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 921,
@@ -11880,6 +12483,7 @@ export const FACTS = [
     options: ["Oui en 1920","Oui en 1910","Oui, il en est le créateur","Peut-être","Le schéma porte son nom","Non, il n'en est pas l'inventeur"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 922,
@@ -11893,6 +12497,7 @@ export const FACTS = [
     options: ["5 000","10 000","20 000","30 000","100 000","Environ 40 000 membres"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 923,
@@ -11906,6 +12511,7 @@ export const FACTS = [
     options: ["1900","1910","1930","1940","1950","1923"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 924,
@@ -11919,6 +12525,7 @@ export const FACTS = [
     options: ["1 million","10 millions","50 millions","100 millions","500 millions","282 millions de dollars en cash"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 925,
@@ -11932,6 +12539,7 @@ export const FACTS = [
     options: ["Al Capone","Lucky Luciano","John Gotti","Jesse James","El Chapo","Pablo Escobar à Hacienda Nápoles"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 926,
@@ -11945,6 +12553,7 @@ export const FACTS = [
     options: ["Vol Louvre","Casse Londres","Braquage Paris","Vol Rome","Casse Genève","Le casse d'Anvers en 2003"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 927,
@@ -11958,6 +12567,7 @@ export const FACTS = [
     options: ["Collée","Scotchée","Agrafée","Zippée à l'arrière","Maintenue par des aimants","Cousue directement sur elle"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 928,
@@ -11971,6 +12581,7 @@ export const FACTS = [
     options: ["5 kg","10 kg","15 kg","18 kg","30 kg","23 kg"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 929,
@@ -11984,6 +12595,7 @@ export const FACTS = [
     options: ["Synthétiseur","Verre frotté","Guitare électrique","Tube fluorescent seul","Moteur d'avion","Avec le son d'un vieux téléviseur mélangé"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 930,
@@ -11997,6 +12609,7 @@ export const FACTS = [
     options: ["Non","À peu près pareil","Deux fois plus","Dix fois plus","Exactement pareil","Oui, le film a coûté plus cher"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 931,
@@ -12010,6 +12623,7 @@ export const FACTS = [
     options: ["Oui, dès le départ","Oui, unique choix","Il a payé pour le rôle","Il l'avait déjà joué","Lucas n'avait pas de préférence","Non, Lucas voulait l'éviter"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 932,
@@ -12023,6 +12637,7 @@ export const FACTS = [
     options: ["2 ans","5 ans","8 ans","10 ans","12 ans","17 ans de développement"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 933,
@@ -12036,6 +12651,7 @@ export const FACTS = [
     options: ["Non","Deuxième","C'est un film anglais","Il n'a pas gagné","Il est américain","Oui, premier dans l'histoire"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 934,
@@ -12049,6 +12665,7 @@ export const FACTS = [
     options: ["Leurs personnages","L'anneau unique","La Terre du Milieu","Gandalf","LOTR en elfique","Le chiffre 9 en elfique"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 935,
@@ -12062,6 +12679,7 @@ export const FACTS = [
     options: ["30 minutes","1 heure","4 heures","8 heures","Toute la journée","Maximum 2 heures"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 936,
@@ -12075,6 +12693,7 @@ export const FACTS = [
     options: ["Australien","Irlandais","Anglais","Français","Texan","Accent canadien d'origine"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 937,
@@ -12088,6 +12707,7 @@ export const FACTS = [
     options: ["3","5","10","20","30","40 studios l'ont refusée"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 938,
@@ -12101,6 +12721,7 @@ export const FACTS = [
     options: ["1","2","4","5","10","3 fins différentes par cinéma"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 939,
@@ -12114,6 +12735,7 @@ export const FACTS = [
     options: ["Non","1 semaine","2 semaines","1 mois","3 mois","Oui, 6 semaines dans une chambre"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 940,
@@ -12127,6 +12749,7 @@ export const FACTS = [
     options: ["Platoon","Full Metal Jacket","Born on the Fourth","The Deer Hunter","Hamburger Hill","Apocalypse Now"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 941,
@@ -12140,6 +12763,7 @@ export const FACTS = [
     options: ["MGM","Warner Bros","Paramount","Universal","Columbia","Oui, 20th Century Fox"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 942,
@@ -12153,6 +12777,7 @@ export const FACTS = [
     options: ["Non","Parfois","Seulement les simples","Pour les films asiatiques","Seulement depuis 2000","Oui, absolument toutes"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 943,
@@ -12166,6 +12791,7 @@ export const FACTS = [
     options: ["Terminator 2","Speed Racer","Inception","Gravity","Avatar","Matrix (1999)"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 944,
@@ -12179,6 +12805,7 @@ export const FACTS = [
     options: ["Une fois","Trois fois","Cinq fois","Deux fois","Quatre fois","Jamais"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 945,
@@ -12192,6 +12819,7 @@ export const FACTS = [
     options: ["Non","Partiellement","Il simulait","Il entendait les basses","Il utilisait des vibrations","Oui, complètement sourd"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 946,
@@ -12205,6 +12833,7 @@ export const FACTS = [
     options: ["Oui toutes","La plupart","Quelques-unes","Seulement les paroles","50% seulement","Non, il n'en a écrit aucune"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 947,
@@ -12218,6 +12847,7 @@ export const FACTS = [
     options: ["Non","Il avait moins de dents","Il portait des prothèses","Ses dents étaient normales","Deux seulement","Oui, 4 incisives supplémentaires"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 948,
@@ -12231,6 +12861,7 @@ export const FACTS = [
     options: ["Non jamais","Oui jusqu'en 1950","Oui jusqu'en 1980","Non aux USA","Seulement en Europe","Oui, jusqu'en 2016"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 949,
@@ -12244,6 +12875,7 @@ export const FACTS = [
     options: ["Non","Ils n'ont pas été contactés","Seulement 100M","Ils ont accepté","500M refusés","Oui, un milliard en 2000"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 950,
@@ -12257,6 +12889,7 @@ export const FACTS = [
     options: ["Non, tout normal","Il jouait de la basse","Ambidextre","Il n'utilisait pas de médiator","Il jouait avec les dents","Oui, il était gaucher et jouait à l'envers"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 951,
@@ -12270,6 +12903,7 @@ export const FACTS = [
     options: ["Non","Elle n'a jamais signé","Sony l'a renvoyée","Universal","Après 2 ans","Oui, par Def Jam après 3 mois"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 952,
@@ -12283,6 +12917,7 @@ export const FACTS = [
     options: ["Au hasard","John Lennon insectophile","Inspiré de la nature","Nom d'une rue","Acronyme","Hommage à Buddy Holly et les Crickets"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 953,
@@ -12296,6 +12931,7 @@ export const FACTS = [
     options: ["Non","Seulement un","En cours","Pour les améliorer","À titre expérimental","Oui pour récupérer ses droits"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 954,
@@ -12309,6 +12945,7 @@ export const FACTS = [
     options: ["Non","Oui, trop bizarre","Oui, trop chère","Oui, trop simple","Oui, inchantable","Oui, jugée trop longue"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 955,
@@ -12322,6 +12959,7 @@ export const FACTS = [
     options: ["Non","À peu près pareil","L'URSS a duré bien plus","Impossible à comparer","Même période","Oui, ils durent depuis plus longtemps"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 956,
@@ -12335,6 +12973,7 @@ export const FACTS = [
     options: ["Non","Peut-être","Seulement à l'adulte","Avec des notes","Deux écoutes","Oui dès l'âge de 14 ans"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 957,
@@ -12348,6 +12987,7 @@ export const FACTS = [
     options: ["90 dB","100 dB","110 dB","120 dB","150 dB","129,5 dB avec MANOWAR"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 958,
@@ -12361,6 +13001,7 @@ export const FACTS = [
     options: ["Non","Seulement des chats","Seulement des chiens","Un perroquet","Un lion","Oui, dont une girafe et un chimpanzé"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 959,
@@ -12374,6 +13015,7 @@ export const FACTS = [
     options: ["Non","Il n'était pas malade","Opéré trop tard","Il ne savait pas","L'opération échoua","Oui, pour raisons religieuses"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 960,
@@ -12387,6 +13029,7 @@ export const FACTS = [
     options: ["Non","Elle a annulé","Elle était calme","Elle a eu un malaise","Elle a pleuré","Oui, à cause du stress extrême"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 961,
@@ -12400,6 +13043,7 @@ export const FACTS = [
     options: ["380 Hz","400 Hz","432 Hz","450 Hz","460 Hz","440 Hz (La standard)"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 962,
@@ -12413,6 +13057,7 @@ export const FACTS = [
     options: ["Les Beatles","Les Rolling Stones","Pink Floyd","The Doors","Led Zeppelin","Le Club des 27 (Jim Morrison, Jimi Hendrix, Janis Joplin)"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 963,
@@ -12426,6 +13071,7 @@ export const FACTS = [
     options: ["Non","À peu près pareil","Deux fois plus","La moitié","Trois fois plus","Oui, incroyablement"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 964,
@@ -12439,6 +13085,7 @@ export const FACTS = [
     options: ["90%","95%","98%","99%","100%","99,86%"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 965,
@@ -12452,6 +13099,7 @@ export const FACTS = [
     options: ["Non","C'est comparable","Deux fois plus","Pareil","Impossible à dire","Oui, bien plus d'étoiles"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 966,
@@ -12465,6 +13113,7 @@ export const FACTS = [
     options: ["Non","Seulement ses anneaux","Elle coulerait","Partiellement","Selon la température","Oui, elle est moins dense que l'eau"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 967,
@@ -12478,6 +13127,7 @@ export const FACTS = [
     options: ["1 seconde","1 minute","4 minutes","12 minutes","30 minutes","8 minutes et 20 secondes"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 968,
@@ -12491,6 +13141,7 @@ export const FACTS = [
     options: ["1 mm","5 mm","1 cm","10 cm","1 m","3,8 cm par an"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 969,
@@ -12504,6 +13155,7 @@ export const FACTS = [
     options: ["10","50","200","500","1 000","Plus de 1 300 Terres"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 970,
@@ -12517,6 +13169,7 @@ export const FACTS = [
     options: ["Une souris","Un singe","Un chien","Un hamster","Un lapin","Des mouches à fruits en 1947"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 971,
@@ -12530,6 +13183,7 @@ export const FACTS = [
     options: ["Trop loin","Trop petit","Les ondes s'annulent","L'espace absorbe","Les casques filtrent","Pas de son sans matière pour le propager"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 972,
@@ -12543,6 +13197,7 @@ export const FACTS = [
     options: ["1 kg","1 tonne","1 000 tonnes","1 million tonnes","100 milliards tonnes","Environ 1 milliard de tonnes"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 973,
@@ -12556,6 +13211,7 @@ export const FACTS = [
     options: ["1 000 km/h","5 000 km/h","10 000 km/h","20 000 km/h","40 000 km/h","28 000 km/h"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 974,
@@ -12569,6 +13225,7 @@ export const FACTS = [
     options: ["Non, bien plus grande","Même taille","Deux fois plus grande","100 fois plus petite","Non","Oui, plus petite en superficie"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 975,
@@ -12582,6 +13239,7 @@ export const FACTS = [
     options: ["1 milliard km","5 milliards km","10 milliards km","15 milliards km","50 milliards km","Plus de 23 milliards de km"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 976,
@@ -12595,6 +13253,7 @@ export const FACTS = [
     options: ["0,5 cm","1 cm","5 cm","10 cm","15 cm","2 à 3 cm"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 977,
@@ -12608,6 +13267,7 @@ export const FACTS = [
     options: ["13 milliards","30 milliards","50 milliards","80 milliards","130 milliards","Environ 93 milliards d'années-lumière"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 978,
@@ -12621,6 +13281,7 @@ export const FACTS = [
     options: ["Oui, noble","Oui, militaire","Issu d'ingénieurs","Fils d'un cosmonaute","Oui, bourgeois","Non, fils de paysans"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 979,
@@ -12634,6 +13295,7 @@ export const FACTS = [
     options: ["Non","Seulement les blancs","Ils en gagnent","Seulement sur la Lune","Peut-être","Oui, phénomène d'anémie spatiale"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 980,
@@ -12647,6 +13309,7 @@ export const FACTS = [
     options: ["Non, c'est Io","Non, Jupiter","Vénus","Terre","Mercure","Oui, l'Olympus Mons"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 981,
@@ -12660,6 +13323,7 @@ export const FACTS = [
     options: ["5 minutes","10 minutes","30 minutes","1 heure","2 heures","Environ 20 minutes"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 982,
@@ -12673,6 +13337,7 @@ export const FACTS = [
     options: ["Non, bien pires","Aucun lien","Légèrement pires","Seulement pour les hommes","Pas d'effet","Oui selon une étude néerlandaise"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 983,
@@ -12686,6 +13351,7 @@ export const FACTS = [
     options: ["Lexicophobie","Logophobie","Verbophobie","Linguaphobie","Polyphobie","Hippopotomonstrosesquippédaliophobie"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 984,
@@ -12699,6 +13365,7 @@ export const FACTS = [
     options: ["Non","Ça réveille","Aucun effet","Parfois","Uniquement le week-end","Oui, étude Baylor 2018"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 985,
@@ -12712,6 +13379,7 @@ export const FACTS = [
     options: ["Mémoire sélective","Biais de confirmation","Confiance des experts","Effet placebo cognitif","Phénomène d'imposteur","Les incompétents surestiment, les experts sous-estiment"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 986,
@@ -12725,6 +13393,7 @@ export const FACTS = [
     options: ["Non","Différentes zones","Seulement les femmes","Uniquement l'humiliation","Ça dépend","Oui, dans les mêmes zones cérébrales"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 987,
@@ -12738,6 +13407,7 @@ export const FACTS = [
     options: ["Tâches agréables","Premières tâches","Dernières tâches","Tâches réussies","Tâches difficiles","Des tâches interrompues"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 988,
@@ -12751,6 +13421,7 @@ export const FACTS = [
     options: ["Non","Seulement le bleu","Elle calme","Elle ralentit","Elle endort","Oui, elle accélère le rythme cardiaque"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 989,
@@ -12764,6 +13435,7 @@ export const FACTS = [
     options: ["La vue","L'ouïe","Le goût","Le toucher","La proprioception","L'odorat"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 990,
@@ -12777,6 +13449,7 @@ export const FACTS = [
     options: ["Non","Parfois","Seulement les Asiatiques","C'est un mythe","Uniquement en public","Oui, instinctivement"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 991,
@@ -12790,6 +13463,7 @@ export const FACTS = [
     options: ["Non","Seulement leur mère","Après 6 mois","C'est acquis","Aucune préférence","Oui, c'est inné"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 992,
@@ -12803,6 +13477,7 @@ export const FACTS = [
     options: ["Jamais","10 fois","5 fois","Seulement rarement","3-4 fois","1 à 2 fois par jour"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 993,
@@ -12816,6 +13491,7 @@ export const FACTS = [
     options: ["1 cigarette","3 cigarettes","5 cigarettes","10 cigarettes","20 cigarettes","15 cigarettes par jour"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 994,
@@ -12829,6 +13505,7 @@ export const FACTS = [
     options: ["10%","30%","50%","70%","95%","90%"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 995,
@@ -12842,6 +13519,7 @@ export const FACTS = [
     options: ["Américains","Chinois","Australiens","Allemands","Brésiliens","Les touristes japonais"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 996,
@@ -12855,6 +13533,7 @@ export const FACTS = [
     options: ["Non","Peut-être","Seulement les femmes","Ça les ralentit","Aucun effet","Oui, le marketing olfactif est prouvé"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 997,
@@ -12868,6 +13547,7 @@ export const FACTS = [
     options: ["Non","Seulement chez 1%","Seulement sous hypnose","Seulement enfants","Chez 5%","Oui, chez 25% des personnes"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 998,
@@ -12881,6 +13561,7 @@ export const FACTS = [
     options: ["Avant 3 ans","Avant 5 ans","Avant 10 ans","Avant 12 ans","Aucune limite","Avant 7 ans"],
     correctIndex: 5,
     imageUrl: null,
+    difficulty: 'normal',
   },
   {
     id: 999,
@@ -12894,6 +13575,7 @@ export const FACTS = [
     options: ["Aucun","Shirel","Isaac","Aaron"],
     correctIndex: 0,
     imageUrl: "https://znoceotakhynqcqhpwgz.supabase.co/storage/v1/object/public/fact-images/facts/new-1774710871260.png",
+    difficulty: 'easy',
   },
 ]
 
@@ -12996,7 +13678,7 @@ PARCOURS_FACTS.forEach(f => {
 export const VIP_FACT_IDS = new Set([
   2, 4, 7, 10, 14, 17, 20, 24, 29, 30, 35, 38, 42, 47, 51, 56, 60, 65, 70, 75,
   80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250,
-  260, 270, 280, 290, 300, 310, 320, 330, 340, 350,
+  260, 270, 280, 290, 300, 320, 330, 340, 350,
 ])
 
 // Generate a masked teaser title — reveals first ~40% of words to build curiosity

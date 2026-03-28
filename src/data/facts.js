@@ -12882,6 +12882,19 @@ export const FACTS = [
     correctIndex: 5,
     imageUrl: null,
   },
+  {
+    id: 999,
+    category: "kids",
+    question: "Qui est le meilleur à What The Fact! ?",
+    hint1: "Famille",
+    hint2: "Kalfon",
+    shortAnswer: "Aucun",
+    explanation: "C'est Michael le meilleur il a crée toutes les questions ET les réponses !! mais il aurait jamais pu sans l'aide de DIAMS !",
+    sourceUrl: "",
+    options: ["Aucun","Shirel","Isaac","Aaron"],
+    correctIndex: 0,
+    imageUrl: "https://znoceotakhynqcqhpwgz.supabase.co/storage/v1/object/public/fact-images/facts/new-1774710871260.png",
+  },
 ]
 
 export const getCategoryById = (id) => CATEGORIES.find((c) => c.id === id)

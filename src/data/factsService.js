@@ -87,8 +87,11 @@ function buildAll(rawFacts) {
     if (!Array.isArray(f.options) || f.options.length < 2) return false
     if (typeof f.correctIndex !== 'number' || f.correctIndex < 0) return false
     if (f.imageUrl !== null && f.imageUrl !== undefined) {
-      const id = getImageId(f.imageUrl)
-      if (id === null || !EXISTING_IMAGE_IDS.has(id)) return false
+      // External URLs (https://) are always valid
+      if (!f.imageUrl.startsWith('http')) {
+        const id = getImageId(f.imageUrl)
+        if (id === null || !EXISTING_IMAGE_IDS.has(id)) return false
+      }
     }
     return true
   })
@@ -100,7 +103,7 @@ function buildAll(rawFacts) {
       typeof f.correctIndex === 'number' && _difficulty[f.id])
     .map(f => {
       let imageUrl = f.imageUrl
-      if (imageUrl !== null && imageUrl !== undefined) {
+      if (imageUrl !== null && imageUrl !== undefined && !imageUrl.startsWith('http')) {
         const id = getImageId(imageUrl)
         if (!id || !EXISTING_IMAGE_IDS.has(id)) imageUrl = null
       }

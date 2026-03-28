@@ -12902,11 +12902,14 @@ export const isFactValid = (fact) => {
   if (!Array.isArray(fact.options) || fact.options.length < 2) return false
   if (typeof fact.correctIndex !== 'number' || fact.correctIndex < 0) return false
 
-  // imageUrl: null means intentionally no image (generated fact) — allowed
-  // imageUrl: "/assets/facts/N.png" must point to an existing image file
+  // imageUrl: null → no image, allowed
+  // imageUrl: "https://..." → external image, always allowed
+  // imageUrl: "/assets/facts/N.png" → must exist locally (N between 1-350)
   if (fact.imageUrl !== null && fact.imageUrl !== undefined) {
-    const imageId = getImageId(fact.imageUrl)
-    if (imageId === null || !EXISTING_IMAGE_IDS.has(imageId)) return false
+    if (!fact.imageUrl.startsWith('http')) {
+      const imageId = getImageId(fact.imageUrl)
+      if (imageId === null || !EXISTING_IMAGE_IDS.has(imageId)) return false
+    }
   }
 
   return true
@@ -12945,7 +12948,7 @@ export const PARCOURS_FACTS = FACTS
   .filter(f => f && f.question && f.category && Array.isArray(f.options) && f.options.length >= 2 && typeof f.correctIndex === 'number' && DIFFICULTY_ASSIGNMENT[f.id])
   .map(f => {
     let imageUrl = f.imageUrl
-    if (imageUrl !== null && imageUrl !== undefined) {
+    if (imageUrl !== null && imageUrl !== undefined && !imageUrl.startsWith('http')) {
       const imageId = getImageId(imageUrl)
       if (!imageId || !EXISTING_IMAGE_IDS.has(imageId)) imageUrl = null
     }

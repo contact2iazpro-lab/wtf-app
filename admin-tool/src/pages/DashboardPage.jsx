@@ -15,7 +15,7 @@ function StatCard({ label, value, sub, color }) {
   )
 }
 
-function BarChart({ data, max }) {
+function BarChart({ data, max, color = '#FF6B1A' }) {
   const m = max || Math.max(...data.map(d => d.count), 1)
   return (
     <div className="space-y-1.5">
@@ -26,7 +26,7 @@ function BarChart({ data, max }) {
           <div className="flex-1 h-4 bg-slate-700 rounded overflow-hidden">
             <div
               className="h-full rounded transition-all"
-              style={{ width: `${(d.count / m) * 100}%`, background: '#FF6B1A' }}
+              style={{ width: `${(d.count / m) * 100}%`, background: color }}
             />
           </div>
           <span className="w-8 text-right text-slate-400">{d.count}</span>
@@ -53,6 +53,8 @@ export default function DashboardPage({ toast }) {
   const [loading, setLoading] = useState(true)
   const [syncStatus, setSyncStatus] = useState(null) // null | 'running' | 'done' | 'error'
   const [syncMessage, setSyncMessage] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all') // 'all' | 'published' | 'unpublished' | 'doublon'
+  const [allFactsForFilter, setAllFactsForFilter] = useState([])
 
   useEffect(() => { load() }, [])
 
@@ -71,22 +73,15 @@ export default function DashboardPage({ toast }) {
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_published', true),
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_published', false),
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_vip', true),
-        supabase.from('facts').select('category, is_published, vip_usage, is_vip, difficulty'),
+        supabase.from('facts').select('category, is_published, vip_usage, is_vip, difficulty, archived_reason'),
         supabase.from('edit_history').select('*').order('edited_at', { ascending: false }).limit(5),
       ])
 
       setStats({ total, published, unpublished, vipTotal })
+      setAllFactsForFilter(allFacts || [])
 
-      // Category counts
-      const catCounts = {}
-      for (const f of allFacts || []) {
-        catCounts[f.category] = (catCounts[f.category] || 0) + 1
-      }
-      const catData = CATEGORIES
-        .map(c => ({ ...c, count: catCounts[c.id] || 0 }))
-        .filter(c => c.count > 0)
-        .sort((a, b) => b.count - a.count)
-      setCategoryData(catData)
+      // Category counts (will be recalculated via filter)
+      updateCategoryData(allFacts || [], 'all')
 
       // VIP by usage
       const usageCounts = {}
@@ -118,6 +113,34 @@ export default function DashboardPage({ toast }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  // ── Filter category data by publication status ────────────────────────
+  function updateCategoryData(facts, filter) {
+    let filtered = facts
+    if (filter === 'published') {
+      filtered = facts.filter(f => f.is_published === true)
+    } else if (filter === 'unpublished') {
+      filtered = facts.filter(f => f.is_published === false)
+    } else if (filter === 'doublon') {
+      filtered = facts.filter(f => f.archived_reason === 'doublon')
+    }
+    // filter === 'all' uses all facts
+
+    const catCounts = {}
+    for (const f of filtered) {
+      catCounts[f.category] = (catCounts[f.category] || 0) + 1
+    }
+    const catData = CATEGORIES
+      .map(c => ({ ...c, count: catCounts[c.id] || 0 }))
+      .filter(c => c.count > 0)
+      .sort((a, b) => b.count - a.count)
+    setCategoryData(catData)
+  }
+
+  function handleCategoryFilterChange(newFilter) {
+    setCategoryFilter(newFilter)
+    updateCategoryData(allFactsForFilter, newFilter)
   }
 
   async function runSync() {
@@ -279,8 +302,59 @@ export default function DashboardPage({ toast }) {
 
       {/* Category bar chart */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
-        <h2 className="text-base font-black text-white mb-4">📊 Facts par catégorie</h2>
-        <BarChart data={categoryData} />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h2 className="text-base font-black text-white">📊 Facts par catégorie</h2>
+        </div>
+
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-2">
+          {[
+            { id: 'all', label: 'Tous', color: '#94A3B8' },
+            { id: 'published', label: 'Publiés', color: '#22C55E' },
+            { id: 'unpublished', label: 'Non-publiés', color: '#F59E0B' },
+            { id: 'doublon', label: 'Doublons', color: '#EF4444' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => handleCategoryFilterChange(tab.id)}
+              className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                categoryFilter === tab.id
+                  ? 'text-white shadow-lg'
+                  : 'bg-slate-700 text-slate-400 hover:text-slate-200'
+              }`}
+              style={categoryFilter === tab.id ? { background: tab.color } : {}}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4 mb-4 text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-sm" style={{ background: '#94A3B8' }} />
+            <span className="text-slate-400">Tous</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-sm" style={{ background: '#22C55E' }} />
+            <span className="text-slate-400">Publiés</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-sm" style={{ background: '#F59E0B' }} />
+            <span className="text-slate-400">Non-publiés</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-sm" style={{ background: '#EF4444' }} />
+            <span className="text-slate-400">Doublons</span>
+          </div>
+        </div>
+
+        <BarChart data={categoryData} color={
+          categoryFilter === 'all' ? '#94A3B8' :
+          categoryFilter === 'published' ? '#22C55E' :
+          categoryFilter === 'unpublished' ? '#F59E0B' :
+          '#EF4444'
+        } />
       </div>
 
       {/* Sync button */}

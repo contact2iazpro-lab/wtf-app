@@ -119,6 +119,7 @@ export default function App() {
 
   // Facts loading state
   const [factsReady, setFactsReady] = useState(false)
+  const [loadingProgress, setLoadingProgress] = useState(0)
 
   // Dev panel
   const [showDevPanel, setShowDevPanel] = useState(false)
@@ -128,13 +129,7 @@ export default function App() {
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
   // Tutorial (first visit — mandatory) + auto-show rules (once per session)
-  const [showTutorial, setShowTutorial] = useState(() => {
-    // Migration: transfer old key to new key so existing users don't see tutorial again
-    if (localStorage.getItem('wtf_tutorial_done') === 'true' && !localStorage.getItem('hideWelcomeScreen')) {
-      localStorage.setItem('hideWelcomeScreen', 'true')
-    }
-    return localStorage.getItem('hideWelcomeScreen') !== 'true'
-  })
+  const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem('wtf_tutorial_done') !== 'true')
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const rulesAutoShownRef = useRef(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -635,7 +630,16 @@ export default function App() {
     })
   }, [])
 
-  // Auto-show rules removed — rules accessible manually via Settings > "Voir les règles"
+  // Auto-show rules once per session (if toggle is ON and tutorial not showing)
+  useEffect(() => {
+    if (!factsReady) return
+    if (showTutorial) return
+    if (rulesAutoShownRef.current) return
+    rulesAutoShownRef.current = true
+    if (localStorage.getItem('wtf_hide_howtoplay') !== 'true') {
+      setShowHowToPlay(true)
+    }
+  }, [factsReady, showTutorial])
 
   // Push history entry on screen change (back button support)
   useEffect(() => {
@@ -669,13 +673,54 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [screen, gameMode, handleHome])
 
+  // Update loading progress
+  useEffect(() => {
+    if (!factsReady) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 90) return prev
+          return prev + Math.random() * 30
+        })
+      }, 500)
+      return () => clearInterval(interval)
+    } else {
+      setLoadingProgress(100)
+    }
+  }, [factsReady])
+
   if (!factsReady) {
     return (
-      <div className="w-full h-full max-w-md mx-auto flex items-center justify-center" style={{ background: 'linear-gradient(170deg, #0A0F1E 0%, #1A0A35 60%, #0E1A2E 100%)' }}>
-        <div className="text-center">
-          <div className="text-6xl mb-4" style={{ animation: 'pulse 1.5s ease-in-out infinite' }}>🤯</div>
-          <div className="text-white/50 text-sm font-bold tracking-widest uppercase">Chargement…</div>
+      <div className="w-full h-full max-w-md mx-auto flex flex-col items-center justify-center p-6" style={{ background: 'linear-gradient(170deg, #0A0F1E 0%, #1A0A35 60%, #0E1A2E 100%)' }}>
+        <style>{`
+          @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+          }
+        `}</style>
+
+        <div className="mb-8" style={{ animation: 'logoFloat 3s ease-in-out infinite' }}>
+          <img src="/logo-wtf.png" alt="WTF Logo" className="w-24 h-24 object-contain" />
         </div>
+
+        <h2 className="text-white font-black text-lg text-center mb-8">Le quiz des f*cts impossibles</h2>
+
+        <div className="w-full max-w-xs">
+          {/* Progress bar container */}
+          <div className="relative w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
+            {/* Progress fill */}
+            <div
+              className="h-full bg-gradient-to-r from-orange-500 to-pink-500 transition-all"
+              style={{ width: `${Math.min(loadingProgress, 100)}%`, transitionDuration: '300ms' }}
+            />
+          </div>
+
+          {/* Percentage - centered and immobile */}
+          <div className="text-center text-white/60 text-sm font-bold">
+            {Math.floor(Math.min(loadingProgress, 100))}%
+          </div>
+        </div>
+
+        <div className="text-white/40 text-xs font-bold tracking-widest uppercase mt-6">Chargement…</div>
       </div>
     )
   }
@@ -792,7 +837,6 @@ export default function App() {
           totalFacts={totalRounds}
           coinsEarned={coinsEarnedLastSession}
           sessionType={sessionType}
-          difficulty={selectedDifficulty}
           onReplay={handleReplay}
           onHome={handleHome}
           completedCategoryLevels={completedLevels}

@@ -609,18 +609,30 @@ export default function FactEditorPage({ toast }) {
 
         {/* IMAGE */}
         <Section title="🖼 Image">
-          <Field label={`URL Image ${imageStatus === 'ok' ? '— ✓ Accessible' : imageStatus === 'error' ? '— ✕ Non accessible' : ''}`}>
+          <Field label={`URL Image ${imageStatus === 'ok' ? '— ✓ Accessible' : imageStatus === 'error' ? '— ✕ Non accessible' : imageStatus === 'loading' ? '— vérification…' : ''}`}>
             <div className="flex gap-2">
               <input
                 value={fact.image_url || ''}
                 onChange={e => { set('image_url', e.target.value); checkImage(e.target.value) }}
                 className={`${inputCls} flex-1`}
-                placeholder="https://…"
+                placeholder="https://… ou /assets/facts/N.png"
               />
               <div className="flex items-center gap-2 shrink-0">
                 {imageStatus === 'loading' && <span className="text-slate-400 text-sm animate-spin">⟳</span>}
                 {imageStatus === 'ok' && <span className="text-green-400 text-sm">●</span>}
                 {imageStatus === 'error' && <span className="text-red-400 text-sm">✕</span>}
+                {/* Ouvrir l'URL résolue dans un onglet — utile pour diagnostiquer les 404 */}
+                {fact.image_url && (
+                  <a
+                    href={resolveImageUrl(fact.image_url) ?? fact.image_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-2 rounded-xl bg-slate-700 text-slate-400 text-xs hover:text-white hover:bg-slate-600 transition-all shrink-0"
+                    title={`Ouvrir: ${resolveImageUrl(fact.image_url) ?? fact.image_url}`}
+                  >
+                    🔗
+                  </a>
+                )}
                 <label
                   className="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-700 text-slate-200 text-xs font-bold hover:bg-slate-600 transition-all select-none"
                   title="Importer une image depuis votre disque"
@@ -638,6 +650,12 @@ export default function FactEditorPage({ toast }) {
                 </label>
               </div>
             </div>
+            {/* Affiche l'URL résolue quand non accessible — aide au diagnostic */}
+            {imageStatus === 'error' && fact.image_url && (
+              <p className="text-red-400/70 text-xs mt-1.5 font-mono break-all">
+                URL testée : {resolveImageUrl(fact.image_url) ?? fact.image_url}
+              </p>
+            )}
           </Field>
           {fact.image_url && (
             <div

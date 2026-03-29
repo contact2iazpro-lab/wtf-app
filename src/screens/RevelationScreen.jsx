@@ -210,20 +210,19 @@ export default function RevelationScreen({
       </div>
 
       {/* Image du fait ou animation de mauvaise réponse */}
-      {fact.imageUrl && (
-        <div
-          className={`mx-5 mb-3 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', aspectRatio: '1 / 1', background: !isCorrect && !isDuel && flipped ? '#1a1a1a' : 'transparent' }}>
-          {/* Afficher l'image seulement si bonne réponse */}
-          {isCorrect && (
-            <img
-              src={fact.imageUrl}
-              alt={fact.question}
-              className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
-              style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
-              onError={(e) => { e.target.onerror = null; e.target.src = '/assets/facts/fallback.svg' }}
-            />
-          )}
+      <div
+        className={`mx-5 mb-3 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
+        style={{ borderColor: cat?.color + '60', aspectRatio: '1 / 1', background: !isCorrect && !isDuel && flipped ? '#1a1a1a' : 'transparent' }}>
+        {/* Afficher l'image si bonne réponse — fallback si imageUrl absent ou introuvable */}
+        {isCorrect && (
+          <img
+            src={fact.imageUrl || '/assets/facts/fallback.svg'}
+            alt={fact.question}
+            className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
+            style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
+            onError={(e) => { e.target.onerror = null; e.target.src = '/assets/facts/fallback.svg' }}
+          />
+        )}
 
           {/* Animation logo WTF! pour mauvaise réponse */}
           {!isCorrect && !isDuel && flipped && (
@@ -285,7 +284,7 @@ export default function RevelationScreen({
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* Question */}
       <div className="mx-5 mb-4 rounded-2xl p-4 border shrink-0" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>

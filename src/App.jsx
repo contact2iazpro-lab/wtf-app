@@ -705,18 +705,19 @@ export default function App() {
         <h2 className="text-white font-black text-lg text-center mb-8">Le quiz des f*cts impossibles</h2>
 
         <div className="w-full max-w-xs">
-          {/* Progress bar container */}
-          <div className="relative w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
-            {/* Progress fill */}
+          {/* Progress bar with centered immobile percentage */}
+          <div className="relative w-full rounded-full" style={{ height: 28, background: 'rgba(255,255,255,0.1)' }}>
+            {/* Fill */}
             <div
-              className="h-full bg-gradient-to-r from-orange-500 to-pink-500 transition-all"
+              className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-orange-500 to-pink-500 transition-all"
               style={{ width: `${Math.min(loadingProgress, 100)}%`, transitionDuration: '300ms' }}
             />
-          </div>
-
-          {/* Percentage - centered and immobile */}
-          <div className="text-center text-white/60 text-sm font-bold">
-            {Math.floor(Math.min(loadingProgress, 100))}%
+            {/* Percentage — absolutely centered, never moves */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white font-black text-xs" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
+                {Math.floor(Math.min(loadingProgress, 100))}%
+              </span>
+            </div>
           </div>
         </div>
 

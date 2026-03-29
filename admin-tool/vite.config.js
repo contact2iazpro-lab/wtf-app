@@ -14,10 +14,18 @@ export default defineConfig({
      *
      * When game components (QuestionScreen, RevelationScreen, CircularTimer…)
      * are imported into the admin-tool for live preview, they pull in side-effect
-     * modules (AudioContext, SettingsModal) that must not run in the admin context.
+     * modules (AudioContext, SettingsModal → AuthContext → Supabase) that must not
+     * run in the admin context and whose packages may not be installed.
      *
-     * This plugin intercepts those specific imports — only when the importing file
-     * is inside the game's src directory — and redirects them to no-op stubs.
+     * This plugin intercepts those imports — only when the importing file is inside
+     * the game's src directory — and redirects them to lightweight no-op stubs.
+     *
+     * Stubbed import chains:
+     *   audio            → no AudioContext, no sounds
+     *   SettingsModal    → null component (no AuthContext cascade)
+     *   AuthContext      → no-op hooks (prevents Supabase auth init)
+     *   ../lib/supabase  → null client (prevents @supabase/supabase-js load)
+     *   @supabase/supabase-js → stub (safety net — package absent in game node_modules)
      */
     {
       name: 'game-preview-stubs',
@@ -29,21 +37,34 @@ export default defineConfig({
         const normalizedRoot = gameRoot.replace(/\\/g, '/')
         if (!normalizedImporter.startsWith(normalizedRoot)) return null
 
-        // Redirect ../utils/audio (any depth) → no-op stub
+        // ── 1. audio ─────────────────────────────────────────────────────
         if (/\/utils\/audio/.test(id) || id === '../utils/audio' || id === '../../utils/audio') {
           return path.resolve(__dirname, 'src/stubs/audio.js')
         }
 
-        // Redirect SettingsModal → null component stub
+        // ── 2. SettingsModal ──────────────────────────────────────────────
         if (/SettingsModal/.test(id)) {
           return path.resolve(__dirname, 'src/stubs/SettingsModal.jsx')
         }
 
-        // Redirect the game's supabase client → no-op stub.
-        // The game's src/data/facts.js (and other files) may import src/lib/supabase
-        // which itself imports @supabase/supabase-js — a package not installed in
-        // the root node_modules tree, causing Rollup to fail on Vercel.
+        // ── 3. AuthContext ────────────────────────────────────────────────
+        // SettingsModal.jsx imports useAuth from AuthContext which imports supabase.
+        // Stubbing AuthContext cuts the entire auth/supabase cascade.
+        if (/AuthContext/.test(id) || /useAuth/.test(id)) {
+          return path.resolve(__dirname, 'src/stubs/AuthContext.jsx')
+        }
+
+        // ── 4. Game supabase client ───────────────────────────────────────
+        // Catches direct imports of ../lib/supabase from any game file
         if (/\/lib\/supabase/.test(id) || id === '../lib/supabase' || id === '../../lib/supabase') {
+          return path.resolve(__dirname, 'src/stubs/supabase.js')
+        }
+
+        // ── 5. @supabase/supabase-js (safety net) ────────────────────────
+        // If src/lib/supabase.js somehow escapes the redirect above and tries
+        // to import @supabase/supabase-js — a package absent in the game's
+        // root node_modules on Vercel — intercept it here.
+        if (id === '@supabase/supabase-js') {
           return path.resolve(__dirname, 'src/stubs/supabase.js')
         }
 

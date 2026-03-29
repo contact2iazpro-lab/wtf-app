@@ -221,7 +221,7 @@ export default function RevelationScreen({
               alt={fact.question}
               className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
               style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
-              onError={(e) => { e.target.style.display = 'none' }}
+              onError={(e) => { e.target.onerror = null; e.target.src = '/assets/facts/fallback.svg' }}
             />
           )}
 

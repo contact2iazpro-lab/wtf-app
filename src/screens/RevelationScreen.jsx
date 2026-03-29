@@ -284,7 +284,6 @@ export default function RevelationScreen({
             </div>
           )}
         </div>
-      </div>
 
       {/* Question */}
       <div className="mx-5 mb-4 rounded-2xl p-4 border shrink-0" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>

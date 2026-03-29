@@ -1,23 +1,26 @@
 import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
-import { CATEGORIES } from '../data/facts'
+import { getCategoryById, CATEGORIES } from '../data/facts'
 
-const RANK_LEVELS = [
-  { min: 0,  max: 0,  emoji: '💀', label: 'Catastrophe',  color: '#6B7280' },
-  { min: 1,  max: 5,  emoji: '😅', label: 'Apprenti',     color: '#3B82F6' },
-  { min: 6,  max: 10, emoji: '🧠', label: 'Curieux',      color: '#8B5CF6' },
-  { min: 11, max: 17, emoji: '🔥', label: 'Expert',       color: '#F59E0B' },
-  { min: 18, max: 99, emoji: '👑', label: 'GÉNIE WTF!',   color: '#FF5C1A' },
+// MOD 5 — 11 niveaux de ranking basés sur le nombre de bonnes réponses (0-10)
+const RANKINGS = [
+  { score: 0,  emoji: '😵', label: 'Zéro pointé',   message: "Tu as encore beaucoup à découvrir... et c'est tant mieux !" },
+  { score: 1,  emoji: '🐣', label: 'Novice WTF!',   message: "Tu as encore beaucoup à découvrir... et c'est tant mieux !" },
+  { score: 2,  emoji: '🤔', label: 'Curieux',        message: "Tu as encore beaucoup à découvrir... et c'est tant mieux !" },
+  { score: 3,  emoji: '😅', label: 'En route',       message: "Tu as encore beaucoup à découvrir... et c'est tant mieux !" },
+  { score: 4,  emoji: '🧐', label: 'Apprenti',       message: 'Pas mal ! Ces facts commencent à te connaître...' },
+  { score: 5,  emoji: '🙂', label: 'Moyen WTF!',    message: 'Pas mal ! Ces facts commencent à te connaître...' },
+  { score: 6,  emoji: '😎', label: 'Bon joueur',     message: 'Pas mal ! Ces facts commencent à te connaître...' },
+  { score: 7,  emoji: '🧠', label: 'Expert',         message: "Impressionnant ! Tu maîtrises l'art du WTF!" },
+  { score: 8,  emoji: '🔥', label: 'WTF! Addict',   message: "Impressionnant ! Tu maîtrises l'art du WTF!" },
+  { score: 9,  emoji: '👑', label: 'Génie WTF!',    message: "Impressionnant ! Tu maîtrises l'art du WTF!" },
+  { score: 10, emoji: '🌟', label: 'PARFAIT WTF!',  message: 'Parfait ! Tu es officiellement WTF! certifié 🏆' },
 ]
-
-function getRank(score) {
-  return RANK_LEVELS.find((r) => score >= r.min && score <= r.max) || RANK_LEVELS[0]
-}
 
 function getStars(correct, total) {
   const ratio = correct / total
-  if (ratio === 1) return 3
+  if (ratio >= 1) return 3
   if (ratio >= 0.6) return 2
   if (ratio > 0) return 1
   return 0
@@ -26,16 +29,71 @@ function getStars(correct, total) {
 const DIFFICULTY_LABELS = { easy: 'Facile', normal: 'Normal', expert: 'Expert' }
 const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
 
-export default function ResultsScreen({ score, correctCount, totalFacts, onReplay, onHome, completedCategoryLevels = [], coinsEarned = 0, sessionType = 'parcours', difficulty = null }) {
+export default function ResultsScreen({
+  score,
+  correctCount,
+  totalFacts,
+  onReplay,
+  onHome,
+  completedCategoryLevels = [],
+  coinsEarned = 0,
+  sessionType = 'parcours',
+  difficulty = null,
+  categoryId = null,
+  onShare = null,
+}) {
   const [showSettings, setShowSettings] = useState(false)
   const [coinAnimActive, setCoinAnimActive] = useState(false)
-  const [audioDuration, setAudioDuration] = useState(2.5) // fallback duration
+  const [audioDuration, setAudioDuration] = useState(2.5)
+  const [rankVisible, setRankVisible] = useState(false)      // MOD 6
+  const [visibleStars, setVisibleStars] = useState(0)        // MOD 6
+  const [animatedScore, setAnimatedScore] = useState(0)      // MOD 6
+  const [sharedCopied, setSharedCopied] = useState(false)    // MOD 10
 
-  // ── Coin fly animation: synced with "Stamp Approval.mp3" ─────────────────
+  // Category color (MOD 1)
+  const cat = categoryId ? getCategoryById(categoryId) : null
+  const catColor = cat?.color || '#FF5C1A'
+  const screenBg = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
+
+  // MOD 5 — Rank based on correct answers
+  const currentRank = RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
+  const stars = getStars(correctCount, totalFacts)
+  const isPerfect = totalFacts > 0 && correctCount >= totalFacts
+  const perfectBonus = isPerfect ? 25 : 0
+  const totalCoins = coinsEarned + perfectBonus
+
+  // MOD 3 — Precision based on correct answers
+  const precision = totalFacts > 0 ? Math.round((correctCount / totalFacts) * 100) : 0
+
+  // MOD 6 — Sequential animations on mount
+  useEffect(() => {
+    const t1 = setTimeout(() => setRankVisible(true), 250)
+    const starTimers = [1, 2, 3].map((s, i) =>
+      setTimeout(() => { if (s <= stars) setVisibleStars(s) }, 500 + i * 200)
+    )
+    return () => { clearTimeout(t1); starTimers.forEach(clearTimeout) }
+  }, [stars])
+
+  // MOD 6 — Score count-up animation
+  useEffect(() => {
+    if (score <= 0) { setAnimatedScore(0); return }
+    const duration = 800
+    const interval = 16
+    const steps = duration / interval
+    const increment = score / steps
+    let current = 0
+    const timer = setInterval(() => {
+      current = Math.min(current + increment, score)
+      setAnimatedScore(Math.round(current))
+      if (current >= score) clearInterval(timer)
+    }, interval)
+    return () => clearInterval(timer)
+  }, [score])
+
+  // MOD 7 — Coin fly animation (synced with audio)
   useEffect(() => {
     if (coinsEarned <= 0) return
 
-    // Inject CSS keyframes (idempotent)
     const styleId = '__coin-fly-style'
     if (!document.getElementById(styleId)) {
       const s = document.createElement('style')
@@ -52,17 +110,14 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
     }
 
     let cleanT
-
     const startAnim = (dur) => {
       setAudioDuration(dur)
       setCoinAnimActive(true)
       audio.playFile('Stamp Approval.mp3')
-      // Auto-hide overlay after all coins have finished
-      const lastCoinEnd = dur * 1000 + 1800 // last coin delay + animation duration
+      const lastCoinEnd = dur * 1000 + 1800
       cleanT = setTimeout(() => setCoinAnimActive(false), lastCoinEnd)
     }
 
-    // Detect exact audio duration via HTML Audio metadata
     let metaLoaded = false
     const a = new Audio('/Stamp Approval.mp3')
     a.addEventListener('loadedmetadata', () => {
@@ -73,12 +128,8 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
     })
     a.load()
 
-    // Fallback: start after 700ms with 2.5s default if metadata is unavailable
     const fallbackT = setTimeout(() => {
-      if (!metaLoaded) {
-        metaLoaded = true
-        startAnim(2.5)
-      }
+      if (!metaLoaded) { metaLoaded = true; startAnim(2.5) }
     }, 700)
 
     return () => {
@@ -89,64 +140,39 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
     }
   }, [coinsEarned])
 
-  const rank = getRank(score)
-  const stars = getStars(correctCount, totalFacts)
-
-  // Calculate maxScore based on difficulty level
-  // For open questions (duel mode), always assume 5 pts max per question
-  const pointsPerQuestion =
-    difficulty?.scoring?.correct === 5 ? 5 :           // EXPERT or FLASH
-    difficulty?.scoring?.correct === 3 ? 3 :           // NORMAL or EASY
-    Array.isArray(difficulty?.scoring?.correct) ? difficulty.scoring.correct[0] : 5  // Array form, use best case
-  const maxScore = totalFacts * pointsPerQuestion
-  const pct = Math.round((score / maxScore) * 100)
+  // MOD 10 — Share handler
+  const handleShare = () => {
+    const text = `J'ai obtenu ${correctCount}/${totalFacts} au quiz WTF! — ${currentRank.label} ${currentRank.emoji}\nScore : ${score} pts · Précision : ${precision}%\nEssaie de faire mieux ! 🎯 wtf-app.vercel.app`
+    if (onShare) {
+      onShare(text)
+    } else if (navigator.share) {
+      navigator.share({ title: 'What The Fact!', text }).catch(() => {})
+    } else if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text)
+      setSharedCopied(true)
+      setTimeout(() => setSharedCopied(false), 2000)
+    }
+  }
 
   return (
-    <div
-      className="flex flex-col h-full w-full screen-enter overflow-hidden"
-      style={{ background: `linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)` }}>
+    <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: screenBg }}>
 
-      {/* ── Coin fly animation overlay ───────────────────────────────────── */}
+      {/* MOD 7 — Coin fly animation overlay */}
       {coinAnimActive && coinsEarned > 0 && (() => {
         const totalMs = audioDuration * 1000
-        // Spread coins across 55% of audio duration so all arrive before audio ends
         const spreadMs = totalMs * 0.55
-        // Each coin animation: min 700ms, max 1200ms, proportional to audio
         const durMs = Math.min(Math.max(Math.round(totalMs * 0.45), 700), 1200)
-
         return (
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              pointerEvents: 'none',
-              zIndex: 300,
-              overflow: 'hidden',
-            }}
-          >
-            {Array.from({ length: coinsEarned }, (_, i) => {
-              // Stagger each coin evenly over spreadMs
-              const delayMs = coinsEarned > 1
-                ? Math.round((i / (coinsEarned - 1)) * spreadMs)
-                : 0
+          <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 300, overflow: 'hidden' }}>
+            {Array.from({ length: Math.min(coinsEarned, 15) }, (_, i) => {
+              const delayMs = coinsEarned > 1 ? Math.round((i / (Math.min(coinsEarned, 15) - 1)) * spreadMs) : 0
               return (
-                <span
-                  key={i}
-                  style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: '50%',
-                    fontSize: 32,
-                    lineHeight: 1,
-                    userSelect: 'none',
-                    animation: `coinFlyUp ${durMs}ms cubic-bezier(0.4, 0, 0.2, 1) ${delayMs}ms both`,
-                    willChange: 'transform, opacity',
-                    zIndex: 300 + i,
-                  }}
-                >
-                  🪙
-                </span>
+                <span key={i} style={{
+                  position: 'absolute', left: '50%', top: '50%',
+                  fontSize: 32, lineHeight: 1, userSelect: 'none',
+                  animation: `coinFlyUp ${durMs}ms cubic-bezier(0.4, 0, 0.2, 1) ${delayMs}ms both`,
+                  willChange: 'transform, opacity', zIndex: 300 + i,
+                }}>🪙</span>
               )
             })}
           </div>
@@ -155,34 +181,50 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Settings button — top right */}
+      {/* MOD 11 — ⚙️ fixed bottom-right */}
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
-        className="fixed top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
-        style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 40, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        className="fixed bottom-4 right-4 z-40 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
+        style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', boxShadow: '0 2px 12px rgba(0,0,0,0.2)' }}>
         ⚙️
       </button>
 
-      {/* Header */}
-      <div className="flex flex-col items-center pt-4 pb-2 px-6 shrink-0">
-        <div className="text-5xl mb-1 animate-bounce-in">{rank.emoji}</div>
+      {/* MOD 6 — Rang avec effet tampon scale 0→1 */}
+      <div className="flex flex-col items-center pt-6 pb-2 px-6 shrink-0">
         <div
-          className="text-lg font-black mb-0.5"
-          style={{ color: rank.color }}>
-          {rank.label}
+          className="text-6xl mb-2"
+          style={{
+            transform: rankVisible ? 'scale(1)' : 'scale(0)',
+            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          }}>
+          {currentRank.emoji}
         </div>
-        <div className="text-white/50 text-xs font-semibold">Partie terminée !</div>
+        <div
+          className="text-xl font-black mb-1 text-center"
+          style={{
+            color: 'white',
+            transform: rankVisible ? 'scale(1)' : 'scale(0)',
+            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
+          }}>
+          {currentRank.label}
+        </div>
+        {/* MOD 12 — Texte lisible sur fond coloré */}
+        <div className="text-white/75 text-xs font-semibold text-center px-6 leading-relaxed">
+          {currentRank.message}
+        </div>
       </div>
 
-      {/* Stars */}
-      <div className="flex justify-center gap-2 pb-2 shrink-0">
+      {/* MOD 6 — Étoiles qui poppent une par une (délai 200ms) */}
+      <div className="flex justify-center gap-3 pb-3 shrink-0">
         {[1, 2, 3].map((s) => (
           <span
             key={s}
-            className="text-4xl transition-all duration-300"
+            className="text-4xl"
             style={{
-              filter: s <= stars ? 'drop-shadow(0 0 12px #FF5C1A)' : 'none',
-              opacity: s <= stars ? 1 : 0.15,
+              transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
+              transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              filter: s <= stars ? `drop-shadow(0 0 12px ${catColor})` : 'none',
+              opacity: s <= stars ? 1 : 0.2,
             }}>
             ⭐
           </span>
@@ -190,89 +232,95 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
       </div>
 
       {/* Score card */}
-      <div className="mx-5 mb-3 rounded-3xl border p-4 shrink-0" style={{ background: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)' }}>
-        {/* Big score */}
-        <div className="text-center mb-4">
-          <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-1">Score final</div>
-          <div className="text-5xl font-black" style={{ color: '#FF5C1A' }}>{score}</div>
-          <div className="text-white/40 text-xs font-semibold">/ {maxScore} points max</div>
+      <div className="mx-5 mb-3 rounded-3xl border p-4 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)' }}>
+        {/* MOD 6 — Score animé count-up + MOD 12 — blanc pur */}
+        <div className="text-center mb-3">
+          <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Score final</div>
+          <div className="text-5xl font-black text-white">{animatedScore}</div>
+          <div className="text-white/50 text-xs font-semibold">points</div>
         </div>
 
-        {/* Progress bar */}
-        <div className="h-2 bg-wtf-border rounded-full overflow-hidden mb-4">
+        {/* Progress bar couleur catégorie */}
+        <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.15)' }}>
           <div
             className="h-full rounded-full transition-all duration-1000"
-            style={{
-              width: `${pct}%`,
-              background: 'linear-gradient(90deg, #FF5C1A, #FF7A42)',
-            }}
+            style={{ width: `${precision}%`, background: `linear-gradient(90deg, ${catColor}cc, ${catColor})` }}
           />
         </div>
 
-        {/* Stats row */}
+        {/* MOD 9 — "À découvrir" remplace "Ratées" + MOD 12 — couleurs cohérentes */}
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
             <div className="text-xl font-black text-white">{correctCount}</div>
-            <div className="text-white/40 text-xs font-semibold">Correctes</div>
+            <div className="text-white/60 text-xs font-semibold">Correctes</div>
           </div>
           <div>
             <div className="text-xl font-black text-white">{totalFacts - correctCount}</div>
-            <div className="text-white/40 text-xs font-semibold">Ratées</div>
+            <div className="text-white/60 text-xs font-semibold">À découvrir</div>
           </div>
           <div>
-            <div className="text-xl font-black" style={{ color: '#FF5C1A' }}>{pct}%</div>
-            <div className="text-white/40 text-xs font-semibold">Précision</div>
+            {/* MOD 3 — Précision basée sur correctCount / totalFacts */}
+            <div className="text-xl font-black" style={{ color: catColor }}>{precision}%</div>
+            <div className="text-white/60 text-xs font-semibold">Précision</div>
           </div>
         </div>
       </div>
 
-      {/* WTF Coins earned */}
-      {coinsEarned > 0 && (
-        <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0 flex items-center gap-3" style={{ background: 'rgba(255,215,0,0.1)', borderColor: 'rgba(255,215,0,0.35)', backdropFilter: 'blur(8px)' }}>
-          <span className="text-3xl">🪙</span>
-          <div className="flex-1">
-            <div className="text-yellow-300 font-black text-base">+{coinsEarned} WTF Coins</div>
-            <div className="text-white/50 text-xs font-semibold">
-              {sessionType === 'flash_solo' && coinsEarned >= 25 ? 'Session parfaite ! 🎯' : 'Ajoutés à ton solde'}
+      {/* MOD 7 — Coins gagnés (avec bonus parfait si 10/10) */}
+      {totalCoins > 0 && (
+        <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">🪙</span>
+            <div className="flex-1">
+              <div className="text-yellow-200 font-black text-base">+{totalCoins} WTF Coins</div>
+              {isPerfect && perfectBonus > 0 ? (
+                <div className="text-yellow-300/80 text-xs font-semibold">
+                  {coinsEarned} pts + {perfectBonus} bonus score parfait 🌟
+                </div>
+              ) : (
+                <div className="text-white/50 text-xs font-semibold">Ajoutés à ton solde</div>
+              )}
             </div>
+            {isPerfect && <span className="text-2xl">🏆</span>}
           </div>
         </div>
       )}
 
-      {/* Scoring reminder */}
-      <div className="mx-5 mb-3 rounded-2xl border p-2 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)' }}>
-        <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2">Rappel scoring</div>
-        <div className="flex justify-between text-2xs gap-1">
-          {[
-            { label: '+5', pts: '0 ind', color: '#22C55E' },
-            { label: '+3', pts: '1 ind', color: '#F59E0B' },
-            { label: '+2', pts: '2 ind', color: '#EF4444' },
-            { label: '0', pts: 'Faux', color: '#3B82F6' },
-          ].map((item) => (
-            <div key={item.label} className="flex flex-col items-center flex-1">
-              <div className="font-black text-xs" style={{ color: item.color }}>{item.label}</div>
-              <div className="text-white/40 text-2xs font-semibold">{item.pts}</div>
-            </div>
-          ))}
-        </div>
+      {/* MOD 8 — Bandeau prochain micro-objectif */}
+      <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.15)' }}>
+        {cat ? (
+          <div className="text-white/80 text-xs font-semibold text-center leading-relaxed">
+            🏅 <span style={{ color: catColor }}>{cat.label}</span> — continue les parcours pour débloquer ton prochain badge !
+          </div>
+        ) : (
+          <div className="text-white/70 text-xs font-semibold text-center leading-relaxed">
+            Lance un nouveau parcours pour débloquer ton premier badge !
+          </div>
+        )}
       </div>
+
+      {/* MOD 2 — Bloc "Rappel scoring" supprimé */}
 
       {/* Completion rewards */}
       {completedCategoryLevels.length > 0 && (
         <div className="mx-5 mb-3 rounded-2xl border p-4 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
-          <div className="text-white/70 text-xs font-bold uppercase tracking-widest mb-3 text-center">🏆 Niveau complété !</div>
-          {completedCategoryLevels.map(({ catId, difficulty }) => {
-            const cat = CATEGORIES.find(c => c.id === catId)
+          <div className="text-white/80 text-xs font-bold uppercase tracking-widest mb-3 text-center">🏆 Niveau complété !</div>
+          {completedCategoryLevels.map(({ catId, difficulty: lvlDiff }) => {
+            const lvlCat = CATEGORIES.find(c => c.id === catId)
             return (
-              <div key={`${catId}_${difficulty}`} className="flex items-center gap-3 mb-2 last:mb-0 p-2 rounded-xl" style={{ background: 'rgba(255,215,0,0.1)' }}>
-                {cat?.image ? (
-                  <img src={cat.image} alt={cat.label} className="w-10 h-10 rounded-lg object-contain" style={{ background: 'rgba(255,255,255,0.1)' }} />
+              <div key={`${catId}_${lvlDiff}`} className="flex items-center gap-3 mb-2 last:mb-0 p-2 rounded-xl" style={{ background: 'rgba(255,215,0,0.1)' }}>
+                {lvlCat?.image ? (
+                  <img src={lvlCat.image} alt={lvlCat.label} className="w-10 h-10 rounded-lg object-contain" style={{ background: 'rgba(255,255,255,0.1)' }} />
                 ) : (
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl" style={{ background: 'rgba(255,255,255,0.1)' }}>{cat?.emoji || '🌟'}</div>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                    {lvlCat?.emoji || '🌟'}
+                  </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-black text-white text-xs">{DIFFICULTY_EMOJIS[difficulty]} {cat?.label || catId} — {DIFFICULTY_LABELS[difficulty]}</div>
-                  <div className="text-yellow-300 text-xs font-semibold mt-0.5">De nouveaux facts arrivent bientôt !</div>
+                  <div className="font-black text-white text-xs">
+                    {DIFFICULTY_EMOJIS[lvlDiff]} {lvlCat?.label || catId} — {DIFFICULTY_LABELS[lvlDiff]}
+                  </div>
+                  <div className="text-yellow-200 text-xs font-semibold mt-0.5">De nouveaux facts arrivent bientôt !</div>
                 </div>
                 <div className="text-2xl">🥇</div>
               </div>
@@ -281,24 +329,35 @@ export default function ResultsScreen({ score, correctCount, totalFacts, onRepla
         </div>
       )}
 
-      {/* Actions */}
-      <div className="px-5 pb-3 flex flex-col gap-2 shrink-0">
+      {/* MOD 10 — Boutons hiérarchisés : Rejouer / Partager / Revenir + pb-20 pour dégager ⚙️ */}
+      <div className="px-5 pb-20 flex flex-col gap-2 shrink-0">
+        {/* Principal — Rejouer, grand, couleur catégorie */}
         <button
           onClick={onReplay}
-          className="btn-press w-full py-3 rounded-2xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
+          className="btn-press w-full py-4 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
           style={{
-            background: 'linear-gradient(135deg, #FF5C1A 0%, #D94A10 100%)',
-            boxShadow: '0 8px 32px rgba(255, 92, 26, 0.4)',
+            background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
+            boxShadow: `0 8px 32px ${catColor}50`,
           }}>
           🔄 Rejouer
         </button>
+        {/* Nouveau — Partager mon score, levier viral */}
+        <button
+          onClick={handleShare}
+          className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all border"
+          style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.25)', color: 'white' }}>
+          <span>{sharedCopied ? '✅' : '📤'}</span>
+          {sharedCopied ? 'Copié !' : 'Partager mon score'}
+        </button>
+        {/* Secondaire — Revenir, discret */}
         <button
           onClick={onHome}
-          className="btn-press w-full py-3 rounded-2xl border border-wtf-border text-white/70 font-bold text-xs active:scale-95 transition-all"
-          style={{ background: 'rgba(255,255,255,0.04)' }}>
-          🏠 Accueil
+          className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
+          style={{ background: 'transparent', color: 'rgba(255,255,255,0.55)' }}>
+          ← Revenir
         </button>
       </div>
+
     </div>
   )
 }

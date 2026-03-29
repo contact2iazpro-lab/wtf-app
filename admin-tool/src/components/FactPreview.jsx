@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CATEGORY_MAP } from '../constants/categories'
+import { resolveImageUrl } from '../utils/imageUrl'
 
 // Couleurs de catégorie (identiques au jeu)
 const CATEGORY_COLORS = {
@@ -156,7 +157,7 @@ function RevelationPreview({ fact }) {
         {hasImage ? (
           <>
             <img
-              src={fact.image_url}
+              src={resolveImageUrl(fact.image_url)}
               alt=""
               className="w-full h-full object-cover"
               onError={e => { e.target.style.display = 'none' }}

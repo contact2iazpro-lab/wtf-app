@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, VIP_USAGES } from '../constants/categories'
 import FactPreview from '../components/FactPreview'
+import { resolveImageUrl } from '../utils/imageUrl'
 
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'short_answer', 'explanation',
@@ -156,7 +157,7 @@ export default function FactEditorPage({ toast }) {
       const img = new Image()
       img.onload = () => setImageStatus('ok')
       img.onerror = () => setImageStatus('error')
-      img.src = url
+      img.src = resolveImageUrl(url) ?? url
     }, 500)
   }
 
@@ -644,7 +645,7 @@ export default function FactEditorPage({ toast }) {
               style={{ width: '100%', maxWidth: 280, aspectRatio: '1 / 1' }}
             >
               <img
-                src={fact.image_url}
+                src={resolveImageUrl(fact.image_url)}
                 alt="aperçu"
                 style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                 onLoad={() => setImageStatus('ok')}

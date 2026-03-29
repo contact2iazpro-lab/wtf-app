@@ -82,6 +82,7 @@ export default function QuestionScreen({
   playerName,
   playerColor,
   playerEmoji,
+  playerCoins = 0,
 }) {
   const [answerMode, setAnswerMode] = useState(null) // null | 'open' | 'qcm'
 
@@ -96,14 +97,12 @@ export default function QuestionScreen({
   const [showSettings, setShowSettings] = useState(false)
   const cat = getCategoryById(fact.category)
 
-  // Dynamic background per category
+  // MOD 1 — Dynamic luminous gradient per category
   const screenBg = cat
-    ? `linear-gradient(135deg, ${cat.color}45 0%, ${cat.color}30 50%, ${cat.color}15 100%)`
-    : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)'
+    ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
+    : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
-  const cardBg = cat
-    ? `linear-gradient(135deg, ${cat.color}35 0%, ${cat.color}18 100%)`
-    : 'rgba(0,0,0,0.4)'
+  const cardBg = 'rgba(0, 0, 0, 0.28)'
 
   // Potential coins for this question
   const baseCoins = answerMode === 'open' ? 5 : answerMode === 'qcm' ? 1 : (gameMode !== 'solo' ? 5 : 1)
@@ -142,17 +141,20 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Header: ← | Category emoji + name | ⚙️ ──────────────────────────────
+  // MOD 3 — Header: 3 zones — left(#id · progress) | center(emoji + category) | right(coins ⭐)
   const header = (
     <div className="px-4 pt-4 pb-2 shrink-0 flex items-center justify-between gap-2">
+      {/* Left: fact id + progress — tappable to quit */}
       <button
         onClick={() => setShowQuitConfirm(true)}
-        className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:text-white/80 transition-colors shrink-0"
-        style={{ background: 'rgba(255,255,255,0.08)' }}
-        title="Retour">
-        ←
+        className="shrink-0"
+        title="Quitter">
+        <span className="font-black text-sm" style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}>
+          #{fact.id} · {factIndex + 1}/{totalFacts}
+        </span>
       </button>
 
+      {/* Center: category emoji + name */}
       <div className="flex items-center gap-2 flex-1 justify-center min-w-0">
         {cat && <span className="text-lg shrink-0">{cat.emoji}</span>}
         <span
@@ -160,71 +162,69 @@ export default function QuestionScreen({
           style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}>
           {cat?.label || 'Question'}
         </span>
-        {playerName && (
+      </div>
+
+      {/* Right: coins balance */}
+      <div className="shrink-0">
+        <span className="font-black text-sm" style={{ color: cat?.color || '#FFD700' }}>
+          ⭐ {playerCoins}
+        </span>
+      </div>
+    </div>
+  )
+
+  // MOD 4 — Segmented progress bar: 10 distinct segments
+  const progressBar = (
+    <div className="px-4 pb-2 shrink-0">
+      <div className="flex w-full" style={{ gap: 2 }}>
+        {Array.from({ length: totalFacts }).map((_, i) => (
           <div
-            className="px-2 py-0.5 rounded-full text-xs font-black shrink-0"
-            style={{ background: playerColor + '20', color: playerColor }}>
-            {playerEmoji ?? '⚡'} {playerName}
-          </div>
+            key={i}
+            className="flex-1 rounded-full transition-all duration-300"
+            style={{
+              height: 6,
+              background: i < factIndex + 1
+                ? cat?.color || '#FF6B1A'
+                : (cat?.color || '#FF6B1A') + '40',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+
+  // MOD 5 — Footer: timer centered + settings button on right (no overlap)
+  const footer = (showTimer) => (
+    <div className="px-4 pb-4 pt-1 shrink-0 flex items-center">
+      {/* Left spacer balances the settings button width */}
+      <div style={{ width: 40 }} />
+
+      {/* Timer centered */}
+      <div className="flex-1 flex justify-center">
+        {showTimer ? (
+          // MOD 7 — size=96 triggers fontSize=22 in CircularTimer (vs 17 at size=72)
+          <CircularTimer
+            key={`${fact.id}-${answerMode}`}
+            size={96}
+            duration={timerDuration}
+            onTimeout={onTimeout}
+          />
+        ) : (
+          <div style={{ width: 96, height: 96 }} />
         )}
       </div>
 
+      {/* Settings button — bottom right, clears timer */}
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
-        className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:text-white/80 transition-colors shrink-0"
-        style={{ background: 'rgba(255,255,255,0.08)' }}>
+        className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}>
         ⚙️
       </button>
     </div>
   )
 
-  // ── Progress bar ─────────────────────────────────────────────────────────
-  const progressBar = (
-    <div className="px-4 pb-2 shrink-0">
-      <div className="h-1 rounded-full w-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
-        <div
-          className="h-1 rounded-full transition-all duration-300"
-          style={{ width: `${((factIndex + 1) / totalFacts) * 100}%`, background: cat?.color || '#FF6B1A' }}
-        />
-      </div>
-    </div>
-  )
-
-  // ── Footer: #id + X/total | timer | coins ────────────────────────────────
-  const footer = (showTimer) => (
-    <div className="px-4 pb-4 pt-1 shrink-0 flex items-center justify-between gap-3">
-      <div className="flex flex-col items-start" style={{ minWidth: 56 }}>
-        <span className="font-black text-xs" style={{ color: cat?.color || 'rgba(255,255,255,0.5)' }}>
-          #{fact.id}
-        </span>
-        <span className="font-bold text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-          {factIndex + 1} / {totalFacts}
-        </span>
-      </div>
-
-      {showTimer ? (
-        <CircularTimer
-          key={`${fact.id}-${answerMode}`}
-          size={72}
-          duration={timerDuration}
-          onTimeout={onTimeout}
-        />
-      ) : (
-        <div style={{ width: 72, height: 72 }} />
-      )}
-
-      <div className="flex flex-col items-end" style={{ minWidth: 56 }}>
-        <span className="font-black text-base" style={{ color: cat?.color || '#FF6B1A' }}>
-          ⬡ {potentialCoins}
-        </span>
-        <span className="font-bold text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-          pts max
-        </span>
-      </div>
-    </div>
-  )
-
-  // ── Shared elements ───────────────────────────────────────────────────────
+  // ── Question card ─────────────────────────────────────────────────────────
   const questionCard = (
     <div
       className="rounded-3xl p-4 border shrink-0 mb-2"
@@ -238,20 +238,7 @@ export default function QuestionScreen({
     </div>
   )
 
-  const factImage = fact.imageUrl && gameMode === 'duel' && (
-    <div
-      className="mx-auto mb-2 rounded-2xl overflow-hidden border shrink-0"
-      style={{ height: 96, width: 96, borderColor: cat?.color + '40' }}>
-      <img
-        src={fact.imageUrl}
-        alt={fact.question}
-        className="w-full h-full object-contain"
-        style={{ background: '#111' }}
-        onError={e => { e.target.style.display = 'none' }}
-      />
-    </div>
-  )
-
+  // MOD 6 — Hints only when difficulty.hintsAllowed is truthy (Easy mode only)
   const hintButtons = (
     <div className="grid grid-cols-2 gap-2 shrink-0 mb-2">
       <HintFlipButton
@@ -278,10 +265,9 @@ export default function QuestionScreen({
         {header}
         {progressBar}
 
+        {/* MOD 2 — No spacer, compact layout top-to-bottom */}
         <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
-          {factImage}
           {questionCard}
-          <div className="flex-1 min-h-0" />
 
           <div className="flex flex-col gap-3 shrink-0">
             {playerName && (
@@ -340,13 +326,13 @@ export default function QuestionScreen({
         {header}
         {progressBar}
 
+        {/* MOD 2 — No spacer, compact layout top-to-bottom */}
         <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
-          {factImage}
           {questionCard}
-          <div className="flex-1 min-h-0" />
 
           <div className="flex flex-col gap-2 shrink-0">
-            {hintButtons}
+            {/* MOD 6 — Hints only in Easy mode */}
+            {difficulty?.hintsAllowed && hintButtons}
             <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center">
               Le questionneur valide la réponse
             </div>
@@ -372,7 +358,8 @@ export default function QuestionScreen({
     )
   }
 
-  // ── Phase 2 : QCM ────────────────────────────────────────────────────────
+  // ── Phase 2 : QCM ─────────────────────────────────────────────────────────
+  // Order: header → progress → question → [hints if Easy] → QCM answers → timer
   return (
     <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
       {quitModal}
@@ -380,13 +367,13 @@ export default function QuestionScreen({
       {header}
       {progressBar}
 
+      {/* MOD 2 — No spacer, compact layout top-to-bottom */}
       <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
-        {factImage}
         {questionCard}
-        <div className="flex-1 min-h-0" />
 
         <div className="flex flex-col gap-2 shrink-0">
-          {(difficulty?.hintsAllowed !== false) && hintButtons}
+          {/* MOD 6 — Hints only in Easy mode (difficulty.hintsAllowed === true) */}
+          {difficulty?.hintsAllowed && hintButtons}
 
           <div className={`grid ${difficulty?.choices === 6 ? 'grid-cols-3' : 'grid-cols-2'} gap-2 shrink-0`}>
             {fact.options.map((option, index) => (

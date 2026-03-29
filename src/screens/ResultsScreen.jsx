@@ -29,6 +29,10 @@ function getStars(correct, total) {
 const DIFFICULTY_LABELS = { easy: 'Facile', normal: 'Normal', expert: 'Expert' }
 const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
 
+// COR 4 — Confetti colors
+const CONFETTI_COLORS = ['#FF5C1A', '#FFD700', '#FF4081', '#00BCD4', '#7C4DFF', '#4CAF50', '#FF9800', '#E91E63']
+const DAILY_LIMIT = 3
+
 export default function ResultsScreen({
   score,
   correctCount,
@@ -41,6 +45,8 @@ export default function ResultsScreen({
   difficulty = null,
   categoryId = null,
   onShare = null,
+  unlockedFactsThisSession = [],
+  sessionsToday = 0,
 }) {
   const [showSettings, setShowSettings] = useState(false)
   const [coinAnimActive, setCoinAnimActive] = useState(false)
@@ -49,6 +55,7 @@ export default function ResultsScreen({
   const [visibleStars, setVisibleStars] = useState(0)        // MOD 6
   const [animatedScore, setAnimatedScore] = useState(0)      // MOD 6
   const [sharedCopied, setSharedCopied] = useState(false)    // MOD 10
+  const [confettiActive, setConfettiActive] = useState(false) // COR 4
 
   // Category color (MOD 1)
   const cat = categoryId ? getCategoryById(categoryId) : null
@@ -64,6 +71,39 @@ export default function ResultsScreen({
 
   // MOD 3 — Precision based on correct answers
   const precision = totalFacts > 0 ? Math.round((correctCount / totalFacts) * 100) : 0
+
+  // COR 5 — Remaining daily quests
+  const remainingQuests = Math.max(0, DAILY_LIMIT - sessionsToday)
+
+  // COR 4 — Confetti on mount (2s)
+  useEffect(() => {
+    const styleId = '__confetti-style'
+    if (!document.getElementById(styleId)) {
+      const s = document.createElement('style')
+      s.id = styleId
+      s.textContent = `
+        @keyframes confettiFall {
+          0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+          80%  { opacity: 1; }
+          100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes confettiFallPerfect {
+          0%   { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
+          60%  { opacity: 1; }
+          100% { transform: translateY(110vh) rotate(1080deg) scale(0.5); opacity: 0; }
+        }
+      `
+      document.head.appendChild(s)
+    }
+
+    setConfettiActive(true)
+    const t = setTimeout(() => setConfettiActive(false), isPerfect ? 3000 : 2000)
+    return () => {
+      clearTimeout(t)
+      const el = document.getElementById(styleId)
+      if (el) el.remove()
+    }
+  }, [isPerfect])
 
   // MOD 6 — Sequential animations on mount
   useEffect(() => {
@@ -154,8 +194,40 @@ export default function ResultsScreen({
     }
   }
 
+  // COR 4 — Confetti particles (seeded layout)
+  const confettiParticles = Array.from({ length: isPerfect ? 40 : 25 }, (_, i) => ({
+    id: i,
+    left: `${((i * 37 + 11) % 97)}%`,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    delay: `${((i * 0.07) % 1.2).toFixed(2)}s`,
+    duration: isPerfect ? `${(1.8 + (i % 5) * 0.25).toFixed(2)}s` : `${(1.4 + (i % 4) * 0.2).toFixed(2)}s`,
+    size: i % 3 === 0 ? 8 : i % 3 === 1 ? 6 : 5,
+    shape: i % 2 === 0 ? '50%' : '2px',
+  }))
+
   return (
     <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: screenBg }}>
+
+      {/* COR 4 — Confetti overlay */}
+      {confettiActive && (
+        <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 200, overflow: 'hidden' }}>
+          {confettiParticles.map(p => (
+            <div
+              key={p.id}
+              style={{
+                position: 'absolute',
+                top: '-12px',
+                left: p.left,
+                width: p.size,
+                height: p.size,
+                borderRadius: p.shape,
+                background: p.color,
+                animation: `${isPerfect ? 'confettiFallPerfect' : 'confettiFall'} ${p.duration} ${p.delay} ease-in both`,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* MOD 7 — Coin fly animation overlay */}
       {coinAnimActive && coinsEarned > 0 && (() => {
@@ -266,6 +338,57 @@ export default function ResultsScreen({
         </div>
       </div>
 
+      {/* COR 2 — Carrousel horizontal des facts débloqués */}
+      {unlockedFactsThisSession.length > 0 && (
+        <div className="mb-3 shrink-0">
+          <div className="px-5 mb-2">
+            <span className="text-white/80 text-xs font-black uppercase tracking-widest">
+              🔓 Facts débloqués ({unlockedFactsThisSession.length})
+            </span>
+          </div>
+          <div
+            className="flex gap-2.5 overflow-x-auto scrollbar-hide"
+            style={{ paddingLeft: 20, paddingRight: 20 }}>
+            {unlockedFactsThisSession.map((fact) => (
+              <div
+                key={fact.id}
+                className="shrink-0 rounded-2xl overflow-hidden flex flex-col"
+                style={{
+                  width: 110,
+                  background: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  backdropFilter: 'blur(8px)',
+                }}>
+                {/* Image ou fallback emoji */}
+                <div
+                  className="w-full flex items-center justify-center overflow-hidden"
+                  style={{ height: 70, background: 'rgba(255,255,255,0.06)' }}>
+                  {fact.imageUrl ? (
+                    <img
+                      src={fact.imageUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
+                    />
+                  ) : null}
+                  <div
+                    className="w-full h-full items-center justify-center text-2xl"
+                    style={{ display: fact.imageUrl ? 'none' : 'flex' }}>
+                    {CATEGORIES.find(c => c.id === fact.category)?.emoji || '💡'}
+                  </div>
+                </div>
+                {/* Réponse courte */}
+                <div className="px-2 py-1.5 flex-1">
+                  <p className="text-white text-xs font-bold leading-tight line-clamp-2" style={{ fontSize: '0.62rem' }}>
+                    {fact.shortAnswer || fact.question}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* MOD 7 — Coins gagnés (avec bonus parfait si 10/10) */}
       {totalCoins > 0 && (
         <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
@@ -299,8 +422,6 @@ export default function ResultsScreen({
         )}
       </div>
 
-      {/* MOD 2 — Bloc "Rappel scoring" supprimé */}
-
       {/* Completion rewards */}
       {completedCategoryLevels.length > 0 && (
         <div className="mx-5 mb-3 rounded-2xl border p-4 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
@@ -329,17 +450,27 @@ export default function ResultsScreen({
         </div>
       )}
 
-      {/* MOD 10 — Boutons hiérarchisés : Rejouer / Partager / Revenir + pb-20 pour dégager ⚙️ */}
-      <div className="px-5 pb-20 flex flex-col gap-2 shrink-0">
+      {/* COR 5 + COR 6 — CTA avec ticket count, pb-4 */}
+      <div className="px-5 pb-4 flex flex-col gap-2 shrink-0">
+
+        {/* COR 5 — Message tickets restants */}
+        <div className="text-center text-xs font-bold mb-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          {remainingQuests > 0
+            ? `🎯 Tu as encore ${remainingQuests} quête${remainingQuests > 1 ? 's' : ''} disponible${remainingQuests > 1 ? 's' : ''} aujourd'hui !`
+            : "✅ Tu as utilisé toutes tes quêtes du jour — reviens demain !"}
+        </div>
+
         {/* Principal — Rejouer, grand, couleur catégorie */}
         <button
           onClick={onReplay}
           className="btn-press w-full py-4 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
           style={{
-            background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
-            boxShadow: `0 8px 32px ${catColor}50`,
+            background: remainingQuests > 0
+              ? `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`
+              : 'rgba(255,255,255,0.15)',
+            boxShadow: remainingQuests > 0 ? `0 8px 32px ${catColor}50` : 'none',
           }}>
-          🔄 Rejouer
+          {remainingQuests > 0 ? '🔄 Rejouer' : '🔄 Encore une quête'}
         </button>
         {/* Nouveau — Partager mon score, levier viral */}
         <button

@@ -801,6 +801,9 @@ export default function App() {
           onReplay={handleReplay}
           onHome={handleHome}
           completedCategoryLevels={completedLevels}
+          categoryId={selectedCategory}
+          unlockedFactsThisSession={sessionCorrectFacts}
+          sessionsToday={sessionsToday}
         />
       )}
 

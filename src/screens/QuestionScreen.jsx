@@ -141,21 +141,21 @@ export default function QuestionScreen({
     </div>
   )
 
-  // MOD 3 — Header: 3 zones — left(#id · progress) | center(emoji + category) | right(coins ⭐)
+  // MOD 3 — Header: 3 zones égales (w-1/3 chacune) pour un centrage absolu
   const header = (
-    <div className="px-4 pt-4 pb-2 shrink-0 flex items-center justify-between gap-2">
-      {/* Left: fact id + progress — tappable to quit */}
+    <div className="px-4 pt-4 pb-2 shrink-0 flex items-center">
+      {/* Left (w-1/3): fact id + progress — tappable to quit */}
       <button
         onClick={() => setShowQuitConfirm(true)}
-        className="shrink-0"
+        className="w-1/3 text-left"
         title="Quitter">
         <span className="font-black text-sm" style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}>
           #{fact.id} · {factIndex + 1}/{totalFacts}
         </span>
       </button>
 
-      {/* Center: category emoji + name */}
-      <div className="flex items-center gap-2 flex-1 justify-center min-w-0">
+      {/* Center (w-1/3): category emoji + name — toujours centré */}
+      <div className="w-1/3 flex items-center gap-2 justify-center min-w-0">
         {cat && <span className="text-lg shrink-0">{cat.emoji}</span>}
         <span
           className="font-black text-sm tracking-wide truncate"
@@ -164,8 +164,8 @@ export default function QuestionScreen({
         </span>
       </div>
 
-      {/* Right: coins balance */}
-      <div className="shrink-0">
+      {/* Right (w-1/3): coins balance */}
+      <div className="w-1/3 flex justify-end">
         <span className="font-black text-sm" style={{ color: cat?.color || '#FFD700' }}>
           ⭐ {playerCoins}
         </span>
@@ -266,7 +266,7 @@ export default function QuestionScreen({
         {progressBar}
 
         {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-        <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
+        <div className="flex flex-col px-4">
           {questionCard}
 
           <div className="flex flex-col gap-3 shrink-0">
@@ -327,7 +327,7 @@ export default function QuestionScreen({
         {progressBar}
 
         {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-        <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
+        <div className="flex flex-col px-4">
           {questionCard}
 
           <div className="flex flex-col gap-2 shrink-0">
@@ -368,7 +368,7 @@ export default function QuestionScreen({
       {progressBar}
 
       {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-      <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
+      <div className="flex flex-col px-4">
         {questionCard}
 
         <div className="flex flex-col gap-2 shrink-0">

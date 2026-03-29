@@ -5,8 +5,6 @@ import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
 // ── Hint flip card button ────────────────────────────────────────────────────
-// Fixed size pill button that flips (scaleY squish) to reveal the hint text.
-// Cannot be re-clicked after flipping. Text auto-sizes to fit.
 function HintFlipButton({ num, hint, color, onReveal }) {
   const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
 
@@ -14,11 +12,9 @@ function HintFlipButton({ num, hint, color, onReveal }) {
     if (phase !== 'front') return
     setPhase('flip')
     onReveal()
-    // Switch to back content once squished flat, then expand
     setTimeout(() => setPhase('back'), 160)
   }
 
-  // Adaptive font size based on hint length
   const hintLen = hint?.length || 0
   const hintFs = hintLen > 55 ? 9 : hintLen > 38 ? 11 : 12
 
@@ -26,9 +22,9 @@ function HintFlipButton({ num, hint, color, onReveal }) {
     <button
       onClick={handleClick}
       style={{
-        height: 52,
+        height: 48,
         width: '100%',
-        borderRadius: 26,
+        borderRadius: 24,
         border: `2px solid ${phase === 'back' ? color + '80' : color}`,
         background: phase === 'back' ? `${color}18` : `${color}1a`,
         transform: phase === 'flip' ? 'scaleY(0.08)' : 'scaleY(1)',
@@ -37,13 +33,14 @@ function HintFlipButton({ num, hint, color, onReveal }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '4px 14px',
+        padding: '4px 12px',
         cursor: phase !== 'front' ? 'default' : 'pointer',
         pointerEvents: phase !== 'front' ? 'none' : 'auto',
+        flexShrink: 0,
       }}
     >
       {phase !== 'back' ? (
-        <span style={{ fontWeight: 900, fontSize: 14, color, whiteSpace: 'nowrap' }}>
+        <span style={{ fontWeight: 900, fontSize: 13, color, whiteSpace: 'nowrap' }}>
           N°{num} — Indice
         </span>
       ) : (
@@ -88,7 +85,7 @@ export default function QuestionScreen({
 }) {
   const [answerMode, setAnswerMode] = useState(null) // null | 'open' | 'qcm'
 
-  // En mode solo, aller directement au QCM (pas de choix de mode)
+  // En mode solo, aller directement au QCM
   useEffect(() => {
     if (gameMode === 'solo') {
       setAnswerMode('qcm')
@@ -99,15 +96,21 @@ export default function QuestionScreen({
   const [showSettings, setShowSettings] = useState(false)
   const cat = getCategoryById(fact.category)
 
-  // Dynamic background per category — vivid & bright
+  // Dynamic background per category
   const screenBg = cat
     ? `linear-gradient(135deg, ${cat.color}45 0%, ${cat.color}30 50%, ${cat.color}15 100%)`
     : 'linear-gradient(170deg, #06304A 0%, #0A4870 20%, #C45A00 65%, #7A2E00 85%, #3A1200 100%)'
 
-  // Dynamic card background — flashy & bright
   const cardBg = cat
     ? `linear-gradient(135deg, ${cat.color}35 0%, ${cat.color}18 100%)`
     : 'rgba(0,0,0,0.4)'
+
+  // Potential coins for this question
+  const baseCoins = answerMode === 'open' ? 5 : answerMode === 'qcm' ? 1 : (gameMode !== 'solo' ? 5 : 1)
+  const potentialCoins = Math.max(0, baseCoins - (hintsUsed || 0))
+
+  // Timer duration
+  const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
 
   // ── Quit confirmation modal ──────────────────────────────────────────────
   const quitModal = showQuitConfirm && (
@@ -139,42 +142,45 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Shared header ────────────────────────────────────────────────────────
+  // ── Header: ← | Category emoji + name | ⚙️ ──────────────────────────────
   const header = (
-    <div className="px-5 pt-4 pb-3 shrink-0">
-      {/* Top row: back + counter + player badge | settings */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          {/* Back button — left side, same style as Settings */}
-          <button
-            onClick={() => setShowQuitConfirm(true)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
-            style={{ background: 'rgba(255,255,255,0.08)' }}
-            title="Retour">
-            ←
-          </button>
-          {playerName && (
-            <div
-              className="px-2.5 py-1 rounded-full text-xs font-black"
-              style={{ background: playerColor + '20', color: playerColor }}>
-              {playerEmoji ?? '⚡'} {playerName}
-            </div>
-          )}
-          <div className="text-xs font-bold uppercase tracking-wide" style={{ color: cat?.color || 'rgba(255,255,255,0.5)' }}>
-            #{fact.id} · {factIndex + 1} / {totalFacts}
+    <div className="px-4 pt-4 pb-2 shrink-0 flex items-center justify-between gap-2">
+      <button
+        onClick={() => setShowQuitConfirm(true)}
+        className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:text-white/80 transition-colors shrink-0"
+        style={{ background: 'rgba(255,255,255,0.08)' }}
+        title="Retour">
+        ←
+      </button>
+
+      <div className="flex items-center gap-2 flex-1 justify-center min-w-0">
+        {cat && <span className="text-lg shrink-0">{cat.emoji}</span>}
+        <span
+          className="font-black text-sm tracking-wide truncate"
+          style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}>
+          {cat?.label || 'Question'}
+        </span>
+        {playerName && (
+          <div
+            className="px-2 py-0.5 rounded-full text-xs font-black shrink-0"
+            style={{ background: playerColor + '20', color: playerColor }}>
+            {playerEmoji ?? '⚡'} {playerName}
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Settings button — right side */}
-          <button
-            onClick={() => { audio.play('click'); setShowSettings(true) }}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 transition-colors"
-            style={{ background: 'rgba(255,255,255,0.08)' }}>
-            ⚙️
-          </button>
-        </div>
+        )}
       </div>
-      {/* Progress bar */}
+
+      <button
+        onClick={() => { audio.play('click'); setShowSettings(true) }}
+        className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:text-white/80 transition-colors shrink-0"
+        style={{ background: 'rgba(255,255,255,0.08)' }}>
+        ⚙️
+      </button>
+    </div>
+  )
+
+  // ── Progress bar ─────────────────────────────────────────────────────────
+  const progressBar = (
+    <div className="px-4 pb-2 shrink-0">
       <div className="h-1 rounded-full w-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
         <div
           className="h-1 rounded-full transition-all duration-300"
@@ -184,31 +190,44 @@ export default function QuestionScreen({
     </div>
   )
 
-  const categoryBadge = cat && (
-    <div className="mx-5 mb-2 rounded-2xl px-5 py-2 flex items-center gap-3 shrink-0"
-      style={{ background: 'rgba(0,0,0,0.35)', border: `1.5px solid ${cat.color}80`, backdropFilter: 'blur(8px)' }}>
-      <span className="text-2xl">{cat.emoji}</span>
-      <span className="font-black text-base tracking-wide" style={{ color: cat.color }}>{cat.label}</span>
+  // ── Footer: #id + X/total | timer | coins ────────────────────────────────
+  const footer = (showTimer) => (
+    <div className="px-4 pb-4 pt-1 shrink-0 flex items-center justify-between gap-3">
+      <div className="flex flex-col items-start" style={{ minWidth: 56 }}>
+        <span className="font-black text-xs" style={{ color: cat?.color || 'rgba(255,255,255,0.5)' }}>
+          #{fact.id}
+        </span>
+        <span className="font-bold text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          {factIndex + 1} / {totalFacts}
+        </span>
+      </div>
+
+      {showTimer ? (
+        <CircularTimer
+          key={`${fact.id}-${answerMode}`}
+          size={72}
+          duration={timerDuration}
+          onTimeout={onTimeout}
+        />
+      ) : (
+        <div style={{ width: 72, height: 72 }} />
+      )}
+
+      <div className="flex flex-col items-end" style={{ minWidth: 56 }}>
+        <span className="font-black text-base" style={{ color: cat?.color || '#FF6B1A' }}>
+          ⬡ {potentialCoins}
+        </span>
+        <span className="font-bold text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          pts max
+        </span>
+      </div>
     </div>
   )
 
-  const factImage = (compact = false) => fact.imageUrl && gameMode === 'duel' && (
-    <div
-      className={`mx-auto mb-2 rounded-2xl overflow-hidden border shrink-0 ${compact ? 'h-32 w-32' : 'h-48 w-full mx-5'}`}
-      style={{ borderColor: cat?.color + '40', maxWidth: compact ? '128px' : undefined }}>
-      <img
-        src={fact.imageUrl}
-        alt={fact.question}
-        className="w-full h-full object-contain"
-        style={{ background: '#111' }}
-        onError={e => { e.target.style.display = 'none' }}
-      />
-    </div>
-  )
-
+  // ── Shared elements ───────────────────────────────────────────────────────
   const questionCard = (
     <div
-      className="mx-5 mb-2 rounded-3xl p-4 border shrink-0"
+      className="rounded-3xl p-4 border shrink-0 mb-2"
       style={{
         background: cardBg,
         borderColor: cat?.color + '70',
@@ -219,59 +238,95 @@ export default function QuestionScreen({
     </div>
   )
 
+  const factImage = fact.imageUrl && gameMode === 'duel' && (
+    <div
+      className="mx-auto mb-2 rounded-2xl overflow-hidden border shrink-0"
+      style={{ height: 96, width: 96, borderColor: cat?.color + '40' }}>
+      <img
+        src={fact.imageUrl}
+        alt={fact.question}
+        className="w-full h-full object-contain"
+        style={{ background: '#111' }}
+        onError={e => { e.target.style.display = 'none' }}
+      />
+    </div>
+  )
+
+  const hintButtons = (
+    <div className="grid grid-cols-2 gap-2 shrink-0 mb-2">
+      <HintFlipButton
+        num={1}
+        hint={fact.hint1}
+        color="#FBBF24"
+        onReveal={() => { onUseHint(1); audio.play('click') }}
+      />
+      <HintFlipButton
+        num={2}
+        hint={fact.hint2}
+        color="#F97316"
+        onReveal={() => { onUseHint(2); audio.play('click') }}
+      />
+    </div>
+  )
+
   // ── Phase 0 : Mode selection ──────────────────────────────────────────────
   if (!answerMode) {
     return (
       <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
         {quitModal}
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
-        {categoryBadge}
-        {factImage()}
-        {questionCard}
+        {progressBar}
 
-        <div className="px-5 pb-3 flex flex-col gap-3 mt-auto shrink-0">
-          {playerName && (
-            <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center mb-1">
-              Choisissez votre mode
-            </div>
-          )}
+        <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
+          {factImage}
+          {questionCard}
+          <div className="flex-1 min-h-0" />
 
-          {/* Open question — duel only */}
-          {playerName && (
+          <div className="flex flex-col gap-3 shrink-0">
+            {playerName && (
+              <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center">
+                Choisissez votre mode
+              </div>
+            )}
+
+            {playerName && (
+              <button
+                onClick={() => setAnswerMode('open')}
+                className="btn-press w-full py-4 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
+                style={{ background: `${cat?.color || '#22C55E'}12`, borderColor: `${cat?.color || '#22C55E'}60`, boxShadow: `0 4px 20px ${cat?.color || '#22C55E'}18` }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-white font-black text-base">🧠 Question ouverte</div>
+                    <div className="text-white/40 text-xs font-semibold mt-0.5">N°1 · N°2 · 60 secondes</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-black text-2xl" style={{ color: cat?.color || '#22C55E' }}>5</div>
+                    <div className="text-xs font-bold text-white/40">pts max</div>
+                  </div>
+                </div>
+              </button>
+            )}
+
             <button
-              onClick={() => setAnswerMode('open')}
-              className="btn-press w-full py-5 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
-              style={{ background: `${cat?.color || '#22C55E'}12`, borderColor: `${cat?.color || '#22C55E'}60`, boxShadow: `0 4px 20px ${cat?.color || '#22C55E'}18` }}>
+              onClick={() => setAnswerMode('qcm')}
+              className="btn-press w-full py-4 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
+              style={{ background: `${cat?.color || '#FF5C1A'}08`, borderColor: `${cat?.color || '#FF5C1A'}40`, boxShadow: `0 4px 20px ${cat?.color || '#FF5C1A'}15` }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-white font-black text-base">🧠 Question ouverte</div>
-                  <div className="text-white/40 text-xs font-semibold mt-0.5">N°1 · N°2 · 60 secondes</div>
+                  <div className="text-white font-black text-base">🎯 Choix multiple</div>
+                  <div className="text-white/40 text-xs font-semibold mt-0.5">4 réponses · 20 secondes</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-black text-2xl" style={{ color: cat?.color || '#22C55E' }}>5</div>
-                  <div className="text-xs font-bold text-white/40">pts max</div>
+                  <div className="font-black text-2xl" style={{ color: cat?.color || '#FF5C1A' }}>1</div>
+                  <div className="text-xs font-bold text-white/40">pt</div>
                 </div>
               </div>
             </button>
-          )}
-
-          {/* QCM */}
-          <button
-            onClick={() => setAnswerMode('qcm')}
-            className="btn-press w-full py-5 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
-            style={{ background: `${cat?.color || '#FF5C1A'}08`, borderColor: `${cat?.color || '#FF5C1A'}40`, boxShadow: `0 4px 20px ${cat?.color || '#FF5C1A'}15` }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-white font-black text-base">🎯 Choix multiple</div>
-                <div className="text-white/40 text-xs font-semibold mt-0.5">4 réponses · 20 secondes</div>
-              </div>
-              <div className="text-right">
-                <div className="font-black text-2xl" style={{ color: cat?.color || '#FF5C1A' }}>1</div>
-                <div className="text-xs font-bold text-white/40">pt</div>
-              </div>
-            </div>
-          </button>
+          </div>
         </div>
+
+        {footer(false)}
       </div>
     )
   }
@@ -279,115 +334,84 @@ export default function QuestionScreen({
   // ── Phase 1 : Open question ───────────────────────────────────────────────
   if (answerMode === 'open') {
     return (
-      <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: screenBg }}>
+      <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
         {quitModal}
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
-        {categoryBadge}
-        {factImage(true)}
-        {questionCard}
+        {progressBar}
 
-        {/* Spacer pushes buttons to bottom */}
-        <div className="flex-1" />
+        <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
+          {factImage}
+          {questionCard}
+          <div className="flex-1 min-h-0" />
 
-        {/* Buttons */}
-        <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
-          {/* Hint flip cards */}
-          <div className="grid grid-cols-2 gap-3">
-            <HintFlipButton
-              num={1}
-              hint={fact.hint1}
-              color="#FBBF24"
-              onReveal={() => { onUseHint(1); audio.play('click') }}
-            />
-            <HintFlipButton
-              num={2}
-              hint={fact.hint2}
-              color="#F97316"
-              onReveal={() => { onUseHint(2); audio.play('click') }}
-            />
-          </div>
-
-          {/* Validation buttons (pressed by questioner) */}
-          <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center">
-            Le questionneur valide la réponse
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => { audio.play('wrong'); audio.vibrate([120]); onOpenValidate(false) }}
-              className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
-              style={{ background: 'rgba(244,67,54,0.1)', borderColor: '#F44336', color: '#F44336' }}>
-              ✗ Incorrect
-            </button>
-            <button
-              onClick={() => { audio.play('correct'); audio.vibrate([40,20,40]); onOpenValidate(true) }}
-              className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
-              style={{ background: 'rgba(76,175,80,0.1)', borderColor: '#4CAF50', color: '#4CAF50' }}>
-              ✓ Correct !
-            </button>
+          <div className="flex flex-col gap-2 shrink-0">
+            {hintButtons}
+            <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center">
+              Le questionneur valide la réponse
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { audio.play('wrong'); audio.vibrate([120]); onOpenValidate(false) }}
+                className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
+                style={{ background: 'rgba(244,67,54,0.1)', borderColor: '#F44336', color: '#F44336' }}>
+                ✗ Incorrect
+              </button>
+              <button
+                onClick={() => { audio.play('correct'); audio.vibrate([40,20,40]); onOpenValidate(true) }}
+                className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
+                style={{ background: 'rgba(76,175,80,0.1)', borderColor: '#4CAF50', color: '#4CAF50' }}>
+                ✓ Correct !
+              </button>
+            </div>
           </div>
         </div>
 
-        <CircularTimer duration={60} onTimeout={onTimeout} />
+        {footer(true)}
       </div>
     )
   }
 
   // ── Phase 2 : QCM ────────────────────────────────────────────────────────
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter" style={{ background: screenBg }}>
+    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
-      {categoryBadge}
-      {factImage(true)}
-      {questionCard}
+      {progressBar}
 
-      {/* Spacer pushes buttons to bottom */}
-      <div className="flex-1" />
+      <div className="flex-1 min-h-0 flex flex-col px-4 overflow-hidden">
+        {factImage}
+        {questionCard}
+        <div className="flex-1 min-h-0" />
 
-      <div className="px-5 pb-3 flex flex-col gap-3 shrink-0">
-        {/* Hint flip cards — only shown if hints are allowed for this difficulty */}
-        {(difficulty?.hintsAllowed !== false) && (
-          <div className="grid grid-cols-2 gap-3">
-            <HintFlipButton
-              num={1}
-              hint={fact.hint1}
-              color="#FBBF24"
-              onReveal={() => { onUseHint(1); audio.play('click') }}
-            />
-            <HintFlipButton
-              num={2}
-              hint={fact.hint2}
-              color="#F97316"
-              onReveal={() => { onUseHint(2); audio.play('click') }}
-            />
+        <div className="flex flex-col gap-2 shrink-0">
+          {(difficulty?.hintsAllowed !== false) && hintButtons}
+
+          <div className={`grid ${difficulty?.choices === 6 ? 'grid-cols-3' : 'grid-cols-2'} gap-2 shrink-0`}>
+            {fact.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  const correct = index === fact.correctIndex
+                  audio.play(correct ? 'correct' : 'wrong')
+                  audio.vibrate(correct ? [40, 20, 40] : [120])
+                  onSelectAnswer(index)
+                }}
+                className="btn-press py-4 rounded-2xl text-white font-bold text-sm transition-all active:scale-95 border"
+                style={{
+                  background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
+                  borderColor: cat?.color + '40',
+                  boxShadow: `0 4px 16px ${cat?.color}15`,
+                }}>
+                {option}
+              </button>
+            ))}
           </div>
-        )}
-
-        {/* Answer buttons */}
-        <div className={`grid ${difficulty?.choices === 6 ? 'grid-cols-3' : 'grid-cols-2'} gap-3`}>
-          {fact.options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                const correct = index === fact.correctIndex
-                audio.play(correct ? 'correct' : 'wrong')
-                audio.vibrate(correct ? [40, 20, 40] : [120])
-                onSelectAnswer(index)
-              }}
-              className="btn-press py-4 rounded-2xl text-white font-bold text-sm transition-all active:scale-95 border"
-              style={{
-                background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
-                borderColor: cat?.color + '40',
-                boxShadow: `0 4px 16px ${cat?.color}15`,
-              }}>
-              {option}
-            </button>
-          ))}
         </div>
       </div>
 
-      <CircularTimer duration={difficulty?.duration || 20} onTimeout={onTimeout} />
+      {footer(true)}
     </div>
   )
 }

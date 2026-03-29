@@ -225,6 +225,7 @@ export default function FactsListPage({ toast }) {
   const [filterPublished, setFilterPublished] = useState('all')
   const [filterPack, setFilterPack] = useState('all')
   const [filterDifficulty, setFilterDifficulty] = useState('all')
+  const [filterImage, setFilterImage] = useState('all') // 'all' | 'with' | 'without'
   const [showCatDropdown, setShowCatDropdown] = useState(false)
 
   // Sort
@@ -294,10 +295,10 @@ export default function FactsListPage({ toast }) {
   }, [showCatDropdown])
 
   // Reset page on filter change
-  useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterPack, filterDifficulty])
+  useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterPack, filterDifficulty, filterImage])
 
   // Load facts
-  useEffect(() => { loadFacts() }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterPack, filterDifficulty, sortField, sortDir])
+  useEffect(() => { loadFacts() }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterPack, filterDifficulty, filterImage, sortField, sortDir])
 
   // Load difficulty counts when generate modal opens
   useEffect(() => {
@@ -309,7 +310,7 @@ export default function FactsListPage({ toast }) {
     try {
       let q = supabase
         .from('facts')
-        .select('id, category, question, is_vip, is_published, pack_id, updated_at, difficulty', { count: 'exact' })
+        .select('id, category, question, is_vip, is_published, pack_id, updated_at, difficulty, image_url', { count: 'exact' })
 
       if (debouncedSearch) {
         q = q.or(`question.ilike.%${debouncedSearch}%,explanation.ilike.%${debouncedSearch}%,short_answer.ilike.%${debouncedSearch}%`)
@@ -321,6 +322,8 @@ export default function FactsListPage({ toast }) {
       if (filterPublished === 'unpublished') q = q.eq('is_published', false)
       if (filterPack !== 'all') q = q.eq('pack_id', filterPack)
       if (filterDifficulty !== 'all') q = q.eq('difficulty', filterDifficulty)
+      if (filterImage === 'with') q = q.not('image_url', 'is', null).neq('image_url', '')
+      if (filterImage === 'without') q = q.or('image_url.is.null,image_url.eq.')
 
       q = q.order(sortField, { ascending: sortDir === 'asc' })
       q = q.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
@@ -335,7 +338,7 @@ export default function FactsListPage({ toast }) {
     } finally {
       setLoading(false)
     }
-  }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterPack, filterDifficulty, sortField, sortDir])
+  }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterPack, filterDifficulty, filterImage, sortField, sortDir])
 
   async function loadDifficultyCounts() {
     try {
@@ -1058,9 +1061,21 @@ export default function FactsListPage({ toast }) {
           <option value="premium">Premium</option>
         </select>
 
-        {(search || filterCategories.length || filterVip !== 'all' || filterPublished !== 'all' || filterPack !== 'all' || filterDifficulty !== 'all') && (
+        {/* Filtre image */}
+        <select
+          value={filterImage}
+          onChange={e => setFilterImage(e.target.value)}
+          className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none"
+          style={filterImage !== 'all' ? { borderColor: filterImage === 'with' ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)' } : {}}
+        >
+          <option value="all">Image : Tous</option>
+          <option value="with">🖼️ Avec image</option>
+          <option value="without">❌ Sans image</option>
+        </select>
+
+        {(search || filterCategories.length || filterVip !== 'all' || filterPublished !== 'all' || filterPack !== 'all' || filterDifficulty !== 'all' || filterImage !== 'all') && (
           <button
-            onClick={() => { setSearch(''); setFilterCategories([]); setFilterVip('all'); setFilterPublished('all'); setFilterPack('all'); setFilterDifficulty('all') }}
+            onClick={() => { setSearch(''); setFilterCategories([]); setFilterVip('all'); setFilterPublished('all'); setFilterPack('all'); setFilterDifficulty('all'); setFilterImage('all') }}
             className="px-3 py-2 rounded-xl bg-red-900/30 border border-red-800 text-red-400 text-sm hover:bg-red-900/50 transition-all"
           >
             ✕ Effacer
@@ -1115,6 +1130,7 @@ export default function FactsListPage({ toast }) {
               <th className="px-3 py-3 text-left cursor-pointer text-slate-400 hover:text-white" onClick={() => handleSort('difficulty')}>
                 Difficulté<SortIcon field="difficulty" current={sortField} dir={sortDir} />
               </th>
+              <th className="px-3 py-3 text-center text-slate-400">Image</th>
               <th className="px-3 py-3 text-center text-slate-400">VIP</th>
               <th className="px-3 py-3 text-center text-slate-400">Publié</th>
               <th className="px-3 py-3 text-left text-slate-400">Pack</th>
@@ -1126,9 +1142,9 @@ export default function FactsListPage({ toast }) {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={10} className="text-center py-12 text-slate-500">Chargement…</td></tr>
+              <tr><td colSpan={11} className="text-center py-12 text-slate-500">Chargement…</td></tr>
             ) : facts.length === 0 ? (
-              <tr><td colSpan={10} className="text-center py-12 text-slate-500">Aucun fact trouvé</td></tr>
+              <tr><td colSpan={11} className="text-center py-12 text-slate-500">Aucun fact trouvé</td></tr>
             ) : (
               facts.map(fact => (
                 <tr
@@ -1150,6 +1166,27 @@ export default function FactsListPage({ toast }) {
                   </td>
                   <td className="px-3 py-2.5">
                     <DifficultyBadge value={fact.difficulty || 'Normal'} />
+                  </td>
+                  {/* Indicateur image */}
+                  <td className="px-3 py-2.5 text-center">
+                    {fact.image_url
+                      ? (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                          style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}
+                          title={fact.image_url}
+                        >
+                          🖼️
+                        </span>
+                      ) : (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                          style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)' }}
+                        >
+                          ✕
+                        </span>
+                      )
+                    }
                   </td>
                   <td className="px-3 py-2.5 text-center">
                     <button onClick={() => toggleVip(fact)} title="Toggle VIP">

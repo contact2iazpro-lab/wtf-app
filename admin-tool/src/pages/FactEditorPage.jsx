@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, VIP_USAGES } from '../constants/categories'
+import FactPreview from '../components/FactPreview'
 
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'short_answer', 'explanation',
@@ -148,13 +149,14 @@ export default function FactEditorPage({ toast }) {
     if (!url) { setImageStatus(null); return }
     setImageStatus('loading')
     clearTimeout(imageTimerRef.current)
-    imageTimerRef.current = setTimeout(async () => {
-      try {
-        await fetch(url, { method: 'HEAD', mode: 'no-cors' })
-        setImageStatus('ok')
-      } catch {
-        setImageStatus('error')
-      }
+    // BUG FIX : fetch() avec mode:'no-cors' retournait toujours une réponse opaque
+    // considérée comme succès, même pour les URLs invalides.
+    // On utilise un objet Image natif qui déclenche onload/onerror correctement.
+    imageTimerRef.current = setTimeout(() => {
+      const img = new Image()
+      img.onload = () => setImageStatus('ok')
+      img.onerror = () => setImageStatus('error')
+      img.src = url
     }, 500)
   }
 
@@ -651,6 +653,9 @@ export default function FactEditorPage({ toast }) {
             </div>
           )}
         </Section>
+
+        {/* APERÇU EN JEU — synchronisé en temps réel avec le formulaire */}
+        <FactPreview fact={fact} />
 
         {/* HISTORIQUE */}
         <div className="bg-slate-800 rounded-2xl border border-slate-700">

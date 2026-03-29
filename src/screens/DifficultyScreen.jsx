@@ -2,27 +2,27 @@ import { useState } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 
-// MOD 1+2 — Niveaux renommés : Curieux / À fond / WTF! Addict (plus de "Parcours")
+// COR 1 — Ordre croissant : Curieux → À fond → WTF! Addict
 const DIFFICULTY_LEVELS = [
   {
-    id: 'expert',
-    label: 'WTF! Addict',       // était : Parcours Expert
-    emoji: '⚡',
-    color: '#FF5C1A',
-    colorRgba: 'rgba(255, 92, 26, 0.7)',
+    id: 'easy',
+    label: 'Curieux',
+    emoji: '💚',
+    color: '#22C55E',
+    colorRgba: 'rgba(34, 197, 94, 0.82)',
     description: [
-      '6 choix possibles',
-      '30 secondes de réflexion',
-      'Sans indices',
-      '5 points par réponse correcte',
+      '4 choix possibles',
+      '60 secondes de réflexion',
+      'Avec indices disponibles',
+      '3/2/1 points selon les indices',
     ],
   },
   {
     id: 'normal',
-    label: 'À fond',             // était : Parcours Normal
+    label: 'À fond',
     emoji: '🧠',
     color: '#3B82F6',
-    colorRgba: 'rgba(59, 130, 246, 0.7)',
+    colorRgba: 'rgba(59, 130, 246, 0.82)',
     description: [
       '4 choix possibles',
       '60 secondes de réflexion',
@@ -31,16 +31,16 @@ const DIFFICULTY_LEVELS = [
     ],
   },
   {
-    id: 'easy',
-    label: 'Curieux',            // était : Parcours Facile
-    emoji: '💚',
-    color: '#22C55E',
-    colorRgba: 'rgba(34, 197, 94, 0.7)',
+    id: 'expert',
+    label: 'WTF! Addict',
+    emoji: '⚡',
+    color: '#FF5C1A',
+    colorRgba: 'rgba(255, 92, 26, 0.82)',
     description: [
-      '4 choix possibles',
-      '60 secondes de réflexion',
-      'Avec indices',
-      '3/2/1 points selon les indices',
+      '6 choix possibles',
+      '30 secondes de réflexion',
+      'Sans indices',
+      '5 points par réponse correcte',
     ],
   },
 ]
@@ -93,15 +93,15 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
           style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
           ←
         </button>
-        {/* MOD 3 — Nouveau titre */}
-        <h1 className="text-lg md:text-xl font-black text-white text-center flex-1">
+        {/* COR 3 — Titre plus grand et contrasté */}
+        <h1 className="text-xl md:text-2xl font-black text-white text-center flex-1" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
           Jusqu'où tu veux aller ?
         </h1>
         <div className="w-8 md:w-9" />
       </div>
 
-      {/* MOD 1 — Sous-titre "Quête WTF!" */}
-      <p className="text-center text-xs font-bold uppercase tracking-[0.18em] mb-1 shrink-0" style={{ color: 'rgba(255,255,255,0.55)' }}>
+      {/* COR 3 — Sous-titre plus visible */}
+      <p className="text-center text-sm font-black uppercase tracking-[0.15em] mb-1.5 shrink-0" style={{ color: 'rgba(255,255,255,0.88)' }}>
         Quête WTF! — choisis ton niveau
       </p>
 
@@ -116,16 +116,16 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
               className="btn-press rounded-xl md:rounded-2xl p-3 md:p-4 text-left"
               style={{
                 background: difficulty.colorRgba,
-                opacity: isSelected ? 1 : 0.52,
-                // MOD 4 — Bordure couleur niveau, scale animation, shadow affirmé
+                opacity: isSelected ? 1 : 0.55,
+                // COR 4 — Bordure blanche épaisse (toujours visible), scale + shadow
                 border: isSelected
-                  ? `3px solid ${difficulty.color}`
-                  : '3px solid transparent',
+                  ? '4px solid rgba(255,255,255,0.95)'
+                  : '4px solid transparent',
                 transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                 boxShadow: isSelected
-                  ? `0 6px 24px ${difficulty.color}55, 0 0 0 1px ${difficulty.color}30`
+                  ? `0 8px 28px ${difficulty.color}70, 0 0 0 2px ${difficulty.color}50`
                   : 'none',
-                transition: 'opacity 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease',
+                transition: 'opacity 0.2s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.2s ease',
               }}>
 
               {/* Emoji + Titre + ✓ */}
@@ -144,12 +144,12 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                 )}
               </div>
 
-              {/* Descripteurs */}
-              <div className="space-y-0.5">
+              {/* COR 2 — Descripteurs blancs, bold, lisibles sur fond coloré */}
+              <div className="space-y-1">
                 {difficulty.description.map((desc, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs md:text-sm">
-                    <span className="text-black/50 text-2xs md:text-xs shrink-0">•</span>
-                    <span className="text-black font-medium leading-snug">{desc}</span>
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="shrink-0 text-white/60 text-xs">•</span>
+                    <span className="text-white font-bold text-xs md:text-sm leading-snug">{desc}</span>
                   </div>
                 ))}
               </div>
@@ -158,8 +158,8 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         })}
       </div>
 
-      {/* MOD 5 — Bouton "C'EST PARTI ! ⚡" */}
-      <div className="px-3 md:px-4 pb-16 md:pb-16 pt-2 shrink-0">
+      {/* Bouton "C'EST PARTI ! ⚡" */}
+      <div className="px-3 md:px-4 pb-4 pt-2 shrink-0">
         <button
           onClick={() => handleSelect(selectedId)}
           className="btn-press w-full py-3 md:py-3.5 rounded-xl md:rounded-2xl text-white font-black text-sm md:text-base uppercase tracking-wide active:scale-95 transition-all"

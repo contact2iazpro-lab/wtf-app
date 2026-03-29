@@ -8,7 +8,7 @@ const FallbackImage = ({ categoryColor }) => (
   <div style={{
     background: `linear-gradient(160deg, ${categoryColor}22 0%, ${categoryColor} 100%)`,
     width: '100%',
-    height: '100%',           // MOD 3 — remplit le cadre carré
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -28,7 +28,7 @@ const FallbackImage = ({ categoryColor }) => (
   </div>
 )
 
-// MOD 9 — Messages bienveillants mauvaise réponse
+// ── Messages bienveillants ─────────────────────────────────────────────────────
 const WRONG_MESSAGES = [
   "Tu l'auras la prochaine fois ! 💪",
   "Retente ta chance... ce fait mérite d'être connu !",
@@ -36,6 +36,25 @@ const WRONG_MESSAGES = [
   "Même Einstein aurait séché sur celui-là ! 🧠",
   "Ce fait est tellement WTF qu'on comprend que tu aies raté ! 😂",
 ]
+
+const CORRECT_MESSAGES = [
+  "Félicitations, tu le savais vraiment ! 🎉",
+  "Bravo, t'es une machine ! 🧠",
+  "Parfait ! Ce fait est gravé dans ta mémoire 🔥",
+  "Chapeau l'artiste ! 🎩",
+  "Tu es vraiment incollable ! 💪",
+]
+
+// COR 6 — Badge "coins" lisible sur tous supports (remplace l'emoji 🪙)
+const CoinsLabel = () => (
+  <span style={{
+    fontSize: '0.55rem', fontWeight: 900, letterSpacing: '0.06em',
+    background: 'rgba(255,255,255,0.22)', borderRadius: '3px',
+    padding: '1px 4px', marginRight: '3px',
+    color: 'white', verticalAlign: 'middle',
+    display: 'inline-block',
+  }}>COINS</span>
+)
 
 export default function RevelationScreen({
   fact,
@@ -61,8 +80,9 @@ export default function RevelationScreen({
   const [showSettings, setShowSettings] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
 
-  // MOD 9 — Message bienveillant aléatoire, calculé une seule fois au montage
-  const [wrongMsg] = useState(() => WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)])
+  // Messages aléatoires calculés une seule fois au montage
+  const [wrongMsg]   = useState(() => WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)])
+  const [correctMsg] = useState(() => CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)])
 
   const scoreRefTarget = useRef(null)
   const pointsBadgeRef = useRef(null)
@@ -71,6 +91,11 @@ export default function RevelationScreen({
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext
   const isLast = factIndex + 1 >= totalFacts
+
+  // COR 7 — Gradient catégorie identique dans les deux cas
+  const catGradient = cat
+    ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
+    : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -140,7 +165,7 @@ export default function RevelationScreen({
     boxShadow: `0 4px 20px ${isDuel ? playerColor : cat?.color}40`,
   }
 
-  // ── Quit confirmation modal ──────────────────────────────────────────────
+  // ── Quit confirmation modal ───────────────────────────────────────────────
   const quitModal = showQuitConfirm && (
     <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
       <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', border: '1px solid #E5E7EB', boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }}>
@@ -166,7 +191,7 @@ export default function RevelationScreen({
     </div>
   )
 
-  // MOD 1 + 2 — Header 3 zones, 🪙 coins, tappable → quit
+  // ── Header 3 zones — COR 6: "coins" text ─────────────────────────────────
   const header = (
     <div className="px-4 pt-3 pb-2 shrink-0 flex items-center">
       <div className="w-1/3 flex flex-col">
@@ -187,17 +212,17 @@ export default function RevelationScreen({
           {cat?.label || ''}
         </span>
       </div>
-      {/* MOD 1 — 🪙 au lieu de ⭐ */}
+      {/* COR 6 — "coins" lisible à la place du 🪙 */}
       <div className="w-1/3 flex justify-end">
         <span ref={scoreRefTarget} className={`font-black text-sm${showScorePulse ? ' score-pulse' : ''}`}
           style={{ color: cat?.color || '#FFA500' }}>
-          🪙 {displayedScore}
+          <CoinsLabel />{displayedScore}
         </span>
       </div>
     </div>
   )
 
-  // MOD 7 — Bouton ⚙️ fixe en bas à droite (commun aux deux cas)
+  // ── ⚙️ fixe bas-droite ──────────────────────────────────────────────────
   const settingsBtn = (
     <button
       onClick={() => { audio.play('click'); setShowSettings(true) }}
@@ -207,7 +232,7 @@ export default function RevelationScreen({
     </button>
   )
 
-  // Badge de points flottant
+  // ── Badge de points flottant ──────────────────────────────────────────────
   const floatingBadge = !isDuel && showBadge && (
     <div ref={pointsBadgeRef} className="fixed pointer-events-none" style={{
       left: '50%', top: '50%', width: '180px',
@@ -226,7 +251,25 @@ export default function RevelationScreen({
     </div>
   )
 
-  // ── CAS MAUVAISE RÉPONSE (solo) : full screen fixe ────────────────────────
+  // ── COR 1+7 : Overlay message dans le cadre image (réutilisable) ──────────
+  // Wrong → message en bas | Correct → message en haut (évite le tampon FOU bas-droite)
+  const imageMessageOverlay = (msg, position = 'bottom') => flipped && !isDuel && (
+    <div
+      className="absolute left-0 right-0 px-3 py-2 text-center pointer-events-none"
+      style={{
+        zIndex: 3,
+        ...(position === 'bottom'
+          ? { bottom: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)' }
+          : { top: 0,    background: 'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%)' }
+        ),
+      }}>
+      <span className="font-bold text-sm" style={{ color: 'white', textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
+        {msg}
+      </span>
+    </div>
+  )
+
+  // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
   if (!isCorrect && !isDuel) {
     return (
       <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
@@ -236,40 +279,32 @@ export default function RevelationScreen({
         {header}
 
         <div className="flex-1 min-h-0 flex flex-col px-5 gap-2 overflow-hidden">
-          {/* MOD 2 + 8 — Image carrée 1:1, fond coloré catégorie, pas de WTF animation */}
+
+          {/* COR 2+7 — Cadre carré identique, fond catégorie, tampon centré */}
           <div
             className="rounded-3xl overflow-hidden border shrink-0 relative"
-            style={{
-              borderColor: cat?.color + '60',
-              aspectRatio: '1 / 1',
-              background: cat
-                ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
-                : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)',
-            }}>
-            {/* Tampon FAUX — conservé */}
+            style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}>
+
+            {/* COR 2 — Tampon "PAS CETTE FOIS" centré, grand, -8deg, semi-transparent */}
             {flipped && (
-              <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: '16px' }}>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 2 }}>
                 <div className="stamp-wow" style={{
-                  fontSize: '64px', fontWeight: 900, color: '#F44336',
-                  textShadow: '0 4px 12px rgba(244, 67, 54, 0.5)',
-                  transform: 'rotate(-15deg) scale(1.1)', transformOrigin: 'right bottom',
-                  border: '3px solid #F44336', borderRadius: '8px', padding: '8px 20px',
-                  backgroundColor: 'rgba(244, 67, 54, 0.12)', backdropFilter: 'blur(4px)',
+                  fontSize: '42px', fontWeight: 900, color: '#F44336',
+                  textShadow: '0 4px 16px rgba(244,67,54,0.6)',
+                  transform: 'rotate(-8deg)',
+                  border: '4px solid #F44336', borderRadius: '10px',
+                  padding: '10px 22px', textAlign: 'center', lineHeight: 1.15,
+                  background: 'rgba(244,67,54,0.15)', backdropFilter: 'blur(4px)',
+                  opacity: 0.92,
                 }}>
-                  FAUX
+                  PAS CETTE<br/>FOIS
                 </div>
               </div>
             )}
-          </div>
 
-          {/* MOD 9 — Message bienveillant aléatoire */}
-          {flipped && (
-            <div className="text-center shrink-0 px-2 py-1">
-              <span className="font-bold text-sm" style={{ color: cat?.color || 'white' }}>
-                {wrongMsg}
-              </span>
-            </div>
-          )}
+            {/* COR 1 — Message bienveillant en bas du cadre */}
+            {imageMessageOverlay(wrongMsg, 'bottom')}
+          </div>
 
           {/* Question */}
           <div className="rounded-2xl p-3 border shrink-0" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>
@@ -291,13 +326,13 @@ export default function RevelationScreen({
           )}
         </div>
 
-        {/* MOD 10 — Boutons symétriques sur la même ligne, pb-20 pour dégager le ⚙️ fixe */}
+        {/* COR 5 — Boutons bas : "Partager à un ami" + Suivant */}
         <div className="px-5 pb-20 pt-2 flex gap-3 shrink-0">
           <button
             onClick={handleShare}
-            className="btn-press flex-1 py-4 rounded-2xl border font-bold text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+            className="btn-press flex-1 py-4 rounded-2xl border font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center leading-tight"
             style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}>
-            👥 Aide
+            🤝 Partager à un ami pour avoir de l'aide
           </button>
           <button
             onClick={() => { audio.play('click'); onNext() }}
@@ -310,7 +345,7 @@ export default function RevelationScreen({
     )
   }
 
-  // ── CAS BONNE RÉPONSE (et duel) : scrollable ─────────────────────────────
+  // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
   return (
     <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: screenBg }}>
       {quitModal}
@@ -321,10 +356,11 @@ export default function RevelationScreen({
 
       <div className="flex flex-col px-5 gap-2 pb-20">
 
-        {/* Image avec WOW effect + tampon FOU — MOD 2 : toujours 1:1 */}
+        {/* COR 1+7 — Cadre carré identique, même fond catégorie, message en haut du cadre */}
         <div
           className={`rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', aspectRatio: '1 / 1', background: 'transparent' }}>
+          style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}>
+
           {isCorrect && (
             fact.imageUrl && !imgFailed ? (
               <img
@@ -338,8 +374,10 @@ export default function RevelationScreen({
               <FallbackImage categoryColor={cat?.color || '#10B981'} />
             )
           )}
+
+          {/* Tampon FOU — bas droite */}
           {!isDuel && flipped && isCorrect && (
-            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: '24px' }}>
+            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: '24px', zIndex: 2 }}>
               <div className="stamp-wow" style={{
                 fontSize: '94px', fontWeight: 900, color: '#4CAF50',
                 textShadow: '0 4px 12px rgba(76, 175, 80, 0.5)',
@@ -351,9 +389,10 @@ export default function RevelationScreen({
               </div>
             </div>
           )}
-        </div>
 
-        {/* MOD 4 — Pas de bloc "Question" en cas de bonne réponse */}
+          {/* COR 1 — Message bienveillant EN HAUT du cadre (évite superposition tampon FOU bas-droite) */}
+          {imageMessageOverlay(correctMsg, 'top')}
+        </div>
 
         {/* Duel — badges correct/incorrect + points */}
         {isDuel && (
@@ -378,14 +417,7 @@ export default function RevelationScreen({
           </>
         )}
 
-        {/* MOD 6 — Bonne réponse avec animation score-pop */}
-        {!isOpenMode && !isTimeout && isCorrect && (
-          <div className="rounded-2xl p-3 border border-green-500/40 score-pop"
-            style={{ background: 'rgba(76, 175, 80, 0.1)', animationDelay: '0.3s', opacity: 0 }}>
-            <div className="text-green-400 text-xs font-bold uppercase tracking-wide mb-1">✓ Bonne réponse :</div>
-            <div className="text-white font-bold text-sm">{correctAnswerText}</div>
-          </div>
-        )}
+        {/* Mauvaise réponse choisie (visible dans le duel, ou open mode) */}
         {!isOpenMode && !isTimeout && selectedAnswer >= 0 && selectedAnswerText !== correctAnswerText && (
           <div className="rounded-2xl p-3 border border-red-500/40" style={{ background: 'rgba(244, 67, 54, 0.1)' }}>
             <div className="text-red-500 text-xs font-bold uppercase tracking-wide mb-1">✗ Votre réponse :</div>
@@ -404,19 +436,29 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* MOD 5 — Le Saviez-Vous : source en haut, Partager + Suivant en bas */}
+        {/* COR 3+4 — Le Saviez-Vous : "bonne réponse" intégrée dans la carte, Partager orange */}
         {!isDuel && isCorrect && (
           <div className="rounded-3xl border p-4" style={{
             background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)',
             borderColor: cat?.color + '70', backdropFilter: 'blur(12px)',
             boxShadow: `0 4px 32px ${cat?.color || '#000'}25`,
           }}>
+            {/* COR 3 — Bonne réponse intégrée ici (supprime l'espace vide entre image et carte) */}
+            {!isOpenMode && !isTimeout && (
+              <div className="rounded-xl px-3 py-2 border border-green-500/30 mb-3 score-pop"
+                style={{ background: 'rgba(76,175,80,0.1)', animationDelay: '0.3s', opacity: 0 }}>
+                <div className="text-green-400 text-xs font-bold uppercase tracking-wide mb-0.5">✓ Bonne réponse :</div>
+                <div className="text-white font-bold text-sm">{correctAnswerText}</div>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xl">🧠</span>
               <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
             </div>
             <p className="text-white/80 text-sm leading-relaxed font-medium mb-3">{fact.explanation}</p>
-            {/* Source — ligne propre alignée à droite */}
+
+            {/* Source */}
             {fact.sourceUrl && (
               <div className="flex justify-end mb-2">
                 <a href={fact.sourceUrl} target="_blank" rel="noopener noreferrer"
@@ -429,18 +471,18 @@ export default function RevelationScreen({
                 </a>
               </div>
             )}
-            {/* MOD 5 — Partager (vif) + Suivant sur la même ligne */}
+
+            {/* COR 4 — Partager orange fixe + Suivant */}
             <div className="flex gap-2">
               <button
                 onClick={handleShare}
-                className="btn-press flex-1 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all border-2"
+                className="btn-press flex-1 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                 style={{
-                  background: `linear-gradient(135deg, ${cat?.color}30 0%, ${cat?.color}15 100%)`,
-                  borderColor: cat?.color + '80',
-                  color: cat?.color || 'white',
-                  boxShadow: `0 4px 16px ${cat?.color}30`,
+                  background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)',
+                  color: 'white',
+                  boxShadow: '0 4px 20px rgba(255,107,26,0.45)',
                 }}>
-                {copied ? '✅ Copié !' : '🎩 Partager'}
+                {copied ? '✅ Copié !' : '🎩 Partager ce WTF!'}
               </button>
               <button
                 onClick={() => { audio.play('click'); onNext() }}
@@ -471,7 +513,7 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Suivant duel (solo a son bouton dans "Le Saviez-Vous") */}
+        {/* Bouton Suivant duel */}
         {isDuel && (
           <button
             onClick={() => { audio.play('click'); onNext() }}

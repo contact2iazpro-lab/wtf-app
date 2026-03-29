@@ -85,7 +85,7 @@ export default function HomeScreen({
 
   // MOD 6 — Modes de jeu: actifs en haut (Parcours, Flash), inactifs en bas (Marathon, Multijoueur)
   const gameModes = [
-    { id: 'parcours', label: 'Mode Parcours', emoji: '🎯', desc: 'Complétez vos Collections', action: () => { audio.startMusic(); audio.play('click'); onPlay() }, active: true },
+    { id: 'parcours', label: 'Quête WTF!', emoji: '🎯', desc: 'Complétez vos Collections', action: () => { audio.startMusic(); audio.play('click'); onPlay() }, active: true },
     { id: 'flash',    label: 'Session Flash',  emoji: '⚡', desc: '5 questions rapides',      action: () => { audio.play('click'); onFlashSolo() }, active: true },
     { id: 'marathon', label: 'Marathon',        emoji: '🏃', desc: '20 questions',             action: handleMarathon, active: false },
     { id: 'duel',     label: 'Multijoueur',     emoji: '🎮', desc: '2-6 joueurs',             action: handleDuel, active: false },
@@ -110,11 +110,11 @@ export default function HomeScreen({
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* ── Settings button — top right ── */}
+      {/* ── Settings button — bottom right (au-dessus de la nav bar) ── */}
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
         className="fixed w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
-        style={{ zIndex: 40, top: 12, right: 16, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        style={{ zIndex: 40, bottom: 64, right: 16, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         ⚙️
       </button>
 
@@ -141,7 +141,7 @@ export default function HomeScreen({
         <p className="text-sm font-black tracking-[0.15em] uppercase -mt-1 mb-0" style={{ color: '#7C3AED' }}>
           Vrai ou fou ?
         </p>
-        <p className="text-xs font-bold mb-2" style={{ color: 'rgba(124,58,237,0.7)', letterSpacing: '0.04em' }}>
+        <p className="text-sm font-black mb-2" style={{ color: '#7C3AED', letterSpacing: '0.02em' }}>
           Des faits 100% vrais, des réactions 100% fun
         </p>
 
@@ -173,7 +173,9 @@ export default function HomeScreen({
           <div
             className="flex-1 rounded-2xl p-2 text-center border"
             style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-            <div className="text-xl mb-0">🪙</div>
+            <div className="mb-0 flex items-center justify-center">
+              <span className="font-black text-xs px-1.5 py-0.5 rounded" style={{ color: 'white', background: '#FF6B1A', letterSpacing: '0.04em' }}>WTF$</span>
+            </div>
             <div className="text-lg font-black leading-tight" style={{ color: '#1a1a2e' }}>{wtfCoins}</div>
             <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>WTF Coins</div>
           </div>
@@ -275,18 +277,18 @@ export default function HomeScreen({
           )}
         </div>
 
-        {/* MOD 9 — Chat agrandi (créatures supprimées, pas présentes dans ce fichier) */}
-        <div className="flex-1 flex items-end justify-center overflow-hidden" style={{ minHeight: 0 }}>
+        {/* Chat — collé au contenu, plus grand */}
+        <div className="shrink-0 mt-2 flex justify-center overflow-hidden">
           <img
             src="/cat-president.png"
             alt="Cat President"
             style={{
-              width: '75%',
-              maxHeight: '130px',
+              width: '88%',
+              maxHeight: '160px',
               objectFit: 'contain',
               objectPosition: 'bottom',
-              maskImage: 'linear-gradient(to top, transparent 0%, black 35%)',
-              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 35%)',
+              maskImage: 'linear-gradient(to top, transparent 0%, black 40%)',
+              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 40%)',
             }}
           />
         </div>

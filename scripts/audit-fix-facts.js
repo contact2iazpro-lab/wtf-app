@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
-const SUPABASE_URL = 'https://znoceotakhynqcqhpwgz.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpub2Nlb3Rha2h5bnFjcWhwd2d6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDYyNDE3NSwiZXhwIjoyMDkwMjAwMTc1fQ.oyuC3Rdp8NcDlZmLGKZmYVcRCsOZUG8yZFTZZKaaZyw';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://znoceotakhynqcqhpwgz.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+if (!SUPABASE_KEY) {
+  console.error('Error: SUPABASE_SERVICE_KEY environment variable is required');
+  process.exit(1);
+}
 
 const headers = {
   'apikey': SUPABASE_KEY,

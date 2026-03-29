@@ -119,8 +119,6 @@ export default function App() {
 
   // Facts loading state
   const [factsReady, setFactsReady] = useState(false)
-  const [loadingProgress, setLoadingProgress] = useState(0)
-
   // Dev panel
   const [showDevPanel, setShowDevPanel] = useState(false)
 
@@ -665,20 +663,6 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [screen, gameMode, handleHome])
 
-  // Update loading progress
-  useEffect(() => {
-    if (!factsReady) {
-      const interval = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev >= 90) return prev
-          return prev + Math.random() * 30
-        })
-      }, 500)
-      return () => clearInterval(interval)
-    } else {
-      setLoadingProgress(100)
-    }
-  }, [factsReady])
 
   if (!factsReady) {
     return (
@@ -696,24 +680,7 @@ export default function App() {
 
         <h2 className="text-white font-black text-lg text-center mb-8">Le quiz des f*cts impossibles</h2>
 
-        <div className="w-full max-w-xs">
-          {/* Progress bar with centered immobile percentage */}
-          <div className="relative w-full rounded-full" style={{ height: 28, background: 'rgba(255,255,255,0.1)' }}>
-            {/* Fill */}
-            <div
-              className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-orange-500 to-pink-500 transition-all"
-              style={{ width: `${Math.min(loadingProgress, 100)}%`, transitionDuration: '300ms' }}
-            />
-            {/* Percentage — absolutely centered, never moves */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white font-black text-xs" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
-                {Math.floor(Math.min(loadingProgress, 100))}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-white/40 text-xs font-bold tracking-widest uppercase mt-6">Chargement…</div>
+        <div className="text-white/40 text-xs font-bold tracking-widest uppercase">Chargement…</div>
       </div>
     )
   }

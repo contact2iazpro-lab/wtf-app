@@ -3,6 +3,32 @@ import SettingsModal from '../components/SettingsModal'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
+// ── Fallback image — couleur dynamique par catégorie ─────────────────────────
+const FallbackImage = ({ categoryColor }) => (
+  <div style={{
+    background: `linear-gradient(160deg, ${categoryColor}22 0%, ${categoryColor} 100%)`,
+    width: '100%',
+    aspectRatio: '16/9',
+    borderRadius: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '24px',
+  }}>
+    <div style={{ fontSize: '14px', fontWeight: 900, color: 'rgba(255,255,255,0.25)', letterSpacing: '4px' }}>WTF!</div>
+    <div style={{ fontSize: '72px', fontWeight: 900, color: 'white', lineHeight: 1 }}>?</div>
+    <div style={{ width: '60%', height: '1px', background: 'rgba(255,255,255,0.3)', margin: '4px 0' }} />
+    <div style={{ fontSize: '13px', fontWeight: 700, color: 'white', letterSpacing: '1px', textAlign: 'center' }}>CE FAIT EST SI INCROYABLE</div>
+    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', textAlign: 'center', lineHeight: 1.5 }}>
+      qu'on n'a pas encore trouvé<br/>une image à la hauteur...
+    </div>
+    <div style={{ width: '60%', height: '1px', background: 'rgba(255,255,255,0.3)', margin: '4px 0' }} />
+    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Image bientôt disponible</div>
+  </div>
+)
+
 export default function RevelationScreen({
   fact,
   isCorrect,
@@ -25,6 +51,7 @@ export default function RevelationScreen({
   const [showScorePulse, setShowScorePulse] = useState(false)
   const [showBadge, setShowBadge] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [imgFailed, setImgFailed] = useState(false)
 
   const scoreRefTarget = useRef(null)
   const pointsBadgeRef = useRef(null)
@@ -213,15 +240,19 @@ export default function RevelationScreen({
       <div
         className={`mx-5 mb-3 rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
         style={{ borderColor: cat?.color + '60', aspectRatio: '1 / 1', background: !isCorrect && !isDuel && flipped ? '#1a1a1a' : 'transparent' }}>
-        {/* Afficher l'image si bonne réponse — fallback si imageUrl absent ou introuvable */}
+        {/* Afficher l'image si bonne réponse — fallback dynamique si imageUrl absent ou introuvable */}
         {isCorrect && (
-          <img
-            src={fact.imageUrl || '/assets/facts/fallback.svg'}
-            alt={fact.question}
-            className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
-            style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
-            onError={(e) => { e.target.onerror = null; e.target.src = '/assets/facts/fallback.svg' }}
-          />
+          fact.imageUrl && !imgFailed ? (
+            <img
+              src={fact.imageUrl}
+              alt={fact.question}
+              className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
+              style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <FallbackImage categoryColor={cat?.color || '#10B981'} />
+          )
         )}
 
           {/* Animation logo WTF! pour mauvaise réponse */}

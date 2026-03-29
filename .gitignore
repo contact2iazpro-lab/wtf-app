@@ -4,5 +4,8 @@ dist/
 *.cjs
 fact_data_correct.json
 sources_temp.json
+.env
+.env.*
+!.env.example
 .env.local
 .env*.local

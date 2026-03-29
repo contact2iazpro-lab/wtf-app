@@ -39,6 +39,14 @@ export default defineConfig({
           return path.resolve(__dirname, 'src/stubs/SettingsModal.jsx')
         }
 
+        // Redirect the game's supabase client → no-op stub.
+        // The game's src/data/facts.js (and other files) may import src/lib/supabase
+        // which itself imports @supabase/supabase-js — a package not installed in
+        // the root node_modules tree, causing Rollup to fail on Vercel.
+        if (/\/lib\/supabase/.test(id) || id === '../lib/supabase' || id === '../../lib/supabase') {
+          return path.resolve(__dirname, 'src/stubs/supabase.js')
+        }
+
         return null
       },
     },

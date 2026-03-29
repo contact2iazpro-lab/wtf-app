@@ -1,6 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: [
+    './index.html',
+    './src/**/*.{js,jsx}',
+    // Include game source files so Tailwind generates all classes used by
+    // real QuestionScreen / RevelationScreen components in the live preview
+    '../src/**/*.{js,jsx}',
+  ],
   theme: {
     extend: {
       colors: {

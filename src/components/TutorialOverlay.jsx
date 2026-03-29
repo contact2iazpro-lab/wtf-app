@@ -5,9 +5,9 @@ const STEPS = [
   {
     gradient: 'linear-gradient(170deg, #0A0F1E 0%, #2A0A45 60%, #0E1A2E 100%)',
     accent: '#FF6B1A',
-    emoji: '⭐',
+    logoImage: '/logo-wtf.png',
     title: 'What The\nF*ct !',
-    subtitle: 'Le quiz des facts impossibles',
+    subtitle: 'Le quiz des f*cts impossibles',
     bullets: null,
     visual: null,
   },
@@ -295,7 +295,7 @@ export default function TutorialOverlay({ onComplete }) {
           transition: 'opacity 0.18s ease',
         }}
       >
-        {/* Big emoji */}
+        {/* Big emoji or logo */}
         <div
           style={{
             fontSize: '5.5rem',
@@ -304,7 +304,10 @@ export default function TutorialOverlay({ onComplete }) {
             filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.6))',
           }}
         >
-          {current.emoji}
+          {current.logoImage
+            ? <img src={current.logoImage} alt="WTF Logo" style={{ width: '6rem', height: '6rem', objectFit: 'contain' }} />
+            : current.emoji
+          }
         </div>
 
         {/* Title */}

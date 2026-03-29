@@ -769,6 +769,7 @@ export default function App() {
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
+          playerCoins={sessionScore}
         />
       )}
 

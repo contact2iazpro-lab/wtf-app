@@ -129,7 +129,7 @@ export default function App() {
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
   // Tutorial (first visit — mandatory) + auto-show rules (once per session)
-  const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem('wtf_tutorial_done') !== 'true')
+  const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem('hideWelcomeScreen') !== 'true')
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const rulesAutoShownRef = useRef(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -630,16 +630,8 @@ export default function App() {
     })
   }, [])
 
-  // Auto-show rules once per session (if toggle is ON and tutorial not showing)
-  useEffect(() => {
-    if (!factsReady) return
-    if (showTutorial) return
-    if (rulesAutoShownRef.current) return
-    rulesAutoShownRef.current = true
-    if (localStorage.getItem('wtf_hide_howtoplay') !== 'true') {
-      setShowHowToPlay(true)
-    }
-  }, [factsReady, showTutorial])
+  // HowToPlayModal only opens manually (via Settings), not automatically
+  // TutorialOverlay covers onboarding — no duplicate auto-show needed
 
   // Push history entry on screen change (back button support)
   useEffect(() => {

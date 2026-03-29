@@ -364,36 +364,35 @@ export default function TutorialOverlay({ onComplete }) {
       {/* Bottom nav */}
       <div className="px-6 pb-8 pt-4 shrink-0">
 
-        {/* Progress bar (first slide only) */}
+        {/* Progress bar (first slide only) — % centré et immobile */}
         {step === 0 && (
           <div
             style={{
+              position: 'relative',
               marginBottom: 16,
-              height: 26,
-              borderRadius: 13,
+              height: 28,
+              borderRadius: 14,
               background: 'rgba(255,255,255,0.12)',
-              overflow: 'hidden',
               border: '1px solid rgba(255,255,255,0.1)',
             }}
           >
+            {/* Fill */}
             <div
               style={{
+                position: 'absolute',
+                top: 0, left: 0,
                 height: '100%',
                 width: `${barWidth}%`,
                 background: `linear-gradient(90deg, ${current.accent}cc, ${current.accent})`,
-                borderRadius: 13,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                paddingRight: barWidth > 8 ? 8 : 0,
-                minWidth: 0,
+                borderRadius: 14,
+                transition: 'width 100ms linear',
               }}
-            >
-              {barWidth > 8 && (
-                <span style={{ fontSize: 11, fontWeight: 900, color: 'white', whiteSpace: 'nowrap' }}>
-                  {Math.round(barWidth)}%
-                </span>
-              )}
+            />
+            {/* Percentage — always centered, never moves */}
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: 11, fontWeight: 900, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                {Math.round(barWidth)}%
+              </span>
             </div>
           </div>
         )}

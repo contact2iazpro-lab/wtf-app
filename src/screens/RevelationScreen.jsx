@@ -251,21 +251,24 @@ export default function RevelationScreen({
     </div>
   )
 
-  // ── COR 1+7 : Overlay message dans le cadre image (réutilisable) ──────────
-  // Wrong → message en bas | Correct → message en haut (évite le tampon FOU bas-droite)
-  const imageMessageOverlay = (msg, position = 'bottom') => flipped && !isDuel && (
+  // ── COR 1 : Message centré verticalement dans le cadre image ────────────────
+  // Pill semi-transparent centré, indépendant du gradient top/bottom
+  const centeredMessagePill = (msg) => flipped && !isDuel && (
     <div
-      className="absolute left-0 right-0 px-3 py-2 text-center pointer-events-none"
-      style={{
-        zIndex: 3,
-        ...(position === 'bottom'
-          ? { bottom: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)' }
-          : { top: 0,    background: 'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%)' }
-        ),
+      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+      style={{ zIndex: 4 }}>
+      <div style={{
+        background: 'rgba(0,0,0,0.62)',
+        backdropFilter: 'blur(6px)',
+        borderRadius: '16px',
+        padding: '8px 16px',
+        maxWidth: '82%',
+        textAlign: 'center',
       }}>
-      <span className="font-bold text-sm" style={{ color: 'white', textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
-        {msg}
-      </span>
+        <span style={{ fontSize: '13px', fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
+          {msg}
+        </span>
+      </div>
     </div>
   )
 
@@ -285,11 +288,14 @@ export default function RevelationScreen({
             className="rounded-3xl overflow-hidden border shrink-0 relative"
             style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}>
 
-            {/* COR 2 — Tampon "PAS CETTE FOIS" centré, grand, -8deg, semi-transparent */}
+            {/* COR 1+2 — Tampon + message bienveillant empilés, centrés verticalement */}
             {flipped && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 2 }}>
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+                style={{ zIndex: 3, gap: '14px' }}>
+                {/* Tampon "PAS CETTE FOIS" */}
                 <div className="stamp-wow" style={{
-                  fontSize: '42px', fontWeight: 900, color: '#F44336',
+                  fontSize: '40px', fontWeight: 900, color: '#F44336',
                   textShadow: '0 4px 16px rgba(244,67,54,0.6)',
                   transform: 'rotate(-8deg)',
                   border: '4px solid #F44336', borderRadius: '10px',
@@ -299,11 +305,17 @@ export default function RevelationScreen({
                 }}>
                   PAS CETTE<br/>FOIS
                 </div>
+                {/* Message bienveillant centré sous le tampon */}
+                <div style={{
+                  background: 'rgba(0,0,0,0.62)', backdropFilter: 'blur(6px)',
+                  borderRadius: '14px', padding: '7px 14px', maxWidth: '82%', textAlign: 'center',
+                }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
+                    {wrongMsg}
+                  </span>
+                </div>
               </div>
             )}
-
-            {/* COR 1 — Message bienveillant en bas du cadre */}
-            {imageMessageOverlay(wrongMsg, 'bottom')}
           </div>
 
           {/* Question */}
@@ -390,8 +402,8 @@ export default function RevelationScreen({
             </div>
           )}
 
-          {/* COR 1 — Message bienveillant EN HAUT du cadre (évite superposition tampon FOU bas-droite) */}
-          {imageMessageOverlay(correctMsg, 'top')}
+          {/* COR 1 — Message bienveillant centré verticalement dans le cadre */}
+          {centeredMessagePill(correctMsg)}
         </div>
 
         {/* Duel — badges correct/incorrect + points */}
@@ -443,10 +455,10 @@ export default function RevelationScreen({
             borderColor: cat?.color + '70', backdropFilter: 'blur(12px)',
             boxShadow: `0 4px 32px ${cat?.color || '#000'}25`,
           }}>
-            {/* COR 3 — Bonne réponse intégrée ici (supprime l'espace vide entre image et carte) */}
+            {/* COR 3 — Bonne réponse visible immédiatement (pas d'opacity:0 qui crée un espace vide) */}
             {!isOpenMode && !isTimeout && (
               <div className="rounded-xl px-3 py-2 border border-green-500/30 mb-3 score-pop"
-                style={{ background: 'rgba(76,175,80,0.1)', animationDelay: '0.3s', opacity: 0 }}>
+                style={{ background: 'rgba(76,175,80,0.1)' }}>
                 <div className="text-green-400 text-xs font-bold uppercase tracking-wide mb-0.5">✓ Bonne réponse :</div>
                 <div className="text-white font-bold text-sm">{correctAnswerText}</div>
               </div>

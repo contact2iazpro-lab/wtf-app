@@ -43,8 +43,8 @@ const SCREENS = {
 
 const DIFFICULTY_LEVELS = {
   EXPERT: { id: 'expert', label: 'Quête WTF! Addict', emoji: '⚡', choices: 6, duration: 30, hintsAllowed: false, scoring: { correct: 5, wrong: 0 } },
-  NORMAL: { id: 'normal', label: 'Quête À fond',      emoji: '🧠', choices: 4, duration: 60, hintsAllowed: false, scoring: { correct: 3, wrong: 0 } },
-  EASY:   { id: 'easy',   label: 'Quête Curieux',     emoji: '💚', choices: 6, duration: 60, hintsAllowed: true,  scoring: { correct: [3, 2, 1], wrong: 0 } },
+  NORMAL: { id: 'normal', label: 'Quête À fond',      emoji: '🧠', choices: 4, duration: 30, hintsAllowed: false, scoring: { correct: 3, wrong: 0 } },
+  EASY:   { id: 'easy',   label: 'Quête Curieux',     emoji: '💚', choices: 4, duration: 30, hintsAllowed: true,  scoring: { correct: [3, 2, 1], wrong: 0 } },
   FLASH:  { id: 'flash',  label: 'Session Flash',   emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true,  scoring: { correct: [5, 3, 2], wrong: 0 } },
 }
 
@@ -444,6 +444,8 @@ export default function App() {
           const isPerfect = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
           coinsEarned = isPerfect ? 25 : 10
           coinsEarned += newStreak * 2 // streak bonus
+        } else if (sessionType === 'parcours') {
+          coinsEarned = sessionScore // 1 coin par point marqué
         }
         setCoinsEarnedLastSession(coinsEarned)
 

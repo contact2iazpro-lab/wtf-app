@@ -13,9 +13,9 @@ const DIFFICULTY_LEVELS = [
     badge: 'IDÉAL POUR COMMENCER',
     description: [
       { icon: '🎯', text: '4 choix possibles' },
-      { icon: '⏱️', text: '60 secondes de réflexion' },
+      { icon: '⏱️', text: '30 secondes de réflexion' },
       { icon: '💡', text: 'Avec indices disponibles' },
-      { icon: '⭐', text: '3/2/1 points selon les indices' },
+      { icon: '⭐', text: '3/2/1 coins selon les indices' },
     ],
   },
   {
@@ -27,9 +27,9 @@ const DIFFICULTY_LEVELS = [
     badge: 'LE PLUS JOUÉ',
     description: [
       { icon: '🎯', text: '4 choix possibles' },
-      { icon: '⏱️', text: '60 secondes de réflexion' },
+      { icon: '⏱️', text: '30 secondes de réflexion' },
       { icon: '🚫', text: 'Sans indices' },
-      { icon: '⭐', text: '3 points par réponse correcte' },
+      { icon: '⭐', text: '3 coins par réponse correcte' },
     ],
   },
   {
@@ -43,7 +43,7 @@ const DIFFICULTY_LEVELS = [
       { icon: '🎯', text: '6 choix possibles' },
       { icon: '⏱️', text: '30 secondes de réflexion' },
       { icon: '🚫', text: 'Sans indices' },
-      { icon: '⭐', text: '5 points par réponse correcte' },
+      { icon: '⭐', text: '5 coins par réponse correcte' },
     ],
   },
 ]
@@ -59,7 +59,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
       label: difficulty.label,
       emoji: difficulty.emoji,
       choices: difficultyId === 'expert' ? 6 : 4,
-      duration: difficultyId === 'expert' ? 30 : 60,
+      duration: 30,
       hintsAllowed: difficultyId === 'easy',
       scoring: difficultyId === 'expert'
         ? { correct: 5, wrong: 0 }

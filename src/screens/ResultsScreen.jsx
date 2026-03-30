@@ -430,7 +430,7 @@ export default function ResultsScreen({
               <div className="text-yellow-200 font-black text-base">+{totalCoins} WTF! Coins</div>
               {isPerfect && perfectBonus > 0 ? (
                 <div className="text-yellow-300/80 text-xs font-semibold">
-                  {coinsEarned} pts + {perfectBonus} bonus score parfait 🌟
+                  {coinsEarned} coins + {perfectBonus} bonus score parfait 🌟
                 </div>
               ) : (
                 <div className="text-white/50 text-xs font-semibold">Ajoutés à ton solde</div>

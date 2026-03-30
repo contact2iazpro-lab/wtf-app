@@ -303,7 +303,7 @@ export default function QuestionScreen({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-white font-black text-base">🧠 Question ouverte</div>
-                    <div className="text-white/40 text-xs font-semibold mt-0.5">N°1 · N°2 · 60 secondes</div>
+                    <div className="text-white/40 text-xs font-semibold mt-0.5">N°1 · N°2 · 30 secondes</div>
                   </div>
                   <div className="text-right">
                     <div className="font-black text-2xl" style={{ color: cat?.color || '#22C55E' }}>5</div>

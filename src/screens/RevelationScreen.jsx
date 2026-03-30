@@ -143,13 +143,12 @@ export default function RevelationScreen({
   }
 
   const handleNativeShare = () => {
-    const shortTitle = fact.shortTitle || fact.question.slice(0, 50)
     const shareMessages = [
-      `🤯 Mate ce f*ct !\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-      `🤯 Tu savais ça ?!\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-      `🤯 WOOW incroyable !\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-      `🤯 Regarde ce que j'ai découvert !\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-      `🤯 Non mais t'as vu ça ?!\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 Mate ce f*ct !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 Tu savais ça ?!\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 WOOW incroyable !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 Regarde ce que j'ai découvert !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 Non mais t'as vu ça ?!\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
     ]
     const shareMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
     if (navigator.share) {
@@ -586,45 +585,30 @@ export default function RevelationScreen({
             </div>
             <p className="text-white/80 text-sm leading-relaxed font-medium mb-3">{fact.explanation}</p>
 
-            {/* Lien source + bouton Suivant sur la même ligne */}
-            <div className="flex items-center gap-2 mb-2">
-              {fact.sourceUrl ? (
-                <a
-                  href={fact.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs font-semibold flex-1 min-w-0"
-                  style={{ color: cat?.color + 'cc' }}
-                >
-                  <span>🔗</span>
-                  <span className="underline underline-offset-2 truncate">
-                    {fact.sourceUrl.replace(/^https?:\/\//, '').split('/')[0]}
-                  </span>
-                </a>
-              ) : (
-                <div className="flex-1" />
-              )}
+            {/* MOD 4+5 — Partager + Suivant côte à côte, URL supprimée */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleNativeShare}
+                className="btn-press flex-1 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                style={{
+                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+                  color: 'white',
+                  boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
+                }}
+              >
+                🎩 Partager ce WTF!
+              </button>
               <button
                 onClick={() => { audio.play('click'); onNext() }}
-                className="btn-press py-3 px-4 rounded-xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all shrink-0"
-                style={nextBtnStyle}
+                className="btn-press flex-1 py-3 rounded-xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
+                style={{
+                  background: 'linear-gradient(135deg, #FF6B1A 0%, #FF6B1Acc 100%)',
+                  boxShadow: '0 4px 20px #FF6B1A40',
+                }}
               >
                 ⚡ Suivant →
               </button>
             </div>
-
-            {/* MOD 4 — Partage natif Web Share API */}
-            <button
-              onClick={handleNativeShare}
-              className="btn-press w-full py-3 rounded-xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-              style={{
-                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                color: 'white',
-                boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
-              }}
-            >
-              🎩 Partager ce WTF!
-            </button>
           </div>
         )}
 

@@ -439,13 +439,15 @@ export default function App() {
       const newSessionsToday = sessionsToday + 1
 
       if (!isQuickPlay) {
-        // Unlock correctly answered facts
+        // Unlock correctly answered facts — sauf en mode marathon (f*cts joués mais non collectés)
         const newUnlocked = new Set(unlockedFacts)
         const toSync = []
-        for (const fact of sessionCorrectFacts) {
-          if (!newUnlocked.has(fact.id)) {
-            newUnlocked.add(fact.id)
-            toSync.push(fact)
+        if (sessionType !== 'marathon') {
+          for (const fact of sessionCorrectFacts) {
+            if (!newUnlocked.has(fact.id)) {
+              newUnlocked.add(fact.id)
+              toSync.push(fact)
+            }
           }
         }
 

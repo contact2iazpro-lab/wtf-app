@@ -259,14 +259,14 @@ export default function HomeScreen({
           src="/logo-wtf.png"
           alt="WTF!"
           style={{
-            height: 72, objectFit: 'contain',
+            maxHeight: 90, objectFit: 'contain',
             filter: 'drop-shadow(0 4px 18px rgba(255,120,0,0.55))',
             animation: logoAnimated ? 'wtfLogoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
             opacity: logoAnimated ? 1 : 0,
           }}
         />
         <div style={{
-          fontSize: 16, fontWeight: 900, color: '#FF6B1A',
+          fontSize: 'clamp(24px, 6vw, 32px)', fontWeight: 900, color: '#FF6B1A',
           letterSpacing: 1, textAlign: 'center',
           textShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
@@ -290,29 +290,28 @@ export default function HomeScreen({
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'space-evenly',
           alignSelf: 'stretch',
-          paddingBottom: 120,
-          gap: 16,
+          paddingTop: 8, paddingBottom: 180,
         }}>
           <ActiveIcon emoji="🎯" label="Quête WTF!" onClick={() => nav('difficulty')} />
           <ActiveIcon emoji="🔥" label="Série"       onClick={() => nav('streak')} />
           <ActiveIcon emoji="📅" label="Du Jour"     onClick={() => nav('wtfDuJour')} />
         </div>
 
-        {/* ── Colonne centre — tagline uniquement ── */}
+        {/* ── Colonne centre — tagline uniquement, centrée sur l'icône du milieu ── */}
         <div style={{
           flex: 1,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
+          alignSelf: 'center',
           minWidth: 0,
-          padding: '0 6px',
+          padding: '0 8px',
         }}>
           <div style={{
-            fontSize: 'clamp(20px, 5vw, 28px)', color: 'white', textAlign: 'center',
+            fontSize: 'clamp(20px, 5vw, 26px)', color: 'white', textAlign: 'center',
             lineHeight: 1.35,
             textShadow: '0 1px 6px rgba(0,0,0,0.5)',
             fontWeight: 800,
-            padding: '0 16px',
           }}>
-            Des f*cts 100% vrais,<br />des réactions 100% fun
+            Des f*cts 100% vrais,<br />des réactions 100% fun !!!
           </div>
         </div>
 
@@ -322,8 +321,7 @@ export default function HomeScreen({
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'space-evenly',
           alignSelf: 'stretch',
-          paddingBottom: 120,
-          gap: 16,
+          paddingTop: 8, paddingBottom: 180,
         }}>
           <ActiveIcon emoji="🏃" label="Marathon" onClick={() => nav('marathon')} />
           <ComingSoonIcon emoji="🎮" />

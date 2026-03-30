@@ -31,12 +31,12 @@ const FallbackImage = ({ categoryColor }) => (
 
 // ── Messages bienveillants ─────────────────────────────────────────────────────
 const WRONG_MESSAGES = [
+  "Pas grave, maintenant tu sais... que tu ne sais pas ! 😅",
+  "Même les experts se trompent sur celui-là 🧠",
   "Tu l'auras la prochaine fois ! 💪",
-  "Retente ta chance... ce f*ct mérite d'être connu !",
-  "Même les experts se trompent sur celui-là 😅",
-  "Même Einstein aurait séché sur celui-là ! 🧠",
   "Ce f*ct est tellement WTF! qu'on comprend que tu aies raté ! 😂",
-  "Pas grave, maintenant tu sais ! 🎓",
+  "Même Einstein aurait séché sur celui-là ! 🧠",
+  "Retente ta chance... ce f*ct mérite d'être connu !",
   "Ce f*ct est dans ta tête pour toujours... même raté ! 🧩",
   "Un de perdu, dix de retrouvés — rejoue ! 🎯",
   "La prochaine fois tu épateras tes amis avec ce f*ct ! 🤩",
@@ -369,17 +369,17 @@ export default function RevelationScreen({
               )}
             </div>
 
-            {/* Stats joueurs */}
+            {/* Stats joueurs — MOD B : 16px/700, couleur catégorie */}
             <div className="text-center py-1 shrink-0">
-              <span className="text-xs font-bold" style={{ color: cat?.color || '#FF6B1A' }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: cat?.color || '#FF6B1A' }}>
                 👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
               </span>
             </div>
 
-            {/* Question */}
+            {/* Question — MOD A : label 16px, texte 20px/700 */}
             <div className="rounded-2xl p-3 border shrink-0" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>
-              <div className="text-white/60 text-xs font-semibold mb-1">La question :</div>
-              <div className="text-white font-bold text-sm leading-snug">{fact.question}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>La question :</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{fact.question}</div>
             </div>
 
             {/* MOD 4 — Bloc "✗ Votre réponse" supprimé */}

@@ -2,19 +2,20 @@ import { useState } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 
-// COR 1 — Ordre croissant : Curieux → À fond → WTF! Addict
+// COR 2 — Niveaux avec dégradés, badges et descripteurs iconifiés
 const DIFFICULTY_LEVELS = [
   {
     id: 'easy',
     label: 'Curieux',
     emoji: '💚',
-    color: '#22C55E',
-    colorRgba: 'rgba(34, 197, 94, 0.82)',
+    color: '#10B981',
+    gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+    badge: 'IDÉAL POUR COMMENCER',
     description: [
-      '4 choix possibles',
-      '60 secondes de réflexion',
-      'Avec indices disponibles',
-      '3/2/1 points selon les indices',
+      { icon: '🎯', text: '4 choix possibles' },
+      { icon: '⏱️', text: '60 secondes de réflexion' },
+      { icon: '💡', text: 'Avec indices disponibles' },
+      { icon: '⭐', text: '3/2/1 points selon les indices' },
     ],
   },
   {
@@ -22,25 +23,27 @@ const DIFFICULTY_LEVELS = [
     label: 'À fond',
     emoji: '🧠',
     color: '#3B82F6',
-    colorRgba: 'rgba(59, 130, 246, 0.82)',
+    gradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+    badge: 'LE PLUS JOUÉ',
     description: [
-      '4 choix possibles',
-      '60 secondes de réflexion',
-      'Sans indices',
-      '3 points par réponse correcte',
+      { icon: '🎯', text: '4 choix possibles' },
+      { icon: '⏱️', text: '60 secondes de réflexion' },
+      { icon: '🚫', text: 'Sans indices' },
+      { icon: '⭐', text: '3 points par réponse correcte' },
     ],
   },
   {
     id: 'expert',
     label: 'WTF! Addict',
     emoji: '⚡',
-    color: '#FF5C1A',
-    colorRgba: 'rgba(255, 92, 26, 0.82)',
+    color: '#F97316',
+    gradient: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
+    badge: 'POUR LES VRAIS 🔥',
     description: [
-      '6 choix possibles',
-      '30 secondes de réflexion',
-      'Sans indices',
-      '5 points par réponse correcte',
+      { icon: '🎯', text: '6 choix possibles' },
+      { icon: '⏱️', text: '30 secondes de réflexion' },
+      { icon: '🚫', text: 'Sans indices' },
+      { icon: '⭐', text: '5 points par réponse correcte' },
     ],
   },
 ]
@@ -68,16 +71,22 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
     onSelectDifficulty(difficultyObj)
   }
 
-  const handleBack = () => {
-    audio.play('click')
-    onBack()
-  }
+  const selectedLevel = DIFFICULTY_LEVELS.find(d => d.id === selectedId)
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden scrollbar-hide screen-enter rainbow-bg">
+    <div className="flex flex-col h-full w-full overflow-hidden screen-enter rainbow-bg">
+
+      {/* COR 5 — Pulse animation pour le bouton CTA */}
+      <style>{`
+        @keyframes cta-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+          50%       { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+        }
+        .cta-pulse { animation: cta-pulse 2s ease-in-out infinite; }
+      `}</style>
+
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* MOD 6 — ⚙️ en bas à droite (cohérent avec les autres écrans) */}
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
         className="fixed bottom-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
@@ -86,55 +95,61 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
       </button>
 
       {/* Header */}
-      <div className="px-3 md:px-4 pt-2 md:pt-3 pb-2 flex items-center justify-between shrink-0">
+      <div className="px-3 pt-2 pb-1 flex items-center justify-between shrink-0">
         <button
-          onClick={handleBack}
-          className="w-8 md:w-9 h-8 md:h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors active:scale-90 text-base"
-          style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+          onClick={() => { audio.play('click'); onBack() }}
+          className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all"
+          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', fontSize: 16 }}>
           ←
         </button>
-        {/* COR 3 — Titre plus grand et contrasté */}
-        <h1 className="text-xl md:text-2xl font-black text-white text-center flex-1" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+
+        {/* COR 1 — Titre 28px, black, blanc pur */}
+        <h1
+          className="flex-1 text-center font-black"
+          style={{ fontSize: 28, color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
           Jusqu'où tu veux aller ?
         </h1>
-        <div className="w-8 md:w-9" />
+        <div className="w-9" />
       </div>
 
-      {/* COR 3 — Sous-titre plus visible */}
-      <p className="text-center text-sm font-black uppercase tracking-[0.15em] mb-1.5 shrink-0" style={{ color: 'rgba(255,255,255,0.88)' }}>
-        Quête WTF! — choisis ton niveau
+      {/* COR 1 — Sous-titre 14px, tracking 2px, blanc 80% */}
+      <p
+        className="text-center shrink-0 mb-1"
+        style={{ fontSize: 14, fontWeight: 700, letterSpacing: '2px', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>
+        Quête WTF! — Choisis ton niveau
       </p>
 
-      {/* Difficulty Cards */}
-      <div className="px-3 md:px-4 py-1 md:py-2 flex flex-col gap-2 md:gap-2.5 overflow-y-auto scrollbar-hide">
+      {/* COR 2 — Cartes : flex-1 pour remplir sans espace mort (COR 6) */}
+      <div className="px-3 flex-1 flex flex-col gap-2 overflow-hidden py-1">
         {DIFFICULTY_LEVELS.map((difficulty) => {
           const isSelected = selectedId === difficulty.id
           return (
             <button
               key={difficulty.id}
               onClick={() => { audio.play('click'); setSelectedId(difficulty.id) }}
-              className="btn-press rounded-xl md:rounded-2xl p-3 md:p-4 text-left"
+              className="btn-press flex-1 rounded-2xl p-3 text-left relative overflow-hidden"
               style={{
-                background: difficulty.colorRgba,
-                opacity: isSelected ? 1 : 0.55,
-                // COR 4 — Bordure blanche épaisse (toujours visible), scale + shadow
-                border: isSelected
-                  ? '4px solid rgba(255,255,255,0.95)'
-                  : '4px solid transparent',
+                background: difficulty.gradient,
+                // COR 3 — Sélection affirmée : bordure blanche 3px + shadow + scale
+                border: isSelected ? '3px solid white' : '3px solid transparent',
                 transform: isSelected ? 'scale(1.02)' : 'scale(1)',
-                boxShadow: isSelected
-                  ? `0 8px 28px ${difficulty.color}70, 0 0 0 2px ${difficulty.color}50`
-                  : 'none',
-                transition: 'opacity 0.2s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.2s ease',
+                boxShadow: isSelected ? '0 0 20px rgba(255,255,255,0.4)' : 'none',
+                transition: 'border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
               }}>
 
-              {/* Emoji + Titre + ✓ */}
-              <div className="flex items-center gap-2 mb-1.5 md:mb-2">
-                <span className="text-xl md:text-2xl shrink-0">{difficulty.emoji}</span>
-                <h2 className="text-white font-black text-sm md:text-base flex-1">
+              {/* COR 2 — Badge haut-droite */}
+              <div
+                className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full"
+                style={{ background: 'rgba(255,255,255,0.22)', fontSize: 9, fontWeight: 700, color: 'white', letterSpacing: '0.5px' }}>
+                {difficulty.badge}
+              </div>
+
+              {/* Emoji (32px) + Titre (22px 900) + ✓ */}
+              <div className="flex items-center gap-2 mb-1.5">
+                <span style={{ fontSize: 32, lineHeight: 1 }}>{difficulty.emoji}</span>
+                <h2 style={{ fontSize: 22, fontWeight: 900, color: 'white', flex: 1 }}>
                   {difficulty.label}
                 </h2>
-                {/* MOD 4 — ✓ plus visible : cercle blanc avec couleur niveau */}
                 {isSelected && (
                   <span
                     className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-black shrink-0"
@@ -144,12 +159,12 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                 )}
               </div>
 
-              {/* COR 2 — Descripteurs blancs, bold, lisibles sur fond coloré */}
-              <div className="space-y-1">
+              {/* COR 4 — Descripteurs avec icônes, 14px, blanc 90%, font-weight 600 */}
+              <div className="space-y-0.5">
                 {difficulty.description.map((desc, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="shrink-0 text-white/60 text-xs">•</span>
-                    <span className="text-white font-bold text-xs md:text-sm leading-snug">{desc}</span>
+                  <div key={i} className="flex items-center gap-1.5">
+                    <span style={{ fontSize: 12, width: 18, textAlign: 'center', flexShrink: 0 }}>{desc.icon}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.9)', lineHeight: 1.3 }}>{desc.text}</span>
                   </div>
                 ))}
               </div>
@@ -158,14 +173,18 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         })}
       </div>
 
-      {/* Bouton "C'EST PARTI ! ⚡" */}
-      <div className="px-3 md:px-4 pb-4 pt-2 shrink-0">
+      {/* COR 5+6 — Bouton CTA compact, sans espace vide */}
+      <div className="px-3 pb-3 pt-2 shrink-0">
         <button
           onClick={() => handleSelect(selectedId)}
-          className="btn-press w-full py-3 md:py-3.5 rounded-xl md:rounded-2xl text-white font-black text-sm md:text-base uppercase tracking-wide active:scale-95 transition-all"
+          className="btn-press w-full rounded-2xl font-black uppercase tracking-wide active:scale-95 transition-all cta-pulse"
           style={{
-            background: DIFFICULTY_LEVELS.find(d => d.id === selectedId)?.color,
-            boxShadow: `0 8px 32px ${DIFFICULTY_LEVELS.find(d => d.id === selectedId)?.color}55`,
+            fontSize: 18,
+            fontWeight: 900,
+            paddingTop: 16,
+            paddingBottom: 16,
+            background: 'white',
+            color: selectedLevel?.color || '#3B82F6',
           }}>
           C'EST PARTI ! ⚡
         </button>

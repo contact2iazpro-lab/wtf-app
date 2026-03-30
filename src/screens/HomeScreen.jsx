@@ -1,22 +1,21 @@
-import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { audio } from '../utils/audio'
+/**
+ * HomeScreen — Refonte complète
+ * Architecture : 5 zones full-screen (100dvh), pas de scroll
+ * Zone 1 : Header (profil · coins · tickets · settings)
+ * Zone 2 : Bandeau badge + countdown
+ * Zone 3 : Corps 3 colonnes (actifs | logo+chat | bientôt)
+ * Zone 4 : Bouton Flash
+ * Zone 5 : Nav 5 onglets
+ */
+
+import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
-import { getCategoryById } from '../data/facts'
-import { getDeviceId } from '../config/devConfig'
-
-// ── Série flame visual evolution ──────────────────────────────────────────────
-function getStreakFlame(streak) {
-  if (streak >= 100) return { emoji: '🌟', label: 'Légendaire', color: '#FF6B1A', glow: 'rgba(255,107,26,0.8)' }
-  if (streak >= 30)  return { emoji: '⭐🔥', label: `${streak} jours`, color: '#FFD700', glow: 'rgba(255,215,0,0.6)' }
-  if (streak >= 7)   return { emoji: '💙🔥', label: `${streak} jours`, color: '#60A5FA', glow: 'rgba(96,165,250,0.5)' }
-  return { emoji: '🔥', label: streak > 0 ? `${streak} jours` : '0 jour', color: '#FF6B1A', glow: 'rgba(255,107,26,0.4)' }
-}
+import { audio } from '../utils/audio'
 
 // ── Countdown to midnight ─────────────────────────────────────────────────────
 function useCountdownToMidnight() {
-  const getRemaining = () => {
+  const calc = () => {
     const now = new Date()
     const midnight = new Date(now)
     midnight.setHours(24, 0, 0, 0)
@@ -25,301 +24,319 @@ function useCountdownToMidnight() {
     const m = Math.floor((diff % 3600000) / 60000)
     return `${h}h ${String(m).padStart(2, '0')}min`
   }
-  const [remaining, setRemaining] = useState(getRemaining)
+  const [remaining, setRemaining] = useState(calc)
   useEffect(() => {
-    const timer = setInterval(() => setRemaining(getRemaining()), 30000)
-    return () => clearInterval(timer)
+    const t = setInterval(() => setRemaining(calc()), 30000)
+    return () => clearInterval(t)
   }, [])
   return remaining
 }
 
-// ── Logo ──────────────────────────────────────────────────────────────────────
-function StarLogo() {
+// ── Badge progress 0-100 ──────────────────────────────────────────────────────
+function getBadgeProgress(info) {
+  if (!info) return 0
+  const total = info.count || 10
+  const done  = total - (info.remaining || total)
+  return Math.max(4, Math.min(96, Math.round((done / total) * 100)))
+}
+
+// ── Icône active (colonne gauche) ─────────────────────────────────────────────
+function ActiveIcon({ emoji, label, onClick }) {
   return (
-    <div className="relative flex items-center justify-center animate-fade-up" style={{ width: 110, height: 110 }}>
-      <div className="absolute inset-0" style={{
-        background: 'radial-gradient(circle, rgba(255,180,0,0.3) 0%, transparent 65%)',
-        filter: 'blur(18px)',
-      }} />
-      <img
-        src="/logo-wtf.png"
-        alt="WTF!"
-        style={{ width: 150, height: 150, objectFit: 'contain', position: 'relative', zIndex: 1, filter: 'drop-shadow(0 6px 20px rgba(255,120,0,0.5))' }}
-      />
+    <button
+      onClick={onClick}
+      style={{
+        width: 52, height: 52, borderRadius: 14,
+        background: 'rgba(255,255,255,0.9)',
+        boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
+        border: 'none', cursor: 'pointer', padding: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 2,
+        WebkitTapHighlightColor: 'transparent',
+        transition: 'transform 0.1s',
+        flexShrink: 0,
+      }}
+      onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.93)')}
+      onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
+    >
+      <span style={{ fontSize: 22, lineHeight: 1 }}>{emoji}</span>
+      <span style={{
+        fontSize: 6.5, fontWeight: 800, color: '#FF6B1A',
+        textAlign: 'center', lineHeight: 1.2,
+        maxWidth: 46, overflow: 'hidden',
+        textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      }}>{label}</span>
+    </button>
+  )
+}
+
+// ── Icône bientôt (colonne droite) ────────────────────────────────────────────
+function ComingSoonIcon({ emoji }) {
+  return (
+    <div style={{
+      width: 52, height: 52, borderRadius: 14,
+      background: 'rgba(255,255,255,0.25)',
+      border: '1.5px dashed rgba(255,255,255,0.5)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 2,
+      flexShrink: 0,
+    }}>
+      <span style={{ fontSize: 22, opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 6.5, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
     </div>
   )
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HomeScreen({
-  totalScore, streak, wtfCoins, wtfDuJourFait, sessionsToday,
-  onWTFDuJour, onFlashSolo, onPlay, onQuickPlay, onDuel, onMarathon,
-  onOpenDevPanel,
-  // Badge progress: { category, count, difficulty, remaining } or null
-  nextBadgeInfo = null,
+  playerCoins          = 0,
+  dailyQuestsRemaining = 3,
+  currentStreak        = 0,
+  nextBadgeInfo        = null,
+  onNavigate,
+  onOpenSettings,
 }) {
   const [showSettings, setShowSettings] = useState(false)
-  const navigate = useNavigate()
-  const tapCountRef = useRef(0)
-  const tapTimerRef = useRef(null)
-  const countdownRemaining = useCountdownToMidnight()
+  const countdown     = useCountdownToMidnight()
+  const badgeProgress = getBadgeProgress(nextBadgeInfo)
 
-  const handleLogoTap = () => {
-    tapCountRef.current += 1
-    clearTimeout(tapTimerRef.current)
-    if (tapCountRef.current >= 3) {
-      tapCountRef.current = 0
-      if (onOpenDevPanel) onOpenDevPanel()
-    } else {
-      tapTimerRef.current = setTimeout(() => { tapCountRef.current = 0 }, 600)
-    }
+  const nav = (target) => {
+    audio.play?.('click')
+    if (onNavigate) onNavigate(target)
   }
 
-  const flame = getStreakFlame(streak)
-
-  // Série state: active (played today) vs in danger (not played yet)
-  const streakPlayedToday = (sessionsToday > 0) || wtfDuJourFait
-  const streakInDanger = streak > 0 && !streakPlayedToday
-
-  const handleDuel = () => { audio.startMusic(); audio.play('click'); onDuel() }
-  const handleMarathon = () => { audio.startMusic(); audio.play('click'); onMarathon() }
-
-  // MOD 6 — Modes de jeu: actifs en haut (Parcours, Flash), inactifs en bas (Marathon, Multijoueur)
-  const gameModes = [
-    { id: 'parcours', label: 'Quête WTF!', emoji: '🎯', desc: 'Complétez vos Collections', action: () => { audio.startMusic(); audio.play('click'); onPlay() }, active: true },
-    { id: 'flash',    label: 'Session Flash',  emoji: '⚡', desc: '5 questions rapides',      action: () => { audio.play('click'); onFlashSolo() }, active: true },
-    { id: 'marathon', label: 'Marathon',        emoji: '🏃', desc: '20 questions',             action: handleMarathon, active: false },
-    { id: 'duel',     label: 'Multijoueur',     emoji: '🎮', desc: '2-6 joueurs',             action: handleDuel, active: false },
-  ]
+  const handleSettings = () => {
+    audio.play?.('click')
+    if (onOpenSettings) onOpenSettings()
+    else setShowSettings(true)
+  }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden scrollbar-hide rainbow-bg">
-
-      {/* ── Flame animations ── */}
-      <style>{`
-        @keyframes flame-pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.8; }
-        }
-        @keyframes flame-danger {
-          0%, 100% { opacity: 1; }
-          35%, 65% { opacity: 0.2; }
-        }
-        .flame-active { animation: flame-pulse 1.8s ease-in-out infinite; display: inline-block; }
-        .flame-danger { animation: flame-danger 1.3s ease-in-out infinite; display: inline-block; }
-      `}</style>
-
+    <div
+      style={{
+        display: 'flex', flexDirection: 'column',
+        height: '100dvh', width: '100%', overflow: 'hidden',
+        fontFamily: 'Nunito, sans-serif',
+      }}
+      className="rainbow-bg"
+    >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* ── Settings button — bottom right (au-dessus de la nav bar) ── */}
-      <button
-        onClick={() => { audio.play('click'); setShowSettings(true) }}
-        className="fixed w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
-        style={{ zIndex: 40, bottom: 80, right: 16, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        ⚙️
-      </button>
+      {/* ══ ZONE 1 — Header ══════════════════════════════════════════════════ */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '8px 12px',
+        background: 'rgba(0,0,0,0.2)',
+        flexShrink: 0,
+      }}>
+        {/* Profil */}
+        <button
+          onClick={() => nav('profil')}
+          style={{
+            width: 34, height: 34, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.25)',
+            border: '2px solid rgba(255,255,255,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, cursor: 'pointer', flexShrink: 0,
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+          👤
+        </button>
 
-      {/* ── Header: logo + taglines + stats ── */}
-      <div className="relative pt-1 pb-0 px-4 flex flex-col items-center shrink-0" style={{ zIndex: 1 }}>
-        <div onClick={handleLogoTap} style={{ cursor: 'default', WebkitTapHighlightColor: 'transparent' }}>
-          <StarLogo />
+        <div style={{ flex: 1 }} />
+
+        {/* Coins */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          background: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: '4px 10px',
+        }}>
+          <CoinsIcon size={16} />
+          <span style={{ fontWeight: 800, color: 'white', fontSize: 13 }}>{playerCoins}</span>
         </div>
 
-        {import.meta.env.DEV && (
-          <button
-            onClick={() => {
-              const id = getDeviceId()
-              navigator.clipboard?.writeText(id).catch(() => {})
-              alert(`Device ID (copié):\n\n${id}`)
+        {/* Tickets */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          background: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: '4px 10px',
+        }}>
+          <span style={{ fontSize: 14 }}>🎟️</span>
+          <span style={{ fontWeight: 800, color: 'white', fontSize: 13 }}>{dailyQuestsRemaining}</span>
+        </div>
+
+        {/* Settings */}
+        <button
+          onClick={handleSettings}
+          style={{
+            width: 34, height: 34, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.25)',
+            border: '2px solid rgba(255,255,255,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, cursor: 'pointer', flexShrink: 0,
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+          ⚙️
+        </button>
+      </div>
+
+      {/* ══ ZONE 2 — Badge progress + countdown ══════════════════════════════ */}
+      <div style={{
+        margin: '6px 12px 0',
+        background: 'rgba(0,0,0,0.2)',
+        borderRadius: 10, padding: '6px 10px',
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <span style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Prochain badge
+          </span>
+          <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+            ⏱ {countdown}
+          </span>
+        </div>
+        <div style={{ height: 6, background: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${badgeProgress}%`, background: '#FF6B1A', borderRadius: 3, transition: 'width 0.5s ease' }} />
+        </div>
+        <div style={{ marginTop: 4, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.7)', lineHeight: 1.3 }}>
+          {nextBadgeInfo
+            ? `${nextBadgeInfo.category} × ${nextBadgeInfo.count} ${nextBadgeInfo.difficulty} — encore ${nextBadgeInfo.remaining} f*cts`
+            : 'Lance une quête pour débloquer ton premier badge !'}
+        </div>
+      </div>
+
+      {/* ══ ZONE 3 — Corps 3 colonnes ════════════════════════════════════════ */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'row',
+        padding: '8px 8px 4px', gap: 6, minHeight: 0,
+      }}>
+
+        {/* ── Colonne gauche — modes actifs ── */}
+        <div style={{
+          width: 64, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 10,
+        }}>
+          <ActiveIcon emoji="🎯" label="Quête WTF!" onClick={() => nav('difficulty')} />
+          <ActiveIcon emoji="🔥" label="Série"       onClick={() => nav('streak')} />
+          <ActiveIcon emoji="📅" label="F*ct du Jour" onClick={() => nav('wtfDuJour')} />
+        </div>
+
+        {/* ── Colonne centre — logo + tagline + mascotte ── */}
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          minWidth: 0, minHeight: 0,
+        }}>
+          <img
+            src="/logo-wtf.png"
+            alt="WTF!"
+            style={{
+              maxHeight: 80, objectFit: 'contain', flexShrink: 0,
+              filter: 'drop-shadow(0 4px 18px rgba(255,120,0,0.55))',
             }}
-            className="text-xs px-2 py-0.5 rounded-lg font-mono -mt-1 mb-0.5"
-            style={{ background: 'rgba(0,0,0,0.12)', color: 'rgba(0,0,0,0.35)', border: '1px solid rgba(0,0,0,0.08)' }}>
-            Afficher mon Device ID
-          </button>
-        )}
-
-        {/* MOD 1 — Taglines */}
-        <p className="text-sm font-black tracking-[0.15em] uppercase -mt-1 mb-0" style={{ color: '#7C3AED' }}>
-          Vrai ou fou ?
-        </p>
-        <p className="text-sm font-bold mb-2" style={{ color: 'white', textShadow: '0 1px 6px rgba(0,0,0,0.35)', letterSpacing: '0.02em' }}>
-          Des f*cts 100% vrais, des réactions 100% fun
-        </p>
-
-        {/* MOD 7 — Stats row: Série + WTF Coins — même px-4 que les blocs en dessous */}
-        <div className="flex gap-2 w-full">
-
-          {/* COR 2 — Série compact (py-2 px-3) */}
-          <div
-            className="flex-1 rounded-2xl py-2 px-3 text-center border"
-            style={{
-              background: 'rgba(255,255,255,0.6)',
-              borderColor: streakInDanger ? 'rgba(255,107,26,0.7)' : 'rgba(255,255,255,0.9)',
-              backdropFilter: 'blur(12px)',
-              boxShadow: `0 4px 16px ${streakInDanger ? 'rgba(255,107,26,0.35)' : flame.glow}`,
-            }}>
-            <div className="text-lg mb-0">
-              <span className={streakPlayedToday ? 'flame-active' : streakInDanger ? 'flame-danger' : ''}>
-                {flame.emoji}
-              </span>
-            </div>
-            <div className="text-base font-black leading-tight" style={{ color: '#1a1a2e' }}>{streak}</div>
-            <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>Série</div>
-            {streakInDanger && (
-              <div className="text-xs font-bold mt-0.5" style={{ color: '#FF6B1A' }}>⚠️ En danger !</div>
-            )}
+          />
+          <div style={{ fontSize: 15, fontWeight: 900, color: '#FF6B1A', letterSpacing: 1, marginTop: 4, textAlign: 'center' }}>
+            VRAI OU FOU ?
           </div>
-
-          {/* COR 1+2 — WTF Coins compact, affichage inline icon+chiffre */}
-          <div
-            className="flex-1 rounded-2xl py-2 px-3 text-center border"
-            style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-            <div className="flex items-center justify-center gap-1.5 mb-0.5">
-              <CoinsIcon size={18} />
-              <span className="text-base font-black" style={{ color: '#1a1a2e', fontWeight: 700 }}>{wtfCoins}</span>
-            </div>
-            <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>WTF! Coins</div>
+          <div style={{
+            fontSize: 10, color: 'white', textAlign: 'center',
+            marginTop: 2, lineHeight: 1.35,
+            textShadow: '0 1px 5px rgba(0,0,0,0.45)',
+            padding: '0 6px',
+          }}>
+            Des f*cts 100% vrais,<br />des réactions 100% fun
           </div>
-
-        </div>
-      </div>
-
-      {/* ── MOD 4 — WTF du Jour avec countdown ── */}
-      <div className="px-4 py-1.5 shrink-0" style={{ position: 'relative', zIndex: 1 }}>
-        {!wtfDuJourFait ? (
-          <button
-            onClick={() => { audio.play('click'); onWTFDuJour() }}
-            className="btn-press w-full rounded-2xl text-white font-black tracking-wide uppercase transition-all duration-150 active:scale-95 overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-              boxShadow: '0 8px 40px rgba(124,58,237,0.55), 0 2px 8px rgba(0,0,0,0.4)',
-            }}>
-            <div className="flex items-center px-3 py-2 gap-3">
-              <span className="text-2xl">🤯</span>
-              <div className="flex-1 text-left">
-                <div className="text-sm font-black">Le WTF! du Jour t'attend !</div>
-                <div className="text-xs font-bold opacity-75 normal-case tracking-normal">
-                  Disponible encore {countdownRemaining}
-                </div>
-              </div>
-              <div className="text-xs font-black px-2 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                NOUVEAU
-              </div>
-            </div>
-          </button>
-        ) : (
-          <button
-            onClick={() => { audio.play('click'); onFlashSolo() }}
-            className="btn-press w-full py-2 rounded-2xl text-white text-sm font-black tracking-wide uppercase transition-all duration-150 active:scale-95"
-            style={{
-              background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)',
-              boxShadow: '0 8px 40px rgba(255,92,26,0.55), 0 2px 8px rgba(0,0,0,0.4)',
-            }}>
-            <span className="flex items-center justify-center gap-3">
-              <span className="text-xl">⚡</span>
-              Session Flash Solo
-            </span>
-          </button>
-        )}
-      </div>
-
-      {/* ── MOD 6/8 — Modes de jeu (Parcours + Flash en haut, Marathon + Multi en bas) ── */}
-      <div className="px-4 pb-1 flex-1 overflow-hidden flex flex-col" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="flex items-center gap-2 mb-1.5 shrink-0">
-          <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(0,0,0,0.45)' }}>Modes de jeu</h2>
-          <div className="h-px flex-1" style={{ background: 'rgba(0,0,0,0.15)' }} />
-        </div>
-
-        <div className="shrink-0">
-          <div className="grid grid-cols-2 gap-2">
-            {gameModes.map((mode) => (
-              <div
-                key={mode.id}
-                onClick={mode.active ? mode.action : undefined}
-                className={`rounded-2xl p-2.5 border transition-all duration-150 ${mode.active ? 'cursor-pointer active:scale-95' : 'opacity-40 cursor-not-allowed'}`}
-                style={mode.active ? {
-                  background: 'rgba(255,255,255,0.6)',
-                  borderColor: 'rgba(255,255,255,0.9)',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                } : {
-                  background: 'rgba(255,255,255,0.3)',
-                  borderColor: 'rgba(255,255,255,0.5)',
-                  backdropFilter: 'blur(8px)',
-                }}>
-                <div className="text-2xl mb-1">{mode.emoji}</div>
-                <div className="font-black text-xs" style={{ color: '#1a1a2e' }}>{mode.label}</div>
-                {mode.active
-                  ? <div className="text-xs mt-0.5 font-bold" style={{ color: '#FF6B1A' }}>{mode.desc}</div>
-                  : <div className="text-xs mt-0.5 font-bold px-1.5 py-0.5 rounded-full inline-block" style={{ background: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.35)' }}>Bientôt</div>
-                }
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* MOD 5 — Bandeau prochain badge */}
-        <div
-          className="mt-1.5 shrink-0 rounded-xl px-3 py-1.5 border"
-          style={{ background: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)' }}>
-          {nextBadgeInfo ? (
-            <p className="text-xs font-bold" style={{ color: '#1a1a2e' }}>
-              🏅{' '}
-              <span style={{ color: '#7C3AED' }}>{nextBadgeInfo.category}</span>
-              {' × '}{nextBadgeInfo.count} {nextBadgeInfo.difficulty}
-              {' — encore '}
-              <span style={{ color: '#FF6B1A' }}>{nextBadgeInfo.remaining} f*cts</span>
-            </p>
-          ) : (
-            <p className="text-xs font-bold" style={{ color: 'rgba(0,0,0,0.4)' }}>
-              🏅 Commence une quête pour débloquer ton premier badge !
-            </p>
-          )}
-        </div>
-
-        {/* COR 4+7 — Chat visible, espacement max 8px, pas d'overflow caché */}
-        <div className="shrink-0 mt-1 flex justify-center" style={{ minHeight: 120 }}>
           <img
             src="/cat-president.png"
-            alt="Cat President"
+            alt="Chat WTF!"
             style={{
-              width: '88%',
-              maxHeight: '160px',
-              objectFit: 'contain',
-              objectPosition: 'bottom',
-              maskImage: 'linear-gradient(to top, transparent 0%, black 40%)',
-              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 40%)',
+              maxWidth: '65%', maxHeight: '25%',
+              objectFit: 'contain', objectPosition: 'bottom',
+              marginTop: 10, flexShrink: 1,
+              maskImage: 'linear-gradient(to top, transparent 0%, black 45%)',
+              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 45%)',
             }}
           />
         </div>
+
+        {/* ── Colonne droite — bientôt ── */}
+        <div style={{
+          width: 64, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', gap: 10,
+        }}>
+          <ComingSoonIcon emoji="🏃" />
+          <ComingSoonIcon emoji="🎮" />
+          <ComingSoonIcon emoji="⚡" />
+        </div>
+
       </div>
 
-      {/* MOD 10 — Barre de navigation en bas */}
-      <div
-        className="shrink-0 flex items-center justify-around py-2 px-1 border-t"
-        style={{
-          background: 'rgba(255,255,255,0.65)',
-          borderColor: 'rgba(255,255,255,0.9)',
-          backdropFilter: 'blur(16px)',
-          zIndex: 30,
-        }}>
+      {/* ══ ZONE 4 — Bouton Flash ════════════════════════════════════════════ */}
+      <div style={{ padding: '4px 16px 6px', flexShrink: 0 }}>
+        <button
+          onClick={() => nav('categoryFlash')}
+          style={{
+            width: '100%', padding: '12px',
+            background: 'white', color: '#FF6B1A',
+            fontWeight: 900, fontSize: 14,
+            border: 'none', borderRadius: 16,
+            cursor: 'pointer', letterSpacing: '0.06em',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+            fontFamily: 'Nunito, sans-serif',
+            WebkitTapHighlightColor: 'transparent',
+            transition: 'transform 0.1s',
+          }}
+          onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.97)')}
+          onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
+        >
+          ⚡ JOUER EN MODE FLASH
+        </button>
+      </div>
+
+      {/* ══ ZONE 5 — Navigation 5 onglets ════════════════════════════════════ */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-end',
+        justifyContent: 'space-around',
+        padding: '6px 4px 12px',
+        background: 'rgba(0,0,0,0.25)',
+        flexShrink: 0,
+      }}>
         {[
-          { icon: '🏠', label: 'Accueil',    path: '/',           active: true },
-          { icon: '📚', label: 'Collection', path: '/collection', active: false },
-          { icon: '🏆', label: 'Trophées',   path: '/trophees',   active: false },
-          { icon: '⚡', label: 'Blitz',      path: '/blitz',      active: false },
-          { icon: '👤', label: 'Profil',     path: '/profil',     active: false },
+          { icon: '🛒', label: 'Boutique',   action: () => console.log('Boutique — à brancher'), active: false, center: false },
+          { icon: '🏆', label: 'Trophées',   action: () => nav('trophees'),   active: false, center: false },
+          { icon: '🏠', label: 'Accueil',    action: null,                    active: true,  center: true  },
+          { icon: '👥', label: 'Amis',       action: () => console.log('Amis — à brancher'), active: false, center: false },
+          { icon: '📚', label: 'Collection', action: () => nav('collection'), active: false, center: false },
         ].map((item) => (
           <button
-            key={item.path}
-            onClick={() => { audio.play('click'); if (!item.active) navigate(item.path) }}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all active:scale-90"
-            style={{ minWidth: 44 }}>
-            <span style={{ fontSize: 20 }}>{item.icon}</span>
-            <span
-              className="font-bold"
-              style={{ fontSize: '0.6rem', color: item.active ? '#FF6B1A' : 'rgba(0,0,0,0.4)' }}>
+            key={item.label}
+            onClick={item.action || undefined}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              background: 'none', border: 'none',
+              cursor: item.action ? 'pointer' : 'default',
+              padding: '0 8px',
+              position: 'relative',
+              marginBottom: item.center ? 8 : 0,
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            {item.center && (
+              <div style={{
+                position: 'absolute',
+                top: -10, left: '50%', transform: 'translateX(-50%)',
+                width: 44, height: 44, borderRadius: '50%',
+                background: 'white',
+                boxShadow: '0 3px 12px rgba(0,0,0,0.25)',
+                zIndex: 0,
+              }} />
+            )}
+            <span style={{ fontSize: 22, position: 'relative', zIndex: 1 }}>{item.icon}</span>
+            <span style={{
+              fontSize: 9, fontWeight: 700,
+              color: item.active ? '#FF6B1A' : 'rgba(255,255,255,0.7)',
+              position: 'relative', zIndex: 1,
+            }}>
               {item.label}
             </span>
           </button>

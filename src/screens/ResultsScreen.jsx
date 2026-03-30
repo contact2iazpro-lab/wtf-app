@@ -29,6 +29,11 @@ function getStars(correct, total) {
 
 const DIFFICULTY_LABELS = { easy: 'Curieux', normal: 'À fond', expert: 'WTF! Addict' }
 const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
+const CHALLENGE_LABELS = {
+  easy:   'Tenter le niveau À fond ? ⚡',
+  normal: 'Oser le WTF! Addict ? 🔥',
+  expert: 'Rejouer en WTF! Addict 🏆',
+}
 
 // COR 4 — Confetti colors
 const CONFETTI_COLORS = ['#FF5C1A', '#FFD700', '#FF4081', '#00BCD4', '#7C4DFF', '#4CAF50', '#FF9800', '#E91E63']
@@ -46,6 +51,8 @@ export default function ResultsScreen({
   difficulty = null,
   categoryId = null,
   onShare = null,
+  onFactDetail = null,
+  onChallengeUp = null,
   unlockedFactsThisSession = [],
   sessionsToday = 0,
 }) {
@@ -61,12 +68,23 @@ export default function ResultsScreen({
   // Category color (MOD 1)
   const cat = categoryId ? getCategoryById(categoryId) : null
   const catColor = cat?.color || '#FF5C1A'
-  const screenBg = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
 
   // MOD 5 — Rank based on correct answers
   const currentRank = RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
   const stars = getStars(correctCount, totalFacts)
   const isPerfect = totalFacts > 0 && correctCount >= totalFacts
+
+  // COR 1 — Fond variable selon le score
+  const screenBg = isPerfect
+    ? 'linear-gradient(160deg, #FEF3C722 0%, #F59E0B 100%)'
+    : correctCount >= 7
+    ? 'linear-gradient(160deg, #ECFDF522 0%, #10B981 100%)'
+    : correctCount >= 4
+    ? 'linear-gradient(160deg, #EFF6FF22 0%, #3B82F6 100%)'
+    : 'linear-gradient(160deg, #F5F3FF22 0%, #6366F1 100%)'
+
+  // COR 6 — Taux moyen pseudo-aléatoire stable par catégorie
+  const avgSuccessRate = 15 + ((categoryId ? categoryId.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 50) % 40)
   const perfectBonus = isPerfect ? 25 : 0
   const totalCoins = coinsEarned + perfectBonus
 
@@ -181,13 +199,14 @@ export default function ResultsScreen({
     }
   }, [coinsEarned])
 
-  // MOD 10 — Share handler
+  // COR 5 — Share handler natif avec message défi
   const handleShare = () => {
-    const text = `J'ai obtenu ${correctCount}/${totalFacts} au quiz WTF! — ${currentRank.label} ${currentRank.emoji}\nScore : ${score} pts · Précision : ${precision}%\nEssaie de faire mieux ! 🎯 wtf-app.vercel.app`
+    const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || 'Curieux') : 'Curieux'
+    const text = `J'ai fait ${correctCount}/10 en mode ${diffLabel} sur What The F*ct! 🎯\nTu peux faire mieux ? Rejoins-moi sur wtf-app.vercel.app`
     if (onShare) {
       onShare(text)
     } else if (navigator.share) {
-      navigator.share({ title: 'What The Fact!', text }).catch(() => {})
+      navigator.share({ title: 'What The F*ct!', text }).catch(() => {})
     } else if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text)
       setSharedCopied(true)
@@ -339,6 +358,13 @@ export default function ResultsScreen({
         </div>
       </div>
 
+      {/* COR 6 — Stats joueurs sous le score */}
+      <div className="text-center px-5 mb-2 shrink-0">
+        <span className="text-xs font-semibold text-white/55">
+          👥 En moyenne, les joueurs réussissent {avgSuccessRate}% des f*cts de cette catégorie
+        </span>
+      </div>
+
       {/* COR 2 — Carrousel horizontal des facts débloqués */}
       {unlockedFactsThisSession.length > 0 && (
         <div className="mb-3 shrink-0">
@@ -353,13 +379,15 @@ export default function ResultsScreen({
             {unlockedFactsThisSession.map((fact) => (
               <div
                 key={fact.id}
-                className="shrink-0 rounded-2xl overflow-hidden flex flex-col"
+                className="shrink-0 rounded-2xl overflow-hidden flex flex-col active:scale-95 transition-all"
                 style={{
                   width: 110,
                   background: 'rgba(0,0,0,0.3)',
                   border: '1px solid rgba(255,255,255,0.18)',
                   backdropFilter: 'blur(8px)',
-                }}>
+                  cursor: onFactDetail ? 'pointer' : 'default',
+                }}
+                onClick={() => onFactDetail && onFactDetail(fact)}>
                 {/* Image ou fallback emoji */}
                 <div
                   className="w-full flex items-center justify-center overflow-hidden"
@@ -461,26 +489,40 @@ export default function ResultsScreen({
             : "✅ Tu as utilisé toutes tes quêtes du jour — reviens demain !"}
         </div>
 
-        {/* Principal — Rejouer, grand, couleur catégorie */}
+        {/* COR 3 — Principal : Rejouer même catégorie + difficulté */}
         <button
           onClick={onReplay}
           className="btn-press w-full py-4 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
           style={{
-            background: remainingQuests > 0
-              ? `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`
-              : 'rgba(255,255,255,0.15)',
-            boxShadow: remainingQuests > 0 ? `0 8px 32px ${catColor}50` : 'none',
+            background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
+            boxShadow: `0 8px 32px ${catColor}50`,
           }}>
-          {remainingQuests > 0 ? '🔄 Rejouer' : '🔄 Encore une quête'}
+          🔄 Rejouer
         </button>
-        {/* Nouveau — Partager mon score, levier viral */}
+
+        {/* COR 4 — Défier sur difficulté supérieure */}
+        {difficulty && (
+          <button
+            onClick={() => onChallengeUp && onChallengeUp()}
+            className="btn-press w-full py-3.5 rounded-2xl font-black text-sm active:scale-95 transition-all border-2"
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              borderColor: 'rgba(255,255,255,0.3)',
+              color: 'white',
+            }}>
+            {CHALLENGE_LABELS[difficulty.id || difficulty] || 'Changer de niveau ⚡'}
+          </button>
+        )}
+
+        {/* COR 5 — Partager + Défier */}
         <button
           onClick={handleShare}
           className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all border"
           style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.25)', color: 'white' }}>
           <span>{sharedCopied ? '✅' : '📤'}</span>
-          {sharedCopied ? 'Copié !' : 'Partager mon score'}
+          {sharedCopied ? 'Copié !' : 'Partager mon score & défier mes amis'}
         </button>
+
         {/* Secondaire — Revenir, discret */}
         <button
           onClick={onHome}

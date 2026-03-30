@@ -320,8 +320,8 @@ export default function RevelationScreen({
           </button>
         </div>
 
-        {/* MOD 6 — flex-1 justify-between : contenu en haut, boutons collés en bas */}
-        <div className="flex-1 flex flex-col px-5 pb-6 gap-2 justify-between overflow-hidden">
+        {/* MOD 5 — flex-1 justify-between, gap clamp pour distribution verticale */}
+        <div className="flex-1 flex flex-col px-5 pb-6 justify-between overflow-hidden" style={{ gap: 'clamp(8px, 2vh, 20px)' }}>
 
           <div className="flex flex-col gap-2 min-h-0">
 
@@ -390,7 +390,7 @@ export default function RevelationScreen({
 
           </div>
 
-          {/* MOD 5+6 — Boutons même importance visuelle, collés en bas */}
+          {/* MOD 6 — Boutons côte à côte, même hauteur */}
           <div className="flex gap-3 shrink-0">
             <button
               onClick={handleNativeShare}
@@ -406,7 +406,10 @@ export default function RevelationScreen({
             <button
               onClick={() => { audio.play('click'); onNext() }}
               className="btn-press flex-1 py-4 rounded-2xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
-              style={nextBtnStyle}
+              style={{
+                background: 'linear-gradient(135deg, #FF6B1A 0%, #FF6B1Acc 100%)',
+                boxShadow: '0 4px 20px #FF6B1A40',
+              }}
             >
               {nextLabel}
             </button>

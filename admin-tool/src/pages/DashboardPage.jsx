@@ -36,6 +36,19 @@ function BarChart({ data, max, color = '#FF6B1A' }) {
   )
 }
 
+const QUALITY_CHECKS = [
+  { key: 'noImage',               emoji: '📷', label: 'Sans image' },
+  { key: 'questionTooLong',       emoji: '📝', label: 'Question trop longue' },
+  { key: 'explanationOutOfRange', emoji: '📖', label: 'Explication hors limites' },
+  { key: 'missingHints',          emoji: '💡', label: 'Indices manquants' },
+  { key: 'incompleteOptions',     emoji: '🎯', label: 'Options QCM incomplètes' },
+  { key: 'noSourceUrl',           emoji: '🔗', label: 'Sans URL source' },
+]
+
+function truncate(str, n) {
+  return str && str.length > n ? str.slice(0, n) + '…' : (str || '')
+}
+
 function fmt(dateStr) {
   if (!dateStr) return '—'
   return new Date(dateStr).toLocaleString('fr-FR', {
@@ -56,8 +69,12 @@ export default function DashboardPage({ toast }) {
   const [categoryFilter, setCategoryFilter] = useState('all') // 'all' | 'published' | 'unpublished' | 'doublon'
   const [difficultyFilter, setDifficultyFilter] = useState('published') // 'all' | 'published' | 'unpublished' | 'doublon'
   const [allFactsForFilter, setAllFactsForFilter] = useState([])
+  const [qualityIssues, setQualityIssues] = useState(null)
+  const [qualityLoading, setQualityLoading] = useState(true)
+  const [qualityError, setQualityError] = useState(false)
+  const [expandedIssue, setExpandedIssue] = useState(null)
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load(); fetchQualityIssues() }, [])
 
   async function load() {
     setLoading(true)
@@ -164,6 +181,31 @@ export default function DashboardPage({ toast }) {
     updateDifficultyData(allFactsForFilter, newFilter)
   }
 
+  async function fetchQualityIssues() {
+    setQualityLoading(true)
+    setQualityError(false)
+    try {
+      const { data, error } = await supabase
+        .from('facts')
+        .select('id, question, hint1, hint2, explanation, options, image_url, source_url, category, is_published')
+      if (error) throw error
+      const f = data || []
+      setQualityIssues({
+        noImage:               f.filter(x => !x.image_url || x.image_url.trim() === ''),
+        questionTooLong:       f.filter(x => x.question && x.question.length > 100),
+        explanationOutOfRange: f.filter(x => !x.explanation || x.explanation.length < 100 || x.explanation.length > 300),
+        missingHints:          f.filter(x => !x.hint1 || !x.hint2 || x.hint1.trim() === '' || x.hint2.trim() === ''),
+        incompleteOptions:     f.filter(x => !x.options || x.options.length < 4),
+        noSourceUrl:           f.filter(x => !x.source_url || x.source_url.trim() === ''),
+      })
+    } catch (err) {
+      console.error('Quality check error:', err)
+      setQualityError(true)
+    } finally {
+      setQualityLoading(false)
+    }
+  }
+
   async function runSync() {
     if (syncStatus === 'running') return
     setSyncStatus('running')
@@ -223,7 +265,7 @@ export default function DashboardPage({ toast }) {
           <p className="text-slate-400 text-sm mt-1">Vue d'ensemble du contenu WTF!</p>
         </div>
         <button
-          onClick={load}
+          onClick={() => { load(); fetchQualityIssues() }}
           className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-sm font-semibold hover:bg-slate-700 transition-all"
         >
           ↺ Actualiser
@@ -239,6 +281,131 @@ export default function DashboardPage({ toast }) {
         </Link>
         <StatCard label="Facts VIP ⭐" value={stats?.vipTotal} color="#FFD700" />
       </div>
+
+      {/* Quality Dashboard */}
+      {(() => {
+        const totalAlerts = qualityIssues
+          ? Object.values(qualityIssues).reduce((sum, list) => sum + list.length, 0)
+          : 0
+        const expandedList = expandedIssue && qualityIssues ? qualityIssues[expandedIssue] : null
+        const expandedCheck = QUALITY_CHECKS.find(c => c.key === expandedIssue)
+
+        return (
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-8 overflow-hidden">
+            {/* Section header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <h2 className="text-base font-black text-white">🔍 Qualité des F*cts</h2>
+                {!qualityLoading && !qualityError && (
+                  <span
+                    className="px-2 py-0.5 rounded-full text-xs font-black"
+                    style={{
+                      background: totalAlerts > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
+                      color: totalAlerts > 0 ? '#EF4444' : '#22C55E',
+                    }}
+                  >
+                    {totalAlerts > 0 ? `${totalAlerts} alertes` : '✓ Tout est OK'}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={fetchQualityIssues}
+                disabled={qualityLoading}
+                className="text-slate-500 hover:text-slate-300 text-sm transition-colors disabled:opacity-40"
+                title="Recalculer"
+              >
+                {qualityLoading ? <span className="inline-block animate-spin">⟳</span> : '↺'}
+              </button>
+            </div>
+
+            {/* Cards grid */}
+            <div className="p-5">
+              {qualityError ? (
+                <p className="text-red-400 text-sm">Erreur lors du chargement des données qualité.</p>
+              ) : qualityLoading ? (
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  {QUALITY_CHECKS.map(c => (
+                    <div key={c.key} className="bg-slate-700/50 rounded-xl p-4 animate-pulse h-24" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  {QUALITY_CHECKS.map(c => {
+                    const count = qualityIssues?.[c.key]?.length ?? 0
+                    const isExpanded = expandedIssue === c.key
+                    return (
+                      <div
+                        key={c.key}
+                        className="bg-slate-700/50 rounded-xl p-4 border transition-all"
+                        style={{ borderColor: isExpanded ? '#FF6B1A' : 'transparent' }}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <span className="text-lg">{c.emoji}</span>
+                          <span
+                            className="text-2xl font-black leading-none"
+                            style={{ color: count > 0 ? '#EF4444' : '#22C55E' }}
+                          >
+                            {count}
+                          </span>
+                        </div>
+                        <div className="text-xs font-semibold text-slate-300 mb-3 leading-tight">{c.label}</div>
+                        <button
+                          onClick={() => setExpandedIssue(isExpanded ? null : c.key)}
+                          disabled={count === 0}
+                          className="text-xs font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          style={{ color: isExpanded ? '#FF6B1A' : '#94A3B8' }}
+                        >
+                          {isExpanded ? '▲ Masquer' : 'Voir les f*cts →'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Expanded list */}
+              {expandedList && expandedCheck && (
+                <div className="mt-4 border border-slate-600 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-2.5 bg-slate-700 border-b border-slate-600">
+                    <span className="text-sm font-bold text-white">
+                      {expandedCheck.emoji} {expandedCheck.label} — {expandedList.length} f*ct{expandedList.length > 1 ? 's' : ''}
+                    </span>
+                    <button
+                      onClick={() => setExpandedIssue(null)}
+                      className="text-slate-400 hover:text-white text-lg leading-none transition-colors"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-700 max-h-72 overflow-y-auto">
+                    {expandedList.map(f => (
+                      <div key={f.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors">
+                        <Link
+                          to={`/facts/${f.id}`}
+                          className="text-xs font-black shrink-0 hover:underline"
+                          style={{ color: '#FF6B1A' }}
+                        >
+                          #{f.id}
+                        </Link>
+                        <span className="text-xs text-slate-500 shrink-0">{f.category}</span>
+                        <span className="text-xs text-slate-300 flex-1 min-w-0 truncate">
+                          {truncate(f.question, 60)}
+                        </span>
+                        <Link
+                          to={`/facts/${f.id}`}
+                          className="shrink-0 px-2 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+                        >
+                          Éditer →
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Difficulty distribution */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">

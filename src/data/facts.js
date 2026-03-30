@@ -48,7 +48,7 @@ export const FACTS = [
     shortAnswer: "Elle peut être invisible et se camoufler",
     explanation: "Les araignées de la famille des Thomisidae, ou araignées crabes, se distinguent par leur capacité à changer de couleur pour se camoufler dans leur environnement. Elles se fondent ainsi dans plantes pour attraper des proies sans utiliser de toile, comptant sur leur camouflage et leur rapidité.",
     sourceUrl: "https://bugguide.net/node/view/1957",
-    options: ["Elle court à reculons comme un crabe","Elle tisse des toiles en entonnoir","Elle marche sur l'eau sans couler","Elle mord deux fois plus fort","Elle a des pinces comme un crabe","Elle peut être invisible et se camoufler"],
+    options: ["Elle court à reculons","Elle tisse des toiles en entonnoir","Elle marche sur l'eau sans couler","Elle mord deux fois plus fort","Elle a des pinces comme un crabe","Elle peut être invisible et se camoufler"],
     correctIndex: 5,
     imageUrl: "/assets/facts/3.png",
     difficulty: 'expert',

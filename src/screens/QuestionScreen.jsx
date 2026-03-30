@@ -98,6 +98,23 @@ export default function QuestionScreen({
   const [showSettings, setShowSettings] = useState(false)
   const cat = getCategoryById(fact.category)
 
+  // COR 2 — Inject compact style for small screens (max-height: 700px)
+  useEffect(() => {
+    const styleId = '__qs-compact'
+    if (document.getElementById(styleId)) return
+    const s = document.createElement('style')
+    s.id = styleId
+    s.textContent = `@media (max-height: 700px) {
+      .qs-root .qs-h { padding-top: 0.5rem !important; padding-bottom: 0.25rem !important; }
+      .qs-root .qs-pb { padding-bottom: 0.25rem !important; }
+      .qs-root .qs-m { padding-left: 0.75rem !important; padding-right: 0.75rem !important; gap: 0.5rem !important; }
+      .qs-root .qs-f { padding-top: 0.25rem !important; padding-bottom: 0.5rem !important; }
+      .qs-root .qs-m .rounded-3xl { padding: 0.75rem !important; }
+    }`
+    document.head.appendChild(s)
+    return () => { const el = document.getElementById(styleId); if (el) el.remove() }
+  }, [])
+
   // MOD 1 — Dynamic luminous gradient per category
   const screenBg = cat
     ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
@@ -144,7 +161,7 @@ export default function QuestionScreen({
 
   // MOD 3 — Header: 3 zones égales (w-1/3 chacune) pour un centrage absolu
   const header = (
-    <div className="px-4 pt-4 pb-2 shrink-0 flex items-center">
+    <div className="qs-h px-4 pt-4 pb-2 shrink-0 flex items-center">
       {/* Left (w-1/3): fact id + progress — tappable to quit */}
       <button
         onClick={() => setShowQuitConfirm(true)}
@@ -167,17 +184,17 @@ export default function QuestionScreen({
 
       {/* Right (w-1/3): coins balance */}
       <div className="w-1/3 flex justify-end">
-        <span className="font-black text-sm flex items-center gap-1" style={{ color: cat?.color || '#FFD700' }}>
-          <CoinsIcon size={16} />
-          {playerCoins}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <CoinsIcon size={18} />
+          <span style={{ fontWeight: 700, color: 'white' }}>{playerCoins}</span>
+        </div>
       </div>
     </div>
   )
 
   // MOD 4 — Segmented progress bar: 10 distinct segments
   const progressBar = (
-    <div className="px-4 pb-2 shrink-0">
+    <div className="qs-pb px-4 pb-2 shrink-0">
       <div className="flex w-full" style={{ gap: 2 }}>
         {Array.from({ length: totalFacts }).map((_, i) => (
           <div
@@ -197,7 +214,7 @@ export default function QuestionScreen({
 
   // MOD 5 — Footer: timer centered + settings button on right (no overlap)
   const footer = (showTimer) => (
-    <div className="px-4 pb-4 pt-1 shrink-0 flex items-center">
+    <div className="qs-f px-4 pb-4 pt-1 shrink-0 flex items-center">
       {/* Left spacer balances the settings button width */}
       <div style={{ width: 40 }} />
 
@@ -261,14 +278,14 @@ export default function QuestionScreen({
   // ── Phase 0 : Mode selection ──────────────────────────────────────────────
   if (!answerMode) {
     return (
-      <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+      <div className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
 
         {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-        <div className="flex flex-col px-4">
+        <div className="qs-m flex-1 flex flex-col px-4">
           {questionCard}
 
           <div className="flex flex-col gap-3 shrink-0">
@@ -322,14 +339,14 @@ export default function QuestionScreen({
   // ── Phase 1 : Open question ───────────────────────────────────────────────
   if (answerMode === 'open') {
     return (
-      <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+      <div className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
 
         {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-        <div className="flex flex-col px-4">
+        <div className="qs-m flex-1 flex flex-col px-4">
           {questionCard}
 
           <div className="flex flex-col gap-2 shrink-0">
@@ -363,14 +380,14 @@ export default function QuestionScreen({
   // ── Phase 2 : QCM ─────────────────────────────────────────────────────────
   // Order: header → progress → question → [hints if Easy] → QCM answers → timer
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+    <div className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
       {progressBar}
 
       {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-      <div className="flex flex-col px-4">
+      <div className="qs-m flex-1 flex flex-col px-4">
         {questionCard}
 
         <div className="flex flex-col gap-2 shrink-0">

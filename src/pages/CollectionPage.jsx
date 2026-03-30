@@ -41,6 +41,10 @@ const DIFF_CONFIG = {
 // ─── Fact detail full-screen view ──────────────────────────────────────────
 
 function FactDetailView({ fact, onClose }) {
+  const cat = PLAYABLE_CATEGORIES.find(c => c.id === fact.category)
+  const catColor = cat?.color || '#FF6B1A'
+  const screenBg = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
+
   const share = () => {
     const text = `🤯 Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct! https://wtf-app-livid.vercel.app/`
     if (navigator.share) navigator.share({ text }).catch(() => {})
@@ -50,56 +54,57 @@ function FactDetailView({ fact, onClose }) {
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ zIndex: 400, background: '#FAFAF8', overflow: 'hidden' }}
+      style={{ zIndex: 400, background: screenBg, overflow: 'hidden' }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
+      {/* B4 — Header cohérent avec les autres écrans */}
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: `1px solid rgba(255,255,255,0.15)` }}>
         <button
           onClick={onClose}
           className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151', fontSize: 16 }}
+          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', fontSize: 16 }}
         >
           ←
         </button>
-        <span className="font-black text-sm flex-1 truncate" style={{ color: '#1a1a2e' }}>{fact.shortAnswer}</span>
+        {/* B3 — Titre plus visible, couleur catégorie */}
+        <span className="font-black text-base flex-1 truncate" style={{ color: 'white' }}>{fact.shortAnswer}</span>
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto">
-        {/* Image — object-contain so nothing is cropped */}
+        {/* Image */}
         {fact.imageUrl ? (
           <img
             src={fact.imageUrl}
             alt={fact.shortAnswer}
             className="w-full"
-            style={{ maxHeight: 280, objectFit: 'contain', background: '#F3F4F6' }}
+            style={{ maxHeight: 260, objectFit: 'contain', background: 'rgba(255,255,255,0.08)' }}
           />
         ) : (
           <div
             className="w-full flex items-center justify-center"
-            style={{ height: 160, background: '#F3F4F6', borderBottom: '1px solid #E5E7EB' }}
+            style={{ height: 130, background: 'rgba(255,255,255,0.06)' }}
           >
             <span className="text-5xl opacity-30">🖼️</span>
           </div>
         )}
 
-        {/* Body */}
-        <div className="px-5 py-6">
-          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: '#FF6B1A' }}>
+        {/* B2 — Espacement réduit entre image et corps */}
+        <div className="px-5 py-4">
+          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: catColor }}>
             Le saviez-vous ?
           </p>
-          <p className="text-base font-semibold" style={{ color: '#374151', lineHeight: '1.7' }}>
+          <p className="text-base font-semibold" style={{ color: 'rgba(255,255,255,0.9)', lineHeight: '1.7' }}>
             {fact.explanation}
           </p>
           {fact.sourceUrl && (
             <div className="mt-4 flex items-start gap-2">
-              <span style={{ color: '#9CA3AF', fontSize: 13, lineHeight: '1.6' }}>🔗</span>
+              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: '1.6' }}>🔗</span>
               <a
                 href={fact.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs break-all"
-                style={{ color: '#FF6B1A', textDecoration: 'underline', lineHeight: '1.6' }}
+                style={{ color: catColor, textDecoration: 'underline', lineHeight: '1.6' }}
               >
                 {fact.sourceUrl}
               </a>
@@ -109,11 +114,11 @@ function FactDetailView({ fact, onClose }) {
       </div>
 
       {/* Share button */}
-      <div className="px-5 pb-8 pt-3 shrink-0" style={{ borderTop: '1px solid #E5E7EB' }}>
+      <div className="px-5 pb-8 pt-3 shrink-0" style={{ borderTop: 'rgba(255,255,255,0.1)' }}>
         <button
           onClick={share}
           className="w-full py-3.5 rounded-2xl font-black text-white text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
-          style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', boxShadow: '0 4px 16px rgba(255,107,26,0.3)' }}
+          style={{ background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`, boxShadow: `0 4px 16px ${catColor}50` }}
         >
           <span className="text-lg">📤</span> Partager ce F*ct
         </button>
@@ -132,23 +137,31 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ zIndex: 300, background: '#FAFAF8' }}
+      style={{ zIndex: 300, background: `linear-gradient(160deg, ${cat.color}11 0%, ${cat.color}33 100%)` }}
     >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
+      {/* C4 — Header personnalisé couleur catégorie */}
+      <div
+        className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0"
+        style={{ background: `${cat.color}22`, borderBottom: `1px solid ${cat.color}44` }}
+      >
         <button
           onClick={onClose}
           className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151', fontSize: 16 }}
+          style={{ background: 'rgba(255,255,255,0.25)', border: `1px solid rgba(255,255,255,0.3)`, color: cat.color, fontSize: 16 }}
         >
           ←
         </button>
-        <span className="text-xl">{cat.emoji}</span>
+        <span className="text-2xl">{cat.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className="font-black text-sm truncate" style={{ color: '#1a1a2e' }}>{cat.label}</p>
-          <p className="text-xs font-semibold" style={{ color: diff.color }}>{diff.emoji} Niveau {diff.label}</p>
+          <p className="font-black text-base truncate" style={{ color: '#1a1a2e' }}>{cat.label}</p>
+          <p className="text-xs font-bold" style={{ color: diff.color }}>{diff.emoji} {diff.label}</p>
         </div>
-        <span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>{unlockedFacts.length}/{facts.length}</span>
+        <span
+          className="text-xs font-black px-2 py-1 rounded-full"
+          style={{ background: `${cat.color}22`, color: cat.color, border: `1px solid ${cat.color}44` }}
+        >
+          {unlockedFacts.length}/{facts.length}
+        </span>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -206,7 +219,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                         src={fact.imageUrl}
                         alt=""
                         className="w-full h-full object-contain"
-                        style={{ filter: 'grayscale(1) brightness(0.35) blur(2px)' }}
+                        style={{ filter: 'blur(8px) brightness(0.7)' }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center" style={{ color: '#D1D5DB', fontSize: 20 }}>?</div>

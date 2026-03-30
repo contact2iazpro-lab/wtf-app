@@ -22,7 +22,7 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
     <div
       className="flex flex-col h-full w-full overflow-hidden"
       style={{
-        background: `linear-gradient(170deg, #0A0F1E 0%, #1A0A35 40%, #2D0A5C 70%, #1A0A35 100%)`,
+        background: `linear-gradient(170deg, ${cat?.color || '#7C3AED'}22 0%, ${cat?.color || '#7C3AED'} 100%)`,
         transition: 'opacity 0.3s',
         opacity: visible ? 1 : 0,
       }}
@@ -36,19 +36,19 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
           ←
         </button>
         <div className="flex-1 text-center">
-          <div className="text-white font-black text-sm tracking-wide">WTF! du Jour</div>
+          <div className="font-black text-base tracking-wide" style={{ color: cat?.color || '#7C3AED' }}>WTF! du Jour</div>
           <div className="text-white/40 text-xs">Tous les jours, un nouveau f*ct</div>
         </div>
         <div className="w-9" />
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 gap-6">
+      <div className="flex-1 flex flex-col items-center justify-start px-6 gap-3 pt-2 overflow-hidden">
 
         {/* Pulsing star/mascotte */}
         <div className="flex items-center justify-center" style={{ animation: 'bounceIn 0.6s cubic-bezier(0.68,-0.55,0.265,1.55)' }}>
           <div
-            className="w-32 h-32 rounded-full flex items-center justify-center text-7xl"
+            className="w-20 h-20 rounded-full flex items-center justify-center text-5xl"
             style={{
               background: `radial-gradient(circle, ${cat?.color || '#7C3AED'}33 0%, transparent 70%)`,
               boxShadow: `0 0 60px ${cat?.color || '#7C3AED'}55`,

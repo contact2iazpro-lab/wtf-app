@@ -302,13 +302,14 @@ export default function HomeScreen({
           <ActiveIcon emoji="📅" label="Du Jour"     onClick={() => nav('wtfDuJour')} />
         </div>
 
-        {/* ── Colonne centre — tagline uniquement, centrée sur l'icône du milieu ── */}
+        {/* ── Colonne centre — tagline alignée sur l'icône du milieu ── */}
         <div style={{
           flex: 1,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          alignSelf: 'center',
+          alignSelf: 'stretch',
+          paddingBottom: 180,
           minWidth: 0,
-          padding: '0 8px',
+          padding: '0 8px 180px',
         }}>
           <div style={{
             fontSize: 'calc(22px * var(--scale))', color: 'white', textAlign: 'center',

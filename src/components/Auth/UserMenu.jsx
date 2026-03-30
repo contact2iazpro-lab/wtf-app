@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import CoinsIcon from '../CoinsIcon'
 
 export default function UserMenu() {
   const { user, profile, signOut } = useAuth()
@@ -32,7 +33,7 @@ export default function UserMenu() {
         </div>
         <span className="text-xs font-bold text-white max-w-20 truncate">{displayName}</span>
         {coins > 0 && (
-          <span className="text-xs font-bold" style={{ color: '#FCD34D' }}>🪙{coins}</span>
+          <span className="text-xs font-bold flex items-center gap-0.5" style={{ color: '#FCD34D' }}><CoinsIcon size={14} />{coins}</span>
         )}
       </button>
 
@@ -49,7 +50,7 @@ export default function UserMenu() {
               <p className="text-xs mt-0.5" style={{ color: '#9CA3AF' }}>{user.email}</p>
               <div className="flex items-center gap-3 mt-2">
                 <span className="text-xs font-bold" style={{ color: '#6B7280' }}>🔥 {streak} streak</span>
-                <span className="text-xs font-bold" style={{ color: '#6B7280' }}>🪙 {coins} coins</span>
+                <span className="text-xs font-bold flex items-center gap-1" style={{ color: '#6B7280' }}><CoinsIcon size={12} /> {coins} coins</span>
               </div>
             </div>
 

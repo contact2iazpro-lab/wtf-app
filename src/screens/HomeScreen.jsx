@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { audio } from '../utils/audio'
 import SettingsModal from '../components/SettingsModal'
+import CoinsIcon from '../components/CoinsIcon'
 import { getCategoryById } from '../data/facts'
 import { getDeviceId } from '../config/devConfig'
 
@@ -174,7 +175,7 @@ export default function HomeScreen({
             className="flex-1 rounded-2xl p-2 text-center border"
             style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
             <div className="mb-0 flex items-center justify-center">
-              <span className="font-black text-xs px-1.5 py-0.5 rounded" style={{ color: 'white', background: '#FF6B1A', letterSpacing: '0.04em' }}>WTF$</span>
+              <CoinsIcon size={22} />
             </div>
             <div className="text-lg font-black leading-tight" style={{ color: '#1a1a2e' }}>{wtfCoins}</div>
             <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>WTF! Coins</div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import CircularTimer from '../components/CircularTimer'
 import SettingsModal from '../components/SettingsModal'
+import CoinsIcon from '../components/CoinsIcon'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
@@ -166,8 +167,9 @@ export default function QuestionScreen({
 
       {/* Right (w-1/3): coins balance */}
       <div className="w-1/3 flex justify-end">
-        <span className="font-black text-sm" style={{ color: cat?.color || '#FFD700' }}>
-          ⭐ {playerCoins}
+        <span className="font-black text-sm flex items-center gap-1" style={{ color: cat?.color || '#FFD700' }}>
+          <CoinsIcon size={16} />
+          {playerCoins}
         </span>
       </div>
     </div>

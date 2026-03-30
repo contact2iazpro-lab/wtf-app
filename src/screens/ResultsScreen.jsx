@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
+import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
 
@@ -393,7 +394,7 @@ export default function ResultsScreen({
       {totalCoins > 0 && (
         <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🪙</span>
+            <CoinsIcon size={32} />
             <div className="flex-1">
               <div className="text-yellow-200 font-black text-base">+{totalCoins} WTF! Coins</div>
               {isPerfect && perfectBonus > 0 ? (

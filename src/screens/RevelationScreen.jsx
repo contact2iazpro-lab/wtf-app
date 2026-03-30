@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
+import CoinsIcon from '../components/CoinsIcon'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
@@ -45,16 +46,6 @@ const CORRECT_MESSAGES = [
   "Tu es vraiment incollable ! 💪",
 ]
 
-// COR 6 — Badge "coins" lisible sur tous supports (remplace l'emoji 🪙)
-const CoinsLabel = () => (
-  <span style={{
-    fontSize: '0.55rem', fontWeight: 900, letterSpacing: '0.06em',
-    background: 'rgba(255,255,255,0.22)', borderRadius: '3px',
-    padding: '1px 4px', marginRight: '3px',
-    color: 'white', verticalAlign: 'middle',
-    display: 'inline-block',
-  }}>COINS</span>
-)
 
 export default function RevelationScreen({
   fact,
@@ -212,11 +203,10 @@ export default function RevelationScreen({
           {cat?.label || ''}
         </span>
       </div>
-      {/* COR 6 — "coins" lisible à la place du 🪙 */}
       <div className="w-1/3 flex justify-end">
-        <span ref={scoreRefTarget} className={`font-black text-sm${showScorePulse ? ' score-pulse' : ''}`}
+        <span ref={scoreRefTarget} className={`font-black text-sm flex items-center gap-1${showScorePulse ? ' score-pulse' : ''}`}
           style={{ color: cat?.color || '#FFA500' }}>
-          <CoinsLabel />{displayedScore}
+          <CoinsIcon size={14} />{displayedScore}
         </span>
       </div>
     </div>

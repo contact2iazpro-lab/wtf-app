@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
+import CoinsIcon from '../components/CoinsIcon'
 
 export default function WTFDuJourRevealScreen({
   fact,
@@ -134,7 +135,7 @@ export default function WTFDuJourRevealScreen({
           </div>
           <div>
             <div className="text-2xl font-black" style={{ color: '#FFD700' }}>+{displayedCoins}</div>
-            <div className="text-white/40 text-xs font-semibold">🪙 Coins</div>
+            <div className="text-white/40 text-xs font-semibold flex items-center justify-center gap-1"><CoinsIcon size={12} /> Coins</div>
           </div>
         </div>
 

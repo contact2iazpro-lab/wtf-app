@@ -356,15 +356,6 @@ export default function CollectionPage() {
               <strong style={{ color: '#1a1a2e' }}>{overallUnlocked} / {overallTotal}</strong> F*cts débloqués
             </p>
           </div>
-          {!isConnected && (
-            <button
-              onClick={() => setShowLogin(true)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 shrink-0"
-              style={{ background: 'rgba(255,107,26,0.2)', border: '1px solid rgba(255,107,26,0.4)', color: '#FF8C4A' }}
-            >
-              ☁️ Sync
-            </button>
-          )}
         </div>
 
         {/* Global progress bar (overall) */}

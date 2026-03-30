@@ -263,8 +263,8 @@ export default function App() {
       case 'marathon':
         setGameMode('marathon')
         setSessionType('marathon')
-        setSelectedCategory('kids')
-        setScreen(SCREENS.DIFFICULTY)
+        setSelectedCategory(null)
+        setScreen(SCREENS.CATEGORY)
         break
       default: break
     }
@@ -274,13 +274,12 @@ export default function App() {
     setSelectedDifficulty(difficulty)
 
     if (gameMode === 'marathon') {
-      // Marathon : 20 questions Kids, pas de ticket quête consommé
-      const facts = [...getFactsByCategory('kids')]
+      // Marathon : 20 questions dans la catégorie choisie, pas de ticket consommé
+      const facts = [...getFactsByCategory(selectedCategory)]
         .sort(() => Math.random() - 0.5)
         .slice(0, 20)
         .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
       setIsQuickPlay(false)
-      setSelectedCategory('kids')
       setSessionType('marathon')
       initSessionState(facts)
       setScreen(SCREENS.QUESTION)
@@ -301,7 +300,7 @@ export default function App() {
     setSessionType('parcours')
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts, gameMode])
+  }, [unlockedFacts, gameMode, selectedCategory])
 
   const handleMarathonMode = useCallback(() => {
     setGameMode('marathon')
@@ -310,6 +309,13 @@ export default function App() {
   }, [])
 
   const handleSelectCategory = useCallback((categoryId) => {
+    // Marathon : on mémorise la catégorie puis on va choisir la difficulté
+    if (gameMode === 'marathon') {
+      setSelectedCategory(categoryId)
+      setScreen(SCREENS.DIFFICULTY)
+      return
+    }
+
     let facts = []
 
     if (categoryId === null) {
@@ -341,7 +347,7 @@ export default function App() {
     setSelectedCategory(categoryId)
     initSessionState(factsWithOptions)
     setScreen(SCREENS.QUESTION)
-  }, [selectedDifficulty])
+  }, [selectedDifficulty, gameMode])
 
   // ─── Answer handlers ─────────────────────────────────────────────────────
 

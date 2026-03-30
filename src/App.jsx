@@ -717,7 +717,7 @@ export default function App() {
           break
         default:
           if (gameMode === 'marathon') {
-            if (!window.confirm('Quitter la partie marathon ? Votre score ne sera pas sauvegardé.')) break
+            if (!window.confirm(`Tu as répondu à ${currentIndex} question${currentIndex > 1 ? 's' : ''}. Si tu quittes, ton score ne sera pas sauvegardé.`)) break
           }
           handleHome()
       }

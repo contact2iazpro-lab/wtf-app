@@ -4,12 +4,12 @@
  *   [Chat absolu en fond]
  *   Zone 1 : Header (profil · coins · tickets · settings)
  *   Zone 2 : Bandeau badge + countdown
- *   Zone 3 : Corps 3 colonnes (actifs | logo+taglines | bientôt)
+ *   Zone 3 : Corps 3 colonnes (actifs | logo+taglines | bientôt) — hauteur contrainte
  *   Zone 4 : Bouton Flash (z-index 2, au-dessus du chat)
  *   Zone 5 : Nav 5 onglets (z-index 2, au-dessus du chat)
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
@@ -48,12 +48,12 @@ function ActiveIcon({ emoji, label, onClick }) {
     <button
       onClick={onClick}
       style={{
-        width: 48, height: 48, borderRadius: 13,
+        width: 72, height: 72, borderRadius: 18,
         background: 'rgba(255,255,255,0.9)',
         boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
         border: 'none', cursor: 'pointer', padding: 0,
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: 2,
+        alignItems: 'center', justifyContent: 'center', gap: 3,
         WebkitTapHighlightColor: 'transparent',
         transition: 'transform 0.1s',
         flexShrink: 0,
@@ -61,11 +61,11 @@ function ActiveIcon({ emoji, label, onClick }) {
       onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.93)')}
       onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
     >
-      <span style={{ fontSize: 20, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 26, lineHeight: 1 }}>{emoji}</span>
       <span style={{
-        fontSize: 7, fontWeight: 800, color: '#FF6B1A',
+        fontSize: 9, fontWeight: 700, color: '#FF6B1A',
         textAlign: 'center', lineHeight: 1.2,
-        maxWidth: 44, overflow: 'hidden',
+        maxWidth: 64, overflow: 'hidden',
         textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>{label}</span>
     </button>
@@ -76,15 +76,15 @@ function ActiveIcon({ emoji, label, onClick }) {
 function ComingSoonIcon({ emoji }) {
   return (
     <div style={{
-      width: 48, height: 48, borderRadius: 13,
+      width: 72, height: 72, borderRadius: 18,
       background: 'rgba(255,255,255,0.25)',
       border: '1.5px dashed rgba(255,255,255,0.5)',
       display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 2,
+      alignItems: 'center', justifyContent: 'center', gap: 3,
       flexShrink: 0,
     }}>
-      <span style={{ fontSize: 20, opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
-      <span style={{ fontSize: 6.5, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
+      <span style={{ fontSize: 26, opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
     </div>
   )
 }
@@ -98,10 +98,17 @@ export default function HomeScreen({
   onNavigate,
   onOpenSettings,
 }) {
-  const [showSettings, setShowSettings] = useState(false)
+  const [showSettings, setShowSettings]   = useState(false)
+  const [logoAnimated, setLogoAnimated]   = useState(false)
   const countdown     = useCountdownToMidnight()
   const badgeProgress = getBadgeProgress(nextBadgeInfo)
   const scale         = useScale()
+
+  // Animation logo au montage
+  useEffect(() => {
+    const timer = setTimeout(() => setLogoAnimated(true), 100)
+    return () => clearTimeout(timer)
+  }, [])
 
   const nav = (target) => {
     audio.play?.('click')
@@ -125,6 +132,17 @@ export default function HomeScreen({
         '--scale': scale,
       }}
     >
+      {/* Keyframes animation logo */}
+      <style>{`
+        @keyframes wtfLogoEntrance {
+          0%   { transform: scale(2.5) rotate(0deg);   opacity: 0; }
+          30%  { transform: scale(3)   rotate(180deg); opacity: 1; }
+          60%  { transform: scale(1.2) rotate(320deg); }
+          80%  { transform: scale(1.1) rotate(350deg); }
+          100% { transform: scale(1)   rotate(360deg); opacity: 1; }
+        }
+      `}</style>
+
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* ══ CHAT — fond pleine largeur, aligné avec la nav en bas ════════════ */}
@@ -225,18 +243,21 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ══ ZONE 3 — Corps 3 colonnes ════════════════════════════════════════ */}
+      {/* ══ ZONE 3 — Corps 3 colonnes (contrainte entre badge et chat) ═══════ */}
       <div style={{
-        flex: 1, display: 'flex', flexDirection: 'row',
-        padding: '4px 8px', gap: 6, minHeight: 0,
+        flex: '0 0 auto',
+        height: 'calc(60vh - 54px - 58px)',  /* 60vh - header - badge */
+        display: 'flex', flexDirection: 'row',
+        alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 8px',
         position: 'relative', zIndex: 1,
       }}>
 
         {/* ── Colonne gauche — modes actifs ── */}
         <div style={{
-          width: 60, flexShrink: 0,
+          width: 80, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 8,
+          alignItems: 'center', justifyContent: 'center', gap: 12,
         }}>
           <ActiveIcon emoji="🎯" label="Quête WTF!" onClick={() => nav('difficulty')} />
           <ActiveIcon emoji="🔥" label="Série"       onClick={() => nav('streak')} />
@@ -258,6 +279,8 @@ export default function HomeScreen({
             style={{
               maxHeight: 80, objectFit: 'contain', flexShrink: 0,
               filter: 'drop-shadow(0 4px 18px rgba(255,120,0,0.55))',
+              animation: logoAnimated ? 'wtfLogoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
+              opacity: logoAnimated ? 1 : 0,
             }}
           />
           <div style={{ fontSize: 15, fontWeight: 900, color: '#FF6B1A', letterSpacing: 1, textAlign: 'center' }}>
@@ -275,9 +298,9 @@ export default function HomeScreen({
 
         {/* ── Colonne droite — bientôt ── */}
         <div style={{
-          width: 60, flexShrink: 0,
+          width: 80, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 8,
+          alignItems: 'center', justifyContent: 'center', gap: 12,
         }}>
           <ComingSoonIcon emoji="🏃" />
           <ComingSoonIcon emoji="🎮" />

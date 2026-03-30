@@ -11,6 +11,7 @@ import { DEV_PANEL_ENABLED } from './config/devConfig'
 import { logDevEvent } from './utils/devLogger'
 import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
+import MarathonScreen from './screens/MarathonScreen'
 import DifficultyScreen from './screens/DifficultyScreen'
 import CategoryScreen from './screens/CategoryScreen'
 import QuestionScreen from './screens/QuestionScreen'
@@ -40,6 +41,7 @@ const SCREENS = {
   DUEL_SETUP: 'duel_setup',
   DUEL_PASS: 'duel_pass',
   DUEL_RESULTS: 'duel_results',
+  MARATHON_RESULTS: 'marathon_results',
 }
 
 const DIFFICULTY_LEVELS = {
@@ -258,12 +260,34 @@ export default function App() {
       case 'trophees':      navigate('/trophees'); break
       case 'profil':        console.log('Navigation vers Profil — à brancher'); break
       case 'streak':        console.log('Navigation vers Série — à brancher'); break
+      case 'marathon':
+        setGameMode('marathon')
+        setSessionType('marathon')
+        setSelectedCategory('kids')
+        setScreen(SCREENS.DIFFICULTY)
+        break
       default: break
     }
   }, [handlePlay, handleWTFDuJour, handleFlashSolo, navigate])
 
   const handleSelectDifficulty = useCallback((difficulty) => {
     setSelectedDifficulty(difficulty)
+
+    if (gameMode === 'marathon') {
+      // Marathon : 20 questions Kids, pas de ticket quête consommé
+      const facts = [...getFactsByCategory('kids')]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 20)
+        .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+      setIsQuickPlay(false)
+      setSelectedCategory('kids')
+      setSessionType('marathon')
+      initSessionState(facts)
+      setScreen(SCREENS.QUESTION)
+      return
+    }
+
+    // Parcours standard
     const available = getParcoursFacts().filter(f =>
       f.difficulty === difficulty.id && !unlockedFacts.has(f.id) && !f.isSuperWTF
     )
@@ -277,7 +301,7 @@ export default function App() {
     setSessionType('parcours')
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts])
+  }, [unlockedFacts, gameMode])
 
   const handleMarathonMode = useCallback(() => {
     setGameMode('marathon')
@@ -451,12 +475,18 @@ export default function App() {
           coinsEarned += newStreak * 2 // streak bonus
         } else if (sessionType === 'parcours') {
           coinsEarned = sessionScore // 1 coin par point marqué
+        } else if (sessionType === 'marathon') {
+          // 3 coins par bonne réponse + 20 coins bonus si 20/20
+          coinsEarned = correctCount * 3
+          if (correctCount === 20) coinsEarned += 20
         }
         setCoinsEarnedLastSession(coinsEarned)
 
         const newTotalScore = totalScore + sessionScore
         const newWtfCoins = wtfCoins + coinsEarned
         const newWtfDuJourDate = sessionType === 'wtf_du_jour' ? TODAY() : wtfDuJourDate
+        // Marathon ne consomme pas de ticket quête
+        const marathonSessionsToday = sessionType === 'marathon' ? sessionsToday : newSessionsToday
 
         const newStorage = {
           totalScore: newTotalScore,
@@ -464,7 +494,7 @@ export default function App() {
           unlockedFacts: newUnlocked,
           wtfCoins: newWtfCoins,
           wtfDuJourDate: newWtfDuJourDate,
-          sessionsToday: newSessionsToday,
+          sessionsToday: marathonSessionsToday,
         }
         saveStorage(newStorage)
         setStorage({
@@ -490,6 +520,8 @@ export default function App() {
       // Route to appropriate end screen
       if (sessionType === 'wtf_du_jour') {
         setScreen(SCREENS.WTF_REVEAL)
+      } else if (sessionType === 'marathon') {
+        setScreen(SCREENS.MARATHON_RESULTS)
       } else {
         setScreen(SCREENS.RESULTS)
       }
@@ -779,7 +811,13 @@ export default function App() {
           onOpenValidate={handleOpenValidate}
           onUseHint={handleUseHint}
           onTimeout={handleTimeout}
-          onQuit={handleHome}
+          onQuit={gameMode === 'marathon'
+            ? () => {
+                if (window.confirm(`Tu as répondu à ${currentIndex} question${currentIndex > 1 ? 's' : ''}. Si tu quittes, ton score ne sera pas sauvegardé.`))
+                  handleHome()
+              }
+            : handleHome
+          }
           category={selectedCategory}
           gameMode={gameMode}
           difficulty={gameMode === 'solo' ? selectedDifficulty : null}
@@ -821,6 +859,24 @@ export default function App() {
           categoryId={selectedCategory}
           unlockedFactsThisSession={sessionCorrectFacts}
           sessionsToday={sessionsToday}
+        />
+      )}
+
+      {screen === SCREENS.MARATHON_RESULTS && (
+        <MarathonScreen
+          correctCount={correctCount}
+          totalFacts={sessionFacts.length}
+          sessionScore={sessionScore}
+          coinsEarned={coinsEarnedLastSession}
+          isPerfect={correctCount === 20}
+          difficulty={selectedDifficulty}
+          onReplay={() => {
+            setGameMode('marathon')
+            setSessionType('marathon')
+            setSelectedCategory('kids')
+            setScreen(SCREENS.DIFFICULTY)
+          }}
+          onHome={handleHome}
         />
       )}
 

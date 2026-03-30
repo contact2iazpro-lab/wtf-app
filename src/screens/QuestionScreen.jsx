@@ -6,7 +6,7 @@ import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
 // ── Hint flip card button ────────────────────────────────────────────────────
-function HintFlipButton({ num, hint, color, onReveal }) {
+function HintFlipButton({ num, hint, catColor, brightness = 1, onReveal }) {
   const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
 
   const handleClick = () => {
@@ -16,8 +16,7 @@ function HintFlipButton({ num, hint, color, onReveal }) {
     setTimeout(() => setPhase('back'), 160)
   }
 
-  const hintLen = hint?.length || 0
-  const hintFs = hintLen > 55 ? 9 : hintLen > 38 ? 11 : 12
+  const color = catColor || '#FF6B1A'
 
   return (
     <button
@@ -38,6 +37,7 @@ function HintFlipButton({ num, hint, color, onReveal }) {
         cursor: phase !== 'front' ? 'default' : 'pointer',
         pointerEvents: phase !== 'front' ? 'none' : 'auto',
         flexShrink: 0,
+        filter: `brightness(${brightness})`,
       }}
     >
       {phase !== 'back' ? (
@@ -47,7 +47,7 @@ function HintFlipButton({ num, hint, color, onReveal }) {
       ) : (
         <span
           style={{
-            fontSize: hintFs,
+            fontSize: 18,
             fontWeight: 700,
             color: 'white',
             textAlign: 'center',
@@ -119,7 +119,8 @@ export default function QuestionScreen({
       .qs-root .qs-pb { padding-bottom: 0.25rem !important; }
       .qs-root .qs-m  { padding-left: 0.75rem !important; padding-right: 0.75rem !important; gap: 0.5rem !important; }
       .qs-root .qs-m .rounded-3xl { padding: 0.75rem !important; }
-    }`
+    }
+    .qs-timer-wrap svg text { font-size: 32px !important; font-weight: 900 !important; }`
     document.head.appendChild(s)
     return () => { const el = document.getElementById(styleId); if (el) el.remove() }
   }, [])
@@ -231,22 +232,22 @@ export default function QuestionScreen({
     <div className="qs-pb px-4 pb-3 shrink-0">
       <div className="flex w-full items-end" style={{ gap: 2 }}>
         {Array.from({ length: totalFacts }).map((_, i) => {
-          const isActive = i === factIndex
           const isFilled = i <= factIndex
+          const showLabel = i === 2
           return (
             <div
               key={i}
               className="flex-1 rounded-full transition-all duration-300 flex items-center justify-center"
               style={{
-                height: isActive ? 18 : 6,
+                height: 20,
                 background: isFilled
                   ? cat?.color || '#FF6B1A'
                   : (cat?.color || '#FF6B1A') + '40',
               }}
             >
-              {isActive && (
-                <span style={{ fontSize: 8, fontWeight: 900, color: 'white', lineHeight: 1 }}>
-                  {factIndex + 1}
+              {showLabel && totalFacts > 0 && (
+                <span style={{ fontSize: 13, fontWeight: 900, color: 'white', lineHeight: 1, fontFamily: 'Arial' }}>
+                  {factIndex + 1}/{totalFacts}
                 </span>
               )}
             </div>
@@ -275,21 +276,26 @@ export default function QuestionScreen({
   const hintButtons = (
     <div className="grid grid-cols-2 gap-2 shrink-0">
       <HintFlipButton
-        num={1} hint={fact.hint1} color="#FBBF24"
+        num={1} hint={fact.hint1} catColor={cat?.color || '#FF6B1A'} brightness={0.7}
         onReveal={() => { onUseHint(1); audio.play('click') }}
       />
       <HintFlipButton
-        num={2} hint={fact.hint2} color="#F97316"
+        num={2} hint={fact.hint2} catColor={cat?.color || '#FF6B1A'} brightness={1.3}
         onReveal={() => { onUseHint(2); audio.play('click') }}
       />
     </div>
   )
 
-  // ── Numéro du f*ct — discret, couleur catégorie ────────────────────────────
+  // ── Numéro du f*ct — grand, couleur catégorie, contour blanc ─────────────────
   const factIdLabel = (
     <div
       className="text-center shrink-0"
-      style={{ fontSize: 12, fontWeight: 700, color: cat?.color || 'rgba(255,255,255,0.4)', opacity: 0.65 }}
+      style={{
+        fontSize: 20,
+        fontWeight: 900,
+        color: cat?.color || 'rgba(255,255,255,0.4)',
+        textShadow: '-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
+      }}
     >
       #{fact.id}
     </div>
@@ -299,7 +305,7 @@ export default function QuestionScreen({
   // MOD 3 + MOD 4 + MOD 5 — pas de halo, pas de fond coloré, juste le SVG.
   const timerZone = (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ transform: 'scale(var(--scale))', transformOrigin: 'center' }}>
+      <div className="qs-timer-wrap" style={{ transform: 'scale(var(--scale))', transformOrigin: 'center' }}>
         <CircularTimer
           key={`${fact.id}-${answerMode}`}
           size={110}
@@ -394,7 +400,7 @@ export default function QuestionScreen({
         {progressBar}
 
         {/* MOD 3 — contenu shrink-0, timer zone flex-1 */}
-        <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 'calc(12px * var(--scale))' }}>
+        <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 16 }}>
           {questionCard}
           {difficulty?.hintsAllowed && hintButtons}
           <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center">
@@ -437,14 +443,14 @@ export default function QuestionScreen({
       {progressBar}
 
       {/* Contenu fixe shrink-0 */}
-      <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 'calc(12px * var(--scale))' }}>
+      <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 16 }}>
         {questionCard}
 
         {/* Indices — uniquement en mode Curieux */}
         {difficulty?.hintsAllowed && hintButtons}
 
         {/* Boutons QCM — MOD 2 : py-5 text-lg gap-3 */}
-        <div className={`grid ${difficulty?.choices === 6 ? 'grid-cols-3' : 'grid-cols-2'} gap-3 shrink-0`}>
+        <div className="grid gap-3 shrink-0" style={{ gridTemplateColumns: '1fr 1fr' }}>
           {fact.options.map((option, index) => (
             <button
               key={index}
@@ -459,6 +465,12 @@ export default function QuestionScreen({
                 fontSize: 'calc(1rem * var(--scale))',
                 paddingTop: 'calc(14px * var(--scale))',
                 paddingBottom: 'calc(14px * var(--scale))',
+                minHeight: 64,
+                height: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
                 background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
                 borderColor: cat?.color + '40',
                 boxShadow: `0 4px 16px ${cat?.color}15`,

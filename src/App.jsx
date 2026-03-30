@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
@@ -99,6 +100,7 @@ function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDat
 
 export default function App() {
   const navigate = useNavigate()
+  const scale = useScale()
   const [screen, setScreen] = useState(SCREENS.HOME)
   const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.NORMAL)
   const [selectedCategory, setSelectedCategory] = useState(null)
@@ -707,7 +709,7 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg">
+    <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg" style={{ '--scale': scale, height: '100dvh' }}>
       {/* First-visit tutorial (mandatory, no skip) */}
       {showTutorial && <TutorialOverlay onComplete={handleTutorialComplete} />}
 

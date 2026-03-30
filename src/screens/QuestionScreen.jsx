@@ -267,7 +267,7 @@ export default function QuestionScreen({
         boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
       }}
     >
-      <h2 className="text-white text-base font-bold leading-snug">{fact.question}</h2>
+      <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))' }}>{fact.question}</h2>
     </div>
   )
 
@@ -299,12 +299,14 @@ export default function QuestionScreen({
   // MOD 3 + MOD 4 + MOD 5 — pas de halo, pas de fond coloré, juste le SVG.
   const timerZone = (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <CircularTimer
-        key={`${fact.id}-${answerMode}`}
-        size={120}
-        duration={timerDuration}
-        onTimeout={handleTimeout}
-      />
+      <div style={{ transform: 'scale(var(--scale))', transformOrigin: 'center' }}>
+        <CircularTimer
+          key={`${fact.id}-${answerMode}`}
+          size={110}
+          duration={timerDuration}
+          onTimeout={handleTimeout}
+        />
+      </div>
     </div>
   )
 
@@ -392,7 +394,7 @@ export default function QuestionScreen({
         {progressBar}
 
         {/* MOD 3 — contenu shrink-0, timer zone flex-1 */}
-        <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 12 }}>
+        <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 'calc(12px * var(--scale))' }}>
           {questionCard}
           {difficulty?.hintsAllowed && hintButtons}
           <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center">
@@ -435,7 +437,7 @@ export default function QuestionScreen({
       {progressBar}
 
       {/* Contenu fixe shrink-0 */}
-      <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 12 }}>
+      <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 'calc(12px * var(--scale))' }}>
         {questionCard}
 
         {/* Indices — uniquement en mode Curieux */}
@@ -452,8 +454,11 @@ export default function QuestionScreen({
                 audio.vibrate(correct ? [40, 20, 40] : [120])
                 onSelectAnswer(index)
               }}
-              className="btn-press py-5 text-lg rounded-2xl text-white font-bold transition-all active:scale-95 border"
+              className="btn-press rounded-2xl text-white font-bold transition-all active:scale-95 border"
               style={{
+                fontSize: 'calc(1rem * var(--scale))',
+                paddingTop: 'calc(14px * var(--scale))',
+                paddingBottom: 'calc(14px * var(--scale))',
                 background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
                 borderColor: cat?.color + '40',
                 boxShadow: `0 4px 16px ${cat?.color}15`,

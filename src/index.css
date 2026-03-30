@@ -1,3 +1,10 @@
+:root {
+  --scale: 1;
+  --base-font:    calc(16px * var(--scale));
+  --base-padding: calc(16px * var(--scale));
+  --base-gap:     calc(12px * var(--scale));
+}
+
 *, *::before, *::after {
   font-family: 'Nunito', system-ui, sans-serif;
 }

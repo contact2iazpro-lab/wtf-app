@@ -115,7 +115,7 @@ export default function HomeScreen({
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
         className="fixed w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
-        style={{ zIndex: 40, bottom: 64, right: 16, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        style={{ zIndex: 40, bottom: 80, right: 16, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         ⚙️
       </button>
 
@@ -142,42 +142,42 @@ export default function HomeScreen({
         <p className="text-sm font-black tracking-[0.15em] uppercase -mt-1 mb-0" style={{ color: '#7C3AED' }}>
           Vrai ou fou ?
         </p>
-        <p className="text-sm font-black mb-2" style={{ color: '#7C3AED', letterSpacing: '0.02em' }}>
+        <p className="text-sm font-bold mb-2" style={{ color: 'white', textShadow: '0 1px 6px rgba(0,0,0,0.35)', letterSpacing: '0.02em' }}>
           Des f*cts 100% vrais, des réactions 100% fun
         </p>
 
         {/* MOD 7 — Stats row: Série + WTF Coins — même px-4 que les blocs en dessous */}
         <div className="flex gap-2 w-full">
 
-          {/* MOD 2/3 — Série (ex-Streak) avec flamme animée */}
+          {/* COR 2 — Série compact (py-2 px-3) */}
           <div
-            className="flex-1 rounded-2xl p-2 text-center border"
+            className="flex-1 rounded-2xl py-2 px-3 text-center border"
             style={{
               background: 'rgba(255,255,255,0.6)',
               borderColor: streakInDanger ? 'rgba(255,107,26,0.7)' : 'rgba(255,255,255,0.9)',
               backdropFilter: 'blur(12px)',
               boxShadow: `0 4px 16px ${streakInDanger ? 'rgba(255,107,26,0.35)' : flame.glow}`,
             }}>
-            <div className="text-xl mb-0">
+            <div className="text-lg mb-0">
               <span className={streakPlayedToday ? 'flame-active' : streakInDanger ? 'flame-danger' : ''}>
                 {flame.emoji}
               </span>
             </div>
-            <div className="text-lg font-black leading-tight" style={{ color: '#1a1a2e' }}>{streak}</div>
+            <div className="text-base font-black leading-tight" style={{ color: '#1a1a2e' }}>{streak}</div>
             <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>Série</div>
             {streakInDanger && (
               <div className="text-xs font-bold mt-0.5" style={{ color: '#FF6B1A' }}>⚠️ En danger !</div>
             )}
           </div>
 
-          {/* WTF Coins */}
+          {/* COR 1+2 — WTF Coins compact, affichage inline icon+chiffre */}
           <div
-            className="flex-1 rounded-2xl p-2 text-center border"
+            className="flex-1 rounded-2xl py-2 px-3 text-center border"
             style={{ background: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-            <div className="mb-0 flex items-center justify-center">
-              <CoinsIcon size={22} />
+            <div className="flex items-center justify-center gap-1.5 mb-0.5">
+              <CoinsIcon size={18} />
+              <span className="text-base font-black" style={{ color: '#1a1a2e', fontWeight: 700 }}>{wtfCoins}</span>
             </div>
-            <div className="text-lg font-black leading-tight" style={{ color: '#1a1a2e' }}>{wtfCoins}</div>
             <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>WTF! Coins</div>
           </div>
 
@@ -278,8 +278,8 @@ export default function HomeScreen({
           )}
         </div>
 
-        {/* Chat — collé au contenu, plus grand */}
-        <div className="shrink-0 mt-2 flex justify-center overflow-hidden">
+        {/* COR 4+7 — Chat visible, espacement max 8px, pas d'overflow caché */}
+        <div className="shrink-0 mt-1 flex justify-center" style={{ minHeight: 120 }}>
           <img
             src="/cat-president.png"
             alt="Cat President"
@@ -319,7 +319,7 @@ export default function HomeScreen({
             <span style={{ fontSize: 20 }}>{item.icon}</span>
             <span
               className="font-bold"
-              style={{ fontSize: '0.6rem', color: item.active ? '#7C3AED' : 'rgba(0,0,0,0.4)' }}>
+              style={{ fontSize: '0.6rem', color: item.active ? '#FF6B1A' : 'rgba(0,0,0,0.4)' }}>
               {item.label}
             </span>
           </button>

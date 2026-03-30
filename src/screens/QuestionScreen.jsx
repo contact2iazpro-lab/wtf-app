@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import CircularTimer from '../components/CircularTimer'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
@@ -98,19 +98,48 @@ export default function QuestionScreen({
   const [showSettings, setShowSettings] = useState(false)
   const cat = getCategoryById(fact.category)
 
-  // COR 2 — Inject compact style for small screens (max-height: 700px)
+  // Timer duration
+  const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
+
+  // ── Halo: parallel countdown (pauses when modal is open) ──────────────────
+  const [timerLeft, setTimerLeft] = useState(timerDuration)
+  const pausedRef = useRef(false)
+  useEffect(() => { pausedRef.current = showQuitConfirm }, [showQuitConfirm])
+
+  useEffect(() => {
+    if (!answerMode) return
+    setTimerLeft(timerDuration)
+    const iv = setInterval(() => {
+      if (pausedRef.current) return
+      setTimerLeft(t => Math.max(0, t - 1))
+    }, 1000)
+    return () => clearInterval(iv)
+  }, [fact.id, answerMode, timerDuration])
+
+  // Wrapped timeout — no-op while modal is open
+  const handleTimeout = useCallback(() => {
+    if (!pausedRef.current) onTimeout?.()
+  }, [onTimeout])
+
+  // ── Style injection: compact + animation keyframes ─────────────────────────
   useEffect(() => {
     const styleId = '__qs-compact'
     if (document.getElementById(styleId)) return
     const s = document.createElement('style')
     s.id = styleId
-    s.textContent = `@media (max-height: 700px) {
-      .qs-root .qs-h { padding-top: 0.5rem !important; padding-bottom: 0.25rem !important; }
-      .qs-root .qs-pb { padding-bottom: 0.25rem !important; }
-      .qs-root .qs-m { padding-left: 0.75rem !important; padding-right: 0.75rem !important; gap: 0.5rem !important; }
-      .qs-root .qs-f { padding-top: 0.25rem !important; padding-bottom: 0.5rem !important; }
-      .qs-root .qs-m .rounded-3xl { padding: 0.75rem !important; }
-    }`
+    s.textContent = `
+      @media (max-height: 700px) {
+        .qs-root .qs-h { padding-top: 0.5rem !important; padding-bottom: 0.25rem !important; }
+        .qs-root .qs-pb { padding-bottom: 0.25rem !important; }
+        .qs-root .qs-m { padding-left: 0.75rem !important; padding-right: 0.75rem !important; gap: 0.5rem !important; }
+        .qs-root .qs-f { padding-top: 0.25rem !important; padding-bottom: 0.5rem !important; }
+        .qs-root .qs-m .rounded-3xl { padding: 0.75rem !important; }
+      }
+      @keyframes halo-calm    { from { transform: scale(1);    } to { transform: scale(1.08); } }
+      @keyframes halo-warn    { from { transform: scale(1);    } to { transform: scale(1.15); } }
+      @keyframes halo-danger  { from { transform: scale(1);    } to { transform: scale(1.2);  } }
+      @keyframes float-particle { from { transform: translateY(-10px); } to { transform: translateY(10px); } }
+    `
     document.head.appendChild(s)
     return () => { const el = document.getElementById(styleId); if (el) el.remove() }
   }, [])
@@ -126,58 +155,115 @@ export default function QuestionScreen({
   const baseCoins = answerMode === 'open' ? 5 : answerMode === 'qcm' ? 1 : (gameMode !== 'solo' ? 5 : 1)
   const potentialCoins = Math.max(0, baseCoins - (hintsUsed || 0))
 
-  // Timer duration
-  const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
+  // ── Halo config ───────────────────────────────────────────────────────────
+  const haloConfig = timerLeft > 15
+    ? { background: cat?.color || '#22C55E', opacity: 0.3, animation: 'halo-calm 2s ease-in-out infinite alternate' }
+    : timerLeft > 5
+    ? { background: cat?.color || '#F97316', opacity: 0.5, animation: 'halo-warn 0.8s ease-in-out infinite alternate' }
+    : { background: '#EF4444',              opacity: 0.5, animation: 'halo-danger 0.4s ease-in-out infinite alternate' }
 
-  // ── Quit confirmation modal ──────────────────────────────────────────────
+  // ── Decorative background particles ───────────────────────────────────────
+  const PARTICLES = [
+    { size: 8,  top: '12%', left: '7%',  dur: '4s',   delay: '0s'   },
+    { size: 12, top: '22%', left: '88%', dur: '5s',   delay: '1s'   },
+    { size: 10, top: '55%', left: '4%',  dur: '3.5s', delay: '0.5s' },
+    { size: 16, top: '68%', left: '91%', dur: '6s',   delay: '2s'   },
+    { size: 9,  top: '38%', left: '93%', dur: '4.5s', delay: '1.5s' },
+    { size: 14, top: '82%', left: '12%', dur: '5.5s', delay: '0.8s' },
+  ]
+
+  const particles = PARTICLES.map((p, i) => (
+    <div
+      key={i}
+      style={{
+        position: 'absolute',
+        top: p.top,
+        left: p.left,
+        width: p.size,
+        height: p.size,
+        borderRadius: '50%',
+        background: 'rgba(255,255,255,0.15)',
+        animation: `float-particle ${p.dur} ease-in-out ${p.delay} infinite alternate`,
+        pointerEvents: 'none',
+        zIndex: -1,
+      }}
+    />
+  ))
+
+  // ── Quit confirmation modal — updated text + buttons ──────────────────────
   const quitModal = showQuitConfirm && (
-    <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
-      <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', border: '1px solid #E5E7EB', boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }}>
+    <div
+      className="absolute inset-0 z-50 flex items-center justify-center p-6"
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}
+    >
+      <div
+        className="w-full rounded-3xl p-6 mx-4"
+        style={{
+          background: '#FAFAF8',
+          border: '1px solid #E5E7EB',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.25)',
+        }}
+      >
         <div className="text-2xl text-center mb-3">🏃</div>
-        <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter la partie ?</h2>
-        <p className="text-sm text-center mb-6 leading-relaxed" style={{ color: '#6B7280' }}>
-          {gameMode === 'marathon'
-            ? 'Tes points accumulés ne seront pas comptabilisés au classement.'
-            : 'Ta progression sera perdue.'
-          }
+        <h2
+          className="font-black text-lg text-center mb-2"
+          style={{ color: '#1a1a2e' }}
+        >
+          Quitter le parcours ?
+        </h2>
+        <p
+          className="text-sm text-center mb-6 leading-relaxed"
+          style={{ color: '#6B7280' }}
+        >
+          Tu as exploré <strong style={{ color: '#1a1a2e' }}>{factIndex}</strong>{' '}
+          f*ct{factIndex !== 1 ? 's' : ''} jusqu'ici.<br />
+          Si tu quittes maintenant, ils ne seront pas sauvegardés.
         </p>
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3">
           <button
             onClick={() => setShowQuitConfirm(false)}
-            className="flex-1 py-4 rounded-2xl font-black text-base"
-            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>
-            Annuler
+            className="w-full py-4 rounded-2xl font-black text-base"
+            style={{ background: cat?.color || '#FF6B1A', color: 'white' }}
+          >
+            Continuer le parcours
           </button>
           <button
             onClick={onQuit}
-            className="flex-1 py-4 rounded-2xl font-black text-base"
-            style={{ background: 'rgba(244,67,54,0.1)', border: '1px solid #F44336', color: '#DC2626' }}>
-            Quitter
+            className="w-full py-3 rounded-2xl font-bold text-sm"
+            style={{ background: 'transparent', color: '#9CA3AF' }}
+          >
+            Quitter quand même
           </button>
         </div>
       </div>
     </div>
   )
 
-  // MOD 3 — Header: 3 zones égales (w-1/3 chacune) pour un centrage absolu
+  // ── Header: X button + fact id | category | coins ─────────────────────────
   const header = (
     <div className="qs-h px-4 pt-4 pb-2 shrink-0 flex items-center">
-      {/* Left (w-1/3): fact id + progress — tappable to quit */}
-      <button
-        onClick={() => setShowQuitConfirm(true)}
-        className="w-1/3 text-left"
-        title="Quitter">
+      {/* Left (w-1/3): X quit button + fact id/progress */}
+      <div className="w-1/3 flex items-center gap-2">
+        <button
+          onClick={() => setShowQuitConfirm(true)}
+          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+          title="Quitter"
+          style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
+        >
+          <span style={{ fontSize: 11, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+        </button>
         <span className="font-black text-sm" style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}>
           #{fact.id} · {factIndex + 1}/{totalFacts}
         </span>
-      </button>
+      </div>
 
-      {/* Center (w-1/3): category emoji + name — toujours centré */}
+      {/* Center (w-1/3): category emoji + name */}
       <div className="w-1/3 flex items-center gap-2 justify-center min-w-0">
         {cat && <span className="text-lg shrink-0">{cat.emoji}</span>}
         <span
           className="font-black text-sm tracking-wide truncate"
-          style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}>
+          style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}
+        >
           {cat?.label || 'Question'}
         </span>
       </div>
@@ -192,7 +278,7 @@ export default function QuestionScreen({
     </div>
   )
 
-  // MOD 4 — Segmented progress bar: 10 distinct segments
+  // ── Segmented progress bar ─────────────────────────────────────────────────
   const progressBar = (
     <div className="qs-pb px-4 pb-2 shrink-0">
       <div className="flex w-full" style={{ gap: 2 }}>
@@ -212,54 +298,73 @@ export default function QuestionScreen({
     </div>
   )
 
-  // MOD 5 — Footer: timer centered + settings button on right (no overlap)
+  // ── Footer: timer (size 120) + halo + settings ─────────────────────────────
   const footer = (showTimer) => (
     <div className="qs-f px-4 pb-4 pt-1 shrink-0 flex items-center">
-      {/* Left spacer balances the settings button width */}
+      {/* Left spacer balances the settings button */}
       <div style={{ width: 40 }} />
 
       {/* Timer centered */}
       <div className="flex-1 flex justify-center">
         {showTimer ? (
-          // MOD 7 — size=96 triggers fontSize=22 in CircularTimer (vs 17 at size=72)
-          <CircularTimer
-            key={`${fact.id}-${answerMode}`}
-            size={80}
-            duration={timerDuration}
-            onTimeout={onTimeout}
-          />
+          <div style={{ position: 'relative' }}>
+            {/* Halo */}
+            <div
+              style={{
+                position: 'absolute',
+                top: -10,
+                left: -10,
+                width: 140,
+                height: 140,
+                borderRadius: '50%',
+                pointerEvents: 'none',
+                ...haloConfig,
+              }}
+            />
+            {/* Timer */}
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <CircularTimer
+                key={`${fact.id}-${answerMode}`}
+                size={120}
+                duration={timerDuration}
+                onTimeout={handleTimeout}
+              />
+            </div>
+          </div>
         ) : (
-          <div style={{ width: 80, height: 80 }} />
+          <div style={{ width: 120, height: 120 }} />
         )}
       </div>
 
-      {/* Settings button — bottom right, clears timer */}
+      {/* Settings button */}
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
         className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}>
+        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+      >
         ⚙️
       </button>
     </div>
   )
 
-  // ── Question card ─────────────────────────────────────────────────────────
+  // ── Question card ──────────────────────────────────────────────────────────
   const questionCard = (
     <div
-      className="rounded-3xl p-4 border shrink-0 mb-2"
+      className="rounded-3xl p-4 border shrink-0"
       style={{
         background: cardBg,
         borderColor: cat?.color + '70',
         backdropFilter: 'blur(12px)',
         boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
-      }}>
+      }}
+    >
       <h2 className="text-white text-base font-bold leading-snug">{fact.question}</h2>
     </div>
   )
 
-  // MOD 6 — Hints only when difficulty.hintsAllowed is truthy (Easy mode only)
+  // ── Hints ──────────────────────────────────────────────────────────────────
   const hintButtons = (
-    <div className="grid grid-cols-2 gap-2 shrink-0 mb-2">
+    <div className="grid grid-cols-2 gap-2 shrink-0">
       <HintFlipButton
         num={1}
         hint={fact.hint1}
@@ -275,17 +380,20 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Phase 0 : Mode selection ──────────────────────────────────────────────
+  // ── Phase 0 : Mode selection ───────────────────────────────────────────────
   if (!answerMode) {
     return (
-      <div className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+      <div
+        className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden"
+        style={{ background: screenBg }}
+      >
+        {particles}
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
 
-        {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-        <div className="qs-m flex-1 flex flex-col px-4">
+        <div className="qs-m flex-1 flex flex-col px-4 justify-center" style={{ gap: 16 }}>
           {questionCard}
 
           <div className="flex flex-col gap-3 shrink-0">
@@ -299,7 +407,12 @@ export default function QuestionScreen({
               <button
                 onClick={() => setAnswerMode('open')}
                 className="btn-press w-full py-4 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
-                style={{ background: `${cat?.color || '#22C55E'}12`, borderColor: `${cat?.color || '#22C55E'}60`, boxShadow: `0 4px 20px ${cat?.color || '#22C55E'}18` }}>
+                style={{
+                  background: `${cat?.color || '#22C55E'}12`,
+                  borderColor: `${cat?.color || '#22C55E'}60`,
+                  boxShadow: `0 4px 20px ${cat?.color || '#22C55E'}18`,
+                }}
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-white font-black text-base">🧠 Question ouverte</div>
@@ -316,7 +429,12 @@ export default function QuestionScreen({
             <button
               onClick={() => setAnswerMode('qcm')}
               className="btn-press w-full py-4 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
-              style={{ background: `${cat?.color || '#FF5C1A'}08`, borderColor: `${cat?.color || '#FF5C1A'}40`, boxShadow: `0 4px 20px ${cat?.color || '#FF5C1A'}15` }}>
+              style={{
+                background: `${cat?.color || '#FF5C1A'}08`,
+                borderColor: `${cat?.color || '#FF5C1A'}40`,
+                boxShadow: `0 4px 20px ${cat?.color || '#FF5C1A'}15`,
+              }}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-white font-black text-base">🎯 Choix multiple</div>
@@ -336,21 +454,23 @@ export default function QuestionScreen({
     )
   }
 
-  // ── Phase 1 : Open question ───────────────────────────────────────────────
+  // ── Phase 1 : Open question ────────────────────────────────────────────────
   if (answerMode === 'open') {
     return (
-      <div className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+      <div
+        className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden"
+        style={{ background: screenBg }}
+      >
+        {particles}
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
 
-        {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-        <div className="qs-m flex-1 flex flex-col px-4">
+        <div className="qs-m flex-1 flex flex-col px-4 justify-center" style={{ gap: 16 }}>
           {questionCard}
 
           <div className="flex flex-col gap-2 shrink-0">
-            {/* MOD 6 — Hints only in Easy mode */}
             {difficulty?.hintsAllowed && hintButtons}
             <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center">
               Le questionneur valide la réponse
@@ -359,13 +479,15 @@ export default function QuestionScreen({
               <button
                 onClick={() => { audio.play('wrong'); audio.vibrate([120]); onOpenValidate(false) }}
                 className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
-                style={{ background: 'rgba(244,67,54,0.1)', borderColor: '#F44336', color: '#F44336' }}>
+                style={{ background: 'rgba(244,67,54,0.1)', borderColor: '#F44336', color: '#F44336' }}
+              >
                 ✗ Incorrect
               </button>
               <button
-                onClick={() => { audio.play('correct'); audio.vibrate([40,20,40]); onOpenValidate(true) }}
+                onClick={() => { audio.play('correct'); audio.vibrate([40, 20, 40]); onOpenValidate(true) }}
                 className="btn-press py-4 rounded-2xl border-2 font-black text-base active:scale-95 transition-all"
-                style={{ background: 'rgba(76,175,80,0.1)', borderColor: '#4CAF50', color: '#4CAF50' }}>
+                style={{ background: 'rgba(76,175,80,0.1)', borderColor: '#4CAF50', color: '#4CAF50' }}
+              >
                 ✓ Correct !
               </button>
             </div>
@@ -377,24 +499,27 @@ export default function QuestionScreen({
     )
   }
 
-  // ── Phase 2 : QCM ─────────────────────────────────────────────────────────
-  // Order: header → progress → question → [hints if Easy] → QCM answers → timer
+  // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
   return (
-    <div className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+    <div
+      className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden"
+      style={{ background: screenBg }}
+    >
+      {particles}
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
       {progressBar}
 
-      {/* MOD 2 — No spacer, compact layout top-to-bottom */}
-      <div className="qs-m flex-1 flex flex-col px-4">
+      <div className="qs-m flex-1 flex flex-col px-4 justify-center" style={{ gap: 16 }}>
         {questionCard}
 
-        <div className="flex flex-col gap-2 shrink-0">
-          {/* MOD 6 — Hints only in Easy mode (difficulty.hintsAllowed === true) */}
+        <div className="flex flex-col gap-3 shrink-0">
           {difficulty?.hintsAllowed && hintButtons}
 
-          <div className={`grid ${difficulty?.choices === 6 ? 'grid-cols-3' : 'grid-cols-2'} gap-2 shrink-0`}>
+          <div
+            className={`grid ${difficulty?.choices === 6 ? 'grid-cols-3' : 'grid-cols-2'} gap-3 shrink-0`}
+          >
             {fact.options.map((option, index) => (
               <button
                 key={index}
@@ -404,12 +529,13 @@ export default function QuestionScreen({
                   audio.vibrate(correct ? [40, 20, 40] : [120])
                   onSelectAnswer(index)
                 }}
-                className={`btn-press ${difficulty?.choices === 6 ? 'py-2 text-xs' : 'py-4 text-sm'} rounded-2xl text-white font-bold transition-all active:scale-95 border`}
+                className="btn-press py-5 text-lg rounded-2xl text-white font-bold transition-all active:scale-95 border"
                 style={{
                   background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
                   borderColor: cat?.color + '40',
                   boxShadow: `0 4px 16px ${cat?.color}15`,
-                }}>
+                }}
+              >
                 {option}
               </button>
             ))}

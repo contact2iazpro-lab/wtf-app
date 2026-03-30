@@ -96,6 +96,16 @@ export default function QuestionScreen({
   const [showSettings, setShowSettings]       = useState(false)
   const cat = getCategoryById(fact.category)
 
+  // ── Lisibilité sur fond coloré ─────────────────────────────────────────────
+  const isLightColor = (hex) => {
+    if (!hex || hex.length < 7) return false
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return (r * 299 + g * 587 + b * 114) / 1000 > 128
+  }
+  const catTextColor = cat?.color ? (isLightColor(cat.color) ? '#1a1a1a' : '#ffffff') : '#ffffff'
+
   // Timer duration
   const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
 
@@ -226,7 +236,7 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Barre de progression — MOD 3 : segment actif 14px, inactifs 8px, centrés ─
+  // ── Barre de progression — COR 1 : inactifs 12px, actif 18px, label 14px ────
   const progressBar = (
     <div className="qs-pb px-4 pb-2 shrink-0">
       <div className="flex w-full items-center" style={{ gap: 2 }}>
@@ -239,7 +249,7 @@ export default function QuestionScreen({
               key={i}
               className="flex-1 transition-all duration-300 flex items-center justify-center"
               style={{
-                height: isActive ? 14 : 8,
+                height: isActive ? 18 : 12,
                 borderRadius: isActive ? 4 : 999,
                 background: isFilled
                   ? cat?.color || '#FF6B1A'
@@ -247,7 +257,7 @@ export default function QuestionScreen({
               }}
             >
               {showLabel && totalFacts > 0 && (
-                <span style={{ fontSize: 13, fontWeight: 900, color: 'white', lineHeight: 1, fontFamily: 'Arial' }}>
+                <span style={{ fontSize: 14, fontWeight: 900, color: catTextColor, lineHeight: 1, fontFamily: 'Arial' }}>
                   {factIndex + 1}/{totalFacts}
                 </span>
               )}
@@ -287,13 +297,13 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Numéro du f*ct — MOD 1 : 16px/700, couleur catégorie, sous le header ─────
+  // ── Numéro du f*ct — COR 2 : 22px/900, couleur catégorie, sous le header ─────
   const factIdLabel = (
     <div
       className="text-center shrink-0 px-4 pb-1"
       style={{
-        fontSize: 16,
-        fontWeight: 700,
+        fontSize: 22,
+        fontWeight: 900,
         color: cat?.color || 'rgba(255,255,255,0.4)',
       }}
     >
@@ -460,17 +470,17 @@ export default function QuestionScreen({
                 audio.vibrate(correct ? [40, 20, 40] : [120])
                 onSelectAnswer(index)
               }}
-              className="btn-press rounded-2xl text-white font-bold transition-all active:scale-95 border"
+              className="btn-press rounded-2xl font-bold transition-all active:scale-95 border"
               style={{
-                fontSize: 'calc(1rem * var(--scale))',
-                paddingTop: 'calc(14px * var(--scale))',
-                paddingBottom: 'calc(14px * var(--scale))',
-                minHeight: 64,
-                height: 'auto',
+                fontSize: 'clamp(13px, 1.8vw, 16px)',
+                minHeight: 72,
+                height: 72,
+                overflow: 'hidden',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 textAlign: 'center',
+                color: 'white',
                 background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
                 borderColor: cat?.color + '40',
                 boxShadow: `0 4px 16px ${cat?.color}15`,

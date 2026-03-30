@@ -36,8 +36,8 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
           ←
         </button>
         <div className="flex-1 text-center">
-          <div className="text-white font-black text-sm tracking-wide">WTF du Jour</div>
-          <div className="text-white/40 text-xs">Tous les jours, un nouveau fait</div>
+          <div className="text-white font-black text-sm tracking-wide">WTF! du Jour</div>
+          <div className="text-white/40 text-xs">Tous les jours, un nouveau f*ct</div>
         </div>
         <div className="w-9" />
       </div>
@@ -78,13 +78,13 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
             backdropFilter: 'blur(12px)',
           }}>
           <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-3 text-center">
-            Le fait du jour
+            Le f*ct du jour
           </div>
           <div className="text-white font-black text-lg leading-snug text-center mb-1">
             {titrePartiel}
           </div>
           <div className="text-white/30 text-xs text-center mt-2">
-            Joue la session pour révéler le fait complet
+            Joue la session pour révéler le f*ct complet
           </div>
         </div>
 

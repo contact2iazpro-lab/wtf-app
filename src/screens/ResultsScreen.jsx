@@ -26,7 +26,7 @@ function getStars(correct, total) {
   return 0
 }
 
-const DIFFICULTY_LABELS = { easy: 'Facile', normal: 'Normal', expert: 'Expert' }
+const DIFFICULTY_LABELS = { easy: 'Curieux', normal: 'À fond', expert: 'WTF! Addict' }
 const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
 
 // COR 4 — Confetti colors
@@ -395,7 +395,7 @@ export default function ResultsScreen({
           <div className="flex items-center gap-3">
             <span className="text-3xl">🪙</span>
             <div className="flex-1">
-              <div className="text-yellow-200 font-black text-base">+{totalCoins} WTF Coins</div>
+              <div className="text-yellow-200 font-black text-base">+{totalCoins} WTF! Coins</div>
               {isPerfect && perfectBonus > 0 ? (
                 <div className="text-yellow-300/80 text-xs font-semibold">
                   {coinsEarned} pts + {perfectBonus} bonus score parfait 🌟
@@ -413,11 +413,11 @@ export default function ResultsScreen({
       <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.15)' }}>
         {cat ? (
           <div className="text-white/80 text-xs font-semibold text-center leading-relaxed">
-            🏅 <span style={{ color: catColor }}>{cat.label}</span> — continue les parcours pour débloquer ton prochain badge !
+            🏅 <span style={{ color: catColor }}>{cat.label}</span> — continue les quêtes pour débloquer ton prochain badge !
           </div>
         ) : (
           <div className="text-white/70 text-xs font-semibold text-center leading-relaxed">
-            Lance un nouveau parcours pour débloquer ton premier badge !
+            Lance une nouvelle quête pour débloquer ton premier badge !
           </div>
         )}
       </div>

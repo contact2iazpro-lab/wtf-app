@@ -142,7 +142,7 @@ export default function HomeScreen({
           Vrai ou fou ?
         </p>
         <p className="text-sm font-black mb-2" style={{ color: '#7C3AED', letterSpacing: '0.02em' }}>
-          Des faits 100% vrais, des réactions 100% fun
+          Des f*cts 100% vrais, des réactions 100% fun
         </p>
 
         {/* MOD 7 — Stats row: Série + WTF Coins — même px-4 que les blocs en dessous */}
@@ -177,7 +177,7 @@ export default function HomeScreen({
               <span className="font-black text-xs px-1.5 py-0.5 rounded" style={{ color: 'white', background: '#FF6B1A', letterSpacing: '0.04em' }}>WTF$</span>
             </div>
             <div className="text-lg font-black leading-tight" style={{ color: '#1a1a2e' }}>{wtfCoins}</div>
-            <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>WTF Coins</div>
+            <div className="text-xs font-bold uppercase tracking-wide" style={{ color: '#666' }}>WTF! Coins</div>
           </div>
 
         </div>
@@ -196,7 +196,7 @@ export default function HomeScreen({
             <div className="flex items-center px-3 py-2 gap-3">
               <span className="text-2xl">🤯</span>
               <div className="flex-1 text-left">
-                <div className="text-sm font-black">Le WTF du Jour t'attend !</div>
+                <div className="text-sm font-black">Le WTF! du Jour t'attend !</div>
                 <div className="text-xs font-bold opacity-75 normal-case tracking-normal">
                   Disponible encore {countdownRemaining}
                 </div>
@@ -268,11 +268,11 @@ export default function HomeScreen({
               <span style={{ color: '#7C3AED' }}>{nextBadgeInfo.category}</span>
               {' × '}{nextBadgeInfo.count} {nextBadgeInfo.difficulty}
               {' — encore '}
-              <span style={{ color: '#FF6B1A' }}>{nextBadgeInfo.remaining} facts</span>
+              <span style={{ color: '#FF6B1A' }}>{nextBadgeInfo.remaining} f*cts</span>
             </p>
           ) : (
             <p className="text-xs font-bold" style={{ color: 'rgba(0,0,0,0.4)' }}>
-              🏅 Commence un parcours pour débloquer ton premier badge !
+              🏅 Commence une quête pour débloquer ton premier badge !
             </p>
           )}
         </div>

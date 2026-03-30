@@ -31,16 +31,16 @@ const FallbackImage = ({ categoryColor }) => (
 // ── Messages bienveillants ─────────────────────────────────────────────────────
 const WRONG_MESSAGES = [
   "Tu l'auras la prochaine fois ! 💪",
-  "Retente ta chance... ce fait mérite d'être connu !",
+  "Retente ta chance... ce f*ct mérite d'être connu !",
   "Même les experts se trompent sur celui-là 😅",
   "Même Einstein aurait séché sur celui-là ! 🧠",
-  "Ce fait est tellement WTF qu'on comprend que tu aies raté ! 😂",
+  "Ce f*ct est tellement WTF! qu'on comprend que tu aies raté ! 😂",
 ]
 
 const CORRECT_MESSAGES = [
   "Félicitations, tu le savais vraiment ! 🎉",
   "Bravo, t'es une machine ! 🧠",
-  "Parfait ! Ce fait est gravé dans ta mémoire 🔥",
+  "Parfait ! Ce f*ct est gravé dans ta mémoire 🔥",
   "Chapeau l'artiste ! 🎩",
   "Tu es vraiment incollable ! 💪",
 ]

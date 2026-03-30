@@ -58,8 +58,8 @@ export default function WTFDuJourRevealScreen({
         }}>
         <div className="text-5xl animate-bounce-in">🤯</div>
         <div>
-          <div className="text-white font-black text-lg tracking-wide">What The Fact !</div>
-          <div className="text-white/50 text-xs">Tu as débloqué le fait du jour</div>
+          <div className="text-white font-black text-lg tracking-wide">What The F*ct !</div>
+          <div className="text-white/50 text-xs">Tu as débloqué le f*ct du jour</div>
         </div>
       </div>
 
@@ -85,7 +85,7 @@ export default function WTFDuJourRevealScreen({
             {cat?.label || fact.category}
           </span>
           <span className="ml-auto text-xs font-bold px-2 py-1 rounded-full" style={{ background: `${cat?.color || '#7C3AED'}33`, color: cat?.color || '#7C3AED' }}>
-            Fait du Jour
+            F*ct du Jour
           </span>
         </div>
 
@@ -142,7 +142,7 @@ export default function WTFDuJourRevealScreen({
         {streak > 0 && (
           <div className="mt-3 pt-3 flex items-center justify-center gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
             <span className="text-lg">{streak >= 7 ? '💙🔥' : '🔥'}</span>
-            <span className="text-white font-black text-sm">Streak {streak} jours !</span>
+            <span className="text-white font-black text-sm">Série {streak} jours !</span>
             {streak === 7 && <span className="text-xs px-2 py-0.5 rounded-full font-black" style={{ background: 'rgba(96,165,250,0.2)', color: '#60A5FA' }}>Semaine parfaite !</span>}
             {streak === 30 && <span className="text-xs px-2 py-0.5 rounded-full font-black" style={{ background: 'rgba(255,215,0,0.2)', color: '#FFD700' }}>1 mois !</span>}
           </div>

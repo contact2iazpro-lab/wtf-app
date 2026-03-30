@@ -9,10 +9,10 @@ const BUILD_DATE = new Date().toLocaleDateString('fr-FR', { day: '2-digit', mont
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function computeLevel(factsCount) {
-  if (factsCount >= 350) return { level: 50, title: 'Légende WTF' }
-  if (factsCount >= 200) return { level: 35, title: 'Maître WTF' }
-  if (factsCount >= 100) return { level: 20, title: 'Expert WTF' }
-  if (factsCount >= 30)  return { level: 10, title: 'Chasseur de Faits' }
+  if (factsCount >= 350) return { level: 50, title: 'Légende WTF!' }
+  if (factsCount >= 200) return { level: 35, title: 'Maître WTF!' }
+  if (factsCount >= 100) return { level: 20, title: 'Expert WTF!' }
+  if (factsCount >= 30)  return { level: 10, title: 'Chasseur de F*cts' }
   if (factsCount >= 10)  return { level: 5,  title: 'Questionneur' }
   return { level: 1, title: 'Curieux' }
 }
@@ -113,18 +113,18 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
   // ─── Notifications ──────────────────────────────────────────────────────────
   const NOTIFS = [
     {
-      label: '📬 WTF du Jour',
-      title: '🤯 Le fait du jour t\'attend',
+      label: '📬 WTF! du Jour',
+      title: '🤯 Le f*ct du jour t\'attend',
       body: `[${cat?.label || 'Sciences'}] Il pleut des diamants sur... → Joue pour découvrir et l'ajouter à ta collection`,
     },
     {
-      label: '🔥 Streak danger (J7)',
-      title: '🔥 Streak 7 jours — Plus que 4h',
+      label: '🔥 Série danger (J7)',
+      title: '🔥 Série 7 jours — Plus que 4h',
       body: 'Joue une session rapide pour garder ta série.',
     },
     {
-      label: '🔥 Streak danger (J30)',
-      title: '🔥 Streak 30 jours — Plus que 4h',
+      label: '🔥 Série danger (J30)',
+      title: '🔥 Série 30 jours — Plus que 4h',
       body: 'Joue une session rapide pour garder ta série.',
     },
     {
@@ -134,7 +134,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
     },
     {
       label: '📦 Nouveau pack dispo',
-      title: '📦 50 nouveaux faits arrivent dans 3 jours 🔥',
+      title: '📦 50 nouveaux f*cts arrivent dans 3 jours 🔥',
       body: 'Catégorie : Gastronomie — Prépare-toi !',
     },
   ]
@@ -160,7 +160,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
         className="flex items-center gap-3 px-4 pt-5 pb-3 shrink-0"
         style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,107,26,0.06)' }}>
         <div className="flex-1">
-          <div className="text-white font-black text-base tracking-wide">🛠 WTF Dev Panel</div>
+          <div className="text-white font-black text-base tracking-wide">🛠 WTF! Dev Panel</div>
           <div className="flex gap-2 mt-0.5">
             <span className="text-white/35 text-xs font-mono">v{APP_VERSION}</span>
             <span className="text-white/20 text-xs">·</span>
@@ -210,26 +210,26 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
 
         {/* ─── Section 2 — Player State ────────────────────────────────────── */}
         <Section title="👤 Section 2 — État du joueur">
-          <StateRow label="🔥 Streak" value={`${streak} jour${streak !== 1 ? 's' : ''}`}>
-            <Btn danger onClick={() => act('Streak → 0', () => devActions.setStreak(0))}>Reset</Btn>
-            <Btn color="#3B82F6" onClick={() => act('Streak → 30j', () => devActions.setStreak(30))}>→ 30j</Btn>
+          <StateRow label="🔥 Série" value={`${streak} jour${streak !== 1 ? 's' : ''}`}>
+            <Btn danger onClick={() => act('Série → 0', () => devActions.setStreak(0))}>Reset</Btn>
+            <Btn color="#3B82F6" onClick={() => act('Série → 30j', () => devActions.setStreak(30))}>→ 30j</Btn>
           </StateRow>
 
-          <StateRow label="🪙 WTF Coins" value={wtfCoins.toString()}>
+          <StateRow label="🪙 WTF! Coins" value={wtfCoins.toString()}>
             <Btn danger onClick={() => act('Coins → 0', () => devActions.setCoins(0))}>Reset</Btn>
             <Btn color="#22C55E" onClick={() => act('+100 coins', () => devActions.addCoins(100))}>+100</Btn>
           </StateRow>
 
-          <StateRow label="⭐ Niveau WTF" value={`Niv.${level} — ${levelTitle}`}>
+          <StateRow label="⭐ Niveau WTF!" value={`Niv.${level} — ${levelTitle}`}>
             <Btn color="#8B5CF6" onClick={() => act('Level up forcé', () => devActions.unlockRandomFacts(35))}>Level up</Btn>
           </StateRow>
 
-          <StateRow label="📚 Collection" value={`${factsCount} fact${factsCount !== 1 ? 's' : ''} acquis`}>
+          <StateRow label="📚 Collection" value={`${factsCount} f*ct${factsCount !== 1 ? 's' : ''} acquis`}>
             <Btn danger onClick={() => act('Collection reset', () => devActions.resetCollection())}>Reset</Btn>
           </StateRow>
 
-          <StateRow label="🤯 WTF du Jour" value={wtfDuJourFait ? '✅ Fait aujourd\'hui' : '⏳ Pas encore fait'}>
-            <Btn color="#F59E0B" onClick={() => act('WTF du Jour reset', () => devActions.resetWTFDuJour())}>Rejouer</Btn>
+          <StateRow label="🤯 WTF! du Jour" value={wtfDuJourFait ? '✅ Joué aujourd\'hui' : '⏳ Pas encore joué'}>
+            <Btn color="#F59E0B" onClick={() => act('WTF! du Jour reset', () => devActions.resetWTFDuJour())}>Rejouer</Btn>
           </StateRow>
 
           <StateRow label="⚡ Sessions aujourd'hui" value={`${sessionsToday} session${sessionsToday !== 1 ? 's' : ''}`}>
@@ -247,7 +247,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
             🆕 Simuler J1 (nouveau joueur) — remet tout à zéro
           </ScenarioBtn>
           <ScenarioBtn onClick={() => act('Simuler J7', () => devActions.simulateJ7())}>
-            📅 Simuler J7 (streak établi) — streak 7 + 15 facts
+            📅 Simuler J7 (série établie) — série 7 + 15 f*cts
           </ScenarioBtn>
           <ScenarioBtn onClick={() => act('Collection Animaux complète', () => devActions.simulateCollectionAnimaux())}>
             🦁 Simuler collection complète [Animaux]
@@ -255,13 +255,13 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
           <ScenarioBtn onClick={() => act('Simuler premier achat', () => devActions.simulatePurchase())}>
             💳 Simuler premier achat (IAP)
           </ScenarioBtn>
-          <ScenarioBtn onClick={() => act('Streak Shield modal', () => devActions.forceStreakShield())}>
-            🛡️ Forcer affichage Streak Shield
+          <ScenarioBtn onClick={() => act('Série Shield modal', () => devActions.forceStreakShield())}>
+            🛡️ Forcer affichage Série Shield
           </ScenarioBtn>
         </Section>
 
         {/* ─── Section 4 — Facts & Contenu ─────────────────────────────────── */}
-        <Section title="📖 Section 4 — Facts & Contenu">
+        <Section title="📖 Section 4 — F*cts & Contenu">
           {/* Current daily fact */}
           {dailyFact ? (
             <div
@@ -276,7 +276,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
               <div className="text-white/40 text-xs mt-0.5 line-clamp-2">{dailyFact.explanation}</div>
             </div>
           ) : (
-            <div className="text-white/30 text-xs px-2">Aucun fact du jour chargé</div>
+            <div className="text-white/30 text-xs px-2">Aucun f*ct du jour chargé</div>
           )}
 
           {/* Override fact ID */}
@@ -285,7 +285,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
               type="number"
               min="1"
               max="999"
-              placeholder="ID du fact (ex: 42)"
+              placeholder="ID du f*ct (ex: 42)"
               value={factIdInput}
               onChange={e => setFactIdInput(e.target.value)}
               className="flex-1 px-3 py-2 rounded-xl text-xs font-bold text-white"
@@ -300,7 +300,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
               onClick={() => {
                 const id = parseInt(factIdInput)
                 if (!isNaN(id) && id > 0) {
-                  act(`Fact du jour → #${id}`, () => devActions.overrideDailyFact(id))
+                  act(`F*ct du jour → #${id}`, () => devActions.overrideDailyFact(id))
                 } else {
                   setToast('❌ ID invalide')
                   setTimeout(() => setToast(null), 2000)

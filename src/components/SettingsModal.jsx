@@ -109,7 +109,7 @@ function SaveProgressModal({ onClose }) {
           <div className="p-5">
             <p className="text-sm mb-5 font-bold text-center" style={{ color: '#374151', lineHeight: '1.6' }}>
               La connexion à un compte {providerLabel} réinitialisera ta progression locale actuelle
-              <span style={{ color: '#EF4444' }}> (streak, points, facts débloqués)</span>.
+              <span style={{ color: '#EF4444' }}> (série, points, f*cts débloqués)</span>.
               <br /><br />
               Cette action est <strong style={{ color: '#EF4444' }}>irréversible</strong>. Continuer ?
             </p>

@@ -33,9 +33,9 @@ function ProgressBar({ percentage, color }) {
 }
 
 const DIFF_CONFIG = {
-  easy:   { label: 'Facile', emoji: '💚', color: '#22C55E' },
-  normal: { label: 'Normal', emoji: '🧠', color: '#8B5CF6' },
-  expert: { label: 'Expert', emoji: '⚡', color: '#F59E0B' },
+  easy:   { label: 'Curieux',     emoji: '💚', color: '#22C55E' },
+  normal: { label: 'À fond',      emoji: '🧠', color: '#8B5CF6' },
+  expert: { label: 'WTF! Addict', emoji: '⚡', color: '#F59E0B' },
 }
 
 // ─── Fact detail full-screen view ──────────────────────────────────────────
@@ -154,7 +154,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {unlockedFacts.length === 0 && (
           <p className="text-center text-sm py-8" style={{ color: '#9CA3AF' }}>
-            Aucun F*ct débloqué à ce niveau.<br />Lance un parcours {diff.label} pour commencer !
+            Aucun F*ct débloqué à ce niveau.<br />Lance une quête {diff.label} pour commencer !
           </p>
         )}
 

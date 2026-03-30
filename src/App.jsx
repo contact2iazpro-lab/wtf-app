@@ -95,6 +95,7 @@ function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDat
 }
 
 export default function App() {
+  const navigate = useNavigate()
   const [screen, setScreen] = useState(SCREENS.HOME)
   const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.NORMAL)
   const [selectedCategory, setSelectedCategory] = useState(null)
@@ -109,6 +110,7 @@ export default function App() {
   const [pointsEarned, setPointsEarned] = useState(0)
   const [storage, setStorage] = useState(loadStorage)
   const { totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday } = storage
+  const dailyQuestsRemaining = Math.max(0, 3 - (sessionsToday || 0))
 
   // Session type tracking
   const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'marathon' | 'duel'
@@ -240,6 +242,20 @@ export default function App() {
     setSessionType('parcours')
     setScreen(SCREENS.DIFFICULTY)
   }, [])
+
+  // ─── HomeScreen navigation handler ──────────────────────────────────────────
+  const handleHomeNavigate = useCallback((target) => {
+    switch (target) {
+      case 'difficulty':    handlePlay(); break
+      case 'wtfDuJour':     handleWTFDuJour(); break
+      case 'categoryFlash': handleFlashSolo(); break
+      case 'collection':    navigate('/collection'); break
+      case 'trophees':      navigate('/trophees'); break
+      case 'profil':        console.log('Navigation vers Profil — à brancher'); break
+      case 'streak':        console.log('Navigation vers Série — à brancher'); break
+      default: break
+    }
+  }, [handlePlay, handleWTFDuJour, handleFlashSolo, navigate])
 
   const handleSelectDifficulty = useCallback((difficulty) => {
     setSelectedDifficulty(difficulty)
@@ -697,18 +713,12 @@ export default function App() {
 
       {screen === SCREENS.HOME && (
         <HomeScreen
-          totalScore={totalScore}
-          streak={streak}
-          wtfCoins={wtfCoins}
-          wtfDuJourFait={wtfDuJourFait}
-          sessionsToday={sessionsToday}
-          onWTFDuJour={handleWTFDuJour}
-          onFlashSolo={handleFlashSolo}
-          onPlay={handlePlay}
-          onQuickPlay={handleQuickPlay}
-          onDuel={handleDuelMode}
-          onMarathon={handleMarathonMode}
-          onOpenDevPanel={DEV_PANEL_ENABLED ? () => setShowDevPanel(true) : undefined}
+          playerCoins={wtfCoins}
+          currentStreak={streak}
+          dailyQuestsRemaining={dailyQuestsRemaining}
+          nextBadgeInfo={null}
+          onNavigate={handleHomeNavigate}
+          onOpenSettings={() => setShowSettings(true)}
         />
       )}
 

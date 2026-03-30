@@ -1,17 +1,19 @@
 /**
- * HomeScreen — Refonte complète
- * Architecture : 5 zones full-screen (100dvh), pas de scroll
- * Zone 1 : Header (profil · coins · tickets · settings)
- * Zone 2 : Bandeau badge + countdown
- * Zone 3 : Corps 3 colonnes (actifs | logo+chat | bientôt)
- * Zone 4 : Bouton Flash
- * Zone 5 : Nav 5 onglets
+ * HomeScreen — Chat pleine largeur en fond + distribution verticale
+ * Architecture :
+ *   [Chat absolu en fond]
+ *   Zone 1 : Header (profil · coins · tickets · settings)
+ *   Zone 2 : Bandeau badge + countdown
+ *   Zone 3 : Corps 3 colonnes (actifs | logo+taglines | bientôt)
+ *   Zone 4 : Bouton Flash (z-index 2, au-dessus du chat)
+ *   Zone 5 : Nav 5 onglets (z-index 2, au-dessus du chat)
  */
 
 import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
+import { useScale } from '../hooks/useScale'
 
 // ── Countdown to midnight ─────────────────────────────────────────────────────
 function useCountdownToMidnight() {
@@ -99,6 +101,7 @@ export default function HomeScreen({
   const [showSettings, setShowSettings] = useState(false)
   const countdown     = useCountdownToMidnight()
   const badgeProgress = getBadgeProgress(nextBadgeInfo)
+  const scale         = useScale()
 
   const nav = (target) => {
     audio.play?.('click')
@@ -113,14 +116,30 @@ export default function HomeScreen({
 
   return (
     <div
-      style={{
-        display: 'flex', flexDirection: 'column',
-        height: '100dvh', width: '100%', overflow: 'hidden',
-        fontFamily: 'Nunito, sans-serif',
-      }}
       className="rainbow-bg"
+      style={{
+        position: 'relative',
+        height: '100dvh', width: '100%', overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+        fontFamily: 'Nunito, sans-serif',
+        '--scale': scale,
+      }}
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
+      {/* ══ CHAT — fond pleine largeur, aligné avec la nav en bas ════════════ */}
+      <img
+        src="/cat-president.png"
+        alt=""
+        style={{
+          position: 'absolute',
+          bottom: 0, left: 0, right: 0,
+          width: '100%',
+          objectFit: 'contain',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
 
       {/* ══ ZONE 1 — Header ══════════════════════════════════════════════════ */}
       <div style={{
@@ -128,6 +147,7 @@ export default function HomeScreen({
         padding: '8px 12px',
         background: 'rgba(0,0,0,0.2)',
         flexShrink: 0,
+        position: 'relative', zIndex: 1,
       }}>
         {/* Profil */}
         <button
@@ -185,6 +205,7 @@ export default function HomeScreen({
         background: 'rgba(0,0,0,0.2)',
         borderRadius: 10, padding: '6px 10px',
         flexShrink: 0,
+        position: 'relative', zIndex: 1,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -207,7 +228,8 @@ export default function HomeScreen({
       {/* ══ ZONE 3 — Corps 3 colonnes ════════════════════════════════════════ */}
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'row',
-        padding: '4px 8px 4px', gap: 6, minHeight: 0,
+        padding: '4px 8px', gap: 6, minHeight: 0,
+        position: 'relative', zIndex: 1,
       }}>
 
         {/* ── Colonne gauche — modes actifs ── */}
@@ -221,11 +243,14 @@ export default function HomeScreen({
           <ActiveIcon emoji="📅" label="Du Jour"     onClick={() => nav('wtfDuJour')} />
         </div>
 
-        {/* ── Colonne centre — logo + tagline + mascotte ── */}
+        {/* ── Colonne centre — logo + taglines uniquement (chat en fond) ── */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 'clamp(8px, 2vh, 20px)',
           minWidth: 0, minHeight: 0,
+          padding: '8px 0',
         }}>
           <img
             src="/logo-wtf.png"
@@ -235,28 +260,17 @@ export default function HomeScreen({
               filter: 'drop-shadow(0 4px 18px rgba(255,120,0,0.55))',
             }}
           />
-          <div style={{ fontSize: 15, fontWeight: 900, color: '#FF6B1A', letterSpacing: 1, marginTop: 4, textAlign: 'center' }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: '#FF6B1A', letterSpacing: 1, textAlign: 'center' }}>
             VRAI OU FOU ?
           </div>
           <div style={{
             fontSize: 10, color: 'white', textAlign: 'center',
-            marginTop: 2, lineHeight: 1.35,
+            lineHeight: 1.35,
             textShadow: '0 1px 5px rgba(0,0,0,0.45)',
             padding: '0 6px',
           }}>
             Des f*cts 100% vrais,<br />des réactions 100% fun
           </div>
-          <img
-            src="/cat-president.png"
-            alt="Chat WTF!"
-            style={{
-              maxWidth: '50%', maxHeight: 100,
-              objectFit: 'contain', objectPosition: 'bottom',
-              marginTop: 8, flexShrink: 1,
-              maskImage: 'linear-gradient(to top, transparent 0%, black 45%)',
-              WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 45%)',
-            }}
-          />
         </div>
 
         {/* ── Colonne droite — bientôt ── */}
@@ -272,13 +286,13 @@ export default function HomeScreen({
 
       </div>
 
-      {/* ══ ZONE 4 — Bouton Flash ════════════════════════════════════════════ */}
-      <div style={{ padding: '4px 16px 6px', flexShrink: 0 }}>
+      {/* ══ ZONE 4 — Bouton Flash (z-index 2, par-dessus le chat) ════════════ */}
+      <div style={{ padding: '4px 16px 6px', flexShrink: 0, position: 'relative', zIndex: 2 }}>
         <button
           onClick={() => nav('categoryFlash')}
           style={{
             width: '100%', padding: '12px',
-            background: 'white', color: '#FF6B1A',
+            background: 'rgba(255,255,255,0.95)', color: '#FF6B1A',
             fontWeight: 900, fontSize: 14,
             border: 'none', borderRadius: 16,
             cursor: 'pointer', letterSpacing: '0.06em',
@@ -294,13 +308,14 @@ export default function HomeScreen({
         </button>
       </div>
 
-      {/* ══ ZONE 5 — Navigation 5 onglets ════════════════════════════════════ */}
+      {/* ══ ZONE 5 — Navigation 5 onglets (z-index 2, par-dessus le chat) ════ */}
       <div style={{
         display: 'flex', alignItems: 'flex-end',
         justifyContent: 'space-around',
         padding: '6px 4px 12px',
         background: 'rgba(0,0,0,0.25)',
         flexShrink: 0,
+        position: 'relative', zIndex: 2,
       }}>
         {[
           { icon: '🛒', label: 'Boutique',   action: () => console.log('Boutique — à brancher'), active: false, center: false },

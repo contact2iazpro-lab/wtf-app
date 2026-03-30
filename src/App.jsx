@@ -52,6 +52,9 @@ const TODAY = () => new Date().toISOString().slice(0, 10) // YYYY-MM-DD
 const TODAY_DATE_STR = () => new Date().toDateString()
 const YESTERDAY_DATE_STR = () => new Date(Date.now() - 86400000).toDateString()
 
+// TEMP TEST — remettre à 10 avant le lancement en production
+const QUESTIONS_PER_GAME = 5
+
 function loadStorage() {
   try {
     const today = TODAY()
@@ -222,7 +225,7 @@ export default function App() {
     const difficulty = DIFFICULTY_LEVELS.NORMAL
     const facts = [...getValidFacts().filter(f => f.category === randomCat.id)]
       .sort(() => Math.random() - 0.5)
-      .slice(0, 10)
+      .slice(0, QUESTIONS_PER_GAME)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
 
     setSessionType('parcours')
@@ -248,7 +251,7 @@ export default function App() {
     )
     const facts = [...available]
       .sort(() => Math.random() - 0.5)
-      .slice(0, 10)
+      .slice(0, QUESTIONS_PER_GAME)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
     setIsQuickPlay(false)
     setGameMode('solo')
@@ -275,9 +278,9 @@ export default function App() {
       )
 
       if (validCategories.length < 10) {
-        facts = [...getValidFacts()].sort(() => Math.random() - 0.5).slice(0, 10)
+        facts = [...getValidFacts()].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
       } else {
-        const selectedCats = [...validCategories].sort(() => Math.random() - 0.5).slice(0, 10)
+        const selectedCats = [...validCategories].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
         facts = selectedCats.map(cat => {
           const catFacts = getValidFacts().filter(f => f.category === cat.id)
           return catFacts[Math.floor(Math.random() * catFacts.length)]
@@ -285,7 +288,7 @@ export default function App() {
         facts.sort(() => Math.random() - 0.5)
       }
     } else {
-      facts = [...getFactsByCategory(categoryId)].sort(() => Math.random() - 0.5).slice(0, 10)
+      facts = [...getFactsByCategory(categoryId)].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
     }
 
     const factsWithOptions = facts.map(fact => ({
@@ -502,7 +505,7 @@ export default function App() {
   const handleDuelStart = useCallback((playerNames) => {
     const n = playerNames.length
     const allFacts = getFactsByCategory(null)
-    const shuffled = [...allFacts].sort(() => Math.random() - 0.5).slice(0, 10 * n)
+    const shuffled = [...allFacts].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME * n)
 
     setDuelPlayers(playerNames.map(name => ({ name, score: 0 })))
     setDuelCurrentPlayerIndex(0)

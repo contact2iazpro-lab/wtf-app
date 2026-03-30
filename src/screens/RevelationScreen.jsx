@@ -36,14 +36,24 @@ const WRONG_MESSAGES = [
   "Même les experts se trompent sur celui-là 😅",
   "Même Einstein aurait séché sur celui-là ! 🧠",
   "Ce f*ct est tellement WTF! qu'on comprend que tu aies raté ! 😂",
+  "Pas grave, maintenant tu sais ! 🎓",
+  "Ce f*ct est dans ta tête pour toujours... même raté ! 🧩",
+  "Un de perdu, dix de retrouvés — rejoue ! 🎯",
+  "La prochaine fois tu épateras tes amis avec ce f*ct ! 🤩",
+  "Raté mais instruit ! C'est le principe de WTF! 😎",
 ]
 
 const CORRECT_MESSAGES = [
-  "Félicitations, tu le savais vraiment ! 🎉",
-  "Bravo, t'es une machine ! 🧠",
   "Parfait ! Ce f*ct est gravé dans ta mémoire 🔥",
-  "Chapeau l'artiste ! 🎩",
-  "Tu es vraiment incollable ! 💪",
+  "Impressionnant ! Tu connaissais vraiment ça ? 🧠",
+  "Exactement ! Tu es officiellement WTF! certifié 🏆",
+  "Bravo ! Peu de gens savent ça 👏",
+  "Bien joué ! Ce f*ct ne te quittera plus 💡",
+  "Yes ! Tu as l'œil pour les f*cts incroyables 👁️",
+  "Correct ! On t'a vu venir 😎",
+  "Chapeau ! Ce f*ct est dans ta collection 🎩",
+  "Magnifique ! Tu aurais fait un excellent WTF! Addict 🌟",
+  "Incroyable mais vrai... comme toi ! ✨",
 ]
 
 
@@ -82,6 +92,7 @@ export default function RevelationScreen({
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext
   const isLast = factIndex + 1 >= totalFacts
+  const successRate = 15 + (fact.id % 40)
 
   // COR 7 — Gradient catégorie identique dans les deux cas
   const catGradient = cat
@@ -241,24 +252,14 @@ export default function RevelationScreen({
     </div>
   )
 
-  // ── COR 1 : Message centré verticalement dans le cadre image ────────────────
-  // Pill semi-transparent centré, indépendant du gradient top/bottom
-  const centeredMessagePill = (msg) => flipped && !isDuel && (
+  // ── COR 1 : Message succès — overlay bas ~25% du cadre image ────────────────
+  const bottomMessageStrip = (msg) => flipped && !isDuel && (
     <div
-      className="absolute inset-0 flex items-center justify-center pointer-events-none"
-      style={{ zIndex: 4 }}>
-      <div style={{
-        background: 'rgba(0,0,0,0.62)',
-        backdropFilter: 'blur(6px)',
-        borderRadius: '16px',
-        padding: '8px 16px',
-        maxWidth: '82%',
-        textAlign: 'center',
-      }}>
-        <span style={{ fontSize: '13px', fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
-          {msg}
-        </span>
-      </div>
+      className="absolute bottom-0 left-0 right-0 flex items-center pointer-events-none"
+      style={{ zIndex: 4, minHeight: '25%', background: 'rgba(0,0,0,0.6)', padding: '10px 14px' }}>
+      <span style={{ fontSize: '12px', fontWeight: 700, color: 'white', lineHeight: 1.45, display: 'block' }}>
+        {msg}
+      </span>
     </div>
   )
 
@@ -283,15 +284,14 @@ export default function RevelationScreen({
               <div
                 className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
                 style={{ zIndex: 3, gap: '14px' }}>
-                {/* Tampon "PAS CETTE FOIS" */}
+                {/* Tampon "PAS CETTE FOIS" — COR 4 : fond blanc semi-transparent pour lisibilité */}
                 <div className="stamp-wow" style={{
-                  fontSize: '40px', fontWeight: 900, color: '#F44336',
-                  textShadow: '0 4px 16px rgba(244,67,54,0.6)',
+                  fontSize: '36px', fontWeight: 900, color: '#F44336',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.5)',
                   transform: 'rotate(-8deg)',
                   border: '4px solid #F44336', borderRadius: '10px',
-                  padding: '10px 22px', textAlign: 'center', lineHeight: 1.15,
-                  background: 'rgba(244,67,54,0.15)', backdropFilter: 'blur(4px)',
-                  opacity: 0.92,
+                  padding: '14px 28px', textAlign: 'center', lineHeight: 1.15,
+                  background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(6px)',
                 }}>
                   PAS CETTE<br/>FOIS
                 </div>
@@ -306,6 +306,13 @@ export default function RevelationScreen({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* COR 3 — Stats joueurs sous l'image */}
+          <div className="text-center py-1 shrink-0">
+            <span className="text-xs font-bold" style={{ color: cat?.color || '#FF6B1A' }}>
+              👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
+            </span>
           </div>
 
           {/* Question */}
@@ -332,8 +339,8 @@ export default function RevelationScreen({
         <div className="px-5 pb-20 pt-2 flex gap-3 shrink-0">
           <button
             onClick={handleShare}
-            className="btn-press flex-1 py-4 rounded-2xl border font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center leading-tight"
-            style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}>
+            className="btn-press flex-1 py-4 rounded-2xl border-2 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center leading-tight"
+            style={{ background: 'white', borderColor: cat?.color || '#FF6B1A', color: cat?.color || '#FF6B1A' }}>
             🤝 Partager à un ami pour avoir de l'aide
           </button>
           <button
@@ -392,9 +399,18 @@ export default function RevelationScreen({
             </div>
           )}
 
-          {/* COR 1 — Message bienveillant centré verticalement dans le cadre */}
-          {centeredMessagePill(correctMsg)}
+          {/* COR 1 — Message succès en bas du cadre image */}
+          {bottomMessageStrip(correctMsg)}
         </div>
+
+        {/* COR 3 — Stats joueurs sous l'image */}
+        {!isDuel && (
+          <div className="text-center py-1 shrink-0">
+            <span className="text-xs font-bold" style={{ color: cat?.color || '#FF6B1A' }}>
+              👥 Seulement {successRate}% des joueurs ont trouvé ce f*ct
+            </span>
+          </div>
+        )}
 
         {/* Duel — badges correct/incorrect + points */}
         {isDuel && (

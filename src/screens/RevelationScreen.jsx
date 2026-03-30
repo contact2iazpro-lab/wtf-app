@@ -284,86 +284,135 @@ export default function RevelationScreen({
       <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-        {settingsBtn}
-        {header}
 
-        <div className="flex-1 min-h-0 flex flex-col px-5 gap-2 overflow-hidden">
-
-          {/* COR 2+7 — Cadre carré identique, fond catégorie, tampon centré */}
-          <div
-            className="rounded-3xl overflow-hidden border shrink-0 relative"
-            style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}>
-
-            {/* COR 1+2 — Tampon + message bienveillant empilés, centrés verticalement */}
-            {flipped && (
-              <div
-                className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
-                style={{ zIndex: 3, gap: '14px' }}>
-                {/* Tampon "PAS CETTE FOIS" — COR 4 : fond blanc semi-transparent pour lisibilité */}
-                <div className="stamp-wow" style={{
-                  fontSize: '48px', fontWeight: 900, color: '#F44336',
-                  textShadow: '0 1px 4px rgba(0,0,0,0.2)',
-                  transform: 'rotate(-8deg)',
-                  border: '5px solid #F44336', borderRadius: '12px',
-                  padding: '18px 32px', textAlign: 'center', lineHeight: 1.1,
-                  background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(4px)',
-                }}>
-                  PAS CETTE<br/>FOIS
-                </div>
-                {/* Message bienveillant centré sous le tampon */}
-                <div style={{
-                  background: 'rgba(0,0,0,0.62)', backdropFilter: 'blur(6px)',
-                  borderRadius: '14px', padding: '7px 14px', maxWidth: '82%', textAlign: 'center',
-                }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
-                    {wrongMsg}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* COR 3 — Stats joueurs sous l'image */}
-          <div className="text-center py-1 shrink-0">
-            <span className="text-xs font-bold" style={{ color: cat?.color || '#FF6B1A' }}>
-              👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
+        {/* MOD 1 — Header identique à QuestionScreen */}
+        <div className="px-4 pt-4 pb-2 shrink-0 flex items-center gap-2">
+          <button
+            onClick={() => setShowQuitConfirm(true)}
+            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
+          >
+            <span style={{ fontSize: 11, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{
+              fontWeight: 900, fontSize: 13,
+              color: cat?.color || 'rgba(255,255,255,0.7)',
+              lineHeight: 1.2, wordBreak: 'break-word',
+              display: '-webkit-box', WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            }}>
+              {cat?.label || 'Question'}
             </span>
           </div>
-
-          {/* Question */}
-          <div className="rounded-2xl p-3 border shrink-0" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>
-            <div className="text-white/60 text-xs font-semibold mb-1">La question :</div>
-            <div className="text-white font-bold text-sm leading-snug">{fact.question}</div>
+          <div className="flex items-center gap-1 shrink-0" style={{ userSelect: 'none' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#FF6B1A', lineHeight: 1 }}>WTF$</span>
+            <CoinsIcon size={16} />
+            <span ref={scoreRefTarget} style={{ fontWeight: 700, color: 'white', fontSize: 13 }}>
+              {displayedScore}
+            </span>
           </div>
-
-          {/* Mauvaise réponse */}
-          {!isOpenMode && !isTimeout && selectedAnswer >= 0 && (
-            <div className="rounded-2xl p-3 border border-red-500/40 shrink-0" style={{ background: 'rgba(244, 67, 54, 0.1)' }}>
-              <div className="text-red-400 text-xs font-bold uppercase tracking-wide mb-1">✗ Votre réponse :</div>
-              <div className="text-white font-bold text-sm">{selectedAnswerText}</div>
-            </div>
-          )}
-          {isTimeout && (
-            <div className="rounded-2xl p-3 border border-orange-500/40 shrink-0" style={{ background: 'rgba(255, 152, 0, 0.1)' }}>
-              <div className="text-orange-400 text-xs font-bold uppercase tracking-wide">⏱️ Temps écoulé</div>
-            </div>
-          )}
+          <button
+            onClick={() => { audio.play('click'); setShowSettings(true) }}
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+          >
+            ⚙️
+          </button>
         </div>
 
-        {/* COR 5 — Boutons bas : "Partager à un ami" + Suivant */}
-        <div className="px-5 pb-6 pt-2 flex gap-3 shrink-0">
-          <button
-            onClick={handleShare}
-            className="btn-press flex-1 py-4 rounded-2xl border-2 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center leading-tight"
-            style={{ background: 'white', borderColor: cat?.color || '#FF6B1A', color: cat?.color || '#FF6B1A' }}>
-            🤝 Partager à un ami pour avoir de l'aide
-          </button>
-          <button
-            onClick={() => { audio.play('click'); onNext() }}
-            className="btn-press flex-1 py-4 rounded-2xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
-            style={nextBtnStyle}>
-            {nextLabel}
-          </button>
+        {/* MOD 6 — flex-1 justify-between : contenu en haut, boutons collés en bas */}
+        <div className="flex-1 flex flex-col px-5 pb-6 gap-2 justify-between overflow-hidden">
+
+          <div className="flex flex-col gap-2 min-h-0">
+
+            {/* MOD 2 — Image floutée carrée + overlay sombre (FOMO visuel) */}
+            <div
+              className="rounded-3xl overflow-hidden border shrink-0 relative"
+              style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}
+            >
+              {fact.imageUrl && !imgFailed ? (
+                <img
+                  src={fact.imageUrl}
+                  alt={fact.question}
+                  className="w-full h-full"
+                  style={{ objectFit: 'contain', filter: 'blur(12px) brightness(0.7)' }}
+                  onError={() => setImgFailed(true)}
+                />
+              ) : (
+                <div style={{ filter: 'blur(12px) brightness(0.7)', width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                  <FallbackImage categoryColor={cat?.color || '#10B981'} />
+                </div>
+              )}
+
+              {/* Overlay sombre semi-transparent */}
+              <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.3)', zIndex: 1 }} />
+
+              {/* MOD 3 — Message bienveillant centré (remplace le tampon "PAS CETTE FOIS") */}
+              {flipped && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  style={{ zIndex: 2 }}
+                >
+                  <div style={{
+                    background: 'rgba(0,0,0,0.65)',
+                    borderRadius: 12,
+                    padding: '20px 24px',
+                    maxWidth: '85%',
+                    textAlign: 'center',
+                  }}>
+                    <span style={{ fontSize: 18, fontWeight: 900, color: 'white', lineHeight: 1.4, display: 'block' }}>
+                      {wrongMsg}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Stats joueurs */}
+            <div className="text-center py-1 shrink-0">
+              <span className="text-xs font-bold" style={{ color: cat?.color || '#FF6B1A' }}>
+                👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
+              </span>
+            </div>
+
+            {/* Question */}
+            <div className="rounded-2xl p-3 border shrink-0" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>
+              <div className="text-white/60 text-xs font-semibold mb-1">La question :</div>
+              <div className="text-white font-bold text-sm leading-snug">{fact.question}</div>
+            </div>
+
+            {/* MOD 4 — Bloc "✗ Votre réponse" supprimé */}
+            {isTimeout && (
+              <div className="rounded-2xl p-3 border border-orange-500/40 shrink-0" style={{ background: 'rgba(255, 152, 0, 0.1)' }}>
+                <div className="text-orange-400 text-xs font-bold uppercase tracking-wide">⏱️ Temps écoulé</div>
+              </div>
+            )}
+
+          </div>
+
+          {/* MOD 5+6 — Boutons même importance visuelle, collés en bas */}
+          <div className="flex gap-3 shrink-0">
+            <button
+              onClick={handleNativeShare}
+              className="btn-press flex-1 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center"
+              style={{
+                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+                color: 'white',
+                boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
+              }}
+            >
+              🤝 Demander de l'aide à un ami
+            </button>
+            <button
+              onClick={() => { audio.play('click'); onNext() }}
+              className="btn-press flex-1 py-4 rounded-2xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
+              style={nextBtnStyle}
+            >
+              {nextLabel}
+            </button>
+          </div>
+
         </div>
       </div>
     )

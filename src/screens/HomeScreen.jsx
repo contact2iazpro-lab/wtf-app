@@ -48,12 +48,14 @@ function ActiveIcon({ emoji, label, onClick }) {
     <button
       onClick={onClick}
       style={{
-        width: 88, height: 88, borderRadius: 22,
+        width: 'calc(88px * var(--scale))', height: 'calc(88px * var(--scale))',
+        borderRadius: 'calc(22px * var(--scale))',
         background: 'rgba(255,255,255,0.9)',
         boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
         border: 'none', cursor: 'pointer', padding: 0,
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: 4,
+        alignItems: 'center', justifyContent: 'center',
+        gap: 'calc(4px * var(--scale))',
         WebkitTapHighlightColor: 'transparent',
         transition: 'transform 0.1s',
         flexShrink: 0,
@@ -61,11 +63,11 @@ function ActiveIcon({ emoji, label, onClick }) {
       onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.93)')}
       onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
     >
-      <span style={{ fontSize: 30, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 'calc(30px * var(--scale))', lineHeight: 1 }}>{emoji}</span>
       <span style={{
-        fontSize: 11, fontWeight: 700, color: '#FF6B1A',
+        fontSize: 'calc(11px * var(--scale))', fontWeight: 700, color: '#FF6B1A',
         textAlign: 'center', lineHeight: 1.2,
-        maxWidth: 76, overflow: 'hidden',
+        maxWidth: 'calc(76px * var(--scale))', overflow: 'hidden',
         textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>{label}</span>
     </button>
@@ -76,15 +78,17 @@ function ActiveIcon({ emoji, label, onClick }) {
 function ComingSoonIcon({ emoji }) {
   return (
     <div style={{
-      width: 88, height: 88, borderRadius: 22,
+      width: 'calc(88px * var(--scale))', height: 'calc(88px * var(--scale))',
+      borderRadius: 'calc(22px * var(--scale))',
       background: 'rgba(255,255,255,0.25)',
       border: '1.5px dashed rgba(255,255,255,0.5)',
       display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 4,
+      alignItems: 'center', justifyContent: 'center',
+      gap: 'calc(4px * var(--scale))',
       flexShrink: 0,
     }}>
-      <span style={{ fontSize: 30, opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
-      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
+      <span style={{ fontSize: 'calc(30px * var(--scale))', opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 'calc(11px * var(--scale))', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
     </div>
   )
 }
@@ -219,7 +223,8 @@ export default function HomeScreen({
       <div style={{
         margin: '4px 12px 0',
         background: 'rgba(0,0,0,0.2)',
-        borderRadius: 10, padding: '6px 10px',
+        borderRadius: 10,
+        padding: 'calc(8px * var(--scale)) calc(12px * var(--scale))',
         flexShrink: 0,
         position: 'relative', zIndex: 1,
       }}>
@@ -259,14 +264,14 @@ export default function HomeScreen({
           src="/logo-wtf.png"
           alt="WTF!"
           style={{
-            maxHeight: 90, objectFit: 'contain',
+            maxHeight: 'calc(90px * var(--scale))', objectFit: 'contain',
             filter: 'drop-shadow(0 4px 18px rgba(255,120,0,0.55))',
             animation: logoAnimated ? 'wtfLogoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
             opacity: logoAnimated ? 1 : 0,
           }}
         />
         <div style={{
-          fontSize: 'clamp(24px, 6vw, 32px)', fontWeight: 900, color: '#FF6B1A',
+          fontSize: 'calc(28px * var(--scale))', fontWeight: 900, color: '#FF6B1A',
           letterSpacing: 1, textAlign: 'center',
           textShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
@@ -306,7 +311,7 @@ export default function HomeScreen({
           padding: '0 8px',
         }}>
           <div style={{
-            fontSize: 'clamp(20px, 5vw, 26px)', color: 'white', textAlign: 'center',
+            fontSize: 'calc(22px * var(--scale))', color: 'white', textAlign: 'center',
             lineHeight: 1.35,
             textShadow: '0 1px 6px rgba(0,0,0,0.5)',
             fontWeight: 800,
@@ -335,9 +340,9 @@ export default function HomeScreen({
         <button
           onClick={() => nav('categoryFlash')}
           style={{
-            width: '100%', padding: '12px',
+            width: '100%', padding: 'calc(14px * var(--scale))',
             background: 'rgba(255,255,255,0.95)', color: '#FF6B1A',
-            fontWeight: 900, fontSize: 14,
+            fontWeight: 900, fontSize: 'calc(14px * var(--scale))',
             border: 'none', borderRadius: 16,
             cursor: 'pointer', letterSpacing: '0.06em',
             boxShadow: '0 4px 20px rgba(0,0,0,0.18)',

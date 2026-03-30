@@ -565,12 +565,12 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Le Saviez-Vous card — MOD 3 layout + MOD 4 partage natif */}
+        {/* Le Saviez-Vous card — fond neutre, pas de dégradé parasite */}
         {!isDuel && isCorrect && (
           <div className="rounded-3xl border p-4" style={{
-            background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)',
-            borderColor: cat?.color + '70', backdropFilter: 'blur(12px)',
-            boxShadow: `0 4px 32px ${cat?.color || '#000'}25`,
+            background: 'rgba(0,0,0,0.28)',
+            borderColor: cat?.color + '50', backdropFilter: 'blur(12px)',
+            boxShadow: `0 4px 32px rgba(0,0,0,0.25)`,
           }}>
             {/* ✓ Bonne réponse */}
             {!isOpenMode && !isTimeout && (

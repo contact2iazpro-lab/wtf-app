@@ -311,9 +311,9 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Zone timer — centré dans le conteneur distribute ──────────────────────
+  // ── Zone timer — centré, padding-bottom pour ne pas toucher le bas ──────────
   const timerZone = (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: 16 }}>
       <div className="qs-timer-wrap" style={{ transform: 'scale(var(--scale))', transformOrigin: 'center' }}>
         <CircularTimer
           key={`${fact.id}-${answerMode}`}

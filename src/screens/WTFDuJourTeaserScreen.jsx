@@ -43,7 +43,7 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-start px-6 gap-3 pt-2 overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-start px-6 gap-2 pt-2 overflow-hidden">
 
         {/* Pulsing star/mascotte */}
         <div className="flex items-center justify-center" style={{ animation: 'bounceIn 0.6s cubic-bezier(0.68,-0.55,0.265,1.55)' }}>
@@ -117,7 +117,7 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
       </div>
 
       {/* CTA */}
-      <div className="px-6 pb-8 pt-4 shrink-0">
+      <div className="px-6 pb-5 pt-2 shrink-0">
         <button
           onClick={() => { audio.play('click'); onStart() }}
           className="btn-press w-full py-4 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"

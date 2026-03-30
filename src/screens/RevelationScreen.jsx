@@ -336,7 +336,7 @@ export default function RevelationScreen({
         </div>
 
         {/* COR 5 — Boutons bas : "Partager à un ami" + Suivant */}
-        <div className="px-5 pb-20 pt-2 flex gap-3 shrink-0">
+        <div className="px-5 pb-6 pt-2 flex gap-3 shrink-0">
           <button
             onClick={handleShare}
             className="btn-press flex-1 py-4 rounded-2xl border-2 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center leading-tight"
@@ -356,19 +356,20 @@ export default function RevelationScreen({
 
   // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: screenBg }}>
+    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {settingsBtn}
       {floatingBadge}
       {header}
 
-      <div className="flex flex-col px-5 gap-2 pb-20">
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex flex-col px-5 gap-2 pb-4 pt-1">
 
         {/* COR 1+7 — Cadre carré identique, même fond catégorie, message en haut du cadre */}
         <div
           className={`rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}>
+          style={{ borderColor: cat?.color + '60', aspectRatio: '16/9', background: catGradient }}>
 
           {isCorrect && (
             fact.imageUrl && !imgFailed ? (
@@ -541,6 +542,7 @@ export default function RevelationScreen({
           </button>
         )}
 
+      </div>
       </div>
     </div>
   )

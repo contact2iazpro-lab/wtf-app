@@ -226,7 +226,7 @@ export default function ResultsScreen({
   }))
 
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-y-auto scrollbar-hide" style={{ background: screenBg }}>
+    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
 
       {/* COR 4 — Confetti overlay */}
       {confettiActive && (
@@ -281,10 +281,13 @@ export default function ResultsScreen({
         ⚙️
       </button>
 
+      {/* scrollable zone */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
+
       {/* MOD 6 — Rang avec effet tampon scale 0→1 */}
-      <div className="flex flex-col items-center pt-6 pb-2 px-6 shrink-0">
+      <div className="flex flex-col items-center pt-4 pb-1 px-6 shrink-0">
         <div
-          className="text-6xl mb-2"
+          className="text-5xl mb-1"
           style={{
             transform: rankVisible ? 'scale(1)' : 'scale(0)',
             transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -292,7 +295,7 @@ export default function ResultsScreen({
           {currentRank.emoji}
         </div>
         <div
-          className="text-xl font-black mb-1 text-center"
+          className="text-lg font-black mb-0.5 text-center"
           style={{
             color: 'white',
             transform: rankVisible ? 'scale(1)' : 'scale(0)',
@@ -307,11 +310,11 @@ export default function ResultsScreen({
       </div>
 
       {/* MOD 6 — Étoiles qui poppent une par une (délai 200ms) */}
-      <div className="flex justify-center gap-3 pb-3 shrink-0">
+      <div className="flex justify-center gap-3 pb-2 shrink-0">
         {[1, 2, 3].map((s) => (
           <span
             key={s}
-            className="text-4xl"
+            className="text-3xl"
             style={{
               transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
               transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -324,11 +327,11 @@ export default function ResultsScreen({
       </div>
 
       {/* Score card */}
-      <div className="mx-5 mb-3 rounded-3xl border p-4 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)' }}>
+      <div className="mx-5 mb-2 rounded-3xl border p-3 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)' }}>
         {/* MOD 6 — Score animé count-up + MOD 12 — blanc pur */}
-        <div className="text-center mb-3">
-          <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Score final</div>
-          <div className="text-5xl font-black text-white">{animatedScore}</div>
+        <div className="text-center mb-2">
+          <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-0.5">Score final</div>
+          <div className="text-4xl font-black text-white">{animatedScore}</div>
           <div className="text-white/50 text-xs font-semibold">points</div>
         </div>
 
@@ -359,7 +362,7 @@ export default function ResultsScreen({
       </div>
 
       {/* COR 6 — Stats joueurs sous le score */}
-      <div className="text-center px-5 mb-2 shrink-0">
+      <div className="text-center px-5 mb-1 shrink-0">
         <span className="text-xs font-semibold text-white/55">
           👥 En moyenne, les joueurs réussissent {avgSuccessRate}% des f*cts de cette catégorie
         </span>
@@ -439,7 +442,7 @@ export default function ResultsScreen({
       )}
 
       {/* MOD 8 — Bandeau prochain micro-objectif */}
-      <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.15)' }}>
+      <div className="mx-5 mb-2 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.15)' }}>
         {cat ? (
           <div className="text-white/80 text-xs font-semibold text-center leading-relaxed">
             🏅 <span style={{ color: catColor }}>{cat.label}</span> — continue les quêtes pour débloquer ton prochain badge !
@@ -478,6 +481,8 @@ export default function ResultsScreen({
           })}
         </div>
       )}
+
+      </div>{/* end scrollable zone */}
 
       {/* COR 5 + COR 6 — CTA avec ticket count, pb-4 */}
       <div className="px-5 pb-4 flex flex-col gap-2 shrink-0">

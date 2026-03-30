@@ -77,19 +77,19 @@ function FactDetailView({ fact, onClose }) {
             src={fact.imageUrl}
             alt={fact.shortAnswer}
             className="w-full"
-            style={{ maxHeight: 260, objectFit: 'contain', background: 'rgba(255,255,255,0.08)' }}
+            style={{ height: 220, objectFit: 'cover', background: 'rgba(255,255,255,0.08)' }}
           />
         ) : (
           <div
             className="w-full flex items-center justify-center"
-            style={{ height: 130, background: 'rgba(255,255,255,0.06)' }}
+            style={{ height: 80, background: 'rgba(255,255,255,0.06)' }}
           >
             <span className="text-5xl opacity-30">🖼️</span>
           </div>
         )}
 
         {/* B2 — Espacement réduit entre image et corps */}
-        <div className="px-5 py-4">
+        <div className="px-5 py-3">
           <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: catColor }}>
             Le saviez-vous ?
           </p>

@@ -224,12 +224,12 @@ export default function QuestionScreen({
           // MOD 7 — size=96 triggers fontSize=22 in CircularTimer (vs 17 at size=72)
           <CircularTimer
             key={`${fact.id}-${answerMode}`}
-            size={96}
+            size={80}
             duration={timerDuration}
             onTimeout={onTimeout}
           />
         ) : (
-          <div style={{ width: 96, height: 96 }} />
+          <div style={{ width: 80, height: 80 }} />
         )}
       </div>
 
@@ -404,7 +404,7 @@ export default function QuestionScreen({
                   audio.vibrate(correct ? [40, 20, 40] : [120])
                   onSelectAnswer(index)
                 }}
-                className="btn-press py-4 rounded-2xl text-white font-bold text-sm transition-all active:scale-95 border"
+                className={`btn-press ${difficulty?.choices === 6 ? 'py-2 text-xs' : 'py-4 text-sm'} rounded-2xl text-white font-bold transition-all active:scale-95 border`}
                 style={{
                   background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
                   borderColor: cat?.color + '40',

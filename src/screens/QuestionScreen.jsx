@@ -296,20 +296,20 @@ export default function QuestionScreen({
   const hintButtons = (
     <div className="grid grid-cols-2 gap-2 shrink-0">
       <HintFlipButton
-        num={1} hint={fact.hint1} catColor={cat?.color || '#FF6B1A'} brightness={0.7}
+        num={1} hint={fact.hint1} catColor={cat?.color || '#FF6B1A'} brightness={0.75}
         onReveal={() => { onUseHint(1); audio.play('click') }}
       />
       <HintFlipButton
-        num={2} hint={fact.hint2} catColor={cat?.color || '#FF6B1A'} brightness={1.3}
+        num={2} hint={fact.hint2} catColor={cat?.color || '#FF6B1A'} brightness={1.25}
         onReveal={() => { onUseHint(2); audio.play('click') }}
       />
     </div>
   )
 
-  // ── Numéro du f*ct — COR 2 : 22px/900, couleur catégorie, sous le header ─────
+  // ── Numéro du f*ct — COR 2/5 : 22px/900, début de distribution ──────────────
   const factIdLabel = (
     <div
-      className="text-center shrink-0 px-4 pb-1"
+      className="text-center shrink-0"
       style={{
         fontSize: 22,
         fontWeight: 900,
@@ -320,9 +320,9 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Zone timer — centré, padding-bottom pour ne pas toucher le bas ──────────
+  // ── Zone timer — COR 4 : flex:1 flottant entre QCM et bas ──────────────────
   const timerZone = (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: 16 }}>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 8, paddingBottom: 16, minHeight: 80 }}>
       <div className="qs-timer-wrap" style={{ transform: 'scale(var(--scale))', transformOrigin: 'center' }}>
         <CircularTimer
           key={`${fact.id}-${answerMode}`}
@@ -417,10 +417,10 @@ export default function QuestionScreen({
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
-        {factIdLabel}
 
-        {/* MOD 2 — distribution verticale justify-between */}
-        <div className="qs-m flex-1 px-4 pb-4 flex flex-col justify-between" style={{ gap: 'clamp(8px, 2vh, 24px)' }}>
+        {/* COR 5 — distribution depuis le numéro : factIdLabel est le premier élément */}
+        <div className="qs-m flex-1 px-4 pb-4 flex flex-col" style={{ gap: 'clamp(8px, 2vh, 24px)' }}>
+          {factIdLabel}
           {questionCard}
           {difficulty?.hintsAllowed && hintButtons}
           <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center shrink-0">
@@ -459,10 +459,10 @@ export default function QuestionScreen({
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
       {progressBar}
-      {factIdLabel}
 
-      {/* MOD 2 — distribution verticale justify-between, merge QCM + timer */}
-      <div className="qs-m flex-1 px-4 pb-4 flex flex-col justify-between" style={{ gap: 'clamp(8px, 2vh, 24px)' }}>
+      {/* COR 5 — distribution depuis le numéro : factIdLabel est le premier élément */}
+      <div className="qs-m flex-1 px-4 pb-4 flex flex-col" style={{ gap: 'clamp(8px, 2vh, 24px)' }}>
+        {factIdLabel}
         {questionCard}
 
         {/* Indices — uniquement en mode Curieux */}

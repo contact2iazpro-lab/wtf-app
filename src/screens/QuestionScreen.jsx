@@ -94,12 +94,10 @@ export default function QuestionScreen({
   playerEmoji,
   playerCoins = 0,
 }) {
-  const [answerMode, setAnswerMode] = useState(null) // null | 'open' | 'qcm'
-
-  // En mode solo, aller directement au QCM
-  useEffect(() => {
-    if (gameMode === 'solo') setAnswerMode('qcm')
-  }, [gameMode])
+  // Solo et marathon → QCM direct, duel → sélection du mode
+  const [answerMode, setAnswerMode] = useState(
+    (gameMode === 'solo' || gameMode === 'marathon') ? 'qcm' : null
+  )
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showSettings, setShowSettings]       = useState(false)
@@ -380,26 +378,6 @@ export default function QuestionScreen({
               </button>
             )}
 
-            <button
-              onClick={() => setAnswerMode('qcm')}
-              className="btn-press w-full py-4 rounded-2xl active:scale-95 transition-all text-left px-5 border-2"
-              style={{
-                background: `${cat?.color || '#FF5C1A'}08`,
-                borderColor: `${cat?.color || '#FF5C1A'}40`,
-                boxShadow: `0 4px 20px ${cat?.color || '#FF5C1A'}15`,
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-white font-black text-base">🎯 Choix multiple</div>
-                  <div className="text-white/40 text-xs font-semibold mt-0.5">4 réponses · 20 secondes</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-black text-2xl" style={{ color: cat?.color || '#FF5C1A' }}>1</div>
-                  <div className="text-xs font-bold text-white/40">pt</div>
-                </div>
-              </div>
-            </button>
           </div>
         </div>
       </div>

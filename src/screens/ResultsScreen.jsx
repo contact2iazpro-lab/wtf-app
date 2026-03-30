@@ -373,7 +373,7 @@ export default function ResultsScreen({
         <div className="mb-3 shrink-0">
           <div className="px-5 mb-2">
             <span className="text-white/80 text-xs font-black uppercase tracking-widest">
-              🔓 Facts débloqués ({unlockedFactsThisSession.length})
+              🔓 F*cts débloqués ({unlockedFactsThisSession.length})
             </span>
           </div>
           <div
@@ -409,11 +409,11 @@ export default function ResultsScreen({
                     {CATEGORIES.find(c => c.id === fact.category)?.emoji || '💡'}
                   </div>
                 </div>
-                {/* Réponse courte */}
-                <div className="px-2 py-1.5 flex-1">
-                  <p className="text-white text-xs font-bold leading-tight line-clamp-2" style={{ fontSize: '0.62rem' }}>
-                    {fact.shortAnswer || fact.question}
-                  </p>
+                {/* Numéro du f*ct en couleur catégorie */}
+                <div className="px-2 py-1.5 flex-1 flex items-center justify-center">
+                  <span className="font-black text-sm" style={{ color: CATEGORIES.find(c => c.id === fact.category)?.color || catColor }}>
+                    #{fact.id}
+                  </span>
                 </div>
               </div>
             ))}

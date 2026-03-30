@@ -87,13 +87,6 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      <button
-        onClick={() => { audio.play('click'); setShowSettings(true) }}
-        className="fixed bottom-4 right-4 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
-        style={{ background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(0,0,0,0.12)', zIndex: 40, fontSize: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        ⚙️
-      </button>
-
       {/* Header */}
       <div className="px-3 pt-2 pb-1 flex items-center justify-between shrink-0">
         <button
@@ -109,7 +102,14 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
           style={{ fontSize: 28, color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
           Jusqu'où tu veux aller ?
         </h1>
-        <div className="w-9" />
+
+        {/* ⚙️ dans le header, pas fixed */}
+        <button
+          onClick={() => { audio.play('click'); setShowSettings(true) }}
+          className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all"
+          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', fontSize: 16 }}>
+          ⚙️
+        </button>
       </div>
 
       {/* COR 1 — Sous-titre 14px, tracking 2px, blanc 80% */}

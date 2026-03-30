@@ -286,12 +286,12 @@ export default function RevelationScreen({
                 style={{ zIndex: 3, gap: '14px' }}>
                 {/* Tampon "PAS CETTE FOIS" — COR 4 : fond blanc semi-transparent pour lisibilité */}
                 <div className="stamp-wow" style={{
-                  fontSize: '36px', fontWeight: 900, color: '#F44336',
-                  textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                  fontSize: '48px', fontWeight: 900, color: '#F44336',
+                  textShadow: '0 1px 4px rgba(0,0,0,0.2)',
                   transform: 'rotate(-8deg)',
-                  border: '4px solid #F44336', borderRadius: '10px',
-                  padding: '14px 28px', textAlign: 'center', lineHeight: 1.15,
-                  background: 'rgba(255,255,255,0.22)', backdropFilter: 'blur(6px)',
+                  border: '5px solid #F44336', borderRadius: '12px',
+                  padding: '18px 32px', textAlign: 'center', lineHeight: 1.1,
+                  background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(4px)',
                 }}>
                   PAS CETTE<br/>FOIS
                 </div>
@@ -497,9 +497,9 @@ export default function RevelationScreen({
                 onClick={handleShare}
                 className="btn-press flex-1 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                 style={{
-                  background: 'linear-gradient(135deg, #FF6B1A 0%, #D94A10 100%)',
+                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
                   color: 'white',
-                  boxShadow: '0 4px 20px rgba(255,107,26,0.45)',
+                  boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
                 }}>
                 {copied ? '✅ Copié !' : '🎩 Partager ce WTF!'}
               </button>

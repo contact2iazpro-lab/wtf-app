@@ -65,8 +65,11 @@ function FactDetailView({ fact, onClose }) {
         >
           ←
         </button>
-        {/* B3 — Titre plus visible, couleur catégorie */}
-        <span className="font-black text-base flex-1 truncate" style={{ color: 'white' }}>{fact.shortAnswer}</span>
+        {/* Numéro + question */}
+        <div className="flex-1 min-w-0">
+          <span className="text-xs font-black" style={{ color: catColor }}>#{fact.id}</span>
+          <p className="font-bold text-sm text-white leading-snug mt-0.5 line-clamp-2">{fact.question}</p>
+        </div>
       </div>
 
       {/* Scrollable content */}
@@ -87,6 +90,12 @@ function FactDetailView({ fact, onClose }) {
             <span className="text-5xl opacity-30">🖼️</span>
           </div>
         )}
+
+        {/* Réponse */}
+        <div className="px-5 pt-3 pb-1">
+          <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: catColor }}>Réponse</p>
+          <p className="text-base font-black" style={{ color: 'white' }}>{fact.shortAnswer}</p>
+        </div>
 
         {/* B2 — Espacement réduit entre image et corps */}
         <div className="px-5 py-3">
@@ -218,7 +227,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                       <img
                         src={fact.imageUrl}
                         alt=""
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover"
                         style={{ filter: 'blur(8px) brightness(0.7)' }}
                       />
                     ) : (

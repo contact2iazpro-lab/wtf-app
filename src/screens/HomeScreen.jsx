@@ -181,7 +181,7 @@ export default function HomeScreen({
 
       {/* ══ ZONE 2 — Badge progress + countdown ══════════════════════════════ */}
       <div style={{
-        margin: '6px 12px 0',
+        margin: '4px 12px 0',
         background: 'rgba(0,0,0,0.2)',
         borderRadius: 10, padding: '6px 10px',
         flexShrink: 0,
@@ -250,7 +250,7 @@ export default function HomeScreen({
             src="/cat-president.png"
             alt="Chat WTF!"
             style={{
-              maxWidth: '55%', maxHeight: 120,
+              maxWidth: '50%', maxHeight: 100,
               objectFit: 'contain', objectPosition: 'bottom',
               marginTop: 8, flexShrink: 1,
               maskImage: 'linear-gradient(to top, transparent 0%, black 45%)',

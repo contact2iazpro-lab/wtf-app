@@ -318,7 +318,7 @@ export default function HomeScreen({
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', gap: 14,
         }}>
-          <ActiveIcon emoji="🏃" label="Marathon" onClick={() => console.log('Marathon')} />
+          <ActiveIcon emoji="🏃" label="Marathon" onClick={() => nav('marathon')} />
           <ComingSoonIcon emoji="🎮" />
           <ComingSoonIcon emoji="⚡" />
         </div>

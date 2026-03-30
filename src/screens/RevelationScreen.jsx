@@ -142,6 +142,21 @@ export default function RevelationScreen({
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleNativeShare = () => {
+    const shortTitle = fact.shortTitle || fact.question.slice(0, 50)
+    const shareMessages = [
+      `🤯 Mate ce f*ct !\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 Tu savais ça ?!\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 WOOW incroyable !\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 Regarde ce que j'ai découvert !\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `🤯 Non mais t'as vu ça ?!\n\n"${shortTitle}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+    ]
+    const shareMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
+    if (navigator.share) {
+      navigator.share({ text: shareMessage })
+    }
+  }
+
   const isLastPlayer = isDuel && duelContext.isLastPlayer
   const playerColor = isDuel ? (['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][duelContext.currentPlayerIndex] ?? '#FF5C1A') : null
   const isOpenMode = selectedAnswer === 100 || selectedAnswer === -2
@@ -359,25 +374,63 @@ export default function RevelationScreen({
     <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      {settingsBtn}
       {floatingBadge}
-      {header}
+
+      {/* Header identique à QuestionScreen — MOD 1 */}
+      <div className="px-4 pt-4 pb-2 shrink-0 flex items-center gap-2">
+        <button
+          onClick={() => setShowQuitConfirm(true)}
+          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
+        >
+          <span style={{ fontSize: 11, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{
+            fontWeight: 900, fontSize: 13,
+            color: cat?.color || 'rgba(255,255,255,0.7)',
+            lineHeight: 1.2, wordBreak: 'break-word',
+            display: '-webkit-box', WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {cat?.label || 'Question'}
+          </span>
+        </div>
+        <div className="flex items-center gap-1 shrink-0" style={{ userSelect: 'none' }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#FF6B1A', lineHeight: 1 }}>WTF$</span>
+          <CoinsIcon size={16} />
+          <span
+            ref={scoreRefTarget}
+            className={showScorePulse ? 'score-pulse' : ''}
+            style={{ fontWeight: 700, color: 'white', fontSize: 13 }}
+          >
+            {displayedScore}
+          </span>
+        </div>
+        <button
+          onClick={() => { audio.play('click'); setShowSettings(true) }}
+          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+        >
+          ⚙️
+        </button>
+      </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hide">
       <div className="flex flex-col px-5 gap-2 pb-4 pt-1">
 
-        {/* COR 1+7 — Cadre carré identique, même fond catégorie, message en haut du cadre */}
+        {/* Image carrée — MOD 2 : contain, jamais tronquée */}
         <div
           className={`rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', aspectRatio: '16/9', background: catGradient }}>
-
+          style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}
+        >
           {isCorrect && (
             fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                className={`w-full h-full object-cover${!isDuel ? ' wow-image' : ''}`}
-                style={!isDuel ? { animationDelay: '0.1s', opacity: 0 } : {}}
+                className={`w-full h-full${!isDuel ? ' wow-image' : ''}`}
+                style={{ objectFit: 'contain', ...((!isDuel) ? { animationDelay: '0.1s', opacity: 0 } : {}) }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
@@ -399,12 +452,18 @@ export default function RevelationScreen({
               </div>
             </div>
           )}
-
-          {/* COR 1 — Message succès en bas du cadre image */}
-          {bottomMessageStrip(correctMsg)}
         </div>
 
-        {/* COR 3 — Stats joueurs sous l'image */}
+        {/* MOD 3 — Message de succès sous l'image, pas en overlay */}
+        {flipped && !isDuel && isCorrect && (
+          <div className="text-center px-2 shrink-0">
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'white', lineHeight: 1.45, display: 'block' }}>
+              {correctMsg}
+            </span>
+          </div>
+        )}
+
+        {/* Stats joueurs */}
         {!isDuel && (
           <div className="text-center py-1 shrink-0">
             <span className="text-xs font-bold" style={{ color: cat?.color || '#FF6B1A' }}>
@@ -455,14 +514,14 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* COR 3+4 — Le Saviez-Vous : "bonne réponse" intégrée dans la carte, Partager orange */}
+        {/* Le Saviez-Vous card — MOD 3 layout + MOD 4 partage natif */}
         {!isDuel && isCorrect && (
           <div className="rounded-3xl border p-4" style={{
             background: cat ? `linear-gradient(135deg, ${cat.color}18 0%, ${cat.color}06 100%)` : 'rgba(0,0,0,0.35)',
             borderColor: cat?.color + '70', backdropFilter: 'blur(12px)',
             boxShadow: `0 4px 32px ${cat?.color || '#000'}25`,
           }}>
-            {/* COR 3 — Bonne réponse visible immédiatement (pas d'opacity:0 qui crée un espace vide) */}
+            {/* ✓ Bonne réponse */}
             {!isOpenMode && !isTimeout && (
               <div className="rounded-xl px-3 py-2 border border-green-500/30 mb-3 score-pop"
                 style={{ background: 'rgba(76,175,80,0.1)' }}>
@@ -471,45 +530,52 @@ export default function RevelationScreen({
               </div>
             )}
 
+            {/* 🧠 Le Saviez-Vous */}
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xl">🧠</span>
               <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
             </div>
             <p className="text-white/80 text-sm leading-relaxed font-medium mb-3">{fact.explanation}</p>
 
-            {/* Source */}
-            {fact.sourceUrl && (
-              <div className="flex justify-end mb-2">
-                <a href={fact.sourceUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-xs font-semibold"
-                  style={{ color: cat?.color + 'cc' }}>
+            {/* Lien source + bouton Suivant sur la même ligne */}
+            <div className="flex items-center gap-2 mb-2">
+              {fact.sourceUrl ? (
+                <a
+                  href={fact.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs font-semibold flex-1 min-w-0"
+                  style={{ color: cat?.color + 'cc' }}
+                >
                   <span>🔗</span>
-                  <span className="underline underline-offset-2 truncate max-w-[180px]">
+                  <span className="underline underline-offset-2 truncate">
                     {fact.sourceUrl.replace(/^https?:\/\//, '').split('/')[0]}
                   </span>
                 </a>
-              </div>
-            )}
-
-            {/* COR 4 — Partager orange fixe + Suivant */}
-            <div className="flex gap-2">
-              <button
-                onClick={handleShare}
-                className="btn-press flex-1 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-                style={{
-                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                  color: 'white',
-                  boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
-                }}>
-                {copied ? '✅ Copié !' : '🎩 Partager ce WTF!'}
-              </button>
+              ) : (
+                <div className="flex-1" />
+              )}
               <button
                 onClick={() => { audio.play('click'); onNext() }}
-                className="btn-press flex-1 py-3 rounded-xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
-                style={nextBtnStyle}>
-                {nextLabel} →
+                className="btn-press py-3 px-4 rounded-xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all shrink-0"
+                style={nextBtnStyle}
+              >
+                ⚡ Suivant →
               </button>
             </div>
+
+            {/* MOD 4 — Partage natif Web Share API */}
+            <button
+              onClick={handleNativeShare}
+              className="btn-press w-full py-3 rounded-xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+              style={{
+                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+                color: 'white',
+                boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
+              }}
+            >
+              🎩 Partager ce WTF!
+            </button>
           </div>
         )}
 

@@ -90,7 +90,7 @@ function ComingSoonIcon({ emoji }) {
 }
 
 // ── NAV_HEIGHT estimé ─────────────────────────────────────────────────────────
-const NAV_HEIGHT = 70 // px — hauteur exacte de la barre de navigation
+const NAV_HEIGHT = 0 // chat aligné sur bottom: 0, nav par-dessus en z-index 2
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HomeScreen({
@@ -153,7 +153,7 @@ export default function HomeScreen({
         alt=""
         style={{
           position: 'absolute',
-          bottom: NAV_HEIGHT,
+          bottom: 0,
           left: 0, right: 0,
           width: '100%',
           objectFit: 'contain',
@@ -289,8 +289,8 @@ export default function HomeScreen({
           width: 96, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'space-evenly',
-          maxHeight: 'calc(45vh)',
-          alignSelf: 'center',
+          alignSelf: 'stretch',
+          paddingBottom: 120,
           gap: 16,
         }}>
           <ActiveIcon emoji="🎯" label="Quête WTF!" onClick={() => nav('difficulty')} />
@@ -306,10 +306,11 @@ export default function HomeScreen({
           padding: '0 6px',
         }}>
           <div style={{
-            fontSize: 'clamp(18px, 4vw, 24px)', color: 'white', textAlign: 'center',
-            lineHeight: 1.4,
+            fontSize: 'clamp(20px, 5vw, 28px)', color: 'white', textAlign: 'center',
+            lineHeight: 1.35,
             textShadow: '0 1px 6px rgba(0,0,0,0.5)',
-            fontWeight: 700,
+            fontWeight: 800,
+            padding: '0 16px',
           }}>
             Des f*cts 100% vrais,<br />des réactions 100% fun
           </div>
@@ -320,8 +321,8 @@ export default function HomeScreen({
           width: 96, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'space-evenly',
-          maxHeight: 'calc(45vh)',
-          alignSelf: 'center',
+          alignSelf: 'stretch',
+          paddingBottom: 120,
           gap: 16,
         }}>
           <ActiveIcon emoji="🏃" label="Marathon" onClick={() => nav('marathon')} />

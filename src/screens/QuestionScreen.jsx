@@ -226,20 +226,21 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Barre de progression segmentée — segment actif avec numéro ────────────
-  // MOD 2 — segment actif (factIndex) plus haut et affiche son numéro.
+  // ── Barre de progression — MOD 3 : segment actif 14px, inactifs 8px, centrés ─
   const progressBar = (
-    <div className="qs-pb px-4 pb-3 shrink-0">
-      <div className="flex w-full items-end" style={{ gap: 2 }}>
+    <div className="qs-pb px-4 pb-2 shrink-0">
+      <div className="flex w-full items-center" style={{ gap: 2 }}>
         {Array.from({ length: totalFacts }).map((_, i) => {
+          const isActive = i === factIndex
           const isFilled = i <= factIndex
           const showLabel = i === 2
           return (
             <div
               key={i}
-              className="flex-1 rounded-full transition-all duration-300 flex items-center justify-center"
+              className="flex-1 transition-all duration-300 flex items-center justify-center"
               style={{
-                height: 20,
+                height: isActive ? 14 : 8,
+                borderRadius: isActive ? 4 : 999,
                 background: isFilled
                   ? cat?.color || '#FF6B1A'
                   : (cat?.color || '#FF6B1A') + '40',
@@ -286,25 +287,23 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Numéro du f*ct — grand, couleur catégorie, contour blanc ─────────────────
+  // ── Numéro du f*ct — MOD 1 : 16px/700, couleur catégorie, sous le header ─────
   const factIdLabel = (
     <div
-      className="text-center shrink-0"
+      className="text-center shrink-0 px-4 pb-1"
       style={{
-        fontSize: 20,
-        fontWeight: 900,
+        fontSize: 16,
+        fontWeight: 700,
         color: cat?.color || 'rgba(255,255,255,0.4)',
-        textShadow: '-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
       }}
     >
       #{fact.id}
     </div>
   )
 
-  // ── Zone timer — occupe l'espace restant, timer centré ─────────────────────
-  // MOD 3 + MOD 4 + MOD 5 — pas de halo, pas de fond coloré, juste le SVG.
+  // ── Zone timer — centré dans le conteneur distribute ──────────────────────
   const timerZone = (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="qs-timer-wrap" style={{ transform: 'scale(var(--scale))', transformOrigin: 'center' }}>
         <CircularTimer
           key={`${fact.id}-${answerMode}`}
@@ -327,6 +326,7 @@ export default function QuestionScreen({
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
+        {factIdLabel}
 
         <div className="qs-m flex-1 flex flex-col px-4 justify-center" style={{ gap: 16 }}>
           {questionCard}
@@ -398,12 +398,13 @@ export default function QuestionScreen({
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
+        {factIdLabel}
 
-        {/* MOD 3 — contenu shrink-0, timer zone flex-1 */}
-        <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 16 }}>
+        {/* MOD 2 — distribution verticale justify-between */}
+        <div className="qs-m flex-1 px-4 pb-4 flex flex-col justify-between" style={{ gap: 'clamp(8px, 2vh, 24px)' }}>
           {questionCard}
           {difficulty?.hintsAllowed && hintButtons}
-          <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center">
+          <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center shrink-0">
             Le questionneur valide la réponse
           </div>
           <div className="grid grid-cols-2 gap-3 shrink-0">
@@ -422,10 +423,8 @@ export default function QuestionScreen({
               ✓ Correct !
             </button>
           </div>
-          {factIdLabel}
+          {timerZone}
         </div>
-
-        {timerZone}
       </div>
     )
   }
@@ -441,15 +440,16 @@ export default function QuestionScreen({
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
       {progressBar}
+      {factIdLabel}
 
-      {/* Contenu fixe shrink-0 */}
-      <div className="qs-m px-4 shrink-0 flex flex-col" style={{ gap: 16 }}>
+      {/* MOD 2 — distribution verticale justify-between, merge QCM + timer */}
+      <div className="qs-m flex-1 px-4 pb-4 flex flex-col justify-between" style={{ gap: 'clamp(8px, 2vh, 24px)' }}>
         {questionCard}
 
         {/* Indices — uniquement en mode Curieux */}
         {difficulty?.hintsAllowed && hintButtons}
 
-        {/* Boutons QCM — MOD 2 : py-5 text-lg gap-3 */}
+        {/* Boutons QCM */}
         <div className="grid gap-3 shrink-0" style={{ gridTemplateColumns: '1fr 1fr' }}>
           {fact.options.map((option, index) => (
             <button
@@ -481,12 +481,8 @@ export default function QuestionScreen({
           ))}
         </div>
 
-        {/* Numéro du f*ct discret */}
-        {factIdLabel}
+        {timerZone}
       </div>
-
-      {/* Timer — MOD 3/4/5 : flex-1 centré, sans halo ni fond */}
-      {timerZone}
     </div>
   )
 }

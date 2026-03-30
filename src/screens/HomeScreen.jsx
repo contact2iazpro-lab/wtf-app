@@ -46,7 +46,7 @@ function ActiveIcon({ emoji, label, onClick }) {
     <button
       onClick={onClick}
       style={{
-        width: 52, height: 52, borderRadius: 14,
+        width: 48, height: 48, borderRadius: 13,
         background: 'rgba(255,255,255,0.9)',
         boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
         border: 'none', cursor: 'pointer', padding: 0,
@@ -59,11 +59,11 @@ function ActiveIcon({ emoji, label, onClick }) {
       onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.93)')}
       onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
     >
-      <span style={{ fontSize: 22, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 20, lineHeight: 1 }}>{emoji}</span>
       <span style={{
-        fontSize: 6.5, fontWeight: 800, color: '#FF6B1A',
+        fontSize: 7, fontWeight: 800, color: '#FF6B1A',
         textAlign: 'center', lineHeight: 1.2,
-        maxWidth: 46, overflow: 'hidden',
+        maxWidth: 44, overflow: 'hidden',
         textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>{label}</span>
     </button>
@@ -74,14 +74,14 @@ function ActiveIcon({ emoji, label, onClick }) {
 function ComingSoonIcon({ emoji }) {
   return (
     <div style={{
-      width: 52, height: 52, borderRadius: 14,
+      width: 48, height: 48, borderRadius: 13,
       background: 'rgba(255,255,255,0.25)',
       border: '1.5px dashed rgba(255,255,255,0.5)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 2,
       flexShrink: 0,
     }}>
-      <span style={{ fontSize: 22, opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 20, opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
       <span style={{ fontSize: 6.5, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
     </div>
   )
@@ -168,11 +168,12 @@ export default function HomeScreen({
           onClick={handleSettings}
           style={{
             width: 34, height: 34, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.25)',
-            border: '2px solid rgba(255,255,255,0.55)',
+            background: 'rgba(255,255,255,0.2)',
+            border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 16, cursor: 'pointer', flexShrink: 0,
             WebkitTapHighlightColor: 'transparent',
+            color: 'white', filter: 'brightness(0) invert(1)',
           }}>
           ⚙️
         </button>
@@ -206,18 +207,18 @@ export default function HomeScreen({
       {/* ══ ZONE 3 — Corps 3 colonnes ════════════════════════════════════════ */}
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'row',
-        padding: '8px 8px 4px', gap: 6, minHeight: 0,
+        padding: '4px 8px 4px', gap: 6, minHeight: 0,
       }}>
 
         {/* ── Colonne gauche — modes actifs ── */}
         <div style={{
-          width: 64, flexShrink: 0,
+          width: 60, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 10,
+          alignItems: 'center', justifyContent: 'center', gap: 8,
         }}>
           <ActiveIcon emoji="🎯" label="Quête WTF!" onClick={() => nav('difficulty')} />
           <ActiveIcon emoji="🔥" label="Série"       onClick={() => nav('streak')} />
-          <ActiveIcon emoji="📅" label="F*ct du Jour" onClick={() => nav('wtfDuJour')} />
+          <ActiveIcon emoji="📅" label="Du Jour"     onClick={() => nav('wtfDuJour')} />
         </div>
 
         {/* ── Colonne centre — logo + tagline + mascotte ── */}
@@ -249,9 +250,9 @@ export default function HomeScreen({
             src="/cat-president.png"
             alt="Chat WTF!"
             style={{
-              maxWidth: '65%', maxHeight: '25%',
+              maxWidth: '55%', maxHeight: 120,
               objectFit: 'contain', objectPosition: 'bottom',
-              marginTop: 10, flexShrink: 1,
+              marginTop: 8, flexShrink: 1,
               maskImage: 'linear-gradient(to top, transparent 0%, black 45%)',
               WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 45%)',
             }}
@@ -260,9 +261,9 @@ export default function HomeScreen({
 
         {/* ── Colonne droite — bientôt ── */}
         <div style={{
-          width: 64, flexShrink: 0,
+          width: 60, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 10,
+          alignItems: 'center', justifyContent: 'center', gap: 8,
         }}>
           <ComingSoonIcon emoji="🏃" />
           <ComingSoonIcon emoji="🎮" />

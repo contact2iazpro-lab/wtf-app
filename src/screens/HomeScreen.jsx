@@ -48,7 +48,7 @@ function ActiveIcon({ emoji, label, onClick }) {
     <button
       onClick={onClick}
       style={{
-        width: 80, height: 80, borderRadius: 20,
+        width: 88, height: 88, borderRadius: 22,
         background: 'rgba(255,255,255,0.9)',
         boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
         border: 'none', cursor: 'pointer', padding: 0,
@@ -61,11 +61,11 @@ function ActiveIcon({ emoji, label, onClick }) {
       onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.93)')}
       onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
     >
-      <span style={{ fontSize: 28, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 30, lineHeight: 1 }}>{emoji}</span>
       <span style={{
-        fontSize: 10, fontWeight: 700, color: '#FF6B1A',
+        fontSize: 11, fontWeight: 700, color: '#FF6B1A',
         textAlign: 'center', lineHeight: 1.2,
-        maxWidth: 70, overflow: 'hidden',
+        maxWidth: 76, overflow: 'hidden',
         textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>{label}</span>
     </button>
@@ -76,21 +76,21 @@ function ActiveIcon({ emoji, label, onClick }) {
 function ComingSoonIcon({ emoji }) {
   return (
     <div style={{
-      width: 80, height: 80, borderRadius: 20,
+      width: 88, height: 88, borderRadius: 22,
       background: 'rgba(255,255,255,0.25)',
       border: '1.5px dashed rgba(255,255,255,0.5)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 4,
       flexShrink: 0,
     }}>
-      <span style={{ fontSize: 28, opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
-      <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
+      <span style={{ fontSize: 30, opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
     </div>
   )
 }
 
 // ── NAV_HEIGHT estimé ─────────────────────────────────────────────────────────
-const NAV_HEIGHT = 64 // px — padding 6+12 + emoji ~26 + label ~10 + gap 2 ≈ 56 → marge 64
+const NAV_HEIGHT = 70 // px — hauteur exacte de la barre de navigation
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HomeScreen({
@@ -251,7 +251,7 @@ export default function HomeScreen({
         flexShrink: 0,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center',
-        paddingTop: 10, paddingBottom: 4,
+        paddingTop: 4, paddingBottom: 4,
         gap: 6,
         position: 'relative', zIndex: 1,
       }}>
@@ -286,9 +286,12 @@ export default function HomeScreen({
 
         {/* ── Colonne gauche — modes actifs ── */}
         <div style={{
-          width: 88, flexShrink: 0,
+          width: 96, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 14,
+          alignItems: 'center', justifyContent: 'space-evenly',
+          maxHeight: 'calc(45vh)',
+          alignSelf: 'center',
+          gap: 16,
         }}>
           <ActiveIcon emoji="🎯" label="Quête WTF!" onClick={() => nav('difficulty')} />
           <ActiveIcon emoji="🔥" label="Série"       onClick={() => nav('streak')} />
@@ -300,11 +303,11 @@ export default function HomeScreen({
           flex: 1,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           minWidth: 0,
-          padding: '0 4px',
+          padding: '0 6px',
         }}>
           <div style={{
-            fontSize: 11, color: 'white', textAlign: 'center',
-            lineHeight: 1.45,
+            fontSize: 'clamp(18px, 4vw, 24px)', color: 'white', textAlign: 'center',
+            lineHeight: 1.4,
             textShadow: '0 1px 6px rgba(0,0,0,0.5)',
             fontWeight: 700,
           }}>
@@ -314,9 +317,12 @@ export default function HomeScreen({
 
         {/* ── Colonne droite — Marathon actif + bientôt ── */}
         <div style={{
-          width: 88, flexShrink: 0,
+          width: 96, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 14,
+          alignItems: 'center', justifyContent: 'space-evenly',
+          maxHeight: 'calc(45vh)',
+          alignSelf: 'center',
+          gap: 16,
         }}>
           <ActiveIcon emoji="🏃" label="Marathon" onClick={() => nav('marathon')} />
           <ComingSoonIcon emoji="🎮" />

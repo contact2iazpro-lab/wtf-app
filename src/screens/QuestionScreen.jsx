@@ -18,6 +18,12 @@ function HintFlipButton({ num, hint, catColor, brightness = 1, onReveal }) {
 
   const color = catColor || '#FF6B1A'
 
+  // Texte adaptatif selon luminosité de la couleur catégorie
+  const isLight = color.length >= 7
+    ? (parseInt(color.slice(1,3),16)*299 + parseInt(color.slice(3,5),16)*587 + parseInt(color.slice(5,7),16)*114) / 1000 > 128
+    : false
+  const labelColor = isLight ? '#1a1a1a' : '#ffffff'
+
   return (
     <button
       onClick={handleClick}
@@ -25,8 +31,9 @@ function HintFlipButton({ num, hint, catColor, brightness = 1, onReveal }) {
         height: 48,
         width: '100%',
         borderRadius: 24,
-        border: `2px solid ${phase === 'back' ? color + '80' : color}`,
-        background: phase === 'back' ? `${color}18` : `${color}1a`,
+        // front : teinte catégorie + brightness | back : fond blanc semi-transparent
+        border: `2px solid ${color}`,
+        background: phase === 'back' ? 'rgba(255,255,255,0.88)' : `${color}28`,
         transform: phase === 'flip' ? 'scaleY(0.08)' : 'scaleY(1)',
         transition: 'transform 0.15s ease, background 0.3s, border-color 0.3s',
         overflow: 'hidden',
@@ -34,14 +41,16 @@ function HintFlipButton({ num, hint, catColor, brightness = 1, onReveal }) {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '4px 12px',
-        cursor: phase !== 'front' ? 'default' : 'pointer',
+        cursor: 'pointer',
         pointerEvents: phase !== 'front' ? 'none' : 'auto',
         flexShrink: 0,
-        filter: `brightness(${brightness})`,
+        opacity: 1,
+        // brightness uniquement sur la phase front pour différencier N°1 et N°2
+        filter: phase === 'back' ? 'none' : `brightness(${brightness})`,
       }}
     >
       {phase !== 'back' ? (
-        <span style={{ fontWeight: 900, fontSize: 13, color, whiteSpace: 'nowrap' }}>
+        <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap' }}>
           N°{num} — Indice
         </span>
       ) : (
@@ -49,7 +58,7 @@ function HintFlipButton({ num, hint, catColor, brightness = 1, onReveal }) {
           style={{
             fontSize: 18,
             fontWeight: 700,
-            color: 'white',
+            color: color,
             textAlign: 'center',
             lineHeight: 1.35,
             wordBreak: 'break-word',

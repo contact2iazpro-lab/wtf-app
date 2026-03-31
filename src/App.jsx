@@ -79,6 +79,11 @@ function loadStorage() {
     const wtfDuJourFait = wtfDuJourDate === today
     const sessionsToday = saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0
 
+    const devMode = localStorage.getItem('wtf_dev_mode') === 'true'
+    if (devMode) {
+      return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins: 9999, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0 }
+    }
+
     return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday }
   } catch {
     return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 0, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0 }
@@ -86,6 +91,7 @@ function loadStorage() {
 }
 
 function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, sessionsToday }) {
+  if (localStorage.getItem('wtf_dev_mode') === 'true') return
   try {
     localStorage.setItem('wtf_data', JSON.stringify({
       totalScore,
@@ -690,6 +696,14 @@ export default function App() {
       setFactsReady(true)
     })
   }, [])
+
+  // Dev mode: unlock all facts in memory (no localStorage write)
+  useEffect(() => {
+    if (!factsReady) return
+    if (localStorage.getItem('wtf_dev_mode') !== 'true') return
+    const allIds = new Set(getValidFacts().map(f => f.id))
+    setStorage(prev => ({ ...prev, unlockedFacts: allIds }))
+  }, [factsReady])
 
   // HowToPlayModal only opens manually (via Settings), not automatically
   // TutorialOverlay covers onboarding — no duplicate auto-show needed

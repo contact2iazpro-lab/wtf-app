@@ -220,6 +220,40 @@ function SaveProgressModal({ onClose }) {
   )
 }
 
+// Dev mode toggle row — visible only in development
+function DevModeToggleRow() {
+  const [devMode, setDevMode] = useState(() => localStorage.getItem('wtf_dev_mode') === 'true')
+
+  const toggle = () => {
+    const next = !devMode
+    localStorage.setItem('wtf_dev_mode', String(next))
+    setDevMode(next)
+    window.location.reload()
+  }
+
+  return (
+    <>
+      <div className="h-px mt-3 mb-3" style={{ background: 'rgba(255,107,26,0.25)' }} />
+      <button
+        onClick={toggle}
+        className="w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all active:scale-95"
+        style={{
+          background: devMode ? 'rgba(255,107,26,0.12)' : '#F9FAFB',
+          borderColor: devMode ? '#FF6B1A' : '#E5E7EB',
+        }}
+      >
+        <span className="flex items-center gap-3">
+          <span className="text-2xl">{devMode ? '🛠' : '👤'}</span>
+          <span className="font-bold text-sm" style={{ color: devMode ? '#FF6B1A' : '#9CA3AF' }}>
+            {devMode ? '🛠 MODE DEV ACTIF' : '👤 MODE JOUEUR'}
+          </span>
+        </span>
+        <TogglePill on={devMode} />
+      </button>
+    </>
+  )
+}
+
 // Toggle pill (reusable)
 function TogglePill({ on }) {
   return (
@@ -371,6 +405,8 @@ export default function SettingsModal({ onClose, onShowRules }) {
             </span>
             <TogglePill on={showWelcome} />
           </button>
+
+          {import.meta.env.DEV && <DevModeToggleRow />}
         </div>
       </div>
     </>

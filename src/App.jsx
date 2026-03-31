@@ -58,6 +58,16 @@ const YESTERDAY_DATE_STR = () => new Date(Date.now() - 86400000).toDateString()
 // TEMP TEST — remettre à 10 avant le lancement en production
 const QUESTIONS_PER_GAME = 5
 
+// Paliers de récompenses fidélité Streak
+const getStreakReward = (streakDays) => {
+  if (streakDays === 1)  return { coins: 5,  tickets: 0, hints: 0, badge: false }
+  if (streakDays === 3)  return { coins: 0,  tickets: 0, hints: 2, badge: false }
+  if (streakDays === 7)  return { coins: 25, tickets: 1, hints: 3, badge: true  }
+  if (streakDays === 14) return { coins: 0,  tickets: 1, hints: 3, badge: false }
+  if (streakDays === 30) return { coins: 0,  tickets: 0, hints: 0, badge: false, special: 'wtf_premium' }
+  return null
+}
+
 function loadStorage() {
   try {
     const today = TODAY()
@@ -153,6 +163,8 @@ export default function App() {
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
   const [completedLevels, setCompletedLevels] = useState([])
   const [sessionIsPerfect, setSessionIsPerfect] = useState(false)
+  const [streakRewardToast, setStreakRewardToast] = useState(null)
+  const [showStreakSpecialModal, setShowStreakSpecialModal] = useState(false)
 
   const { user } = useAuth()
 
@@ -522,8 +534,26 @@ export default function App() {
         }
         setCoinsEarnedLastSession(coinsEarned)
 
+        // Récompenses fidélité Streak (uniquement si 1re session du jour → streak incrémenté)
+        const streakReward = isFirstSessionToday ? getStreakReward(newStreak) : null
+        if (streakReward) {
+          if (streakReward.hints > 0) {
+            const currentHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
+            localStorage.setItem('wtf_hints_available', String(currentHints + streakReward.hints))
+          }
+          if (streakReward.badge) {
+            localStorage.setItem(`wtf_badge_streak_${newStreak}`, 'true')
+          }
+          if (streakReward.special === 'wtf_premium') {
+            setShowStreakSpecialModal(true)
+          } else {
+            setStreakRewardToast({ days: newStreak, reward: streakReward })
+          }
+        }
+
         const newTotalScore = totalScore + sessionScore
-        const newWtfCoins = wtfCoins + coinsEarned
+        const streakRewardCoins = streakReward?.coins ?? 0
+        const newWtfCoins = wtfCoins + coinsEarned + streakRewardCoins
         const newWtfDuJourDate = sessionType === 'wtf_du_jour' ? TODAY() : wtfDuJourDate
         // Marathon ne consomme pas de ticket quête
         const marathonSessionsToday = sessionType === 'marathon' ? sessionsToday : newSessionsToday
@@ -535,7 +565,7 @@ export default function App() {
           wtfCoins: newWtfCoins,
           wtfDuJourDate: newWtfDuJourDate,
           sessionsToday: marathonSessionsToday,
-          tickets: (tickets || 0) + (isPerfectSession ? 1 : 0),
+          tickets: (tickets || 0) + (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0),
         }
         saveStorage(newStorage)
         setStorage({
@@ -732,6 +762,13 @@ export default function App() {
     setStorage(prev => ({ ...prev, unlockedFacts: allIds }))
   }, [factsReady])
 
+  // Auto-dismiss streak reward toast après 3 secondes
+  useEffect(() => {
+    if (!streakRewardToast) return
+    const t = setTimeout(() => setStreakRewardToast(null), 3000)
+    return () => clearTimeout(t)
+  }, [streakRewardToast])
+
   // HowToPlayModal only opens manually (via Settings), not automatically
   // TutorialOverlay covers onboarding — no duplicate auto-show needed
 
@@ -791,6 +828,102 @@ export default function App() {
 
   return (
     <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg" style={{ '--scale': scale, height: '100dvh' }}>
+
+      {/* Toast récompense Streak */}
+      <style>{`
+        @keyframes streakToastSlide {
+          from { transform: translateX(-50%) translateY(-60px); opacity: 0; }
+          to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+        }
+      `}</style>
+      {streakRewardToast && (
+        <div style={{
+          position: 'fixed', top: 16, left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          background: '#FF6B1A', color: 'white',
+          borderRadius: 12, padding: '10px 20px',
+          fontWeight: 700, fontSize: 15,
+          textAlign: 'center',
+          boxShadow: '0 4px 24px rgba(255,107,26,0.55)',
+          whiteSpace: 'nowrap',
+          animation: 'streakToastSlide 0.35s ease',
+          pointerEvents: 'none',
+        }}>
+          {`🔥 Série de ${streakRewardToast.days} jours !  `}
+          {streakRewardToast.reward._label
+            ? streakRewardToast.reward._label
+            : <>
+                {streakRewardToast.reward.coins   > 0 && `+${streakRewardToast.reward.coins} 🪙  `}
+                {streakRewardToast.reward.tickets > 0 && `+${streakRewardToast.reward.tickets} 🎟️  `}
+                {streakRewardToast.reward.hints   > 0 && `+${streakRewardToast.reward.hints} 💡  `}
+                {streakRewardToast.reward.badge && '🏅 Badge !'}
+              </>
+          }
+        </div>
+      )}
+
+      {/* Modal choix Jour 30 — WTF Premium ou 10 f*cts */}
+      {showStreakSpecialModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1001,
+          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+        }}>
+          <div style={{
+            background: 'linear-gradient(160deg, #1a0a35, #0A0F1E)',
+            border: '2px solid #FF6B1A',
+            borderRadius: 24, padding: 28, width: '100%', maxWidth: 360,
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 8 }}>🔥</div>
+            <h2 style={{ color: 'white', fontSize: 22, fontWeight: 900, marginBottom: 6 }}>
+              30 jours de série !
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 24 }}>
+              Incroyable ! Choisis ta récompense ultime :
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <button
+                onClick={() => {
+                  localStorage.setItem('wtf_badge_streak_30', 'true')
+                  localStorage.setItem('wtf_premium_earned', 'true')
+                  setShowStreakSpecialModal(false)
+                  setStreakRewardToast({ days: 30, reward: { coins: 0, tickets: 0, hints: 0, badge: false, _label: 'WTF Premium 👑' } })
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #FF6B1A, #EA580C)',
+                  color: 'white', border: 'none', borderRadius: 14,
+                  padding: '14px 20px', fontWeight: 900, fontSize: 16, cursor: 'pointer',
+                }}>
+                👑 WTF Premium
+              </button>
+              <button
+                onClick={() => {
+                  // Débloquer 10 f*cts aléatoires non encore débloqués
+                  const raw = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                  const unlocked = new Set(raw.unlockedFacts || [])
+                  const locked = getValidFacts().filter(f => !unlocked.has(f.id))
+                  const toAdd = [...locked].sort(() => Math.random() - 0.5).slice(0, 10).map(f => f.id)
+                  toAdd.forEach(id => unlocked.add(id))
+                  raw.unlockedFacts = [...unlocked]
+                  localStorage.setItem('wtf_data', JSON.stringify(raw))
+                  localStorage.setItem('wtf_badge_streak_30', 'true')
+                  setShowStreakSpecialModal(false)
+                  setStreakRewardToast({ days: 30, reward: { coins: 0, tickets: 0, hints: 0, badge: false, _label: '10 f*cts débloqués 🎴' } })
+                }}
+                style={{
+                  background: 'rgba(255,255,255,0.1)', color: 'white',
+                  border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 14,
+                  padding: '14px 20px', fontWeight: 800, fontSize: 16, cursor: 'pointer',
+                }}>
+                🎴 10 f*cts débloqués
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* First-visit tutorial (mandatory, no skip) */}
       {showTutorial && <TutorialOverlay onComplete={handleTutorialComplete} />}
 

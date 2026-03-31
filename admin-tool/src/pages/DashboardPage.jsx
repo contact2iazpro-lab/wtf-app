@@ -223,7 +223,7 @@ export default function DashboardPage({ toast }) {
     }, 2000)
 
     try {
-      const resp = await fetch('/api/sync-facts', {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-facts`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,

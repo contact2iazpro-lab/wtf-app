@@ -49,6 +49,7 @@ export default function ResultsScreen({
   coinsEarned = 0,
   sessionType = 'parcours',
   difficulty = null,
+  ticketEarned = false,
   categoryId = null,
   onShare = null,
   onFactDetail = null,
@@ -64,6 +65,7 @@ export default function ResultsScreen({
   const [animatedScore, setAnimatedScore] = useState(0)      // MOD 6
   const [sharedCopied, setSharedCopied] = useState(false)    // MOD 10
   const [confettiActive, setConfettiActive] = useState(false) // COR 4
+  const [ticketPopVisible, setTicketPopVisible] = useState(false)
 
   // Category color (MOD 1)
   const cat = categoryId ? getCategoryById(categoryId) : null
@@ -148,6 +150,13 @@ export default function ResultsScreen({
     }, interval)
     return () => clearInterval(timer)
   }, [score])
+
+  // Badge Perfect — animation ticket avec délai (après les étoiles)
+  useEffect(() => {
+    if (!ticketEarned) return
+    const t = setTimeout(() => setTicketPopVisible(true), 900)
+    return () => clearTimeout(t)
+  }, [ticketEarned])
 
   // MOD 7 — Coin fly animation (synced with audio)
   useEffect(() => {
@@ -325,6 +334,57 @@ export default function ResultsScreen({
           </span>
         ))}
       </div>
+
+      {/* ── Badge Perfect ───────────────────────────────────────────────── */}
+      {isPerfect && (
+        <div
+          className="mx-5 mb-3 rounded-3xl p-4 shrink-0"
+          style={{
+            background: 'linear-gradient(135deg, rgba(253,224,71,0.22) 0%, rgba(245,158,11,0.35) 100%)',
+            border: '2px solid rgba(253,224,71,0.6)',
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 4px 24px rgba(245,158,11,0.35)',
+          }}
+        >
+          {/* Titre badge */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span style={{ fontSize: 28 }}>⭐</span>
+            <span
+              className="font-black uppercase tracking-widest"
+              style={{ fontSize: 22, color: '#FDE047', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+            >
+              PERFECT !
+            </span>
+            <span style={{ fontSize: 28 }}>⭐</span>
+          </div>
+
+          {/* Message */}
+          <p
+            className="text-center font-bold leading-relaxed mb-3"
+            style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)' }}
+          >
+            Incroyable ! Tu as répondu correctement à toutes les questions !
+          </p>
+
+          {/* Récompense ticket */}
+          {ticketEarned && (
+            <div
+              className="flex items-center justify-center gap-2 rounded-2xl py-2 px-4"
+              style={{
+                background: 'rgba(253,224,71,0.18)',
+                border: '1px solid rgba(253,224,71,0.4)',
+                transform: ticketPopVisible ? 'scale(1)' : 'scale(0)',
+                transition: 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }}
+            >
+              <span style={{ fontSize: 20 }}>🎟️</span>
+              <span className="font-black" style={{ fontSize: 15, color: '#FDE047' }}>
+                +1 ticket bonus !
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Score card */}
       <div className="mx-5 mb-2 rounded-3xl border p-3 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)' }}>

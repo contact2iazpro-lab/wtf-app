@@ -79,18 +79,20 @@ function loadStorage() {
     const wtfDuJourFait = wtfDuJourDate === today
     const sessionsToday = saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0
 
+    const tickets = saved.tickets || 0
+
     const devMode = localStorage.getItem('wtf_dev_mode') === 'true'
     if (devMode) {
-      return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins: 9999, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0 }
+      return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins: 9999, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 99 }
     }
 
-    return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday }
+    return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets }
   } catch {
-    return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 0, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0 }
+    return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 0, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 0 }
   }
 }
 
-function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, sessionsToday }) {
+function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, sessionsToday, tickets = 0 }) {
   if (localStorage.getItem('wtf_dev_mode') === 'true') return
   try {
     localStorage.setItem('wtf_data', JSON.stringify({
@@ -102,6 +104,7 @@ function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDat
       wtfDuJourDate,
       sessionsToday,
       sessionsTodayDate: TODAY(),
+      tickets,
     }))
   } catch { /* ignore */ }
 }
@@ -122,7 +125,7 @@ export default function App() {
   const [isCorrect, setIsCorrect] = useState(null)
   const [pointsEarned, setPointsEarned] = useState(0)
   const [storage, setStorage] = useState(loadStorage)
-  const { totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday } = storage
+  const { totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets } = storage
   const dailyQuestsRemaining = Math.max(0, 3 - (sessionsToday || 0))
 
   // Session type tracking
@@ -149,6 +152,7 @@ export default function App() {
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
   const [completedLevels, setCompletedLevels] = useState([])
+  const [sessionIsPerfect, setSessionIsPerfect] = useState(false)
 
   const { user } = useAuth()
 
@@ -175,6 +179,7 @@ export default function App() {
     setIsCorrect(null)
     setSessionCorrectFacts([])
     setCompletedLevels([])
+    setSessionIsPerfect(false)
     setPointsEarned(0)
   }
 
@@ -491,16 +496,25 @@ export default function App() {
         }
         setCompletedLevels(newlyCompleted)
 
+        // Badge Perfect (Quête WTF! uniquement) — indices autorisés
+        const isPerfectSession = sessionType === 'parcours' && correctCount === sessionFacts.length
+        if (isPerfectSession) {
+          const catKey = selectedCategory || 'all'
+          const diffKey = selectedDifficulty?.id || 'unknown'
+          localStorage.setItem(`wtf_perfect_${catKey}_${diffKey}`, 'true')
+        }
+        setSessionIsPerfect(isPerfectSession)
+
         // WTF Coins calculation
         let coinsEarned = 0
         if (sessionType === 'wtf_du_jour') {
           coinsEarned = 5 + (newStreak * 2) // 5 base + streak bonus
         } else if (sessionType === 'flash_solo') {
-          const isPerfect = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
-          coinsEarned = isPerfect ? 25 : 10
+          const isPerfectFlash = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
+          coinsEarned = isPerfectFlash ? 25 : 10
           coinsEarned += newStreak * 2 // streak bonus
         } else if (sessionType === 'parcours') {
-          coinsEarned = sessionScore // 1 coin par point marqué
+          coinsEarned = sessionScore // coins égaux aux points marqués
         } else if (sessionType === 'marathon') {
           // 3 coins par bonne réponse + 20 coins bonus si 20/20
           coinsEarned = correctCount * 3
@@ -521,6 +535,7 @@ export default function App() {
           wtfCoins: newWtfCoins,
           wtfDuJourDate: newWtfDuJourDate,
           sessionsToday: marathonSessionsToday,
+          tickets: (tickets || 0) + (isPerfectSession ? 1 : 0),
         }
         saveStorage(newStorage)
         setStorage({
@@ -887,6 +902,8 @@ export default function App() {
           totalFacts={totalRounds}
           coinsEarned={coinsEarnedLastSession}
           sessionType={sessionType}
+          difficulty={selectedDifficulty}
+          ticketEarned={sessionIsPerfect}
           onReplay={handleReplay}
           onHome={handleHome}
           completedCategoryLevels={completedLevels}

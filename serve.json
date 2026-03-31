@@ -1,9 +1,8 @@
 {
-  "redirects": [
-    { "source": "/admin", "destination": "/admin/", "type": 301 }
-  ],
+  "trailingSlash": false,
   "rewrites": [
-    { "source": "/admin/{,**}", "destination": "/admin/index.html" },
+    { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/admin/**", "destination": "/admin/index.html" },
     { "source": "/**", "destination": "/index.html" }
   ]
 }

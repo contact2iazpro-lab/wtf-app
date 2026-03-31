@@ -16,4 +16,7 @@ cd ..
 echo "==> Merging admin into dist/admin/..."
 cp -r admin-tool/dist dist/admin
 
+# 4. Copy serve.json into dist/ for SPA routing
+cp serve.json dist/serve.json
+
 echo "==> Done! dist/ ready to serve."

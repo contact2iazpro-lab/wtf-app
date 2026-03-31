@@ -27,7 +27,9 @@ RUN cp -r /app/admin-tool/dist /app/dist/admin
 
 # Stage 2 — Serve
 FROM nginx:alpine
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+COPY nginx.conf /etc/nginx/templates/nginx.conf.template
+RUN rm /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 ENV PORT=80
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 EXPOSE 80

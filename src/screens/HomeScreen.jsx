@@ -266,14 +266,15 @@ export default function HomeScreen({
         <button
           onClick={() => nav('profil')}
           style={{
-            width: 34, height: 34, borderRadius: '50%',
+            width: 'calc(40px * var(--scale))', height: 'calc(40px * var(--scale))', borderRadius: '50%',
             background: 'rgba(255,255,255,0.25)',
             border: '2px solid rgba(255,255,255,0.55)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, cursor: 'pointer', flexShrink: 0,
+            cursor: 'pointer', flexShrink: 0,
             WebkitTapHighlightColor: 'transparent',
+            padding: 0, overflow: 'hidden',
           }}>
-          👤
+          <img src="/assets/ui/avatar-default.png" alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
         </button>
 
         <div style={{ flex: 1 }} />
@@ -282,7 +283,7 @@ export default function HomeScreen({
           display: 'flex', alignItems: 'center', gap: 5,
           background: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: '4px 10px',
         }}>
-          <CoinsIcon size={16} />
+          <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: 'calc(28px * var(--scale))', height: 'calc(28px * var(--scale))', flexShrink: 0 }} />
           <span style={{ fontWeight: 800, color: 'white', fontSize: 13 }}>{playerCoins}</span>
         </div>
 
@@ -290,21 +291,21 @@ export default function HomeScreen({
           display: 'flex', alignItems: 'center', gap: 5,
           background: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: '4px 10px',
         }}>
-          <span style={{ fontSize: 14 }}>🎟️</span>
+          <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: 'calc(28px * var(--scale))', height: 'calc(28px * var(--scale))', flexShrink: 0 }} />
           <span style={{ fontWeight: 800, color: 'white', fontSize: 13 }}>{dailyQuestsRemaining}</span>
         </div>
 
         <button
           onClick={handleSettings}
           style={{
-            width: 34, height: 34, borderRadius: '50%',
+            width: 'calc(40px * var(--scale))', height: 'calc(40px * var(--scale))', borderRadius: '50%',
             background: 'rgba(255,255,255,0.2)',
             border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, cursor: 'pointer', flexShrink: 0,
+            cursor: 'pointer', flexShrink: 0,
             WebkitTapHighlightColor: 'transparent',
           }}>
-          ⚙️
+          <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: 'calc(28px * var(--scale))', height: 'calc(28px * var(--scale))' }} />
         </button>
       </div>
 
@@ -318,7 +319,8 @@ export default function HomeScreen({
         position: 'relative', zIndex: 1,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <img src="/assets/ui/icon-badge.png" alt="badge" style={{ width: 'calc(32px * var(--scale))', height: 'calc(32px * var(--scale))', flexShrink: 0 }} />
             Prochain badge
           </span>
           <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
@@ -380,9 +382,15 @@ export default function HomeScreen({
               }}
             >
               {/* Icône */}
-              <span style={{ fontSize: 15, lineHeight: 1 }}>
-                {isColl ? '🎁' : isAvail ? '🎁' : isTrophy ? '🏆' : '🔒'}
-              </span>
+              <img
+                src={isAvail || isColl
+                  ? '/assets/ui/chest-open.png'
+                  : isTrophy
+                    ? '/assets/ui/chest-trophy.png'
+                    : '/assets/ui/chest-locked.png'}
+                alt={isAvail ? 'coffre disponible' : isTrophy ? 'coffre trophée' : 'coffre verrouillé'}
+                style={{ width: 'calc(48px * var(--scale))', height: 'calc(48px * var(--scale))', objectFit: 'contain', flexShrink: 0 }}
+              />
 
               {/* Label J-N + coche si collecté */}
               <span style={{

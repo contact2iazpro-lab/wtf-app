@@ -109,7 +109,6 @@ export default function RevelationScreen({
         setTimeout(() => audio.playFile('What the fact.mp3'), 350)
         setTimeout(() => audio.playFile('Coins points.mp3'), 600)
       } else {
-        setTimeout(() => audio.playFile('Stamp Refusal.mp3'), 350)
       }
     }
     return () => clearTimeout(timer)

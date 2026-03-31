@@ -484,9 +484,9 @@ function buildDifficultyAssignment() {
   for (const f of FACTS) {
     if (!f || !f.difficulty) continue
     switch (f.difficulty.toLowerCase()) {
-      case 'facile': case 'easy':   map[f.id] = 'easy';   break
-      case 'normal':                map[f.id] = 'normal'; break
-      case 'expert': case 'hard':   map[f.id] = 'expert'; break
+      case 'facile': case 'easy': case 'cool':     map[f.id] = 'cool'; break
+      case 'normal': case 'hot':                   map[f.id] = 'hot';  break
+      case 'expert': case 'hard': case 'wtf':      map[f.id] = 'wtf';  break
     }
   }
 
@@ -497,9 +497,9 @@ function buildDifficultyAssignment() {
       .filter(f => f && f.question && f.category === catId && Array.isArray(f.options) && f.options.length >= 2 && typeof f.correctIndex === 'number' && !map[f.id])
       .sort((a, b) => a.id - b.id)
     catFacts.forEach((f, i) => {
-      if (i < 10) map[f.id] = 'easy'
-      else if (i < 20) map[f.id] = 'normal'
-      else map[f.id] = 'expert'
+      if (i < 10) map[f.id] = 'cool'
+      else if (i < 20) map[f.id] = 'hot'
+      else map[f.id] = 'wtf'
     })
   }
   return map

@@ -485,7 +485,7 @@ export default function QuestionScreen({
         {factIdLabel}
         {questionCard}
 
-        {/* Indices — uniquement en mode Curieux */}
+        {/* Indices */}
         {difficulty?.hintsAllowed && hintButtons}
 
         {/* Boutons QCM */}

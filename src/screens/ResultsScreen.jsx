@@ -27,12 +27,12 @@ function getStars(correct, total) {
   return 0
 }
 
-const DIFFICULTY_LABELS = { easy: 'Curieux', normal: 'À fond', expert: 'WTF! Addict' }
-const DIFFICULTY_EMOJIS = { easy: '💚', normal: '🧠', expert: '⚡' }
+const DIFFICULTY_LABELS = { cool: 'Cool', hot: 'Hot', wtf: 'WTF!' }
+const DIFFICULTY_EMOJIS = { cool: '❄️', hot: '🔥', wtf: '⚡' }
 const CHALLENGE_LABELS = {
-  easy:   'Tenter le niveau À fond ? ⚡',
-  normal: 'Oser le WTF! Addict ? 🔥',
-  expert: 'Rejouer en WTF! Addict 🏆',
+  cool: 'Tenter le niveau Hot ? 🔥',
+  hot:  'Oser le WTF! ? ⚡',
+  wtf:  'Rejouer en WTF! 🏆',
 }
 
 // COR 4 — Confetti colors
@@ -210,7 +210,7 @@ export default function ResultsScreen({
 
   // COR 5 — Share handler natif avec message défi
   const handleShare = () => {
-    const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || 'Curieux') : 'Curieux'
+    const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || 'Cool') : 'Cool'
     const text = `J'ai fait ${correctCount}/10 en mode ${diffLabel} sur What The F*ct! 🎯\nTu peux faire mieux ? Rejoins-moi sur wtf-app.vercel.app`
     if (onShare) {
       onShare(text)

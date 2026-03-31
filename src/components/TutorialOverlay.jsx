@@ -35,9 +35,9 @@ const STEPS = [
     title: 'Quête WTF!',
     subtitle: null,
     bullets: [
-      { icon: '💚', text: '**Curieux** — 60 s · 6 choix · indices disponibles' },
-      { icon: '🧠', text: '**À fond** — 60 s · 4 choix · 3 pts par bonne réponse' },
-      { icon: '⚡', text: '**WTF! Addict** — 30 s · 6 choix · 5 pts · max scoring' },
+      { icon: '❄️', text: '**Cool** — 30 s · 4 choix · indices à 2 coins · 3 pts' },
+      { icon: '🔥', text: '**Hot** — 30 s · 4 choix · indices à 5 coins · 3 pts' },
+      { icon: '⚡', text: '**WTF!** — 30 s · 6 choix · 1 indice à 8 coins · 5 pts' },
     ],
     visual: null,
   },

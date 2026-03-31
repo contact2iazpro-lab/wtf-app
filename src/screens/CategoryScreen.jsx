@@ -95,7 +95,10 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
               <div
                 className="flex items-center gap-3 px-4 py-3 rounded-2xl"
                 style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)' }}>
-                <span className="text-2xl shrink-0">{selectedCat?.emoji}</span>
+                {selectedCatId === 'random'
+                  ? <span className="text-2xl shrink-0">🎲</span>
+                  : <img src={`/assets/categories/${selectedCat?.id === 'lois' ? 'lois-et-regles' : selectedCat?.id === 'sport' ? 'sports' : selectedCat?.id}.png`} alt="" className="shrink-0" style={{ width: 32, height: 32, borderRadius: '20%', objectFit: 'cover' }} />
+                }
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wide mb-0.5" style={{ color: 'rgba(0,0,0,0.35)' }}>Catégorie</div>
                   <div className="font-black text-sm" style={{ color: '#1a1a2e' }}>{selectedCat?.label}</div>
@@ -189,7 +192,12 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                   opacity: hasFacts ? dimOpacity : 0.4,
                   transition: 'opacity 0.2s ease, border-color 0.2s ease',
                 }}>
-                <span className="text-xl leading-none">{cat.emoji}</span>
+                <img
+                  src={`/assets/categories/${cat.id === 'lois' ? 'lois-et-regles' : cat.id === 'sport' ? 'sports' : cat.id}.png`}
+                  alt={cat.label}
+                  style={{ width: 44, height: 44, borderRadius: '20%', objectFit: 'cover', flexShrink: 0 }}
+                  onError={(e) => { e.target.style.display = 'none'; e.target.insertAdjacentHTML('afterend', `<span class="text-xl leading-none">${cat.emoji}</span>`) }}
+                />
                 <span className="font-bold text-xs leading-tight" style={{ color: hasFacts ? '#000' : 'rgba(255,255,255,0.3)' }}>
                   {cat.label}
                 </span>

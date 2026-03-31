@@ -2,87 +2,88 @@ import { useState } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 
-// COR 2 — Niveaux avec dégradés, badges et descripteurs iconifiés
 const DIFFICULTY_LEVELS = [
   {
-    id: 'easy',
-    label: 'Curieux',
-    emoji: '💚',
-    color: '#10B981',
-    gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-    badge: 'IDÉAL POUR COMMENCER',
-    description: [
-      { icon: '🎯', text: '4 choix possibles' },
-      { icon: '⏱️', text: '30 secondes de réflexion' },
-      { icon: '💡', text: '1 indice offert · 2e indice = 3 🪙' },
-      { icon: '⭐', text: '3 coins par réponse correcte' },
-    ],
-  },
-  {
-    id: 'normal',
-    label: 'À fond',
-    emoji: '🧠',
+    id: 'cool',
+    label: 'Cool',
+    emoji: '❄️',
     color: '#3B82F6',
-    gradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-    badge: 'LE PLUS JOUÉ',
-    description: [
-      { icon: '🎯', text: '4 choix possibles' },
-      { icon: '⏱️', text: '30 secondes de réflexion' },
-      { icon: '🪙', text: 'Indices disponibles = 5 🪙 chacun' },
-      { icon: '⭐', text: '3 coins par réponse correcte' },
+    cardBg: '#0a1628',
+    badge: 'Accessible',
+    description: '4 choix de réponse · Indices disponibles',
+    stats: [
+      { label: 'QCM', value: '4 choix' },
+      { label: 'Indices', value: '2 coins' },
+      { label: 'Gains', value: '3 coins' },
     ],
+    choices: 4, freeHints: 0, paidHints: 2, hintCost: 2, coinsPerCorrect: 3,
+    scoring: { correct: 3, wrong: 0 },
   },
   {
-    id: 'expert',
-    label: 'WTF! Addict',
-    emoji: '⚡',
-    color: '#F97316',
-    gradient: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)',
-    badge: 'POUR LES VRAIS 🔥',
-    description: [
-      { icon: '🎯', text: '6 choix possibles' },
-      { icon: '⏱️', text: '30 secondes de réflexion' },
-      { icon: '🪙', text: '1 indice disponible = 8 🪙' },
-      { icon: '⭐', text: '5 coins par réponse correcte' },
+    id: 'hot',
+    label: 'Hot',
+    emoji: '🔥',
+    color: '#FF6B1A',
+    cardBg: '#1a0a00',
+    badge: 'Intense',
+    description: '4 choix de réponse · Indices plus chers',
+    stats: [
+      { label: 'QCM', value: '4 choix' },
+      { label: 'Indices', value: '5 coins' },
+      { label: 'Gains', value: '3 coins' },
     ],
+    choices: 4, freeHints: 0, paidHints: 2, hintCost: 5, coinsPerCorrect: 3,
+    scoring: { correct: 3, wrong: 0 },
+  },
+  {
+    id: 'wtf',
+    label: 'WTF!',
+    emoji: '⚡',
+    color: '#8B5CF6',
+    cardBg: '#120a1a',
+    badge: 'Sans filet',
+    description: '6 choix de réponse · Indices rares',
+    stats: [
+      { label: 'QCM', value: '6 choix' },
+      { label: 'Indices', value: '8 coins' },
+      { label: 'Gains', value: '5 coins' },
+    ],
+    choices: 6, freeHints: 0, paidHints: 1, hintCost: 8, coinsPerCorrect: 5,
+    scoring: { correct: 5, wrong: 0 },
   },
 ]
 
 export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
-  const [selectedId, setSelectedId] = useState('normal')
+  const [selectedId, setSelectedId] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
 
   const handleSelect = (difficultyId) => {
-    const difficulty = DIFFICULTY_LEVELS.find(d => d.id === difficultyId)
-    const difficultyObj = {
-      id: difficulty.id,
-      label: difficulty.label,
-      emoji: difficulty.emoji,
-      choices:        difficultyId === 'expert' ? 6 : 4,
-      duration:       30,
-      hintsAllowed:   true,
-      freeHints:      difficultyId === 'easy'   ? 1 : 0,
-      paidHints:      difficultyId === 'expert' ? 1 : 2,
-      hintCost:       difficultyId === 'easy'   ? 3 : difficultyId === 'normal' ? 5 : 8,
-      coinsPerCorrect: difficultyId === 'expert' ? 5 : 3,
-      scoring:        difficultyId === 'expert'
-        ? { correct: 5, wrong: 0 }
-        : { correct: 3, wrong: 0 },
-    }
+    const d = DIFFICULTY_LEVELS.find(l => l.id === difficultyId)
     audio.play('click')
-    onSelectDifficulty(difficultyObj)
+    onSelectDifficulty({
+      id: d.id,
+      label: d.label,
+      emoji: d.emoji,
+      choices: d.choices,
+      duration: 30,
+      hintsAllowed: true,
+      freeHints: d.freeHints,
+      paidHints: d.paidHints,
+      hintCost: d.hintCost,
+      coinsPerCorrect: d.coinsPerCorrect,
+      scoring: d.scoring,
+    })
   }
 
-  const selectedLevel = DIFFICULTY_LEVELS.find(d => d.id === selectedId)
+  const hasSelection = selectedId !== null
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden screen-enter rainbow-bg">
+    <div className="flex flex-col h-full w-full overflow-hidden screen-enter" style={{ background: '#0f0f1a' }}>
 
-      {/* COR 5 — Pulse animation pour le bouton CTA */}
       <style>{`
         @keyframes cta-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
-          50%       { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+          0%, 100% { box-shadow: 0 8px 32px rgba(255,107,26,0.4); }
+          50%       { box-shadow: 0 8px 32px rgba(255,107,26,0.7), 0 0 0 6px rgba(255,107,26,0.15); }
         }
         .cta-pulse { animation: cta-pulse 2s ease-in-out infinite; }
       `}</style>
@@ -94,79 +95,87 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         <button
           onClick={() => { audio.play('click'); onBack() }}
           className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all"
-          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: 'white', fontSize: 16 }}>
+          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', fontSize: 16 }}>
           ←
         </button>
 
-        {/* COR 1 — Titre 28px, black, blanc pur */}
         <h1
           className="flex-1 text-center font-black"
-          style={{ fontSize: 28, color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
-          Jusqu'où tu veux aller ?
+          style={{ fontSize: 24, color: 'white', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+          Choisis ton niveau
         </h1>
 
-        {/* ⚙️ dans le header, pas fixed */}
         <button
           onClick={() => { audio.play('click'); setShowSettings(true) }}
           className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-all"
-          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', fontSize: 16 }}>
+          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', fontSize: 16 }}>
           ⚙️
         </button>
       </div>
 
-      {/* COR 1 — Sous-titre 14px, tracking 2px, blanc 80% */}
       <p
-        className="text-center shrink-0 mb-1"
-        style={{ fontSize: 14, fontWeight: 700, letterSpacing: '2px', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>
-        Quête WTF! — Choisis ton niveau
+        className="text-center shrink-0 mb-2"
+        style={{ fontSize: 13, fontWeight: 700, letterSpacing: '1.5px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+        Quête WTF!
       </p>
 
-      {/* COR 2 — Cartes : flex-1 pour remplir sans espace mort (COR 6) */}
-      <div className="px-3 flex-1 flex flex-col gap-2 overflow-hidden py-1">
-        {DIFFICULTY_LEVELS.map((difficulty) => {
-          const isSelected = selectedId === difficulty.id
+      {/* Cards */}
+      <div className="px-3 flex-1 flex flex-col gap-2 overflow-y-auto scrollbar-hide py-1">
+        {DIFFICULTY_LEVELS.map((d) => {
+          const isSelected = selectedId === d.id
           return (
             <button
-              key={difficulty.id}
-              onClick={() => { audio.play('click'); setSelectedId(difficulty.id) }}
-              className="btn-press flex-1 rounded-2xl p-3 text-left relative overflow-hidden"
+              key={d.id}
+              onClick={() => { audio.play('click'); setSelectedId(d.id) }}
+              className="btn-press rounded-2xl text-left relative overflow-hidden shrink-0"
               style={{
-                background: difficulty.gradient,
-                // COR 3 — Sélection affirmée : bordure blanche 3px + shadow + scale
-                border: isSelected ? '3px solid white' : '3px solid transparent',
-                transform: isSelected ? 'scale(1.02)' : 'scale(1)',
-                boxShadow: isSelected ? '0 0 20px rgba(255,255,255,0.4)' : 'none',
-                transition: 'border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                background: d.cardBg,
+                border: isSelected ? `2.5px solid ${d.color}` : `1.5px solid ${d.color}`,
+                boxShadow: isSelected ? `0 0 24px ${d.color}40, inset 0 0 30px ${d.color}08` : 'none',
+                transition: 'all 0.2s ease',
+                padding: '10px 12px',
               }}>
 
-              {/* COR 2 — Badge haut-droite */}
-              <div
-                className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,255,255,0.22)', fontSize: 9, fontWeight: 700, color: 'white', letterSpacing: '0.5px' }}>
-                {difficulty.badge}
+              {/* Decoration emoji */}
+              <span style={{
+                position: 'absolute', top: -10, right: -5,
+                fontSize: 80, opacity: 0.06, lineHeight: 1,
+                pointerEvents: 'none',
+              }}>{d.emoji}</span>
+
+              {/* Top row: icon + name + badge */}
+              <div className="flex items-center gap-2 mb-1" style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: `${d.color}33`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 20, flexShrink: 0,
+                }}>{d.emoji}</div>
+                <h2 style={{ fontSize: 22, fontWeight: 900, color: d.color, flex: 1 }}>{d.label}</h2>
+                <span style={{
+                  background: `${d.color}26`,
+                  color: d.color,
+                  fontSize: 9, fontWeight: 700,
+                  padding: '2px 8px', borderRadius: 20,
+                }}>{d.badge}</span>
               </div>
 
-              {/* Emoji (32px) + Titre (22px 900) + ✓ */}
-              <div className="flex items-center gap-2 mb-1.5">
-                <span style={{ fontSize: 32, lineHeight: 1 }}>{difficulty.emoji}</span>
-                <h2 style={{ fontSize: 22, fontWeight: 900, color: 'white', flex: 1 }}>
-                  {difficulty.label}
-                </h2>
-                {isSelected && (
-                  <span
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-black shrink-0"
-                    style={{ background: 'rgba(255,255,255,0.92)', color: difficulty.color }}>
-                    ✓
-                  </span>
-                )}
-              </div>
+              {/* Description */}
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: 600, marginBottom: 6, position: 'relative', zIndex: 1 }}>
+                {d.description}
+              </p>
 
-              {/* COR 4 — Descripteurs avec icônes, 14px, blanc 90%, font-weight 600 */}
-              <div className="space-y-0.5">
-                {difficulty.description.map((desc, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <span style={{ fontSize: 12, width: 18, textAlign: 'center', flexShrink: 0 }}>{desc.icon}</span>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.9)', lineHeight: 1.3 }}>{desc.text}</span>
+              {/* Stats row */}
+              <div style={{ display: 'flex', gap: 6, position: 'relative', zIndex: 1 }}>
+                {d.stats.map((s, i) => (
+                  <div key={i} style={{
+                    flex: 1, textAlign: 'center',
+                    background: 'rgba(255,255,255,0.04)',
+                    borderRadius: 8, padding: '4px 3px',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 1 }}>{s.label}</div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: d.color }}>{s.value}</div>
                   </div>
                 ))}
               </div>
@@ -175,20 +184,23 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         })}
       </div>
 
-      {/* COR 5+6 — Bouton CTA compact, sans espace vide */}
-      <div className="px-3 pb-3 pt-2 shrink-0">
+      {/* CTA button */}
+      <div className="px-3 pb-4 pt-2 shrink-0">
         <button
-          onClick={() => handleSelect(selectedId)}
-          className="btn-press w-full rounded-2xl font-black uppercase tracking-wide active:scale-95 transition-all cta-pulse"
+          onClick={() => hasSelection && handleSelect(selectedId)}
+          disabled={!hasSelection}
+          className={`btn-press w-full rounded-2xl font-black uppercase tracking-wide active:scale-95 transition-all ${hasSelection ? 'cta-pulse' : ''}`}
           style={{
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: 900,
             paddingTop: 16,
             paddingBottom: 16,
-            background: 'white',
-            color: selectedLevel?.color || '#3B82F6',
+            background: hasSelection ? '#FF6B1A' : 'rgba(255,255,255,0.08)',
+            color: hasSelection ? 'white' : 'rgba(255,255,255,0.25)',
+            border: hasSelection ? 'none' : '1px solid rgba(255,255,255,0.1)',
+            cursor: hasSelection ? 'pointer' : 'default',
           }}>
-          C'EST PARTI ! ⚡
+          {hasSelection ? "C'EST PARTI !" : 'Sélectionne un niveau'}
         </button>
       </div>
     </div>

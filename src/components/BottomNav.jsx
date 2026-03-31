@@ -1,11 +1,11 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const NAV_ITEMS = [
-  { path: '/',           icon: '🏠', label: 'Accueil' },
-  { path: '/collection', icon: '📚', label: 'Collection' },
-  { path: '/trophees',   icon: '🏆', label: 'Trophées',  soon: true },
-  { path: '/classement', icon: '⚡', label: 'Blitz',     soon: true },
-  { path: '/profil',     icon: '👤', label: 'Profil',    soon: true },
+  { path: '/',           slug: 'accueil',    label: 'Accueil' },
+  { path: '/collection', slug: 'collection', label: 'Collection' },
+  { path: '/trophees',   slug: 'trophees',   label: 'Trophées',  soon: true },
+  { path: '/classement', slug: 'boutique',   label: 'Boutique',  soon: true },
+  { path: '/profil',     slug: 'amis',       label: 'Amis',      soon: true },
 ]
 
 export default function BottomNav() {
@@ -37,7 +37,18 @@ export default function BottomNav() {
             className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl active:scale-90 transition-all relative"
             style={{ opacity: item.soon ? 0.35 : 1 }}
           >
-            <span className="text-xl leading-none">{item.icon}</span>
+            <img
+              src={`/assets/nav/${item.slug}.png`}
+              alt={item.label}
+              style={{
+                width: isActive ? 28 : 24,
+                height: isActive ? 28 : 24,
+                filter: isActive
+                  ? 'brightness(0) saturate(100%) invert(50%) sepia(95%) saturate(1500%) hue-rotate(360deg) brightness(100%)'
+                  : 'brightness(0) invert(0.6)',
+                transition: 'all 0.2s ease',
+              }}
+            />
             <span
               className="text-xs font-bold leading-none"
               style={{ color: isActive ? '#FF6B1A' : 'rgba(255,255,255,0.4)', fontSize: 10 }}

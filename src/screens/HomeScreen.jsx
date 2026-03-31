@@ -10,11 +10,28 @@
  *   Zone 5 : Navigation z-index 2, toujours en bas
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
+
+// ── Fond aléatoire par session ────────────────────────────────────────────────
+const HOME_BACKGROUNDS = [
+  '/assets/backgrounds/home-orange.png',
+  '/assets/backgrounds/home-violet.png',
+  '/assets/backgrounds/home-bleu.png',
+  '/assets/backgrounds/home-rouge.png',
+  '/assets/backgrounds/home-teal.png',
+]
+
+function getSessionBackground() {
+  const stored = sessionStorage.getItem('wtf_home_bg')
+  if (stored) return stored
+  const bg = HOME_BACKGROUNDS[Math.floor(Math.random() * HOME_BACKGROUNDS.length)]
+  sessionStorage.setItem('wtf_home_bg', bg)
+  return bg
+}
 
 // ── Coffre quotidien ──────────────────────────────────────────────────────────
 const COFFRE_DAYS = [1, 2, 3, 4, 7]
@@ -100,7 +117,7 @@ function get24hProgress() {
 }
 
 // ── Icône active ──────────────────────────────────────────────────────────────
-function ActiveIcon({ emoji, label, onClick }) {
+function ActiveIcon({ emoji, icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -116,11 +133,15 @@ function ActiveIcon({ emoji, label, onClick }) {
         WebkitTapHighlightColor: 'transparent',
         transition: 'transform 0.1s',
         flexShrink: 0,
+        overflow: 'hidden',
       }}
       onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.93)')}
       onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
     >
-      <span style={{ fontSize: 'calc(30px * var(--scale))', lineHeight: 1 }}>{emoji}</span>
+      {icon
+        ? <img src={icon} alt={label} style={{ width: 'calc(48px * var(--scale))', height: 'calc(48px * var(--scale))', borderRadius: '20%', objectFit: 'cover', flexShrink: 0 }} />
+        : <span style={{ fontSize: 'calc(30px * var(--scale))', lineHeight: 1 }}>{emoji}</span>
+      }
       <span style={{
         fontSize: 'calc(11px * var(--scale))', fontWeight: 700, color: '#FF6B1A',
         textAlign: 'center', lineHeight: 1.2,
@@ -132,7 +153,7 @@ function ActiveIcon({ emoji, label, onClick }) {
 }
 
 // ── Icône bientôt ─────────────────────────────────────────────────────────────
-function ComingSoonIcon({ emoji }) {
+function ComingSoonIcon({ emoji, icon, label }) {
   return (
     <div style={{
       width: 'calc(88px * var(--scale))', height: 'calc(88px * var(--scale))',
@@ -143,9 +164,13 @@ function ComingSoonIcon({ emoji }) {
       alignItems: 'center', justifyContent: 'center',
       gap: 'calc(4px * var(--scale))',
       flexShrink: 0,
+      overflow: 'hidden',
     }}>
-      <span style={{ fontSize: 'calc(30px * var(--scale))', opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
-      <span style={{ fontSize: 'calc(11px * var(--scale))', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>Bientôt</span>
+      {icon
+        ? <img src={icon} alt={label || ''} style={{ width: 'calc(48px * var(--scale))', height: 'calc(48px * var(--scale))', borderRadius: '20%', objectFit: 'cover', opacity: 0.5, flexShrink: 0 }} />
+        : <span style={{ fontSize: 'calc(30px * var(--scale))', opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
+      }
+      <span style={{ fontSize: 'calc(11px * var(--scale))', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>{label || 'Bientôt'}</span>
     </div>
   )
 }
@@ -170,6 +195,7 @@ export default function HomeScreen({
   const countdown   = useCountdownToMidnight()
   const progress24h = get24hProgress()
   const scale       = useScale()
+  const homeBg      = useMemo(() => getSessionBackground(), [])
 
   useEffect(() => {
     const timer = setTimeout(() => setLogoAnimated(true), 100)
@@ -189,13 +215,16 @@ export default function HomeScreen({
 
   return (
     <div
-      className="rainbow-bg"
       style={{
         position: 'relative',
         height: '100dvh', width: '100%', overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
         fontFamily: 'Nunito, sans-serif',
         '--scale': scale,
+        backgroundImage: `url(${homeBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundColor: '#1a1a2e',
       }}
     >
       {/* Keyframes */}
@@ -424,9 +453,9 @@ export default function HomeScreen({
           alignSelf: 'stretch',
           paddingTop: 8, paddingBottom: 180,
         }}>
-          <ActiveIcon emoji="🎯" label="Quête WTF!" onClick={() => nav('difficulty')} />
-          <ActiveIcon emoji="🔥" label="Série"       onClick={() => nav('streak')} />
-          <ActiveIcon emoji="📅" label="Du Jour"     onClick={() => nav('wtfDuJour')} />
+          <ActiveIcon icon="/assets/modes/quete.png" label="Quête WTF!" onClick={() => nav('difficulty')} />
+          <ActiveIcon icon="/assets/modes/serie.png" label="Série"       onClick={() => nav('streak')} />
+          <ActiveIcon icon="/assets/modes/wtf-semaine.png" label="Du Jour"     onClick={() => nav('wtfDuJour')} />
         </div>
 
         {/* ── Colonne centre — tagline alignée sur l'icône du milieu ── */}
@@ -456,9 +485,9 @@ export default function HomeScreen({
           alignSelf: 'stretch',
           paddingTop: 8, paddingBottom: 180,
         }}>
-          <ActiveIcon emoji="🏃" label="Marathon" onClick={() => nav('marathon')} />
+          <ActiveIcon icon="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
           <ComingSoonIcon emoji="🎮" />
-          <ComingSoonIcon emoji="⚡" />
+          <ComingSoonIcon icon="/assets/modes/blitz.png" label="Blitz" />
         </div>
 
       </div>
@@ -495,11 +524,11 @@ export default function HomeScreen({
         position: 'relative', zIndex: 2,
       }}>
         {[
-          { icon: '🛒', label: 'Boutique',   action: () => console.log('Boutique'), active: false, center: false },
-          { icon: '🏆', label: 'Trophées',   action: () => nav('trophees'),         active: false, center: false },
-          { icon: '🏠', label: 'Accueil',    action: null,                          active: true,  center: true  },
-          { icon: '👥', label: 'Amis',       action: () => console.log('Amis'),     active: false, center: false },
-          { icon: '📚', label: 'Collection', action: () => nav('collection'),       active: false, center: false },
+          { slug: 'boutique',   label: 'Boutique',   action: () => console.log('Boutique'), active: false, center: false },
+          { slug: 'trophees',   label: 'Trophées',   action: () => nav('trophees'),         active: false, center: false },
+          { slug: 'accueil',    label: 'Accueil',    action: null,                          active: true,  center: true  },
+          { slug: 'amis',       label: 'Amis',       action: () => console.log('Amis'),     active: false, center: false },
+          { slug: 'collection', label: 'Collection', action: () => nav('collection'),       active: false, center: false },
         ].map((item) => (
           <button
             key={item.label}
@@ -524,7 +553,19 @@ export default function HomeScreen({
                 zIndex: 0,
               }} />
             )}
-            <span style={{ fontSize: 22, position: 'relative', zIndex: 1 }}>{item.icon}</span>
+            <img
+              src={`/assets/nav/${item.slug}.png`}
+              alt={item.label}
+              style={{
+                width: item.active ? 28 : 24,
+                height: item.active ? 28 : 24,
+                position: 'relative', zIndex: 1,
+                filter: item.active
+                  ? 'brightness(0) saturate(100%) invert(50%) sepia(95%) saturate(1500%) hue-rotate(360deg) brightness(100%)'
+                  : 'brightness(0) invert(0.6)',
+                transition: 'all 0.2s ease',
+              }}
+            />
             <span style={{
               fontSize: 9, fontWeight: 700,
               color: item.active ? '#FF6B1A' : 'rgba(255,255,255,0.7)',

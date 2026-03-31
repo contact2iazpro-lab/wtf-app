@@ -52,7 +52,7 @@ const CORRECT_MESSAGES = [
   "Yes ! Tu as l'œil pour les f*cts incroyables 👁️",
   "Correct ! On t'a vu venir 😎",
   "Chapeau ! Ce f*ct est dans ta collection 🎩",
-  "Magnifique ! Tu aurais fait un excellent WTF! Addict 🌟",
+  "Magnifique ! Tu aurais fait un excellent joueur WTF! 🌟",
   "Incroyable mais vrai... comme toi ! ✨",
 ]
 

@@ -33,9 +33,9 @@ function ProgressBar({ percentage, color }) {
 }
 
 const DIFF_CONFIG = {
-  easy:   { label: 'Curieux',     emoji: '💚', color: '#22C55E' },
-  normal: { label: 'À fond',      emoji: '🧠', color: '#8B5CF6' },
-  expert: { label: 'WTF! Addict', emoji: '⚡', color: '#F59E0B' },
+  cool: { label: 'Cool', emoji: '❄️', color: '#3B82F6' },
+  hot:  { label: 'Hot',  emoji: '🔥', color: '#FF6B1A' },
+  wtf:  { label: 'WTF!', emoji: '⚡', color: '#8B5CF6' },
 }
 
 // ─── Fact detail full-screen view ──────────────────────────────────────────
@@ -258,7 +258,7 @@ export default function CollectionPage() {
   const navigate = useNavigate()
   const { isConnected } = useAuth()
   const [showLogin, setShowLogin] = useState(false)
-  const [activeTab, setActiveTab] = useState('easy')
+  const [activeTab, setActiveTab] = useState('cool')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
 

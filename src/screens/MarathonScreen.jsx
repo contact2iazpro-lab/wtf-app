@@ -6,9 +6,9 @@
 import CoinsIcon from '../components/CoinsIcon'
 
 const DIFFICULTY_LABELS = {
-  easy:   { label: 'Curieux',    emoji: '💚' },
-  normal: { label: 'À fond',     emoji: '🧠' },
-  expert: { label: 'WTF! Addict', emoji: '⚡' },
+  cool: { label: 'Cool', emoji: '❄️' },
+  hot:  { label: 'Hot',  emoji: '🔥' },
+  wtf:  { label: 'WTF!', emoji: '⚡' },
 }
 
 function StarBar({ correctCount, total = 20 }) {

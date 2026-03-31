@@ -52,14 +52,14 @@ function fromRow(row) {
   }
 }
 
-// ─── Normalise les valeurs de difficulté (FR ou EN) → 'easy'|'normal'|'expert' ─
+// ─── Normalise les valeurs de difficulté (FR ou EN) → 'cool'|'hot'|'wtf' ─
 function normalizeDifficulty(d) {
   if (!d) return null
   switch (d.toLowerCase()) {
-    case 'facile': case 'easy':            return 'easy'
-    case 'normal':                         return 'normal'
-    case 'expert': case 'hard':            return 'expert'
-    default:                               return null
+    case 'facile': case 'easy': case 'cool':     return 'cool'
+    case 'normal': case 'hot':                   return 'hot'
+    case 'expert': case 'hard': case 'wtf':      return 'wtf'
+    default:                                     return null
   }
 }
 
@@ -92,7 +92,7 @@ function buildDifficultyFrom(facts) {
         typeof f.correctIndex === 'number' && !map[f.id])
       .sort((a, b) => a.id - b.id)
     catFacts.forEach((f, i) => {
-      map[f.id] = i < 10 ? 'easy' : i < 20 ? 'normal' : 'expert'
+      map[f.id] = i < 10 ? 'cool' : i < 20 ? 'hot' : 'wtf'
     })
   }
   return map

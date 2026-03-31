@@ -21,7 +21,7 @@ const CHAPTERS = [
     shortTitle: 'Quête WTF!',
     title: 'Quête WTF!',
     content: [
-      { icon: '🎯', text: 'Choisis un niveau : **Curieux**, **À fond** ou **WTF! Addict**.' },
+      { icon: '🎯', text: 'Choisis un niveau : **Cool**, **Hot** ou **WTF!**.' },
       { icon: '🔀', text: '**10 questions** issues du pool de ton niveau.' },
       { icon: '🏆', text: 'Les f*cts que tu trouves rejoignent ta **Collection** si tu termines.' },
       { icon: '🚪', text: 'Quitter en cours = aucun f*ct sauvegardé pour cette session.' },
@@ -45,9 +45,9 @@ const CHAPTERS = [
     shortTitle: 'Niveaux',
     title: 'Niveaux de difficulté',
     content: [
-      { icon: '💚', text: '**Curieux** — 60 s · 6 choix · indices dispo (3→2→1 pts)' },
-      { icon: '🧠', text: '**À fond** — 60 s · 4 choix · pas d\'indices · 3 pts' },
-      { icon: '⚡', text: '**WTF! Addict** — 30 s · 6 choix · pas d\'indices · 5 pts' },
+      { icon: '❄️', text: '**Cool** — 30 s · 4 choix · indices à 2 coins · 3 pts' },
+      { icon: '🔥', text: '**Hot** — 30 s · 4 choix · indices à 5 coins · 3 pts' },
+      { icon: '⚡', text: '**WTF!** — 30 s · 6 choix · 1 indice à 8 coins · 5 pts' },
       { icon: '🔓', text: 'Tous les niveaux sont disponibles **dès le départ**.' },
     ],
   },
@@ -70,7 +70,7 @@ const CHAPTERS = [
     title: 'Collection',
     content: [
       { icon: '🗂️', text: 'Tes f*cts débloqués sont organisés par **catégorie**.' },
-      { icon: '🔢', text: '**10 f*cts par niveau** (Curieux / À fond / WTF! Addict) par catégorie.' },
+      { icon: '🔢', text: '**10 f*cts par niveau** (Cool / Hot / WTF!) par catégorie.' },
       { icon: '💡', text: 'Un f*ct déjà débloqué **ne réapparaît plus** dans ta quête.' },
       { icon: '📊', text: 'Consulte ta **progression par catégorie** depuis l\'écran Collection.' },
     ],

@@ -3,13 +3,13 @@
   "configurations": [
     {
       "name": "wtf-app",
-      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeExecutable": "node",
       "runtimeArgs": ["node_modules/vite/bin/vite.js", "--host"],
-      "port": 5173
+      "port": 3000
     },
     {
       "name": "admin-tool",
-      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeExecutable": "node",
       "runtimeArgs": ["admin-tool/node_modules/vite/bin/vite.js", "admin-tool", "--host"],
       "port": 5174
     }

@@ -124,10 +124,23 @@ class AudioManager {
         this._tone(659.25, 0.12, 'sine', 0.35, 0.1)
         this._tone(783.99, 0.3,  'sine', 0.4,  0.22)
         break
-      case 'wrong':
-        this._tone(220, 0.14, 'sawtooth', 0.18)
-        this._tone(185, 0.35, 'sawtooth', 0.14, 0.12)
+      case 'wrong': {
+        const wrongSounds = [
+          '/sounds/wrong/Au_Suivant.mp4',
+          '/sounds/wrong/Dommage.mp4',
+          '/sounds/wrong/Ha_la_la.mp4',
+          '/sounds/wrong/Nan_c_est_pas_ca.mp4',
+          '/sounds/wrong/Oh_essaye_un_autre.mp4',
+          '/sounds/wrong/Oh_non.mp4',
+          '/sounds/wrong/Prochaine_question.mp4',
+          '/sounds/wrong/Rat\u00e9.mp4',
+          '/sounds/wrong/What_the.mp4',
+        ]
+        const randomWrongSound = wrongSounds[Math.floor(Math.random() * wrongSounds.length)]
+        const wrongAudio = new Audio(randomWrongSound)
+        wrongAudio.play().catch(() => {})
         break
+      }
       case 'reveal':
         this._tone(440, 0.10, 'sine', 0.10)
         this._tone(554, 0.14, 'sine', 0.15, 0.09)

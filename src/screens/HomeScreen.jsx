@@ -16,6 +16,63 @@ import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 
+// ── Coffre quotidien ──────────────────────────────────────────────────────────
+const COFFRE_DAYS = [1, 2, 3, 4, 7]
+
+function useDailyCoffre() {
+  const today = new Date().toISOString().slice(0, 10)
+
+  const read = () => {
+    const lastDate   = localStorage.getItem('wtf_coffre_last_date') || null
+    const lastIndex  = parseInt(localStorage.getItem('wtf_coffre_index') ?? '-1')
+    const claimedToday   = lastDate === today
+    const availableIndex = claimedToday ? -1 : (lastIndex + 1) % COFFRE_DAYS.length
+    return { lastIndex, claimedToday, availableIndex }
+  }
+
+  const [coffreData, setCoffreData] = useState(read)
+
+  const claim = () => {
+    const { availableIndex } = coffreData
+    if (availableIndex < 0) return null
+    const REWARDS = [
+      { type: 'coins', amount: 5  },
+      { type: 'coins', amount: 10 },
+      { type: 'hints', amount: 1  },
+      { type: 'hints', amount: 2  },
+    ]
+    const reward = REWARDS[Math.floor(Math.random() * REWARDS.length)]
+    localStorage.setItem('wtf_coffre_last_date', today)
+    localStorage.setItem('wtf_coffre_index', String(availableIndex))
+    setCoffreData({ lastIndex: availableIndex, claimedToday: true, availableIndex: -1 })
+    return reward
+  }
+
+  // Statut pour chaque slot : 'available' | 'collected' | 'locked' | 'locked-trophy'
+  const getStatus = (i) => {
+    const { lastIndex, claimedToday, availableIndex } = coffreData
+    const isTrophy = COFFRE_DAYS[i] === 7
+    if (!claimedToday && i === availableIndex) return 'available'
+    if (i <= lastIndex)                         return 'collected'
+    return isTrophy ? 'locked-trophy' : 'locked'
+  }
+
+  return { ...coffreData, claim, getStatus }
+}
+
+// ── Appliquer la récompense coffre dans wtf_data (localStorage direct) ─────────
+function applyCofreReward(reward) {
+  try {
+    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    if (reward.type === 'coins') {
+      data.wtfCoins = (data.wtfCoins || 0) + reward.amount
+    } else if (reward.type === 'hints') {
+      data.wtfHints = (data.wtfHints || 0) + reward.amount
+    }
+    localStorage.setItem('wtf_data', JSON.stringify(data))
+  } catch { /* ignore */ }
+}
+
 // ── Countdown to midnight ─────────────────────────────────────────────────────
 function useCountdownToMidnight() {
   const calc = () => {
@@ -107,6 +164,9 @@ export default function HomeScreen({
 }) {
   const [showSettings, setShowSettings] = useState(false)
   const [logoAnimated, setLogoAnimated] = useState(false)
+  const [showCoffreModal, setShowCoffreModal] = useState(false)
+  const [coffreReward,    setCoffreReward]    = useState(null)
+  const { claim, getStatus } = useDailyCoffre()
   const countdown   = useCountdownToMidnight()
   const progress24h = get24hProgress()
   const scale       = useScale()
@@ -249,6 +309,73 @@ export default function HomeScreen({
             ? `${nextBadgeInfo.category} × ${nextBadgeInfo.count} ${nextBadgeInfo.difficulty} — encore ${nextBadgeInfo.remaining} f*cts`
             : 'Lance une quête pour débloquer ton premier badge !'}
         </div>
+      </div>
+
+      {/* ══ COFFRE QUOTIDIEN ════════════════════════════════════════════════ */}
+      <div style={{
+        display: 'flex', gap: 6, padding: '4px 12px 2px',
+        flexShrink: 0, position: 'relative', zIndex: 1,
+        justifyContent: 'center',
+      }}>
+        {COFFRE_DAYS.map((day, i) => {
+          const status   = getStatus(i)
+          const isAvail  = status === 'available'
+          const isColl   = status === 'collected'
+          const isTrophy = status === 'locked-trophy'
+
+          return (
+            <button
+              key={day}
+              onClick={() => {
+                if (!isAvail) return
+                audio.play?.('click')
+                const reward = claim()
+                if (reward) {
+                  applyCofreReward(reward)
+                  setCoffreReward(reward)
+                  setShowCoffreModal(true)
+                }
+              }}
+              style={{
+                flex: 1,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                gap: 2, padding: '5px 3px',
+                borderRadius: 10,
+                background: isAvail ? 'rgba(255,107,26,0.2)' : 'rgba(0,0,0,0.15)',
+                border: `1.5px solid ${isAvail ? '#FF6B1A' : 'rgba(255,255,255,0.1)'}`,
+                cursor: isAvail ? 'pointer' : 'default',
+                opacity: isColl ? 0.35 : status === 'locked' ? 0.5 : 1,
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'opacity 0.2s, background 0.2s',
+              }}
+            >
+              {/* Icône */}
+              <span style={{ fontSize: 15, lineHeight: 1 }}>
+                {isColl ? '🎁' : isAvail ? '🎁' : isTrophy ? '🏆' : '🔒'}
+              </span>
+
+              {/* Label J-N + coche si collecté */}
+              <span style={{
+                fontSize: 8, fontWeight: 900, lineHeight: 1,
+                color: isAvail ? '#FFD700' : 'rgba(255,255,255,0.7)',
+              }}>
+                {`J-${day}`}{isColl ? ' ✓' : ''}
+              </span>
+
+              {/* Badge NOUVEAU */}
+              {isAvail && (
+                <span style={{
+                  fontSize: 6, fontWeight: 900, color: '#FF6B1A',
+                  background: 'rgba(255,107,26,0.3)', borderRadius: 4,
+                  padding: '1px 3px', lineHeight: 1.3, letterSpacing: '0.03em',
+                }}>
+                  NOUVEAU
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {/* ══ ZONE LOGO — Étoile WTF! + VRAI OU FOU ? ═════════════════════════ */}
@@ -408,6 +535,58 @@ export default function HomeScreen({
           </button>
         ))}
       </div>
+
+      {/* ══ MODAL COFFRE ════════════════════════════════════════════════════ */}
+      {showCoffreModal && coffreReward && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20,
+          }}
+          onClick={() => setShowCoffreModal(false)}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)',
+              border: '2px solid #FF6B1A',
+              borderRadius: 24, padding: '32px 28px',
+              textAlign: 'center', maxWidth: 300, width: '100%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,107,26,0.25)',
+              fontFamily: 'Nunito, sans-serif',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 56, marginBottom: 12, lineHeight: 1 }}>🎁</div>
+            <div style={{
+              fontSize: 20, fontWeight: 900, color: '#FFD700',
+              marginBottom: 10, letterSpacing: '0.05em', textTransform: 'uppercase',
+            }}>
+              Coffre du jour !
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: 'white', marginBottom: 24, lineHeight: 1.4 }}>
+              {coffreReward.type === 'coins'
+                ? `🎁 Tu as gagné ${coffreReward.amount} coins !`
+                : `🎁 Tu as gagné ${coffreReward.amount} indice${coffreReward.amount > 1 ? 's' : ''} !`}
+            </div>
+            <button
+              onClick={() => setShowCoffreModal(false)}
+              style={{
+                background: 'linear-gradient(135deg, #FF6B1A 0%, #FF8C42 100%)',
+                color: 'white', border: 'none',
+                borderRadius: 16, padding: '13px 36px',
+                fontWeight: 900, fontSize: 15, cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+                boxShadow: '0 4px 16px rgba(255,107,26,0.45)',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              Super ! 🎉
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   )

@@ -14,8 +14,8 @@ const DIFFICULTY_LEVELS = [
     description: [
       { icon: '🎯', text: '4 choix possibles' },
       { icon: '⏱️', text: '30 secondes de réflexion' },
-      { icon: '💡', text: 'Avec indices disponibles' },
-      { icon: '⭐', text: '3/2/1 coins selon les indices' },
+      { icon: '💡', text: '1 indice offert · 2e indice = 3 🪙' },
+      { icon: '⭐', text: '3 coins par réponse correcte' },
     ],
   },
   {
@@ -28,7 +28,7 @@ const DIFFICULTY_LEVELS = [
     description: [
       { icon: '🎯', text: '4 choix possibles' },
       { icon: '⏱️', text: '30 secondes de réflexion' },
-      { icon: '🚫', text: 'Sans indices' },
+      { icon: '🪙', text: 'Indices disponibles = 5 🪙 chacun' },
       { icon: '⭐', text: '3 coins par réponse correcte' },
     ],
   },
@@ -42,7 +42,7 @@ const DIFFICULTY_LEVELS = [
     description: [
       { icon: '🎯', text: '6 choix possibles' },
       { icon: '⏱️', text: '30 secondes de réflexion' },
-      { icon: '🚫', text: 'Sans indices' },
+      { icon: '🪙', text: '1 indice disponible = 8 🪙' },
       { icon: '⭐', text: '5 coins par réponse correcte' },
     ],
   },
@@ -58,14 +58,16 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
       id: difficulty.id,
       label: difficulty.label,
       emoji: difficulty.emoji,
-      choices: difficultyId === 'expert' ? 6 : 4,
-      duration: 30,
-      hintsAllowed: difficultyId === 'easy',
-      scoring: difficultyId === 'expert'
+      choices:        difficultyId === 'expert' ? 6 : 4,
+      duration:       30,
+      hintsAllowed:   true,
+      freeHints:      difficultyId === 'easy'   ? 1 : 0,
+      paidHints:      difficultyId === 'expert' ? 1 : 2,
+      hintCost:       difficultyId === 'easy'   ? 3 : difficultyId === 'normal' ? 5 : 8,
+      coinsPerCorrect: difficultyId === 'expert' ? 5 : 3,
+      scoring:        difficultyId === 'expert'
         ? { correct: 5, wrong: 0 }
-        : difficultyId === 'normal'
-          ? { correct: 3, wrong: 0 }
-          : { correct: [3, 2, 1], wrong: 0 },
+        : { correct: 3, wrong: 0 },
     }
     audio.play('click')
     onSelectDifficulty(difficultyObj)

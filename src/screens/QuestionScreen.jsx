@@ -6,11 +6,16 @@ import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
 // ── Hint flip card button ────────────────────────────────────────────────────
-function HintFlipButton({ num, hint, catColor, brightness = 1, onReveal }) {
+// isFree    : indice gratuit (pas de coût)
+// cost      : coût en coins si payant
+// canAfford : le joueur a assez de coins pour cet indice payant
+function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, onReveal }) {
   const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
 
+  const disabled = !isFree && !canAfford
+
   const handleClick = () => {
-    if (phase !== 'front') return
+    if (phase !== 'front' || disabled) return
     setPhase('flip')
     onReveal()
     setTimeout(() => setPhase('back'), 160)
@@ -31,28 +36,47 @@ function HintFlipButton({ num, hint, catColor, brightness = 1, onReveal }) {
         height: 48,
         width: '100%',
         borderRadius: 24,
-        // front : teinte catégorie + brightness | back : fond blanc semi-transparent
-        border: `2px solid ${color}`,
-        background: phase === 'back' ? 'rgba(255,255,255,0.88)' : `${color}28`,
+        border: disabled ? '2px solid #6B7280' : `2px solid ${color}`,
+        background: disabled
+          ? 'rgba(107,114,128,0.15)'
+          : phase === 'back' ? 'rgba(255,255,255,0.88)' : `${color}28`,
         transform: phase === 'flip' ? 'scaleY(0.08)' : 'scaleY(1)',
         transition: 'transform 0.15s ease, background 0.3s, border-color 0.3s',
         overflow: 'hidden',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '4px 12px',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         pointerEvents: phase !== 'front' ? 'none' : 'auto',
         flexShrink: 0,
-        opacity: 1,
-        // brightness uniquement sur la phase front pour différencier N°1 et N°2
-        filter: phase === 'back' ? 'none' : `brightness(${brightness})`,
+        opacity: disabled ? 0.55 : 1,
+        gap: 1,
       }}
     >
       {phase !== 'back' ? (
-        <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap' }}>
-          N°{num} — Indice
-        </span>
+        disabled ? (
+          // Payant + solde insuffisant
+          <>
+            <span style={{ fontWeight: 900, fontSize: 12, color: '#9CA3AF', textDecoration: 'line-through', whiteSpace: 'nowrap' }}>
+              Indice — {cost} 🪙
+            </span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
+              Pas assez de coins
+            </span>
+          </>
+        ) : isFree ? (
+          // Gratuit
+          <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap' }}>
+            N°{num} — Indice offert
+          </span>
+        ) : (
+          // Payant + solde suffisant
+          <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap' }}>
+            Indice — {cost} 🪙
+          </span>
+        )
       ) : (
         <span
           style={{
@@ -291,16 +315,34 @@ export default function QuestionScreen({
   )
 
   // ── Hints ──────────────────────────────────────────────────────────────────
-  const hintButtons = (
-    <div className="grid grid-cols-2 gap-2 shrink-0">
-      <HintFlipButton
-        num={1} hint={fact.hint1} catColor={cat?.color || '#FF6B1A'} brightness={0.75}
-        onReveal={() => { onUseHint(1); audio.play('click') }}
-      />
-      <HintFlipButton
-        num={2} hint={fact.hint2} catColor={cat?.color || '#FF6B1A'} brightness={1.25}
-        onReveal={() => { onUseHint(2); audio.play('click') }}
-      />
+  // Nombre total d'indices = gratuits + payants (selon le niveau)
+  const freeHints  = difficulty?.freeHints  ?? 0
+  const paidHints  = difficulty?.paidHints  ?? 0
+  const hintCost   = difficulty?.hintCost   ?? 0
+  const totalHints = freeHints + paidHints
+
+  const hintButtons = totalHints > 0 && (
+    <div
+      className="shrink-0"
+      style={{ display: 'grid', gridTemplateColumns: totalHints === 1 ? '1fr' : '1fr 1fr', gap: 8 }}
+    >
+      {Array.from({ length: totalHints }, (_, i) => {
+        const hintNum = i + 1
+        const isFree  = hintNum <= freeHints
+        const hintText = hintNum === 1 ? fact.hint1 : fact.hint2
+        return (
+          <HintFlipButton
+            key={hintNum}
+            num={hintNum}
+            hint={hintText}
+            catColor={cat?.color || '#FF6B1A'}
+            isFree={isFree}
+            cost={hintCost}
+            canAfford={playerCoins >= hintCost}
+            onReveal={() => { onUseHint(hintNum); audio.play('click') }}
+          />
+        )
+      })}
     </div>
   )
 

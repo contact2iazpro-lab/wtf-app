@@ -6,6 +6,7 @@ import path from 'path'
 const gameRoot = path.resolve(__dirname, '../src')
 
 export default defineConfig({
+  base: '/admin/',
   plugins: [
     react(),
 

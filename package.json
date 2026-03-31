@@ -5,14 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "bash build-all.sh",
-    "build:app": "vite build",
-    "start": "node server.js",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.1",
-    "express": "^5.2.1",
     "firebase": "^12.11.0",
     "html2canvas": "^1.4.1",
     "react": "^18.2.0",

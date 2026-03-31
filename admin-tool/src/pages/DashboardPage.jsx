@@ -571,6 +571,124 @@ export default function DashboardPage({ toast }) {
         } />
       </div>
 
+      {/* Detailed category table */}
+      {(() => {
+        const facts = allFactsForFilter || []
+        // Build grouped data per category
+        const catMap = {}
+        for (const f of facts) {
+          if (!f.category) continue
+          if (!catMap[f.category]) catMap[f.category] = { total: 0, published: 0, vip: 0, cool: 0, hot: 0, wtf: 0 }
+          const c = catMap[f.category]
+          c.total++
+          if (f.is_published) c.published++
+          if (f.is_vip) c.vip++
+          const d = (f.difficulty || '').toLowerCase()
+          if (d === 'facile' || d === 'easy' || d === 'cool') c.cool++
+          else if (d === 'normal' || d === 'hot') c.hot++
+          else if (d === 'expert' || d === 'hard' || d === 'wtf') c.wtf++
+        }
+        // Sort by total descending, merge with CATEGORIES for label/emoji
+        const rows = CATEGORIES
+          .map(cat => ({ ...cat, ...(catMap[cat.id] || { total: 0, published: 0, vip: 0, cool: 0, hot: 0, wtf: 0 }) }))
+          .filter(r => r.total > 0)
+          .sort((a, b) => b.total - a.total)
+        const maxTotal = rows.length > 0 ? rows[0].total : 1
+
+        return (
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-8 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+              <h2 className="text-base font-black text-white">📋 Vue détaillée par catégorie</h2>
+              <span className="text-xs text-slate-500 font-semibold">{rows.length} catégories · {facts.length} facts</span>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-700 text-xs uppercase tracking-wider">
+                    <th className="text-left px-5 py-3 text-slate-500 font-bold">Catégorie</th>
+                    <th className="text-center px-3 py-3 text-slate-500 font-bold">Total</th>
+                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#22C55E' }}>Publiés</th>
+                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#FFD700' }}>VIP</th>
+                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#3B82F6' }}>Cool</th>
+                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#FF6B1A' }}>Hot</th>
+                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#8B5CF6' }}>WTF!</th>
+                    <th className="px-5 py-3 text-slate-500 font-bold text-right" style={{ minWidth: 140 }}>Progression</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map(r => {
+                    const pubPct = r.total > 0 ? Math.round((r.published / r.total) * 100) : 0
+                    return (
+                      <tr
+                        key={r.id}
+                        className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
+                        onClick={() => { window.location.href = `/facts?category=${r.id}` }}
+                      >
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">{r.emoji}</span>
+                            <span className="text-slate-200 font-semibold">{r.label}</span>
+                          </div>
+                        </td>
+                        <td className="text-center px-3 py-3 font-black text-slate-300">{r.total}</td>
+                        <td className="text-center px-3 py-3 font-bold" style={{ color: '#22C55E' }}>{r.published}</td>
+                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.vip > 0 ? '#FFD700' : '#475569' }}>{r.vip}</td>
+                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.cool > 0 ? '#3B82F6' : '#475569' }}>{r.cool}</td>
+                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.hot > 0 ? '#FF6B1A' : '#475569' }}>{r.hot}</td>
+                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.wtf > 0 ? '#8B5CF6' : '#475569' }}>{r.wtf}</td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{
+                                  width: `${pubPct}%`,
+                                  background: pubPct === 100 ? '#22C55E' : pubPct >= 50 ? '#FF6B1A' : '#EF4444',
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs font-bold text-slate-500 w-9 text-right">{pubPct}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                {/* Footer totals */}
+                <tfoot>
+                  <tr className="border-t-2 border-slate-600 bg-slate-800/80">
+                    <td className="px-5 py-3 text-slate-300 font-black text-sm">TOTAL</td>
+                    <td className="text-center px-3 py-3 font-black text-white">{rows.reduce((s, r) => s + r.total, 0)}</td>
+                    <td className="text-center px-3 py-3 font-black" style={{ color: '#22C55E' }}>{rows.reduce((s, r) => s + r.published, 0)}</td>
+                    <td className="text-center px-3 py-3 font-black" style={{ color: '#FFD700' }}>{rows.reduce((s, r) => s + r.vip, 0)}</td>
+                    <td className="text-center px-3 py-3 font-black" style={{ color: '#3B82F6' }}>{rows.reduce((s, r) => s + r.cool, 0)}</td>
+                    <td className="text-center px-3 py-3 font-black" style={{ color: '#FF6B1A' }}>{rows.reduce((s, r) => s + r.hot, 0)}</td>
+                    <td className="text-center px-3 py-3 font-black" style={{ color: '#8B5CF6' }}>{rows.reduce((s, r) => s + r.wtf, 0)}</td>
+                    <td className="px-5 py-3">
+                      {(() => {
+                        const totalAll = rows.reduce((s, r) => s + r.total, 0)
+                        const totalPub = rows.reduce((s, r) => s + r.published, 0)
+                        const pct = totalAll > 0 ? Math.round((totalPub / totalAll) * 100) : 0
+                        return (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#22C55E' }} />
+                            </div>
+                            <span className="text-xs font-bold text-slate-400 w-9 text-right">{pct}%</span>
+                          </div>
+                        )
+                      })()}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Sync button */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
         <h2 className="text-base font-black text-white mb-2">🔄 Sync Supabase → GitHub</h2>

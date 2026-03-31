@@ -1,12 +1,10 @@
 # WTF! — What The F*ct
 
 ## Projet
-- App mobile de trivia basée sur un jeu physique validé
+- App mobile trivia basée sur un jeu physique validé (350 cartes)
 - URL prod : https://wtf-app-livid.vercel.app/
 - Admin Tool : https://wtffactchecking.vercel.app/
-
-## Stack
-- React + Vite + Supabase + Tailwind + Nunito (Google Fonts)
+- Stack : React + Vite + Supabase + Tailwind + Nunito
 - Deploy : Vercel auto sur push master
 
 ## Règles absolues
@@ -14,27 +12,56 @@
 2. Attendre confirmation explicite avant tout git push
 3. Un prompt = un fichier cible = une modification
 4. Toujours travailler sur master directement
+5. Si une branche de preview est créée → merger sur master immédiatement
 
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts
 - WTF toujours avec ! (sauf "What The F*ct")
 - Facile → Curieux | Normal → À fond | Expert → WTF! Addict
 - Streak → Série | Mode Parcours → Quête WTF!
-- Ratées → À découvrir | FAUX → PAS CETTE FOIS
+- Ratées → À découvrir
 
-## Règles de jeu actuelles
+## Règles de jeu — Version finale
+
+| Mode | QCM | Indice gratuit | Indice payant | Prix | Coins/bonne réponse |
+|------|-----|----------------|---------------|------|---------------------|
+| Curieux | 4 | 1 | 2e indice | 3 coins | 3 |
+| À fond | 4 | 0 | 1er + 2e | 5 coins chacun | 3 |
+| WTF! Addict | 6 | 0 | 1 disponible | 8 coins | 5 |
+
 - Timer : 30 secondes (tous modes)
 - Questions par Quête : 5 (TEMP TEST — remettre à 10 au lancement)
-- Curieux : 4 QCM, indices, 3/2/1 coins
-- À fond : 4 QCM, pas d'indices, 3 coins
-- WTF! Addict : 6 QCM, pas d'indices, 5 coins
+- Badge Perfect : attribué si 100% de bonnes réponses → +1 ticket
+- Indice non disponible si pas assez de coins : bouton grisé, JAMAIS de pause du timer
+
+## Modes de jeu
+- Session Flash : gratuit illimité, sans récompense
+- Quête WTF! : 1 ticket, coins + f*cts + trophées
+- Marathon : 1 ticket, 20 questions, catégorie au choix, coins + trophées
+- WTF de la Semaine : gratuit 1×/semaine, 1 f*ct non débloqué
+- Blitz : 3/jour gratuits, affirmations Vrai/Faux sur f*cts débloqués
 
 ## Design system
-- Police : Nunito (400/700/900)
+- Police : Nunito (400/700/900) via Google Fonts
 - Couleur principale : #FF6B1A (orange WTF!)
 - Fond écrans jeu : linear-gradient(160deg, {couleurCatégorie}22, {couleurCatégorie})
 - CoinsIcon : src/components/CoinsIcon.jsx
-- FallbackImage : composant inline dans RevelationScreen.jsx
+- Scaling responsive : useScale hook — base iPhone SE 375×667px
+- Formule : Math.min(window.innerHeight/667, window.innerWidth/375)
+- Toutes les tailles : calc(Xpx * var(--scale))
+- Règle isLightColor : texte #1a1a1a sur fond clair, #ffffff sur fond sombre
+
+## Toggle Mode Dev
+- Clé localStorage : wtf_dev_mode
+- Visible uniquement en import.meta.env.DEV (localhost)
+- Mode Dev : coins = 9999, tickets = 99, indices = 99
+- Jamais visible en production (Vercel)
+
+## Workflow
+- Preview local : npm run dev → localhost:5176
+- Push : manuel uniquement — jamais automatique
+- Git : pull en premier, push en dernier
+- node_modules : npm install sur chaque nouveau poste
 
 ## URLs Notion
 - QG : https://www.notion.so/332b94ed8cb180298efadff6b66d54af

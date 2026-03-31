@@ -1,5 +1,5 @@
 // Supabase Edge Function — POST /functions/v1/sync-facts
-// v1.0.1
+// v1.0.2 — deployed with --no-verify-jwt
 //
 // 1. Fetches all published facts from Supabase
 // 2. Reads current src/data/facts.js from GitHub (to get SHA + preserve header/footer)

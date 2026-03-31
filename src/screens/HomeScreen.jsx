@@ -1,22 +1,15 @@
 /**
- * HomeScreen — Layout final
- * Architecture :
- *   [Chat absolu, bottom = hauteur nav]
- *   Zone 1 : Header (profil · coins · tickets · settings)
- *   Zone 2 : Bandeau badge + barre progression 24h
- *   Zone Logo : Étoile WTF! + VRAI OU FOU ?
- *   Zone 3 : 3 colonnes flex:1 (actifs | tagline | marathon+bientôt)
- *   Zone 4 : Bouton Flash z-index 2
- *   Zone 5 : Navigation z-index 2, toujours en bas
+ * HomeScreen v7 — Refonte complète
+ * 5 zones : Header · Badge · Coffres · Corps (3 cols) · Nav
+ * Full screen, no scroll, useScale responsive
  */
 
 import { useState, useEffect, useMemo } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 
-// ── Fond aléatoire par session ────────────────────────────────────────────────
+// ── Background aléatoire par session ──────────────────────────────────────────
 const HOME_BACKGROUNDS = [
   '/assets/backgrounds/home-orange.png',
   '/assets/backgrounds/home-violet.png',
@@ -26,10 +19,10 @@ const HOME_BACKGROUNDS = [
 ]
 
 function getSessionBackground() {
-  const stored = sessionStorage.getItem('wtf_home_bg')
+  const stored = sessionStorage.getItem('wtf_bg')
   if (stored) return stored
   const bg = HOME_BACKGROUNDS[Math.floor(Math.random() * HOME_BACKGROUNDS.length)]
-  sessionStorage.setItem('wtf_home_bg', bg)
+  sessionStorage.setItem('wtf_bg', bg)
   return bg
 }
 
@@ -40,9 +33,9 @@ function useDailyCoffre() {
   const today = new Date().toISOString().slice(0, 10)
 
   const read = () => {
-    const lastDate   = localStorage.getItem('wtf_coffre_last_date') || null
-    const lastIndex  = parseInt(localStorage.getItem('wtf_coffre_index') ?? '-1')
-    const claimedToday   = lastDate === today
+    const lastDate = localStorage.getItem('wtf_coffre_last_date') || null
+    const lastIndex = parseInt(localStorage.getItem('wtf_coffre_index') ?? '-1')
+    const claimedToday = lastDate === today
     const availableIndex = claimedToday ? -1 : (lastIndex + 1) % COFFRE_DAYS.length
     return { lastIndex, claimedToday, availableIndex }
   }
@@ -53,10 +46,10 @@ function useDailyCoffre() {
     const { availableIndex } = coffreData
     if (availableIndex < 0) return null
     const REWARDS = [
-      { type: 'coins', amount: 5  },
+      { type: 'coins', amount: 5 },
       { type: 'coins', amount: 10 },
-      { type: 'hints', amount: 1  },
-      { type: 'hints', amount: 2  },
+      { type: 'hints', amount: 1 },
+      { type: 'hints', amount: 2 },
     ]
     const reward = REWARDS[Math.floor(Math.random() * REWARDS.length)]
     localStorage.setItem('wtf_coffre_last_date', today)
@@ -65,27 +58,22 @@ function useDailyCoffre() {
     return reward
   }
 
-  // Statut pour chaque slot : 'available' | 'collected' | 'locked' | 'locked-trophy'
   const getStatus = (i) => {
     const { lastIndex, claimedToday, availableIndex } = coffreData
     const isTrophy = COFFRE_DAYS[i] === 7
     if (!claimedToday && i === availableIndex) return 'available'
-    if (i <= lastIndex)                         return 'collected'
+    if (i <= lastIndex) return 'collected'
     return isTrophy ? 'locked-trophy' : 'locked'
   }
 
   return { ...coffreData, claim, getStatus }
 }
 
-// ── Appliquer la récompense coffre dans wtf_data (localStorage direct) ─────────
 function applyCofreReward(reward) {
   try {
     const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    if (reward.type === 'coins') {
-      data.wtfCoins = (data.wtfCoins || 0) + reward.amount
-    } else if (reward.type === 'hints') {
-      data.wtfHints = (data.wtfHints || 0) + reward.amount
-    }
+    if (reward.type === 'coins') data.wtfCoins = (data.wtfCoins || 0) + reward.amount
+    else if (reward.type === 'hints') data.wtfHints = (data.wtfHints || 0) + reward.amount
     localStorage.setItem('wtf_data', JSON.stringify(data))
   } catch { /* ignore */ }
 }
@@ -109,98 +97,32 @@ function useCountdownToMidnight() {
   return remaining
 }
 
-// ── Progression sur 24h ───────────────────────────────────────────────────────
 function get24hProgress() {
   const now = new Date()
   const hours = now.getHours() + now.getMinutes() / 60
   return Math.max(2, Math.min(98, Math.round((hours / 24) * 100)))
 }
 
-// ── Icône active ──────────────────────────────────────────────────────────────
-function ActiveIcon({ emoji, icon, label, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: 'calc(88px * var(--scale))', height: 'calc(88px * var(--scale))',
-        borderRadius: 'calc(22px * var(--scale))',
-        background: 'rgba(255,255,255,0.9)',
-        boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
-        border: 'none', cursor: 'pointer', padding: 0,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        gap: 'calc(4px * var(--scale))',
-        WebkitTapHighlightColor: 'transparent',
-        transition: 'transform 0.1s',
-        flexShrink: 0,
-        overflow: 'hidden',
-      }}
-      onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.93)')}
-      onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
-    >
-      {icon
-        ? <img src={icon} alt={label} style={{ width: 'calc(48px * var(--scale))', height: 'calc(48px * var(--scale))', borderRadius: '20%', objectFit: 'cover', flexShrink: 0 }} />
-        : <span style={{ fontSize: 'calc(30px * var(--scale))', lineHeight: 1 }}>{emoji}</span>
-      }
-      <span style={{
-        fontSize: 'calc(11px * var(--scale))', fontWeight: 700, color: '#FF6B1A',
-        textAlign: 'center', lineHeight: 1.2,
-        maxWidth: 'calc(76px * var(--scale))', overflow: 'hidden',
-        textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-      }}>{label}</span>
-    </button>
-  )
-}
-
-// ── Icône bientôt ─────────────────────────────────────────────────────────────
-function ComingSoonIcon({ emoji, icon, label }) {
-  return (
-    <div style={{
-      width: 'calc(88px * var(--scale))', height: 'calc(88px * var(--scale))',
-      borderRadius: 'calc(22px * var(--scale))',
-      background: 'rgba(255,255,255,0.25)',
-      border: '1.5px dashed rgba(255,255,255,0.5)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      gap: 'calc(4px * var(--scale))',
-      flexShrink: 0,
-      overflow: 'hidden',
-    }}>
-      {icon
-        ? <img src={icon} alt={label || ''} style={{ width: 'calc(48px * var(--scale))', height: 'calc(48px * var(--scale))', borderRadius: '20%', objectFit: 'cover', opacity: 0.5, flexShrink: 0 }} />
-        : <span style={{ fontSize: 'calc(30px * var(--scale))', opacity: 0.5, lineHeight: 1 }}>{emoji}</span>
-      }
-      <span style={{ fontSize: 'calc(11px * var(--scale))', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>{label || 'Bientôt'}</span>
-    </div>
-  )
-}
-
-// ── NAV_HEIGHT estimé ─────────────────────────────────────────────────────────
-const NAV_HEIGHT = 0 // chat aligné sur bottom: 0, nav par-dessus en z-index 2
+// ── Scaled helper ─────────────────────────────────────────────────────────────
+const S = (px) => `calc(${px}px * var(--scale))`
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HomeScreen({
-  playerCoins          = 0,
+  playerCoins = 0,
   dailyQuestsRemaining = 3,
-  currentStreak        = 0,
-  nextBadgeInfo        = null,
+  currentStreak = 0,
+  nextBadgeInfo = null,
   onNavigate,
   onOpenSettings,
 }) {
   const [showSettings, setShowSettings] = useState(false)
-  const [logoAnimated, setLogoAnimated] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
-  const [coffreReward,    setCoffreReward]    = useState(null)
+  const [coffreReward, setCoffreReward] = useState(null)
   const { claim, getStatus } = useDailyCoffre()
-  const countdown   = useCountdownToMidnight()
+  const countdown = useCountdownToMidnight()
   const progress24h = get24hProgress()
-  const scale       = useScale()
-  const homeBg      = useMemo(() => getSessionBackground(), [])
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLogoAnimated(true), 100)
-    return () => clearTimeout(timer)
-  }, [])
+  const scale = useScale()
+  const homeBg = useMemo(() => getSessionBackground(), [])
 
   const nav = (target) => {
     audio.play?.('click')
@@ -212,6 +134,51 @@ export default function HomeScreen({
     if (onOpenSettings) onOpenSettings()
     else setShowSettings(true)
   }
+
+  // ── Mode icon component ────────────────────────────────────────────────────
+  const ModeIcon = ({ src, label, onClick, disabled }) => (
+    <button
+      onClick={disabled ? undefined : onClick}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(3),
+        background: 'none', border: 'none', padding: 0,
+        cursor: disabled ? 'default' : 'pointer',
+        WebkitTapHighlightColor: 'transparent',
+        opacity: disabled ? 0.4 : 1,
+        filter: disabled ? 'grayscale(0.5)' : 'none',
+        transition: 'transform 0.1s',
+      }}
+      onTouchStart={e => !disabled && (e.currentTarget.style.transform = 'scale(0.92)')}
+      onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
+    >
+      <img
+        src={src}
+        alt={label}
+        style={{
+          width: S(54), height: S(54),
+          borderRadius: S(14),
+          overflow: 'hidden',
+          objectFit: 'cover',
+          flexShrink: 0,
+          boxShadow: disabled ? 'none' : '0 2px 8px rgba(0,0,0,0.2)',
+        }}
+      />
+      <span style={{
+        fontSize: S(8), fontWeight: 700, color: 'white',
+        textAlign: 'center', lineHeight: 1.2,
+        maxWidth: S(64), overflow: 'hidden',
+        textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        opacity: disabled ? 0.5 : 1,
+        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+      }}>{label}</span>
+      {disabled && (
+        <span style={{
+          fontSize: S(6), fontWeight: 700, color: 'white', opacity: 0.6,
+          marginTop: S(-2),
+        }}>Bientôt</span>
+      )}
+    </button>
+  )
 
   return (
     <div
@@ -227,132 +194,112 @@ export default function HomeScreen({
         backgroundColor: '#1a1a2e',
       }}
     >
-      {/* Keyframes */}
-      <style>{`
-        @keyframes wtfLogoEntrance {
-          0%   { transform: scale(2.5) rotate(0deg);   opacity: 0; }
-          30%  { transform: scale(3)   rotate(180deg); opacity: 1; }
-          60%  { transform: scale(1.2) rotate(320deg); }
-          80%  { transform: scale(1.1) rotate(350deg); }
-          100% { transform: scale(1)   rotate(360deg); opacity: 1; }
-        }
-      `}</style>
-
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* ══ CHAT — fond pleine largeur, bas aligné sur le haut de la nav ═════ */}
-      <img
-        src="/cat-president.png"
-        alt=""
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0, right: 0,
-          width: '100%',
-          objectFit: 'contain',
-          zIndex: 0,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* ══ ZONE 1 — Header ══════════════════════════════════════════════════ */}
+      {/* ═══ ZONE 1 — HEADER ═══════════════════════════════════════════════ */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '8px 12px',
-        background: 'rgba(0,0,0,0.2)',
-        flexShrink: 0,
-        position: 'relative', zIndex: 1,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: `${S(6)} ${S(10)}`,
+        flexShrink: 0, position: 'relative', zIndex: 2,
       }}>
+        {/* Avatar */}
         <button
           onClick={() => nav('profil')}
           style={{
-            width: 'calc(40px * var(--scale))', height: 'calc(40px * var(--scale))', borderRadius: '50%',
-            background: 'rgba(255,255,255,0.25)',
-            border: '2px solid rgba(255,255,255,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0,
-            WebkitTapHighlightColor: 'transparent',
+            width: S(36), height: S(36), borderRadius: '50%',
+            background: 'rgba(255,255,255,0.3)',
+            border: '2px solid rgba(255,255,255,0.5)',
             padding: 0, overflow: 'hidden',
-          }}>
-          <img src="/assets/ui/avatar-default.png" alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+            cursor: 'pointer', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <img src="/assets/ui/avatar-default.png" alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </button>
 
-        <div style={{ flex: 1 }} />
-
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 5,
-          background: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: '4px 10px',
-        }}>
-          <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: 'calc(28px * var(--scale))', height: 'calc(28px * var(--scale))', flexShrink: 0 }} />
-          <span style={{ fontWeight: 800, color: 'white', fontSize: 13 }}>{playerCoins}</span>
+        {/* Coins + Tickets badges */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(6) }}>
+          <button
+            onClick={() => nav('boutique')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: S(4),
+              background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
+              padding: `${S(3)} ${S(10)}`, border: 'none', cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: S(14), height: S(14), flexShrink: 0 }} />
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11) }}>{playerCoins}</span>
+          </button>
+          <button
+            onClick={() => nav('boutique')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: S(4),
+              background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
+              padding: `${S(3)} ${S(10)}`, border: 'none', cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: S(14), height: S(14), flexShrink: 0 }} />
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11) }}>{dailyQuestsRemaining}</span>
+          </button>
         </div>
 
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 5,
-          background: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: '4px 10px',
-        }}>
-          <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: 'calc(28px * var(--scale))', height: 'calc(28px * var(--scale))', flexShrink: 0 }} />
-          <span style={{ fontWeight: 800, color: 'white', fontSize: 13 }}>{dailyQuestsRemaining}</span>
-        </div>
-
+        {/* Settings */}
         <button
           onClick={handleSettings}
           style={{
-            width: 'calc(40px * var(--scale))', height: 'calc(40px * var(--scale))', borderRadius: '50%',
+            width: S(28), height: S(28), borderRadius: '50%',
             background: 'rgba(255,255,255,0.2)',
-            border: 'none',
+            border: 'none', padding: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
             WebkitTapHighlightColor: 'transparent',
-          }}>
-          <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: 'calc(28px * var(--scale))', height: 'calc(28px * var(--scale))' }} />
+          }}
+        >
+          <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: S(16), height: S(16) }} />
         </button>
       </div>
 
-      {/* ══ ZONE 2 — Badge + barre progression 24h ═══════════════════════════ */}
+      {/* ═══ ZONE 2 — BADGE PROGRESSION ════════════════════════════════════ */}
       <div style={{
-        margin: '4px 12px 0',
-        background: 'rgba(0,0,0,0.2)',
-        borderRadius: 10,
-        padding: 'calc(8px * var(--scale)) calc(12px * var(--scale))',
-        flexShrink: 0,
-        position: 'relative', zIndex: 1,
+        margin: `0 ${S(10)}`,
+        background: 'rgba(255,255,255,0.2)',
+        borderRadius: S(8),
+        padding: `${S(5)} ${S(10)}`,
+        flexShrink: 0, position: 'relative', zIndex: 2,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            <img src="/assets/ui/icon-badge.png" alt="badge" style={{ width: 'calc(32px * var(--scale))', height: 'calc(32px * var(--scale))', flexShrink: 0 }} />
-            Prochain badge
-          </span>
-          <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
-            ⏱ {countdown}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: S(3) }}>
+          <span style={{ fontSize: S(8), fontWeight: 800, color: 'white' }}>Prochain badge</span>
+          <span style={{ fontSize: S(8), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{countdown}</span>
         </div>
-        {/* Barre progression 24h */}
-        <div style={{ height: 6, background: 'rgba(255,255,255,0.2)', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ height: S(4), background: 'rgba(255,255,255,0.2)', borderRadius: S(2), overflow: 'hidden' }}>
           <div style={{
             height: '100%', width: `${progress24h}%`,
-            background: '#FF6B1A', borderRadius: 4,
+            background: 'white', borderRadius: S(2),
             transition: 'width 0.5s ease',
           }} />
         </div>
-        <div style={{ marginTop: 4, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.7)', lineHeight: 1.3 }}>
-          {nextBadgeInfo
-            ? `${nextBadgeInfo.category} × ${nextBadgeInfo.count} ${nextBadgeInfo.difficulty} — encore ${nextBadgeInfo.remaining} f*cts`
-            : 'Lance une quête pour débloquer ton premier badge !'}
-        </div>
       </div>
 
-      {/* ══ COFFRE QUOTIDIEN ════════════════════════════════════════════════ */}
+      {/* ═══ ZONE 3 — COFFRES QUOTIDIENS ═══════════════════════════════════ */}
       <div style={{
-        display: 'flex', gap: 6, padding: '4px 12px 2px',
-        flexShrink: 0, position: 'relative', zIndex: 1,
+        display: 'flex', gap: S(5), padding: `${S(4)} ${S(10)}`,
+        flexShrink: 0, position: 'relative', zIndex: 2,
         justifyContent: 'center',
       }}>
         {COFFRE_DAYS.map((day, i) => {
-          const status   = getStatus(i)
-          const isAvail  = status === 'available'
-          const isColl   = status === 'collected'
+          const status = getStatus(i)
+          const isAvail = status === 'available'
+          const isColl = status === 'collected'
           const isTrophy = status === 'locked-trophy'
+
+          const chestSrc = isAvail || isColl
+            ? '/assets/ui/chest-open.png'
+            : isTrophy
+              ? '/assets/ui/chest-trophy.png'
+              : '/assets/ui/chest-locked.png'
 
           return (
             <button
@@ -371,221 +318,213 @@ export default function HomeScreen({
                 flex: 1,
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                gap: 2, padding: '5px 3px',
-                borderRadius: 10,
-                background: isAvail ? 'rgba(255,107,26,0.2)' : 'rgba(0,0,0,0.15)',
-                border: `1.5px solid ${isAvail ? '#FF6B1A' : 'rgba(255,255,255,0.1)'}`,
+                gap: S(1), padding: `${S(4)} ${S(2)}`,
+                borderRadius: S(8),
+                background: isAvail ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
+                border: `1px solid ${isAvail ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.1)'}`,
                 cursor: isAvail ? 'pointer' : 'default',
                 opacity: isColl ? 0.35 : status === 'locked' ? 0.5 : 1,
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'opacity 0.2s, background 0.2s',
               }}
             >
-              {/* Icône */}
               <img
-                src={isAvail || isColl
-                  ? '/assets/ui/chest-open.png'
-                  : isTrophy
-                    ? '/assets/ui/chest-trophy.png'
-                    : '/assets/ui/chest-locked.png'}
+                src={chestSrc}
                 alt={isAvail ? 'coffre disponible' : isTrophy ? 'coffre trophée' : 'coffre verrouillé'}
-                style={{ width: 'calc(48px * var(--scale))', height: 'calc(48px * var(--scale))', objectFit: 'contain', flexShrink: 0 }}
+                style={{ width: S(28), height: S(28), objectFit: 'contain', flexShrink: 0 }}
               />
-
-              {/* Label J-N + coche si collecté */}
               <span style={{
-                fontSize: 8, fontWeight: 900, lineHeight: 1,
-                color: isAvail ? '#FFD700' : 'rgba(255,255,255,0.7)',
+                fontSize: S(6), fontWeight: 800, lineHeight: 1,
+                color: 'white',
               }}>
-                {`J-${day}`}{isColl ? ' ✓' : ''}
+                {isAvail ? 'NOUVEAU' : `J-${day}`}{isColl ? ' ✓' : ''}
               </span>
-
-              {/* Badge NOUVEAU */}
-              {isAvail && (
-                <span style={{
-                  fontSize: 6, fontWeight: 900, color: '#FF6B1A',
-                  background: 'rgba(255,107,26,0.3)', borderRadius: 4,
-                  padding: '1px 3px', lineHeight: 1.3, letterSpacing: '0.03em',
-                }}>
-                  NOUVEAU
-                </span>
-              )}
             </button>
           )
         })}
       </div>
 
-      {/* ══ ZONE LOGO — Étoile WTF! + VRAI OU FOU ? ═════════════════════════ */}
+      {/* ═══ ZONE 4 — CORPS PRINCIPAL (3 colonnes) ═════════════════════════ */}
       <div style={{
-        flexShrink: 0,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 4, paddingBottom: 4,
-        gap: 6,
-        position: 'relative', zIndex: 1,
-      }}>
-        <img
-          src="/logo-wtf.png"
-          alt="WTF!"
-          style={{
-            maxHeight: 'calc(90px * var(--scale))', objectFit: 'contain',
-            filter: 'drop-shadow(0 4px 18px rgba(255,120,0,0.55))',
-            animation: logoAnimated ? 'wtfLogoEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
-            opacity: logoAnimated ? 1 : 0,
-          }}
-        />
-        <div style={{
-          fontSize: 'calc(28px * var(--scale))', fontWeight: 900, color: '#FF6B1A',
-          letterSpacing: 1, textAlign: 'center',
-          textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-        }}>
-          VRAI OU FOU ?
-        </div>
-      </div>
-
-      {/* ══ ZONE 3 — 3 colonnes flex:1 (remplit l'espace restant) ════════════ */}
-      <div style={{
-        flex: 1,
+        flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'row',
-        alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 8px',
+        padding: `0 ${S(6)}`,
         position: 'relative', zIndex: 1,
-        minHeight: 0,
       }}>
 
-        {/* ── Colonne gauche — modes actifs ── */}
+        {/* ── Colonne gauche ── */}
         <div style={{
-          width: 96, flexShrink: 0,
+          width: S(72), flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'space-evenly',
-          alignSelf: 'stretch',
-          paddingTop: 8, paddingBottom: 180,
+          justifyContent: 'space-evenly', alignItems: 'center',
         }}>
-          <ActiveIcon icon="/assets/modes/quete.png" label="Quête WTF!" onClick={() => nav('difficulty')} />
-          <ActiveIcon icon="/assets/modes/serie.png" label="Série"       onClick={() => nav('streak')} />
-          <ActiveIcon icon="/assets/modes/wtf-semaine.png" label="Du Jour"     onClick={() => nav('wtfDuJour')} />
+          <ModeIcon src="/assets/modes/quete.png" label="Quête WTF!" onClick={() => nav('difficulty')} />
+          <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => nav('trophees')} />
+          <ModeIcon src="/assets/modes/wtf-semaine.png" label="WTF Semaine" onClick={() => nav('wtfDuJour')} />
         </div>
 
-        {/* ── Colonne centre — tagline alignée sur l'icône du milieu ── */}
+        {/* ── Colonne centre ── */}
         <div style={{
-          flex: 1,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          alignSelf: 'stretch',
-          paddingBottom: 180,
-          minWidth: 0,
-          padding: '0 8px 180px',
+          flex: 1, minWidth: 0,
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-evenly', alignItems: 'center',
+          position: 'relative',
         }}>
+          {/* Logo WTF! */}
+          <img
+            src="/logo-wtf.png"
+            alt="WTF!"
+            style={{
+              height: S(60), objectFit: 'contain',
+              filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
+            }}
+          />
+
+          {/* VRAI OU FOU ? */}
           <div style={{
-            fontSize: 'calc(22px * var(--scale))', color: 'white', textAlign: 'center',
-            lineHeight: 1.35,
-            textShadow: '0 1px 6px rgba(0,0,0,0.5)',
-            fontWeight: 800,
+            fontSize: S(20), fontWeight: 900, color: 'white',
+            textAlign: 'center',
+            textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            letterSpacing: 0.5,
           }}>
-            Des f*cts 100% vrais,<br />des réactions 100% fun !!!
+            VRAI OU FOU ?
           </div>
+
+          {/* Tagline */}
+          <div style={{
+            fontSize: S(12), fontWeight: 700, color: 'white',
+            textAlign: 'center', lineHeight: 1.5,
+            textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+          }}>
+            Des f*cts 100% vrais,<br />des réactions 100% fun !
+          </div>
+
+          {/* Chat mascotte — absolute, bottom of zone 4 */}
+          <img
+            src="/cat-president.png"
+            alt="mascotte"
+            style={{
+              position: 'absolute',
+              bottom: 0, left: '50%',
+              transform: 'translateX(-50%)',
+              width: S(110),
+              objectFit: 'contain',
+              zIndex: 1,
+              pointerEvents: 'none',
+            }}
+          />
         </div>
 
-        {/* ── Colonne droite — Marathon actif + bientôt ── */}
+        {/* ── Colonne droite ── */}
         <div style={{
-          width: 96, flexShrink: 0,
+          width: S(72), flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'space-evenly',
-          alignSelf: 'stretch',
-          paddingTop: 8, paddingBottom: 180,
+          justifyContent: 'space-evenly', alignItems: 'center',
         }}>
-          <ActiveIcon icon="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
-          <ComingSoonIcon emoji="🎮" />
-          <ComingSoonIcon icon="/assets/modes/blitz.png" label="Blitz" />
+          <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
+          <ModeIcon src="/assets/modes/multi.png" label="Multi" disabled />
+          <ModeIcon src="/assets/modes/blitz.png" label="Blitz" disabled />
         </div>
-
       </div>
 
-      {/* ══ ZONE 4 — Bouton Flash ════════════════════════════════════════════ */}
-      <div style={{ padding: '4px 16px 6px', flexShrink: 0, position: 'relative', zIndex: 2 }}>
+      {/* ═══ ZONE 4B — BOUTON FLASH ════════════════════════════════════════ */}
+      <div style={{
+        display: 'flex', justifyContent: 'center',
+        padding: `${S(4)} ${S(16)} ${S(4)}`,
+        flexShrink: 0, position: 'relative', zIndex: 5,
+      }}>
         <button
           onClick={() => nav('categoryFlash')}
           style={{
-            width: '100%', padding: 'calc(14px * var(--scale))',
-            background: 'rgba(255,255,255,0.95)', color: '#FF6B1A',
-            fontWeight: 900, fontSize: 'calc(14px * var(--scale))',
-            border: 'none', borderRadius: 16,
-            cursor: 'pointer', letterSpacing: '0.06em',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+            width: '60%',
+            padding: `${S(12)} ${S(16)}`,
+            background: 'white',
+            color: '#FF6B1A',
+            fontWeight: 900, fontSize: S(11),
+            border: 'none', borderRadius: S(12),
+            cursor: 'pointer',
+            letterSpacing: '0.04em',
+            boxShadow: '0 3px 14px rgba(0,0,0,0.15)',
             fontFamily: 'Nunito, sans-serif',
             WebkitTapHighlightColor: 'transparent',
             transition: 'transform 0.1s',
           }}
-          onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.97)')}
-          onTouchEnd={e   => (e.currentTarget.style.transform = 'scale(1)')}
+          onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.96)')}
+          onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
         >
           ⚡ JOUER EN MODE FLASH
         </button>
       </div>
 
-      {/* ══ ZONE 5 — Navigation (toujours collée au bas, flex naturel) ══════ */}
+      {/* ═══ ZONE 5 — NAV BAR ══════════════════════════════════════════════ */}
       <div style={{
         display: 'flex', alignItems: 'flex-end',
         justifyContent: 'space-around',
-        padding: '6px 4px 12px',
-        background: 'rgba(0,0,0,0.25)',
+        padding: `${S(4)} ${S(4)} ${S(10)}`,
+        background: 'rgba(255,255,255,0.95)',
         flexShrink: 0,
-        position: 'relative', zIndex: 2,
+        position: 'relative', zIndex: 10,
       }}>
         {[
-          { slug: 'boutique',   label: 'Boutique',   action: () => console.log('Boutique'), active: false, center: false },
-          { slug: 'trophees',   label: 'Trophées',   action: () => nav('trophees'),         active: false, center: false },
-          { slug: 'accueil',    label: 'Accueil',    action: null,                          active: true,  center: true  },
-          { slug: 'amis',       label: 'Amis',       action: () => console.log('Amis'),     active: false, center: false },
-          { slug: 'collection', label: 'Collection', action: () => nav('collection'),       active: false, center: false },
-        ].map((item) => (
-          <button
-            key={item.label}
-            onClick={item.action || undefined}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-              background: 'none', border: 'none',
-              cursor: item.action ? 'pointer' : 'default',
-              padding: '0 8px',
-              position: 'relative',
-              marginBottom: item.center ? 8 : 0,
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            {item.center && (
-              <div style={{
-                position: 'absolute',
-                top: -10, left: '50%', transform: 'translateX(-50%)',
-                width: 44, height: 44, borderRadius: '50%',
-                background: 'white',
-                boxShadow: '0 3px 12px rgba(0,0,0,0.25)',
-                zIndex: 0,
-              }} />
-            )}
-            <img
-              src={`/assets/nav/${item.slug}.png`}
-              alt={item.label}
+          { slug: 'boutique',   label: 'Boutique',   target: 'boutique',   center: false },
+          { slug: 'trophees',   label: 'Trophées',   target: 'trophees',   center: false },
+          { slug: 'accueil',    label: 'Accueil',    target: null,         center: true  },
+          { slug: 'amis',       label: 'Amis',       target: 'amis',       center: false },
+          { slug: 'collection', label: 'Collection', target: 'collection', center: false },
+        ].map((item) => {
+          const isActive = item.center
+          return (
+            <button
+              key={item.slug}
+              onClick={() => item.target && nav(item.target)}
               style={{
-                width: item.active ? 28 : 24,
-                height: item.active ? 28 : 24,
-                position: 'relative', zIndex: 1,
-                filter: item.active
-                  ? 'brightness(0) saturate(100%) invert(50%) sepia(95%) saturate(1500%) hue-rotate(360deg) brightness(100%)'
-                  : 'brightness(0) invert(0.6)',
-                transition: 'all 0.2s ease',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(2),
+                background: 'none', border: 'none',
+                cursor: 'pointer', padding: `0 ${S(6)}`,
+                position: 'relative',
+                WebkitTapHighlightColor: 'transparent',
               }}
-            />
-            <span style={{
-              fontSize: 9, fontWeight: 700,
-              color: item.active ? '#FF6B1A' : 'rgba(255,255,255,0.7)',
-              position: 'relative', zIndex: 1,
-            }}>
-              {item.label}
-            </span>
-          </button>
-        ))}
+            >
+              {item.center ? (
+                /* Accueil — surélevé, cercle orange */
+                <div style={{
+                  width: S(34), height: S(34), borderRadius: '50%',
+                  background: '#FF6B1A',
+                  border: '3px solid white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginTop: S(-14),
+                  boxShadow: '0 2px 10px rgba(255,107,26,0.4)',
+                }}>
+                  <img
+                    src={`/assets/nav/${item.slug}.png`}
+                    alt={item.label}
+                    style={{ width: S(16), height: S(16), filter: 'brightness(0) invert(1)' }}
+                  />
+                </div>
+              ) : (
+                <img
+                  src={`/assets/nav/${item.slug}.png`}
+                  alt={item.label}
+                  style={{
+                    width: S(18), height: S(18),
+                    opacity: 0.5,
+                    filter: 'grayscale(1)',
+                    transition: 'all 0.2s ease',
+                  }}
+                />
+              )}
+              <span style={{
+                fontSize: S(7), fontWeight: 700,
+                color: isActive ? '#FF6B1A' : '#888',
+              }}>
+                {item.label}
+              </span>
+            </button>
+          )
+        })}
       </div>
 
-      {/* ══ MODAL COFFRE ════════════════════════════════════════════════════ */}
+      {/* ═══ MODAL COFFRE ══════════════════════════════════════════════════ */}
       {showCoffreModal && coffreReward && (
         <div
           style={{
@@ -607,7 +546,7 @@ export default function HomeScreen({
             }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ fontSize: 56, marginBottom: 12, lineHeight: 1 }}>🎁</div>
+            <img src="/assets/ui/chest-open.png" alt="coffre" style={{ width: 64, height: 64, marginBottom: 12 }} />
             <div style={{
               fontSize: 20, fontWeight: 900, color: '#FFD700',
               marginBottom: 10, letterSpacing: '0.05em', textTransform: 'uppercase',
@@ -616,8 +555,8 @@ export default function HomeScreen({
             </div>
             <div style={{ fontSize: 17, fontWeight: 800, color: 'white', marginBottom: 24, lineHeight: 1.4 }}>
               {coffreReward.type === 'coins'
-                ? `🎁 Tu as gagné ${coffreReward.amount} coins !`
-                : `🎁 Tu as gagné ${coffreReward.amount} indice${coffreReward.amount > 1 ? 's' : ''} !`}
+                ? `Tu as gagné ${coffreReward.amount} coins !`
+                : `Tu as gagné ${coffreReward.amount} indice${coffreReward.amount > 1 ? 's' : ''} !`}
             </div>
             <button
               onClick={() => setShowCoffreModal(false)}
@@ -631,12 +570,11 @@ export default function HomeScreen({
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              Super ! 🎉
+              Super !
             </button>
           </div>
         </div>
       )}
-
     </div>
   )
 }

@@ -20,7 +20,15 @@ import {
 } from './facts'
 
 // ─── Re-exports : helpers statiques inchangés ────────────────────────────────
-export { CATEGORIES, PLAYABLE_CATEGORIES, VIP_FACT_IDS, getCategoryById, getTitrePartiel }
+export { CATEGORIES, VIP_FACT_IDS, getCategoryById, getTitrePartiel }
+
+// PLAYABLE_CATEGORIES — dynamique, basé sur les facts chargés
+let _playableCategories = null
+export function getPlayableCategories() {
+  if (_playableCategories) return _playableCategories
+  // Fallback avant initFacts : filtre statique
+  return CATEGORIES.filter(c => !c.disabled && !c.inactive)
+}
 
 // ─── Module-level cache ──────────────────────────────────────────────────────
 let _rawFacts         = null   // null = pas encore initialisé
@@ -102,19 +110,22 @@ function buildAll(rawFacts) {
   _rawFacts   = rawFacts
   _difficulty = buildDifficultyFrom(rawFacts)
 
-  _validFacts = rawFacts.filter(f => {
-    if (!f || !f.question || !f.category) return false
-    if (!Array.isArray(f.options) || f.options.length < 2) return false
-    if (typeof f.correctIndex !== 'number' || f.correctIndex < 0) return false
-    if (f.imageUrl !== null && f.imageUrl !== undefined) {
-      // External URLs (https://) are always valid
-      if (!f.imageUrl.startsWith('http')) {
-        const id = getImageId(f.imageUrl)
-        if (id === null || !EXISTING_IMAGE_IDS.has(id)) return false
+  _validFacts = rawFacts
+    .filter(f => {
+      if (!f || !f.question || !f.category) return false
+      if (!Array.isArray(f.options) || f.options.length < 2) return false
+      if (typeof f.correctIndex !== 'number' || f.correctIndex < 0) return false
+      return true
+    })
+    .map(f => {
+      // Image locale manquante → null (ne pas rejeter le fact)
+      let imageUrl = f.imageUrl
+      if (imageUrl && !imageUrl.startsWith('http')) {
+        const id = getImageId(imageUrl)
+        if (!id || !EXISTING_IMAGE_IDS.has(id)) imageUrl = null
       }
-    }
-    return true
-  })
+      return imageUrl !== f.imageUrl ? { ...f, imageUrl } : f
+    })
 
   _parcoursFacts = rawFacts
     .filter(f =>
@@ -129,6 +140,10 @@ function buildAll(rawFacts) {
       }
       return { ...f, imageUrl, difficulty: _difficulty[f.id], isSuperWTF: false }
     })
+
+  // Catégories jouables = celles qui ont au moins 1 fact valide
+  const activeCatIds = new Set(_validFacts.map(f => f.category))
+  _playableCategories = CATEGORIES.filter(c => activeCatIds.has(c.id))
 
   _categoryLevelIds = {}
   _parcoursFacts.forEach(f => {

@@ -94,7 +94,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
-      height: '100vh', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden',
+      height: '100%', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden',
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
       backgroundImage: `url(${BACKGROUNDS[bgIndex.current]})`,

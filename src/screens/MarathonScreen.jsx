@@ -51,7 +51,7 @@ export default function MarathonScreen({
 
   return (
     <div style={{
-      height: '100dvh', width: '100%', overflow: 'hidden',
+      height: '100%', width: '100%', overflow: 'hidden',
       display: 'flex', flexDirection: 'column',
       background: 'linear-gradient(160deg, #1a0a35 0%, #0A0F1E 100%)',
       fontFamily: 'Nunito, sans-serif',

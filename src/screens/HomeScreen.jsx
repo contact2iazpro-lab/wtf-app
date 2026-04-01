@@ -184,7 +184,7 @@ export default function HomeScreen({
     <div
       style={{
         position: 'relative',
-        height: '100dvh', width: '100%', overflow: 'hidden',
+        height: '100%', width: '100%', overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
         boxSizing: 'border-box',
         paddingTop: S(8),

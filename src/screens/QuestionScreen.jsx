@@ -399,7 +399,7 @@ export default function QuestionScreen({
       <div
         className="qs-root relative screen-enter"
         style={{
-          height: '100vh', width: '100%', overflow: 'hidden',
+          height: '100%', width: '100%', overflow: 'hidden',
           display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
           background: screenBg,
         }}
@@ -455,7 +455,7 @@ export default function QuestionScreen({
       <div
         className="qs-root relative screen-enter"
         style={{
-          height: '100vh', width: '100%', overflow: 'hidden',
+          height: '100%', width: '100%', overflow: 'hidden',
           display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
           background: screenBg,
         }}
@@ -506,7 +506,7 @@ export default function QuestionScreen({
     <div
       className="qs-root relative screen-enter"
       style={{
-        height: '100vh', width: '100%', overflow: 'hidden',
+        height: '100%', width: '100%', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
         background: screenBg,
       }}

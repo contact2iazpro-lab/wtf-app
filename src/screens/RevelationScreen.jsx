@@ -281,7 +281,7 @@ export default function RevelationScreen({
   // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
   if (!isCorrect && !isDuel) {
     return (
-      <div className="relative screen-enter" style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', background: screenBg }}>
+      <div className="relative screen-enter" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', background: screenBg }}>
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
@@ -414,7 +414,7 @@ export default function RevelationScreen({
 
   // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
   return (
-    <div className="relative screen-enter" style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', background: screenBg }}>
+    <div className="relative screen-enter" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', background: screenBg }}>
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {floatingBadge}

@@ -47,7 +47,7 @@ export default function SplashScreen({ onComplete, isReady }) {
 
   return (
     <div style={{
-      height: '100vh',
+      height: '100%',
       width: '100%',
       background: '#FF6B1A',
       display: 'flex',

@@ -87,9 +87,7 @@
 > Sonnet = je sais exactement quoi changer et où
 > Opus = je dois comprendre la structure pour décider
 
-## ⛔ Règle preview
-- Ne jamais lancer npm run dev, vite, ou tout autre serveur
-- Ne jamais tenter de prendre un screenshot ou preview
-- Ne jamais utiliser les outils mcp__Claude_Preview__*
-- Toutes les modifications sont testées manuellement par le développeur
-- Après chaque modification : afficher un résumé des changements uniquement
+## Preview local
+- Preview : npm run dev → localhost:5176
+- Claude peut utiliser les outils mcp__Claude_Preview__* pour vérifier le rendu
+- Ne jamais pusher uniquement pour tester — tester en local d'abord

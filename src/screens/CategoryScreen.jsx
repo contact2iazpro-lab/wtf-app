@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import { PLAYABLE_CATEGORIES } from '../data/facts'
-import { getValidFacts } from '../data/factsService'
+import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 
@@ -14,45 +13,11 @@ const BACKGROUNDS = [
   '/assets/backgrounds/home-violet.png',
 ]
 
-// ── Icônes catégories ────────────────────────────────────────────────────────
-const CATEGORY_ICONS = {
-  animaux: '/assets/categories/animaux.png',
-  art: '/assets/categories/art.png',
-  'corps-humain': '/assets/categories/corps-humain.png',
-  definition: '/assets/categories/definition.png',
-  gastronomie: '/assets/categories/gastronomie.png',
-  geographie: '/assets/categories/geographie.png',
-  histoire: '/assets/categories/histoire.png',
-  kids: '/assets/categories/kids.png',
-  lois: '/assets/categories/lois-et-regles.png',
-  phobies: '/assets/categories/phobies.png',
-  records: '/assets/categories/records.png',
-  sante: '/assets/categories/sante.png',
-  sciences: '/assets/categories/sciences.png',
-  sport: '/assets/categories/sports.png',
-  technologie: '/assets/categories/technologie.png',
-  cinema: '/assets/categories/cinema.png',
-  musique: '/assets/categories/musique.png',
-  espace: '/assets/categories/espace.png',
-  architecture: '/assets/categories/architecture.png',
-  internet: '/assets/categories/internet.png',
-  crimes: '/assets/categories/crimes.png',
-  psychologie: '/assets/categories/psychologie.png',
-  politique: '/assets/categories/politique.png',
-}
+// ── Icônes catégories — convention : /assets/categories/{id}.png ─────────────
+const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 
-// ── Couleurs catégories ──────────────────────────────────────────────────────
-const CATEGORY_COLORS = {
-  animaux: '#22C55E', art: '#A855F7', 'corps-humain': '#EF4444',
-  definition: '#3B82F6', gastronomie: '#F97316', geographie: '#14B8A6',
-  histoire: '#F59E0B', kids: '#EAB308', lois: '#6366F1',
-  phobies: '#8B5CF6', records: '#D97706', sante: '#10B981',
-  sciences: '#06B6D4', sport: '#DC2626', technologie: '#64748B',
-  cinema: '#D97706', musique: '#EC4899', espace: '#2E1A47',
-  architecture: '#A0826D', internet: '#5B8DBE', crimes: '#8B4789',
-  psychologie: '#8E44AD', politique: '#B24B4B',
-  aleatoires: '#FF6B1A',
-}
+// ── Couleur catégorie — lue dynamiquement depuis CATEGORIES (facts.js) ──────
+const getCategoryColor = (cat) => cat?.color || '#6B7280'
 
 // ── isLightColor ─────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -98,14 +63,14 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
 
   // MOD 1 — Masquer catégories sans facts
   const visibleCategories = useMemo(() => {
-    const cats = PLAYABLE_CATEGORIES.filter(cat => (totalPerCategory[cat.id] || 0) > 0)
+    const cats = getPlayableCategories().filter(cat => (totalPerCategory[cat.id] || 0) > 0)
     console.log('categories IDs:', cats.map(c => c.id))
     return cats
   }, [totalPerCategory])
 
   const selectedCat = selectedCatId === 'random'
     ? { label: 'Aléatoires', emoji: '🎲', id: 'random' }
-    : PLAYABLE_CATEGORIES.find(c => c.id === selectedCatId)
+    : getPlayableCategories().find(c => c.id === selectedCatId)
 
   const hasSelection = selectedCatId !== null
 
@@ -127,7 +92,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
-      height: '100vh', width: '100%',
+      height: '100%', width: '100%',
       overflow: 'hidden', boxSizing: 'border-box',
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
@@ -183,7 +148,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                 {selectedCatId === 'random'
                   ? <span style={{ fontSize: S(24), flexShrink: 0 }}>🎲</span>
                   : <img
-                      src={CATEGORY_ICONS[selectedCat?.id] || ''}
+                      src={getCategoryIcon(selectedCat?.id)}
                       alt=""
                       style={{ width: S(32), height: S(32), borderRadius: '20%', objectFit: 'cover', flexShrink: 0 }}
                     />
@@ -323,7 +288,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
             const isComplete = pct === 1
             const isAlmost = pct >= 0.8 && !isComplete
             const remaining = total - unlocked
-            const bgColor = CATEGORY_COLORS[cat.id] || '#6B7280'
+            const bgColor = getCategoryColor(cat)
             const textColor = isLightColor(bgColor) ? '#1a1a1a' : '#ffffff'
 
             return (
@@ -338,7 +303,8 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                   width: '100%',
                   boxSizing: 'border-box',
                   display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'center',
+                  alignItems: 'center', justifyContent: 'flex-start',
+                  paddingTop: S(10),
                   gap: S(4),
                   border: 'none',
                   outline: isSelected ? '3px solid rgba(255,255,255,0.7)' : 'none',
@@ -351,13 +317,13 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                 }}
               >
                 <img
-                  src={CATEGORY_ICONS[cat.id]}
+                  src={getCategoryIcon(cat.id)}
                   alt={cat.label}
                   style={{
                     width: S(44), height: S(44),
                     objectFit: 'contain',
                     display: 'block',
-                    margin: '0 auto',
+                    flexShrink: 0,
                   }}
                   onError={(e) => { e.target.style.display = 'none' }}
                 />
@@ -415,7 +381,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
             pointerEvents: hasSelection ? 'auto' : 'none',
             background: hasSelection ? 'white' : 'rgba(255,255,255,0.25)',
             color: hasSelection
-              ? (CATEGORY_COLORS[selectedCatId] || '#FF6B1A')
+              ? (getCategoryColor(selectedCat) || '#FF6B1A')
               : 'rgba(255,255,255,0.5)',
             transition: 'all 0.2s ease',
             fontFamily: 'Nunito, sans-serif',

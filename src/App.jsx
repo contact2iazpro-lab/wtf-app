@@ -3,7 +3,7 @@ import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
-  getDailyFact, getTitrePartiel, CATEGORIES, PLAYABLE_CATEGORIES,
+  getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories,
   initFacts,
 } from './data/factsService'
 import DevPanel from './components/DevPanel'
@@ -231,7 +231,7 @@ export default function App() {
   const handleFlashSolo = useCallback(() => {
     audio.play('click')
     const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
-    const validCats = PLAYABLE_CATEGORIES.filter(cat =>
+    const validCats = getPlayableCategories().filter(cat =>
       getValidFacts().some(f => f.category === cat.id) &&
       (childMode || cat.id !== 'kids')
     )
@@ -253,7 +253,7 @@ export default function App() {
   // Quick play — no streak/score save (existing behavior kept)
   const handleQuickPlay = useCallback(() => {
     const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
-    const validCats = PLAYABLE_CATEGORIES.filter(cat =>
+    const validCats = getPlayableCategories().filter(cat =>
       getValidFacts().some(f => f.category === cat.id) &&
       (childMode || cat.id !== 'kids')
     )
@@ -350,7 +350,7 @@ export default function App() {
 
     if (categoryId === null) {
       const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
-      const validCategories = PLAYABLE_CATEGORIES.filter(cat =>
+      const validCategories = getPlayableCategories().filter(cat =>
         getValidFacts().some(f => f.category === cat.id) &&
         (childMode || cat.id !== 'kids')
       )

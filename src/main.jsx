@@ -17,12 +17,14 @@ if (import.meta.env.DEV) {
       margin: 0;
     }
     #root {
-      width: 375px;
-      height: 667px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 0 40px rgba(0,0,0,0.8);
-      border-radius: 12px;
+      width: 375px !important;
+      height: 100dvh !important;
+      max-height: 100dvh !important;
+      overflow: hidden !important;
+      position: relative !important;
+      box-shadow: 0 0 60px rgba(0,0,0,0.9) !important;
+      border-radius: 0 !important;
+      box-sizing: border-box !important;
     }
   `
   document.head.appendChild(style)

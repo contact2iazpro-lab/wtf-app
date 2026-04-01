@@ -24,7 +24,7 @@ serve(async (req) => {
     }
 
     // Parse body
-    const { category, count, difficulty_distribution } = await req.json()
+    const { category, categoryLabel, count, difficulty_distribution } = await req.json()
     if (!category || !count) {
       return new Response(JSON.stringify({ error: 'category et count requis' }), {
         status: 400,
@@ -43,7 +43,7 @@ serve(async (req) => {
 
     // Build prompt
     const prompt = `Tu es un créateur de contenu pour le jeu WTF! Facts (jeu de quiz en français).
-Génère exactement ${count} facts surprenants et fascinants en français sur la catégorie "${category}".
+Génère exactement ${count} facts surprenants et fascinants en français sur la catégorie "${categoryLabel || category}".
 
 RÈGLES STRICTES :
 - question : affirmation vraie ou fausse, surprenante (MAXIMUM 100 caractères)

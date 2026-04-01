@@ -9,6 +9,7 @@ const STATUSES = [
   { value: 'published', label: 'Publié',    color: '#10B981', bg: 'rgba(16,185,129,0.15)', icon: '✅' },
   { value: 'reserve',   label: 'Réserve',   color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: '🔒' },
   { value: 'draft',     label: 'Brouillon', color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', icon: '✏️' },
+  { value: 'doublon',   label: 'Doublon',   color: '#6B7280', bg: 'rgba(107,114,128,0.15)', icon: '🔄' },
 ]
 
 function StatusBadge({ value }) {
@@ -100,7 +101,8 @@ async function generateFactsWithClaude(category, count, difficulties) {
       'Authorization': `Bearer ${adminPassword}`,
     },
     body: JSON.stringify({
-      category: categoryLabel,
+      category,
+      categoryLabel,
       count,
       difficulty_distribution: difficulties,
     }),
@@ -388,6 +390,15 @@ export default function FactsListPage({ toast }) {
       else if (batchAction === 'status_published') updateObj = { status: 'published', is_published: true }
       else if (batchAction === 'status_reserve') updateObj = { status: 'reserve', is_published: false }
       else if (batchAction === 'status_draft') updateObj = { status: 'draft', is_published: false }
+      else if (batchAction === 'status_doublon') updateObj = { status: 'doublon', is_published: false }
+      else if (batchAction === 'delete') {
+        const { error } = await supabase.from('facts').delete().in('id', ids)
+        if (error) throw error
+        toast?.(`✓ ${ids.length} facts supprimés`)
+        setBatchAction(null); setBatchValue(''); setSelected(new Set())
+        await loadFacts()
+        return
+      }
       else if (batchAction === 'pack') updateObj = { pack_id: batchValue }
       else if (batchAction === 'difficulty') updateObj = { difficulty: batchValue }
 
@@ -576,6 +587,37 @@ export default function FactsListPage({ toast }) {
   function rejectPendingFact(index) {
     setPendingFacts(prev => prev.filter((_, i) => i !== index))
     toast?.('Fact refusé — supprimé de la file d\'attente')
+  }
+
+  async function acceptAllPendingFacts() {
+    if (!confirm(`Accepter les ${pendingFacts.length} facts en attente ?`)) return
+    let accepted = 0
+    for (let i = 0; i < pendingFacts.length; i++) {
+      setAcceptingIndex(i)
+      const f = pendingFacts[i]
+      try {
+        const { data: maxData } = await supabase
+          .from('facts').select('id').order('id', { ascending: false }).limit(1)
+        const newId = (maxData?.[0]?.id || 0) + 1
+        const options = (f.options || []).filter(o => o.trim())
+        const { error } = await supabase.from('facts').insert({
+          id: newId, category: f.category, question: f.question,
+          hint1: f.hint1 || null, hint2: f.hint2 || null,
+          short_answer: f.short_answer, answer: f.short_answer || '',
+          explanation: f.explanation || null, source_url: f.source_url || null,
+          options: options.length > 0 ? options : null,
+          correct_index: f.correct_index ?? 0, image_url: f.image_url || null,
+          is_vip: false, status: 'draft', is_published: false,
+          pack_id: f.pack_id || 'free', vip_usage: 'available',
+          difficulty: f.difficulty || 'Normal', updated_at: new Date().toISOString(),
+        })
+        if (!error) accepted++
+      } catch (err) { console.error(err) }
+    }
+    setAcceptingIndex(null)
+    setPendingFacts([])
+    toast?.(`✓ ${accepted} facts acceptés`)
+    await loadFacts()
   }
 
   const totalPages = Math.ceil(total / pageSize)
@@ -887,7 +929,7 @@ export default function FactsListPage({ toast }) {
         </div>
       )}
 
-      {batchAction && (batchAction === 'vip' || batchAction.startsWith('status_')) && (
+      {batchAction && (batchAction === 'vip' || batchAction === 'delete' || batchAction.startsWith('status_')) && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60" onClick={() => setBatchAction(null)}>
           <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 w-80" onClick={e => e.stopPropagation()}>
             <h3 className="font-black text-white mb-3">
@@ -895,12 +937,16 @@ export default function FactsListPage({ toast }) {
               {batchAction === 'status_published' && '✅ Publier'}
               {batchAction === 'status_reserve' && '🔒 Mettre en Réserve'}
               {batchAction === 'status_draft' && '✏️ Mettre en Brouillon'}
+              {batchAction === 'status_doublon' && '🔄 Marquer comme Doublon'}
+              {batchAction === 'delete' && '🗑 Supprimer définitivement'}
             </h3>
             <p className="text-slate-400 text-sm mb-5">
               {batchAction === 'vip' && `Marquer ${selected.size} fact(s) comme VIP ?`}
               {batchAction === 'status_published' && `Modifier ${selected.size} fact(s) en Publié ?`}
               {batchAction === 'status_reserve' && `Modifier ${selected.size} fact(s) en Réserve ?`}
               {batchAction === 'status_draft' && `Modifier ${selected.size} fact(s) en Brouillon ?`}
+              {batchAction === 'status_doublon' && `Marquer ${selected.size} fact(s) comme Doublon ?`}
+              {batchAction === 'delete' && `⚠️ Supprimer définitivement ${selected.size} fact(s) ? Cette action est irréversible.`}
             </p>
             <div className="flex gap-2">
               <button onClick={() => setBatchAction(null)} className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold">Annuler</button>
@@ -908,6 +954,8 @@ export default function FactsListPage({ toast }) {
                 background: batchAction === 'status_published' ? '#10B981'
                   : batchAction === 'status_reserve' ? '#F59E0B'
                   : batchAction === 'status_draft' ? '#9CA3AF'
+                  : batchAction === 'status_doublon' ? '#6B7280'
+                  : batchAction === 'delete' ? '#DC2626'
                   : '#FF6B1A'
               }}>
                 {batchLoading ? '…' : 'Confirmer'}
@@ -949,12 +997,20 @@ export default function FactsListPage({ toast }) {
               <span className="text-amber-400 font-black text-sm">⏳ En attente de validation</span>
               <span className="bg-amber-400 text-black text-xs font-black px-2 py-0.5 rounded-full">{pendingFacts.length}</span>
             </div>
-            <button
-              onClick={() => { if (confirm(`Refuser et supprimer les ${pendingFacts.length} facts en attente ?`)) setPendingFacts([]) }}
-              className="text-xs text-slate-500 hover:text-red-400 transition-colors"
-            >
-              ✕ Tout refuser
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={acceptAllPendingFacts}
+                className="text-xs font-bold text-green-400 hover:text-green-300 transition-colors"
+              >
+                ✓ Tout accepter
+              </button>
+              <button
+                onClick={() => { if (confirm(`Refuser et supprimer les ${pendingFacts.length} facts en attente ?`)) setPendingFacts([]) }}
+                className="text-xs text-slate-500 hover:text-red-400 transition-colors"
+              >
+                ✕ Tout refuser
+              </button>
+            </div>
           </div>
           <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
             {pendingFacts.map((pf, i) => (
@@ -1117,6 +1173,8 @@ export default function FactsListPage({ toast }) {
               { key: 'status_published', label: '✅ Publier',    color: '#10B981' },
               { key: 'status_reserve',   label: '🔒 Réserve',   color: '#F59E0B' },
               { key: 'status_draft',     label: '✏️ Brouillon', color: '#9CA3AF' },
+              { key: 'status_doublon',   label: '🔄 Doublon',   color: '#6B7280' },
+              { key: 'delete',           label: '🗑 Supprimer',  color: '#DC2626' },
               { key: 'category',         label: '🗂 Catégorie' },
               { key: 'difficulty',       label: '🎯 Difficulté' },
               { key: 'pack',             label: '📦 Pack' },

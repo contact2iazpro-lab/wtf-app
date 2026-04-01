@@ -91,7 +91,19 @@ export default function DashboardPage({ toast }) {
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_published', true),
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_published', false),
         supabase.from('facts').select('*', { count: 'exact', head: true }).eq('is_vip', true),
-        supabase.from('facts').select('category, is_published, vip_usage, is_vip, difficulty, archived_reason'),
+        (async () => {
+          const all = []
+          let from = 0
+          const PAGE = 1000
+          while (true) {
+            const { data, error } = await supabase.from('facts').select('category, is_published, vip_usage, is_vip, difficulty, archived_reason').range(from, from + PAGE - 1)
+            if (error || !data || data.length === 0) break
+            all.push(...data)
+            if (data.length < PAGE) break
+            from += PAGE
+          }
+          return { data: all }
+        })(),
         supabase.from('edit_history').select('*').order('edited_at', { ascending: false }).limit(5),
       ])
 
@@ -141,8 +153,7 @@ export default function DashboardPage({ toast }) {
     }
     const catData = CATEGORIES
       .map(c => ({ ...c, count: catCounts[c.id] || 0 }))
-      .filter(c => c.count > 0)
-      .sort((a, b) => b.count - a.count)
+      .sort((a, b) => a.label.localeCompare(b.label, 'fr'))
     setCategoryData(catData)
   }
 
@@ -591,8 +602,7 @@ export default function DashboardPage({ toast }) {
         // Sort by total descending, merge with CATEGORIES for label/emoji
         const rows = CATEGORIES
           .map(cat => ({ ...cat, ...(catMap[cat.id] || { total: 0, published: 0, vip: 0, cool: 0, hot: 0, wtf: 0 }) }))
-          .filter(r => r.total > 0)
-          .sort((a, b) => b.total - a.total)
+          .sort((a, b) => a.label.localeCompare(b.label, 'fr'))
         const maxTotal = rows.length > 0 ? rows[0].total : 1
 
         return (

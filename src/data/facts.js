@@ -14,7 +14,7 @@ export const CATEGORIES = [
   { id: 'gastronomie',       label: 'Gastronomie',              emoji: '🍽️', color: '#FFA500', bg: '#3A2000', image: 'Carte WTF Gastronomie.png' },
   { id: 'geographie',        label: 'Géographie',          emoji: '🌍', color: '#40D9C8', bg: '#003A35', image: 'Carte WTF Geographie.png' },
   { id: 'histoire',          label: 'Histoire',                 emoji: '📜', color: '#E8CFA0', bg: '#2C2010', image: 'Carte WTF Histoire.png' },
-  { id: 'internet',          label: 'Internet & Réseaux Sociaux', emoji: '📱', color: '#5B8DBE', bg: '#0A1A35', image: 'Carte WTF Internet.png', disabled: true },
+  { id: 'internet',          label: 'Internet & Réseaux', emoji: '📱', color: '#5B8DBE', bg: '#0A1A35', image: 'Carte WTF Internet.png', disabled: true },
   { id: 'inventions',        label: 'Inventions & Découvertes',   emoji: '💡', color: '#F1C40F', bg: '#2A2000', inactive: true },
   { id: 'jeux-jouets',       label: 'Jeux & Jouets',            emoji: '🎮', color: '#9B59B6', bg: '#1A0A2A', inactive: true },
   { id: 'kids',              label: 'Kids',                     emoji: '🎈', color: '#FFEF60', bg: '#3A3300', image: 'Carte WTF Kids.png' },
@@ -457,21 +457,18 @@ export const isFactValid = (fact) => {
   if (!fact || !fact.question || !fact.category) return false
   if (!Array.isArray(fact.options) || fact.options.length < 2) return false
   if (typeof fact.correctIndex !== 'number' || fact.correctIndex < 0) return false
-
-  // imageUrl: null â no image, allowed
-  // imageUrl: "https://..." â external image, always allowed
-  // imageUrl: "/assets/facts/N.png" â must exist locally (N between 1-350)
-  if (fact.imageUrl !== null && fact.imageUrl !== undefined) {
-    if (!fact.imageUrl.startsWith('http')) {
-      const imageId = getImageId(fact.imageUrl)
-      if (imageId === null || !EXISTING_IMAGE_IDS.has(imageId)) return false
-    }
-  }
-
   return true
 }
 
-export const VALID_FACTS = FACTS.filter(isFactValid)
+function sanitizeImage(fact) {
+  if (fact.imageUrl && !fact.imageUrl.startsWith('http')) {
+    const imageId = getImageId(fact.imageUrl)
+    if (!imageId || !EXISTING_IMAGE_IDS.has(imageId)) return { ...fact, imageUrl: null }
+  }
+  return fact
+}
+
+export const VALID_FACTS = FACTS.filter(isFactValid).map(sanitizeImage)
 
 // Categories available for gameplay (disabled: true = hidden until ready)
 // Jeu joueur — exclut les inactives et disabled (utilisé par CategoryScreen)

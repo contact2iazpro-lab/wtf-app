@@ -13,7 +13,7 @@ export default function App() {
   const { toasts, toast, dismiss } = useToast()
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       <Routes>
         <Route path="/login" element={<LoginPage toast={toast} />} />

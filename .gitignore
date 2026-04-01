@@ -10,3 +10,5 @@ sources_temp.json
 !.env.example
 .env.local
 .env*.local
+supabase/.temp/
+.claude/worktrees/

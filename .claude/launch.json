@@ -4,14 +4,15 @@
     {
       "name": "wtf-app",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--host"],
-      "port": 3000
+      "runtimeArgs": ["node_modules/vite/bin/vite.js", "--host", "--port", "5176"],
+      "port": 5176
     },
     {
       "name": "admin-tool",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["admin-tool/node_modules/vite/bin/vite.js", "admin-tool", "--host"],
-      "port": 5174
+      "runtimeArgs": ["admin-tool/node_modules/vite/bin/vite.js", "--host", "--port", "5174"],
+      "port": 5174,
+      "cwd": "admin-tool"
     }
   ]
 }

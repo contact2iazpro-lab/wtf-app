@@ -2,8 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useCollection'
-import { PLAYABLE_CATEGORIES } from '../data/facts'
-import { getParcoursFacts } from '../data/factsService'
+import { getParcoursFacts, getPlayableCategories } from '../data/factsService'
 import LoginModal from '../components/Auth/LoginModal'
 import { audio } from '../utils/audio'
 
@@ -41,7 +40,7 @@ const DIFF_CONFIG = {
 // ─── Fact detail full-screen view ──────────────────────────────────────────
 
 function FactDetailView({ fact, onClose }) {
-  const cat = PLAYABLE_CATEGORIES.find(c => c.id === fact.category)
+  const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
   const screenBg = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
 
@@ -294,7 +293,7 @@ export default function CollectionPage() {
 
   // Stats for active tab, per category
   const tabStats = useMemo(() => {
-    return PLAYABLE_CATEGORIES.map(cat => {
+    return getPlayableCategories().map(cat => {
       const facts = factsIndex[`${activeTab}_${cat.id}`] || []
       const unlockedCount = facts.filter(f => allUnlockedIds.has(f.id)).length
       const pct = facts.length > 0 ? Math.round((unlockedCount / facts.length) * 100) : 0
@@ -314,7 +313,7 @@ export default function CollectionPage() {
   }, [activeTab, allUnlockedIds, factsIndex])
 
   // Global progress for active tab
-  const tabTotalAvailable = PLAYABLE_CATEGORIES.length * 10 // always 170
+  const tabTotalAvailable = getPlayableCategories().length * 10 // always 170
   const tabTotalUnlocked = tabStats.reduce((a, s) => a + s.unlocked, 0)
   const tabPercentage = Math.round((tabTotalUnlocked / tabTotalAvailable) * 100)
 

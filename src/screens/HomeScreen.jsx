@@ -11,11 +11,11 @@ import { useScale } from '../hooks/useScale'
 
 // ── Background aléatoire par session ──────────────────────────────────────────
 const HOME_BACKGROUNDS = [
-  { url: '/assets/backgrounds/home-orange.png', textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.5)' },
-  { url: '/assets/backgrounds/home-violet.png', textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.4)' },
-  { url: '/assets/backgrounds/home-bleu.png',   textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.4)' },
-  { url: '/assets/backgrounds/home-rouge.png',  textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.5)' },
-  { url: '/assets/backgrounds/home-teal.png',   textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.5)' },
+  { url: '/assets/backgrounds/home-orange.png', textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-violet.png', textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-bleu.png',   textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-rouge.png',  textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-teal.png',   textColor: '#FF6B1A', shadow: 'none' },
 ]
 
 function getSessionBackground() {
@@ -190,6 +190,7 @@ export default function HomeScreen({
         position: 'relative',
         height: '100%', width: '100%', overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
+        justifyContent: 'space-between',
         boxSizing: 'border-box',
         paddingTop: S(8),
         fontFamily: 'Nunito, sans-serif',
@@ -303,7 +304,7 @@ export default function HomeScreen({
       <div style={{
         display: 'flex', gap: S(6), padding: `${S(6)} ${S(10)}`,
         flexShrink: 0, position: 'relative', zIndex: 2,
-        justifyContent: 'center', marginBottom: S(6),
+        justifyContent: 'center',
       }}>
         {COFFRE_DAYS.map((day, i) => {
           const status = getStatus(i)
@@ -445,9 +446,6 @@ export default function HomeScreen({
           des réactions 100% fun !
         </div>
       </div>
-
-      {/* Spacer — pousse le bouton Flash + nav bar en bas */}
-      <div style={{ flex: 1 }} />
 
       {/* ═══ BOUTON FLASH ══════════════════════════════════════════════════ */}
       <div style={{

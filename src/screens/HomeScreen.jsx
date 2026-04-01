@@ -362,11 +362,10 @@ export default function HomeScreen({
 
       {/* ═══ ZONE 4 — CORPS PRINCIPAL ═══════════════════════════════════════ */}
       <div style={{
-        flex: 1, minHeight: 0,
+        flexShrink: 0,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center',
         position: 'relative', zIndex: 1,
-        overflow: 'hidden',
       }}>
 
         {/* 4a. "VRAI OU FOU ?" — pleine largeur */}

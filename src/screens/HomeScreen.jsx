@@ -15,7 +15,7 @@ const HOME_BACKGROUNDS = [
   { url: '/assets/backgrounds/home-violet.png', textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.4)' },
   { url: '/assets/backgrounds/home-bleu.png',   textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.4)' },
   { url: '/assets/backgrounds/home-rouge.png',  textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.5)' },
-  { url: '/assets/backgrounds/home-teal.png',   textColor: '#1a1a2e', shadow: '0 1px 4px rgba(255,255,255,0.3)' },
+  { url: '/assets/backgrounds/home-teal.png',   textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.5)' },
 ]
 
 function getSessionBackground() {
@@ -441,11 +441,13 @@ export default function HomeScreen({
 
       </div>
 
+      {/* Spacer — pousse le bouton Flash + nav bar en bas */}
+      <div style={{ flex: 1 }} />
+
       {/* ═══ BOUTON FLASH ══════════════════════════════════════════════════ */}
       <div style={{
         display: 'flex', justifyContent: 'center',
-        padding: `0 ${S(16)} ${S(12)}`,
-        marginTop: S(6),
+        padding: `0 ${S(16)} ${S(8)}`,
         flexShrink: 0, position: 'relative', zIndex: 10,
       }}>
         <button
@@ -470,9 +472,6 @@ export default function HomeScreen({
           ⚡ JOUER EN MODE FLASH
         </button>
       </div>
-
-      {/* Spacer — pousse la nav bar en bas */}
-      <div style={{ flex: 1 }} />
 
       {/* ═══ ZONE 5 — NAV BAR ══════════════════════════════════════════════ */}
       <div style={{

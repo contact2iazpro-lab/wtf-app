@@ -82,73 +82,36 @@ function assignDifficultiesToNewFacts(existingCounts, count) {
   return assignments
 }
 
-// ── Claude API generation ──────────────────────────────────────────────────
+// ── Claude API generation via Supabase Edge Function ──────────────────────
 async function generateFactsWithClaude(category, count, difficulties) {
-  const apiKey = import.meta.env.VITE_ANTHROPIC_KEY
-  if (!apiKey || apiKey === 'sk-ant-...') {
-    throw new Error('VITE_ANTHROPIC_KEY manquant dans le fichier .env.local')
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD
+  if (!supabaseUrl || !adminPassword) {
+    throw new Error('VITE_SUPABASE_URL ou VITE_ADMIN_PASSWORD manquant dans .env.local')
   }
 
   const categoryObj = CATEGORIES.find(c => c.id === category)
   const categoryLabel = categoryObj ? `${categoryObj.emoji} ${categoryObj.label}` : category
 
-  const prompt = `Tu es un créateur de contenu pour le jeu WTF! Facts (jeu de quiz en français).
-Génère exactement ${count} facts surprenants et fascinants en français sur la catégorie "${categoryLabel}".
-
-RÈGLES STRICTES :
-- question : affirmation vraie ou fausse, surprenante (MAXIMUM 100 caractères)
-- hint1 : indice court (MAXIMUM 20 caractères)
-- hint2 : deuxième indice (MAXIMUM 20 caractères)
-- short_answer : "VRAI" ou "FAUX" uniquement (MAXIMUM 50 caractères)
-- explanation : explication détaillée (ENTRE 100 ET 300 caractères)
-- options : tableau de 4 réponses QCM en français
-- correct_index : index de la bonne réponse (0 à 3)
-- source_url : URL source si connue, sinon ""
-
-Retourne UNIQUEMENT un tableau JSON valide, SANS texte avant ni après.
-Format exact : [{"question":"...","hint1":"...","hint2":"...","short_answer":"VRAI","explanation":"...","options":["A","B","C","D"],"correct_index":0,"source_url":""}]`
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch(`${supabaseUrl}/functions/v1/generate-facts`, {
     method: 'POST',
     headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'anthropic-dangerous-client-side-key-access': 'true',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${adminPassword}`,
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
+      category: categoryLabel,
+      count,
+      difficulty_distribution: difficulties,
     }),
   })
 
   if (!response.ok) {
-    const err = await response.text()
-    throw new Error(`Erreur API Anthropic (${response.status}): ${err}`)
+    const err = await response.json().catch(() => ({ error: response.statusText }))
+    throw new Error(`Erreur génération (${response.status}): ${err.error || JSON.stringify(err)}`)
   }
 
-  const data = await response.json()
-  const text = data.content[0].text.trim()
-
-  // Extract JSON array from response
-  const jsonMatch = text.match(/\[[\s\S]*\]/)
-  if (!jsonMatch) throw new Error('Réponse API invalide — pas de JSON trouvé')
-
-  const facts = JSON.parse(jsonMatch[0])
-  if (!Array.isArray(facts)) throw new Error('Réponse API invalide — pas un tableau')
-
-  // Attach difficulties and metadata
-  return facts.map((f, i) => ({
-    ...f,
-    difficulty: difficulties[i] || 'Normal',
-    category,
-    status: 'draft',
-    is_published: false,
-    pack_id: 'free',
-    options: Array.isArray(f.options) ? f.options : [],
-    correct_index: typeof f.correct_index === 'number' ? f.correct_index : 0,
-  }))
+  return await response.json()
 }
 
 // ── Empty fact template ────────────────────────────────────────────────────
@@ -863,9 +826,9 @@ export default function FactsListPage({ toast }) {
                 </div>
               </div>
 
-              {!import.meta.env.VITE_ANTHROPIC_KEY && (
+              {(!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_ADMIN_PASSWORD) && (
                 <p className="text-amber-400 text-xs bg-amber-900/20 border border-amber-700/30 rounded-xl p-3">
-                  ⚠ <span className="font-bold">VITE_ANTHROPIC_KEY</span> non configuré dans .env.local — la génération ne fonctionnera pas.
+                  ⚠ <span className="font-bold">VITE_SUPABASE_URL</span> ou <span className="font-bold">VITE_ADMIN_PASSWORD</span> non configuré — la génération ne fonctionnera pas.
                 </p>
               )}
             </div>

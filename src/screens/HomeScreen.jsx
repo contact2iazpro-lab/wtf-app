@@ -471,6 +471,9 @@ export default function HomeScreen({
         </button>
       </div>
 
+      {/* Spacer — pousse la nav bar en bas */}
+      <div style={{ flex: 1 }} />
+
       {/* ═══ ZONE 5 — NAV BAR ══════════════════════════════════════════════ */}
       <div style={{
         display: 'flex', alignItems: 'flex-end',

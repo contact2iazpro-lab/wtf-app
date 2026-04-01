@@ -1,0 +1,5 @@
+[build]
+dockerfilePath = "Dockerfile"
+
+[build.args]
+VITE_ANTHROPIC_KEY = "${{VITE_ANTHROPIC_KEY}}"

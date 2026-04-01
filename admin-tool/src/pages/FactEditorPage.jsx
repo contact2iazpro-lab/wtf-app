@@ -8,7 +8,13 @@ import { resolveImageUrl } from '../utils/imageUrl'
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'short_answer', 'explanation',
   'source_url', 'options', 'correct_index', 'image_url',
-  'is_vip', 'is_published', 'pack_id', 'vip_usage', 'difficulty',
+  'is_vip', 'status', 'pack_id', 'vip_usage', 'difficulty',
+]
+
+const STATUSES = [
+  { value: 'draft',     label: 'Brouillon', color: '#9CA3AF', icon: '✏️' },
+  { value: 'reserve',   label: 'Réserve',   color: '#F59E0B', icon: '🔒' },
+  { value: 'published', label: 'Publié',    color: '#10B981', icon: '✅' },
 ]
 
 const DIFFICULTIES = [
@@ -126,9 +132,12 @@ export default function FactEditorPage({ toast }) {
       if (error) throw error
       const options = Array.isArray(data.options) ? data.options : []
       while (options.length < 6) options.push('')
+      // Rétrocompatibilité : mapper is_published → status si status absent
+      const status = data.status || (data.is_published ? 'published' : 'draft')
       const f = {
         ...data,
         options,
+        status,
         vip_usage: data.vip_usage || 'available',
         difficulty: data.difficulty || 'Normal',
       }
@@ -266,6 +275,8 @@ export default function FactEditorPage({ toast }) {
         ...fact,
         options: options.length > 0 ? options : null,
         updated_at: new Date().toISOString(),
+        // Rétrocompatibilité : sync is_published depuis status
+        is_published: fact.status === 'published',
       }
       delete payload.id
 
@@ -578,13 +589,28 @@ export default function FactEditorPage({ toast }) {
               />
             </div>
 
-            <div className="p-4 rounded-xl border" style={{ background: fact.is_published ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', borderColor: fact.is_published ? 'rgba(34,197,94,0.3)' : '#334155' }}>
-              <Toggle
-                on={fact.is_published}
-                onChange={v => set('is_published', v)}
-                label="👁 Publié — Visible dans l'app"
-                color="#22C55E"
-              />
+            <div>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Statut de publication</label>
+              <div className="flex gap-2">
+                {STATUSES.map(s => {
+                  const active = fact.status === s.value
+                  return (
+                    <button
+                      key={s.value}
+                      onClick={() => set('status', s.value)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all"
+                      style={{
+                        background: active ? s.color : 'transparent',
+                        color: active ? 'white' : s.color,
+                        border: `2px solid ${s.color}`,
+                      }}
+                    >
+                      <span>{s.icon}</span>
+                      <span>{s.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
             {fact.is_vip && (

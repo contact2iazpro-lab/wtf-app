@@ -218,8 +218,8 @@ export default function HomeScreen({
           <img src="/assets/ui/avatar-default.png" alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </button>
 
-        {/* Coins + Tickets badges */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: S(6) }}>
+        {/* Coins + Tickets + Settings */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(12) }}>
           <button
             onClick={() => nav('boutique')}
             style={{
@@ -230,7 +230,7 @@ export default function HomeScreen({
             }}
           >
             <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: S(14), height: S(14), flexShrink: 0 }} />
-            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11) }}>{playerCoins}</span>
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{playerCoins}</span>
           </button>
           <button
             onClick={() => nav('boutique')}
@@ -242,24 +242,22 @@ export default function HomeScreen({
             }}
           >
             <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: S(14), height: S(14), flexShrink: 0 }} />
-            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11) }}>{dailyQuestsRemaining}</span>
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{dailyQuestsRemaining}</span>
+          </button>
+          <button
+            onClick={handleSettings}
+            style={{
+              width: S(28), height: S(28), borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none', padding: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: S(16), height: S(16) }} />
           </button>
         </div>
-
-        {/* Settings */}
-        <button
-          onClick={handleSettings}
-          style={{
-            width: S(28), height: S(28), borderRadius: '50%',
-            background: 'rgba(255,255,255,0.2)',
-            border: 'none', padding: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0,
-            WebkitTapHighlightColor: 'transparent',
-          }}
-        >
-          <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: S(16), height: S(16) }} />
-        </button>
       </div>
 
       {/* ═══ ZONE 2 — BADGE PROGRESSION ════════════════════════════════════ */}
@@ -295,10 +293,10 @@ export default function HomeScreen({
           const isColl = status === 'collected'
           const isTrophy = status === 'locked-trophy'
 
-          const chestSrc = isAvail || isColl
+          const chestSrc = isAvail
             ? '/assets/ui/chest-open.png'
             : isTrophy
-              ? '/assets/ui/chest-trophy.png'
+              ? '/assets/ui/chest-trophy.png?v=2'
               : '/assets/ui/chest-locked.png'
 
           return (
@@ -331,7 +329,7 @@ export default function HomeScreen({
               <img
                 src={chestSrc}
                 alt={isAvail ? 'coffre disponible' : isTrophy ? 'coffre trophée' : 'coffre verrouillé'}
-                style={{ width: S(28), height: S(28), objectFit: 'contain', flexShrink: 0 }}
+                style={{ width: S(28), height: S(28), objectFit: 'contain', flexShrink: 0, background: 'transparent', display: 'block' }}
               />
               <span style={{
                 fontSize: S(6), fontWeight: 800, lineHeight: 1,
@@ -344,94 +342,93 @@ export default function HomeScreen({
         })}
       </div>
 
-      {/* ═══ ZONE 4 — CORPS PRINCIPAL (3 colonnes) ═════════════════════════ */}
+      {/* ═══ ZONE 4 — CORPS PRINCIPAL ═══════════════════════════════════════ */}
       <div style={{
         flex: 1, minHeight: 0,
-        display: 'flex', flexDirection: 'row',
-        padding: `0 ${S(6)}`,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center',
         position: 'relative', zIndex: 1,
+        overflow: 'hidden',
       }}>
 
-        {/* ── Colonne gauche ── */}
+        {/* 4a. "VRAI OU FOU ?" — pleine largeur */}
         <div style={{
-          width: S(72), flexShrink: 0,
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-evenly', alignItems: 'center',
+          width: '100%',
+          fontSize: S(26), fontWeight: 900, color: 'white',
+          textAlign: 'center',
+          textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+          letterSpacing: 0.5,
+          marginBottom: S(12),
+          flexShrink: 0,
         }}>
-          <ModeIcon src="/assets/modes/quete.png" label="Quête WTF!" onClick={() => nav('difficulty')} />
-          <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => nav('trophees')} />
-          <ModeIcon src="/assets/modes/wtf-semaine.png" label="WTF Semaine" onClick={() => nav('wtfDuJour')} />
+          VRAI OU FOU ?
         </div>
 
-        {/* ── Colonne centre ── */}
+        {/* 4b. Zone 3 colonnes — gauche: modes | centre: étoile+tagline | droite: modes */}
         <div style={{
-          flex: 1, minWidth: 0,
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-evenly', alignItems: 'center',
-          position: 'relative',
+          display: 'flex', flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          width: '100%',
+          padding: `0 ${S(6)}`,
+          flexShrink: 0,
         }}>
-          {/* Logo WTF! */}
-          <img
-            src="/logo-wtf.png"
-            alt="WTF!"
-            style={{
-              height: S(60), objectFit: 'contain',
-              filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
-            }}
-          />
-
-          {/* VRAI OU FOU ? */}
+          {/* Colonne gauche — 27% */}
           <div style={{
-            fontSize: S(20), fontWeight: 900, color: 'white',
-            textAlign: 'center',
-            textShadow: '0 2px 8px rgba(0,0,0,0.4)',
-            letterSpacing: 0.5,
+            width: '27%', flexShrink: 0,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: S(8),
           }}>
-            VRAI OU FOU ?
+            <ModeIcon src="/assets/modes/quete.png" label="Quête WTF!" onClick={() => nav('difficulty')} />
+            <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => nav('trophees')} />
+            <ModeIcon src="/assets/modes/wtf-semaine.png" label="WTF Semaine" onClick={() => nav('wtfDuJour')} />
           </div>
 
-          {/* Tagline */}
+          {/* Colonne centre — étoile + tagline */}
           <div style={{
-            fontSize: S(12), fontWeight: 700, color: 'white',
-            textAlign: 'center', lineHeight: 1.5,
-            textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+            flex: 1.5,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center',
           }}>
-            Des f*cts 100% vrais,<br />des réactions 100% fun !
+            <img
+              src="/logo-wtf.png"
+              alt="WTF!"
+              style={{
+                display: 'block',
+                width: S(160), height: S(160), objectFit: 'contain',
+                margin: '0 auto',
+                filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
+              }}
+            />
+            <div style={{
+              fontSize: S(13), fontWeight: 700, color: 'white',
+              textAlign: 'center', lineHeight: 1.4,
+              textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+              marginTop: S(8),
+            }}>
+              Des f*cts 100% vrais,<br />des réactions 100% fun !
+            </div>
           </div>
 
-          {/* Chat mascotte — absolute, bottom of zone 4 */}
-          <img
-            src="/cat-president.png"
-            alt="mascotte"
-            style={{
-              position: 'absolute',
-              bottom: 0, left: '50%',
-              transform: 'translateX(-50%)',
-              width: S(110),
-              objectFit: 'contain',
-              zIndex: 1,
-              pointerEvents: 'none',
-            }}
-          />
+          {/* Colonne droite — 27% */}
+          <div style={{
+            width: '27%', flexShrink: 0,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: S(8),
+          }}>
+            <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
+            <ModeIcon src="/assets/modes/multi.png" label="Multi" disabled />
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" disabled />
+          </div>
         </div>
 
-        {/* ── Colonne droite ── */}
-        <div style={{
-          width: S(72), flexShrink: 0,
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-evenly', alignItems: 'center',
-        }}>
-          <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
-          <ModeIcon src="/assets/modes/multi.png" label="Multi" disabled />
-          <ModeIcon src="/assets/modes/blitz.png" label="Blitz" disabled />
-        </div>
       </div>
 
-      {/* ═══ ZONE 4B — BOUTON FLASH ════════════════════════════════════════ */}
+      {/* ═══ BOUTON FLASH ══════════════════════════════════════════════════ */}
       <div style={{
         display: 'flex', justifyContent: 'center',
-        padding: `${S(4)} ${S(16)} ${S(4)}`,
-        flexShrink: 0, position: 'relative', zIndex: 5,
+        padding: `${S(4)} ${S(16)} ${S(16)}`,
+        flexShrink: 0, position: 'relative', zIndex: 10,
       }}>
         <button
           onClick={() => nav('categoryFlash')}
@@ -488,7 +485,7 @@ export default function HomeScreen({
               {item.center ? (
                 /* Accueil — surélevé, cercle orange */
                 <div style={{
-                  width: S(34), height: S(34), borderRadius: '50%',
+                  width: S(38), height: S(38), borderRadius: '50%',
                   background: '#FF6B1A',
                   border: '3px solid white',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -498,7 +495,7 @@ export default function HomeScreen({
                   <img
                     src={`/assets/nav/${item.slug}.png`}
                     alt={item.label}
-                    style={{ width: S(16), height: S(16), filter: 'brightness(0) invert(1)' }}
+                    style={{ width: S(18), height: S(18), filter: 'brightness(0) invert(1)' }}
                   />
                 </div>
               ) : (
@@ -506,16 +503,15 @@ export default function HomeScreen({
                   src={`/assets/nav/${item.slug}.png`}
                   alt={item.label}
                   style={{
-                    width: S(18), height: S(18),
-                    opacity: 0.5,
-                    filter: 'grayscale(1)',
+                    width: S(22), height: S(22),
+                    opacity: 0.6,
                     transition: 'all 0.2s ease',
                   }}
                 />
               )}
               <span style={{
-                fontSize: S(7), fontWeight: 700,
-                color: isActive ? '#FF6B1A' : '#888',
+                fontSize: S(10), fontWeight: 700,
+                color: isActive ? '#FF6B1A' : '#666',
               }}>
                 {item.label}
               </span>

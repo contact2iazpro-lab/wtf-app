@@ -1,27 +1,34 @@
 export const CATEGORIES = [
-  { id: "animaux", label: "Animaux", emoji: "ð¦", color: "#6BCB77", bg: "#0A2A0E", image: "Carte WTF Animaux.png" },
-  { id: "art", label: "Art", emoji: "ð¨", color: "#A07CD8", bg: "#1A0A35", image: "Carte WTF Art.png" },
-  { id: "corps-humain", label: "Corps Humain", emoji: "ð«", color: "#F07070", bg: "#3A0A0A", image: "Carte WTF Corps humain.png" },
-  { id: "definition", label: "DÃ©finition", emoji: "ð", color: "#C8C8C8", bg: "#1C1C1C", image: "Carte WTF Definition.png" },
-  { id: "gastronomie", label: "Gastronomie", emoji: "ð½ï¸", color: "#FFA500", bg: "#3A2000", image: "Carte WTF Gastronomie.png" },
-  { id: "geographie", label: "GÃ©ographie", emoji: "ð", color: "#40D9C8", bg: "#003A35", image: "Carte WTF Geographie.png" },
-  { id: "histoire", label: "Histoire", emoji: "ð", color: "#E8CFA0", bg: "#2C2010", image: "Carte WTF Histoire.png" },
-  { id: "kids", label: "Kids", emoji: "ð", color: "#FFEF60", bg: "#3A3300", image: "Carte WTF Kids.png" },
-  { id: "phobies", label: "Phobies", emoji: "ð±", color: "#A8B8D8", bg: "#0A1020", image: "Carte WTF Phobies.png" },
-  { id: "records", label: "Records", emoji: "ð", color: "#E8B84B", bg: "#2E2000", image: "Carte WTF Records.png" },
-  { id: "sante", label: "SantÃ©", emoji: "âï¸", color: "#90F090", bg: "#053A05", image: "Carte WTF Sante.png" },
-  { id: "sciences", label: "Sciences", emoji: "ð¬", color: "#80C8E8", bg: "#0A2035", image: "Carte WTF Sciences.png" },
-  { id: "sport", label: "Sport", emoji: "â½", color: "#E84535", bg: "#3A0A05", image: "Carte WTF Sport.png" },
-  { id: "technologie", label: "Technologie", emoji: "ð¤", color: "#C0C0C0", bg: "#1C1C1C", image: "Carte WTF Technologie.png" },
-  { id: "lois", label: "Lois & RÃ¨gles", emoji: "âï¸", color: "#B0A8D8", bg: "#1A0A35", image: "Carte WTF Lois et regles.png" },
-  { id: "politique", label: "Politique", emoji: "ð³ï¸", color: "#B24B4B", bg: "#2A0A0A", image: "Carte WTF Politique.png", disabled: true },
-  { id: "cinema", label: "CinÃ©ma", emoji: "ð¬", color: "#D4AF37", bg: "#2A2000", image: "Carte WTF Cinema.png" },
-  { id: "crimes", label: "Crimes & Faits Divers", emoji: "ð", color: "#8B4789", bg: "#2A0A2A", image: "Carte WTF Crimes.png", disabled: true },
-  { id: "architecture", label: "Architecture", emoji: "ðï¸", color: "#A0826D", bg: "#2A1A0F", image: "Carte WTF Architecture.png", disabled: true },
-  { id: "internet", label: "Internet & RÃ©seaux Sociaux", emoji: "ð±", color: "#5B8DBE", bg: "#0A1A35", image: "Carte WTF Internet.png", disabled: true },
-  { id: "espace", label: "Espace", emoji: "ð", color: "#2E1A47", bg: "#1A0A2A", image: "Carte WTF Espace.png", disabled: true },
-  { id: "musique", label: "Musique", emoji: "ðµ", color: "#E84B8A", bg: "#2A0A1A", image: "Carte WTF Musique.png" },
-  { id: "psychologie", label: "Psychologie", emoji: "ð§ ", color: "#8E44AD", bg: "#1A0A2A", image: "Carte WTF Psychologie.png", disabled: true }
+  { id: 'animaux',           label: 'Animaux',                  emoji: '🦁', color: '#6BCB77', bg: '#0A2A0E', image: 'Carte WTF Animaux.png' },
+  { id: 'animaux-marins',    label: 'Animaux Marins',           emoji: '🐬', color: '#40B4D8', bg: '#0A2035', inactive: true },
+  { id: 'animaux-terrestres',label: 'Animaux Terrestres',       emoji: '🦁', color: '#6BCB77', bg: '#0A2A0E', inactive: true },
+  { id: 'architecture',      label: 'Architecture',             emoji: '🏛️', color: '#A0826D', bg: '#2A1A0F', image: 'Carte WTF Architecture.png', disabled: true },
+  { id: 'art',               label: 'Art',                      emoji: '🎨', color: '#A07CD8', bg: '#1A0A35', image: 'Carte WTF Art.png' },
+  { id: 'celebrites',        label: 'Célébrités',emoji: '🌟', color: '#FFD700', bg: '#2A2000', inactive: true },
+  { id: 'cinema',            label: 'Cinéma',              emoji: '🎬', color: '#D4AF37', bg: '#2A2000', image: 'Carte WTF Cinema.png' },
+  { id: 'corps-humain',      label: 'Corps Humain',             emoji: '🫀', color: '#F07070', bg: '#3A0A0A', image: 'Carte WTF Corps humain.png' },
+  { id: 'crimes',            label: 'Crimes & Faits Divers',    emoji: '🔍', color: '#8B4789', bg: '#2A0A2A', image: 'Carte WTF Crimes.png', disabled: true },
+  { id: 'definition',        label: 'Définition',          emoji: '📖', color: '#C8C8C8', bg: '#1C1C1C', image: 'Carte WTF Definition.png' },
+  { id: 'dictons',           label: 'Dictons & Expressions',    emoji: '🗨️', color: '#E67E22', bg: '#2A1500', inactive: true },
+  { id: 'espace',            label: 'Espace',                   emoji: '🚀', color: '#2E1A47', bg: '#1A0A2A', image: 'Carte WTF Espace.png', disabled: true },
+  { id: 'gastronomie',       label: 'Gastronomie',              emoji: '🍽️', color: '#FFA500', bg: '#3A2000', image: 'Carte WTF Gastronomie.png' },
+  { id: 'geographie',        label: 'Géographie',          emoji: '🌍', color: '#40D9C8', bg: '#003A35', image: 'Carte WTF Geographie.png' },
+  { id: 'histoire',          label: 'Histoire',                 emoji: '📜', color: '#E8CFA0', bg: '#2C2010', image: 'Carte WTF Histoire.png' },
+  { id: 'internet',          label: 'Internet & Réseaux Sociaux', emoji: '📱', color: '#5B8DBE', bg: '#0A1A35', image: 'Carte WTF Internet.png', disabled: true },
+  { id: 'inventions',        label: 'Inventions & Découvertes',   emoji: '💡', color: '#F1C40F', bg: '#2A2000', inactive: true },
+  { id: 'jeux-jouets',       label: 'Jeux & Jouets',            emoji: '🎮', color: '#9B59B6', bg: '#1A0A2A', inactive: true },
+  { id: 'kids',              label: 'Kids',                     emoji: '🎈', color: '#FFEF60', bg: '#3A3300', image: 'Carte WTF Kids.png' },
+  { id: 'lois',              label: 'Lois & Règles',       emoji: '⚖️', color: '#B0A8D8', bg: '#1A0A35', image: 'Carte WTF Lois et regles.png' },
+  { id: 'musique',           label: 'Musique',                  emoji: '🎵', color: '#E84B8A', bg: '#2A0A1A', image: 'Carte WTF Musique.png' },
+  { id: 'mythologie',        label: 'Mythologie',               emoji: '⚡', color: '#C8A84B', bg: '#2A2000', inactive: true },
+  { id: 'phobies',           label: 'Phobies',                  emoji: '😱', color: '#A8B8D8', bg: '#0A1020', image: 'Carte WTF Phobies.png' },
+  { id: 'politique',         label: 'Politique',                emoji: '🗳️', color: '#B24B4B', bg: '#2A0A0A', image: 'Carte WTF Politique.png', disabled: true },
+  { id: 'psychologie',       label: 'Psychologie',              emoji: '🧠', color: '#8E44AD', bg: '#1A0A2A', image: 'Carte WTF Psychologie.png', disabled: true },
+  { id: 'records',           label: 'Records',                  emoji: '🏆', color: '#E8B84B', bg: '#2E2000', image: 'Carte WTF Records.png' },
+  { id: 'sante',             label: 'Santé',               emoji: '⚕️', color: '#90F090', bg: '#053A05', image: 'Carte WTF Sante.png' },
+  { id: 'sciences',          label: 'Sciences',                 emoji: '🔬', color: '#80C8E8', bg: '#0A2035', image: 'Carte WTF Sciences.png' },
+  { id: 'sport',             label: 'Sport',                    emoji: '⚽', color: '#E84535', bg: '#3A0A05', image: 'Carte WTF Sport.png' },
+  { id: 'technologie',       label: 'Technologie',              emoji: '🤖', color: '#C0C0C0', bg: '#1C1C1C', image: 'Carte WTF Technologie.png' },
 ]
 
 export const FACTS = [
@@ -467,7 +474,11 @@ export const isFactValid = (fact) => {
 export const VALID_FACTS = FACTS.filter(isFactValid)
 
 // Categories available for gameplay (disabled: true = hidden until ready)
-export const PLAYABLE_CATEGORIES = CATEGORIES.filter((c) => !c.disabled)
+// Jeu joueur — exclut les inactives et disabled (utilisé par CategoryScreen)
+export const PLAYABLE_CATEGORIES = CATEGORIES.filter(c => !c.disabled && !c.inactive)
+
+// Admin tool — toutes les 30 catégories triées alphabétiquement
+export const ALL_CATEGORIES = CATEGORIES
 
 export const getFactsByCategory = (categoryId) =>
   categoryId

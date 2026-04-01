@@ -124,8 +124,9 @@ export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
 
-  const [showSplash, setShowSplash] = useState(true)
+  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const handleSplashComplete = () => {
+    sessionStorage.setItem('wtf_splash_done', 'true')
     setShowSplash(false)
   }
 
@@ -932,6 +933,7 @@ export default function App() {
       {screen === SCREENS.HOME && (
         <HomeScreen
           playerCoins={wtfCoins}
+          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           currentStreak={streak}
           dailyQuestsRemaining={dailyQuestsRemaining}
           nextBadgeInfo={null}

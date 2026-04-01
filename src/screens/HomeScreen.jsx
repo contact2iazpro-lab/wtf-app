@@ -11,19 +11,19 @@ import { useScale } from '../hooks/useScale'
 
 // ── Background aléatoire par session ──────────────────────────────────────────
 const HOME_BACKGROUNDS = [
-  '/assets/backgrounds/home-orange.png',
-  '/assets/backgrounds/home-violet.png',
-  '/assets/backgrounds/home-bleu.png',
-  '/assets/backgrounds/home-rouge.png',
-  '/assets/backgrounds/home-teal.png',
+  { url: '/assets/backgrounds/home-orange.png', textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.5)' },
+  { url: '/assets/backgrounds/home-violet.png', textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.4)' },
+  { url: '/assets/backgrounds/home-bleu.png',   textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.4)' },
+  { url: '/assets/backgrounds/home-rouge.png',  textColor: '#ffffff', shadow: '0 2px 8px rgba(0,0,0,0.5)' },
+  { url: '/assets/backgrounds/home-teal.png',   textColor: '#1a1a2e', shadow: '0 1px 4px rgba(255,255,255,0.3)' },
 ]
 
 function getSessionBackground() {
-  const stored = sessionStorage.getItem('wtf_bg')
-  if (stored) return stored
-  const bg = HOME_BACKGROUNDS[Math.floor(Math.random() * HOME_BACKGROUNDS.length)]
-  sessionStorage.setItem('wtf_bg', bg)
-  return bg
+  const stored = sessionStorage.getItem('wtf_bg_idx')
+  if (stored !== null) return HOME_BACKGROUNDS[parseInt(stored)] || HOME_BACKGROUNDS[0]
+  const idx = Math.floor(Math.random() * HOME_BACKGROUNDS.length)
+  sessionStorage.setItem('wtf_bg_idx', String(idx))
+  return HOME_BACKGROUNDS[idx]
 }
 
 // ── Coffre quotidien ──────────────────────────────────────────────────────────
@@ -109,6 +109,7 @@ const S = (px) => `calc(${px}px * var(--scale))`
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HomeScreen({
   playerCoins = 0,
+  playerHints = 0,
   dailyQuestsRemaining = 3,
   currentStreak = 0,
   nextBadgeInfo = null,
@@ -122,7 +123,10 @@ export default function HomeScreen({
   const countdown = useCountdownToMidnight()
   const progress24h = get24hProgress()
   const scale = useScale()
-  const homeBg = useMemo(() => getSessionBackground(), [])
+  const homeBgData = useMemo(() => getSessionBackground(), [])
+  const homeBg = homeBgData.url
+  const textColor = homeBgData.textColor
+  const textShadow = homeBgData.shadow
 
   const nav = (target) => {
     audio.play?.('click')
@@ -164,10 +168,10 @@ export default function HomeScreen({
         }}
       />
       <span style={{
-        fontSize: S(11), fontWeight: 800, color: '#1a1a2e',
+        fontSize: S(9), fontWeight: 800, color: '#1a1a2e',
         textAlign: 'center', lineHeight: 1.2,
-        maxWidth: S(64), overflow: 'hidden',
-        textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        maxWidth: S(70), wordWrap: 'break-word',
+        whiteSpace: 'normal',
         opacity: disabled ? 0.5 : 1,
         textShadow: 'none',
       }}>{label}</span>
@@ -247,6 +251,18 @@ export default function HomeScreen({
             <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{dailyQuestsRemaining}</span>
           </button>
           <button
+            onClick={() => nav('boutique')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: S(4),
+              background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
+              padding: `${S(3)} ${S(10)}`, border: 'none', cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <span style={{ fontSize: S(12) }}>💡</span>
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{playerHints}</span>
+          </button>
+          <button
             onClick={handleSettings}
             style={{
               width: S(28), height: S(28), borderRadius: '50%',
@@ -267,14 +283,14 @@ export default function HomeScreen({
         margin: `0 ${S(10)}`,
         background: 'rgba(255,255,255,0.2)',
         borderRadius: S(8),
-        padding: `${S(5)} ${S(10)}`,
+        padding: `${S(8)} ${S(12)}`,
         flexShrink: 0, position: 'relative', zIndex: 2,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: S(3) }}>
-          <span style={{ fontSize: S(8), fontWeight: 800, color: 'white' }}>Prochain badge</span>
-          <span style={{ fontSize: S(8), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{countdown}</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: S(5) }}>
+          <span style={{ fontSize: S(10), fontWeight: 800, color: textColor, textShadow }}>Prochain badge</span>
+          <span style={{ fontSize: S(10), fontWeight: 700, color: textColor, opacity: 0.7, textShadow }}>{countdown}</span>
         </div>
-        <div style={{ height: S(4), background: 'rgba(255,255,255,0.2)', borderRadius: S(2), overflow: 'hidden' }}>
+        <div style={{ height: S(6), background: 'rgba(255,255,255,0.2)', borderRadius: S(2), overflow: 'hidden' }}>
           <div style={{
             height: '100%', width: `${progress24h}%`,
             background: 'white', borderRadius: S(2),
@@ -285,9 +301,9 @@ export default function HomeScreen({
 
       {/* ═══ ZONE 3 — COFFRES QUOTIDIENS ═══════════════════════════════════ */}
       <div style={{
-        display: 'flex', gap: S(5), padding: `${S(4)} ${S(10)}`,
+        display: 'flex', gap: S(6), padding: `${S(6)} ${S(10)}`,
         flexShrink: 0, position: 'relative', zIndex: 2,
-        justifyContent: 'center',
+        justifyContent: 'center', marginBottom: S(6),
       }}>
         {COFFRE_DAYS.map((day, i) => {
           const status = getStatus(i)
@@ -331,11 +347,11 @@ export default function HomeScreen({
               <img
                 src={chestSrc}
                 alt={isAvail ? 'coffre disponible' : isTrophy ? 'coffre trophée' : 'coffre verrouillé'}
-                style={{ width: S(28), height: S(28), objectFit: 'contain', flexShrink: 0, background: 'transparent', display: 'block' }}
+                style={{ width: S(36), height: S(36), objectFit: 'contain', flexShrink: 0, background: 'transparent', display: 'block' }}
               />
               <span style={{
-                fontSize: S(6), fontWeight: 800, lineHeight: 1,
-                color: 'white',
+                fontSize: S(8), fontWeight: 800, lineHeight: 1,
+                color: textColor, textShadow,
               }}>
                 {isAvail ? 'NOUVEAU' : `J-${day}`}{isColl ? ' ✓' : ''}
               </span>
@@ -356,9 +372,9 @@ export default function HomeScreen({
         {/* 4a. "VRAI OU FOU ?" — pleine largeur */}
         <div style={{
           width: '100%',
-          fontSize: S(26), fontWeight: 900, color: 'white',
+          fontSize: S(26), fontWeight: 900, color: textColor,
           textAlign: 'center',
-          textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+          textShadow,
           letterSpacing: 0.5,
           marginBottom: S(12),
           flexShrink: 0,
@@ -403,10 +419,10 @@ export default function HomeScreen({
               }}
             />
             <div style={{
-              fontSize: S(13), fontWeight: 700, color: 'white',
+              fontSize: S(13), fontWeight: 700, color: textColor,
               textAlign: 'center', lineHeight: 1.4,
-              textShadow: '0 1px 4px rgba(0,0,0,0.4)',
-              marginTop: S(8),
+              textShadow,
+              marginTop: S(4),
             }}>
               Des f*cts 100% vrais,<br />des réactions 100% fun !
             </div>
@@ -419,8 +435,8 @@ export default function HomeScreen({
             alignItems: 'center', gap: S(8),
           }}>
             <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
-            <ModeIcon src="/assets/modes/multi.png" label="Multi" disabled />
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" disabled />
+            <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('duel_setup')} />
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
           </div>
         </div>
 
@@ -430,7 +446,7 @@ export default function HomeScreen({
       <div style={{
         display: 'flex', justifyContent: 'center',
         padding: `0 ${S(16)} ${S(12)}`,
-        marginTop: 'auto',
+        marginTop: S(6),
         flexShrink: 0, position: 'relative', zIndex: 10,
       }}>
         <button

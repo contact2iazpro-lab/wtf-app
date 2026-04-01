@@ -19,6 +19,7 @@ RUN npm run build
 
 # Install + build admin
 WORKDIR /app/admin-tool
+ENV VITE_ANTHROPIC_KEY=$VITE_ANTHROPIC_KEY
 RUN npm ci
 RUN npm run build
 

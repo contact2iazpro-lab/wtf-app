@@ -68,3 +68,21 @@
 - Paramètres : https://www.notion.so/332b94ed8cb181869176fd6266e78915
 
 ⚠️ VERCEL LIMITS : Ne jamais pusher automatiquement. Commit local uniquement.
+
+## ⚡ Choix du modèle — Règle officielle
+
+### Utiliser SONNET pour :
+- Corrections CSS/style ciblées (1-3 modifications)
+- Changements de textes, labels, valeurs
+- Ajout d'un élément simple (image, bouton, filtre)
+- Fix de bug visuel identifié précisément
+
+### Utiliser OPUS pour :
+- Refonte complète d'un écran
+- Nouvelle logique (état, hooks, props)
+- Architecture multi-fichiers
+- Impact sur plusieurs composants simultanément
+
+### Règle simple :
+> Sonnet = je sais exactement quoi changer et où
+> Opus = je dois comprendre la structure pour décider

@@ -1,11 +1,11 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const NAV_ITEMS = [
-  { path: '/',           slug: 'accueil',    label: 'Accueil' },
-  { path: '/collection', slug: 'collection', label: 'Collection' },
-  { path: '/trophees',   slug: 'trophees',   label: 'Trophées',  soon: true },
-  { path: '/classement', slug: 'boutique',   label: 'Boutique',  soon: true },
-  { path: '/profil',     slug: 'amis',       label: 'Amis',      soon: true },
+  { path: '/boutique',    slug: 'boutique',   label: 'Boutique' },
+  { path: '/recompenses', slug: 'trophees',   label: 'Trophees' },
+  { path: '/',            slug: 'accueil',    label: 'Accueil',  center: true },
+  { path: '/social',      slug: 'amis',       label: 'Amis' },
+  { path: '/collection',  slug: 'collection', label: 'Collection' },
 ]
 
 export default function BottomNav() {
@@ -33,9 +33,8 @@ export default function BottomNav() {
         return (
           <button
             key={item.path}
-            onClick={() => !item.soon && navigate(item.path)}
+            onClick={() => navigate(item.path)}
             className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl active:scale-90 transition-all relative"
-            style={{ opacity: item.soon ? 0.35 : 1 }}
           >
             <img
               src={`/assets/nav/${item.slug}.png`}

@@ -287,9 +287,11 @@ export default function App() {
       case 'wtfDuJour':     handleWTFDuJour(); break
       case 'categoryFlash': handleFlashSolo(); break
       case 'collection':    navigate('/collection'); break
-      case 'trophees':      navigate('/trophees'); break
-      case 'profil':        console.log('Navigation vers Profil — à brancher'); break
-      case 'streak':        console.log('Navigation vers Série — à brancher'); break
+      case 'trophees':      navigate('/recompenses'); break
+      case 'profil':        navigate('/profil'); break
+      case 'boutique':      navigate('/boutique'); break
+      case 'amis':          navigate('/social'); break
+      case 'streak':        navigate('/recompenses'); break
       case 'marathon':
         setGameMode('marathon')
         setSessionType('marathon')

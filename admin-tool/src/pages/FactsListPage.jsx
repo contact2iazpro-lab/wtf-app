@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, getCategoryEmoji } from '../constants/categories'
 
-const PAGE_SIZE = 50
+const PAGE_SIZE_OPTIONS = [50, 100, 200, 500]
 
 const STATUSES = [
   { value: 'published', label: 'Publié',    color: '#10B981', bg: 'rgba(16,185,129,0.15)', icon: '✅' },
@@ -231,6 +231,7 @@ export default function FactsListPage({ toast }) {
   const [facts, setFacts] = useState([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
+  const [pageSize, setPageSize] = useState(100)
   const [loading, setLoading] = useState(true)
 
   // Filters
@@ -314,10 +315,10 @@ export default function FactsListPage({ toast }) {
   }, [showCatDropdown])
 
   // Reset page on filter change
-  useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterDifficulty, filterImage])
+  useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterDifficulty, filterImage, pageSize])
 
   // Load facts
-  useEffect(() => { loadFacts() }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterDifficulty, filterImage, sortField, sortDir])
+  useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterDifficulty, filterImage, sortField, sortDir])
 
   // Load difficulty counts when generate modal opens
   useEffect(() => {
@@ -346,7 +347,7 @@ export default function FactsListPage({ toast }) {
       if (filterImage === 'without') q = q.or('image_url.is.null,image_url.eq.')
 
       q = q.order(sortField, { ascending: sortDir === 'asc' })
-      q = q.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
+      q = q.range(page * pageSize, (page + 1) * pageSize - 1)
 
       const { data, count, error } = await q
       if (error) throw error
@@ -614,7 +615,7 @@ export default function FactsListPage({ toast }) {
     toast?.('Fact refusé — supprimé de la file d\'attente')
   }
 
-  const totalPages = Math.ceil(total / PAGE_SIZE)
+  const totalPages = Math.ceil(total / pageSize)
   const allSelected = facts.length > 0 && selected.size === facts.length
   const someSelected = selected.size > 0
 
@@ -1020,6 +1021,17 @@ export default function FactsListPage({ toast }) {
           />
         </div>
 
+        {/* Page size selector */}
+        <select
+          value={pageSize}
+          onChange={e => setPageSize(Number(e.target.value))}
+          className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none cursor-pointer hover:bg-slate-700 transition-all"
+        >
+          {PAGE_SIZE_OPTIONS.map(n => (
+            <option key={n} value={n}>{n} / page</option>
+          ))}
+        </select>
+
         {/* Category dropdown */}
         <div className="relative" ref={catDropdownRef}>
           <button
@@ -1277,7 +1289,7 @@ export default function FactsListPage({ toast }) {
       {/* ── Pagination ────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mt-3 shrink-0 flex-wrap gap-2">
         <span className="text-sm text-slate-400">
-          Page {page + 1} / {totalPages || 1} · {total} facts
+          {page * pageSize + 1} - {Math.min((page + 1) * pageSize, total)} sur {total} facts
         </span>
         <div className="flex gap-2">
           <button

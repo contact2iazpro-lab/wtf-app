@@ -281,17 +281,17 @@ export default function RevelationScreen({
   // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
   if (!isCorrect && !isDuel) {
     return (
-      <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+      <div className="relative screen-enter" style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', background: screenBg }}>
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-        {/* Header */}
+        {/* Header — flexShrink: 0 */}
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
           <button
             onClick={() => setShowQuitConfirm(true)}
             style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           >
-            <span style={{ fontSize: 14, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+            <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>✕</span>
           </button>
           <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
             <span style={{
@@ -316,101 +316,97 @@ export default function RevelationScreen({
           </button>
         </div>
 
-        {/* MOD 5 — flex-1 justify-between, gap clamp pour distribution verticale */}
-        <div className="flex-1 flex flex-col px-5 pb-6 justify-between overflow-hidden" style={{ gap: 'clamp(8px, 2vh, 20px)' }}>
-
-          <div className="flex flex-col gap-2 min-h-0">
-
-            {/* MOD 2 — Image floutée carrée + overlay sombre (FOMO visuel) */}
-            <div
-              className="rounded-3xl overflow-hidden border shrink-0 relative"
-              style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}
-            >
-              {fact.imageUrl && !imgFailed ? (
-                <img
-                  src={fact.imageUrl}
-                  alt={fact.question}
-                  className="w-full h-full"
-                  style={{ objectFit: 'contain', filter: 'blur(12px) brightness(0.7)' }}
-                  onError={() => setImgFailed(true)}
-                />
-              ) : (
-                <div style={{ filter: 'blur(12px) brightness(0.7)', width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
-                  <FallbackImage categoryColor={cat?.color || '#10B981'} />
-                </div>
-              )}
-
-              {/* Overlay sombre semi-transparent */}
-              <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.3)', zIndex: 1 }} />
-
-              {/* MOD 3 — Message bienveillant centré (remplace le tampon "PAS CETTE FOIS") */}
-              {flipped && (
-                <div
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  style={{ zIndex: 2 }}
-                >
-                  <div style={{
-                    background: 'rgba(0,0,0,0.65)',
-                    borderRadius: 12,
-                    padding: '20px 24px',
-                    maxWidth: '85%',
-                    textAlign: 'center',
-                  }}>
-                    <span style={{ fontSize: 18, fontWeight: 900, color: 'white', lineHeight: 1.4, display: 'block' }}>
-                      {wrongMsg}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Stats joueurs — MOD B : 16px/700, couleur catégorie */}
-            <div className="text-center py-1 shrink-0">
-              <span style={{ fontSize: 16, fontWeight: 700, color: cat?.color || '#FF6B1A' }}>
-                👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
-              </span>
-            </div>
-
-            {/* Question — MOD A : label 16px, texte 20px/700 */}
-            <div className="rounded-2xl p-3 border shrink-0" style={{ background: cat?.color + '15', borderColor: cat?.color + '40' }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>La question :</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{fact.question}</div>
-            </div>
-
-            {/* MOD 4 — Bloc "✗ Votre réponse" supprimé */}
-            {isTimeout && (
-              <div className="rounded-2xl p-3 border border-orange-500/40 shrink-0" style={{ background: 'rgba(255, 152, 0, 0.1)' }}>
-                <div className="text-orange-400 text-xs font-bold uppercase tracking-wide">⏱️ Temps écoulé</div>
+        {/* Zone image — flex: 1 */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(20)}`, minHeight: 0 }}>
+          <div
+            className="rounded-3xl overflow-hidden border relative"
+            style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient, maxHeight: '100%', maxWidth: '100%' }}
+          >
+            {fact.imageUrl && !imgFailed ? (
+              <img
+                src={fact.imageUrl}
+                alt={fact.question}
+                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%', filter: 'blur(12px) brightness(0.7)' }}
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              <div style={{ filter: 'blur(12px) brightness(0.7)', width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                <FallbackImage categoryColor={cat?.color || '#10B981'} />
               </div>
             )}
 
+            {/* Overlay sombre semi-transparent */}
+            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.3)', zIndex: 1 }} />
+
+            {/* Message bienveillant centré */}
+            {flipped && (
+              <div
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                style={{ zIndex: 2 }}
+              >
+                <div style={{
+                  background: 'rgba(0,0,0,0.65)',
+                  borderRadius: S(12),
+                  padding: `${S(20)} ${S(24)}`,
+                  maxWidth: '85%',
+                  textAlign: 'center',
+                }}>
+                  <span style={{ fontSize: S(18), fontWeight: 900, color: 'white', lineHeight: 1.4, display: 'block' }}>
+                    {wrongMsg}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Zone texte/stats — flexShrink: 0 */}
+        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(20)} 0`, display: 'flex', flexDirection: 'column', gap: S(8) }}>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: S(14), fontWeight: 700, color: cat?.color || '#FF6B1A' }}>
+              👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
+            </span>
           </div>
 
-          {/* MOD 6 — Boutons côte à côte, même hauteur */}
-          <div className="flex gap-3 shrink-0">
-            <button
-              onClick={handleNativeShare}
-              className="btn-press flex-1 py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center"
-              style={{
-                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                color: 'white',
-                boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
-              }}
-            >
-              🤝 Demander de l'aide à un ami
-            </button>
-            <button
-              onClick={() => { audio.play('click'); onNext() }}
-              className="btn-press flex-1 py-4 rounded-2xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
-              style={{
-                background: 'linear-gradient(135deg, #FF6B1A 0%, #FF6B1Acc 100%)',
-                boxShadow: '0 4px 20px #FF6B1A40',
-              }}
-            >
-              {nextLabel}
-            </button>
+          <div style={{ background: cat?.color + '15', borderColor: cat?.color + '40', border: '1px solid', borderRadius: S(16), padding: S(12) }}>
+            <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: S(4) }}>La question :</div>
+            <div style={{ fontSize: S(16), fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{fact.question}</div>
           </div>
 
+          {isTimeout && (
+            <div style={{ background: 'rgba(255, 152, 0, 0.1)', border: '1px solid rgba(249, 115, 22, 0.4)', borderRadius: S(16), padding: S(12) }}>
+              <div style={{ color: '#FB923C', fontSize: S(12), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>⏱️ Temps écoulé</div>
+            </div>
+          )}
+        </div>
+
+        {/* Zone boutons — flexShrink: 0 */}
+        <div style={{ flexShrink: 0, display: 'flex', gap: S(12), padding: `${S(12)} ${S(20)} ${S(16)}` }}>
+          <button
+            onClick={handleNativeShare}
+            className="btn-press active:scale-95 transition-all"
+            style={{
+              flex: 1, padding: `${S(14)} 0`, borderRadius: S(16), fontWeight: 900, fontSize: S(14),
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6), textAlign: 'center',
+              background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+              color: 'white',
+              boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
+            }}
+          >
+            🤝 Demander de l'aide à un ami
+          </button>
+          <button
+            onClick={() => { audio.play('click'); onNext() }}
+            className="btn-press active:scale-95 transition-all"
+            style={{
+              flex: 1, padding: `${S(14)} 0`, borderRadius: S(16), fontWeight: 900, fontSize: S(14),
+              color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
+              background: 'linear-gradient(135deg, #FF6B1A 0%, #FF6B1Acc 100%)',
+              boxShadow: '0 4px 20px #FF6B1A40',
+            }}
+          >
+            {nextLabel}
+          </button>
         </div>
       </div>
     )
@@ -418,18 +414,18 @@ export default function RevelationScreen({
 
   // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+    <div className="relative screen-enter" style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', background: screenBg }}>
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {floatingBadge}
 
-      {/* Header */}
+      {/* Header — flexShrink: 0 */}
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
         <button
           onClick={() => setShowQuitConfirm(true)}
           style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
         >
-          <span style={{ fontSize: 14, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+          <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>✕</span>
         </button>
         <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
           <span style={{
@@ -458,21 +454,19 @@ export default function RevelationScreen({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-      <div className="flex flex-col px-5 gap-2 pb-4 pt-1">
-
-        {/* Image carrée — MOD 2 : contain, jamais tronquée */}
+      {/* Zone image — flex: 1 */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(20)}`, minHeight: 0 }}>
         <div
-          className={`rounded-3xl overflow-hidden border shrink-0 relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient }}
+          className={`rounded-3xl overflow-hidden border relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
+          style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient, maxHeight: '100%', maxWidth: '100%' }}
         >
           {isCorrect && (
             fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                className={`w-full h-full${!isDuel ? ' wow-image' : ''}`}
-                style={{ objectFit: 'contain', ...((!isDuel) ? { animationDelay: '0.1s', opacity: 0 } : {}) }}
+                className={!isDuel ? 'wow-image' : ''}
+                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%', ...((!isDuel) ? { animationDelay: '0.1s', opacity: 0 } : {}) }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
@@ -482,12 +476,12 @@ export default function RevelationScreen({
 
           {/* Tampon FOU — bas droite */}
           {!isDuel && flipped && isCorrect && (
-            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: '24px', zIndex: 2 }}>
+            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: S(24), zIndex: 2 }}>
               <div className="stamp-wow" style={{
-                fontSize: '94px', fontWeight: 900, color: '#4CAF50',
+                fontSize: S(94), fontWeight: 900, color: '#4CAF50',
                 textShadow: '0 4px 12px rgba(76, 175, 80, 0.5)',
                 transform: 'rotate(-15deg) scale(1.1)', transformOrigin: 'right bottom',
-                border: '4px solid #4CAF50', borderRadius: '8px', padding: '12px 24px',
+                border: '4px solid #4CAF50', borderRadius: S(8), padding: `${S(12)} ${S(24)}`,
                 backgroundColor: 'rgba(76, 175, 80, 0.1)', backdropFilter: 'blur(4px)',
               }}>
                 FOU
@@ -495,11 +489,14 @@ export default function RevelationScreen({
             </div>
           )}
         </div>
+      </div>
 
-        {/* MOD 3 — Message de succès sous l'image, pas en overlay */}
+      {/* Zone texte/stats — flexShrink: 0 */}
+      <div style={{ flexShrink: 0, padding: `${S(8)} ${S(20)} 0`, display: 'flex', flexDirection: 'column', gap: S(8), maxHeight: '35vh', overflowY: 'auto' }}>
+        {/* Message de succès */}
         {flipped && !isDuel && isCorrect && (
-          <div className="text-center px-2 shrink-0">
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'white', lineHeight: 1.45, display: 'block' }}>
+          <div style={{ textAlign: 'center', padding: `0 ${S(8)}` }}>
+            <span style={{ fontSize: S(14), fontWeight: 700, color: 'white', lineHeight: 1.45, display: 'block' }}>
               {correctMsg}
             </span>
           </div>
@@ -507,8 +504,8 @@ export default function RevelationScreen({
 
         {/* Stats joueurs */}
         {!isDuel && (
-          <div className="text-center py-1 shrink-0">
-            <span className="text-xs font-bold" style={{ color: cat?.color || '#FF6B1A' }}>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: S(12), fontWeight: 700, color: cat?.color || '#FF6B1A' }}>
               👥 Seulement {successRate}% des joueurs ont trouvé ce f*ct
             </span>
           </div>
@@ -537,7 +534,7 @@ export default function RevelationScreen({
           </>
         )}
 
-        {/* Mauvaise réponse choisie (visible dans le duel, ou open mode) */}
+        {/* Mauvaise réponse choisie */}
         {!isOpenMode && !isTimeout && selectedAnswer >= 0 && selectedAnswerText !== correctAnswerText && (
           <div className="rounded-2xl p-3 border border-red-500/40" style={{ background: 'rgba(244, 67, 54, 0.1)' }}>
             <div className="text-red-500 text-xs font-bold uppercase tracking-wide mb-1">✗ Votre réponse :</div>
@@ -556,14 +553,14 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Le Saviez-Vous card — fond neutre, pas de dégradé parasite */}
+        {/* Le Saviez-Vous card */}
         {!isDuel && isCorrect && (
-          <div className="rounded-3xl border p-4" style={{
+          <div style={{
             background: 'rgba(0,0,0,0.28)',
-            borderColor: cat?.color + '50', backdropFilter: 'blur(12px)',
-            boxShadow: `0 4px 32px rgba(0,0,0,0.25)`,
+            borderColor: cat?.color + '50', border: '1px solid', backdropFilter: 'blur(12px)',
+            boxShadow: '0 4px 32px rgba(0,0,0,0.25)',
+            borderRadius: S(24), padding: S(16),
           }}>
-            {/* ✓ Bonne réponse */}
             {!isOpenMode && !isTimeout && (
               <div className="rounded-xl px-3 py-2 border border-green-500/30 mb-3 score-pop"
                 style={{ background: 'rgba(76,175,80,0.1)' }}>
@@ -572,37 +569,11 @@ export default function RevelationScreen({
               </div>
             )}
 
-            {/* 🧠 Le Saviez-Vous */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">🧠</span>
-              <span className="text-white font-black text-sm uppercase tracking-wide">Le saviez-vous ?</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(8), marginBottom: S(8) }}>
+              <span style={{ fontSize: S(20) }}>🧠</span>
+              <span style={{ color: 'white', fontWeight: 900, fontSize: S(14), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
-            <p className="text-white/80 text-sm leading-relaxed font-medium mb-3">{fact.explanation}</p>
-
-            {/* MOD 4+5 — Partager + Suivant côte à côte, URL supprimée */}
-            <div className="flex gap-2">
-              <button
-                onClick={handleNativeShare}
-                className="btn-press flex-1 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-                style={{
-                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                  color: 'white',
-                  boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
-                }}
-              >
-                🎩 Partager ce WTF!
-              </button>
-              <button
-                onClick={() => { audio.play('click'); onNext() }}
-                className="btn-press flex-1 py-3 rounded-xl text-white font-black text-sm uppercase tracking-wide active:scale-95 transition-all"
-                style={{
-                  background: 'linear-gradient(135deg, #FF6B1A 0%, #FF6B1Acc 100%)',
-                  boxShadow: '0 4px 20px #FF6B1A40',
-                }}
-              >
-                ⚡ Suivant →
-              </button>
-            </div>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(13), lineHeight: 1.5, fontWeight: 500 }}>{fact.explanation}</p>
           </div>
         )}
 
@@ -624,18 +595,56 @@ export default function RevelationScreen({
             </div>
           </div>
         )}
+      </div>
 
-        {/* Bouton Suivant duel */}
+      {/* Zone boutons — flexShrink: 0 */}
+      <div style={{ flexShrink: 0, padding: `${S(12)} ${S(20)} ${S(16)}` }}>
+        {/* Solo — Partager + Suivant */}
+        {!isDuel && isCorrect && (
+          <div style={{ display: 'flex', gap: S(12) }}>
+            <button
+              onClick={handleNativeShare}
+              className="btn-press active:scale-95 transition-all"
+              style={{
+                flex: 1, padding: `${S(14)} 0`, borderRadius: S(16), fontWeight: 900, fontSize: S(14),
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+                color: 'white',
+                boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
+              }}
+            >
+              🎩 Partager ce WTF!
+            </button>
+            <button
+              onClick={() => { audio.play('click'); onNext() }}
+              className="btn-press active:scale-95 transition-all"
+              style={{
+                flex: 1, padding: `${S(14)} 0`, borderRadius: S(16), fontWeight: 900, fontSize: S(14),
+                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
+                background: 'linear-gradient(135deg, #FF6B1A 0%, #FF6B1Acc 100%)',
+                boxShadow: '0 4px 20px #FF6B1A40',
+              }}
+            >
+              ⚡ Suivant →
+            </button>
+          </div>
+        )}
+
+        {/* Duel — Suivant */}
         {isDuel && (
           <button
             onClick={() => { audio.play('click'); onNext() }}
-            className="btn-press w-full py-4 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
-            style={nextBtnStyle}>
+            className="btn-press active:scale-95 transition-all"
+            style={{
+              width: '100%', padding: `${S(16)} 0`, borderRadius: S(16),
+              color: 'white', fontWeight: 900, fontSize: S(16),
+              textTransform: 'uppercase', letterSpacing: '0.05em',
+              ...nextBtnStyle,
+            }}
+          >
             {nextLabel}
           </button>
         )}
-
-      </div>
       </div>
     </div>
   )

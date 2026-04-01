@@ -5,11 +5,11 @@ import { useScale } from '../hooks/useScale'
 
 // ── Backgrounds aléatoires (vrais assets) ────────────────────────────────────
 const BACKGROUNDS = [
-  '/assets/backgrounds/home-bleu.png',
-  '/assets/backgrounds/home-orange.png',
-  '/assets/backgrounds/home-rouge.png',
-  '/assets/backgrounds/home-teal.png',
-  '/assets/backgrounds/home-violet.png',
+  '/assets/backgrounds/home-bleu.webp',
+  '/assets/backgrounds/home-orange.webp',
+  '/assets/backgrounds/home-rouge.webp',
+  '/assets/backgrounds/home-teal.webp',
+  '/assets/backgrounds/home-violet.webp',
 ]
 
 // ── Niveaux ──────────────────────────────────────────────────────────────────

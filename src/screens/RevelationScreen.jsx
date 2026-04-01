@@ -152,6 +152,7 @@ export default function RevelationScreen({
       `🤯 Non mais t'as vu ça ?!\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
     ]
     const shareMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
+    console.log('[Share] Message partagé :', shareMessage)
     if (navigator.share) {
       navigator.share({ text: shareMessage })
     }
@@ -280,12 +281,27 @@ export default function RevelationScreen({
 
   // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
   if (!isCorrect && !isDuel) {
+    const handleNextWrong = () => {
+      audio.stopAll?.()
+      audio.play('click')
+      onNext()
+    }
     return (
-      <div className="relative screen-enter" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', background: screenBg }}>
+      <div className="relative screen-enter" style={{
+        height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+        boxSizing: 'border-box', width: '100%',
+        backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        backgroundColor: cat?.color || '#1a1a2e',
+      }}>
+        {/* Overlay couleur catégorie */}
+        <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />
+
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-        {/* Header — flexShrink: 0 */}
+        {/* Header */}
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
           <button
             onClick={() => setShowQuitConfirm(true)}
@@ -295,8 +311,7 @@ export default function RevelationScreen({
           </button>
           <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
             <span style={{
-              fontWeight: 900, fontSize: S(13),
-              color: cat?.color || 'rgba(255,255,255,0.7)',
+              fontWeight: 900, fontSize: S(13), color: 'rgba(255,255,255,0.8)',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
             }}>
               {cat?.label || 'Question'}
@@ -316,97 +331,100 @@ export default function RevelationScreen({
           </button>
         </div>
 
-        {/* Zone image — flex: 1 */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(20)}`, minHeight: 0 }}>
+        {/* Image floutée + tampon — flex: 1 */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(16)}`, minHeight: 0 }}>
           <div
             className="rounded-3xl overflow-hidden border relative"
-            style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient, maxHeight: '100%', maxWidth: '100%' }}
+            style={{ borderColor: 'rgba(255,255,255,0.15)', background: catGradient, maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1' }}
           >
             {fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%', filter: 'blur(12px) brightness(0.7)' }}
+                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%', filter: 'blur(12px) brightness(0.5)' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
-              <div style={{ filter: 'blur(12px) brightness(0.7)', width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
-                <FallbackImage categoryColor={cat?.color || '#10B981'} />
-              </div>
+              <img
+                src="/assets/facts/fallback.svg"
+                alt="Fallback"
+                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%', filter: 'blur(8px) brightness(0.5)' }}
+              />
             )}
-
-            {/* Overlay sombre semi-transparent */}
-            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.3)', zIndex: 1 }} />
-
-            {/* Message bienveillant centré */}
+            {/* Overlay */}
+            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.25)', zIndex: 1 }} />
+            {/* Tampon PAS CETTE FOIS */}
             {flipped && (
-              <div
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                style={{ zIndex: 2 }}
-              >
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 10 }}>
                 <div style={{
-                  background: 'rgba(0,0,0,0.65)',
-                  borderRadius: S(12),
-                  padding: `${S(20)} ${S(24)}`,
-                  maxWidth: '85%',
-                  textAlign: 'center',
+                  fontSize: S(28), fontWeight: 900, color: '#F44336',
+                  textShadow: '0 3px 8px rgba(244, 67, 54, 0.5)',
+                  transform: 'rotate(-12deg)',
+                  border: '3px solid #F44336', borderRadius: S(8), padding: `${S(8)} ${S(16)}`,
+                  backgroundColor: 'rgba(244, 67, 54, 0.1)', backdropFilter: 'blur(4px)',
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
                 }}>
-                  <span style={{ fontSize: S(18), fontWeight: 900, color: 'white', lineHeight: 1.4, display: 'block' }}>
-                    {wrongMsg}
-                  </span>
+                  Pas cette fois
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Zone texte/stats — flexShrink: 0 */}
-        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(20)} 0`, display: 'flex', flexDirection: 'column', gap: S(8) }}>
-          <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: S(14), fontWeight: 700, color: cat?.color || '#FF6B1A' }}>
-              👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
-            </span>
-          </div>
-
-          <div style={{ background: cat?.color + '15', borderColor: cat?.color + '40', border: '1px solid', borderRadius: S(16), padding: S(12) }}>
-            <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginBottom: S(4) }}>La question :</div>
-            <div style={{ fontSize: S(16), fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{fact.question}</div>
-          </div>
-
-          {isTimeout && (
-            <div style={{ background: 'rgba(255, 152, 0, 0.1)', border: '1px solid rgba(249, 115, 22, 0.4)', borderRadius: S(16), padding: S(12) }}>
-              <div style={{ color: '#FB923C', fontSize: S(12), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>⏱️ Temps écoulé</div>
+        {/* Zone info — flexShrink: 0 */}
+        <div style={{ flexShrink: 0, padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
+          {/* Message d'échec + social proof */}
+          {flipped && (
+            <div style={{ textAlign: 'center' }}>
+              <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
+                {wrongMsg}
+              </span>
+              <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.6)', display: 'block', marginTop: S(2) }}>
+                👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
+              </span>
             </div>
           )}
+
+          {/* Encadré question (pas la réponse) */}
+          <div style={{
+            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
+          }}>
+            <div style={{ fontSize: S(9), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4) }}>La question :</div>
+            <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{fact.question}</div>
+            {isTimeout && (
+              <div style={{ marginTop: S(6), fontSize: S(10), fontWeight: 700, color: '#FB923C' }}>⏱️ Temps écoulé</div>
+            )}
+          </div>
         </div>
 
-        {/* Zone boutons — flexShrink: 0 */}
-        <div style={{ flexShrink: 0, display: 'flex', gap: S(12), padding: `${S(12)} ${S(20)} ${S(16)}` }}>
+        {/* Boutons — flexShrink: 0 */}
+        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}`, display: 'flex', gap: S(8) }}>
           <button
             onClick={handleNativeShare}
             className="btn-press active:scale-95 transition-all"
             style={{
-              flex: 1, padding: `${S(14)} 0`, borderRadius: S(16), fontWeight: 900, fontSize: S(14),
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6), textAlign: 'center',
+              flex: 1, padding: `${S(12)} 0`, borderRadius: S(14), fontWeight: 900, fontSize: S(11),
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
               background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-              color: 'white',
-              boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
+              color: 'white', border: 'none',
             }}
           >
-            🤝 Demander de l'aide à un ami
+            🤝 Demander de l'aide
           </button>
           <button
-            onClick={() => { audio.play('click'); onNext() }}
+            onClick={handleNextWrong}
             className="btn-press active:scale-95 transition-all"
             style={{
-              flex: 1, padding: `${S(14)} 0`, borderRadius: S(16), fontWeight: 900, fontSize: S(14),
-              color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-              background: 'linear-gradient(135deg, #FF6B1A 0%, #FF6B1Acc 100%)',
-              boxShadow: '0 4px 20px #FF6B1A40',
+              flex: 1, padding: `${S(12)} 0`, borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+              color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
+              background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
             }}
           >
-            {nextLabel}
+            SUIVANT →
           </button>
+        </div>
         </div>
       </div>
     )
@@ -414,7 +432,17 @@ export default function RevelationScreen({
 
   // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
   return (
-    <div className="relative screen-enter" style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', width: '100%', background: screenBg }}>
+    <div className="relative screen-enter" style={{
+      height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+      boxSizing: 'border-box', width: '100%',
+      backgroundImage: `url(/assets/backgrounds/question-default.webp)`,
+      backgroundSize: 'cover', backgroundPosition: 'center',
+      backgroundColor: cat?.color || '#1a1a2e',
+    }}>
+      {/* Overlay couleur catégorie */}
+      <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />
+
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {floatingBadge}
@@ -429,8 +457,7 @@ export default function RevelationScreen({
         </button>
         <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
           <span style={{
-            fontWeight: 900, fontSize: S(13),
-            color: cat?.color || 'rgba(255,255,255,0.7)',
+            fontWeight: 900, fontSize: S(13), color: 'rgba(255,255,255,0.8)',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
           }}>
             {cat?.label || 'Question'}
@@ -454,34 +481,35 @@ export default function RevelationScreen({
         </button>
       </div>
 
-      {/* Zone image — flex: 1 */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(20)}`, minHeight: 0 }}>
+      {/* Image + tampon — flex: 1 */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(16)}`, minHeight: 0 }}>
         <div
           className={`rounded-3xl overflow-hidden border relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: cat?.color + '60', aspectRatio: '1/1', background: catGradient, maxHeight: '100%', maxWidth: '100%' }}
+          style={{ borderColor: 'rgba(255,255,255,0.2)', background: catGradient, maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1' }}
         >
           {isCorrect && (
             fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                className={!isDuel ? 'wow-image' : ''}
-                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%', ...((!isDuel) ? { animationDelay: '0.1s', opacity: 0 } : {}) }}
+                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
-              <FallbackImage categoryColor={cat?.color || '#10B981'} />
+              <img
+                src="/assets/facts/fallback.svg"
+                alt="Fallback"
+                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%' }}
+              />
             )
           )}
-
-          {/* Tampon FOU — bas droite */}
           {!isDuel && flipped && isCorrect && (
-            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: S(24), zIndex: 2 }}>
-              <div className="stamp-wow" style={{
-                fontSize: S(94), fontWeight: 900, color: '#4CAF50',
-                textShadow: '0 4px 12px rgba(76, 175, 80, 0.5)',
+            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: S(12), zIndex: 10 }}>
+              <div style={{
+                fontSize: S(60), fontWeight: 900, color: '#4CAF50',
+                textShadow: '0 3px 8px rgba(76, 175, 80, 0.5)',
                 transform: 'rotate(-15deg) scale(1.1)', transformOrigin: 'right bottom',
-                border: '4px solid #4CAF50', borderRadius: S(8), padding: `${S(12)} ${S(24)}`,
+                border: '3px solid #4CAF50', borderRadius: S(6), padding: `${S(6)} ${S(14)}`,
                 backgroundColor: 'rgba(76, 175, 80, 0.1)', backdropFilter: 'blur(4px)',
               }}>
                 FOU
@@ -491,126 +519,100 @@ export default function RevelationScreen({
         </div>
       </div>
 
-      {/* Zone texte/stats — flexShrink: 0 */}
-      <div style={{ flexShrink: 0, padding: `${S(8)} ${S(20)} 0`, display: 'flex', flexDirection: 'column', gap: S(8), maxHeight: '35vh', overflowY: 'auto' }}>
-        {/* Message de succès */}
+      {/* Zone info — flexShrink: 0, no scroll */}
+      <div style={{ flexShrink: 0, padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
+        {/* Message de succès + social proof */}
         {flipped && !isDuel && isCorrect && (
-          <div style={{ textAlign: 'center', padding: `0 ${S(8)}` }}>
-            <span style={{ fontSize: S(14), fontWeight: 700, color: 'white', lineHeight: 1.45, display: 'block' }}>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
               {correctMsg}
             </span>
-          </div>
-        )}
-
-        {/* Stats joueurs */}
-        {!isDuel && (
-          <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: S(12), fontWeight: 700, color: cat?.color || '#FF6B1A' }}>
+            <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.6)', display: 'block', marginTop: S(2) }}>
               👥 Seulement {successRate}% des joueurs ont trouvé ce f*ct
             </span>
           </div>
         )}
 
-        {/* Duel — badges correct/incorrect + points */}
+        {/* Duel — badges */}
         {isDuel && (
-          <>
-            <div className="py-3 rounded-2xl text-center border-2 font-black text-base score-pop"
-              style={{
-                background: isCorrect ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)',
-                borderColor: isCorrect ? '#4CAF50' : '#F44336',
-                color: isCorrect ? '#4CAF50' : '#F44336',
-                animationDelay: '0.5s', opacity: 0,
-              }}>
+          <div style={{ display: 'flex', gap: S(8) }}>
+            <div className="score-pop" style={{
+              flex: 1, textAlign: 'center', padding: S(8), borderRadius: S(12),
+              background: isCorrect ? 'rgba(76,175,80,0.15)' : 'rgba(244,67,54,0.15)',
+              border: `2px solid ${isCorrect ? '#4CAF50' : '#F44336'}`,
+              color: isCorrect ? '#4CAF50' : '#F44336', fontWeight: 900, fontSize: S(13),
+              animationDelay: '0.5s', opacity: 0,
+            }}>
               {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
             </div>
-            <div className="py-3 rounded-2xl text-center border-2 font-black text-base score-pop"
-              style={{
-                background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
-                borderColor: cat?.color + '60', color: cat?.color,
-                animationDelay: '0.6s', opacity: 0,
-              }}>
+            <div className="score-pop" style={{
+              flex: 1, textAlign: 'center', padding: S(8), borderRadius: S(12),
+              background: `${cat?.color}15`, border: `2px solid ${cat?.color}60`,
+              color: cat?.color, fontWeight: 900, fontSize: S(13),
+              animationDelay: '0.6s', opacity: 0,
+            }}>
               +{pointsEarned} pts
             </div>
-          </>
-        )}
-
-        {/* Mauvaise réponse choisie */}
-        {!isOpenMode && !isTimeout && selectedAnswer >= 0 && selectedAnswerText !== correctAnswerText && (
-          <div className="rounded-2xl p-3 border border-red-500/40" style={{ background: 'rgba(244, 67, 54, 0.1)' }}>
-            <div className="text-red-500 text-xs font-bold uppercase tracking-wide mb-1">✗ Votre réponse :</div>
-            <div className="text-white font-bold text-sm">{selectedAnswerText}</div>
-          </div>
-        )}
-        {isOpenMode && (
-          <div className="rounded-2xl p-3 border border-green-500/40" style={{ background: 'rgba(76, 175, 80, 0.1)' }}>
-            <div className="text-green-500 text-xs font-bold uppercase tracking-wide mb-1">✓ Réponse :</div>
-            <div className="text-white font-bold text-sm">{correctAnswerText}</div>
-          </div>
-        )}
-        {isTimeout && (
-          <div className="rounded-2xl p-3 border border-orange-500/40" style={{ background: 'rgba(255, 152, 0, 0.1)' }}>
-            <div className="text-orange-500 text-xs font-bold uppercase tracking-wide">⏱️ Temps écoulé</div>
           </div>
         )}
 
-        {/* Le Saviez-Vous card */}
+        {/* Encadré explication */}
         {!isDuel && isCorrect && (
           <div style={{
-            background: 'rgba(0,0,0,0.28)',
-            borderColor: cat?.color + '50', border: '1px solid', backdropFilter: 'blur(12px)',
-            boxShadow: '0 4px 32px rgba(0,0,0,0.25)',
-            borderRadius: S(24), padding: S(16),
+            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
           }}>
-            {!isOpenMode && !isTimeout && (
-              <div className="rounded-xl px-3 py-2 border border-green-500/30 mb-3 score-pop"
-                style={{ background: 'rgba(76,175,80,0.1)' }}>
-                <div className="text-green-400 text-xs font-bold uppercase tracking-wide mb-0.5">✓ Bonne réponse :</div>
-                <div className="text-white font-bold text-sm">{correctAnswerText}</div>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(8), marginBottom: S(8) }}>
-              <span style={{ fontSize: S(20) }}>🧠</span>
-              <span style={{ color: 'white', fontWeight: 900, fontSize: S(14), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            <div style={{
+              background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
+              borderRadius: S(10), padding: `${S(8)} ${S(10)}`, marginBottom: S(8),
+            }}>
+              <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
+              <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{correctAnswerText}</div>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(13), lineHeight: 1.5, fontWeight: 500 }}>{fact.explanation}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>
+              <span style={{ fontSize: S(14) }}>🧠</span>
+              <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
+            {fact.sourceUrl && (
+              <a href={fact.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: S(9), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(4), textDecoration: 'underline', textAlign: 'right' }}>
+                Source
+              </a>
+            )}
           </div>
         )}
 
         {/* Duel — scores finaux */}
         {isDuel && isLastPlayer && (
-          <div className="rounded-2xl border p-4" style={{ background: 'rgba(0,0,0,0.35)', borderColor: 'rgba(255,255,255,0.1)' }}>
-            <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-3">Scores</div>
-            <div className="flex flex-col gap-2">
-              {[...duelContext.players]
-                .map((p, i) => ({ ...p, color: ['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][i] }))
-                .sort((a, b) => b.score - a.score)
-                .map((p, rank) => (
-                  <div key={p.name} className="flex items-center gap-3">
-                    <span className="text-white/30 text-xs w-4">{rank + 1}.</span>
-                    <span className="flex-1 text-white font-bold text-sm truncate">{p.name}</span>
-                    <span className="font-black text-base" style={{ color: p.color }}>{p.score} pts</span>
-                  </div>
-                ))}
-            </div>
+          <div style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: S(12), padding: S(10) }}>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(9), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: S(6) }}>Scores</div>
+            {[...duelContext.players]
+              .map((p, i) => ({ ...p, color: ['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][i] }))
+              .sort((a, b) => b.score - a.score)
+              .map((p, rank) => (
+                <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: S(6), marginBottom: S(3) }}>
+                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: S(10), width: S(14) }}>{rank + 1}.</span>
+                  <span style={{ flex: 1, color: 'white', fontWeight: 700, fontSize: S(11) }}>{p.name}</span>
+                  <span style={{ fontWeight: 900, fontSize: S(12), color: p.color }}>{p.score} pts</span>
+                </div>
+              ))}
           </div>
         )}
       </div>
 
-      {/* Zone boutons — flexShrink: 0 */}
-      <div style={{ flexShrink: 0, padding: `${S(12)} ${S(20)} ${S(16)}` }}>
-        {/* Solo — Partager + Suivant */}
+      {/* Boutons — flexShrink: 0 */}
+      <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}` }}>
         {!isDuel && isCorrect && (
-          <div style={{ display: 'flex', gap: S(12) }}>
+          <div style={{ display: 'flex', gap: S(8) }}>
             <button
               onClick={handleNativeShare}
               className="btn-press active:scale-95 transition-all"
               style={{
-                flex: 1, padding: `${S(14)} 0`, borderRadius: S(16), fontWeight: 900, fontSize: S(14),
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                flex: 1, padding: `${S(12)} 0`, borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                color: 'white',
-                boxShadow: `0 4px 20px ${cat?.color || '#FF6B1A'}45`,
+                color: 'white', border: 'none',
               }}
             >
               🎩 Partager ce WTF!
@@ -619,32 +621,31 @@ export default function RevelationScreen({
               onClick={() => { audio.play('click'); onNext() }}
               className="btn-press active:scale-95 transition-all"
               style={{
-                flex: 1, padding: `${S(14)} 0`, borderRadius: S(16), fontWeight: 900, fontSize: S(14),
-                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                background: 'linear-gradient(135deg, #FF6B1A 0%, #FF6B1Acc 100%)',
-                boxShadow: '0 4px 20px #FF6B1A40',
+                flex: 1, padding: `${S(12)} 0`, borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
+                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
               }}
             >
-              ⚡ Suivant →
+              SUIVANT →
             </button>
           </div>
         )}
 
-        {/* Duel — Suivant */}
         {isDuel && (
           <button
             onClick={() => { audio.play('click'); onNext() }}
             className="btn-press active:scale-95 transition-all"
             style={{
-              width: '100%', padding: `${S(16)} 0`, borderRadius: S(16),
-              color: 'white', fontWeight: 900, fontSize: S(16),
-              textTransform: 'uppercase', letterSpacing: '0.05em',
+              width: '100%', padding: `${S(14)} 0`, borderRadius: S(14),
+              color: 'white', fontWeight: 900, fontSize: S(14),
+              textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
               ...nextBtnStyle,
             }}
           >
             {nextLabel}
           </button>
         )}
+      </div>
       </div>
     </div>
   )

@@ -388,6 +388,7 @@ export default function FactsListPage({ toast }) {
       if (batchAction === 'category') updateObj = { category: batchValue }
       else if (batchAction === 'vip') updateObj = { is_vip: true }
       else if (batchAction === 'status_published') updateObj = { status: 'published', is_published: true }
+      else if (batchAction === 'status_unpublished') updateObj = { status: 'draft', is_published: false }
       else if (batchAction === 'status_reserve') updateObj = { status: 'reserve', is_published: false }
       else if (batchAction === 'status_draft') updateObj = { status: 'draft', is_published: false }
       else if (batchAction === 'status_doublon') updateObj = { status: 'doublon', is_published: false }
@@ -935,6 +936,7 @@ export default function FactsListPage({ toast }) {
             <h3 className="font-black text-white mb-3">
               {batchAction === 'vip' && '⭐ Marquer VIP'}
               {batchAction === 'status_published' && '✅ Publier'}
+              {batchAction === 'status_unpublished' && '⛔ Dépublier'}
               {batchAction === 'status_reserve' && '🔒 Mettre en Réserve'}
               {batchAction === 'status_draft' && '✏️ Mettre en Brouillon'}
               {batchAction === 'status_doublon' && '🔄 Marquer comme Doublon'}
@@ -943,6 +945,7 @@ export default function FactsListPage({ toast }) {
             <p className="text-slate-400 text-sm mb-5">
               {batchAction === 'vip' && `Marquer ${selected.size} fact(s) comme VIP ?`}
               {batchAction === 'status_published' && `Modifier ${selected.size} fact(s) en Publié ?`}
+              {batchAction === 'status_unpublished' && `Dépublier ${selected.size} fact(s) ? Ils passeront en Brouillon.`}
               {batchAction === 'status_reserve' && `Modifier ${selected.size} fact(s) en Réserve ?`}
               {batchAction === 'status_draft' && `Modifier ${selected.size} fact(s) en Brouillon ?`}
               {batchAction === 'status_doublon' && `Marquer ${selected.size} fact(s) comme Doublon ?`}
@@ -951,7 +954,8 @@ export default function FactsListPage({ toast }) {
             <div className="flex gap-2">
               <button onClick={() => setBatchAction(null)} className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold">Annuler</button>
               <button onClick={executeBatch} disabled={batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold" style={{
-                background: batchAction === 'status_published' ? '#10B981'
+                background: batchAction === 'status_unpublished' ? '#EF4444'
+                  : batchAction === 'status_published' ? '#10B981'
                   : batchAction === 'status_reserve' ? '#F59E0B'
                   : batchAction === 'status_draft' ? '#9CA3AF'
                   : batchAction === 'status_doublon' ? '#6B7280'
@@ -1170,7 +1174,8 @@ export default function FactsListPage({ toast }) {
           <div className="flex gap-2 flex-wrap">
             {[
               { key: 'vip',              label: '⭐ Marquer VIP' },
-              { key: 'status_published', label: '✅ Publier',    color: '#10B981' },
+              { key: 'status_published',   label: '✅ Publier',    color: '#10B981' },
+              { key: 'status_unpublished', label: '⛔ Dépublier',  color: '#EF4444' },
               { key: 'status_reserve',   label: '🔒 Réserve',   color: '#F59E0B' },
               { key: 'status_draft',     label: '✏️ Brouillon', color: '#9CA3AF' },
               { key: 'status_doublon',   label: '🔄 Doublon',   color: '#6B7280' },

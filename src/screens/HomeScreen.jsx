@@ -11,11 +11,11 @@ import { useScale } from '../hooks/useScale'
 
 // ── Background aléatoire par session ──────────────────────────────────────────
 const HOME_BACKGROUNDS = [
-  { url: '/assets/backgrounds/home-orange.png', textColor: '#FF6B1A', shadow: 'none' },
-  { url: '/assets/backgrounds/home-violet.png', textColor: '#FF6B1A', shadow: 'none' },
-  { url: '/assets/backgrounds/home-bleu.png',   textColor: '#FF6B1A', shadow: 'none' },
-  { url: '/assets/backgrounds/home-rouge.png',  textColor: '#FF6B1A', shadow: 'none' },
-  { url: '/assets/backgrounds/home-teal.png',   textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-orange.webp', textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-violet.webp', textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-bleu.webp',   textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-rouge.webp',  textColor: '#FF6B1A', shadow: 'none' },
+  { url: '/assets/backgrounds/home-teal.webp',   textColor: '#FF6B1A', shadow: 'none' },
 ]
 
 function getSessionBackground() {

@@ -124,9 +124,8 @@ export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
 
-  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('wtf_splash_shown'))
+  const [showSplash, setShowSplash] = useState(true)
   const handleSplashComplete = () => {
-    sessionStorage.setItem('wtf_splash_shown', 'true')
     setShowSplash(false)
   }
 
@@ -813,29 +812,13 @@ export default function App() {
   }, [screen, gameMode, handleHome])
 
 
-  if (!factsReady) {
-    return (
-      <div className="w-full h-full max-w-md mx-auto flex flex-col items-center justify-center p-6" style={{ background: 'linear-gradient(170deg, #0A0F1E 0%, #1A0A35 60%, #0E1A2E 100%)' }}>
-        <style>{`
-          @keyframes logoFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-          }
-        `}</style>
-
-        <div className="mb-8" style={{ animation: 'logoFloat 3s ease-in-out infinite' }}>
-          <img src="/logo-wtf.png" alt="WTF Logo" className="w-24 h-24 object-contain" />
-        </div>
-
-        <h2 className="text-white font-black text-lg text-center mb-8">Le quiz des f*cts impossibles</h2>
-
-        <div className="text-white/40 text-xs font-bold tracking-widest uppercase">Chargement…</div>
-      </div>
-    )
-  }
-
   if (showSplash) {
-    return <SplashScreen onComplete={handleSplashComplete} />
+    return (
+      <SplashScreen
+        onComplete={handleSplashComplete}
+        isReady={factsReady}
+      />
+    )
   }
 
   return (

@@ -164,7 +164,7 @@ export default function HomeScreen({
         }}
       />
       <span style={{
-        fontSize: S(8), fontWeight: 700, color: '#1a1a2e',
+        fontSize: S(11), fontWeight: 800, color: '#1a1a2e',
         textAlign: 'center', lineHeight: 1.2,
         maxWidth: S(64), overflow: 'hidden',
         textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -186,6 +186,8 @@ export default function HomeScreen({
         position: 'relative',
         height: '100dvh', width: '100%', overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
+        boxSizing: 'border-box',
+        paddingTop: S(8),
         fontFamily: 'Nunito, sans-serif',
         '--scale': scale,
         backgroundImage: `url(${homeBg})`,
@@ -427,7 +429,8 @@ export default function HomeScreen({
       {/* ═══ BOUTON FLASH ══════════════════════════════════════════════════ */}
       <div style={{
         display: 'flex', justifyContent: 'center',
-        padding: `${S(4)} ${S(16)} ${S(16)}`,
+        padding: `0 ${S(16)} ${S(12)}`,
+        marginTop: 'auto',
         flexShrink: 0, position: 'relative', zIndex: 10,
       }}>
         <button

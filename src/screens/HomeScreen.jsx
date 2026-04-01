@@ -164,12 +164,12 @@ export default function HomeScreen({
         }}
       />
       <span style={{
-        fontSize: S(8), fontWeight: 700, color: 'white',
+        fontSize: S(8), fontWeight: 700, color: '#1a1a2e',
         textAlign: 'center', lineHeight: 1.2,
         maxWidth: S(64), overflow: 'hidden',
         textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         opacity: disabled ? 0.5 : 1,
-        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+        textShadow: 'none',
       }}>{label}</span>
       {disabled && (
         <span style={{

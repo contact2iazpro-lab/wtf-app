@@ -136,6 +136,7 @@ export default function QuestionScreen({
     return (r * 299 + g * 587 + b * 114) / 1000 > 128
   }
   const catTextColor = cat?.color ? (isLightColor(cat.color) ? '#1a1a1a' : '#ffffff') : '#ffffff'
+  const S = (px) => `calc(${px}px * var(--scale))`
 
   // Timer duration
   const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
@@ -215,7 +216,7 @@ export default function QuestionScreen({
   // ── Header: ✕ | catégorie | WTF$ coins | ⚙️ ──────────────────────────────
   // MOD 1 — 4 éléments horizontaux. Nom catégorie sans emoji, se réduit si long.
   const header = (
-    <div className="qs-h px-4 pt-4 pb-2 shrink-0 flex items-center gap-2">
+    <div className="qs-h" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: `${S(4)} ${S(12)} ${S(8)}`, flexShrink: 0 }}>
 
       {/* 1 — Bouton ✕ quitter */}
       <button
@@ -235,11 +236,9 @@ export default function QuestionScreen({
             fontSize: 13,
             color: cat?.color || 'rgba(255,255,255,0.7)',
             lineHeight: 1.2,
-            wordBreak: 'break-word',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
+            whiteSpace: 'nowrap',
             overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {cat?.label || 'Question'}
@@ -267,28 +266,34 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Barre de progression — COR 1 : inactifs 12px, actif 18px, label 14px ────
+  // ── Barre de progression ─────────────────────────────────────────────────────
   const progressBar = (
-    <div className="qs-pb px-4 pb-2 shrink-0">
-      <div className="flex w-full items-center" style={{ gap: 2 }}>
+    <div style={{ padding: `0 ${S(16)} ${S(4)}`, flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
         {Array.from({ length: totalFacts }).map((_, i) => {
           const isActive = i === factIndex
-          const isFilled = i <= factIndex
-          const showLabel = i === 2
           return (
             <div
               key={i}
-              className="flex-1 transition-all duration-300 flex items-center justify-center"
               style={{
-                height: isActive ? 18 : 12,
-                borderRadius: isActive ? 4 : 999,
-                background: isFilled
-                  ? cat?.color || '#FF6B1A'
-                  : (cat?.color || '#FF6B1A') + '40',
+                flex: 1,
+                height: isActive ? S(12) : S(6),
+                borderRadius: S(3),
+                background: isActive ? 'white' : 'rgba(255,255,255,0.3)',
+                position: isActive ? 'relative' : 'static',
+                transition: 'all 0.3s ease',
               }}
             >
-              {showLabel && totalFacts > 0 && (
-                <span style={{ fontSize: 14, fontWeight: 900, color: catTextColor, lineHeight: 1, fontFamily: 'Arial' }}>
+              {isActive && (
+                <span style={{
+                  position: 'absolute',
+                  top: '50%', left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  fontSize: S(8),
+                  fontWeight: 700,
+                  color: cat?.color || '#1a1a2e',
+                  whiteSpace: 'nowrap',
+                }}>
                   {factIndex + 1}/{totalFacts}
                 </span>
               )}
@@ -362,11 +367,11 @@ export default function QuestionScreen({
 
   // ── Zone timer — COR 4 : flex:1 flottant entre QCM et bas ──────────────────
   const timerZone = (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 8, paddingBottom: 16, minHeight: 80 }}>
-      <div className="qs-timer-wrap" style={{ transform: 'scale(var(--scale))', transformOrigin: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: S(8), paddingBottom: S(16), flexShrink: 0 }}>
+      <div className="qs-timer-wrap" style={{ width: S(90), height: S(90), flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         <CircularTimer
           key={`${fact.id}-${answerMode}`}
-          size={110}
+          size={90}
           duration={timerDuration}
           onTimeout={handleTimeout}
         />
@@ -378,8 +383,12 @@ export default function QuestionScreen({
   if (!answerMode) {
     return (
       <div
-        className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden"
-        style={{ background: screenBg }}
+        className="qs-root relative screen-enter"
+        style={{
+          height: '100vh', width: '100%', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
+          background: screenBg,
+        }}
       >
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
@@ -387,7 +396,7 @@ export default function QuestionScreen({
         {progressBar}
         {factIdLabel}
 
-        <div className="qs-m flex-1 flex flex-col px-4 justify-center" style={{ gap: 16 }}>
+        <div className="qs-m" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', padding: `0 ${S(16)}` }}>
           {questionCard}
 
           <div className="flex flex-col gap-3 shrink-0">
@@ -430,17 +439,26 @@ export default function QuestionScreen({
   if (answerMode === 'open') {
     return (
       <div
-        className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden"
-        style={{ background: screenBg }}
+        className="qs-root relative screen-enter"
+        style={{
+          height: '100vh', width: '100%', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
+          background: screenBg,
+        }}
       >
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
+        {factIdLabel}
 
-        {/* COR 5 — distribution depuis le numéro : factIdLabel est le premier élément */}
-        <div className="qs-m flex-1 px-4 pb-4 flex flex-col" style={{ gap: 'clamp(8px, 2vh, 24px)' }}>
-          {factIdLabel}
+        {/* Zone centrale : question + indices + validation */}
+        <div className="qs-m" style={{
+          flex: 1, minHeight: 0,
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-evenly',
+          padding: `0 ${S(16)}`,
+        }}>
           {questionCard}
           {difficulty?.hintsAllowed && hintButtons}
           <div className="text-white/30 text-xs font-bold uppercase tracking-widest text-center shrink-0">
@@ -462,34 +480,43 @@ export default function QuestionScreen({
               ✓ Correct !
             </button>
           </div>
-          {timerZone}
         </div>
+
+        {timerZone}
       </div>
     )
   }
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
-  // MOD 3 — ordre : question → indices → boutons → #id → timer (flex-1)
   return (
     <div
-      className="qs-root relative flex flex-col h-full w-full screen-enter overflow-hidden"
-      style={{ background: screenBg }}
+      className="qs-root relative screen-enter"
+      style={{
+        height: '100vh', width: '100%', overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
+        background: screenBg,
+      }}
     >
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
       {progressBar}
+      {factIdLabel}
 
-      {/* COR 5 — distribution depuis le numéro : factIdLabel est le premier élément */}
-      <div className="qs-m flex-1 px-4 pb-4 flex flex-col" style={{ gap: 'clamp(8px, 2vh, 24px)' }}>
-        {factIdLabel}
+      {/* Zone centrale : question + indices + QCM — flex 1, space-evenly */}
+      <div className="qs-m" style={{
+        flex: 1, minHeight: 0,
+        display: 'flex', flexDirection: 'column',
+        justifyContent: 'space-evenly',
+        padding: `0 ${S(16)}`,
+      }}>
         {questionCard}
 
         {/* Indices */}
         {difficulty?.hintsAllowed && hintButtons}
 
         {/* Boutons QCM */}
-        <div className="grid gap-3 shrink-0" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8) }}>
           {fact.options.map((option, index) => (
             <button
               key={index}
@@ -499,29 +526,32 @@ export default function QuestionScreen({
                 audio.vibrate(correct ? [40, 20, 40] : [120])
                 onSelectAnswer(index)
               }}
-              className="btn-press rounded-2xl font-bold transition-all active:scale-95 border"
+              className="btn-press transition-all active:scale-95"
               style={{
-                fontSize: 'clamp(13px, 1.8vw, 16px)',
-                minHeight: 72,
-                height: 72,
+                background: 'rgba(255,255,255,0.15)',
+                border: '1.5px solid rgba(255,255,255,0.4)',
+                borderRadius: S(12),
+                color: 'white',
+                fontWeight: 700,
+                fontSize: fact.options.length > 4 ? S(13) : S(14),
+                padding: `${S(12)} ${S(8)}`,
+                minHeight: fact.options.length > 4 ? S(48) : S(52),
+                width: '100%',
                 overflow: 'hidden',
+                textOverflow: 'ellipsis',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 textAlign: 'center',
-                color: 'white',
-                background: `linear-gradient(135deg, ${cat?.color}20 0%, ${cat?.color}10 100%)`,
-                borderColor: cat?.color + '40',
-                boxShadow: `0 4px 16px ${cat?.color}15`,
               }}
             >
               {option}
             </button>
           ))}
         </div>
-
-        {timerZone}
       </div>
+
+      {timerZone}
     </div>
   )
 }

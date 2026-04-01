@@ -42,10 +42,11 @@ const DIFF_CONFIG = {
 function FactDetailView({ fact, onClose }) {
   const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
-  const screenBg = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
+  const S = (px) => `calc(${px}px * var(--scale))`
 
   const share = () => {
-    const text = `🤯 Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct! https://wtf-app-livid.vercel.app/`
+    const text = `🤯 Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct! https://wtf-app-production.up.railway.app/`
+    console.log('[Share]', text)
     if (navigator.share) navigator.share({ text }).catch(() => {})
     else navigator.clipboard?.writeText(text).catch(() => {})
   }
@@ -53,83 +54,116 @@ function FactDetailView({ fact, onClose }) {
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ zIndex: 400, background: screenBg, overflow: 'hidden' }}
+      style={{
+        zIndex: 400, overflow: 'hidden',
+        backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        backgroundColor: catColor,
+      }}
     >
-      {/* B4 — Header cohérent avec les autres écrans */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0" style={{ borderBottom: `1px solid rgba(255,255,255,0.15)` }}>
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', fontSize: 16 }}
-        >
-          ←
-        </button>
-        {/* Numéro + question */}
-        <div className="flex-1 min-w-0">
-          <span className="text-xs font-black" style={{ color: catColor }}>#{fact.id}</span>
-          <p className="font-bold text-sm text-white leading-snug mt-0.5 line-clamp-2">{fact.question}</p>
-        </div>
-      </div>
+      {/* Overlay catégorie */}
+      <div style={{ position: 'absolute', inset: 0, background: `${catColor}cc`, zIndex: 0 }} />
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Image */}
-        {fact.imageUrl ? (
-          <img
-            src={fact.imageUrl}
-            alt={fact.shortAnswer}
-            className="w-full"
-            style={{ height: 220, objectFit: 'cover', background: 'rgba(255,255,255,0.08)' }}
-          />
-        ) : (
-          <div
-            className="w-full flex items-center justify-center"
-            style={{ height: 80, background: 'rgba(255,255,255,0.06)' }}
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(10), padding: `${S(12)} ${S(16)}`, flexShrink: 0 }}>
+          <button
+            onClick={onClose}
+            style={{
+              width: S(36), height: S(36), borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', fontSize: S(16), fontWeight: 900, flexShrink: 0,
+            }}
           >
-            <span className="text-5xl opacity-30">🖼️</span>
+            ←
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ fontWeight: 900, fontSize: S(13), color: 'white', lineHeight: 1.3, display: 'block' }}>
+              {fact.shortAnswer || fact.question}
+            </span>
           </div>
-        )}
-
-        {/* Réponse */}
-        <div className="px-5 pt-3 pb-1">
-          <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: catColor }}>Réponse</p>
-          <p className="text-base font-black" style={{ color: 'white' }}>{fact.shortAnswer}</p>
         </div>
 
-        {/* B2 — Espacement réduit entre image et corps */}
-        <div className="px-5 py-3">
-          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: catColor }}>
-            Le saviez-vous ?
-          </p>
-          <p className="text-base font-semibold" style={{ color: 'rgba(255,255,255,0.9)', lineHeight: '1.7' }}>
-            {fact.explanation}
-          </p>
-          {fact.sourceUrl && (
-            <div className="mt-4 flex items-start gap-2">
-              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: '1.6' }}>🔗</span>
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(16)}`, paddingBottom: S(16) }}>
+
+          {/* Image avec encadré */}
+          <div style={{
+            borderRadius: S(20), overflow: 'hidden', position: 'relative',
+            border: `3px solid ${catColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            background: `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`,
+            aspectRatio: '1/1', marginBottom: S(12),
+          }}>
+            {fact.imageUrl ? (
+              <img
+                src={fact.imageUrl}
+                alt={fact.shortAnswer}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <img
+                src="/assets/facts/fallback.svg"
+                alt="Fallback"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            )}
+            {/* Tampon FOU */}
+            <div style={{ position: 'absolute', bottom: S(8), right: S(8), zIndex: 10, pointerEvents: 'none' }}>
+              <div style={{
+                fontSize: S(36), fontWeight: 900, color: '#4CAF50',
+                textShadow: '0 2px 6px rgba(76,175,80,0.5)',
+                transform: 'rotate(-15deg)',
+                border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(3)} ${S(8)}`,
+                backgroundColor: 'rgba(76,175,80,0.1)', backdropFilter: 'blur(4px)',
+              }}>
+                FOU
+              </div>
+            </div>
+          </div>
+
+          {/* Le saviez-vous */}
+          <div style={{
+            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: S(16), padding: S(14), marginBottom: S(12),
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(6), marginBottom: S(8) }}>
+              <span style={{ fontSize: S(18) }}>🧠</span>
+              <span style={{ color: 'white', fontWeight: 900, fontSize: S(12), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(13), lineHeight: 1.5, fontWeight: 500, margin: 0 }}>
+              {fact.explanation}
+            </p>
+            {fact.sourceUrl && (
               <a
                 href={fact.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs break-all"
-                style={{ color: catColor, textDecoration: 'underline', lineHeight: '1.6' }}
+                style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(8), textDecoration: 'underline', textAlign: 'right' }}
               >
-                {fact.sourceUrl}
+                Source
               </a>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Share button */}
-      <div className="px-5 pb-8 pt-3 shrink-0" style={{ borderTop: 'rgba(255,255,255,0.1)' }}>
-        <button
-          onClick={share}
-          className="w-full py-3.5 rounded-2xl font-black text-white text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
-          style={{ background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`, boxShadow: `0 4px 16px ${catColor}50` }}
-        >
-          <span className="text-lg">📤</span> Partager ce F*ct
-        </button>
+        {/* Bouton partager — fixe en bas */}
+        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(14)}` }}>
+          <button
+            onClick={share}
+            style={{
+              width: '100%', height: S(44), borderRadius: S(14),
+              fontWeight: 900, fontSize: S(13), color: 'white', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+              background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
+              boxShadow: `0 4px 16px ${catColor}50`,
+            }}
+          >
+            🎩 Partager ce F*ct
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -138,114 +172,135 @@ function FactDetailView({ fact, onClose }) {
 // ─── Fact list overlay for a category+difficulty ────────────────────────────
 
 function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, onClose }) {
+  const S = (px) => `calc(${px}px * var(--scale))`
   const diff = DIFF_CONFIG[activeTab]
   const unlockedFacts = facts.filter(f => unlockedIds.has(f.id))
   const lockedFacts   = facts.filter(f => !unlockedIds.has(f.id))
+  const rgb = hexToRgb(cat.color)
 
   return (
     <div
       className="fixed inset-0 flex flex-col"
-      style={{ zIndex: 300, background: `linear-gradient(160deg, ${cat.color}11 0%, ${cat.color}33 100%)` }}
+      style={{
+        zIndex: 300,
+        backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        backgroundColor: cat.color,
+      }}
     >
-      {/* C4 — Header personnalisé couleur catégorie */}
-      <div
-        className="flex items-center gap-3 px-4 pt-4 pb-3 shrink-0"
-        style={{ background: `${cat.color}22`, borderBottom: `1px solid ${cat.color}44` }}
-      >
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ background: 'rgba(255,255,255,0.25)', border: `1px solid rgba(255,255,255,0.3)`, color: cat.color, fontSize: 16 }}
-        >
-          ←
-        </button>
-        <span className="text-2xl">{cat.emoji}</span>
-        <div className="flex-1 min-w-0">
-          <p className="font-black text-base truncate" style={{ color: '#1a1a2e' }}>{cat.label}</p>
-          <p className="text-xs font-bold" style={{ color: diff.color }}>{diff.emoji} {diff.label}</p>
+      {/* Overlay catégorie */}
+      <div style={{ position: 'absolute', inset: 0, background: `${cat.color}cc`, zIndex: 0 }} />
+
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(10), padding: `${S(12)} ${S(16)}`, flexShrink: 0 }}>
+          <button
+            onClick={onClose}
+            style={{
+              width: S(36), height: S(36), borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', fontSize: S(16), fontWeight: 900, flexShrink: 0,
+            }}
+          >
+            ←
+          </button>
+          <img
+            src={`/assets/categories/${cat.id}.png`}
+            alt={cat.label}
+            style={{ width: S(32), height: S(32), borderRadius: S(8), objectFit: 'cover', flexShrink: 0 }}
+            onError={(e) => { e.target.style.display = 'none' }}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ fontWeight: 900, fontSize: S(13), color: 'white', display: 'block', lineHeight: 1.2 }}>{cat.label}</span>
+            <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>{diff.emoji} {diff.label}</span>
+          </div>
+          <span style={{
+            fontSize: S(11), fontWeight: 900, color: 'white',
+            background: 'rgba(255,255,255,0.2)', borderRadius: S(12),
+            padding: `${S(4)} ${S(10)}`,
+          }}>
+            {unlockedFacts.length}/{facts.length}
+          </span>
         </div>
-        <span
-          className="text-xs font-black px-2 py-1 rounded-full"
-          style={{ background: `${cat.color}22`, color: cat.color, border: `1px solid ${cat.color}44` }}
-        >
-          {unlockedFacts.length}/{facts.length}
-        </span>
-      </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {unlockedFacts.length === 0 && (
-          <p className="text-center text-sm py-8" style={{ color: '#9CA3AF' }}>
-            Aucun F*ct débloqué à ce niveau.<br />Lance une quête {diff.label} pour commencer !
-          </p>
-        )}
-
-        {unlockedFacts.length > 0 && (
-          <>
-            <p className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: '#9CA3AF' }}>
-              F*cts débloqués — {unlockedFacts.length}
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(16)}`, paddingBottom: S(80) }}>
+          {unlockedFacts.length === 0 && (
+            <p style={{ textAlign: 'center', fontSize: S(13), color: 'rgba(255,255,255,0.5)', padding: `${S(32)} 0` }}>
+              Aucun F*ct débloqué à ce niveau.<br />Lance une quête {diff.label} pour commencer !
             </p>
-            <div className="flex flex-col gap-2 mb-5">
-              {unlockedFacts.map(fact => (
-                <button
-                  key={fact.id}
-                  onClick={() => { audio.play('click'); onSelectFact(fact) }}
-                  className="flex items-center gap-3 p-3 rounded-2xl text-left active:scale-98 transition-all"
-                  style={{ background: '#F3F4F6', border: `1px solid rgba(${hexToRgb(cat.color)}, 0.3)` }}
-                >
-                  {fact.imageUrl ? (
-                    <img src={fact.imageUrl} alt="" className="w-12 h-12 rounded-xl object-contain shrink-0" style={{ background: '#E5E7EB' }} />
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl" style={{ background: '#E5E7EB' }}>🌟</div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-sm truncate" style={{ color: '#1a1a2e' }}>{fact.shortAnswer}</p>
-                    <p className="text-xs mt-0.5 line-clamp-2" style={{ color: '#6B7280', lineHeight: '1.4' }}>{fact.explanation}</p>
-                  </div>
-                  <span className="text-lg shrink-0" style={{ color: 'rgba(0,0,0,0.25)' }}>›</span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+          )}
 
-        {lockedFacts.length > 0 && (
-          <>
-            <p className="text-xs font-black uppercase tracking-wider mb-3" style={{ color: '#D1D5DB' }}>
-              À découvrir — {lockedFacts.length}
-            </p>
-            <div className="flex flex-col gap-2">
-              {lockedFacts.map(fact => (
-                <div
-                  key={fact.id}
-                  className="flex items-center gap-3 p-3 rounded-2xl overflow-hidden relative"
-                  style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}
-                >
-                  {/* Silhouette image (blurred + greyscale) */}
-                  <div className="w-12 h-12 rounded-xl shrink-0 overflow-hidden relative" style={{ background: '#E5E7EB' }}>
+          {unlockedFacts.length > 0 && (
+            <>
+              <p style={{ fontSize: S(10), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: S(8) }}>
+                F*cts débloqués — {unlockedFacts.length}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), marginBottom: S(16) }}>
+                {unlockedFacts.map(fact => (
+                  <button
+                    key={fact.id}
+                    onClick={() => { audio.play('click'); onSelectFact(fact) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: S(10),
+                      padding: S(10), borderRadius: S(14), textAlign: 'left', width: '100%', border: 'none',
+                      background: `rgba(${rgb}, 0.15)`, backdropFilter: 'blur(8px)',
+                      cursor: 'pointer',
+                    }}
+                  >
                     {fact.imageUrl ? (
-                      <img
-                        src={fact.imageUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        style={{ filter: 'blur(8px) brightness(0.7)' }}
-                      />
+                      <img src={fact.imageUrl} alt="" style={{ width: S(48), height: S(48), borderRadius: S(10), objectFit: 'contain', flexShrink: 0, background: `rgba(${rgb}, 0.2)` }} />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center" style={{ color: '#D1D5DB', fontSize: 20 }}>?</div>
+                      <img src="/assets/facts/fallback.svg" alt="" style={{ width: S(48), height: S(48), borderRadius: S(10), objectFit: 'cover', flexShrink: 0 }} />
                     )}
-                    <div className="absolute inset-0 flex items-center justify-center text-sm font-black" style={{ color: 'rgba(0,0,0,0.25)' }}>🔒</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontWeight: 900, fontSize: S(12), color: 'white', display: 'block' }}>{fact.shortAnswer}</span>
+                      <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.6)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4, marginTop: S(2) }}>{fact.explanation}</span>
+                    </div>
+                    <span style={{ fontSize: S(16), color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>›</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {lockedFacts.length > 0 && (
+            <>
+              <p style={{ fontSize: S(10), fontWeight: 900, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: S(8) }}>
+                À découvrir — {lockedFacts.length}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: S(8) }}>
+                {lockedFacts.map(fact => (
+                  <div
+                    key={fact.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: S(10),
+                      padding: S(10), borderRadius: S(14),
+                      background: 'rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    <div style={{ width: S(48), height: S(48), borderRadius: S(10), overflow: 'hidden', position: 'relative', flexShrink: 0, background: 'rgba(0,0,0,0.3)' }}>
+                      {fact.imageUrl ? (
+                        <img src={fact.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(8px) brightness(0.5)' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: S(18) }}>?</div>
+                      )}
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(16) }}>🔒</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ height: S(10), borderRadius: S(4), background: 'rgba(255,255,255,0.1)', width: '70%', marginBottom: S(4) }} />
+                      <div style={{ height: S(8), borderRadius: S(4), background: 'rgba(255,255,255,0.06)', width: '90%', marginBottom: S(3) }} />
+                      <div style={{ height: S(8), borderRadius: S(4), background: 'rgba(255,255,255,0.06)', width: '55%' }} />
+                    </div>
+                    <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>#{fact.id}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    {/* Masked text bars (Panini silhouette effect) */}
-                    <div className="h-3 rounded-full mb-1.5" style={{ background: '#E5E7EB', width: '70%' }} />
-                    <div className="h-2 rounded-full mb-1" style={{ background: '#F3F4F6', width: '90%' }} />
-                    <div className="h-2 rounded-full" style={{ background: '#F3F4F6', width: '55%' }} />
-                  </div>
-                  <span className="text-xs font-bold shrink-0" style={{ color: '#D1D5DB' }}>#{fact.id}</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -434,25 +489,17 @@ export default function CollectionPage() {
                       : '1px solid rgba(255,255,255,0.06)',
                 }}
               >
-                {/* Mini grid */}
-                <div
-                  className="grid gap-px rounded-xl overflow-hidden shrink-0"
-                  style={{ gridTemplateColumns: 'repeat(5, 1fr)', width: 50, height: 20 }}
-                >
-                  {Array.from({ length: 10 }, (_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        background: i < unlocked ? `rgba(${rgb}, 0.9)` : '#E5E7EB',
-                      }}
-                    />
-                  ))}
-                </div>
+                {/* Icône catégorie */}
+                <img
+                  src={`/assets/categories/${cat.id}.png`}
+                  alt={cat.label}
+                  style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+                  onError={(e) => { e.target.style.display = 'none' }}
+                />
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-base">{cat.emoji}</span>
                     <span className="font-black text-sm truncate" style={{ color: '#1a1a2e' }}>{cat.label}</span>
                     {isCompleted && <span className="text-sm shrink-0">🏆</span>}
                   </div>

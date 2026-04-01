@@ -164,7 +164,7 @@ export default function QuestionScreen({
       .qs-root .qs-m  { padding-left: 0.75rem !important; padding-right: 0.75rem !important; gap: 0.5rem !important; }
       .qs-root .qs-m .rounded-3xl { padding: 0.75rem !important; }
     }
-    .qs-timer-wrap svg text { font-size: 32px !important; font-weight: 900 !important; }`
+    .qs-timer-wrap svg text { font-size: 42px !important; font-weight: 900 !important; }`
     document.head.appendChild(s)
     return () => { const el = document.getElementById(styleId); if (el) el.remove() }
   }, [])
@@ -381,11 +381,11 @@ export default function QuestionScreen({
 
   // ── Zone timer — COR 4 : flex:1 flottant entre QCM et bas ──────────────────
   const timerZone = (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: S(8), paddingBottom: S(16), flexShrink: 0 }}>
-      <div className="qs-timer-wrap" style={{ width: S(90), height: S(90), flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0 }}>
+      <div className="qs-timer-wrap" style={{ width: S(120), height: S(120), flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         <CircularTimer
           key={`${fact.id}-${answerMode}`}
-          size={90}
+          size={120}
           duration={timerDuration}
           onTimeout={handleTimeout}
         />
@@ -463,6 +463,13 @@ export default function QuestionScreen({
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
+        {difficulty && (
+          <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
+            <span style={{ fontSize: S(10), fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
+              {difficulty.emoji || ''} Mode {difficulty.label || difficulty.id}
+            </span>
+          </div>
+        )}
         {progressBar}
         {factIdLabel}
 
@@ -514,6 +521,19 @@ export default function QuestionScreen({
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
+
+      {/* Rappel du mode */}
+      {difficulty && (
+        <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
+          <span style={{
+            fontSize: S(10), fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.4)',
+          }}>
+            {difficulty.emoji || ''} Mode {difficulty.label || difficulty.id}
+          </span>
+        </div>
+      )}
+
       {progressBar}
       {factIdLabel}
 

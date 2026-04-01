@@ -22,7 +22,7 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
     <div
       className="flex flex-col h-full w-full overflow-hidden"
       style={{
-        background: `linear-gradient(170deg, ${cat?.color || '#7C3AED'}22 0%, ${cat?.color || '#7C3AED'} 100%)`,
+        background: 'linear-gradient(170deg, #0D9488 0%, #115E59 50%, #0F172A 100%)',
         transition: 'opacity 0.3s',
         opacity: visible ? 1 : 0,
       }}
@@ -36,8 +36,8 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
           ←
         </button>
         <div className="flex-1 text-center">
-          <div className="font-black text-base tracking-wide" style={{ color: cat?.color || '#7C3AED' }}>WTF! du Jour</div>
-          <div className="text-white/40 text-xs">Tous les jours, un nouveau f*ct</div>
+          <div className="font-black text-base tracking-wide" style={{ color: '#FF6B1A' }}>WTF! du Jour</div>
+          <div className="text-white/50 text-xs">Tous les jours, un nouveau f*ct</div>
         </div>
         <div className="w-9" />
       </div>
@@ -45,17 +45,18 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-start px-6 gap-2 pt-2 overflow-hidden">
 
-        {/* Pulsing star/mascotte */}
+        {/* Icône catégorie */}
         <div className="flex items-center justify-center" style={{ animation: 'bounceIn 0.6s cubic-bezier(0.68,-0.55,0.265,1.55)' }}>
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-5xl"
+          <img
+            src={`/assets/categories/${fact.category}.png`}
+            alt={cat?.label || fact.category}
             style={{
-              background: `radial-gradient(circle, ${cat?.color || '#7C3AED'}33 0%, transparent 70%)`,
-              boxShadow: `0 0 60px ${cat?.color || '#7C3AED'}55`,
-              border: `2px solid ${cat?.color || '#7C3AED'}44`,
-            }}>
-            {cat?.emoji || '🤯'}
-          </div>
+              width: 80, height: 80, borderRadius: '50%', objectFit: 'cover',
+              border: `3px solid ${cat?.color || '#7C3AED'}66`,
+              boxShadow: `0 0 40px ${cat?.color || '#7C3AED'}55`,
+            }}
+            onError={(e) => { e.target.style.display = 'none' }}
+          />
         </div>
 
         {/* Category label */}
@@ -81,10 +82,10 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
             Le f*ct du jour
           </div>
           <div className="text-white font-black text-lg leading-snug text-center mb-1">
-            {titrePartiel}
+            🔒 {titrePartiel}
           </div>
           <div className="text-white/30 text-xs text-center mt-2">
-            Joue la session pour révéler le f*ct complet
+            🔓 Joue la session pour révéler le f*ct complet
           </div>
         </div>
 

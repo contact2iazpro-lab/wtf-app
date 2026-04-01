@@ -56,7 +56,11 @@ export default function ResultsScreen({
   onChallengeUp = null,
   unlockedFactsThisSession = [],
   sessionsToday = 0,
+  playerCoins = 0,
+  playerTickets = 0,
+  playerHints = 0,
 }) {
+  const S = (px) => `calc(${px}px * var(--scale))`
   const [showSettings, setShowSettings] = useState(false)
   const [coinAnimActive, setCoinAnimActive] = useState(false)
   const [audioDuration, setAudioDuration] = useState(2.5)
@@ -235,7 +239,11 @@ export default function ResultsScreen({
   }))
 
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{ background: screenBg }}>
+    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{
+      backgroundImage: 'url(/assets/backgrounds/results-victory.webp)',
+      backgroundSize: 'cover', backgroundPosition: 'center',
+      backgroundColor: catColor,
+    }}>
 
       {/* COR 4 — Confetti overlay */}
       {confettiActive && (
@@ -282,13 +290,40 @@ export default function ResultsScreen({
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* MOD 11 — ⚙️ fixed bottom-right */}
-      <button
-        onClick={() => { audio.play('click'); setShowSettings(true) }}
-        className="fixed bottom-4 right-4 z-40 w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition-all"
-        style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', boxShadow: '0 2px 12px rgba(0,0,0,0.2)' }}>
-        ⚙️
-      </button>
+      {/* Header */}
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
+        <button
+          onClick={onHome}
+          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+        >
+          <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+        </button>
+        <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
+          <span style={{ fontWeight: 900, fontSize: S(11), color: 'rgba(255,255,255,0.8)', lineHeight: 1.2, display: 'block' }}>
+            {cat?.label || 'Résultats'}
+          </span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+            <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
+            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerCoins}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+            <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
+            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerTickets}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+            <span style={{ fontSize: S(14) }}>💡</span>
+            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerHints}</span>
+          </div>
+        </div>
+        <button
+          onClick={() => { audio.play('click'); setShowSettings(true) }}
+          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(6) }}
+        >
+          <img src="/assets/ui/icon-settings.png" alt="" style={{ width: S(20), height: S(20) }} />
+        </button>
+      </div>
 
       {/* scrollable zone */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">

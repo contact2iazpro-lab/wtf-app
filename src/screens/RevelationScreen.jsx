@@ -71,10 +71,12 @@ export default function RevelationScreen({
   duelContext,
   gameMode,
   sessionScore,
+  playerTickets = 0,
+  playerHints = 0,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
 
-  const [flipped, setFlipped] = useState(false)
+  const [flipped, setFlipped] = useState(true)
   const [copied, setCopied] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [displayedScore, setDisplayedScore] = useState(sessionScore - pointsEarned)
@@ -103,7 +105,6 @@ export default function RevelationScreen({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setFlipped(true)
       if (!isDuel && isCorrect) setShowBadge(true)
     }, 300)
     if (!isDuel) {
@@ -312,20 +313,28 @@ export default function RevelationScreen({
           <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
             <span style={{
               fontWeight: 900, fontSize: S(13), color: 'rgba(255,255,255,0.8)',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
+              whiteSpace: 'normal', overflow: 'visible', display: 'block',
             }}>
               {cat?.label || 'Question'}
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flexShrink: 0, userSelect: 'none' }}>
-            <img src="/assets/ui/icon-coins.png" style={{ width: S(20), height: S(20), marginRight: S(4) }} alt="" />
-            <span ref={scoreRefTarget} style={{ fontWeight: 700, color: 'white', fontSize: S(13) }}>
-              {displayedScore}
-            </span>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+              <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
+              <span ref={scoreRefTarget} style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{displayedScore}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+              <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
+              <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerTickets}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+              <span style={{ fontSize: S(14) }}>💡</span>
+              <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerHints}</span>
+            </div>
           </div>
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}
-            style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(8) }}
+            style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(6) }}
           >
             <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
           </button>
@@ -334,8 +343,8 @@ export default function RevelationScreen({
         {/* Image floutée + tampon — flex: 1 */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(16)}`, minHeight: 0 }}>
           <div
-            className="rounded-3xl overflow-hidden border relative"
-            style={{ borderColor: 'rgba(255,255,255,0.15)', background: catGradient, maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1' }}
+            className="rounded-3xl overflow-hidden relative"
+            style={{ border: `3px solid ${cat?.color || 'rgba(255,255,255,0.3)'}`, background: catGradient, maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1', boxShadow: `0 4px 20px rgba(0,0,0,0.3)` }}
           >
             {fact.imageUrl && !imgFailed ? (
               <img
@@ -353,26 +362,11 @@ export default function RevelationScreen({
             )}
             {/* Overlay */}
             <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.25)', zIndex: 1 }} />
-            {/* Tampon PAS CETTE FOIS */}
-            {flipped && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 10 }}>
-                <div style={{
-                  fontSize: S(28), fontWeight: 900, color: '#F44336',
-                  textShadow: '0 3px 8px rgba(244, 67, 54, 0.5)',
-                  transform: 'rotate(-12deg)',
-                  border: '3px solid #F44336', borderRadius: S(8), padding: `${S(8)} ${S(16)}`,
-                  backgroundColor: 'rgba(244, 67, 54, 0.1)', backdropFilter: 'blur(4px)',
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
-                }}>
-                  Pas cette fois
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Zone info — flexShrink: 0 */}
-        <div style={{ flexShrink: 0, padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
+        {/* Zone info — flex: 1 */}
+        <div style={{ flex: 1, minHeight: 0, padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4), justifyContent: 'center' }}>
           {/* Message d'échec + social proof */}
           {flipped && (
             <div style={{ textAlign: 'center' }}>
@@ -399,31 +393,33 @@ export default function RevelationScreen({
           </div>
         </div>
 
-        {/* Boutons — flexShrink: 0 */}
-        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}`, display: 'flex', gap: S(8) }}>
-          <button
-            onClick={handleNativeShare}
-            className="btn-press active:scale-95 transition-all"
-            style={{
-              flex: 1, padding: `${S(12)} 0`, borderRadius: S(14), fontWeight: 900, fontSize: S(11),
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-              background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-              color: 'white', border: 'none',
-            }}
-          >
-            🤝 Demander de l'aide
-          </button>
-          <button
-            onClick={handleNextWrong}
-            className="btn-press active:scale-95 transition-all"
-            style={{
-              flex: 1, padding: `${S(12)} 0`, borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-              color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
-              background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-            }}
-          >
-            SUIVANT →
-          </button>
+        {/* Boutons — flexShrink: 0, hauteur fixe */}
+        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}` }}>
+          <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
+            <button
+              onClick={handleNativeShare}
+              className="btn-press active:scale-95 transition-all"
+              style={{
+                flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+                color: 'white', border: 'none',
+              }}
+            >
+              🤝 Demander de l'aide
+            </button>
+            <button
+              onClick={handleNextWrong}
+              className="btn-press active:scale-95 transition-all"
+              style={{
+                flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
+                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+              }}
+            >
+              SUIVANT →
+            </button>
+          </div>
         </div>
         </div>
       </div>
@@ -457,35 +453,39 @@ export default function RevelationScreen({
         </button>
         <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
           <span style={{
-            fontWeight: 900, fontSize: S(13), color: 'rgba(255,255,255,0.8)',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
+            fontWeight: 900, fontSize: S(11), color: 'rgba(255,255,255,0.8)',
+            lineHeight: 1.2, display: 'block',
           }}>
             {cat?.label || 'Question'}
           </span>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flexShrink: 0, userSelect: 'none' }}>
-          <img src="/assets/ui/icon-coins.png" style={{ width: S(20), height: S(20), marginRight: S(4) }} alt="" />
-          <span
-            ref={scoreRefTarget}
-            className={showScorePulse ? 'score-pulse' : ''}
-            style={{ fontWeight: 700, color: 'white', fontSize: S(13) }}
-          >
-            {displayedScore}
-          </span>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+            <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
+            <span ref={scoreRefTarget} className={showScorePulse ? 'score-pulse' : ''} style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{displayedScore}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+            <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
+            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerTickets}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+            <span style={{ fontSize: S(14) }}>💡</span>
+            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerHints}</span>
+          </div>
         </div>
         <button
           onClick={() => { audio.play('click'); setShowSettings(true) }}
-          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(8) }}
+          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(6) }}
         >
           <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
         </button>
       </div>
 
-      {/* Image + tampon — flex: 1 */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(16)}`, minHeight: 0 }}>
+      {/* Image + tampon */}
+      <div style={{ maxHeight: '30vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(16)}`, flexShrink: 0 }}>
         <div
-          className={`rounded-3xl overflow-hidden border relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ borderColor: 'rgba(255,255,255,0.2)', background: catGradient, maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1' }}
+          className={`rounded-3xl overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
+          style={{ border: `3px solid ${cat?.color || 'rgba(255,255,255,0.3)'}`, background: catGradient, maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1', boxShadow: `0 4px 20px rgba(0,0,0,0.3)` }}
         >
           {isCorrect && (
             fact.imageUrl && !imgFailed ? (
@@ -499,17 +499,17 @@ export default function RevelationScreen({
               <img
                 src="/assets/facts/fallback.svg"
                 alt="Fallback"
-                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%' }}
+                style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
               />
             )
           )}
           {!isDuel && flipped && isCorrect && (
-            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: S(12), zIndex: 10 }}>
+            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: S(8), zIndex: 10 }}>
               <div style={{
-                fontSize: S(60), fontWeight: 900, color: '#4CAF50',
+                fontSize: S(36), fontWeight: 900, color: '#4CAF50',
                 textShadow: '0 3px 8px rgba(76, 175, 80, 0.5)',
                 transform: 'rotate(-15deg) scale(1.1)', transformOrigin: 'right bottom',
-                border: '3px solid #4CAF50', borderRadius: S(6), padding: `${S(6)} ${S(14)}`,
+                border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(4)} ${S(10)}`,
                 backgroundColor: 'rgba(76, 175, 80, 0.1)', backdropFilter: 'blur(4px)',
               }}>
                 FOU
@@ -519,8 +519,8 @@ export default function RevelationScreen({
         </div>
       </div>
 
-      {/* Zone info — flexShrink: 0, no scroll */}
-      <div style={{ flexShrink: 0, padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
+      {/* Zone info — flex: 1, scroll si texte long */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
         {/* Message de succès + social proof */}
         {flipped && !isDuel && isCorrect && (
           <div style={{ textAlign: 'center' }}>
@@ -601,15 +601,15 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* Boutons — flexShrink: 0 */}
+      {/* Boutons — flexShrink: 0, hauteur fixe */}
       <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}` }}>
         {!isDuel && isCorrect && (
-          <div style={{ display: 'flex', gap: S(8) }}>
+          <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             <button
               onClick={handleNativeShare}
               className="btn-press active:scale-95 transition-all"
               style={{
-                flex: 1, padding: `${S(12)} 0`, borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
                 color: 'white', border: 'none',
@@ -621,7 +621,7 @@ export default function RevelationScreen({
               onClick={() => { audio.play('click'); onNext() }}
               className="btn-press active:scale-95 transition-all"
               style={{
-                flex: 1, padding: `${S(12)} 0`, borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
               }}

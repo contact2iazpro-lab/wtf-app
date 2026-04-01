@@ -1024,6 +1024,8 @@ export default function App() {
           duelContext={duelContext}
           gameMode={gameMode}
           sessionScore={gameMode === 'duel' ? 0 : sessionScore}
+          playerTickets={tickets}
+          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
         />
       )}
 
@@ -1042,6 +1044,9 @@ export default function App() {
           categoryId={selectedCategory}
           unlockedFactsThisSession={sessionCorrectFacts}
           sessionsToday={sessionsToday}
+          playerCoins={wtfCoins}
+          playerTickets={tickets}
+          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
         />
       )}
 

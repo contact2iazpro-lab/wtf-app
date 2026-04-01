@@ -47,7 +47,7 @@ export default function WTFDuJourRevealScreen({
   return (
     <div
       className="flex flex-col h-full w-full"
-      style={{ background: 'linear-gradient(170deg, #0A0F1E 0%, #1A0A35 30%, #0E2840 70%, #0A1E2E 100%)', overflow: 'hidden' }}>
+      style={{ background: 'linear-gradient(170deg, #0D9488 0%, #115E59 50%, #0F172A 100%)', overflow: 'hidden' }}>
 
       {/* Mascotte WTF */}
       <div
@@ -57,7 +57,12 @@ export default function WTFDuJourRevealScreen({
           opacity: phase >= 1 ? 1 : 0,
           transition: 'all 0.5s cubic-bezier(0.34,1.56,0.64,1)',
         }}>
-        <div className="text-5xl animate-bounce-in">🤯</div>
+        <img
+          src={`/assets/categories/${fact.category}.png`}
+          alt={cat?.label}
+          style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: `2px solid ${cat?.color || '#FF6B1A'}66` }}
+          onError={(e) => { e.target.style.display = 'none' }}
+        />
         <div>
           <div className="text-white font-black text-lg tracking-wide">What The F*ct !</div>
           <div className="text-white/50 text-xs">Tu as débloqué le f*ct du jour</div>
@@ -81,7 +86,7 @@ export default function WTFDuJourRevealScreen({
         <div
           className="flex items-center gap-2 px-4 py-3"
           style={{ background: `${cat?.color || '#7C3AED'}18`, borderBottom: `1px solid ${cat?.color || '#7C3AED'}33` }}>
-          <span className="text-2xl">{cat?.emoji || '🤯'}</span>
+          <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none' }} />
           <span className="font-black text-sm uppercase tracking-widest" style={{ color: cat?.color || '#7C3AED' }}>
             {cat?.label || fact.category}
           </span>

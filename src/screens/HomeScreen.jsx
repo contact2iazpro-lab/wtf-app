@@ -14,7 +14,6 @@ const HOME_BACKGROUNDS = [
   { url: '/assets/backgrounds/home-orange.webp', textColor: '#FF6B1A', shadow: 'none' },
   { url: '/assets/backgrounds/home-violet.webp', textColor: '#FF6B1A', shadow: 'none' },
   { url: '/assets/backgrounds/home-bleu.webp',   textColor: '#FF6B1A', shadow: 'none' },
-  { url: '/assets/backgrounds/home-rouge.webp',  textColor: '#FF6B1A', shadow: 'none' },
   { url: '/assets/backgrounds/home-teal.webp',   textColor: '#FF6B1A', shadow: 'none' },
 ]
 
@@ -427,8 +426,8 @@ export default function HomeScreen({
             alignItems: 'center', gap: S(8),
           }}>
             <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
-            <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('duel_setup')} />
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
+            <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('amis')} />
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} disabled />
           </div>
         </div>
 
@@ -456,21 +455,37 @@ export default function HomeScreen({
         <button
           onClick={() => nav('categoryFlash')}
           style={{
-            width: '60%',
-            padding: `${S(12)} ${S(16)}`,
-            background: 'white',
+            width: '65%',
+            padding: `${S(14)} ${S(20)}`,
+            background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
             color: '#FF6B1A',
-            fontWeight: 900, fontSize: S(11),
-            border: 'none', borderRadius: S(12),
+            fontWeight: 900, fontSize: S(12),
+            border: 'none',
+            borderRadius: S(14),
             cursor: 'pointer',
             letterSpacing: '0.04em',
-            boxShadow: '0 3px 14px rgba(0,0,0,0.15)',
             fontFamily: 'Nunito, sans-serif',
             WebkitTapHighlightColor: 'transparent',
-            transition: 'transform 0.1s',
+            transition: 'transform 0.1s, box-shadow 0.1s',
+            boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
+            position: 'relative',
           }}
-          onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.96)')}
-          onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
+          onTouchStart={e => {
+            e.currentTarget.style.transform = 'translateY(4px)'
+            e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)'
+          }}
+          onTouchEnd={e => {
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)'
+          }}
+          onMouseDown={e => {
+            e.currentTarget.style.transform = 'translateY(4px)'
+            e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)'
+          }}
+          onMouseUp={e => {
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)'
+          }}
         >
           ⚡ JOUER EN MODE FLASH
         </button>

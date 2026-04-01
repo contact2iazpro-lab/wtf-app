@@ -69,7 +69,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
   }, [totalPerCategory])
 
   const selectedCat = selectedCatId === 'random'
-    ? { label: 'Aléatoires', emoji: '🎲', id: 'random' }
+    ? { label: 'Aléatoire', emoji: '🎲', id: 'random' }
     : getPlayableCategories().find(c => c.id === selectedCatId)
 
   const hasSelection = selectedCatId !== null
@@ -248,7 +248,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
           gap: S(10),
         }}>
 
-          {/* Aléatoires — toujours visible si au moins 1 catégorie a des facts */}
+          {/* Aléatoire — toujours visible si au moins 1 catégorie a des facts */}
           {visibleCategories.length > 0 && (
             <button
               onClick={() => handleCategoryClick('random')}
@@ -258,7 +258,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                   : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)',
                 borderRadius: S(12),
                 padding: S(12),
-                height: S(110),
+                height: S(85),
                 width: '100%',
                 boxSizing: 'border-box',
                 display: 'flex', flexDirection: 'column',
@@ -275,7 +275,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
               }}
             >
               <span style={{ fontSize: S(32) }}>🎲</span>
-              <span style={{ fontWeight: 700, fontSize: S(13), color: '#1a1a1a' }}>Aléatoires</span>
+              <span style={{ fontWeight: 700, fontSize: S(13), color: '#1a1a1a' }}>Aléatoire</span>
             </button>
           )}
 
@@ -299,7 +299,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                   background: bgColor,
                   borderRadius: S(12),
                   padding: S(12),
-                  height: S(110),
+                  height: S(85),
                   width: '100%',
                   boxSizing: 'border-box',
                   display: 'flex', flexDirection: 'column',

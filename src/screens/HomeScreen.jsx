@@ -417,14 +417,6 @@ export default function HomeScreen({
                 filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
               }}
             />
-            <div style={{
-              fontSize: S(13), fontWeight: 700, color: textColor,
-              textAlign: 'center', lineHeight: 1.4,
-              textShadow,
-              marginTop: S(4),
-            }}>
-              Des f*cts 100% vrais,<br />des réactions 100% fun !
-            </div>
           </div>
 
           {/* Colonne droite — 27% */}
@@ -439,6 +431,19 @@ export default function HomeScreen({
           </div>
         </div>
 
+      </div>
+
+      {/* Tagline */}
+      <div style={{
+        textAlign: 'center', padding: `${S(8)} ${S(16)}`,
+        flexShrink: 0,
+      }}>
+        <div style={{ fontSize: S(13), fontWeight: 700, color: textColor, textShadow, lineHeight: 1.5 }}>
+          Des f*cts 100% vrais,
+        </div>
+        <div style={{ fontSize: S(13), fontWeight: 700, color: textColor, textShadow, lineHeight: 1.5 }}>
+          des réactions 100% fun !
+        </div>
       </div>
 
       {/* Spacer — pousse le bouton Flash + nav bar en bas */}

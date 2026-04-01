@@ -421,7 +421,9 @@ export default function FactsListPage({ toast }) {
       let updateObj = {}
       if (batchAction === 'category') updateObj = { category: batchValue }
       else if (batchAction === 'vip') updateObj = { is_vip: true }
-      else if (batchAction === 'unpublish') updateObj = { is_published: false }
+      else if (batchAction === 'status_published') updateObj = { status: 'published', is_published: true }
+      else if (batchAction === 'status_reserve') updateObj = { status: 'reserve', is_published: false }
+      else if (batchAction === 'status_draft') updateObj = { status: 'draft', is_published: false }
       else if (batchAction === 'pack') updateObj = { pack_id: batchValue }
       else if (batchAction === 'difficulty') updateObj = { difficulty: batchValue }
 
@@ -921,16 +923,29 @@ export default function FactsListPage({ toast }) {
         </div>
       )}
 
-      {batchAction && (batchAction === 'vip' || batchAction === 'unpublish') && (
+      {batchAction && (batchAction === 'vip' || batchAction.startsWith('status_')) && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60" onClick={() => setBatchAction(null)}>
           <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 w-80" onClick={e => e.stopPropagation()}>
-            <h3 className="font-black text-white mb-3">{batchAction === 'vip' ? '⭐ Marquer VIP' : '👁 Dépublier'}</h3>
+            <h3 className="font-black text-white mb-3">
+              {batchAction === 'vip' && '⭐ Marquer VIP'}
+              {batchAction === 'status_published' && '✅ Publier'}
+              {batchAction === 'status_reserve' && '🔒 Mettre en Réserve'}
+              {batchAction === 'status_draft' && '✏️ Mettre en Brouillon'}
+            </h3>
             <p className="text-slate-400 text-sm mb-5">
-              {batchAction === 'vip' ? `Marquer ${selected.size} fact(s) comme VIP ?` : `Dépublier ${selected.size} fact(s) ?`}
+              {batchAction === 'vip' && `Marquer ${selected.size} fact(s) comme VIP ?`}
+              {batchAction === 'status_published' && `Modifier ${selected.size} fact(s) en Publié ?`}
+              {batchAction === 'status_reserve' && `Modifier ${selected.size} fact(s) en Réserve ?`}
+              {batchAction === 'status_draft' && `Modifier ${selected.size} fact(s) en Brouillon ?`}
             </p>
             <div className="flex gap-2">
               <button onClick={() => setBatchAction(null)} className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold">Annuler</button>
-              <button onClick={executeBatch} disabled={batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold" style={{ background: batchAction === 'unpublish' ? '#EF4444' : '#FF6B1A' }}>
+              <button onClick={executeBatch} disabled={batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold" style={{
+                background: batchAction === 'status_published' ? '#10B981'
+                  : batchAction === 'status_reserve' ? '#F59E0B'
+                  : batchAction === 'status_draft' ? '#9CA3AF'
+                  : '#FF6B1A'
+              }}>
                 {batchLoading ? '…' : 'Confirmer'}
               </button>
             </div>
@@ -1123,16 +1138,19 @@ export default function FactsListPage({ toast }) {
           </span>
           <div className="flex gap-2 flex-wrap">
             {[
-              { key: 'vip',        label: '⭐ Marquer VIP' },
-              { key: 'unpublish',  label: '👁 Dépublier' },
-              { key: 'category',   label: '🗂 Catégorie' },
-              { key: 'difficulty', label: '🎯 Difficulté' },
-              { key: 'pack',       label: '📦 Pack' },
+              { key: 'vip',              label: '⭐ Marquer VIP' },
+              { key: 'status_published', label: '✅ Publier',    color: '#10B981' },
+              { key: 'status_reserve',   label: '🔒 Réserve',   color: '#F59E0B' },
+              { key: 'status_draft',     label: '✏️ Brouillon', color: '#9CA3AF' },
+              { key: 'category',         label: '🗂 Catégorie' },
+              { key: 'difficulty',       label: '🎯 Difficulté' },
+              { key: 'pack',             label: '📦 Pack' },
             ].map(a => (
               <button
                 key={a.key}
                 onClick={() => { setBatchAction(a.key); setBatchValue('') }}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-700 text-white hover:bg-slate-600 transition-all"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all"
+                style={{ background: a.color || '#334155' }}
               >
                 {a.label}
               </button>

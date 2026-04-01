@@ -1,4 +1,5 @@
 .vercel
+src/config/devConfig.js
 node_modules/
 dist/
 *.cjs

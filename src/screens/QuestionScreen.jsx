@@ -36,8 +36,8 @@ function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, onReveal
         height: 48,
         width: '100%',
         borderRadius: 24,
-        border: disabled ? '2px solid #6B7280' : `2px solid ${color}`,
-        background: disabled
+        border: (disabled && phase !== 'back') ? '2px solid #6B7280' : `2px solid ${color}`,
+        background: (disabled && phase !== 'back')
           ? 'rgba(107,114,128,0.15)'
           : phase === 'back' ? 'rgba(255,255,255,0.88)' : `${color}28`,
         transform: phase === 'flip' ? 'scaleY(0.08)' : 'scaleY(1)',
@@ -48,10 +48,10 @@ function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, onReveal
         alignItems: 'center',
         justifyContent: 'center',
         padding: '4px 12px',
-        cursor: disabled ? 'not-allowed' : 'pointer',
+        cursor: (disabled && phase !== 'back') ? 'not-allowed' : 'pointer',
         pointerEvents: phase !== 'front' ? 'none' : 'auto',
         flexShrink: 0,
-        opacity: disabled ? 0.55 : 1,
+        opacity: (disabled && phase !== 'back') ? 0.55 : 1,
         gap: 1,
       }}
     >
@@ -59,8 +59,9 @@ function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, onReveal
         disabled ? (
           // Payant + solde insuffisant
           <>
-            <span style={{ fontWeight: 900, fontSize: 12, color: '#9CA3AF', textDecoration: 'line-through', whiteSpace: 'nowrap' }}>
-              Indice — {cost} 🪙
+            <span style={{ fontWeight: 900, fontSize: 12, color: '#9CA3AF', textDecoration: 'line-through', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+              Indice — {cost}
+              <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 'calc(14px * var(--scale))', height: 'calc(14px * var(--scale))', marginLeft: 'calc(4px * var(--scale))', verticalAlign: 'middle' }} />
             </span>
             <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
               Pas assez de coins
@@ -73,8 +74,9 @@ function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, onReveal
           </span>
         ) : (
           // Payant + solde suffisant
-          <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap' }}>
-            Indice — {cost} 🪙
+          <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+            Indice — {cost}
+            <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 'calc(14px * var(--scale))', height: 'calc(14px * var(--scale))', marginLeft: 'calc(4px * var(--scale))', verticalAlign: 'middle' }} />
           </span>
         )
       ) : (
@@ -213,55 +215,68 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Header: ✕ | catégorie | WTF$ coins | ⚙️ ──────────────────────────────
-  // MOD 1 — 4 éléments horizontaux. Nom catégorie sans emoji, se réduit si long.
+  // ── Header: ✕ | catégorie | coins | ⚙️ ──────────────────────────────────
   const header = (
-    <div className="qs-h" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: `${S(4)} ${S(12)} ${S(8)}`, flexShrink: 0 }}>
+    <div className="qs-h" style={{
+      display: 'flex', flexDirection: 'row',
+      alignItems: 'center', justifyContent: 'space-between',
+      width: '100%', flexShrink: 0,
+      padding: `${S(8)} ${S(12)}`,
+    }}>
 
       {/* 1 — Bouton ✕ quitter */}
       <button
         onClick={() => setShowQuitConfirm(true)}
-        className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
         title="Quitter"
-        style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
-      >
-        <span style={{ fontSize: 11, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
-      </button>
+        style={{
+          width: S(36), height: S(36), borderRadius: '50%',
+          background: 'rgba(255,255,255,0.2)',
+          border: '1.5px solid rgba(255,255,255,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: S(16), color: 'white', cursor: 'pointer', flexShrink: 0,
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >✕</button>
 
-      {/* 2 — Nom de la catégorie (flex-1, réduction font si trop long) */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <span
-          style={{
-            fontWeight: 900,
-            fontSize: 13,
-            color: cat?.color || 'rgba(255,255,255,0.7)',
-            lineHeight: 1.2,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
+      {/* 2 — Nom de la catégorie */}
+      <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
+        <span style={{
+          fontWeight: 900, fontSize: S(13),
+          color: cat?.color || 'rgba(255,255,255,0.7)',
+          lineHeight: 1.2, whiteSpace: 'nowrap',
+          overflow: 'hidden', textOverflow: 'ellipsis',
+          display: 'block',
+        }}>
           {cat?.label || 'Question'}
         </span>
       </div>
 
-      {/* 3 — WTF$ + icône + solde (non cliquable) */}
-      <div
-        className="flex items-center gap-1 shrink-0"
-        style={{ pointerEvents: 'none', userSelect: 'none' }}
-      >
-        <span style={{ fontSize: 10, fontWeight: 700, color: '#FF6B1A', lineHeight: 1 }}>WTF$</span>
-        <CoinsIcon size={16} />
-        <span style={{ fontWeight: 700, color: 'white', fontSize: 13 }}>{playerCoins}</span>
+      {/* 3 — Icône coins + solde */}
+      <div style={{
+        display: 'flex', flexDirection: 'row', alignItems: 'center',
+        flexShrink: 0, pointerEvents: 'none', userSelect: 'none',
+      }}>
+        <img
+          src="/assets/ui/icon-coins.png"
+          alt=""
+          style={{ width: S(20), height: S(20), marginRight: S(4) }}
+        />
+        <span style={{ fontWeight: 700, color: 'white', fontSize: S(13) }}>{playerCoins}</span>
       </div>
 
       {/* 4 — Bouton ⚙️ paramètres */}
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}
-        className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+        style={{
+          width: S(36), height: S(36), borderRadius: '50%',
+          background: 'rgba(255,255,255,0.2)',
+          border: '1.5px solid rgba(255,255,255,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0, cursor: 'pointer', marginLeft: S(8),
+          WebkitTapHighlightColor: 'transparent',
+        }}
       >
-        ⚙️
+        <img src="/assets/ui/icon-settings.png" alt="" style={{ width: S(20), height: S(20) }} />
       </button>
     </div>
   )
@@ -351,16 +366,15 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Numéro du f*ct — COR 2/5 : 22px/900, début de distribution ──────────────
+  // ── Numéro du f*ct ───────────────────────────────────────────────────────────
   const factIdLabel = (
-    <div
-      className="text-center shrink-0"
-      style={{
-        fontSize: 22,
-        fontWeight: 900,
-        color: cat?.color || 'rgba(255,255,255,0.4)',
-      }}
-    >
+    <div style={{
+      textAlign: 'center', width: '100%', display: 'block',
+      flexShrink: 0,
+      marginTop: S(4), marginBottom: S(4),
+      fontSize: S(22), fontWeight: 900,
+      color: cat?.color || 'rgba(255,255,255,0.4)',
+    }}>
       #{fact.id}
     </div>
   )
@@ -396,7 +410,7 @@ export default function QuestionScreen({
         {progressBar}
         {factIdLabel}
 
-        <div className="qs-m" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', padding: `0 ${S(16)}` }}>
+        <div className="qs-m" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: S(10), padding: `0 ${S(16)}` }}>
           {questionCard}
 
           <div className="flex flex-col gap-3 shrink-0">
@@ -456,7 +470,7 @@ export default function QuestionScreen({
         <div className="qs-m" style={{
           flex: 1, minHeight: 0,
           display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-evenly',
+          justifyContent: 'flex-start', gap: S(10),
           padding: `0 ${S(16)}`,
         }}>
           {questionCard}
@@ -503,11 +517,11 @@ export default function QuestionScreen({
       {progressBar}
       {factIdLabel}
 
-      {/* Zone centrale : question + indices + QCM — flex 1, space-evenly */}
+      {/* Zone centrale : question + indices + QCM */}
       <div className="qs-m" style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'space-evenly',
+        justifyContent: 'flex-start', gap: S(10),
         padding: `0 ${S(16)}`,
       }}>
         {questionCard}

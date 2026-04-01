@@ -11,6 +11,7 @@ import { DEV_PANEL_ENABLED } from './config/devConfig'
 import { logDevEvent } from './utils/devLogger'
 import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
+import SplashScreen from './screens/SplashScreen'
 import MarathonScreen from './screens/MarathonScreen'
 import DifficultyScreen from './screens/DifficultyScreen'
 import CategoryScreen from './screens/CategoryScreen'
@@ -122,6 +123,13 @@ function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDat
 export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
+
+  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('wtf_splash_shown'))
+  const handleSplashComplete = () => {
+    sessionStorage.setItem('wtf_splash_shown', 'true')
+    setShowSplash(false)
+  }
+
   const [screen, setScreen] = useState(SCREENS.HOME)
   const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.HOT)
   const [selectedCategory, setSelectedCategory] = useState(null)
@@ -824,6 +832,10 @@ export default function App() {
         <div className="text-white/40 text-xs font-bold tracking-widest uppercase">Chargement…</div>
       </div>
     )
+  }
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />
   }
 
   return (

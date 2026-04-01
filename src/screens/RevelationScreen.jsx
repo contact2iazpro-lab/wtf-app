@@ -72,6 +72,8 @@ export default function RevelationScreen({
   gameMode,
   sessionScore,
 }) {
+  const S = (px) => `calc(${px}px * var(--scale))`
+
   const [flipped, setFlipped] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -283,39 +285,34 @@ export default function RevelationScreen({
         {quitModal}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-        {/* MOD 1 — Header identique à QuestionScreen */}
-        <div className="px-4 pt-4 pb-2 shrink-0 flex items-center gap-2">
+        {/* Header */}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
           <button
             onClick={() => setShowQuitConfirm(true)}
-            className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
+            style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           >
-            <span style={{ fontSize: 11, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+            <span style={{ fontSize: 14, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
           </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
             <span style={{
-              fontWeight: 900, fontSize: 13,
+              fontWeight: 900, fontSize: S(13),
               color: cat?.color || 'rgba(255,255,255,0.7)',
-              lineHeight: 1.2, wordBreak: 'break-word',
-              display: '-webkit-box', WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical', overflow: 'hidden',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
             }}>
               {cat?.label || 'Question'}
             </span>
           </div>
-          <div className="flex items-center gap-1 shrink-0" style={{ userSelect: 'none' }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#FF6B1A', lineHeight: 1 }}>WTF$</span>
-            <CoinsIcon size={16} />
-            <span ref={scoreRefTarget} style={{ fontWeight: 700, color: 'white', fontSize: 13 }}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flexShrink: 0, userSelect: 'none' }}>
+            <img src="/assets/ui/icon-coins.png" style={{ width: S(20), height: S(20), marginRight: S(4) }} alt="" />
+            <span ref={scoreRefTarget} style={{ fontWeight: 700, color: 'white', fontSize: S(13) }}>
               {displayedScore}
             </span>
           </div>
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}
-            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+            style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(8) }}
           >
-            ⚙️
+            <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
           </button>
         </div>
 
@@ -426,43 +423,38 @@ export default function RevelationScreen({
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {floatingBadge}
 
-      {/* Header identique à QuestionScreen — MOD 1 */}
-      <div className="px-4 pt-4 pb-2 shrink-0 flex items-center gap-2">
+      {/* Header */}
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
         <button
           onClick={() => setShowQuitConfirm(true)}
-          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
+          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
         >
-          <span style={{ fontSize: 11, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+          <span style={{ fontSize: 14, color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
         </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
           <span style={{
-            fontWeight: 900, fontSize: 13,
+            fontWeight: 900, fontSize: S(13),
             color: cat?.color || 'rgba(255,255,255,0.7)',
-            lineHeight: 1.2, wordBreak: 'break-word',
-            display: '-webkit-box', WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
           }}>
             {cat?.label || 'Question'}
           </span>
         </div>
-        <div className="flex items-center gap-1 shrink-0" style={{ userSelect: 'none' }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: '#FF6B1A', lineHeight: 1 }}>WTF$</span>
-          <CoinsIcon size={16} />
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', flexShrink: 0, userSelect: 'none' }}>
+          <img src="/assets/ui/icon-coins.png" style={{ width: S(20), height: S(20), marginRight: S(4) }} alt="" />
           <span
             ref={scoreRefTarget}
             className={showScorePulse ? 'score-pulse' : ''}
-            style={{ fontWeight: 700, color: 'white', fontSize: 13 }}
+            style={{ fontWeight: 700, color: 'white', fontSize: S(13) }}
           >
             {displayedScore}
           </span>
         </div>
         <button
           onClick={() => { audio.play('click'); setShowSettings(true) }}
-          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(8) }}
         >
-          ⚙️
+          <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
         </button>
       </div>
 

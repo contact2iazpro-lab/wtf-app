@@ -315,6 +315,18 @@ export default function SettingsModal({ onClose, onShowRules }) {
             <h2 className="font-black text-lg tracking-wide" style={{ color: '#1a1a2e' }}>⚙️ Paramètres</h2>
           </div>
 
+          {import.meta.env.DEV && (
+            <div style={{
+              background: 'rgba(255,100,0,0.15)',
+              border: '1px solid rgba(255,100,0,0.4)',
+              borderRadius: 'calc(8px * var(--scale))',
+              padding: 'calc(8px * var(--scale))',
+              marginBottom: 'calc(8px * var(--scale))',
+            }}>
+              <DevModeToggleRow />
+            </div>
+          )}
+
           {/* 4 circular icon toggles */}
           <div className="flex justify-around mb-6">
             {iconToggles.map(t => <IconToggle key={t.label} {...t} />)}
@@ -406,7 +418,6 @@ export default function SettingsModal({ onClose, onShowRules }) {
             <TogglePill on={showWelcome} />
           </button>
 
-          {import.meta.env.DEV && <DevModeToggleRow />}
         </div>
       </div>
     </>

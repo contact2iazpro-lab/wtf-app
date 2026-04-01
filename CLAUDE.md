@@ -86,3 +86,10 @@
 ### Règle simple :
 > Sonnet = je sais exactement quoi changer et où
 > Opus = je dois comprendre la structure pour décider
+
+## ⛔ Règle preview
+- Ne jamais lancer npm run dev, vite, ou tout autre serveur
+- Ne jamais tenter de prendre un screenshot ou preview
+- Ne jamais utiliser les outils mcp__Claude_Preview__*
+- Toutes les modifications sont testées manuellement par le développeur
+- Après chaque modification : afficher un résumé des changements uniquement

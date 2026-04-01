@@ -7,7 +7,7 @@
 // Retrieve via: HomeScreen → bouton "Afficher mon Device ID" (visible en __DEV__)
 
 export const DEV_WHITELIST_DEVICES = [
-  'DEVICE_ID_À_REMPLACER', // Mon iPhone de test / navigateur principal
+  'DEVICE_ID_À_REMPLACER',
 ]
 
 // ─── Device ID (persistent per browser) ──────────────────────────────────────

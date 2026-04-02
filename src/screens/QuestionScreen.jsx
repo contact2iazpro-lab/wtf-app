@@ -140,8 +140,12 @@ export default function QuestionScreen({
   const catTextColor = cat?.color ? (isLightColor(cat.color) ? '#1a1a1a' : '#ffffff') : '#ffffff'
   const S = (px) => `calc(${px}px * var(--scale))`
 
-  // Timer duration
-  const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
+  // Timer duration — Flash mode = 20s per question
+  const isFlash = difficulty?.id === 'flash'
+  const timerDuration = answerMode === 'open' ? 60 : isFlash ? 20 : (difficulty?.duration || 20)
+
+  // Progress display — Flash shows X/10
+  const displayTotalFacts = isFlash ? 10 : totalFacts
 
   // Pause ref — synced to quit modal state (no re-render of CircularTimer)
   const pausedRef = useRef(false)
@@ -285,7 +289,7 @@ export default function QuestionScreen({
   const progressBar = (
     <div style={{ padding: `0 ${S(16)} ${S(4)}`, flexShrink: 0 }}>
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
-        {Array.from({ length: totalFacts }).map((_, i) => {
+        {Array.from({ length: displayTotalFacts }).map((_, i) => {
           const isActive = i === factIndex
           return (
             <div
@@ -309,7 +313,7 @@ export default function QuestionScreen({
                   color: cat?.color || '#1a1a2e',
                   whiteSpace: 'nowrap',
                 }}>
-                  {factIndex + 1}/{totalFacts}
+                  {factIndex + 1}/{displayTotalFacts}
                 </span>
               )}
             </div>
@@ -366,18 +370,6 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Numéro du f*ct ───────────────────────────────────────────────────────────
-  const factIdLabel = (
-    <div style={{
-      textAlign: 'center', width: '100%', display: 'block',
-      flexShrink: 0,
-      marginTop: S(4), marginBottom: S(4),
-      fontSize: S(22), fontWeight: 900,
-      color: cat?.color || 'rgba(255,255,255,0.4)',
-    }}>
-      #{fact.id}
-    </div>
-  )
 
   // ── Zone timer — COR 4 : flex:1 flottant entre QCM et bas ──────────────────
   const timerZone = (
@@ -408,7 +400,7 @@ export default function QuestionScreen({
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
-        {factIdLabel}
+
 
         <div className="qs-m" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: S(10), padding: `0 ${S(16)}` }}>
           {questionCard}
@@ -471,7 +463,7 @@ export default function QuestionScreen({
           </div>
         )}
         {progressBar}
-        {factIdLabel}
+
 
         {/* Zone centrale : question + indices + validation */}
         <div className="qs-m" style={{
@@ -535,7 +527,6 @@ export default function QuestionScreen({
       )}
 
       {progressBar}
-      {factIdLabel}
 
       {/* Zone centrale : question + indices + QCM */}
       <div className="qs-m" style={{

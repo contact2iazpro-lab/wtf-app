@@ -4,6 +4,16 @@ import CoinsIcon from '../components/CoinsIcon'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
+// ── isLightColor ────────────────────────────────────────────────────────────
+const isLightColor = (hex) => {
+  if (!hex) return false
+  const c = hex.replace('#', '')
+  const r = parseInt(c.substring(0, 2), 16)
+  const g = parseInt(c.substring(2, 4), 16)
+  const b = parseInt(c.substring(4, 6), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 160
+}
+
 // ── Fallback image — couleur dynamique, remplit exactement le cadre 1:1 ──────
 const FallbackImage = ({ categoryColor }) => (
   <div style={{
@@ -56,6 +66,27 @@ const CORRECT_MESSAGES = [
   "Incroyable mais vrai... comme toi ! ✨",
 ]
 
+// ── Stamp animation CSS (injected once) ─────────────────────────────────────
+const STAMP_STYLE_ID = 'revelation-stamp-style'
+if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID)) {
+  const style = document.createElement('style')
+  style.id = STAMP_STYLE_ID
+  style.textContent = `
+    @keyframes stampImpact {
+      0% { transform: translate(-50%, -50%) scale(2.5) rotate(-12deg); opacity: 0; }
+      40% { transform: translate(-50%, -50%) scale(0.9) rotate(-12deg); opacity: 1; }
+      60% { transform: translate(-50%, -50%) scale(1.05) rotate(-12deg); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1) rotate(-12deg); opacity: 1; }
+    }
+    @keyframes coinFly {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      80% { opacity: 1; }
+      100% { opacity: 0; transform: translate(var(--coin-dx), var(--coin-dy)) scale(0.3); }
+    }
+  `
+  document.head.appendChild(style)
+}
+
 
 export default function RevelationScreen({
   fact,
@@ -81,62 +112,43 @@ export default function RevelationScreen({
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [displayedScore, setDisplayedScore] = useState(sessionScore - pointsEarned)
   const [showScorePulse, setShowScorePulse] = useState(false)
-  const [showBadge, setShowBadge] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
+  const [showCoins, setShowCoins] = useState(false)
 
   // Messages aléatoires calculés une seule fois au montage
   const [wrongMsg]   = useState(() => WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)])
   const [correctMsg] = useState(() => CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)])
 
   const scoreRefTarget = useRef(null)
-  const pointsBadgeRef = useRef(null)
-  const [animation, setAnimation] = useState(null)
 
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext
   const isLast = factIndex + 1 >= totalFacts
   const successRate = 15 + (fact.id % 40)
+  const catTextColor = cat?.color ? (isLightColor(cat.color) ? '#1a1a1a' : '#ffffff') : 'rgba(255,255,255,0.8)'
 
   // COR 7 — Gradient catégorie identique dans les deux cas
   const catGradient = cat
     ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
     : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
+  // ── Coins animation (replaces floating +5 pts badge) ──────────────────────
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isDuel && isCorrect) setShowBadge(true)
-    }, 300)
-    if (!isDuel) {
-      if (isCorrect) {
-        setTimeout(() => audio.playFile('What the fact.mp3'), 350)
-        setTimeout(() => audio.playFile('Coins points.mp3'), 600)
-      } else {
-      }
-    }
-    return () => clearTimeout(timer)
-  }, [isCorrect, isDuel])
-
-  useEffect(() => {
-    if (!isDuel && flipped && pointsBadgeRef.current && scoreRefTarget.current) {
-      const badgeRect = pointsBadgeRef.current.getBoundingClientRect()
-      const scoreRect = scoreRefTarget.current.getBoundingClientRect()
-      const offsetX = scoreRect.left - badgeRect.left
-      const offsetY = scoreRect.top - badgeRect.top
-
-      setAnimation({ offsetX, offsetY, duration: 2.5 })
-
+    if (!isDuel && isCorrect) {
+      setTimeout(() => audio.playFile('What the fact.mp3'), 350)
+      setTimeout(() => audio.playFile('Coins points.mp3'), 600)
+      // Trigger coins animation after a short delay
+      setTimeout(() => setShowCoins(true), 400)
+      // Update score after coins reach target
       const scoreTimer = setTimeout(() => {
-        setDisplayedScore((prev) => prev + pointsEarned)
+        setDisplayedScore(prev => prev + pointsEarned)
         setShowScorePulse(true)
-        setShowBadge(false)
-        const pulseTimer = setTimeout(() => setShowScorePulse(false), 600)
-        return () => clearTimeout(pulseTimer)
-      }, 2.5 * 1000)
-
+        setTimeout(() => setShowScorePulse(false), 600)
+      }, 1800)
       return () => clearTimeout(scoreTimer)
     }
-  }, [flipped, isDuel, pointsEarned])
+  }, [isCorrect, isDuel])
 
   const handleShare = () => {
     onShare()
@@ -153,10 +165,15 @@ export default function RevelationScreen({
       `🤯 Non mais t'as vu ça ?!\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
     ]
     const shareMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
-    console.log('[Share] Message partagé :', shareMessage)
     if (navigator.share) {
       navigator.share({ text: shareMessage })
     }
+  }
+
+  const handleNext = () => {
+    audio.stopAll()
+    audio.play('click')
+    onNext()
   }
 
   const isLastPlayer = isDuel && duelContext.isLastPlayer
@@ -166,10 +183,6 @@ export default function RevelationScreen({
 
   const selectedAnswerText = selectedAnswer >= 0 ? fact.options[selectedAnswer] : 'Pas de réponse'
   const correctAnswerText = fact.options[fact.correctIndex]
-
-  const screenBg = cat
-    ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
-    : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
   const nextLabel = isDuel
     ? !isLastPlayer
@@ -183,6 +196,34 @@ export default function RevelationScreen({
       : `linear-gradient(135deg, ${cat?.color} 0%, ${cat?.color}dd 100%)`,
     boxShadow: `0 4px 20px ${isDuel ? playerColor : cat?.color}40`,
   }
+
+  // ── Coins flying animation ────────────────────────────────────────────────
+  const coinsAnimation = showCoins && !isDuel && isCorrect && scoreRefTarget.current && (
+    (() => {
+      const scoreRect = scoreRefTarget.current.getBoundingClientRect()
+      const targetX = scoreRect.left + scoreRect.width / 2
+      const targetY = scoreRect.top + scoreRect.height / 2
+      const centerX = window.innerWidth / 2
+      const centerY = window.innerHeight / 2
+      return Array.from({ length: 6 }).map((_, i) => {
+        const angle = (i / 6) * Math.PI * 2
+        const spread = 30
+        const startX = centerX + Math.cos(angle) * spread
+        const startY = centerY + Math.sin(angle) * spread
+        const dx = targetX - startX
+        const dy = targetY - startY
+        return (
+          <div key={i} className="fixed pointer-events-none" style={{
+            left: startX, top: startY, zIndex: 60,
+            '--coin-dx': `${dx}px`, '--coin-dy': `${dy}px`,
+            animation: `coinFly 1.2s ${0.05 * i}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
+          }}>
+            <CoinsIcon size={22} />
+          </div>
+        )
+      })
+    })()
+  )
 
   // ── Quit confirmation modal ───────────────────────────────────────────────
   const quitModal = showQuitConfirm && (
@@ -210,83 +251,48 @@ export default function RevelationScreen({
     </div>
   )
 
-  // ── Header 3 zones — COR 6: "coins" text ─────────────────────────────────
-  const header = (
-    <div className="px-4 pt-3 pb-2 shrink-0 flex items-center">
-      <div className="w-1/3 flex flex-col">
-        <button onClick={() => setShowQuitConfirm(true)} className="text-left">
-          <span className="font-black text-sm" style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}>
-            #{fact.id} · {factIndex + 1}/{totalFacts}
-          </span>
-        </button>
-        {isDuel && playerColor && (
-          <span className="mt-0.5 px-2 py-0.5 rounded-full text-xs font-black self-start" style={{ background: playerColor + '20', color: playerColor }}>
-            {duelContext.playerName}
-          </span>
-        )}
-      </div>
-      <div className="w-1/3 flex items-center justify-center gap-1.5 min-w-0">
-        {cat && <span className="text-lg shrink-0">{cat.emoji}</span>}
-        <span className="font-black text-sm tracking-wide truncate" style={{ color: cat?.color || 'rgba(255,255,255,0.7)' }}>
-          {cat?.label || ''}
+  // ── Header commun ─────────────────────────────────────────────────────────
+  const renderHeader = () => (
+    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
+      <button
+        onClick={() => setShowQuitConfirm(true)}
+        style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+      >
+        <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>✕</span>
+      </button>
+      <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
+        <span style={{
+          fontWeight: 900, fontSize: S(13), color: catTextColor,
+          whiteSpace: 'normal', overflow: 'visible', display: 'block',
+        }}>
+          {cat?.label || 'Question'}
         </span>
       </div>
-      <div className="w-1/3 flex justify-end">
-        <span ref={scoreRefTarget} className={`font-black text-sm flex items-center gap-1${showScorePulse ? ' score-pulse' : ''}`}
-          style={{ color: cat?.color || '#FFA500' }}>
-          <CoinsIcon size={14} />{displayedScore}
-        </span>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+          <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
+          <span ref={scoreRefTarget} className={showScorePulse ? 'score-pulse' : ''} style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{displayedScore}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+          <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
+          <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerTickets}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+          <img src="/assets/ui/icon-hint.png" style={{ width: S(16), height: S(16) }} alt="" />
+          <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerHints}</span>
+        </div>
       </div>
-    </div>
-  )
-
-  // ── ⚙️ fixe bas-droite ──────────────────────────────────────────────────
-  const settingsBtn = (
-    <button
-      onClick={() => { audio.play('click'); setShowSettings(true) }}
-      className="fixed bottom-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center"
-      style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', boxShadow: '0 2px 12px rgba(0,0,0,0.2)' }}>
-      ⚙️
-    </button>
-  )
-
-  // ── Badge de points flottant ──────────────────────────────────────────────
-  const floatingBadge = !isDuel && showBadge && (
-    <div ref={pointsBadgeRef} className="fixed pointer-events-none" style={{
-      left: '50%', top: '50%', width: '180px',
-      transform: animation
-        ? `translateX(calc(-50% + ${animation.offsetX}px)) translateY(calc(-50% + ${animation.offsetY}px)) scale(0)`
-        : 'translateX(-50%) translateY(-50%) scale(1)',
-      zIndex: 50,
-      background: `linear-gradient(135deg, ${cat?.color}50 0%, ${cat?.color}30 100%)`,
-      border: `3px solid ${cat?.color}`, borderRadius: '20px', color: cat?.color,
-      padding: '16px', textAlign: 'center', fontSize: '44px', fontWeight: 900,
-      textShadow: `0 4px 12px ${cat?.color}60`, boxShadow: `0 12px 32px ${cat?.color}40`,
-      opacity: animation ? 0 : 1,
-      transition: animation ? `all 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)` : 'none',
-    }}>
-      +{pointsEarned} pts
-    </div>
-  )
-
-  // ── COR 1 : Message succès — overlay bas ~25% du cadre image ────────────────
-  const bottomMessageStrip = (msg) => flipped && !isDuel && (
-    <div
-      className="absolute bottom-0 left-0 right-0 flex items-center pointer-events-none"
-      style={{ zIndex: 4, minHeight: '25%', background: 'rgba(0,0,0,0.6)', padding: '10px 14px' }}>
-      <span style={{ fontSize: '12px', fontWeight: 700, color: 'white', lineHeight: 1.45, display: 'block' }}>
-        {msg}
-      </span>
+      <button
+        onClick={() => { audio.play('click'); setShowSettings(true) }}
+        style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(6) }}
+      >
+        <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
+      </button>
     </div>
   )
 
   // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
   if (!isCorrect && !isDuel) {
-    const handleNextWrong = () => {
-      audio.stopAll?.()
-      audio.play('click')
-      onNext()
-    }
     return (
       <div className="relative screen-enter" style={{
         height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
@@ -303,83 +309,59 @@ export default function RevelationScreen({
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
         {/* Header */}
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
-          <button
-            onClick={() => setShowQuitConfirm(true)}
-            style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-          >
-            <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>✕</span>
-          </button>
-          <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
-            <span style={{
-              fontWeight: 900, fontSize: S(13), color: 'rgba(255,255,255,0.8)',
-              whiteSpace: 'normal', overflow: 'visible', display: 'block',
-            }}>
-              {cat?.label || 'Question'}
-            </span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-              <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
-              <span ref={scoreRefTarget} style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{displayedScore}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-              <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
-              <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerTickets}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-              <span style={{ fontSize: S(14) }}>💡</span>
-              <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerHints}</span>
-            </div>
-          </div>
-          <button
-            onClick={() => { audio.play('click'); setShowSettings(true) }}
-            style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(6) }}
-          >
-            <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
-          </button>
-        </div>
+        {renderHeader()}
 
-        {/* Image floutée + tampon — flex: 1 */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(16)}`, minHeight: 0 }}>
+        {/* Image floutée + stamp bienveillant par-dessus */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '35vh' }}>
           <div
-            className="rounded-3xl overflow-hidden relative"
-            style={{ border: `3px solid ${cat?.color || 'rgba(255,255,255,0.3)'}`, background: catGradient, maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1', boxShadow: `0 4px 20px rgba(0,0,0,0.3)` }}
+            className="overflow-hidden relative"
+            style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%' }}
           >
             {fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%', filter: 'blur(12px) brightness(0.5)' }}
+                style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0, filter: 'blur(12px) brightness(0.5)' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
-              <img
-                src="/assets/facts/fallback.svg"
-                alt="Fallback"
-                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%', filter: 'blur(8px) brightness(0.5)' }}
-              />
+              <div style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, background: catGradient, filter: 'blur(8px) brightness(0.5)' }}>
+                <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
+              </div>
             )}
-            {/* Overlay */}
-            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.25)', zIndex: 1 }} />
+            {/* Overlay sombre */}
+            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
+            {/* Stamp bienveillant centré par-dessus l'image */}
+            {flipped && (
+              <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 5 }}>
+                <div style={{
+                  position: 'absolute', left: '50%', top: '50%',
+                  animation: 'stampImpact 0.5s ease-out forwards',
+                  background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderRadius: S(14), padding: `${S(10)} ${S(16)}`,
+                  maxWidth: '85%', textAlign: 'center',
+                }}>
+                  <span style={{ fontSize: S(13), fontWeight: 900, color: 'white', lineHeight: 1.4 }}>
+                    {wrongMsg}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Zone info — flex: 1 */}
-        <div style={{ flex: 1, minHeight: 0, padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4), justifyContent: 'center' }}>
-          {/* Message d'échec + social proof */}
-          {flipped && (
-            <div style={{ textAlign: 'center' }}>
-              <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
-                {wrongMsg}
-              </span>
-              <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.6)', display: 'block', marginTop: S(2) }}>
-                👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
-              </span>
-            </div>
-          )}
+        {/* Social proof */}
+        {flipped && (
+          <div style={{ textAlign: 'center', padding: `${S(4)} ${S(16)} 0` }}>
+            <span style={{ fontSize: S(13), fontWeight: 900, color: 'rgba(255,255,255,0.7)', display: 'block' }}>
+              👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
+            </span>
+          </div>
+        )}
 
-          {/* Encadré question (pas la réponse) */}
+        {/* Encadré question */}
+        <div style={{ flex: 1, minHeight: 0, padding: `${S(4)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.15)',
@@ -393,8 +375,8 @@ export default function RevelationScreen({
           </div>
         </div>
 
-        {/* Boutons — flexShrink: 0, hauteur fixe */}
-        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}` }}>
+        {/* Boutons */}
+        <div style={{ flexShrink: 0, padding: `${S(6)} ${S(16)} ${S(12)}` }}>
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             <button
               onClick={handleNativeShare}
@@ -409,7 +391,7 @@ export default function RevelationScreen({
               🤝 Demander de l'aide
             </button>
             <button
-              onClick={handleNextWrong}
+              onClick={handleNext}
               className="btn-press active:scale-95 transition-all"
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
@@ -441,76 +423,36 @@ export default function RevelationScreen({
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      {floatingBadge}
+      {coinsAnimation}
 
-      {/* Header — flexShrink: 0 */}
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
-        <button
-          onClick={() => setShowQuitConfirm(true)}
-          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-        >
-          <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>✕</span>
-        </button>
-        <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
-          <span style={{
-            fontWeight: 900, fontSize: S(11), color: 'rgba(255,255,255,0.8)',
-            lineHeight: 1.2, display: 'block',
-          }}>
-            {cat?.label || 'Question'}
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
-            <span ref={scoreRefTarget} className={showScorePulse ? 'score-pulse' : ''} style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{displayedScore}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
-            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerTickets}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <span style={{ fontSize: S(14) }}>💡</span>
-            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerHints}</span>
-          </div>
-        </div>
-        <button
-          onClick={() => { audio.play('click'); setShowSettings(true) }}
-          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(6) }}
-        >
-          <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
-        </button>
-      </div>
+      {/* Header */}
+      {renderHeader()}
 
-      {/* Image + tampon */}
-      <div style={{ maxHeight: '30vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: `0 ${S(16)}`, flexShrink: 0 }}>
+      {/* Image pleine largeur + stamp FOU réduit en coin */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '30vh' }}>
         <div
-          className={`rounded-3xl overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ border: `3px solid ${cat?.color || 'rgba(255,255,255,0.3)'}`, background: catGradient, maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1', boxShadow: `0 4px 20px rgba(0,0,0,0.3)` }}
+          className={`overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
+          style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%' }}
         >
-          {isCorrect && (
-            fact.imageUrl && !imgFailed ? (
-              <img
-                src={fact.imageUrl}
-                alt={fact.question}
-                style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', width: '100%', height: '100%' }}
-                onError={() => setImgFailed(true)}
-              />
-            ) : (
-              <img
-                src="/assets/facts/fallback.svg"
-                alt="Fallback"
-                style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
-              />
-            )
+          {fact.imageUrl && !imgFailed ? (
+            <img
+              src={fact.imageUrl}
+              alt={fact.question}
+              style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
           )}
+          {/* Stamp FOU — petit, coin bas droit */}
           {!isDuel && flipped && isCorrect && (
-            <div className="absolute inset-0 flex items-end justify-end pointer-events-none" style={{ padding: S(8), zIndex: 10 }}>
+            <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
               <div style={{
-                fontSize: S(36), fontWeight: 900, color: '#4CAF50',
-                textShadow: '0 3px 8px rgba(76, 175, 80, 0.5)',
-                transform: 'rotate(-15deg) scale(1.1)', transformOrigin: 'right bottom',
-                border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(4)} ${S(10)}`,
-                backgroundColor: 'rgba(76, 175, 80, 0.1)', backdropFilter: 'blur(4px)',
+                fontSize: S(18), fontWeight: 900, color: '#4CAF50',
+                textShadow: '0 2px 6px rgba(76, 175, 80, 0.5)',
+                transform: 'rotate(-12deg)',
+                border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`,
+                backgroundColor: 'rgba(76, 175, 80, 0.15)', backdropFilter: 'blur(4px)',
               }}>
                 FOU
               </div>
@@ -520,14 +462,14 @@ export default function RevelationScreen({
       </div>
 
       {/* Zone info — flex: 1, scroll si texte long */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: `${S(4)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(3) }}>
         {/* Message de succès + social proof */}
         {flipped && !isDuel && isCorrect && (
           <div style={{ textAlign: 'center' }}>
             <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
               {correctMsg}
             </span>
-            <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.6)', display: 'block', marginTop: S(2) }}>
+            <span style={{ fontSize: S(13), fontWeight: 900, color: 'rgba(255,255,255,0.7)', display: 'block', marginTop: S(2) }}>
               👥 Seulement {successRate}% des joueurs ont trouvé ce f*ct
             </span>
           </div>
@@ -556,7 +498,7 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Encadré explication */}
+        {/* Encadré explication — sans lien Source */}
         {!isDuel && isCorrect && (
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
@@ -575,11 +517,6 @@ export default function RevelationScreen({
               <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
-            {fact.sourceUrl && (
-              <a href={fact.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: S(9), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(4), textDecoration: 'underline', textAlign: 'right' }}>
-                Source
-              </a>
-            )}
           </div>
         )}
 
@@ -601,8 +538,8 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* Boutons — flexShrink: 0, hauteur fixe */}
-      <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}` }}>
+      {/* Boutons — flexShrink: 0 */}
+      <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(12)}` }}>
         {!isDuel && isCorrect && (
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             <button
@@ -618,7 +555,7 @@ export default function RevelationScreen({
               🎩 Partager ce WTF!
             </button>
             <button
-              onClick={() => { audio.play('click'); onNext() }}
+              onClick={handleNext}
               className="btn-press active:scale-95 transition-all"
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
@@ -633,7 +570,7 @@ export default function RevelationScreen({
 
         {isDuel && (
           <button
-            onClick={() => { audio.play('click'); onNext() }}
+            onClick={handleNext}
             className="btn-press active:scale-95 transition-all"
             style={{
               width: '100%', padding: `${S(14)} 0`, borderRadius: S(14),

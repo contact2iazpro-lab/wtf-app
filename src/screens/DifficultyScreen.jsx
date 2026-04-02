@@ -12,29 +12,33 @@ const BACKGROUNDS = [
   '/assets/backgrounds/home-violet.webp',
 ]
 
-// ── Niveaux ──────────────────────────────────────────────────────────────────
+// ── Niveaux — synced with App.jsx DIFFICULTY_LEVELS ─────────────────────────
 const DIFFICULTY_LEVELS = [
   {
     id: 'cool',
     label: 'Cool',
+    subtitle: 'Pour les Noobs',
     icon: '/assets/ui/level-cool.png',
     tag: 'ACCESSIBLE',
     cardGradient: 'linear-gradient(135deg, #60A5FA, #1D4ED8)',
+    selectedGradient: 'linear-gradient(135deg, #93C5FD, #3B82F6)',
     ctaColor: '#1D4ED8',
     rules: [
       { icon: '/assets/ui/icon-qcm.png',  text: '4 choix de réponse' },
-      { icon: '/assets/ui/icon-hint.png', text: '1 indice gratuit' },
+      { icon: '/assets/ui/icon-hint.png', text: '2 indices possibles' },
       { icon: '/assets/ui/icon-coins.png', text: '3 coins / bonne réponse' },
     ],
-    choices: 4, freeHints: 1, paidHints: 1, hintCost: 3, coinsPerCorrect: 3,
+    choices: 4, freeHints: 0, paidHints: 2, hintCost: 2, coinsPerCorrect: 3,
     scoring: { correct: 3, wrong: 0 },
   },
   {
     id: 'hot',
     label: 'Hot',
+    subtitle: 'Pour les Pros',
     icon: '/assets/ui/level-hot.png',
     tag: 'INTENSE',
     cardGradient: 'linear-gradient(135deg, #FF6B1A, #DC2626)',
+    selectedGradient: 'linear-gradient(135deg, #FF8C4A, #EF4444)',
     ctaColor: '#DC2626',
     rules: [
       { icon: '/assets/ui/icon-qcm.png',  text: '4 choix de réponse' },
@@ -47,13 +51,15 @@ const DIFFICULTY_LEVELS = [
   {
     id: 'wtf',
     label: 'WTF!',
+    subtitle: 'Pour les Cracks',
     icon: '/assets/ui/level-wtf.png',
-    tag: 'SANS FILET',
-    cardGradient: 'linear-gradient(135deg, #8B5CF6, #4F46E5)',
-    ctaColor: '#4F46E5',
+    tag: 'ULTIME',
+    cardGradient: 'linear-gradient(135deg, #B91C1C, #8B0000)',
+    selectedGradient: 'linear-gradient(135deg, #DC2626, #A31515)',
+    ctaColor: '#8B0000',
     rules: [
       { icon: '/assets/ui/icon-qcm.png',  text: '6 choix de réponse' },
-      { icon: '/assets/ui/icon-hint.png', text: '2 indices possibles' },
+      { icon: '/assets/ui/icon-hint.png', text: '1 indice possible' },
       { icon: '/assets/ui/icon-coins.png', text: '5 coins / bonne réponse' },
     ],
     choices: 6, freeHints: 0, paidHints: 1, hintCost: 8, coinsPerCorrect: 5,
@@ -116,7 +122,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
           style={{
             width: S(36), height: S(36), borderRadius: '50%',
             background: 'rgba(255,255,255,0.2)',
-            border: '1px solid rgba(255,255,255,0.3)',
+            border: '1.5px solid rgba(255,255,255,0.4)',
             color: 'white', fontSize: S(16),
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
@@ -128,13 +134,14 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
           style={{
             width: S(36), height: S(36), borderRadius: '50%',
             background: 'rgba(255,255,255,0.2)',
-            border: '1px solid rgba(255,255,255,0.3)',
-            fontSize: S(16),
+            border: '1.5px solid rgba(255,255,255,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
             WebkitTapHighlightColor: 'transparent',
           }}
-        >⚙️</button>
+        >
+          <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
+        </button>
       </div>
 
       {/* ── Titre + sous-titre ─────────────────────────────────────────── */}
@@ -171,15 +178,14 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
               onClick={() => { audio.play('click'); setSelectedId(d.id) }}
               style={{
                 position: 'relative',
-                background: d.cardGradient,
+                background: isSelected ? d.selectedGradient : d.cardGradient,
                 borderRadius: S(16),
                 padding: S(12),
                 marginBottom: S(8),
                 width: '100%', boxSizing: 'border-box',
-                outline: isSelected ? '3px solid white' : 'none',
-                outlineOffset: '-3px',
+                border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
                 boxShadow: isSelected
-                  ? '0 0 20px rgba(255,255,255,0.25), 0 4px 12px rgba(0,0,0,0.3)'
+                  ? '0 0 24px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.3)'
                   : '0 4px 12px rgba(0,0,0,0.2)',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -189,7 +195,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                 fontFamily: 'Nunito, sans-serif',
               }}
             >
-              {/* En-tête : icône + nom + tag */}
+              {/* En-tête : icône + nom + subtitle + tag */}
               <div style={{
                 display: 'flex', alignItems: 'center',
                 justifyContent: 'space-between',
@@ -204,12 +210,22 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                       borderRadius: S(6),
                     }}
                   />
-                  <span style={{
-                    fontSize: S(20), fontWeight: 900, color: 'white',
-                    textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                  }}>
-                    {d.label}
-                  </span>
+                  <div>
+                    <span style={{
+                      fontSize: S(20), fontWeight: 900, color: 'white',
+                      textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                      display: 'block', lineHeight: 1.1,
+                    }}>
+                      {d.label}
+                    </span>
+                    <span style={{
+                      fontSize: S(10), fontWeight: 700,
+                      color: 'rgba(255,255,255,0.7)',
+                      display: 'block', marginTop: S(1),
+                    }}>
+                      {d.subtitle}
+                    </span>
+                  </div>
                 </div>
                 <span style={{
                   background: 'rgba(0,0,0,0.25)',
@@ -242,8 +258,6 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                     style={{
                       width: S(18), height: S(18),
                       objectFit: 'contain', flexShrink: 0,
-                      filter: 'brightness(0) invert(1)',
-                      opacity: 0.9,
                     }}
                   />
                   <span style={{
@@ -258,8 +272,8 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
           )
         })}
 
-        {/* ── CTA — poussé en bas par marginTop auto ───────────────────── */}
-        <div style={{ marginTop: 'auto', paddingBottom: S(16) }}>
+        {/* ── CTA — poussé en bas, pas d'espace mort ───────────────────── */}
+        <div style={{ marginTop: 'auto', paddingBottom: S(12) }}>
           <button
             onClick={() => hasSelection && handleSelect(selectedId)}
             disabled={!hasSelection}

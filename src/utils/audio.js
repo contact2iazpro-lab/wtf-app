@@ -312,6 +312,15 @@ class AudioManager {
     try { navigator.vibrate?.(pattern) } catch (_) {}
   }
 
+  // Stop all currently playing file audios
+  stopAll() {
+    this._activeFileAudios.forEach(a => {
+      a.pause()
+      a.currentTime = 0
+    })
+    this._activeFileAudios.clear()
+  }
+
   // Play audio files from public directory
   playFile(filename) {
     if (!this._sfxEnabled) return

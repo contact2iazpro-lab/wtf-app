@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useCollection'
-import { getParcoursFacts, getPlayableCategories } from '../data/factsService'
+import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import LoginModal from '../components/Auth/LoginModal'
 import { audio } from '../utils/audio'
 
@@ -13,6 +13,14 @@ function hexToRgb(hex) {
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
   return `${r}, ${g}, ${b}`
+}
+
+function isLightColor(hex) {
+  if (!hex) return false
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 155
 }
 
 function ProgressBar({ percentage, color }) {
@@ -31,10 +39,9 @@ function ProgressBar({ percentage, color }) {
   )
 }
 
-const DIFF_CONFIG = {
-  cool: { label: 'Cool', emoji: '❄️', color: '#3B82F6' },
-  hot:  { label: 'Hot',  emoji: '🔥', color: '#FF6B1A' },
-  wtf:  { label: 'WTF!', emoji: '⚡', color: '#8B5CF6' },
+const TAB_CONFIG = {
+  vip:       { label: 'VIP',      emoji: '👑', color: '#FFD700' },
+  generated: { label: 'Générés', emoji: '🤖', color: '#8B5CF6' },
 }
 
 // ─── Fact detail full-screen view ──────────────────────────────────────────
@@ -173,10 +180,13 @@ function FactDetailView({ fact, onClose }) {
 
 function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, onClose }) {
   const S = (px) => `calc(${px}px * var(--scale))`
-  const diff = DIFF_CONFIG[activeTab]
+  const tab = TAB_CONFIG[activeTab]
   const unlockedFacts = facts.filter(f => unlockedIds.has(f.id))
   const lockedFacts   = facts.filter(f => !unlockedIds.has(f.id))
   const rgb = hexToRgb(cat.color)
+  const textColor = isLightColor(cat.color) ? '#1a1a1a' : '#ffffff'
+  const subtextColor = isLightColor(cat.color) ? 'rgba(26,26,26,0.6)' : 'rgba(255,255,255,0.6)'
+  const mutedColor = isLightColor(cat.color) ? 'rgba(26,26,26,0.4)' : 'rgba(255,255,255,0.4)'
 
   return (
     <div
@@ -214,7 +224,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
           />
           <div style={{ flex: 1, minWidth: 0 }}>
             <span style={{ fontWeight: 900, fontSize: S(13), color: 'white', display: 'block', lineHeight: 1.2 }}>{cat.label}</span>
-            <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>{diff.emoji} {diff.label}</span>
+            <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>{tab.emoji} {tab.label}</span>
           </div>
           <span style={{
             fontSize: S(11), fontWeight: 900, color: 'white',
@@ -229,13 +239,13 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
         <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(16)}`, paddingBottom: S(80) }}>
           {unlockedFacts.length === 0 && (
             <p style={{ textAlign: 'center', fontSize: S(13), color: 'rgba(255,255,255,0.5)', padding: `${S(32)} 0` }}>
-              Aucun F*ct débloqué à ce niveau.<br />Lance une quête {diff.label} pour commencer !
+              Aucun F*ct débloqué dans cette catégorie.<br />Lance une quête pour commencer !
             </p>
           )}
 
           {unlockedFacts.length > 0 && (
             <>
-              <p style={{ fontSize: S(10), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: S(8) }}>
+              <p style={{ fontSize: S(10), fontWeight: 900, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: S(8) }}>
                 F*cts débloqués — {unlockedFacts.length}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), marginBottom: S(16) }}>
@@ -256,10 +266,10 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                       <img src="/assets/facts/fallback.svg" alt="" style={{ width: S(48), height: S(48), borderRadius: S(10), objectFit: 'cover', flexShrink: 0 }} />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontWeight: 900, fontSize: S(12), color: 'white', display: 'block' }}>{fact.shortAnswer}</span>
-                      <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.6)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4, marginTop: S(2) }}>{fact.explanation}</span>
+                      <span style={{ fontWeight: 900, fontSize: S(12), color: textColor, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.3 }}>{fact.question}</span>
+                      <span style={{ fontSize: S(10), color: subtextColor, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4, marginTop: S(2) }}>{fact.explanation}</span>
                     </div>
-                    <span style={{ fontSize: S(16), color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>›</span>
+                    <span style={{ fontSize: S(16), color: mutedColor, flexShrink: 0 }}>›</span>
                   </button>
                 ))}
               </div>
@@ -268,7 +278,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
 
           {lockedFacts.length > 0 && (
             <>
-              <p style={{ fontSize: S(10), fontWeight: 900, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: S(8) }}>
+              <p style={{ fontSize: S(10), fontWeight: 900, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: S(8) }}>
                 À découvrir — {lockedFacts.length}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: S(8) }}>
@@ -312,7 +322,7 @@ export default function CollectionPage() {
   const navigate = useNavigate()
   const { isConnected } = useAuth()
   const [showLogin, setShowLogin] = useState(false)
-  const [activeTab, setActiveTab] = useState('cool')
+  const [activeTab, setActiveTab] = useState('vip')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
 
@@ -335,47 +345,52 @@ export default function CollectionPage() {
     return ids
   }, [localUnlocked, unlockedByCategory])
 
-  // getParcoursFacts() indexed by difficulty+category
+  // Index facts by type + category
   const factsIndex = useMemo(() => {
     const idx = {}
-    for (const f of getParcoursFacts()) {
-      const key = `${f.difficulty}_${f.category}`
+    for (const f of getValidFacts()) {
+      const type = f.type || 'vip' // facts without type default to vip
+      const key = `${type}_${f.category}`
       if (!idx[key]) idx[key] = []
       idx[key].push(f)
     }
     return idx
   }, [])
 
-  // Stats for active tab, per category
+  // Stats for active tab, per category — hide empty categories and "crimes"
   const tabStats = useMemo(() => {
-    return getPlayableCategories().map(cat => {
-      const facts = factsIndex[`${activeTab}_${cat.id}`] || []
-      const unlockedCount = facts.filter(f => allUnlockedIds.has(f.id)).length
-      const pct = facts.length > 0 ? Math.round((unlockedCount / facts.length) * 100) : 0
-      return {
-        cat,
-        facts,
-        unlocked: unlockedCount,
-        total: facts.length,
-        percentage: pct,
-        isCompleted: facts.length > 0 && unlockedCount === facts.length,
-      }
-    }).sort((a, b) => {
-      // Most complete first (descending percentage), then alphabetical
-      if (b.percentage !== a.percentage) return b.percentage - a.percentage
-      return a.cat.label.localeCompare(b.cat.label, 'fr', { sensitivity: 'base' })
-    })
+    return getPlayableCategories()
+      .filter(cat => cat.id !== 'crimes') // Masquer Crimes & Faits Divers
+      .map(cat => {
+        const facts = factsIndex[`${activeTab}_${cat.id}`] || []
+        const unlockedCount = facts.filter(f => allUnlockedIds.has(f.id)).length
+        const pct = facts.length > 0 ? Math.round((unlockedCount / facts.length) * 100) : 0
+        return {
+          cat,
+          facts,
+          unlocked: unlockedCount,
+          total: facts.length,
+          percentage: pct,
+          isCompleted: facts.length > 0 && unlockedCount === facts.length,
+        }
+      })
+      .filter(s => s.total > 0) // Masquer les catégories vides
+      .sort((a, b) => {
+        if (b.percentage !== a.percentage) return b.percentage - a.percentage
+        return a.cat.label.localeCompare(b.cat.label, 'fr', { sensitivity: 'base' })
+      })
   }, [activeTab, allUnlockedIds, factsIndex])
 
   // Global progress for active tab
-  const tabTotalAvailable = getPlayableCategories().length * 10 // always 170
+  const tabTotalFacts = tabStats.reduce((a, s) => a + s.total, 0)
   const tabTotalUnlocked = tabStats.reduce((a, s) => a + s.unlocked, 0)
-  const tabPercentage = Math.round((tabTotalUnlocked / tabTotalAvailable) * 100)
+  const tabPercentage = tabTotalFacts > 0 ? Math.round((tabTotalUnlocked / tabTotalFacts) * 100) : 0
 
-  // Global overall progress (all difficulties)
-  const overallUnlocked = getParcoursFacts().filter(f => allUnlockedIds.has(f.id)).length
-  const overallTotal = getParcoursFacts().length // 510
-  const overallPercentage = Math.round((overallUnlocked / overallTotal) * 100)
+  // Global overall progress (all facts)
+  const allFacts = getValidFacts()
+  const overallUnlocked = allFacts.filter(f => allUnlockedIds.has(f.id)).length
+  const overallTotal = allFacts.length
+  const overallPercentage = overallTotal > 0 ? Math.round((overallUnlocked / overallTotal) * 100) : 0
 
   // Selected category for fact list
   const selectedCatStats = selectedCatId ? tabStats.find(s => s.cat.id === selectedCatId) : null
@@ -435,9 +450,9 @@ export default function CollectionPage() {
           </div>
         </div>
 
-        {/* Difficulty tabs */}
+        {/* VIP / Générés tabs */}
         <div className="flex gap-2 mb-2">
-          {Object.entries(DIFF_CONFIG).map(([key, cfg]) => {
+          {Object.entries(TAB_CONFIG).map(([key, cfg]) => {
             const isActive = activeTab === key
             return (
               <button
@@ -446,7 +461,7 @@ export default function CollectionPage() {
                 className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
                 style={{
                   background: isActive ? cfg.color : '#F3F4F6',
-                  color: isActive ? 'white' : '#9CA3AF',
+                  color: isActive ? (key === 'vip' ? '#1a1a2e' : 'white') : '#9CA3AF',
                   border: isActive ? 'none' : '1px solid #E5E7EB',
                   boxShadow: isActive ? `0 4px 12px rgba(0,0,0,0.3)` : 'none',
                 }}
@@ -460,10 +475,10 @@ export default function CollectionPage() {
         {/* Tab progress */}
         <div className="flex items-center justify-between px-1 mb-1">
           <span className="text-xs" style={{ color: '#9CA3AF' }}>
-            {DIFF_CONFIG[activeTab].emoji} Niveau {DIFF_CONFIG[activeTab].label}
+            {TAB_CONFIG[activeTab].emoji} {TAB_CONFIG[activeTab].label}
           </span>
-          <span className="text-xs font-bold" style={{ color: DIFF_CONFIG[activeTab].color }}>
-            {tabPercentage}% débloqués
+          <span className="text-xs font-bold" style={{ color: TAB_CONFIG[activeTab].color }}>
+            {tabTotalUnlocked} / {tabTotalFacts} — {tabPercentage}%
           </span>
         </div>
       </div>
@@ -527,6 +542,7 @@ export default function CollectionPage() {
           })}
         </div>
       </div>
+
     </div>
   )
 }

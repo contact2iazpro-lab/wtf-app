@@ -541,13 +541,12 @@ export const VIP_FACT_IDS = new Set([
   4, 7, 17, 24, 35, 47, 80, 90, 100, 120, 130, 140, 160, 180, 190, 240, 290, 310, 350,
 ])
 
-// Generate a masked teaser title â reveals first ~40% of words to build curiosity
+// Generate a teaser — use teaser field if available, otherwise question text
 export function getTitrePartiel(fact) {
-  const answer = fact.shortAnswer || ''
-  const words = answer.split(' ')
-  if (words.length <= 1) return `${words[0] || '...'} [masquÃ©] ð`
-  const revealCount = Math.max(1, Math.floor(words.length * 0.4))
-  return `${words.slice(0, revealCount).join(' ')}... [masquÃ©] ð`
+  if (fact.teaser) return fact.teaser
+  const q = fact.question || ''
+  if (q.length > 60) return q.slice(0, 60) + '\u2026'
+  return q
 }
 
 // Get today's WTF du Jour fact â deterministic per calendar day, same for all users

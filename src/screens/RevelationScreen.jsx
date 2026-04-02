@@ -399,7 +399,7 @@ export default function RevelationScreen({
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
               }}
             >
-              SUIVANT →
+              {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
             </button>
           </div>
         </div>
@@ -563,7 +563,7 @@ export default function RevelationScreen({
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
               }}
             >
-              SUIVANT →
+              {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
             </button>
           </div>
         )}

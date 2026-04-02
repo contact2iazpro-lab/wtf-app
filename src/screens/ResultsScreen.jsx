@@ -4,6 +4,16 @@ import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
 
+// ── isLightColor ────────────────────────────────────────────────────────────
+const isLightColor = (hex) => {
+  if (!hex) return false
+  const c = hex.replace('#', '')
+  const r = parseInt(c.substring(0, 2), 16)
+  const g = parseInt(c.substring(2, 4), 16)
+  const b = parseInt(c.substring(4, 6), 16)
+  return (r * 299 + g * 587 + b * 114) / 1000 > 160
+}
+
 // MOD 5 — 11 niveaux de ranking basés sur le nombre de bonnes réponses (0-10)
 const RANKINGS = [
   { score: 0,  emoji: '😵', label: 'Zéro pointé',   message: "Tu as encore beaucoup à découvrir... et c'est tant mieux !" },
@@ -74,6 +84,7 @@ export default function ResultsScreen({
   // Category color (MOD 1)
   const cat = categoryId ? getCategoryById(categoryId) : null
   const catColor = cat?.color || '#FF5C1A'
+  const textOnBg = isLightColor(catColor) ? '#1a1a1a' : '#ffffff'
 
   // MOD 5 — Rank based on correct answers
   const currentRank = RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
@@ -227,6 +238,13 @@ export default function ResultsScreen({
     }
   }
 
+  // Direct home — stop all audio and go home immediately
+  const handleGoHome = () => {
+    audio.stopAll()
+    audio.play('click')
+    onHome()
+  }
+
   // COR 4 — Confetti particles (seeded layout)
   const confettiParticles = Array.from({ length: isPerfect ? 40 : 25 }, (_, i) => ({
     id: i,
@@ -290,31 +308,31 @@ export default function ResultsScreen({
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Header */}
+      {/* Header — pas de catégorie, on n'est plus en jeu */}
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
         <button
-          onClick={onHome}
+          onClick={handleGoHome}
           style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
         >
-          <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1 }}>✕</span>
+          <span style={{ fontSize: S(16), color: textOnBg, fontWeight: 900, lineHeight: 1 }}>✕</span>
         </button>
         <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
-          <span style={{ fontWeight: 900, fontSize: S(11), color: 'rgba(255,255,255,0.8)', lineHeight: 1.2, display: 'block' }}>
-            {cat?.label || 'Résultats'}
+          <span style={{ fontWeight: 900, fontSize: S(13), color: textOnBg, lineHeight: 1.2, display: 'block', textAlign: 'center' }}>
+            Résultats
           </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
             <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
-            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerCoins}</span>
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(12) }}>{playerCoins}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
             <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
-            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerTickets}</span>
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(12) }}>{playerTickets}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <span style={{ fontSize: S(14) }}>💡</span>
-            <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerHints}</span>
+            <img src="/assets/ui/icon-hint.png" style={{ width: S(16), height: S(16) }} alt="" />
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(12) }}>{playerHints}</span>
           </div>
         </div>
         <button
@@ -341,14 +359,13 @@ export default function ResultsScreen({
         <div
           className="text-lg font-black mb-0.5 text-center"
           style={{
-            color: 'white',
+            color: textOnBg,
             transform: rankVisible ? 'scale(1)' : 'scale(0)',
             transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
           }}>
           {currentRank.label}
         </div>
-        {/* MOD 12 — Texte lisible sur fond coloré */}
-        <div className="text-white/75 text-xs font-semibold text-center px-6 leading-relaxed">
+        <div className="text-xs font-semibold text-center px-6 leading-relaxed" style={{ color: textOnBg, opacity: 0.75 }}>
           {currentRank.message}
         </div>
       </div>
@@ -423,11 +440,10 @@ export default function ResultsScreen({
 
       {/* Score card */}
       <div className="mx-5 mb-2 rounded-3xl border p-3 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)' }}>
-        {/* MOD 6 — Score animé count-up + MOD 12 — blanc pur */}
+        {/* MOD 6 — Score animé count-up */}
         <div className="text-center mb-2">
-          <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-0.5">Score final</div>
-          <div className="text-4xl font-black text-white">{animatedScore}</div>
-          <div className="text-white/50 text-xs font-semibold">points</div>
+          <div className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: textOnBg, opacity: 0.6 }}>Coins gagnés</div>
+          <div className="text-4xl font-black" style={{ color: textOnBg }}>{animatedScore}</div>
         </div>
 
         {/* Progress bar couleur catégorie */}
@@ -438,80 +454,94 @@ export default function ResultsScreen({
           />
         </div>
 
-        {/* MOD 9 — "À découvrir" remplace "Ratées" + MOD 12 — couleurs cohérentes */}
+        {/* Stats — renommés */}
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <div className="text-xl font-black text-white">{correctCount}</div>
-            <div className="text-white/60 text-xs font-semibold">Correctes</div>
+            <div className="text-xl font-black" style={{ color: textOnBg }}>{correctCount}</div>
+            <div className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.6 }}>F*cts débloqués</div>
           </div>
           <div>
-            <div className="text-xl font-black text-white">{totalFacts - correctCount}</div>
-            <div className="text-white/60 text-xs font-semibold">À découvrir</div>
+            <div className="text-xl font-black" style={{ color: textOnBg }}>{totalFacts - correctCount}</div>
+            <div className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.6 }}>F*cts à découvrir</div>
           </div>
           <div>
             {/* MOD 3 — Précision basée sur correctCount / totalFacts */}
             <div className="text-xl font-black" style={{ color: catColor }}>{precision}%</div>
-            <div className="text-white/60 text-xs font-semibold">Précision</div>
+            <div className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.6 }}>Précision</div>
           </div>
         </div>
       </div>
 
       {/* COR 6 — Stats joueurs sous le score */}
       <div className="text-center px-5 mb-1 shrink-0">
-        <span className="text-xs font-semibold text-white/55">
+        <span className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.55 }}>
           👥 En moyenne, les joueurs réussissent {avgSuccessRate}% des f*cts de cette catégorie
         </span>
       </div>
 
-      {/* COR 2 — Carrousel horizontal des facts débloqués */}
+      {/* COR 2 — Carrousel horizontal des facts débloqués + non débloqués */}
       {unlockedFactsThisSession.length > 0 && (
         <div className="mb-3 shrink-0">
           <div className="px-5 mb-2">
-            <span className="text-white/80 text-xs font-black uppercase tracking-widest">
+            <span className="text-xs font-black uppercase tracking-widest" style={{ color: textOnBg, opacity: 0.8 }}>
               🔓 F*cts débloqués ({unlockedFactsThisSession.length})
             </span>
           </div>
           <div
             className="flex gap-2.5 overflow-x-auto scrollbar-hide"
             style={{ paddingLeft: 20, paddingRight: 20 }}>
-            {unlockedFactsThisSession.map((fact) => (
-              <div
-                key={fact.id}
-                className="shrink-0 rounded-2xl overflow-hidden flex flex-col active:scale-95 transition-all"
-                style={{
-                  width: 110,
-                  background: 'rgba(0,0,0,0.3)',
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  backdropFilter: 'blur(8px)',
-                  cursor: onFactDetail ? 'pointer' : 'default',
-                }}
-                onClick={() => onFactDetail && onFactDetail(fact)}>
-                {/* Image ou fallback emoji */}
+            {unlockedFactsThisSession.map((fact) => {
+              const factCat = CATEGORIES.find(c => c.id === fact.category)
+              const factCatColor = factCat?.color || catColor
+              const isUnlocked = fact._unlocked !== false
+              return (
                 <div
-                  className="w-full flex items-center justify-center overflow-hidden"
-                  style={{ height: 70, background: 'rgba(255,255,255,0.06)' }}>
-                  {fact.imageUrl ? (
-                    <img
-                      src={fact.imageUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }}
-                    />
-                  ) : null}
+                  key={fact.id}
+                  className="shrink-0 rounded-2xl overflow-hidden flex flex-col active:scale-95 transition-all"
+                  style={{
+                    width: 110,
+                    background: 'rgba(0,0,0,0.3)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    backdropFilter: 'blur(8px)',
+                    cursor: onFactDetail ? 'pointer' : 'default',
+                  }}
+                  onClick={() => onFactDetail && onFactDetail(fact)}>
+                  {/* Image — floutée si non débloqué */}
                   <div
-                    className="w-full h-full items-center justify-center text-2xl"
-                    style={{ display: fact.imageUrl ? 'none' : 'flex' }}>
-                    {CATEGORIES.find(c => c.id === fact.category)?.emoji || '💡'}
+                    className="w-full flex items-center justify-center overflow-hidden relative"
+                    style={{ height: 70, background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})` }}>
+                    {fact.imageUrl ? (
+                      <img
+                        src={fact.imageUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        style={!isUnlocked ? { filter: 'blur(8px) brightness(0.6)' } : undefined}
+                        onError={e => {
+                          e.target.style.display = 'none'
+                          e.target.nextSibling.style.display = 'flex'
+                        }}
+                      />
+                    ) : null}
+                    {/* Fallback flouté — gradient catégorie */}
+                    <div
+                      className="w-full h-full items-center justify-center absolute inset-0"
+                      style={{
+                        display: fact.imageUrl ? 'none' : 'flex',
+                        background: `linear-gradient(135deg, ${factCatColor}66, ${factCatColor})`,
+                        filter: !isUnlocked ? 'blur(4px) brightness(0.6)' : 'none',
+                      }}>
+                      <span style={{ fontSize: 28, color: 'white', fontWeight: 900, opacity: 0.3 }}>?</span>
+                    </div>
+                  </div>
+                  {/* Numéro du f*ct en couleur catégorie */}
+                  <div className="px-2 py-1.5 flex-1 flex items-center justify-center">
+                    <span className="font-black text-sm" style={{ color: factCatColor }}>
+                      #{fact.id}
+                    </span>
                   </div>
                 </div>
-                {/* Numéro du f*ct en couleur catégorie */}
-                <div className="px-2 py-1.5 flex-1 flex items-center justify-center">
-                  <span className="font-black text-sm" style={{ color: CATEGORIES.find(c => c.id === fact.category)?.color || catColor }}>
-                    #{fact.id}
-                  </span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
@@ -528,7 +558,7 @@ export default function ResultsScreen({
                   {coinsEarned} coins + {perfectBonus} bonus score parfait 🌟
                 </div>
               ) : (
-                <div className="text-white/50 text-xs font-semibold">Ajoutés à ton solde</div>
+                <div className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.5 }}>Ajoutés à ton solde</div>
               )}
             </div>
             {isPerfect && <span className="text-2xl">🏆</span>}
@@ -539,11 +569,11 @@ export default function ResultsScreen({
       {/* MOD 8 — Bandeau prochain micro-objectif */}
       <div className="mx-5 mb-2 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.15)' }}>
         {cat ? (
-          <div className="text-white/80 text-xs font-semibold text-center leading-relaxed">
+          <div className="text-xs font-semibold text-center leading-relaxed" style={{ color: textOnBg, opacity: 0.8 }}>
             🏅 <span style={{ color: catColor }}>{cat.label}</span> — continue les quêtes pour débloquer ton prochain badge !
           </div>
         ) : (
-          <div className="text-white/70 text-xs font-semibold text-center leading-relaxed">
+          <div className="text-xs font-semibold text-center leading-relaxed" style={{ color: textOnBg, opacity: 0.7 }}>
             Lance une nouvelle quête pour débloquer ton premier badge !
           </div>
         )}
@@ -552,7 +582,7 @@ export default function ResultsScreen({
       {/* Completion rewards */}
       {completedCategoryLevels.length > 0 && (
         <div className="mx-5 mb-3 rounded-2xl border p-4 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
-          <div className="text-white/80 text-xs font-bold uppercase tracking-widest mb-3 text-center">🏆 Niveau complété !</div>
+          <div className="text-xs font-bold uppercase tracking-widest mb-3 text-center" style={{ color: textOnBg, opacity: 0.8 }}>🏆 Niveau complété !</div>
           {completedCategoryLevels.map(({ catId, difficulty: lvlDiff }) => {
             const lvlCat = CATEGORIES.find(c => c.id === catId)
             return (
@@ -565,7 +595,7 @@ export default function ResultsScreen({
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-black text-white text-xs">
+                  <div className="font-black text-xs" style={{ color: textOnBg }}>
                     {DIFFICULTY_EMOJIS[lvlDiff]} {lvlCat?.label || catId} — {DIFFICULTY_LABELS[lvlDiff]}
                   </div>
                   <div className="text-yellow-200 text-xs font-semibold mt-0.5">De nouveaux facts arrivent bientôt !</div>
@@ -583,7 +613,7 @@ export default function ResultsScreen({
       <div className="px-5 pb-4 flex flex-col gap-2 shrink-0">
 
         {/* COR 5 — Message tickets restants */}
-        <div className="text-center text-xs font-bold mb-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
+        <div className="text-center text-xs font-bold mb-1" style={{ color: textOnBg, opacity: 0.75 }}>
           {remainingQuests > 0
             ? `🎯 Tu as encore ${remainingQuests} quête${remainingQuests > 1 ? 's' : ''} disponible${remainingQuests > 1 ? 's' : ''} aujourd'hui !`
             : "✅ Tu as utilisé toutes tes quêtes du jour — reviens demain !"}
@@ -592,10 +622,11 @@ export default function ResultsScreen({
         {/* COR 3 — Principal : Rejouer même catégorie + difficulté */}
         <button
           onClick={onReplay}
-          className="btn-press w-full py-4 rounded-2xl text-white font-black text-base uppercase tracking-wide active:scale-95 transition-all"
+          className="btn-press w-full py-4 rounded-2xl font-black text-base uppercase tracking-wide active:scale-95 transition-all"
           style={{
             background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
             boxShadow: `0 8px 32px ${catColor}50`,
+            color: isLightColor(catColor) ? '#1a1a1a' : 'white',
           }}>
           🔄 Rejouer
         </button>
@@ -607,10 +638,10 @@ export default function ResultsScreen({
             className="btn-press w-full py-3.5 rounded-2xl font-black text-sm active:scale-95 transition-all border-2"
             style={{
               background: 'rgba(255,255,255,0.08)',
-              borderColor: 'rgba(255,255,255,0.3)',
-              color: 'white',
+              borderColor: `${textOnBg}40`,
+              color: textOnBg,
             }}>
-            {CHALLENGE_LABELS[difficulty.id || difficulty] || 'Changer de niveau ⚡'}
+            {CHALLENGE_LABELS[difficulty.id || difficulty] || 'Changer de mode ⚡'}
           </button>
         )}
 
@@ -618,16 +649,16 @@ export default function ResultsScreen({
         <button
           onClick={handleShare}
           className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all border"
-          style={{ background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.25)', color: 'white' }}>
+          style={{ background: 'rgba(255,255,255,0.1)', borderColor: `${textOnBg}30`, color: textOnBg }}>
           <span>{sharedCopied ? '✅' : '📤'}</span>
           {sharedCopied ? 'Copié !' : 'Partager mon score & défier mes amis'}
         </button>
 
         {/* Secondaire — Revenir, discret */}
         <button
-          onClick={onHome}
+          onClick={handleGoHome}
           className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
-          style={{ background: 'transparent', color: 'rgba(255,255,255,0.55)' }}>
+          style={{ background: 'transparent', color: textOnBg, opacity: 0.55 }}>
           ← Revenir
         </button>
       </div>

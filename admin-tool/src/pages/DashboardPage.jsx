@@ -36,18 +36,14 @@ function BarChart({ data, max, color = '#FF6B1A' }) {
   )
 }
 
-const QUALITY_CHECKS = [
+const ALL_QUALITY_CHECKS = [
   { key: 'noImage',               emoji: '📷', label: 'Sans image' },
   { key: 'questionTooLong',       emoji: '📝', label: 'Question trop longue' },
   { key: 'explanationOutOfRange', emoji: '📖', label: 'Explication hors limites' },
-  { key: 'missingHints',          emoji: '💡', label: 'Indices manquants' },
+  { key: 'missingHints',          emoji: '💡', label: 'Indices manquants (hint1-4)' },
+  { key: 'hintsTooLong',         emoji: '📏', label: 'Indices trop longs (>1 mot)' },
   { key: 'incompleteOptions',     emoji: '🎯', label: 'Options QCM incomplètes' },
   { key: 'noSourceUrl',           emoji: '🔗', label: 'Sans URL source' },
-]
-
-const NEW_FORMAT_CHECKS = [
-  { key: 'missingNewHints',      emoji: '💡', label: 'Indices manquants (hint1-4)' },
-  { key: 'hintsTooLong',         emoji: '📏', label: 'Indices trop longs (>1 mot)' },
   { key: 'missingWrongAnswers',  emoji: '❌', label: 'Fausses réponses manquantes' },
   { key: 'closedQuestion',       emoji: '🚫', label: 'Question pas ouverte' },
   { key: 'missingType',          emoji: '🏷️', label: 'Type manquant (vip/generated)' },
@@ -70,21 +66,17 @@ export default function DashboardPage({ toast }) {
   const [stats, setStats] = useState(null)
   const [categoryData, setCategoryData] = useState([])
   const [vipByUsage, setVipByUsage] = useState([])
-  const [difficultyData, setDifficultyData] = useState([])
+  const [typeData, setTypeData] = useState([])
   const [recentEdits, setRecentEdits] = useState([])
   const [loading, setLoading] = useState(true)
   const [syncStatus, setSyncStatus] = useState(null) // null | 'running' | 'done' | 'error'
   const [syncMessage, setSyncMessage] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all') // 'all' | 'published' | 'unpublished' | 'doublon'
-  const [difficultyFilter, setDifficultyFilter] = useState('published') // 'all' | 'published' | 'unpublished' | 'doublon'
   const [allFactsForFilter, setAllFactsForFilter] = useState([])
   const [qualityIssues, setQualityIssues] = useState(null)
   const [qualityLoading, setQualityLoading] = useState(true)
   const [qualityError, setQualityError] = useState(false)
   const [expandedIssue, setExpandedIssue] = useState(null)
-  const [newFormatIssues, setNewFormatIssues] = useState(null)
-  const [expandedNewFormatIssue, setExpandedNewFormatIssue] = useState(null)
-  const [newFormatTotal, setNewFormatTotal] = useState(0)
   const [enrichStatus, setEnrichStatus] = useState(null)
   const [enrichMessage, setEnrichMessage] = useState('')
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
@@ -112,7 +104,7 @@ export default function DashboardPage({ toast }) {
           let from = 0
           const PAGE = 1000
           while (true) {
-            const { data, error } = await supabase.from('facts').select('category, is_published, vip_usage, is_vip, difficulty, archived_reason').range(from, from + PAGE - 1)
+            const { data, error } = await supabase.from('facts').select('category, is_published, vip_usage, is_vip, type, archived_reason').range(from, from + PAGE - 1)
             if (error || !data || data.length === 0) break
             all.push(...data)
             if (data.length < PAGE) break
@@ -139,8 +131,17 @@ export default function DashboardPage({ toast }) {
         VIP_USAGES.map(u => ({ ...u, count: usageCounts[u.value] || 0 }))
       )
 
-      // Difficulty distribution (will be recalculated via filter)
-      updateDifficultyData(allFacts || [], 'all')
+      // Type distribution (VIP / Generated)
+      const typeCounts = { vip: 0, generated: 0 }
+      for (const f of (allFacts || [])) {
+        if (f.is_vip || f.type === 'vip' || !f.type) typeCounts.vip++
+        if (f.type === 'generated') typeCounts.generated++
+      }
+      const typeTotal = (allFacts || []).length || 1
+      setTypeData([
+        { value: 'VIP', count: typeCounts.vip, color: '#FFD700', pct: Math.round((typeCounts.vip / typeTotal) * 100) },
+        { value: 'Générés', count: typeCounts.generated, color: '#8B5CF6', pct: Math.round((typeCounts.generated / typeTotal) * 100) },
+      ])
 
       setRecentEdits(history || [])
     } catch (err) {
@@ -178,70 +179,18 @@ export default function DashboardPage({ toast }) {
     updateCategoryData(allFactsForFilter, newFilter)
   }
 
-  // ── Filter difficulty data by publication status ────────────────────────
-  function updateDifficultyData(facts, filter) {
-    let filtered = facts
-    if (filter === 'published') {
-      filtered = facts.filter(f => f.is_published === true)
-    } else if (filter === 'unpublished') {
-      filtered = facts.filter(f => f.is_published === false)
-    } else if (filter === 'doublon') {
-      filtered = facts.filter(f => f.archived_reason === 'doublon')
-    }
-    // filter === 'all' uses all facts
-
-    const diffCounts = { Facile: 0, Normal: 0, Expert: 0 }
-    for (const f of filtered) {
-      const d = f.difficulty || 'Normal'
-      if (diffCounts[d] !== undefined) diffCounts[d]++
-    }
-    const totalFacts = filtered.length || 1
-    setDifficultyData([
-      { value: 'Facile', count: diffCounts.Facile, color: '#22C55E', pct: Math.round((diffCounts.Facile / totalFacts) * 100) },
-      { value: 'Normal', count: diffCounts.Normal, color: '#3B82F6', pct: Math.round((diffCounts.Normal / totalFacts) * 100) },
-      { value: 'Expert', count: diffCounts.Expert, color: '#EF4444', pct: Math.round((diffCounts.Expert / totalFacts) * 100) },
-    ])
-  }
-
-  function handleDifficultyFilterChange(newFilter) {
-    setDifficultyFilter(newFilter)
-    updateDifficultyData(allFactsForFilter, newFilter)
-  }
-
   async function fetchQualityIssues() {
     setQualityLoading(true)
     setQualityError(false)
     try {
-      // Legacy quality checks — original columns only
-      const { data, error } = await supabase
-        .from('facts')
-        .select('id, question, hint1, hint2, explanation, options, image_url, source_url, category, is_published')
-      if (error) throw error
-      const f = data || []
-      setQualityIssues({
-        noImage:               f.filter(x => !x.image_url || x.image_url.trim() === ''),
-        questionTooLong:       f.filter(x => x.question && x.question.length > 100),
-        explanationOutOfRange: f.filter(x => !x.explanation || x.explanation.length < 100 || x.explanation.length > 300),
-        missingHints:          f.filter(x => !x.hint1 || !x.hint2 || x.hint1.trim() === '' || x.hint2.trim() === ''),
-        incompleteOptions:     f.filter(x => !x.options || x.options.length < 4),
-        noSourceUrl:           f.filter(x => !x.source_url || x.source_url.trim() === ''),
-      })
-    } catch (err) {
-      console.error('Quality check error:', err)
-      setQualityError(true)
-    } finally {
-      setQualityLoading(false)
-    }
-
-    // New format checks — separate query with new columns (may not exist yet)
-    try {
+      // Fetch ALL facts (published + unpublished) with all relevant columns
       const all = []
       let from = 0
       const PAGE = 1000
       while (true) {
         const { data, error } = await supabase
           .from('facts')
-          .select('id, question, hint1, hint2, hint3, hint4, options, category, is_published, type, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
+          .select('id, question, hint1, hint2, hint3, hint4, explanation, options, image_url, source_url, category, is_published, type, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break
@@ -250,48 +199,48 @@ export default function DashboardPage({ toast }) {
         from += PAGE
       }
 
-      const pub = all.filter(x => x.is_published)
       const isEmpty = v => !v || (typeof v === 'string' && v.trim() === '')
       const hasMultipleWords = v => v && typeof v === 'string' && v.trim().split(/\s+/).length > 1
 
-      const nf = {
-        missingNewHints: pub.filter(x =>
+      // Unified quality checks on ALL facts (published + unpublished)
+      setQualityIssues({
+        noImage:               all.filter(x => !x.image_url || x.image_url.trim() === ''),
+        questionTooLong:       all.filter(x => x.question && x.question.length > 100),
+        explanationOutOfRange: all.filter(x => !x.explanation || x.explanation.length < 100 || x.explanation.length > 300),
+        missingHints:          all.filter(x =>
           isEmpty(x.hint1) || isEmpty(x.hint2) || isEmpty(x.hint3) || isEmpty(x.hint4)
         ),
-        hintsTooLong: pub.filter(x =>
+        hintsTooLong:          all.filter(x =>
           hasMultipleWords(x.hint1) || hasMultipleWords(x.hint2) || hasMultipleWords(x.hint3) || hasMultipleWords(x.hint4)
         ),
-        missingWrongAnswers: pub.filter(x =>
+        incompleteOptions:     all.filter(x => !x.options || x.options.length < 4),
+        noSourceUrl:           all.filter(x => !x.source_url || x.source_url.trim() === ''),
+        missingWrongAnswers:   all.filter(x =>
           isEmpty(x.funny_wrong_1) || isEmpty(x.funny_wrong_2) ||
           isEmpty(x.close_wrong_1) || isEmpty(x.close_wrong_2) ||
           isEmpty(x.plausible_wrong_1) || isEmpty(x.plausible_wrong_2) || isEmpty(x.plausible_wrong_3)
         ),
-        closedQuestion: pub.filter(x =>
+        closedQuestion:        all.filter(x =>
           x.question && (
             /vrai ou faux/i.test(x.question) ||
             /^est-ce que\b/i.test(x.question.trim())
           )
         ),
-        missingType: pub.filter(x =>
+        missingType:           all.filter(x =>
           x.type !== 'vip' && x.type !== 'generated'
         ),
-        notMigrated: pub.filter(x =>
+        notMigrated:           all.filter(x =>
           x.options && x.options.length > 0 &&
           isEmpty(x.funny_wrong_1) && isEmpty(x.funny_wrong_2) &&
           isEmpty(x.close_wrong_1) && isEmpty(x.close_wrong_2) &&
           isEmpty(x.plausible_wrong_1) && isEmpty(x.plausible_wrong_2) && isEmpty(x.plausible_wrong_3)
         ),
-      }
-      setNewFormatIssues(nf)
-
-      const uniqueIds = new Set()
-      for (const list of Object.values(nf)) {
-        for (const x of list) uniqueIds.add(x.id)
-      }
-      setNewFormatTotal(uniqueIds.size)
+      })
     } catch (err) {
-      console.error('New format check error:', err)
-      // Don't set qualityError — only the new format section will show "no data"
+      console.error('Quality check error:', err)
+      setQualityError(true)
+    } finally {
+      setQualityLoading(false)
     }
   }
 
@@ -474,13 +423,13 @@ export default function DashboardPage({ toast }) {
         <StatCard label="Facts VIP ⭐" value={stats?.vipTotal} color="#FFD700" />
       </div>
 
-      {/* Quality Dashboard */}
+      {/* Quality Dashboard — unified */}
       {(() => {
         const totalAlerts = qualityIssues
           ? Object.values(qualityIssues).reduce((sum, list) => sum + list.length, 0)
           : 0
         const expandedList = expandedIssue && qualityIssues ? qualityIssues[expandedIssue] : null
-        const expandedCheck = QUALITY_CHECKS.find(c => c.key === expandedIssue)
+        const expandedCheck = ALL_QUALITY_CHECKS.find(c => c.key === expandedIssue)
 
         return (
           <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-8 overflow-hidden">
@@ -496,7 +445,7 @@ export default function DashboardPage({ toast }) {
                       color: totalAlerts > 0 ? '#EF4444' : '#22C55E',
                     }}
                   >
-                    {totalAlerts > 0 ? `${totalAlerts} alertes` : '✓ Tout est OK'}
+                    {totalAlerts > 0 ? `${totalAlerts} alertes sur tous les f*cts en base` : '✓ Tout est OK'}
                   </span>
                 )}
               </div>
@@ -516,13 +465,13 @@ export default function DashboardPage({ toast }) {
                 <p className="text-red-400 text-sm">Erreur lors du chargement des données qualité.</p>
               ) : qualityLoading ? (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {QUALITY_CHECKS.map(c => (
+                  {ALL_QUALITY_CHECKS.map(c => (
                     <div key={c.key} className="bg-slate-700/50 rounded-xl p-4 animate-pulse h-24" />
                   ))}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {QUALITY_CHECKS.map(c => {
+                  {ALL_QUALITY_CHECKS.map(c => {
                     const count = qualityIssues?.[c.key]?.length ?? 0
                     const isExpanded = expandedIssue === c.key
                     return (
@@ -583,125 +532,8 @@ export default function DashboardPage({ toast }) {
                         <span className="text-xs text-slate-300 flex-1 min-w-0 truncate">
                           {truncate(f.question, 60)}
                         </span>
-                        <Link
-                          to={`/facts/${f.id}`}
-                          className="shrink-0 px-2 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
-                        >
-                          Éditer →
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* New Format Quality Alerts */}
-      {(() => {
-        const totalNewAlerts = newFormatIssues
-          ? Object.values(newFormatIssues).reduce((sum, list) => sum + list.length, 0)
-          : 0
-        const expandedNewList = expandedNewFormatIssue && newFormatIssues ? newFormatIssues[expandedNewFormatIssue] : null
-        const expandedNewCheck = NEW_FORMAT_CHECKS.find(c => c.key === expandedNewFormatIssue)
-        const publishedCount = stats?.published || 0
-
-        return (
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-8 overflow-hidden">
-            {/* Section header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
-              <div className="flex items-center gap-3">
-                <h2 className="text-base font-black text-white">⚠️ Alertes qualité — nouveau format</h2>
-                {!qualityLoading && !qualityError && newFormatIssues && (
-                  <span
-                    className="px-2 py-0.5 rounded-full text-xs font-black"
-                    style={{
-                      background: newFormatTotal > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
-                      color: newFormatTotal > 0 ? '#EF4444' : '#22C55E',
-                    }}
-                  >
-                    {newFormatTotal > 0
-                      ? `${newFormatTotal} f*ct${newFormatTotal > 1 ? 's' : ''} à corriger sur ${publishedCount} publiés`
-                      : '✓ Tout est OK'}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Cards grid */}
-            <div className="p-5">
-              {!newFormatIssues && !qualityLoading ? (
-                <p className="text-amber-400 text-sm">Les colonnes du nouveau format ne sont pas encore disponibles en base. Ajoutez hint3, hint4, funny_wrong_*, close_wrong_*, plausible_wrong_* à la table facts.</p>
-              ) : qualityLoading ? (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {NEW_FORMAT_CHECKS.map(c => (
-                    <div key={c.key} className="bg-slate-700/50 rounded-xl p-4 animate-pulse h-24" />
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {NEW_FORMAT_CHECKS.map(c => {
-                    const count = newFormatIssues?.[c.key]?.length ?? 0
-                    const isExpanded = expandedNewFormatIssue === c.key
-                    return (
-                      <div
-                        key={c.key}
-                        className="bg-slate-700/50 rounded-xl p-4 border transition-all"
-                        style={{ borderColor: isExpanded ? '#FF6B1A' : 'transparent' }}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <span className="text-lg">{c.emoji}</span>
-                          <span
-                            className="text-2xl font-black leading-none"
-                            style={{ color: count > 0 ? '#EF4444' : '#22C55E' }}
-                          >
-                            {count}
-                          </span>
-                        </div>
-                        <div className="text-xs font-semibold text-slate-300 mb-3 leading-tight">{c.label}</div>
-                        <button
-                          onClick={() => setExpandedNewFormatIssue(isExpanded ? null : c.key)}
-                          disabled={count === 0}
-                          className="text-xs font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                          style={{ color: isExpanded ? '#FF6B1A' : '#94A3B8' }}
-                        >
-                          {isExpanded ? '▲ Masquer' : 'Voir les f*cts →'}
-                        </button>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-
-              {/* Expanded list */}
-              {expandedNewList && expandedNewCheck && (
-                <div className="mt-4 border border-slate-600 rounded-xl overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-2.5 bg-slate-700 border-b border-slate-600">
-                    <span className="text-sm font-bold text-white">
-                      {expandedNewCheck.emoji} {expandedNewCheck.label} — {expandedNewList.length} f*ct{expandedNewList.length > 1 ? 's' : ''}
-                    </span>
-                    <button
-                      onClick={() => setExpandedNewFormatIssue(null)}
-                      className="text-slate-400 hover:text-white text-lg leading-none transition-colors"
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <div className="divide-y divide-slate-700 max-h-72 overflow-y-auto">
-                    {expandedNewList.map(f => (
-                      <div key={f.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors">
-                        <Link
-                          to={`/facts/${f.id}`}
-                          className="text-xs font-black shrink-0 hover:underline"
-                          style={{ color: '#FF6B1A' }}
-                        >
-                          #{f.id}
-                        </Link>
-                        <span className="text-xs text-slate-500 shrink-0">{f.category}</span>
-                        <span className="text-xs text-slate-300 flex-1 min-w-0 truncate">
-                          {truncate(f.question, 60)}
+                        <span className="text-xs shrink-0" style={{ color: f.is_published ? '#22C55E' : '#F59E0B' }}>
+                          {f.is_published ? '✓' : '⏸'}
                         </span>
                         <Link
                           to={`/facts/${f.id}`}
@@ -719,46 +551,20 @@ export default function DashboardPage({ toast }) {
         )
       })()}
 
-      {/* Difficulty distribution */}
+      {/* Type distribution (VIP / Générés) */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <h2 className="text-base font-black text-white">🎯 Répartition par difficulté</h2>
-        </div>
-
-        {/* Filter tabs */}
-        <div className="flex gap-2 mb-5 overflow-x-auto pb-2">
-          {[
-            { id: 'all', label: 'Tous', color: '#94A3B8' },
-            { id: 'published', label: 'Publiés', color: '#22C55E' },
-            { id: 'unpublished', label: 'Non-publiés', color: '#F59E0B' },
-            { id: 'doublon', label: 'Doublons', color: '#EF4444' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => handleDifficultyFilterChange(tab.id)}
-              className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                difficultyFilter === tab.id
-                  ? 'text-white shadow-lg'
-                  : 'bg-slate-700 text-slate-400 hover:text-slate-200'
-              }`}
-              style={difficultyFilter === tab.id ? { background: tab.color } : {}}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
-          {difficultyData.map(d => (
-            <div key={d.value} className="text-center p-3 rounded-xl" style={{ background: `${d.color}18`, border: `1px solid ${d.color}40` }}>
-              <div className="text-2xl font-black mb-1" style={{ color: d.color }}>{d.count}</div>
+        <h2 className="text-base font-black text-white mb-4">🏷️ Répartition par type</h2>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {typeData.map(d => (
+            <div key={d.value} className="text-center p-4 rounded-xl" style={{ background: `${d.color}18`, border: `1px solid ${d.color}40` }}>
+              <div className="text-3xl font-black mb-1" style={{ color: d.color }}>{d.count}</div>
               <div className="text-sm font-bold" style={{ color: d.color }}>{d.value}</div>
               <div className="text-xs text-slate-500 mt-0.5">{d.pct}%</div>
             </div>
           ))}
         </div>
         <div className="flex h-3 rounded-full overflow-hidden gap-0.5">
-          {difficultyData.map(d => (
+          {typeData.map(d => (
             d.pct > 0 && (
               <div
                 key={d.value}
@@ -769,20 +575,6 @@ export default function DashboardPage({ toast }) {
             )
           ))}
         </div>
-        {difficultyData.some(d => Math.abs(d.pct - 33) > 10) && (
-          <div className="flex items-center gap-3 mt-2">
-            <p className="text-amber-400 text-xs font-semibold flex-1">
-              ⚠ Répartition déséquilibrée — sélectionnez des facts dans la liste puis utilisez "🎯 Difficulté" dans la barre d'actions en bas
-            </p>
-            <Link
-              to="/facts"
-              className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-white"
-              style={{ background: '#FF6B1A' }}
-            >
-              Gérer les facts →
-            </Link>
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -890,19 +682,16 @@ export default function DashboardPage({ toast }) {
         const catMap = {}
         for (const f of facts) {
           if (!f.category) continue
-          if (!catMap[f.category]) catMap[f.category] = { total: 0, published: 0, vip: 0, cool: 0, hot: 0, wtf: 0 }
+          if (!catMap[f.category]) catMap[f.category] = { total: 0, published: 0, vip: 0, generated: 0 }
           const c = catMap[f.category]
           c.total++
           if (f.is_published) c.published++
-          if (f.is_vip) c.vip++
-          const d = (f.difficulty || '').toLowerCase()
-          if (d === 'facile' || d === 'easy' || d === 'cool') c.cool++
-          else if (d === 'normal' || d === 'hot') c.hot++
-          else if (d === 'expert' || d === 'hard' || d === 'wtf') c.wtf++
+          if (f.is_vip || f.type === 'vip' || !f.type) c.vip++
+          if (f.type === 'generated') c.generated++
         }
         // Sort by total descending, merge with CATEGORIES for label/emoji
         const rows = CATEGORIES
-          .map(cat => ({ ...cat, ...(catMap[cat.id] || { total: 0, published: 0, vip: 0, cool: 0, hot: 0, wtf: 0 }) }))
+          .map(cat => ({ ...cat, ...(catMap[cat.id] || { total: 0, published: 0, vip: 0, generated: 0 }) }))
           .sort((a, b) => a.label.localeCompare(b.label, 'fr'))
         const maxTotal = rows.length > 0 ? rows[0].total : 1
 
@@ -922,9 +711,7 @@ export default function DashboardPage({ toast }) {
                     <th className="text-center px-3 py-3 text-slate-500 font-bold">Total</th>
                     <th className="text-center px-3 py-3 font-bold" style={{ color: '#22C55E' }}>Publiés</th>
                     <th className="text-center px-3 py-3 font-bold" style={{ color: '#FFD700' }}>VIP</th>
-                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#3B82F6' }}>Cool</th>
-                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#FF6B1A' }}>Hot</th>
-                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#8B5CF6' }}>WTF!</th>
+                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#8B5CF6' }}>Générés</th>
                     <th className="px-5 py-3 text-slate-500 font-bold text-right" style={{ minWidth: 140 }}>Progression</th>
                   </tr>
                 </thead>
@@ -946,9 +733,7 @@ export default function DashboardPage({ toast }) {
                         <td className="text-center px-3 py-3 font-black text-slate-300">{r.total}</td>
                         <td className="text-center px-3 py-3 font-bold" style={{ color: '#22C55E' }}>{r.published}</td>
                         <td className="text-center px-3 py-3 font-bold" style={{ color: r.vip > 0 ? '#FFD700' : '#475569' }}>{r.vip}</td>
-                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.cool > 0 ? '#3B82F6' : '#475569' }}>{r.cool}</td>
-                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.hot > 0 ? '#FF6B1A' : '#475569' }}>{r.hot}</td>
-                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.wtf > 0 ? '#8B5CF6' : '#475569' }}>{r.wtf}</td>
+                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.generated > 0 ? '#8B5CF6' : '#475569' }}>{r.generated}</td>
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-2">
                             <div className="flex-1 h-2.5 bg-slate-700 rounded-full overflow-hidden">
@@ -974,9 +759,7 @@ export default function DashboardPage({ toast }) {
                     <td className="text-center px-3 py-3 font-black text-white">{rows.reduce((s, r) => s + r.total, 0)}</td>
                     <td className="text-center px-3 py-3 font-black" style={{ color: '#22C55E' }}>{rows.reduce((s, r) => s + r.published, 0)}</td>
                     <td className="text-center px-3 py-3 font-black" style={{ color: '#FFD700' }}>{rows.reduce((s, r) => s + r.vip, 0)}</td>
-                    <td className="text-center px-3 py-3 font-black" style={{ color: '#3B82F6' }}>{rows.reduce((s, r) => s + r.cool, 0)}</td>
-                    <td className="text-center px-3 py-3 font-black" style={{ color: '#FF6B1A' }}>{rows.reduce((s, r) => s + r.hot, 0)}</td>
-                    <td className="text-center px-3 py-3 font-black" style={{ color: '#8B5CF6' }}>{rows.reduce((s, r) => s + r.wtf, 0)}</td>
+                    <td className="text-center px-3 py-3 font-black" style={{ color: '#8B5CF6' }}>{rows.reduce((s, r) => s + r.generated, 0)}</td>
                     <td className="px-5 py-3">
                       {(() => {
                         const totalAll = rows.reduce((s, r) => s + r.total, 0)

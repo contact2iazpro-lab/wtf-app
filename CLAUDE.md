@@ -2,10 +2,10 @@
 
 ## Projet
 - App mobile trivia basée sur un jeu physique validé (350 cartes)
-- URL prod : https://wtf-app-livid.vercel.app/
-- Admin Tool : https://wtffactchecking.vercel.app/
+- URL prod : https://wtf-app-production.up.railway.app/
+- Admin Tool : https://wtf-app-production.up.railway.app/admin
 - Stack : React + Vite + Supabase + Tailwind + Nunito
-- Deploy : Vercel auto sur push master
+- Deploy : Railway auto sur push master
 
 ## Règles absolues
 1. Ne JAMAIS pusher automatiquement — commit local uniquement
@@ -55,7 +55,7 @@
 - Clé localStorage : wtf_dev_mode
 - Visible uniquement en import.meta.env.DEV (localhost)
 - Mode Dev : coins = 9999, tickets = 99, indices = 99
-- Jamais visible en production (Vercel)
+- Jamais visible en production (Railway)
 
 ## Workflow
 - Preview local : npm run dev → localhost:5176
@@ -67,7 +67,7 @@
 - QG : https://www.notion.so/332b94ed8cb180298efadff6b66d54af
 - Paramètres : https://www.notion.so/332b94ed8cb181869176fd6266e78915
 
-⚠️ VERCEL LIMITS : Ne jamais pusher automatiquement. Commit local uniquement.
+⚠️ RAILWAY : Ne jamais pusher automatiquement. Commit local uniquement.
 
 ## ⚡ Choix du modèle — Règle officielle
 

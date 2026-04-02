@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
   getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories,
+  getGeneratedFacts, getGeneratedFactsByCategory,
   initFacts,
 } from './data/factsService'
 import DevPanel from './components/DevPanel'
@@ -18,6 +19,8 @@ import CategoryScreen from './screens/CategoryScreen'
 import QuestionScreen from './screens/QuestionScreen'
 import RevelationScreen from './screens/RevelationScreen'
 import ResultsScreen from './screens/ResultsScreen'
+import BlitzScreen from './screens/BlitzScreen'
+import BlitzResultsScreen from './screens/BlitzResultsScreen'
 import WTFDuJourTeaserScreen from './screens/WTFDuJourTeaserScreen'
 import WTFDuJourRevealScreen from './screens/WTFDuJourRevealScreen'
 import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from './screens/DuelSetupScreen'
@@ -43,6 +46,8 @@ const SCREENS = {
   DUEL_PASS: 'duel_pass',
   DUEL_RESULTS: 'duel_results',
   MARATHON_RESULTS: 'marathon_results',
+  BLITZ: 'blitz',
+  BLITZ_RESULTS: 'blitz_results',
 }
 
 const DIFFICULTY_LEVELS = {
@@ -50,6 +55,7 @@ const DIFFICULTY_LEVELS = {
   HOT:   { id: 'hot',   label: 'Quête Hot',  emoji: '🔥', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 5, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
   COOL:  { id: 'cool',  label: 'Quête Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 2, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
   FLASH: { id: 'flash', label: 'Session Flash', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 3, scoring: { correct: [5, 3, 2], wrong: 0 } },
+  BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 } },
 }
 
 const TODAY = () => new Date().toISOString().slice(0, 10) // YYYY-MM-DD
@@ -168,6 +174,8 @@ export default function App() {
   const rulesAutoShownRef = useRef(false)
   const [showSettings, setShowSettings] = useState(false)
   const [isQuickPlay, setIsQuickPlay] = useState(false)
+  const [blitzFacts, setBlitzFacts] = useState([])
+  const [blitzResults, setBlitzResults] = useState(null)
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
   const [completedLevels, setCompletedLevels] = useState([])
   const [sessionIsPerfect, setSessionIsPerfect] = useState(false)
@@ -299,6 +307,13 @@ export default function App() {
         setSelectedCategory(null)
         setScreen(SCREENS.CATEGORY)
         break
+      case 'blitz':
+        setGameMode('blitz')
+        setSessionType('blitz')
+        setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
+        setSelectedCategory(null)
+        setScreen(SCREENS.CATEGORY)
+        break
       default: break
     }
   }, [handlePlay, handleWTFDuJour, handleFlashSolo, navigate])
@@ -341,7 +356,82 @@ export default function App() {
     setScreen(SCREENS.CATEGORY)
   }, [])
 
+  // ─── Blitz start ───────────────────────────────────────────────────────────
+  const handleBlitzStart = useCallback((categoryId) => {
+    audio.play('click')
+    // Load generated facts (fallback to all valid facts if no generated ones)
+    let pool = categoryId
+      ? getGeneratedFactsByCategory(categoryId)
+      : getGeneratedFacts()
+
+    // Fallback: if no generated facts, use all valid facts
+    if (pool.length < 4) {
+      pool = categoryId ? getFactsByCategory(categoryId) : getValidFacts()
+    }
+
+    const shuffled = [...pool]
+      .sort(() => Math.random() - 0.5)
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
+
+    setSessionType('blitz')
+    setGameMode('blitz')
+    setSelectedCategory(categoryId)
+    setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
+    setBlitzFacts(shuffled)
+    setBlitzResults(null)
+    setScreen(SCREENS.BLITZ)
+  }, [])
+
+  const handleBlitzFinish = useCallback((results) => {
+    const { correctCount, totalAnswered, coinsEarned } = results
+
+    // Tier bonuses
+    let bonusCoins = 0
+    if (correctCount >= 10) bonusCoins += 5
+    if (correctCount >= 20) bonusCoins += 15
+    if (correctCount >= 30) bonusCoins += 30
+
+    // Random bonus rewards
+    const bonusTicket = Math.random() < 0.10
+    const bonusHint = Math.random() < 0.20
+
+    const totalCoinsGained = coinsEarned + bonusCoins
+
+    // Update storage
+    setStorage(prev => {
+      const newCoins = prev.wtfCoins + totalCoinsGained
+      let newTickets = prev.tickets || 0
+      if (bonusTicket) newTickets += 1
+
+      const next = { ...prev, wtfCoins: newCoins, tickets: newTickets }
+      saveStorage(next)
+      return next
+    })
+
+    // Award hint if won
+    if (bonusHint) {
+      const currentHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
+      localStorage.setItem('wtf_hints_available', String(currentHints + 1))
+    }
+
+    setBlitzResults({
+      correctCount,
+      totalAnswered,
+      coinsEarned,
+      bonusCoins,
+      bonusTicket,
+      bonusHint,
+    })
+    setScreen(SCREENS.BLITZ_RESULTS)
+  }, [])
+
   const handleSelectCategory = useCallback((categoryId) => {
+    // Blitz : démarrer directement sans choisir la difficulté
+    if (gameMode === 'blitz') {
+      handleBlitzStart(categoryId)
+      return
+    }
+
     // Marathon : on mémorise la catégorie puis on va choisir la difficulté
     if (gameMode === 'marathon') {
       setSelectedCategory(categoryId)
@@ -380,7 +470,7 @@ export default function App() {
     setSelectedCategory(categoryId)
     initSessionState(factsWithOptions)
     setScreen(SCREENS.QUESTION)
-  }, [selectedDifficulty, gameMode])
+  }, [selectedDifficulty, gameMode, handleBlitzStart])
 
   // ─── Answer handlers ─────────────────────────────────────────────────────
 
@@ -664,7 +754,13 @@ export default function App() {
     setDuelCurrentPlayerIndex(0)
     setIsQuickPlay(false)
     setSessionType('parcours')
+    setBlitzFacts([])
+    setBlitzResults(null)
   }, [])
+
+  const handleBlitzReplay = useCallback(() => {
+    handleBlitzStart(selectedCategory)
+  }, [selectedCategory, handleBlitzStart])
 
   const handleReplay = useCallback(() => {
     if (sessionType === 'flash_solo') {
@@ -801,6 +897,7 @@ export default function App() {
         case SCREENS.RESULTS:
         case SCREENS.WTF_REVEAL:
         case SCREENS.DUEL_RESULTS:
+        case SCREENS.BLITZ_RESULTS:
           handleHome()
           break
         default:
@@ -1065,6 +1162,29 @@ export default function App() {
             setScreen(SCREENS.DIFFICULTY)
           }}
           onHome={handleHome}
+        />
+      )}
+
+      {screen === SCREENS.BLITZ && blitzFacts.length > 0 && (
+        <BlitzScreen
+          facts={blitzFacts}
+          category={selectedCategory}
+          onFinish={handleBlitzFinish}
+          onQuit={handleHome}
+          playerCoins={wtfCoins}
+        />
+      )}
+
+      {screen === SCREENS.BLITZ_RESULTS && blitzResults && (
+        <BlitzResultsScreen
+          correctCount={blitzResults.correctCount}
+          totalAnswered={blitzResults.totalAnswered}
+          coinsEarned={blitzResults.coinsEarned}
+          bonusCoins={blitzResults.bonusCoins}
+          bonusTicket={blitzResults.bonusTicket}
+          bonusHint={blitzResults.bonusHint}
+          onHome={handleHome}
+          onReplay={handleBlitzReplay}
         />
       )}
 

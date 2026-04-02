@@ -57,6 +57,7 @@ function fromRow(row) {
     correctIndex: row.correct_index,
     imageUrl:     row.image_url    || null,
     difficulty:   row.difficulty   || null,   // ← stocker la difficulté définie dans l'admin
+    type:         row.type         || null,   // 'vip' | 'generated'
   }
 }
 
@@ -167,7 +168,7 @@ export async function initFacts() {
     try {
       const { data, error } = await supabase
         .from('facts')
-        .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty')
+        .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type')
         .eq('is_published', true)
         .order('id')
 
@@ -206,6 +207,15 @@ export function getCategoryLevelFactIds() {
 export function getFactsByCategory(categoryId) {
   const v = getValidFacts()
   return categoryId ? v.filter(f => f.category === categoryId) : v
+}
+
+export function getGeneratedFacts() {
+  return getValidFacts().filter(f => f.type === 'generated')
+}
+
+export function getGeneratedFactsByCategory(categoryId) {
+  const generated = getGeneratedFacts()
+  return categoryId ? generated.filter(f => f.category === categoryId) : generated
 }
 
 export function getDailyFact() {

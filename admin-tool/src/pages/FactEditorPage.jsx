@@ -6,9 +6,11 @@ import FactPreview from '../components/FactPreview'
 import { resolveImageUrl } from '../utils/imageUrl'
 
 const EDITABLE_FIELDS = [
-  'category', 'question', 'hint1', 'hint2', 'short_answer', 'explanation',
+  'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
   'source_url', 'options', 'correct_index', 'image_url',
   'is_vip', 'status', 'pack_id', 'vip_usage', 'difficulty',
+  'funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2',
+  'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
 ]
 
 const STATUSES = [
@@ -108,6 +110,7 @@ export default function FactEditorPage({ toast }) {
   const [imageStatus, setImageStatus] = useState(null) // null | 'loading' | 'ok' | 'error'
   const [imageUploading, setImageUploading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [enriching, setEnriching] = useState(false)
   const imageTimerRef = useRef(null)
   const imageInputRef = useRef(null)
 
@@ -302,6 +305,51 @@ export default function FactEditorPage({ toast }) {
       toast?.('Erreur sauvegarde', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function enrichFact() {
+    setEnriching(true)
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-fact`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            question: fact.question,
+            short_answer: fact.short_answer,
+            explanation: fact.explanation,
+            category: fact.category,
+            hint1: fact.hint1,
+            hint2: fact.hint2,
+          }),
+        }
+      )
+      const data = await resp.json()
+      if (!resp.ok) throw new Error(data.error || 'Erreur enrichissement')
+
+      set('hint1', data.hint1)
+      set('hint2', data.hint2)
+      set('hint3', data.hint3)
+      set('hint4', data.hint4)
+      set('funny_wrong_1', data.funny_wrong_1)
+      set('funny_wrong_2', data.funny_wrong_2)
+      set('close_wrong_1', data.close_wrong_1)
+      set('close_wrong_2', data.close_wrong_2)
+      set('plausible_wrong_1', data.plausible_wrong_1)
+      set('plausible_wrong_2', data.plausible_wrong_2)
+      set('plausible_wrong_3', data.plausible_wrong_3)
+
+      toast?.('✓ Fact enrichi par Claude — vérifiez avant de sauvegarder')
+    } catch (err) {
+      console.error(err)
+      toast?.('Erreur enrichissement : ' + (err.message || ''), 'error')
+    } finally {
+      setEnriching(false)
     }
   }
 
@@ -577,6 +625,96 @@ export default function FactEditorPage({ toast }) {
           </p>
         </Section>
 
+        {/* ENRICHISSEMENT (nouveau format) */}
+        <Section title="🧠 Enrichissement (nouveau format)">
+          <p className="text-xs text-slate-500 mb-4">
+            Indices supplémentaires (un seul mot chacun) et fausses réponses par type.
+          </p>
+
+          {/* Hints 3 & 4 */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <Field label="Indice 3 (1 mot)">
+              <input
+                value={fact.hint3 || ''}
+                onChange={e => set('hint3', e.target.value)}
+                className={inputCls}
+                placeholder="Un seul mot…"
+              />
+            </Field>
+            <Field label="Indice 4 (1 mot)">
+              <input
+                value={fact.hint4 || ''}
+                onChange={e => set('hint4', e.target.value)}
+                className={inputCls}
+                placeholder="Un seul mot…"
+              />
+            </Field>
+          </div>
+
+          {/* Funny wrong answers */}
+          <div className="mb-3">
+            <div className="text-xs font-bold text-slate-400 mb-2">😂 Fausses réponses drôles</div>
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                value={fact.funny_wrong_1 || ''}
+                onChange={e => set('funny_wrong_1', e.target.value)}
+                className={inputCls}
+                placeholder="Drôle 1…"
+              />
+              <input
+                value={fact.funny_wrong_2 || ''}
+                onChange={e => set('funny_wrong_2', e.target.value)}
+                className={inputCls}
+                placeholder="Drôle 2…"
+              />
+            </div>
+          </div>
+
+          {/* Close wrong answers */}
+          <div className="mb-3">
+            <div className="text-xs font-bold text-slate-400 mb-2">🎯 Fausses réponses proches</div>
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                value={fact.close_wrong_1 || ''}
+                onChange={e => set('close_wrong_1', e.target.value)}
+                className={inputCls}
+                placeholder="Proche 1…"
+              />
+              <input
+                value={fact.close_wrong_2 || ''}
+                onChange={e => set('close_wrong_2', e.target.value)}
+                className={inputCls}
+                placeholder="Proche 2…"
+              />
+            </div>
+          </div>
+
+          {/* Plausible wrong answers */}
+          <div>
+            <div className="text-xs font-bold text-slate-400 mb-2">🤔 Fausses réponses plausibles</div>
+            <div className="grid grid-cols-3 gap-3">
+              <input
+                value={fact.plausible_wrong_1 || ''}
+                onChange={e => set('plausible_wrong_1', e.target.value)}
+                className={inputCls}
+                placeholder="Plausible 1…"
+              />
+              <input
+                value={fact.plausible_wrong_2 || ''}
+                onChange={e => set('plausible_wrong_2', e.target.value)}
+                className={inputCls}
+                placeholder="Plausible 2…"
+              />
+              <input
+                value={fact.plausible_wrong_3 || ''}
+                onChange={e => set('plausible_wrong_3', e.target.value)}
+                className={inputCls}
+                placeholder="Plausible 3…"
+              />
+            </div>
+          </div>
+        </Section>
+
         {/* STATUTS */}
         <Section title="⚙️ Statuts">
           <div className="space-y-4">
@@ -753,6 +891,14 @@ export default function FactEditorPage({ toast }) {
             className="px-5 py-3.5 rounded-2xl font-black text-sm text-red-400 bg-red-900/20 border border-red-800/40 hover:bg-red-900/40 transition-all"
           >
             🗑 Supprimer
+          </button>
+          <button
+            onClick={enrichFact}
+            disabled={enriching || !fact.question || !fact.short_answer}
+            className="px-5 py-3.5 rounded-2xl font-black text-sm text-white transition-all disabled:opacity-40 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
+          >
+            {enriching ? '⟳ Enrichissement…' : '🧠 Enrichir ce f*ct'}
           </button>
           <Link
             to="/facts"

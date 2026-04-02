@@ -41,24 +41,78 @@ serve(async (req) => {
       })
     }
 
-    // Build prompt
-    const prompt = `Tu es un créateur de contenu pour le jeu WTF! Facts (jeu de quiz en français).
-Génère exactement ${count} facts surprenants et fascinants en français sur la catégorie "${categoryLabel || category}".
+    // ── Fetch existing facts for deduplication ──────────────────────────
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+    const SUPABASE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    let existingFacts: { question: string; short_answer: string }[] = []
 
-RÈGLES STRICTES :
-- question : affirmation vraie ou fausse, surprenante (MAXIMUM 100 caractères)
-- hint1 : indice court (MAXIMUM 20 caractères)
-- hint2 : deuxième indice (MAXIMUM 20 caractères)
-- short_answer : "VRAI" ou "FAUX" uniquement (MAXIMUM 50 caractères)
-- explanation : explication détaillée (ENTRE 100 ET 300 caractères)
-- options : tableau de 4 réponses QCM en français
-- correct_index : index de la bonne réponse (0 à 3)
-- source_url : URL source si connue, sinon ""
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      try {
+        const existResp = await fetch(
+          `${SUPABASE_URL}/rest/v1/facts?select=question,short_answer&order=id.asc`,
+          {
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+            },
+          }
+        )
+        if (existResp.ok) {
+          existingFacts = await existResp.json()
+        }
+      } catch (_) {
+        // Continue without dedup if fetch fails
+      }
+    }
 
-Retourne UNIQUEMENT un tableau JSON valide, SANS texte avant ni après.
-Format exact : [{"question":"...","hint1":"...","hint2":"...","short_answer":"VRAI","explanation":"...","options":["A","B","C","D"],"correct_index":0,"source_url":""}]`
+    // Build dedup context (first 80 chars of each question + answer)
+    const existingList = existingFacts
+      .map((f: any) => `- Q: ${(f.question || '').slice(0, 80)} | R: ${(f.short_answer || '').slice(0, 50)}`)
+      .join('\n')
+    const dedupBlock = existingFacts.length > 0
+      ? `\n\nFACTS EXISTANTS (NE PAS DUPLIQUER — si un sujet/réponse est trop similaire, choisis un autre sujet) :\n${existingList}`
+      : ''
 
-    // Call Anthropic
+    // ── Build prompt ────────────────────────────────────────────────────
+    const prompt = `Tu es un créateur de contenu pour WTF! Facts, un jeu de quiz en français avec des anecdotes surprenantes et fascinantes.
+
+Génère exactement ${count} facts sur la catégorie "${categoryLabel || category}".
+
+POUR CHAQUE FACT, retourne un objet JSON avec ces champs :
+
+1. "question" : une question OUVERTE, surprenante et captivante (max 100 caractères)
+   - JAMAIS de "Vrai ou Faux"
+   - JAMAIS commencer par "Est-ce que"
+   - La question doit provoquer curiosité, surprise ou amusement
+   - Exemples de bons formats : "Quel animal...", "Combien de...", "Pourquoi les...", "Dans quel pays...", "Que se passe-t-il quand..."
+
+2. "short_answer" : la bonne réponse, courte et percutante (max 50 caractères)
+
+3. "explanation" : le "saviez-vous", une explication détaillée et fascinante (ENTRE 100 ET 300 caractères)
+
+4. "hint1", "hint2", "hint3", "hint4" : 4 indices, chacun est UN SEUL MOT (pas de phrase, pas d'espace), qui oriente vers la réponse sans la donner directement
+
+5. "funny_wrong_1", "funny_wrong_2" : 2 fausses réponses DRÔLES et absurdes qui font sourire (1 à 5 mots max chacune)
+
+6. "close_wrong_1", "close_wrong_2" : 2 fausses réponses PROCHES de la vraie, crédibles et piégeuses, qui font hésiter (1 à 5 mots max chacune)
+
+7. "plausible_wrong_1", "plausible_wrong_2", "plausible_wrong_3" : 3 fausses réponses PLAUSIBLES dans l'univers WTF, fausses mais qui sonnent vraies (1 à 5 mots max chacune)
+
+8. "source_url" : URL source vérifiable si trouvable, sinon ""
+
+RÈGLES DE QUALITÉ STRICTES :
+- Le fact DOIT être 100% vrai et vérifiable
+- Les 4 indices sont UN SEUL MOT chacun, sans espace, sans ponctuation
+- Les réponses drôles doivent VRAIMENT faire sourire, être absurdes mais marrantes
+- Les réponses proches doivent être assez similaires à la vraie réponse pour tromper
+- Les réponses plausibles doivent sonner WTF mais être fausses
+- Pas de sujets sensibles (politique, religion, violence)
+- Rédaction en français, ton fun et accessible
+- Chaque fact doit être UNIQUE — pas de doublons ni de reformulations${dedupBlock}
+
+Retourne UNIQUEMENT un tableau JSON valide de ${count} objets, SANS texte avant ni après.`
+
+    // ── Call Anthropic (Opus) ────────────────────────────────────────────
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -67,8 +121,8 @@ Format exact : [{"question":"...","hint1":"...","hint2":"...","short_answer":"VR
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 4096,
+        model: 'claude-opus-4-6',
+        max_tokens: 8192,
         messages: [{ role: 'user', content: prompt }],
       }),
     })
@@ -101,16 +155,42 @@ Format exact : [{"question":"...","hint1":"...","hint2":"...","short_answer":"VR
       })
     }
 
+    // ── Post-process: dedup against existing facts ──────────────────────
+    const normalize = (s: string) => (s || '').toLowerCase().replace(/[^a-zàâäéèêëïîôùûüÿç0-9\s]/g, '').trim()
+
+    const existingNormalized = existingFacts.map((f: any) => ({
+      q: normalize(f.question),
+      a: normalize(f.short_answer),
+    }))
+
+    const isTooSimilar = (newFact: any) => {
+      const nq = normalize(newFact.question)
+      const na = normalize(newFact.short_answer)
+      for (const ex of existingNormalized) {
+        // Same answer AND question shares >60% of words
+        if (na === ex.a) {
+          const newWords = new Set(nq.split(/\s+/))
+          const existWords = ex.q.split(/\s+/)
+          const overlap = existWords.filter((w: string) => newWords.has(w)).length
+          if (overlap / Math.max(existWords.length, 1) > 0.6) return true
+        }
+      }
+      return false
+    }
+
+    // Filter out duplicates
+    const uniqueFacts = facts.filter((f: any) => !isTooSimilar(f))
+
     // Attach difficulties and metadata
     const difficulties = difficulty_distribution || []
-    const enrichedFacts = facts.map((f: any, i: number) => ({
+    const enrichedFacts = uniqueFacts.map((f: any, i: number) => ({
       ...f,
       difficulty: difficulties[i] || 'Normal',
       category,
+      type: 'generated',
       status: 'draft',
       is_published: false,
       pack_id: 'free',
-      options: Array.isArray(f.options) ? f.options : [],
       correct_index: typeof f.correct_index === 'number' ? f.correct_index : 0,
     }))
 

@@ -555,6 +555,8 @@ export default function FactsListPage({ toast }) {
         question: f.question,
         hint1: f.hint1 || null,
         hint2: f.hint2 || null,
+        hint3: f.hint3 || null,
+        hint4: f.hint4 || null,
         short_answer: f.short_answer,
         answer: f.short_answer || '',   // answer is NOT NULL in DB
         explanation: f.explanation || null,
@@ -563,11 +565,19 @@ export default function FactsListPage({ toast }) {
         correct_index: f.correct_index ?? 0,
         image_url: f.image_url || null,
         is_vip: false,
+        type: f.type || 'generated',
         status: 'draft',
         is_published: false,
         pack_id: f.pack_id || 'free',
         vip_usage: 'available',
         difficulty: f.difficulty || 'Normal',
+        funny_wrong_1: f.funny_wrong_1 || null,
+        funny_wrong_2: f.funny_wrong_2 || null,
+        close_wrong_1: f.close_wrong_1 || null,
+        close_wrong_2: f.close_wrong_2 || null,
+        plausible_wrong_1: f.plausible_wrong_1 || null,
+        plausible_wrong_2: f.plausible_wrong_2 || null,
+        plausible_wrong_3: f.plausible_wrong_3 || null,
         updated_at: new Date().toISOString(),
       }
 

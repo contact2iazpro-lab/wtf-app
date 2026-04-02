@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, VIP_USAGES } from '../constants/categories'
@@ -45,6 +45,15 @@ const QUALITY_CHECKS = [
   { key: 'noSourceUrl',           emoji: '🔗', label: 'Sans URL source' },
 ]
 
+const NEW_FORMAT_CHECKS = [
+  { key: 'missingNewHints',      emoji: '💡', label: 'Indices manquants (hint1-4)' },
+  { key: 'hintsTooLong',         emoji: '📏', label: 'Indices trop longs (>1 mot)' },
+  { key: 'missingWrongAnswers',  emoji: '❌', label: 'Fausses réponses manquantes' },
+  { key: 'closedQuestion',       emoji: '🚫', label: 'Question pas ouverte' },
+  { key: 'missingType',          emoji: '🏷️', label: 'Type manquant (vip/generated)' },
+  { key: 'notMigrated',          emoji: '🔄', label: 'Ancien format non migré' },
+]
+
 function truncate(str, n) {
   return str && str.length > n ? str.slice(0, n) + '…' : (str || '')
 }
@@ -73,6 +82,13 @@ export default function DashboardPage({ toast }) {
   const [qualityLoading, setQualityLoading] = useState(true)
   const [qualityError, setQualityError] = useState(false)
   const [expandedIssue, setExpandedIssue] = useState(null)
+  const [newFormatIssues, setNewFormatIssues] = useState(null)
+  const [expandedNewFormatIssue, setExpandedNewFormatIssue] = useState(null)
+  const [newFormatTotal, setNewFormatTotal] = useState(0)
+  const [enrichStatus, setEnrichStatus] = useState(null)
+  const [enrichMessage, setEnrichMessage] = useState('')
+  const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
+  const enrichCancelRef = useRef(false)
 
   useEffect(() => { load(); fetchQualityIssues() }, [])
 
@@ -196,6 +212,7 @@ export default function DashboardPage({ toast }) {
     setQualityLoading(true)
     setQualityError(false)
     try {
+      // Legacy quality checks — original columns only
       const { data, error } = await supabase
         .from('facts')
         .select('id, question, hint1, hint2, explanation, options, image_url, source_url, category, is_published')
@@ -214,6 +231,67 @@ export default function DashboardPage({ toast }) {
       setQualityError(true)
     } finally {
       setQualityLoading(false)
+    }
+
+    // New format checks — separate query with new columns (may not exist yet)
+    try {
+      const all = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, question, hint1, hint2, hint3, hint4, options, category, is_published, type, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
+          .range(from, from + PAGE - 1)
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+
+      const pub = all.filter(x => x.is_published)
+      const isEmpty = v => !v || (typeof v === 'string' && v.trim() === '')
+      const hasMultipleWords = v => v && typeof v === 'string' && v.trim().split(/\s+/).length > 1
+
+      const nf = {
+        missingNewHints: pub.filter(x =>
+          isEmpty(x.hint1) || isEmpty(x.hint2) || isEmpty(x.hint3) || isEmpty(x.hint4)
+        ),
+        hintsTooLong: pub.filter(x =>
+          hasMultipleWords(x.hint1) || hasMultipleWords(x.hint2) || hasMultipleWords(x.hint3) || hasMultipleWords(x.hint4)
+        ),
+        missingWrongAnswers: pub.filter(x =>
+          isEmpty(x.funny_wrong_1) || isEmpty(x.funny_wrong_2) ||
+          isEmpty(x.close_wrong_1) || isEmpty(x.close_wrong_2) ||
+          isEmpty(x.plausible_wrong_1) || isEmpty(x.plausible_wrong_2) || isEmpty(x.plausible_wrong_3)
+        ),
+        closedQuestion: pub.filter(x =>
+          x.question && (
+            /vrai ou faux/i.test(x.question) ||
+            /^est-ce que\b/i.test(x.question.trim())
+          )
+        ),
+        missingType: pub.filter(x =>
+          x.type !== 'vip' && x.type !== 'generated'
+        ),
+        notMigrated: pub.filter(x =>
+          x.options && x.options.length > 0 &&
+          isEmpty(x.funny_wrong_1) && isEmpty(x.funny_wrong_2) &&
+          isEmpty(x.close_wrong_1) && isEmpty(x.close_wrong_2) &&
+          isEmpty(x.plausible_wrong_1) && isEmpty(x.plausible_wrong_2) && isEmpty(x.plausible_wrong_3)
+        ),
+      }
+      setNewFormatIssues(nf)
+
+      const uniqueIds = new Set()
+      for (const list of Object.values(nf)) {
+        for (const x of list) uniqueIds.add(x.id)
+      }
+      setNewFormatTotal(uniqueIds.size)
+    } catch (err) {
+      console.error('New format check error:', err)
+      // Don't set qualityError — only the new format section will show "no data"
     }
   }
 
@@ -257,6 +335,109 @@ export default function DashboardPage({ toast }) {
       setSyncStatus('error')
       setSyncMessage(`❌ Erreur réseau : ${err.message}`)
     }
+  }
+
+  async function runEnrichAll() {
+    if (enrichStatus === 'running') return
+    enrichCancelRef.current = false
+    setEnrichStatus('running')
+    setEnrichMessage('⏳ Récupération des facts VIP à enrichir...')
+
+    try {
+      const all = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, question, short_answer, explanation, category, hint1, hint2')
+          .eq('is_vip', true)
+          .or('funny_wrong_1.is.null,funny_wrong_1.eq.')
+          .range(from, from + PAGE - 1)
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+
+      if (all.length === 0) {
+        setEnrichStatus('done')
+        setEnrichMessage('✅ Aucun fact VIP à enrichir — tous sont déjà traités !')
+        return
+      }
+
+      setEnrichProgress({ current: 0, total: all.length })
+      let enriched = 0
+
+      for (let i = 0; i < all.length; i++) {
+        if (enrichCancelRef.current) {
+          setEnrichStatus('done')
+          setEnrichMessage(`⏹ Arrêté — ${enriched}/${all.length} enrichis`)
+          return
+        }
+
+        const fact = all[i]
+        setEnrichMessage(`🧠 Enrichissement ${i + 1}/${all.length} — fact #${fact.id}...`)
+        setEnrichProgress({ current: i + 1, total: all.length })
+
+        try {
+          const resp = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-fact`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                question: fact.question,
+                short_answer: fact.short_answer,
+                explanation: fact.explanation,
+                category: fact.category,
+                hint1: fact.hint1,
+                hint2: fact.hint2,
+              }),
+            }
+          )
+          const data = await resp.json()
+          if (!resp.ok) throw new Error(data.error || 'Erreur API')
+
+          const { error: updateError } = await supabase
+            .from('facts')
+            .update({
+              hint1: data.hint1,
+              hint2: data.hint2,
+              hint3: data.hint3,
+              hint4: data.hint4,
+              funny_wrong_1: data.funny_wrong_1,
+              funny_wrong_2: data.funny_wrong_2,
+              close_wrong_1: data.close_wrong_1,
+              close_wrong_2: data.close_wrong_2,
+              plausible_wrong_1: data.plausible_wrong_1,
+              plausible_wrong_2: data.plausible_wrong_2,
+              plausible_wrong_3: data.plausible_wrong_3,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', fact.id)
+          if (updateError) throw updateError
+          enriched++
+        } catch (err) {
+          console.error(`Erreur enrichissement fact #${fact.id}:`, err)
+        }
+      }
+
+      setEnrichStatus('done')
+      setEnrichMessage(`✅ Enrichissement terminé — ${enriched}/${all.length} facts VIP traités`)
+      fetchQualityIssues()
+    } catch (err) {
+      setEnrichStatus('error')
+      setEnrichMessage(`❌ Erreur : ${err.message}`)
+    }
+  }
+
+  function stopEnrich() {
+    enrichCancelRef.current = true
   }
 
   if (loading) {
@@ -390,6 +571,126 @@ export default function DashboardPage({ toast }) {
                   </div>
                   <div className="divide-y divide-slate-700 max-h-72 overflow-y-auto">
                     {expandedList.map(f => (
+                      <div key={f.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors">
+                        <Link
+                          to={`/facts/${f.id}`}
+                          className="text-xs font-black shrink-0 hover:underline"
+                          style={{ color: '#FF6B1A' }}
+                        >
+                          #{f.id}
+                        </Link>
+                        <span className="text-xs text-slate-500 shrink-0">{f.category}</span>
+                        <span className="text-xs text-slate-300 flex-1 min-w-0 truncate">
+                          {truncate(f.question, 60)}
+                        </span>
+                        <Link
+                          to={`/facts/${f.id}`}
+                          className="shrink-0 px-2 py-1 rounded-lg text-xs font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+                        >
+                          Éditer →
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* New Format Quality Alerts */}
+      {(() => {
+        const totalNewAlerts = newFormatIssues
+          ? Object.values(newFormatIssues).reduce((sum, list) => sum + list.length, 0)
+          : 0
+        const expandedNewList = expandedNewFormatIssue && newFormatIssues ? newFormatIssues[expandedNewFormatIssue] : null
+        const expandedNewCheck = NEW_FORMAT_CHECKS.find(c => c.key === expandedNewFormatIssue)
+        const publishedCount = stats?.published || 0
+
+        return (
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-8 overflow-hidden">
+            {/* Section header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <h2 className="text-base font-black text-white">⚠️ Alertes qualité — nouveau format</h2>
+                {!qualityLoading && !qualityError && newFormatIssues && (
+                  <span
+                    className="px-2 py-0.5 rounded-full text-xs font-black"
+                    style={{
+                      background: newFormatTotal > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
+                      color: newFormatTotal > 0 ? '#EF4444' : '#22C55E',
+                    }}
+                  >
+                    {newFormatTotal > 0
+                      ? `${newFormatTotal} f*ct${newFormatTotal > 1 ? 's' : ''} à corriger sur ${publishedCount} publiés`
+                      : '✓ Tout est OK'}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Cards grid */}
+            <div className="p-5">
+              {!newFormatIssues && !qualityLoading ? (
+                <p className="text-amber-400 text-sm">Les colonnes du nouveau format ne sont pas encore disponibles en base. Ajoutez hint3, hint4, funny_wrong_*, close_wrong_*, plausible_wrong_* à la table facts.</p>
+              ) : qualityLoading ? (
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  {NEW_FORMAT_CHECKS.map(c => (
+                    <div key={c.key} className="bg-slate-700/50 rounded-xl p-4 animate-pulse h-24" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  {NEW_FORMAT_CHECKS.map(c => {
+                    const count = newFormatIssues?.[c.key]?.length ?? 0
+                    const isExpanded = expandedNewFormatIssue === c.key
+                    return (
+                      <div
+                        key={c.key}
+                        className="bg-slate-700/50 rounded-xl p-4 border transition-all"
+                        style={{ borderColor: isExpanded ? '#FF6B1A' : 'transparent' }}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <span className="text-lg">{c.emoji}</span>
+                          <span
+                            className="text-2xl font-black leading-none"
+                            style={{ color: count > 0 ? '#EF4444' : '#22C55E' }}
+                          >
+                            {count}
+                          </span>
+                        </div>
+                        <div className="text-xs font-semibold text-slate-300 mb-3 leading-tight">{c.label}</div>
+                        <button
+                          onClick={() => setExpandedNewFormatIssue(isExpanded ? null : c.key)}
+                          disabled={count === 0}
+                          className="text-xs font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                          style={{ color: isExpanded ? '#FF6B1A' : '#94A3B8' }}
+                        >
+                          {isExpanded ? '▲ Masquer' : 'Voir les f*cts →'}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Expanded list */}
+              {expandedNewList && expandedNewCheck && (
+                <div className="mt-4 border border-slate-600 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-2.5 bg-slate-700 border-b border-slate-600">
+                    <span className="text-sm font-bold text-white">
+                      {expandedNewCheck.emoji} {expandedNewCheck.label} — {expandedNewList.length} f*ct{expandedNewList.length > 1 ? 's' : ''}
+                    </span>
+                    <button
+                      onClick={() => setExpandedNewFormatIssue(null)}
+                      className="text-slate-400 hover:text-white text-lg leading-none transition-colors"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-700 max-h-72 overflow-y-auto">
+                    {expandedNewList.map(f => (
                       <div key={f.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-700/50 transition-colors">
                         <Link
                           to={`/facts/${f.id}`}
@@ -698,6 +999,77 @@ export default function DashboardPage({ toast }) {
           </div>
         )
       })()}
+
+      {/* Enrichir VIP batch */}
+      <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
+        <h2 className="text-base font-black text-white mb-2">🧠 Enrichir tous les VIP</h2>
+        <p className="text-slate-400 text-sm mb-4">
+          Enrichit automatiquement tous les facts VIP sans fausses réponses
+          via Claude Opus. Chaque fact est sauvegardé immédiatement après enrichissement.
+        </p>
+
+        {/* Progress bar */}
+        {enrichStatus === 'running' && enrichProgress.total > 0 && (
+          <div className="mb-4">
+            <div className="flex justify-between text-xs text-slate-400 mb-1">
+              <span>{enrichProgress.current}/{enrichProgress.total} enrichis</span>
+              <span>{Math.round((enrichProgress.current / enrichProgress.total) * 100)}%</span>
+            </div>
+            <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${(enrichProgress.current / enrichProgress.total) * 100}%`,
+                  background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {enrichMessage && (
+          <div
+            className="mb-4 px-4 py-3 rounded-xl text-sm font-semibold border"
+            style={{
+              background: enrichStatus === 'error' ? 'rgba(239,68,68,0.1)' : enrichStatus === 'done' ? 'rgba(34,197,94,0.1)' : 'rgba(139,92,246,0.1)',
+              borderColor: enrichStatus === 'error' ? 'rgba(239,68,68,0.3)' : enrichStatus === 'done' ? 'rgba(34,197,94,0.3)' : 'rgba(139,92,246,0.3)',
+              color: enrichStatus === 'error' ? '#EF4444' : enrichStatus === 'done' ? '#22C55E' : '#8B5CF6',
+            }}
+          >
+            {enrichStatus === 'running' && (
+              <span className="inline-block animate-spin mr-2">⟳</span>
+            )}
+            {enrichMessage}
+          </div>
+        )}
+
+        <div className="flex gap-3 flex-wrap">
+          <button
+            disabled={enrichStatus === 'running'}
+            onClick={runEnrichAll}
+            className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
+          >
+            {enrichStatus === 'running' ? 'Enrichissement…' : '🧠 Enrichir tous les VIP'}
+          </button>
+          {enrichStatus === 'running' && (
+            <button
+              onClick={stopEnrich}
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all"
+            >
+              ⏹ Arrêter
+            </button>
+          )}
+          {enrichStatus === 'error' && (
+            <button
+              onClick={runEnrichAll}
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all"
+            >
+              ↺ Réessayer
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Sync button */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">

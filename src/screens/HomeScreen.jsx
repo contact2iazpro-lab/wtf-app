@@ -427,7 +427,7 @@ export default function HomeScreen({
           }}>
             <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
             <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('amis')} />
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} disabled />
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
           </div>
         </div>
 

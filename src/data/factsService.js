@@ -209,6 +209,20 @@ export function getFactsByCategory(categoryId) {
   return categoryId ? v.filter(f => f.category === categoryId) : v
 }
 
+// ─── Getters par type (VIP / Generated) ─────────────────────────────────────
+// Règles officielles :
+//   VIP     = facts du jeu physique (type = 'vip' ou sans type pour les anciens)
+//   Generated = facts créés par IA (type = 'generated')
+
+export function getVipFacts() {
+  return getValidFacts().filter(f => !f.type || f.type === 'vip')
+}
+
+export function getVipFactsByCategory(categoryId) {
+  const vip = getVipFacts()
+  return categoryId ? vip.filter(f => f.category === categoryId) : vip
+}
+
 export function getGeneratedFacts() {
   return getValidFacts().filter(f => f.type === 'generated')
 }
@@ -218,11 +232,44 @@ export function getGeneratedFactsByCategory(categoryId) {
   return categoryId ? generated.filter(f => f.category === categoryId) : generated
 }
 
+// ─── Getters par mode de jeu ────────────────────────────────────────────────
+// Chaque mode a son getter dédié pour garantir le bon pool de facts.
+
+/** Mode Quête : VIP uniquement, toutes catégories */
+export function getQuestFacts() {
+  return getVipFacts()
+}
+
+/** Mode Flash : Generated uniquement, toutes catégories */
+export function getFlashFacts() {
+  return getGeneratedFacts()
+}
+
+/** Mode Marathon : Generated uniquement, dans la catégorie choisie */
+export function getMarathonFacts(categoryId) {
+  return getGeneratedFactsByCategory(categoryId)
+}
+
+/** Mode Série : Generated uniquement, toutes catégories */
+export function getSeriesFacts() {
+  return getGeneratedFacts()
+}
+
+/** Mode WTF Semaine : Generated uniquement, dans la catégorie de la semaine */
+export function getWeeklyFacts(categoryId) {
+  return getGeneratedFactsByCategory(categoryId)
+}
+
+/** Mode WTF du Jour : pioche dans les VIP uniquement */
 export function getDailyFact() {
   const dateStr = new Date().toISOString().slice(0, 10)
   const seed    = dateStr.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-  const valid   = getValidFacts()
-  const pool    = valid.filter(f => VIP_FACT_IDS.has(f.id))
-  const facts   = pool.length > 0 ? pool : valid
-  return facts[seed % facts.length]
+  const pool    = getVipFacts()
+  if (pool.length === 0) return getValidFacts()[0] // fallback ultime
+  return pool[seed % pool.length]
+}
+
+/** Facts pour la session WTF du Jour (VIP, même catégorie que le daily) */
+export function getDailySessionFacts(dailyFact) {
+  return getVipFacts().filter(f => f.category === dailyFact.category && f.id !== dailyFact.id)
 }

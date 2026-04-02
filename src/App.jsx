@@ -54,7 +54,7 @@ const DIFFICULTY_LEVELS = {
   WTF:   { id: 'wtf',   label: 'Quête WTF!', emoji: '⚡', choices: 6, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 8, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
   HOT:   { id: 'hot',   label: 'Quête Hot',  emoji: '🔥', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 5, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
   COOL:  { id: 'cool',  label: 'Quête Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 2, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
-  FLASH: { id: 'flash', label: 'Session Flash', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 3, scoring: { correct: [5, 3, 2], wrong: 0 } },
+  FLASH: { id: 'flash', label: 'Session Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 3, scoring: { correct: [5, 3, 2], wrong: 0 } },
   BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 } },
 }
 
@@ -236,25 +236,24 @@ export default function App() {
     setScreen(SCREENS.QUESTION)
   }, [effectiveDailyFact])
 
-  // Standalone Flash Solo session
+  // Standalone Flash Solo session — generated facts only, 10 questions
   const handleFlashSolo = useCallback(() => {
     audio.play('click')
-    const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
-    const validCats = getPlayableCategories().filter(cat =>
-      getValidFacts().some(f => f.category === cat.id) &&
-      (childMode || cat.id !== 'kids')
-    )
-    const randomCat = validCats[Math.floor(Math.random() * validCats.length)]
-    const facts = [...getValidFacts().filter(f => f.category === randomCat.id)]
+    // Pool : facts générés uniquement
+    let pool = getValidFacts().filter(f => f.type === 'generated')
+    // Fallback si pas assez de generated
+    if (pool.length < 10) pool = getValidFacts()
+
+    const facts = [...pool]
       .sort(() => Math.random() - 0.5)
-      .slice(0, 5)
+      .slice(0, 10)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
 
     setSessionType('flash_solo')
     setGameMode('solo')
     setIsQuickPlay(false)
     setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH)
-    setSelectedCategory(randomCat.id)
+    setSelectedCategory(null)
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
   }, [])
@@ -282,12 +281,29 @@ export default function App() {
     setScreen(SCREENS.QUESTION)
   }, [])
 
-  // Solo parcours flow
+  // Solo parcours flow — Quête WTF! : VIP facts only, random toutes catégories, direct
   const handlePlay = useCallback(() => {
-    setGameMode('solo')
+    audio.play('click')
+    const difficulty = DIFFICULTY_LEVELS.HOT
+    // Pool : facts VIP uniquement (type = 'vip' ou sans type = VIP par défaut)
+    let pool = getValidFacts().filter(f => !f.type || f.type === 'vip')
+    // Exclure les facts déjà débloqués pour plus de variété
+    const unplayed = pool.filter(f => !unlockedFacts.has(f.id))
+    if (unplayed.length >= QUESTIONS_PER_GAME) pool = unplayed
+
+    const facts = [...pool]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, QUESTIONS_PER_GAME)
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+
     setSessionType('parcours')
-    setScreen(SCREENS.DIFFICULTY)
-  }, [])
+    setGameMode('solo')
+    setIsQuickPlay(false)
+    setSelectedDifficulty(difficulty)
+    setSelectedCategory(null)
+    initSessionState(facts)
+    setScreen(SCREENS.QUESTION)
+  }, [unlockedFacts])
 
   // ─── HomeScreen navigation handler ──────────────────────────────────────────
   const handleHomeNavigate = useCallback((target) => {

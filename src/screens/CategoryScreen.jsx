@@ -31,17 +31,15 @@ const isLightColor = (hex) => {
 // ── Scaled helper ────────────────────────────────────────────────────────────
 const S = (px) => `calc(${px}px * var(--scale))`
 
+// ── Pinned IDs always at the end ─────────────────────────────────────────────
+const PINNED_IDS = new Set(['kids', 'random'])
+
 export default function CategoryScreen({ onSelectCategory, onBack, selectedDifficulty, unlockedFacts = new Set() }) {
   const [showSettings, setShowSettings] = useState(false)
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const scale = useScale()
   const bgIndex = useRef(Math.floor(Math.random() * BACKGROUNDS.length))
-
-  const categoriesWithFacts = useMemo(() => {
-    const categoryIds = new Set(getValidFacts().map(f => f.category))
-    return categoryIds
-  }, [])
 
   const totalPerCategory = useMemo(() => {
     const counts = {}
@@ -61,11 +59,14 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
     return counts
   }, [unlockedFacts])
 
-  // MOD 1 — Masquer catégories sans facts
+  // Only categories with at least 1 published fact, sorted alphabetically
+  // with Kids and Aléatoire pinned at end
   const visibleCategories = useMemo(() => {
     const cats = getPlayableCategories().filter(cat => (totalPerCategory[cat.id] || 0) > 0)
-    console.log('categories IDs:', cats.map(c => c.id))
-    return cats
+    const normal = cats.filter(c => !PINNED_IDS.has(c.id))
+    const pinned = cats.filter(c => PINNED_IDS.has(c.id))
+    normal.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
+    return [...normal, ...pinned]
   }, [totalPerCategory])
 
   const selectedCat = selectedCatId === 'random'
@@ -201,7 +202,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
           style={{
             width: S(36), height: S(36), borderRadius: '50%',
             background: 'rgba(255,255,255,0.2)',
-            border: '1px solid rgba(255,255,255,0.3)',
+            border: '1.5px solid rgba(255,255,255,0.4)',
             color: 'white', fontSize: S(16),
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
@@ -227,141 +228,149 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
           style={{
             width: S(36), height: S(36), borderRadius: '50%',
             background: 'rgba(255,255,255,0.2)',
-            border: '1px solid rgba(255,255,255,0.3)',
-            fontSize: S(16),
+            border: '1.5px solid rgba(255,255,255,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
             WebkitTapHighlightColor: 'transparent',
           }}
-        >⚙️</button>
+        >
+          <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
+        </button>
       </div>
 
-      {/* ── Categories grid ───────────────────────────────────────────── */}
+      {/* ── Categories list — scrollable ──────────────────────────────── */}
       <div style={{
         flex: 1, overflowY: 'auto',
-        padding: `0 ${S(10)} ${S(8)}`,
+        padding: `0 ${S(12)} ${S(8)}`,
         WebkitOverflowScrolling: 'touch',
       }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: S(10),
-        }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
 
-          {/* Aléatoire — toujours visible si au moins 1 catégorie a des facts */}
-          {visibleCategories.length > 0 && (
-            <button
-              onClick={() => handleCategoryClick('random')}
-              style={{
-                background: selectedCatId === 'random'
-                  ? 'linear-gradient(135deg, rgba(255,107,26,0.9) 0%, rgba(255,51,133,0.9) 30%, rgba(155,89,182,0.9) 60%, rgba(52,152,219,0.9) 80%, rgba(46,204,113,0.9) 100%)'
-                  : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)',
-                borderRadius: S(12),
-                padding: S(12),
-                height: S(85),
-                width: '100%',
-                boxSizing: 'border-box',
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                gap: S(4),
-                border: 'none',
-                outline: selectedCatId === 'random' ? '3px solid rgba(255,255,255,0.7)' : 'none',
-                outlineOffset: '-3px',
-                opacity: selectedCatId === null || selectedCatId === 'random' ? 1 : 0.5,
-                cursor: 'pointer',
-                transition: 'opacity 0.2s ease',
-                WebkitTapHighlightColor: 'transparent',
-                fontFamily: 'Nunito, sans-serif',
-              }}
-            >
-              <span style={{ fontSize: S(32) }}>🎲</span>
-              <span style={{ fontWeight: 700, fontSize: S(13), color: '#1a1a1a' }}>Aléatoire</span>
-            </button>
-          )}
-
-          {/* Category cards — only those with facts */}
+          {/* Aléatoire — pinned at end but we render all in order */}
           {visibleCategories.map((cat) => {
             const isSelected = selectedCatId === cat.id
             const total = totalPerCategory[cat.id] || 0
             const unlocked = unlockedPerCategory[cat.id] || 0
-            const pct = total > 0 ? unlocked / total : 0
-            const isComplete = pct === 1
-            const isAlmost = pct >= 0.8 && !isComplete
-            const remaining = total - unlocked
+            const pct = total > 0 ? Math.round((unlocked / total) * 100) : 0
             const bgColor = getCategoryColor(cat)
-            const textColor = isLightColor(bgColor) ? '#1a1a1a' : '#ffffff'
+            const lighterBg = isSelected
+              ? bgColor
+              : `${bgColor}99`
 
             return (
               <button
                 key={cat.id}
                 onClick={() => handleCategoryClick(cat.id)}
                 style={{
-                  background: bgColor,
-                  borderRadius: S(12),
-                  padding: S(12),
-                  height: S(85),
-                  width: '100%',
-                  boxSizing: 'border-box',
-                  display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'flex-start',
-                  paddingTop: S(10),
-                  gap: S(4),
-                  border: 'none',
-                  outline: isSelected ? '3px solid rgba(255,255,255,0.7)' : 'none',
-                  outlineOffset: '-3px',
-                  opacity: selectedCatId === null || isSelected ? 1 : 0.5,
+                  background: lighterBg,
+                  borderRadius: S(14),
+                  padding: `${S(10)} ${S(12)}`,
+                  width: '100%', boxSizing: 'border-box',
+                  display: 'flex', alignItems: 'center', gap: S(10),
+                  border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
+                  boxShadow: isSelected
+                    ? '0 0 20px rgba(255,255,255,0.25), 0 4px 12px rgba(0,0,0,0.2)'
+                    : '0 2px 8px rgba(0,0,0,0.15)',
+                  opacity: selectedCatId === null || isSelected ? 1 : 0.6,
                   cursor: 'pointer',
-                  transition: 'opacity 0.2s ease',
+                  transition: 'all 0.2s ease',
                   WebkitTapHighlightColor: 'transparent',
                   fontFamily: 'Nunito, sans-serif',
+                  textAlign: 'left',
                 }}
               >
+                {/* Category icon */}
                 <img
                   src={getCategoryIcon(cat.id)}
                   alt={cat.label}
                   style={{
-                    width: S(44), height: S(44),
-                    objectFit: 'contain',
-                    display: 'block',
-                    flexShrink: 0,
+                    width: S(36), height: S(36),
+                    objectFit: 'contain', flexShrink: 0,
+                    borderRadius: S(8),
                   }}
                   onError={(e) => { e.target.style.display = 'none' }}
                 />
-                <span style={{
-                  fontWeight: 700, fontSize: S(13),
-                  color: textColor,
-                  lineHeight: 1.2, textAlign: 'center',
-                }}>
-                  {cat.label}
-                </span>
 
-                {/* Progress bar */}
-                <div style={{
-                  height: S(4),
-                  background: 'rgba(255,255,255,0.3)',
-                  borderRadius: 2,
-                  marginTop: S(6),
-                  width: '100%',
-                }}>
+                {/* Name + progress */}
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    height: '100%',
-                    width: `${Math.min(pct * 100, 100)}%`,
-                    background: 'white',
-                    borderRadius: 2,
-                  }} />
+                    fontWeight: 900, fontSize: S(13), color: 'white',
+                    lineHeight: 1.2, marginBottom: S(4),
+                    textShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {cat.label}
+                  </div>
+                  {/* Progress bar */}
+                  <div style={{
+                    height: S(4), background: 'rgba(255,255,255,0.3)',
+                    borderRadius: 2, width: '100%',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${Math.min(pct, 100)}%`,
+                      background: 'white',
+                      borderRadius: 2,
+                      transition: 'width 0.3s ease',
+                    }} />
+                  </div>
+                  <div style={{
+                    fontSize: S(10), color: 'rgba(255,255,255,0.75)',
+                    fontWeight: 700, marginTop: S(2),
+                  }}>
+                    {unlocked}/{total} f*cts
+                  </div>
                 </div>
-                <div style={{
-                  fontSize: S(10),
-                  color: 'white',
-                  opacity: 0.8,
-                  textAlign: 'center',
-                  marginTop: S(2),
+
+                {/* Percentage */}
+                <span style={{
+                  fontWeight: 900, fontSize: S(12),
+                  color: 'rgba(255,255,255,0.8)', flexShrink: 0,
                 }}>
-                  {unlocked}/{total}
-                </div>
+                  {pct}%
+                </span>
               </button>
             )
           })}
+
+          {/* Aléatoire — always last */}
+          {visibleCategories.length > 0 && (
+            <button
+              onClick={() => handleCategoryClick('random')}
+              style={{
+                background: selectedCatId === 'random'
+                  ? 'linear-gradient(135deg, rgba(255,107,26,0.95) 0%, rgba(255,51,133,0.95) 30%, rgba(155,89,182,0.95) 60%, rgba(52,152,219,0.95) 80%, rgba(46,204,113,0.95) 100%)'
+                  : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)',
+                borderRadius: S(14),
+                padding: `${S(10)} ${S(12)}`,
+                width: '100%', boxSizing: 'border-box',
+                display: 'flex', alignItems: 'center', gap: S(10),
+                border: selectedCatId === 'random' ? '2.5px solid white' : '2.5px solid transparent',
+                boxShadow: selectedCatId === 'random'
+                  ? '0 0 20px rgba(255,255,255,0.25), 0 4px 12px rgba(0,0,0,0.2)'
+                  : '0 2px 8px rgba(0,0,0,0.15)',
+                opacity: selectedCatId === null || selectedCatId === 'random' ? 1 : 0.6,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                WebkitTapHighlightColor: 'transparent',
+                fontFamily: 'Nunito, sans-serif',
+                textAlign: 'left',
+              }}
+            >
+              <span style={{ fontSize: S(28), flexShrink: 0 }}>🎲</span>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontWeight: 900, fontSize: S(13), color: 'white',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                }}>
+                  Aléatoire
+                </div>
+                <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.75)', fontWeight: 700, marginTop: S(2) }}>
+                  Catégorie surprise !
+                </div>
+              </div>
+            </button>
+          )}
         </div>
       </div>
 
@@ -388,7 +397,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          {hasSelection ? "C'EST PARTI ! ⚡" : 'Sélectionne une catégorie'}
+          {hasSelection ? "C'EST PARTI !" : 'Sélectionne une catégorie'}
         </button>
       </div>
     </div>

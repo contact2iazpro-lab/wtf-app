@@ -49,11 +49,12 @@ const TAB_CONFIG = {
 function FactDetailView({ fact, onClose }) {
   const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
+  const catGradient = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
+  const catTextColor = isLightColor(catColor) ? '#1a1a1a' : '#ffffff'
   const S = (px) => `calc(${px}px * var(--scale))`
 
   const share = () => {
     const text = `🤯 Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct! https://wtf-app-production.up.railway.app/`
-    console.log('[Share]', text)
     if (navigator.share) navigator.share({ text }).catch(() => {})
     else navigator.clipboard?.writeText(text).catch(() => {})
   }
@@ -71,62 +72,91 @@ function FactDetailView({ fact, onClose }) {
       {/* Overlay catégorie */}
       <div style={{ position: 'absolute', inset: 0, background: `${catColor}cc`, zIndex: 0 }} />
 
-      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: S(10), padding: `${S(12)} ${S(16)}`, flexShrink: 0 }}>
+        {/* Header — ← | #ID centre | ⚙️ */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
           <button
             onClick={onClose}
             style={{
               width: S(36), height: S(36), borderRadius: '50%',
               background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontSize: S(16), fontWeight: 900, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}
           >
-            ←
+            <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>←</span>
           </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ fontWeight: 900, fontSize: S(13), color: 'white', lineHeight: 1.3, display: 'block' }}>
-              {fact.shortAnswer || fact.question}
-            </span>
-          </div>
+          <span style={{ fontWeight: 900, fontSize: S(13), color: catTextColor }}>
+            F*ct #{fact.id}
+          </span>
+          <button
+            onClick={() => { audio.play('click') }}
+            style={{
+              width: S(36), height: S(36), borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}
+          >
+            <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
+          </button>
         </div>
 
-        {/* Scrollable content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(16)}`, paddingBottom: S(16) }}>
+        {/* Question en titre */}
+        <div style={{ flexShrink: 0, padding: `0 ${S(16)} ${S(6)}`, textAlign: 'center' }}>
+          <span style={{ fontWeight: 900, fontSize: S(14), color: catTextColor, lineHeight: 1.3, display: 'block' }}>
+            {fact.question}
+          </span>
+        </div>
 
-          {/* Image avec encadré */}
-          <div style={{
-            borderRadius: S(20), overflow: 'hidden', position: 'relative',
-            border: `3px solid ${catColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-            background: `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`,
-            aspectRatio: '1/1', marginBottom: S(12),
-          }}>
+        {/* Image pleine largeur — style RevelationScreen */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '30vh' }}>
+          <div className="overflow-hidden relative" style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%' }}>
             {fact.imageUrl ? (
               <img
                 src={fact.imageUrl}
-                alt={fact.shortAnswer}
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                alt={fact.question}
+                style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
               />
             ) : (
-              <img
-                src="/assets/facts/fallback.svg"
-                alt="Fallback"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            )}
-            {/* Tampon FOU */}
-            <div style={{ position: 'absolute', bottom: S(8), right: S(8), zIndex: 10, pointerEvents: 'none' }}>
               <div style={{
-                fontSize: S(36), fontWeight: 900, color: '#4CAF50',
+                width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '24px',
+                background: catGradient,
+              }}>
+                <div style={{ fontSize: '14px', fontWeight: 900, color: 'rgba(255,255,255,0.25)', letterSpacing: '4px' }}>WTF!</div>
+                <div style={{ fontSize: '72px', fontWeight: 900, color: 'white', lineHeight: 1 }}>?</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Image bientôt disponible</div>
+              </div>
+            )}
+            {/* Tampon FOU — coin bas droit */}
+            <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
+              <div style={{
+                fontSize: S(18), fontWeight: 900, color: '#4CAF50',
                 textShadow: '0 2px 6px rgba(76,175,80,0.5)',
-                transform: 'rotate(-15deg)',
-                border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(3)} ${S(8)}`,
-                backgroundColor: 'rgba(76,175,80,0.1)', backdropFilter: 'blur(4px)',
+                transform: 'rotate(-12deg)',
+                border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`,
+                backgroundColor: 'rgba(76,175,80,0.15)', backdropFilter: 'blur(4px)',
               }}>
                 FOU
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Encadrés réponse + Le saviez-vous — style RevelationScreen */}
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(6) }}>
+          {/* Encadré réponse */}
+          <div style={{
+            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
+          }}>
+            <div style={{
+              background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
+              borderRadius: S(10), padding: `${S(8)} ${S(10)}`,
+            }}>
+              <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>Réponse :</div>
+              <div style={{ fontSize: S(13), fontWeight: 700, color: 'white' }}>{fact.shortAnswer || fact.options?.[fact.correctIndex]}</div>
             </div>
           </div>
 
@@ -134,13 +164,13 @@ function FactDetailView({ fact, onClose }) {
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: S(16), padding: S(14), marginBottom: S(12),
+            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(6), marginBottom: S(8) }}>
-              <span style={{ fontSize: S(18) }}>🧠</span>
-              <span style={{ color: 'white', fontWeight: 900, fontSize: S(12), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>
+              <span style={{ fontSize: S(14) }}>🧠</span>
+              <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(13), lineHeight: 1.5, fontWeight: 500, margin: 0 }}>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0 }}>
               {fact.explanation}
             </p>
             {fact.sourceUrl && (
@@ -148,7 +178,7 @@ function FactDetailView({ fact, onClose }) {
                 href={fact.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(8), textDecoration: 'underline', textAlign: 'right' }}
+                style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(6), textDecoration: 'underline', textAlign: 'right' }}
               >
                 Source
               </a>
@@ -157,9 +187,10 @@ function FactDetailView({ fact, onClose }) {
         </div>
 
         {/* Bouton partager — fixe en bas */}
-        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(14)}` }}>
+        <div style={{ flexShrink: 0, padding: `${S(6)} ${S(16)} ${S(12)}` }}>
           <button
             onClick={share}
+            className="active:scale-95 transition-all"
             style={{
               width: '100%', height: S(44), borderRadius: S(14),
               fontWeight: 900, fontSize: S(13), color: 'white', border: 'none',

@@ -130,6 +130,15 @@ export default function SplashScreen({ onComplete, isReady }) {
           </div>
         </div>
       </div>
+
+      {/* Version */}
+      <span style={{
+        position: 'absolute', bottom: 30, left: '50%', transform: 'translateX(-50%)',
+        color: 'white', opacity: 0.5, fontSize: 12,
+        fontFamily: 'Nunito, sans-serif', fontWeight: 700,
+      }}>
+        v{import.meta.env.VITE_APP_VERSION || '1.0.0'}
+      </span>
     </div>
   )
 }

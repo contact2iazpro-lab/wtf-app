@@ -122,67 +122,6 @@ function emptyFact() {
 }
 
 // ── Pending fact card ──────────────────────────────────────────────────────
-function isFactIncomplete(f) {
-  return !(f.funny_wrong_1 && f.close_wrong_1 && f.plausible_wrong_1)
-}
-
-function PendingFactCard({ fact, onAccept, onReject, accepting }) {
-  const [expanded, setExpanded] = useState(false)
-  const incomplete = isFactIncomplete(fact)
-  return (
-    <div className="bg-slate-900 rounded-xl p-4" style={{ border: incomplete ? '2px solid #F59E0B' : '1px solid rgba(217,119,6,0.3)' }}>
-      <div className="flex items-start gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <DifficultyBadge value={fact.difficulty} />
-            <span className="text-xs text-slate-500">{getCategoryEmoji(fact.category)} {getCategoryLabel(fact.category)}</span>
-            {incomplete && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }}>
-                ⚠ Incomplet
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-white font-medium leading-snug">{fact.question}</p>
-          <p className="text-xs text-slate-500 mt-1">
-            Réponse : <span className="text-slate-300 font-semibold">{fact.short_answer}</span>
-          </p>
-          {expanded && (
-            <div className="mt-2 space-y-1 text-xs text-slate-400">
-              {fact.hint1 && <p>Indice 1 : {fact.hint1}</p>}
-              {fact.hint2 && <p>Indice 2 : {fact.hint2}</p>}
-              {fact.explanation && <p className="text-slate-300">{fact.explanation}</p>}
-              {fact.options?.filter(Boolean).length > 0 && (
-                <p>QCM : {fact.options.filter(Boolean).join(' / ')}</p>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col gap-2 shrink-0">
-          <button
-            onClick={() => setExpanded(v => !v)}
-            className="text-xs text-slate-500 hover:text-white px-2 py-1 rounded transition-colors"
-          >
-            {expanded ? '▲' : '▼'}
-          </button>
-          <button
-            onClick={onAccept}
-            disabled={accepting}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all hover:opacity-80 disabled:opacity-40"
-            style={{ background: '#22C55E' }}
-          >
-            {accepting ? '…' : '✓ Accepter'}
-          </button>
-          <button
-            onClick={onReject}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold text-red-400 bg-red-900/20 border border-red-800/30 hover:bg-red-900/40 transition-all"
-          >
-            ✕ Refuser
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // ══════════════════════════════════════════════════════════════════════════
 export default function FactsListPage({ toast }) {
@@ -207,7 +146,8 @@ export default function FactsListPage({ toast }) {
 
   // Sort
   const [sortField, setSortField] = useState('id')
-  const [sortDir, setSortDir] = useState('asc')
+  const [sortDir, setSortDir] = useState('desc')
+  const [filterRecent, setFilterRecent] = useState(false)
 
   // Batch
   const [selected, setSelected] = useState(new Set())
@@ -229,9 +169,12 @@ export default function FactsListPage({ toast }) {
   const [genCount, setGenCount] = useState(3)
   const [genLoading, setGenLoading] = useState(false)
 
-  // Pending validation queue
-  const [pendingFacts, setPendingFacts] = useState([])
-  const [acceptingIndex, setAcceptingIndex] = useState(null)
+  // Enrich
+  const [enriching, setEnriching] = useState(false)
+  const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
+  const [enrichingSingleId, setEnrichingSingleId] = useState(null)
+  const enrichCancelRef = useRef(false)
+
 
   const searchRef = useRef(null)
   const catDropdownRef = useRef(null)
@@ -271,10 +214,10 @@ export default function FactsListPage({ toast }) {
   }, [showCatDropdown])
 
   // Reset page on filter change
-  useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, pageSize])
+  useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, pageSize])
 
   // Load facts
-  useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, sortField, sortDir])
+  useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, sortField, sortDir])
 
 
   const loadFacts = useCallback(async () => {
@@ -282,7 +225,7 @@ export default function FactsListPage({ toast }) {
     try {
       let q = supabase
         .from('facts')
-        .select('id, category, question, is_vip, is_published, status, pack_id, updated_at, image_url', { count: 'exact' })
+        .select('id, category, question, short_answer, explanation, hint1, hint2, is_vip, is_published, status, pack_id, updated_at, image_url, funny_wrong_1', { count: 'exact' })
 
       if (debouncedSearch) {
         q = q.or(`question.ilike.%${debouncedSearch}%,explanation.ilike.%${debouncedSearch}%,short_answer.ilike.%${debouncedSearch}%`)
@@ -296,6 +239,10 @@ export default function FactsListPage({ toast }) {
       if (filterPack !== 'all') q = q.eq('pack_id', filterPack)
       if (filterImage === 'with') q = q.not('image_url', 'is', null).neq('image_url', '')
       if (filterImage === 'without') q = q.or('image_url.is.null,image_url.eq.')
+      if (filterRecent) {
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        q = q.gte('updated_at', since)
+      }
 
       q = q.order(sortField, { ascending: sortDir === 'asc' })
       q = q.range(page * pageSize, (page + 1) * pageSize - 1)
@@ -310,7 +257,7 @@ export default function FactsListPage({ toast }) {
     } finally {
       setLoading(false)
     }
-  }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, sortField, sortDir])
+  }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, sortField, sortDir])
 
 
   async function toggleVip(fact) {
@@ -493,13 +440,45 @@ export default function FactsListPage({ toast }) {
   // ── Generate facts ─────────────────────────────────────────────────────
   async function startGeneration() {
     if (!genCategory) { toast?.('Choisir une catégorie', 'warn'); return }
-    if (genCount < 1 || genCount > 20) { toast?.('Entre 1 et 20 facts', 'warn'); return }
+    if (genCount < 1 || genCount > 10) { toast?.('Entre 1 et 10 facts', 'warn'); return }
     setGenLoading(true)
     try {
       const generated = await generateFactsWithClaude(genCategory, genCount)
-      setPendingFacts(prev => [...prev, ...generated])
+
+      // Insert directly as drafts
+      let inserted = 0
+      for (const f of generated) {
+        if (!f.funny_wrong_1) console.warn(`[generate] Fact incomplet (pas de fausses réponses) : "${f.question?.slice(0, 50)}"`)
+        try {
+          const { data: maxData } = await supabase
+            .from('facts').select('id').order('id', { ascending: false }).limit(1)
+          const newId = (maxData?.[0]?.id || 0) + 1
+          const options = (f.options || []).filter(o => o.trim())
+          const { error } = await supabase.from('facts').insert({
+            id: newId, category: f.category, question: f.question,
+            hint1: f.hint1 || null, hint2: f.hint2 || null,
+            hint3: f.hint3 || null, hint4: f.hint4 || null,
+            short_answer: f.short_answer, answer: f.short_answer || '',
+            explanation: f.explanation || null, source_url: f.source_url || null,
+            options: options.length > 0 ? options : null,
+            correct_index: f.correct_index ?? 0, image_url: f.image_url || null,
+            is_vip: false, type: f.type || 'generated',
+            status: 'draft', is_published: false,
+            pack_id: f.pack_id || 'free', vip_usage: 'available',
+            difficulty: f.difficulty || 'Normal',
+            funny_wrong_1: f.funny_wrong_1 || null, funny_wrong_2: f.funny_wrong_2 || null,
+            close_wrong_1: f.close_wrong_1 || null, close_wrong_2: f.close_wrong_2 || null,
+            plausible_wrong_1: f.plausible_wrong_1 || null, plausible_wrong_2: f.plausible_wrong_2 || null,
+            plausible_wrong_3: f.plausible_wrong_3 || null,
+            updated_at: new Date().toISOString(),
+          })
+          if (!error) inserted++
+        } catch (err) { console.error('Erreur insertion fact:', err) }
+      }
+
       setShowGenerateModal(false)
-      toast?.(`✓ ${generated.length} facts générés — validez-les ci-dessous`)
+      toast?.(`✓ ${inserted} facts générés et ajoutés en brouillon`)
+      await loadFacts()
     } catch (err) {
       console.error(err)
       toast?.('Erreur génération : ' + (err.message || ''), 'error')
@@ -508,123 +487,97 @@ export default function FactsListPage({ toast }) {
     }
   }
 
-  // ── Validation queue ───────────────────────────────────────────────────
-  async function acceptPendingFact(index) {
-    const f = pendingFacts[index]
-    if (!isFactComplete(f)) {
-      if (!confirm('⚠ Ce fact est incomplet (fausses réponses manquantes). Insérer quand même ?')) return
-    }
-    setAcceptingIndex(index)
+
+  // ── Enrich functions ──────────────────────────────────────────────────
+  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+
+  async function enrichSingleFact(fact) {
+    setEnrichingSingleId(fact.id)
     try {
-      const { data: maxData } = await supabase
-        .from('facts').select('id').order('id', { ascending: false }).limit(1)
-      const newId = (maxData?.[0]?.id || 0) + 1
-
-      const options = (f.options || []).filter(o => o.trim())
-      const payload = {
-        id: newId,
-        category: f.category,
-        question: f.question,
-        hint1: f.hint1 || null,
-        hint2: f.hint2 || null,
-        hint3: f.hint3 || null,
-        hint4: f.hint4 || null,
-        short_answer: f.short_answer,
-        answer: f.short_answer || '',   // answer is NOT NULL in DB
-        explanation: f.explanation || null,
-        source_url: f.source_url || null,
-        options: options.length > 0 ? options : null,
-        correct_index: f.correct_index ?? 0,
-        image_url: f.image_url || null,
-        is_vip: false,
-        type: f.type || 'generated',
-        status: 'draft',
-        is_published: false,
-        pack_id: f.pack_id || 'free',
-        vip_usage: 'available',
-        difficulty: f.difficulty || 'Normal',
-        funny_wrong_1: f.funny_wrong_1 || null,
-        funny_wrong_2: f.funny_wrong_2 || null,
-        close_wrong_1: f.close_wrong_1 || null,
-        close_wrong_2: f.close_wrong_2 || null,
-        plausible_wrong_1: f.plausible_wrong_1 || null,
-        plausible_wrong_2: f.plausible_wrong_2 || null,
-        plausible_wrong_3: f.plausible_wrong_3 || null,
-        updated_at: new Date().toISOString(),
-      }
-
-      const { error } = await supabase.from('facts').insert(payload)
-      if (error) throw error
-
-      setPendingFacts(prev => prev.filter((_, i) => i !== index))
-      toast?.(`✓ Fact accepté → #${newId} (non publié)`)
+      const resp = await fetch(`${supabaseUrl}/functions/v1/enrich-fact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPassword}` },
+        body: JSON.stringify({
+          question: fact.question, short_answer: fact.short_answer,
+          explanation: fact.explanation, category: fact.category,
+          hint1: fact.hint1, hint2: fact.hint2,
+        }),
+      })
+      const data = await resp.json()
+      if (!resp.ok) throw new Error(data.error)
+      await supabase.from('facts').update({
+        hint1: data.hint1, hint2: data.hint2, hint3: data.hint3, hint4: data.hint4,
+        funny_wrong_1: data.funny_wrong_1, funny_wrong_2: data.funny_wrong_2,
+        close_wrong_1: data.close_wrong_1, close_wrong_2: data.close_wrong_2,
+        plausible_wrong_1: data.plausible_wrong_1, plausible_wrong_2: data.plausible_wrong_2,
+        plausible_wrong_3: data.plausible_wrong_3, updated_at: new Date().toISOString(),
+      }).eq('id', fact.id)
+      toast?.(`✓ Fact #${fact.id} enrichi`)
       await loadFacts()
     } catch (err) {
-      console.error(err)
-      toast?.('Erreur acceptation : ' + (err.message || ''), 'error')
+      toast?.(`Erreur enrichissement #${fact.id}: ${err.message}`, 'error')
     } finally {
-      setAcceptingIndex(null)
+      setEnrichingSingleId(null)
     }
   }
 
-  function rejectPendingFact(index) {
-    setPendingFacts(prev => prev.filter((_, i) => i !== index))
-    toast?.('Fact refusé — supprimé de la file d\'attente')
-  }
-
-  function isFactComplete(f) {
-    return !!(f.question && f.short_answer && f.funny_wrong_1 && f.close_wrong_1 && f.plausible_wrong_1)
-  }
-
-  async function acceptAllPendingFacts() {
-    const complete = pendingFacts.filter(isFactComplete)
-    const incomplete = pendingFacts.filter(f => !isFactComplete(f))
-    if (complete.length === 0) {
-      toast?.('Aucun fact complet à accepter — enrichissez les facts incomplets', 'warn')
-      return
+  async function enrichAllIncomplete() {
+    enrichCancelRef.current = false
+    setEnriching(true)
+    try {
+      const { data: incomplete, error } = await supabase
+        .from('facts')
+        .select('id, question, short_answer, explanation, category, hint1, hint2')
+        .is('funny_wrong_1', null)
+        .eq('is_published', true)
+        .order('id')
+      if (error) throw error
+      if (!incomplete?.length) {
+        toast?.('✅ Aucun fact incomplet à enrichir')
+        setEnriching(false)
+        return
+      }
+      if (!confirm(`Enrichir ${incomplete.length} facts incomplets ?`)) {
+        setEnriching(false)
+        return
+      }
+      setEnrichProgress({ current: 0, total: incomplete.length })
+      let enriched = 0
+      for (const fact of incomplete) {
+        if (enrichCancelRef.current) break
+        try {
+          const resp = await fetch(`${supabaseUrl}/functions/v1/enrich-fact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPassword}` },
+            body: JSON.stringify({
+              question: fact.question, short_answer: fact.short_answer,
+              explanation: fact.explanation, category: fact.category,
+              hint1: fact.hint1, hint2: fact.hint2,
+            }),
+          })
+          const data = await resp.json()
+          if (!resp.ok) throw new Error(data.error)
+          await supabase.from('facts').update({
+            hint1: data.hint1, hint2: data.hint2, hint3: data.hint3, hint4: data.hint4,
+            funny_wrong_1: data.funny_wrong_1, funny_wrong_2: data.funny_wrong_2,
+            close_wrong_1: data.close_wrong_1, close_wrong_2: data.close_wrong_2,
+            plausible_wrong_1: data.plausible_wrong_1, plausible_wrong_2: data.plausible_wrong_2,
+            plausible_wrong_3: data.plausible_wrong_3, updated_at: new Date().toISOString(),
+          }).eq('id', fact.id)
+          enriched++
+        } catch (err) {
+          console.error(`Erreur enrichissement #${fact.id}:`, err)
+        }
+        setEnrichProgress({ current: enriched, total: incomplete.length })
+      }
+      toast?.(`✅ ${enriched}/${incomplete.length} facts enrichis`)
+      await loadFacts()
+    } catch (err) {
+      toast?.('Erreur enrichissement : ' + (err.message || ''), 'error')
+    } finally {
+      setEnriching(false)
     }
-    const msg = incomplete.length > 0
-      ? `Accepter ${complete.length} facts complets ? (${incomplete.length} incomplets seront ignorés)`
-      : `Accepter les ${complete.length} facts en attente ?`
-    if (!confirm(msg)) return
-
-    let accepted = 0
-    for (let i = 0; i < complete.length; i++) {
-      setAcceptingIndex(i)
-      const f = complete[i]
-      try {
-        const { data: maxData } = await supabase
-          .from('facts').select('id').order('id', { ascending: false }).limit(1)
-        const newId = (maxData?.[0]?.id || 0) + 1
-        const options = (f.options || []).filter(o => o.trim())
-        const { error } = await supabase.from('facts').insert({
-          id: newId, category: f.category, question: f.question,
-          hint1: f.hint1 || null, hint2: f.hint2 || null,
-          hint3: f.hint3 || null, hint4: f.hint4 || null,
-          short_answer: f.short_answer, answer: f.short_answer || '',
-          explanation: f.explanation || null, source_url: f.source_url || null,
-          options: options.length > 0 ? options : null,
-          correct_index: f.correct_index ?? 0, image_url: f.image_url || null,
-          is_vip: false, type: f.type || 'generated',
-          status: 'draft', is_published: false,
-          pack_id: f.pack_id || 'free', vip_usage: 'available',
-          difficulty: f.difficulty || 'Normal',
-          funny_wrong_1: f.funny_wrong_1 || null,
-          funny_wrong_2: f.funny_wrong_2 || null,
-          close_wrong_1: f.close_wrong_1 || null,
-          close_wrong_2: f.close_wrong_2 || null,
-          plausible_wrong_1: f.plausible_wrong_1 || null,
-          plausible_wrong_2: f.plausible_wrong_2 || null,
-          plausible_wrong_3: f.plausible_wrong_3 || null,
-          updated_at: new Date().toISOString(),
-        })
-        if (!error) accepted++
-      } catch (err) { console.error(err) }
-    }
-    setAcceptingIndex(null)
-    setPendingFacts(incomplete) // Keep incomplete facts in queue
-    toast?.(`✓ ${accepted} facts acceptés${incomplete.length > 0 ? ` — ${incomplete.length} incomplets restants` : ''}`)
-    await loadFacts()
   }
 
   const totalPages = Math.ceil(total / pageSize)
@@ -1015,44 +968,19 @@ export default function FactsListPage({ toast }) {
           >
             ➕<span className="hidden sm:inline"> Ajouter un fact</span><span className="sm:hidden"> Ajouter</span>
           </button>
+          <button
+            onClick={enriching ? () => { enrichCancelRef.current = true } : enrichAllIncomplete}
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all hover:opacity-90 active:scale-95"
+            style={{ background: enriching ? '#EF4444' : 'linear-gradient(135deg, #F59E0B, #D97706)' }}
+          >
+            {enriching
+              ? `⏹ ${enrichProgress.current}/${enrichProgress.total}`
+              : <>✨<span className="hidden sm:inline"> Enrichir les incomplets</span><span className="sm:hidden"> Enrichir</span></>
+            }
+          </button>
         </div>
       </div>
 
-      {/* ── Pending validation queue ──────────────────────────────────── */}
-      {pendingFacts.length > 0 && (
-        <div className="mb-5 shrink-0 bg-amber-950/30 border border-amber-700/40 rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-amber-700/30">
-            <div className="flex items-center gap-2">
-              <span className="text-amber-400 font-black text-sm">⏳ En attente de validation</span>
-              <span className="bg-amber-400 text-black text-xs font-black px-2 py-0.5 rounded-full">{pendingFacts.length}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={acceptAllPendingFacts}
-                className="text-xs font-bold text-green-400 hover:text-green-300 transition-colors"
-              >
-                ✓ Tout accepter
-              </button>
-              <button
-                onClick={() => { if (confirm(`Refuser et supprimer les ${pendingFacts.length} facts en attente ?`)) setPendingFacts([]) }}
-                className="text-xs text-slate-500 hover:text-red-400 transition-colors"
-              >
-                ✕ Tout refuser
-              </button>
-            </div>
-          </div>
-          <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
-            {pendingFacts.map((pf, i) => (
-              <PendingFactCard
-                key={i}
-                fact={pf}
-                onAccept={() => acceptPendingFact(i)}
-                onReject={() => rejectPendingFact(i)}
-                accepting={acceptingIndex === i}
-              />
-            ))}
-          </div>
-        </div>
       )}
 
       {/* ── Filters ───────────────────────────────────────────────────── */}
@@ -1136,6 +1064,19 @@ export default function FactsListPage({ toast }) {
             </button>
           ))}
         </div>
+
+        {/* Recent filter */}
+        <button
+          onClick={() => setFilterRecent(v => !v)}
+          className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+          style={{
+            background: filterRecent ? '#3B82F6' : 'transparent',
+            color: filterRecent ? 'white' : '#94A3B8',
+            border: `1px solid ${filterRecent ? '#3B82F6' : '#334155'}`,
+          }}
+        >
+          🕐 Récents (24h)
+        </button>
 
         {/* Status filter */}
         <div className="flex rounded-xl overflow-hidden border border-slate-700">
@@ -1308,13 +1249,26 @@ export default function FactsListPage({ toast }) {
                   </td>
                   <td className="px-3 py-2.5 text-xs text-slate-500">{fmt(fact.updated_at)}</td>
                   <td className="px-3 py-2.5 text-center">
-                    <Link
-                      to={`/facts/${fact.id}`}
-                      className="px-3 py-1 rounded-lg text-xs font-bold text-white transition-all hover:opacity-80"
-                      style={{ background: '#FF6B1A' }}
-                    >
-                      Éditer
-                    </Link>
+                    <div className="flex items-center justify-center gap-1.5">
+                      {!fact.funny_wrong_1 && (
+                        <button
+                          onClick={() => enrichSingleFact(fact)}
+                          disabled={enrichingSingleId === fact.id}
+                          className="px-2 py-1 rounded-lg text-xs font-bold transition-all hover:opacity-80 disabled:opacity-40"
+                          style={{ background: '#F59E0B', color: 'white' }}
+                          title="Enrichir ce fact"
+                        >
+                          {enrichingSingleId === fact.id ? '⟳' : '✨'}
+                        </button>
+                      )}
+                      <Link
+                        to={`/facts/${fact.id}`}
+                        className="px-3 py-1 rounded-lg text-xs font-bold text-white transition-all hover:opacity-80"
+                        style={{ background: '#FF6B1A' }}
+                      >
+                        Éditer
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))

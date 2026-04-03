@@ -375,20 +375,20 @@ export default function RevelationScreen({
         {renderHeader()}
 
         {/* Image floutée + stamp bienveillant par-dessus */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '35vh', padding: `0 ${S(12)}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}` }}>
           <div
             className="overflow-hidden relative"
-            style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%', borderRadius: S(12) }}
+            style={{ background: catGradient, width: '100%', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
           >
             {fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'contain', width: '100%', height: '100%', position: 'absolute', inset: 0, filter: 'blur(12px) brightness(0.5)' }}
+                style={{ objectFit: 'contain', width: '100%', height: 'auto', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
-              <div style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, background: catGradient, filter: 'blur(8px) brightness(0.5)' }}>
+              <div style={{ width: '100%', aspectRatio: '4/3', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
                 <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
               </div>
             )}
@@ -492,16 +492,16 @@ export default function RevelationScreen({
       {renderHeader()}
 
       {/* Image pleine largeur + stamp FOU réduit en coin */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '30vh', padding: `0 ${S(12)}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}` }}>
         <div
           className={`overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%', borderRadius: S(12) }}
+          style={{ background: catGradient, width: '100%', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
         >
           {fact.imageUrl && !imgFailed ? (
             <img
               src={fact.imageUrl}
               alt={fact.question}
-              style={{ objectFit: 'contain', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+              style={{ objectFit: 'contain', width: '100%', height: 'auto', display: 'block', borderRadius: S(12) }}
               onError={() => setImgFailed(true)}
             />
           ) : (

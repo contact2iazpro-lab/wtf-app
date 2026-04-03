@@ -162,7 +162,7 @@ export default function HomeScreen({
         src={src}
         alt={label}
         style={{
-          width: 52, height: 52,
+          width: S(48), height: S(48),
           borderRadius: '50%',
           overflow: 'hidden',
           objectFit: 'cover',
@@ -194,7 +194,7 @@ export default function HomeScreen({
     <div
       style={{
         display: 'flex', flexDirection: 'column',
-        height: '100vh', width: '100%',
+        height: '100dvh', width: '100%',
         overflow: 'hidden',
         position: 'relative',
         boxSizing: 'border-box',
@@ -238,9 +238,9 @@ export default function HomeScreen({
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* ═══ ZONE 1 — HEADER (52px fixe) ════════════════════════════════════ */}
+      {/* ═══ ZONE 1 — HEADER (44px fixe) ════════════════════════════════════ */}
       <div style={{
-        height: 52, flexShrink: 0,
+        height: 44, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 14px',
         position: 'relative', zIndex: 2,
@@ -337,9 +337,9 @@ export default function HomeScreen({
         <span style={{ fontSize: 10, fontWeight: 700, color: textColor, opacity: 0.7, textShadow, flexShrink: 0 }}>{countdown}</span>
       </div>
 
-      {/* ═══ ZONE 3 — COFFRES QUOTIDIENS (72px fixe) ═══════════════════════ */}
+      {/* ═══ ZONE 3 — COFFRES QUOTIDIENS (60px fixe) ═══════════════════════ */}
       <div style={{
-        height: 72, flexShrink: 0,
+        height: 60, flexShrink: 0,
         display: 'flex', alignItems: 'center',
         gap: 6, padding: '0 14px',
         justifyContent: 'center',
@@ -403,13 +403,13 @@ export default function HomeScreen({
       {/* ═══ ZONE 3B — LOGO VOF (fixe, juste sous les coffres) ════════════ */}
       <div style={{
         flexShrink: 0, display: 'flex', justifyContent: 'center',
-        padding: '4px 0 0',
+        padding: '2px 0 0',
       }}>
         <img
           src="/assets/ui/vof-logo.png?v=4"
           alt="Vrai ou fou ?"
           style={{
-            width: 190, maxHeight: 55, height: 'auto',
+            width: 170, maxHeight: 45, height: 'auto',
             objectFit: 'contain', display: 'block',
           }}
         />
@@ -419,7 +419,7 @@ export default function HomeScreen({
       <div style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'row',
-        padding: '8px 10px',
+        padding: '0 10px',
         position: 'relative',
       }}>
         {/* Starburst light rays — tailles aléatoires avec halo */}
@@ -495,31 +495,29 @@ export default function HomeScreen({
         <div style={{
           flex: 1, minWidth: 0,
           display: 'flex', flexDirection: 'column',
-          justifyContent: 'center', alignItems: 'center',
+          justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', position: 'relative', zIndex: 1,
         }}>
-          {/* 1. Logo WTF — aligné avec Série/Multi */}
+          {/* 1. Logo WTF */}
           <img
             src="/assets/ui/wtf-logo.png?v=4"
             alt="WTF!"
             style={{
-              width: 130, maxHeight: 110, height: 'auto',
+              width: '55%', maxWidth: 130, height: 'auto',
               objectFit: 'contain', display: 'block',
               filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
               position: 'relative', zIndex: 1,
             }}
           />
 
-          {/* 2. Tagline — bas aligné avec Flash/WTF Semaine */}
+          {/* 2. Tagline */}
           <img
             src="/assets/ui/100logo.png?v=5"
             alt="Des f*cts 100% vrais, des réactions 100% fun !"
             style={{
-              width: 180, maxHeight: 60, height: 'auto',
+              width: '70%', maxWidth: 180, height: 'auto',
               objectFit: 'contain', display: 'block',
-              position: 'absolute', bottom: 0, left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 1,
+              position: 'relative', zIndex: 1,
             }}
           />
         </div>
@@ -537,11 +535,12 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ═══ ZONE 4B — BOUTON FLASH (56px fixe) ═══════════════════════════ */}
+      {/* ═══ ZONE 4B — BOUTON FLASH (48px fixe) ═══════════════════════════ */}
       <div style={{
-        height: 56, flexShrink: 0,
+        height: 44, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '0 60px',
+        padding: '0 50px',
+        marginBottom: 8,
         position: 'relative', zIndex: 10,
       }}>
         <button
@@ -575,7 +574,7 @@ export default function HomeScreen({
       <div style={{
         display: 'flex', alignItems: 'flex-end',
         justifyContent: 'space-around',
-        padding: `${S(4)} ${S(4)} ${S(10)}`,
+        padding: `${S(4)} ${S(4)} ${S(6)}`,
         background: 'rgba(255,255,255,0.95)',
         flexShrink: 0,
         position: 'relative', zIndex: 10,

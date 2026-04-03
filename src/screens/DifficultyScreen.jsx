@@ -185,8 +185,9 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                 width: '100%', boxSizing: 'border-box',
                 border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
                 boxShadow: isSelected
-                  ? '0 0 24px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.3)'
+                  ? '0 0 24px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.3), inset 0 0 12px rgba(255,255,255,0.15)'
                   : '0 4px 12px rgba(0,0,0,0.2)',
+                transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                 cursor: 'pointer',
                 textAlign: 'left',
                 flexShrink: 0,

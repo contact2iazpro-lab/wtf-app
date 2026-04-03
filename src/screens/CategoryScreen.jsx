@@ -279,9 +279,10 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                   display: 'flex', alignItems: 'center', gap: S(10),
                   border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
                   boxShadow: isSelected
-                    ? '0 0 20px rgba(255,255,255,0.25), 0 4px 12px rgba(0,0,0,0.2)'
+                    ? '0 0 20px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
                     : '0 2px 8px rgba(0,0,0,0.15)',
                   opacity: selectedCatId === null || isSelected ? 1 : 0.6,
+                  transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   WebkitTapHighlightColor: 'transparent',
@@ -357,9 +358,10 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
                 display: 'flex', alignItems: 'center', gap: S(10),
                 border: selectedCatId === 'random' ? '2.5px solid white' : '2.5px solid transparent',
                 boxShadow: selectedCatId === 'random'
-                  ? '0 0 20px rgba(255,255,255,0.25), 0 4px 12px rgba(0,0,0,0.2)'
+                  ? '0 0 20px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
                   : '0 2px 8px rgba(0,0,0,0.15)',
                 opacity: selectedCatId === null || selectedCatId === 'random' ? 1 : 0.6,
+                transform: selectedCatId === 'random' ? 'scale(1.02)' : 'scale(1)',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 WebkitTapHighlightColor: 'transparent',

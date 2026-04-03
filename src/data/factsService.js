@@ -1,20 +1,16 @@
 // ─── WTF! Facts Service ──────────────────────────────────────────────────────
-// Source des facts : Supabase en priorité, fallback local (facts.js) si indisponible.
-// Garantit que l'app ne plante jamais même sans connexion.
+// Source UNIQUE des facts : Supabase. Pas de fallback local.
+// Si Supabase échoue après 3 retries, l'app affiche un écran d'erreur.
 //
 // Usage dans App.jsx :
-//   await initFacts()           ← appeler une fois au montage
+//   const result = await initFacts()  // { success: true } ou { success: false, error: '...' }
 //   const facts = getValidFacts()
 //   const daily = getDailyFact()
 
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import {
-  FACTS        as LOCAL_FACTS,
   CATEGORIES,
-  PLAYABLE_CATEGORIES,
-  DIFFICULTY_ASSIGNMENT as LOCAL_DIFFICULTY,
   VIP_FACT_IDS,
-  isFactValid,
   getCategoryById,
   getTitrePartiel,
 } from './facts'
@@ -37,6 +33,16 @@ let _parcoursFacts    = null
 let _categoryLevelIds = null
 let _difficulty       = null
 let _initPromise      = null
+
+// Reset pour permettre un retry après échec
+export function resetFacts() {
+  _rawFacts = null
+  _validFacts = null
+  _parcoursFacts = null
+  _categoryLevelIds = null
+  _difficulty = null
+  _initPromise = null
+}
 
 // ─── Transform : ligne Supabase → objet fact de l'app ───────────────────────
 function fromRow(row) {
@@ -163,35 +169,48 @@ function buildAll(rawFacts) {
 }
 
 // ─── initFacts() — appeler une fois dans App.jsx au montage ─────────────────
+// Retourne { success: true } ou { success: false, error: '...' }
+const MAX_RETRIES = 3
+const RETRY_DELAY = 1500 // ms
+
+async function fetchFromSupabase() {
+  const { data, error } = await supabase
+    .from('facts')
+    .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
+    .eq('is_published', true)
+    .order('id')
+
+  if (error) throw new Error(error.message)
+  if (!data || data.length < 10) throw new Error(`Seulement ${data?.length || 0} facts retournés`)
+  return data
+}
+
 export async function initFacts() {
-  if (_rawFacts !== null) return        // déjà initialisé
-  if (_initPromise)       return _initPromise  // en cours
+  if (_rawFacts !== null) return { success: true }
+  if (_initPromise) return _initPromise
 
   _initPromise = (async () => {
     if (!isSupabaseConfigured) {
-      buildAll(LOCAL_FACTS)
-      return
+      console.error('[factsService] Supabase non configuré — impossible de charger les facts')
+      return { success: false, error: 'Supabase non configuré' }
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('facts')
-        .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
-        .eq('is_published', true)
-        .order('id')
-
-      if (!error && data && data.length >= 10) {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const data = await fetchFromSupabase()
         buildAll(data.map(fromRow))
-        console.log(`[factsService] ${data.length} facts chargés depuis Supabase`)
-      } else {
-        if (error) console.warn('[factsService] Erreur Supabase, fallback local :', error.message)
-        else       console.warn('[factsService] Données insuffisantes, fallback local')
-        buildAll(LOCAL_FACTS)
+        console.log(`[factsService] ${data.length} facts chargés depuis Supabase (tentative ${attempt})`)
+        return { success: true }
+      } catch (err) {
+        console.warn(`[factsService] Tentative ${attempt}/${MAX_RETRIES} échouée :`, err.message)
+        if (attempt < MAX_RETRIES) {
+          await new Promise(r => setTimeout(r, RETRY_DELAY))
+        }
       }
-    } catch (err) {
-      console.warn('[factsService] Fetch échoué, fallback local :', err.message)
-      buildAll(LOCAL_FACTS)
     }
+
+    console.error('[factsService] Échec après 3 tentatives — aucun fact chargé')
+    return { success: false, error: 'Impossible de charger les facts après 3 tentatives' }
   })()
 
   return _initPromise
@@ -201,7 +220,7 @@ export async function initFacts() {
 // Si appelés avant initFacts(), retournent le fallback local (app ne plante pas)
 
 export function getValidFacts() {
-  return _validFacts ?? LOCAL_FACTS.filter(isFactValid)
+  return _validFacts ?? []
 }
 
 export function getParcoursFacts() {

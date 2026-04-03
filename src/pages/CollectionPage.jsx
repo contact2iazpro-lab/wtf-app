@@ -40,8 +40,8 @@ function ProgressBar({ percentage, color }) {
 }
 
 const TAB_CONFIG = {
-  vip:       { label: 'VIP',      emoji: '👑', color: '#FFD700' },
-  generated: { label: 'Générés', emoji: '🤖', color: '#8B5CF6' },
+  vip:       { label: 'WTF!',         emoji: '👑', color: '#FFD700' },
+  generated: { label: 'Funny F*cts', emoji: '🤖', color: '#8B5CF6' },
 }
 
 // ─── Fact detail full-screen view ──────────────────────────────────────────

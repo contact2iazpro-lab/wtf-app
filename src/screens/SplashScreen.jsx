@@ -10,6 +10,7 @@ export default function SplashScreen({ onComplete, isReady }) {
   const [minTimeElapsed, setMinTimeElapsed] = useState(false)
   const [showLoading, setShowLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(0)
+  const [forceReady, setForceReady] = useState(false)
   const scale = useScale()
   const timers = useRef([])
 
@@ -27,7 +28,11 @@ export default function SplashScreen({ onComplete, isReady }) {
     const p3 = setTimeout(() => setLoadingProgress(65), 900)
     const p4 = setTimeout(() => setLoadingProgress(80), 1400)
     const p5 = setTimeout(() => setLoadingProgress(90), 2000)
-    timers.current = [t1, t2, t3, t4, p1, p2, p3, p4, p5]
+    const tForce = setTimeout(() => {
+      console.warn('Splash timeout: forcing transition without facts')
+      setForceReady(true)
+    }, 8000)
+    timers.current = [t1, t2, t3, t4, p1, p2, p3, p4, p5, tForce]
     return () => timers.current.forEach(clearTimeout)
   }, [])
 
@@ -38,12 +43,12 @@ export default function SplashScreen({ onComplete, isReady }) {
 
   // Appeler onComplete quand les 2 conditions sont remplies
   useEffect(() => {
-    if (minTimeElapsed && isReady) {
+    if (minTimeElapsed && (isReady || forceReady)) {
       setFadeOut(true)
       const t = setTimeout(() => onComplete(), 500)
       return () => clearTimeout(t)
     }
-  }, [minTimeElapsed, isReady, onComplete])
+  }, [minTimeElapsed, isReady, forceReady, onComplete])
 
   return (
     <div style={{

@@ -5,7 +5,7 @@ import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
   getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories,
   getGeneratedFacts, getGeneratedFactsByCategory,
-  initFacts,
+  initFacts, resetFacts,
 } from './data/factsService'
 import DevPanel from './components/DevPanel'
 import { DEV_PANEL_ENABLED } from './config/devConfig'
@@ -189,6 +189,7 @@ export default function App() {
 
   // Facts loading state
   const [factsReady, setFactsReady] = useState(false)
+  const [factsError, setFactsError] = useState(null)
   // Dev panel
   const [showDevPanel, setShowDevPanel] = useState(false)
 
@@ -900,9 +901,14 @@ export default function App() {
 
   // Load facts on mount (Supabase if configured, local fallback otherwise)
   useEffect(() => {
-    initFacts().then(() => {
-      setDailyFact(getDailyFact())
-      setFactsReady(true)
+    initFacts().then((result) => {
+      if (result?.success) {
+        setDailyFact(getDailyFact())
+        setFactsReady(true)
+        setFactsError(null)
+      } else {
+        setFactsError(result?.error || 'Erreur inconnue')
+      }
     })
   }, [])
 
@@ -969,6 +975,47 @@ export default function App() {
         onComplete={handleSplashComplete}
         isReady={factsReady}
       />
+    )
+  }
+
+  if (factsError && !factsReady) {
+    return (
+      <div style={{
+        height: '100dvh', width: '100%', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 16,
+        background: '#1E3A8A', fontFamily: 'Nunito, sans-serif', padding: 24,
+      }}>
+        <span style={{ fontSize: 48 }}>📡</span>
+        <h2 style={{ color: 'white', fontWeight: 900, fontSize: 20, textAlign: 'center', margin: 0 }}>
+          Connexion impossible
+        </h2>
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, textAlign: 'center', margin: 0, lineHeight: 1.5 }}>
+          Impossible de charger les facts.<br />Vérifie ta connexion internet.
+        </p>
+        <button
+          onClick={() => {
+            setFactsError(null)
+            resetFacts()
+            initFacts().then((result) => {
+              if (result?.success) {
+                setDailyFact(getDailyFact())
+                setFactsReady(true)
+                setFactsError(null)
+              } else {
+                setFactsError(result?.error || 'Erreur inconnue')
+              }
+            })
+          }}
+          style={{
+            background: '#FF6B1A', color: 'white', border: 'none',
+            borderRadius: 14, padding: '14px 32px', fontWeight: 900, fontSize: 16,
+            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+            boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+          }}
+        >
+          Réessayer
+        </button>
+      </div>
     )
   }
 

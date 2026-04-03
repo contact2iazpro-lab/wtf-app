@@ -122,15 +122,25 @@ function emptyFact() {
 }
 
 // ── Pending fact card ──────────────────────────────────────────────────────
+function isFactIncomplete(f) {
+  return !(f.funny_wrong_1 && f.close_wrong_1 && f.plausible_wrong_1)
+}
+
 function PendingFactCard({ fact, onAccept, onReject, accepting }) {
   const [expanded, setExpanded] = useState(false)
+  const incomplete = isFactIncomplete(fact)
   return (
-    <div className="bg-slate-900 rounded-xl border border-amber-700/30 p-4">
+    <div className="bg-slate-900 rounded-xl p-4" style={{ border: incomplete ? '2px solid #F59E0B' : '1px solid rgba(217,119,6,0.3)' }}>
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <DifficultyBadge value={fact.difficulty} />
             <span className="text-xs text-slate-500">{getCategoryEmoji(fact.category)} {getCategoryLabel(fact.category)}</span>
+            {incomplete && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }}>
+                ⚠ Incomplet
+              </span>
+            )}
           </div>
           <p className="text-sm text-white font-medium leading-snug">{fact.question}</p>
           <p className="text-xs text-slate-500 mt-1">
@@ -500,8 +510,11 @@ export default function FactsListPage({ toast }) {
 
   // ── Validation queue ───────────────────────────────────────────────────
   async function acceptPendingFact(index) {
-    setAcceptingIndex(index)
     const f = pendingFacts[index]
+    if (!isFactComplete(f)) {
+      if (!confirm('⚠ Ce fact est incomplet (fausses réponses manquantes). Insérer quand même ?')) return
+    }
+    setAcceptingIndex(index)
     try {
       const { data: maxData } = await supabase
         .from('facts').select('id').order('id', { ascending: false }).limit(1)
@@ -559,12 +572,26 @@ export default function FactsListPage({ toast }) {
     toast?.('Fact refusé — supprimé de la file d\'attente')
   }
 
+  function isFactComplete(f) {
+    return !!(f.question && f.short_answer && f.funny_wrong_1 && f.close_wrong_1 && f.plausible_wrong_1)
+  }
+
   async function acceptAllPendingFacts() {
-    if (!confirm(`Accepter les ${pendingFacts.length} facts en attente ?`)) return
+    const complete = pendingFacts.filter(isFactComplete)
+    const incomplete = pendingFacts.filter(f => !isFactComplete(f))
+    if (complete.length === 0) {
+      toast?.('Aucun fact complet à accepter — enrichissez les facts incomplets', 'warn')
+      return
+    }
+    const msg = incomplete.length > 0
+      ? `Accepter ${complete.length} facts complets ? (${incomplete.length} incomplets seront ignorés)`
+      : `Accepter les ${complete.length} facts en attente ?`
+    if (!confirm(msg)) return
+
     let accepted = 0
-    for (let i = 0; i < pendingFacts.length; i++) {
+    for (let i = 0; i < complete.length; i++) {
       setAcceptingIndex(i)
-      const f = pendingFacts[i]
+      const f = complete[i]
       try {
         const { data: maxData } = await supabase
           .from('facts').select('id').order('id', { ascending: false }).limit(1)
@@ -573,20 +600,30 @@ export default function FactsListPage({ toast }) {
         const { error } = await supabase.from('facts').insert({
           id: newId, category: f.category, question: f.question,
           hint1: f.hint1 || null, hint2: f.hint2 || null,
+          hint3: f.hint3 || null, hint4: f.hint4 || null,
           short_answer: f.short_answer, answer: f.short_answer || '',
           explanation: f.explanation || null, source_url: f.source_url || null,
           options: options.length > 0 ? options : null,
           correct_index: f.correct_index ?? 0, image_url: f.image_url || null,
-          is_vip: false, status: 'draft', is_published: false,
+          is_vip: false, type: f.type || 'generated',
+          status: 'draft', is_published: false,
           pack_id: f.pack_id || 'free', vip_usage: 'available',
-          difficulty: f.difficulty || 'Normal', updated_at: new Date().toISOString(),
+          difficulty: f.difficulty || 'Normal',
+          funny_wrong_1: f.funny_wrong_1 || null,
+          funny_wrong_2: f.funny_wrong_2 || null,
+          close_wrong_1: f.close_wrong_1 || null,
+          close_wrong_2: f.close_wrong_2 || null,
+          plausible_wrong_1: f.plausible_wrong_1 || null,
+          plausible_wrong_2: f.plausible_wrong_2 || null,
+          plausible_wrong_3: f.plausible_wrong_3 || null,
+          updated_at: new Date().toISOString(),
         })
         if (!error) accepted++
       } catch (err) { console.error(err) }
     }
     setAcceptingIndex(null)
-    setPendingFacts([])
-    toast?.(`✓ ${accepted} facts acceptés`)
+    setPendingFacts(incomplete) // Keep incomplete facts in queue
+    toast?.(`✓ ${accepted} facts acceptés${incomplete.length > 0 ? ` — ${incomplete.length} incomplets restants` : ''}`)
     await loadFacts()
   }
 

@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
+import SettingsModal from '../components/SettingsModal'
 
 function hexToRgb(hex) {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -12,7 +13,18 @@ function hexToRgb(hex) {
 
 export default function ProfilPage() {
   const navigate = useNavigate()
-  const { isConnected, user, signInWithGoogle } = useAuth()
+  const { isConnected, user, signInWithGoogle, signOut } = useAuth()
+  const [showConnectedToast, setShowConnectedToast] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+
+  // Show toast when user just connected
+  useEffect(() => {
+    if (isConnected && user) {
+      setShowConnectedToast(true)
+      const timer = setTimeout(() => setShowConnectedToast(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [isConnected, user])
 
   const playerData = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('wtf_data') || '{}') } catch { return {} }
@@ -47,6 +59,20 @@ export default function ProfilPage() {
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: 72 }}>
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {/* Toast connexion réussie */}
+      {showConnectedToast && (
+        <div style={{
+          position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 1000, background: '#22C55E', color: 'white',
+          borderRadius: 12, padding: '10px 20px',
+          fontWeight: 700, fontSize: 14, textAlign: 'center', whiteSpace: 'nowrap',
+          boxShadow: '0 4px 20px rgba(34,197,94,0.4)',
+          animation: 'fadeInDown 0.35s ease',
+        }}>
+          Connecté ! {user?.user_metadata?.name || user?.email}
+        </div>
+      )}
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3">
@@ -57,7 +83,8 @@ export default function ProfilPage() {
           >←</button>
           <h1 className="flex-1 text-lg font-black" style={{ color: '#1a1a2e' }}>Mon Profil</h1>
           <button
-            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            onClick={() => setShowSettings(true)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
             style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}
           >
             <img src="/assets/ui/icon-settings.png" style={{ width: 20, height: 20 }} alt="" />
@@ -75,9 +102,24 @@ export default function ProfilPage() {
             style={{ width: 72, height: 72, border: '3px solid #FF6B1A', objectFit: 'cover' }}
           />
           <span className="font-black text-base" style={{ color: '#1a1a2e' }}>{pseudo}</span>
-          {!isConnected && (
+          {isConnected ? (
+            <>
+              <span className="text-xs font-semibold mt-1" style={{ color: '#6B7280' }}>{user?.email}</span>
+              <div className="flex items-center gap-1.5 mt-1 px-3 py-1 rounded-full" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                <span style={{ fontSize: 10 }}>✅</span>
+                <span className="text-xs font-bold" style={{ color: '#22C55E' }}>Progression sauvegardée</span>
+              </div>
+              <button
+                onClick={signOut}
+                className="mt-2 px-4 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444' }}
+              >
+                Se déconnecter
+              </button>
+            </>
+          ) : (
             <button
-              onClick={signInWithGoogle}
+              onClick={() => signInWithGoogle()}
               className="mt-3 px-5 py-2.5 rounded-2xl font-black text-sm active:scale-95 transition-all"
               style={{ background: '#FF6B1A', color: 'white', border: 'none' }}
             >

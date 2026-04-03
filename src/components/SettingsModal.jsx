@@ -165,24 +165,16 @@ export default function SettingsModal({ onClose }) {
   const [soundOn, setSoundOn] = useState(audio.sfxEnabled)
   const [musicOn, setMusicOn] = useState(audio.musicEnabled)
   const [notifOn, setNotifOn] = useState(() => localStorage.getItem('wtf_notifications') !== 'false')
-  const [showSaveModal, setShowSaveModal] = useState(false)
   const [showRulesModal, setShowRulesModal] = useState(false)
-
-  const { user, isConnected, signOut } = useAuth()
-  const connectedEmail = user?.email ?? ''
+  const [vibrOn, setVibrOn] = useState(() => localStorage.getItem('wtf_vibration') !== 'false')
 
   const toggleSound = () => { const n = !soundOn; setSoundOn(n); audio.setSfxEnabled(n); if (n) audio.play('click') }
   const toggleMusic = () => { const n = !musicOn; setMusicOn(n); audio.setMusicEnabled(n) }
   const toggleNotif = () => { const n = !notifOn; setNotifOn(n); localStorage.setItem('wtf_notifications', String(n)) }
-
-  const handleSignOut = async () => {
-    await signOut()
-    onClose()
-  }
+  const toggleVibr = () => { const n = !vibrOn; setVibrOn(n); localStorage.setItem('wtf_vibration', String(n)); if (n && navigator.vibrate) navigator.vibrate(50) }
 
   return (
     <>
-      {showSaveModal && <SaveProgressModal onClose={() => setShowSaveModal(false)} />}
       {showRulesModal && <HowToPlayModal onClose={() => setShowRulesModal(false)} />}
 
       <div
@@ -218,6 +210,7 @@ export default function SettingsModal({ onClose }) {
               <SettingRow icon="🔊" label="Son" right={<TogglePill on={soundOn} />} onClick={toggleSound} style={{ background: soundOn ? 'rgba(34,197,94,0.06)' : undefined, borderColor: soundOn ? 'rgba(34,197,94,0.3)' : undefined }} />
               <SettingRow icon="🎵" label="Musique" right={<TogglePill on={musicOn} />} onClick={toggleMusic} style={{ background: musicOn ? 'rgba(34,197,94,0.06)' : undefined, borderColor: musicOn ? 'rgba(34,197,94,0.3)' : undefined }} />
               <SettingRow icon="🔔" label="Notifications" right={<TogglePill on={notifOn} />} onClick={toggleNotif} style={{ background: notifOn ? 'rgba(34,197,94,0.06)' : undefined, borderColor: notifOn ? 'rgba(34,197,94,0.3)' : undefined }} />
+              <SettingRow icon="📳" label="Vibreur" right={<TogglePill on={vibrOn} />} onClick={toggleVibr} style={{ background: vibrOn ? 'rgba(34,197,94,0.06)' : undefined, borderColor: vibrOn ? 'rgba(34,197,94,0.3)' : undefined }} />
 
               {/* ── Langue ── */}
               <p className="text-xs font-black uppercase tracking-wider mt-3" style={{ color: '#9CA3AF' }}>Langue</p>
@@ -229,37 +222,6 @@ export default function SettingsModal({ onClose }) {
                 </span>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#E5E7EB', color: '#9CA3AF' }}>Unique</span>
               </div>
-
-              {/* ── Compte ── */}
-              <p className="text-xs font-black uppercase tracking-wider mt-3" style={{ color: '#9CA3AF' }}>Compte</p>
-
-              {isConnected ? (
-                <>
-                  <div className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                    <span className="text-lg">✅</span>
-                    <div className="flex-1 min-w-0">
-                      <span className="font-bold text-sm block" style={{ color: '#1a1a2e' }}>Connecté</span>
-                      <span className="text-xs truncate block" style={{ color: '#6B7280' }}>{connectedEmail}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl transition-all active:scale-95"
-                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)' }}
-                  >
-                    <span className="text-lg">🚪</span>
-                    <span className="font-bold text-sm" style={{ color: '#EF4444' }}>Se déconnecter</span>
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setShowSaveModal(true)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl transition-all active:scale-95"
-                  style={{ background: '#FF6B1A', border: 'none', color: 'white' }}
-                >
-                  <span className="font-black text-sm">Se connecter avec Google</span>
-                </button>
-              )}
 
               {/* ── Divers ── */}
               <p className="text-xs font-black uppercase tracking-wider mt-3" style={{ color: '#9CA3AF' }}>Divers</p>

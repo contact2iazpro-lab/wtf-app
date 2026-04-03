@@ -863,6 +863,9 @@ export default function App() {
       const animauxIds = getValidFacts().filter(f => f.category === 'animaux').map(f => f.id)
       applyStorage({ unlockedFacts: new Set([...storage.unlockedFacts, ...animauxIds]) })
     },
+    setTickets: (n) => applyStorage({ tickets: n }),
+    setHints: (n) => localStorage.setItem('wtf_hints_available', String(n)),
+    cheat999: () => { applyStorage({ wtfCoins: 999, tickets: 999 }); localStorage.setItem('wtf_hints_available', '999') },
     simulatePurchase: () => applyStorage({ wtfCoins: storage.wtfCoins + 100 }),
     unlockRandomFacts: (n = 10) => {
       const locked = getValidFacts().filter(f => !storage.unlockedFacts.has(f.id))

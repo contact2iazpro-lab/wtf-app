@@ -110,8 +110,8 @@ export default function HomeScreen({
   const countdown = useCountdownToMidnight()
   const progress24h = get24hProgress()
   const scale = useScale()
-  const textColor = '#FF6B1A'
-  const textShadow = 'none'
+  const textColor = '#ffffff'
+  const textShadow = '0 1px 4px rgba(0,0,0,0.3)'
 
   // ── Toast premier f*ct découvert ──────────────────────────────────────────
   const [tutorialToast, setTutorialToast] = useState(null)
@@ -162,8 +162,8 @@ export default function HomeScreen({
         src={src}
         alt={label}
         style={{
-          width: S(54), height: S(54),
-          borderRadius: S(14),
+          width: 52, height: 52,
+          borderRadius: '50%',
           overflow: 'hidden',
           objectFit: 'cover',
           flexShrink: 0,
@@ -171,12 +171,15 @@ export default function HomeScreen({
         }}
       />
       <span style={{
-        fontSize: S(9), fontWeight: 800, color: '#1a1a2e',
+        fontFamily: "'Fredoka One', cursive",
+        fontSize: 9, fontWeight: 400, color: 'white',
         textAlign: 'center', lineHeight: 1.2,
-        maxWidth: S(70), wordWrap: 'break-word',
+        letterSpacing: '0.5px',
+        maxWidth: 70, wordWrap: 'break-word',
         whiteSpace: 'normal',
+        marginTop: 3,
         opacity: disabled ? 0.5 : 1,
-        textShadow: 'none',
+        textShadow: '0 1px 4px rgba(0,0,0,0.3)',
       }}>{label}</span>
       {disabled && (
         <span style={{
@@ -190,12 +193,11 @@ export default function HomeScreen({
   return (
     <div
       style={{
-        position: 'relative',
-        height: '100%', width: '100%', overflow: 'hidden', position: 'relative',
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'space-between',
+        height: '100vh', width: '100%',
+        overflow: 'hidden',
+        position: 'relative',
         boxSizing: 'border-box',
-        paddingTop: S(8),
         fontFamily: 'Nunito, sans-serif',
         '--scale': scale,
         background: HOME_BG_COLOR,
@@ -236,11 +238,12 @@ export default function HomeScreen({
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* ═══ ZONE 1 — HEADER ═══════════════════════════════════════════════ */}
+      {/* ═══ ZONE 1 — HEADER (52px fixe) ════════════════════════════════════ */}
       <div style={{
+        height: 52, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: `${S(6)} ${S(10)}`,
-        flexShrink: 0, position: 'relative', zIndex: 2,
+        padding: '0 14px',
+        position: 'relative', zIndex: 2,
       }}>
         {/* Avatar */}
         <button
@@ -312,32 +315,35 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ═══ ZONE 2 — BADGE PROGRESSION ════════════════════════════════════ */}
+      {/* ═══ ZONE 2 — BADGE PROGRESSION (32px fixe) ════════════════════════ */}
       <div style={{
-        margin: `0 ${S(10)}`,
+        height: 32, flexShrink: 0,
+        margin: '0 14px',
         background: 'rgba(255,255,255,0.2)',
-        borderRadius: S(8),
-        padding: `${S(8)} ${S(12)}`,
-        flexShrink: 0, position: 'relative', zIndex: 2,
+        borderRadius: 8,
+        padding: '0 12px',
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'relative', zIndex: 2,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: S(5) }}>
-          <span style={{ fontSize: S(10), fontWeight: 800, color: textColor, textShadow }}>Prochain badge</span>
-          <span style={{ fontSize: S(10), fontWeight: 700, color: textColor, opacity: 0.7, textShadow }}>{countdown}</span>
-        </div>
-        <div style={{ height: S(6), background: 'rgba(255,255,255,0.2)', borderRadius: S(2), overflow: 'hidden' }}>
+        <span style={{ fontSize: 10, fontWeight: 800, color: textColor, textShadow, flexShrink: 0 }}>Prochain badge</span>
+        <div style={{ flex: 1, background: 'rgba(255,255,255,0.2)', borderRadius: 4, height: 5, margin: '0 10px', overflow: 'hidden' }}>
           <div style={{
             height: '100%', width: `${progress24h}%`,
-            background: 'white', borderRadius: S(2),
+            background: 'white', borderRadius: 4,
             transition: 'width 0.5s ease',
           }} />
         </div>
+        <span style={{ fontSize: 10, fontWeight: 700, color: textColor, opacity: 0.7, textShadow, flexShrink: 0 }}>{countdown}</span>
       </div>
 
-      {/* ═══ ZONE 3 — COFFRES QUOTIDIENS ═══════════════════════════════════ */}
+      {/* ═══ ZONE 3 — COFFRES QUOTIDIENS (72px fixe) ═══════════════════════ */}
       <div style={{
-        display: 'flex', gap: S(6), padding: `${S(6)} ${S(10)}`,
-        flexShrink: 0, position: 'relative', zIndex: 2,
+        height: 72, flexShrink: 0,
+        display: 'flex', alignItems: 'center',
+        gap: 6, padding: '0 14px',
         justifyContent: 'center',
+        position: 'relative', zIndex: 2,
       }}>
         {COFFRE_DAYS.map((day, i) => {
           const status = getStatus(i)
@@ -373,7 +379,7 @@ export default function HomeScreen({
                 background: isAvail ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
                 border: `1px solid ${isAvail ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.1)'}`,
                 cursor: isAvail ? 'pointer' : 'default',
-                opacity: isColl ? 0.35 : status === 'locked' ? 0.5 : 1,
+                opacity: isColl ? 0.35 : (status === 'locked' || status === 'locked-trophy') ? 0.5 : 1,
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'opacity 0.2s, background 0.2s',
               }}
@@ -394,194 +400,174 @@ export default function HomeScreen({
         })}
       </div>
 
-      {/* ═══ ZONE 4 — CORPS PRINCIPAL ═══════════════════════════════════════ */}
+      {/* ═══ ZONE 3B — LOGO VOF (fixe, juste sous les coffres) ════════════ */}
       <div style={{
-        flexShrink: 0,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center',
-        position: 'relative', zIndex: 1,
+        flexShrink: 0, display: 'flex', justifyContent: 'center',
+        padding: '4px 0 0',
       }}>
+        <img
+          src="/assets/ui/vof-logo.png?v=4"
+          alt="Vrai ou fou ?"
+          style={{
+            width: 190, maxHeight: 55, height: 'auto',
+            objectFit: 'contain', display: 'block',
+          }}
+        />
+      </div>
 
-        {/* 4a. "VRAI OU FOU ?" — pleine largeur */}
-        <div style={{
-          width: '100%',
-          fontSize: S(26), fontWeight: 900, color: textColor,
-          textAlign: 'center',
-          textShadow,
-          letterSpacing: 0.5,
-          marginBottom: S(12),
-          flexShrink: 0,
-        }}>
-          VRAI OU FOU ?
-        </div>
-
-        {/* 4b. Zone 3 colonnes — gauche: modes | centre: étoile+tagline | droite: modes */}
-        <div style={{
-          display: 'flex', flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          width: '100%',
-          padding: `0 ${S(6)}`,
-          flexShrink: 0,
-        }}>
-          {/* Colonne gauche — 27% */}
-          <div style={{
-            width: '27%', flexShrink: 0,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', gap: S(8),
-          }}>
-            <ModeIcon src="/assets/modes/quete.png" label="Quête WTF!" onClick={() => nav('difficulty')} />
-            <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => nav('trophees')} />
-            <ModeIcon src="/assets/modes/wtf-semaine.png" label="WTF Semaine" onClick={() => nav('wtfDuJour')} />
-          </div>
-
-          {/* Colonne centre — étoile + halo + tagline */}
-          <div style={{
-            flex: 1.5,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center',
-            position: 'relative',
-          }}>
-            {/* Starburst light rays — tailles aléatoires */}
-            {(() => {
-              // Seed stable pour éviter le re-render flicker
-              const rays = [
-                { angle: 0, len: 140, w: 3, op: 0.5 },
-                { angle: 15, len: 180, w: 2, op: 0.35 },
-                { angle: 28, len: 120, w: 4, op: 0.45 },
-                { angle: 45, len: 170, w: 2.5, op: 0.4 },
-                { angle: 58, len: 110, w: 3, op: 0.3 },
-                { angle: 72, len: 190, w: 2, op: 0.5 },
-                { angle: 88, len: 130, w: 3.5, op: 0.35 },
-                { angle: 100, len: 160, w: 2, op: 0.45 },
-                { angle: 115, len: 200, w: 3, op: 0.4 },
-                { angle: 130, len: 100, w: 2.5, op: 0.3 },
-                { angle: 142, len: 175, w: 2, op: 0.5 },
-                { angle: 158, len: 125, w: 4, op: 0.35 },
-                { angle: 170, len: 185, w: 2, op: 0.45 },
-                { angle: 185, len: 145, w: 3, op: 0.4 },
-                { angle: 198, len: 165, w: 2.5, op: 0.5 },
-                { angle: 212, len: 115, w: 3, op: 0.35 },
-                { angle: 225, len: 195, w: 2, op: 0.45 },
-                { angle: 240, len: 135, w: 3.5, op: 0.3 },
-                { angle: 252, len: 180, w: 2, op: 0.5 },
-                { angle: 268, len: 105, w: 3, op: 0.4 },
-                { angle: 280, len: 170, w: 2.5, op: 0.35 },
-                { angle: 295, len: 150, w: 2, op: 0.45 },
-                { angle: 308, len: 190, w: 3, op: 0.5 },
-                { angle: 322, len: 120, w: 4, op: 0.3 },
-                { angle: 338, len: 160, w: 2, op: 0.4 },
-                { angle: 350, len: 185, w: 2.5, op: 0.45 },
-              ]
-              return (
-                <div style={{
+      {/* ═══ ZONE 4 — CORPS PRINCIPAL (flex: 1) ════════════════════════════ */}
+      <div style={{
+        flex: 1, minHeight: 0,
+        display: 'flex', flexDirection: 'row',
+        padding: '8px 10px',
+        position: 'relative',
+      }}>
+        {/* Starburst light rays — tailles aléatoires avec halo */}
+        {(() => {
+          const rays = [
+            { angle: 0, len: 140, w: 3, op: 0.5 },
+            { angle: 15, len: 180, w: 2, op: 0.35 },
+            { angle: 28, len: 120, w: 4, op: 0.45 },
+            { angle: 45, len: 170, w: 2.5, op: 0.4 },
+            { angle: 58, len: 110, w: 3, op: 0.3 },
+            { angle: 72, len: 190, w: 2, op: 0.5 },
+            { angle: 88, len: 130, w: 3.5, op: 0.35 },
+            { angle: 100, len: 160, w: 2, op: 0.45 },
+            { angle: 115, len: 200, w: 3, op: 0.4 },
+            { angle: 130, len: 100, w: 2.5, op: 0.3 },
+            { angle: 142, len: 175, w: 2, op: 0.5 },
+            { angle: 158, len: 125, w: 4, op: 0.35 },
+            { angle: 170, len: 185, w: 2, op: 0.45 },
+            { angle: 185, len: 145, w: 3, op: 0.4 },
+            { angle: 198, len: 165, w: 2.5, op: 0.5 },
+            { angle: 212, len: 115, w: 3, op: 0.35 },
+            { angle: 225, len: 195, w: 2, op: 0.45 },
+            { angle: 240, len: 135, w: 3.5, op: 0.3 },
+            { angle: 252, len: 180, w: 2, op: 0.5 },
+            { angle: 268, len: 105, w: 3, op: 0.4 },
+            { angle: 280, len: 170, w: 2.5, op: 0.35 },
+            { angle: 295, len: 150, w: 2, op: 0.45 },
+            { angle: 308, len: 190, w: 3, op: 0.5 },
+            { angle: 322, len: 120, w: 4, op: 0.3 },
+            { angle: 338, len: 160, w: 2, op: 0.4 },
+            { angle: 350, len: 185, w: 2.5, op: 0.45 },
+          ]
+          return (
+            <div style={{
+              position: 'absolute',
+              width: 400, height: 400,
+              top: '45%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+              zIndex: 0,
+              animation: 'starburst-rotate 40s linear infinite',
+            }}>
+              {rays.map((r, i) => (
+                <div key={i} style={{
                   position: 'absolute',
-                  width: S(400), height: S(400),
                   top: '50%', left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  pointerEvents: 'none',
-                  zIndex: 0,
-                  animation: 'starburst-rotate 40s linear infinite',
-                }}>
-                  {rays.map((r, i) => (
-                    <div key={i} style={{
-                      position: 'absolute',
-                      top: '50%', left: '50%',
-                      width: `calc(${r.len}px * var(--scale))`,
-                      height: `calc(${r.w * 4}px * var(--scale))`,
-                      transformOrigin: '0 50%',
-                      transform: `rotate(${r.angle}deg)`,
-                      background: `linear-gradient(90deg, rgba(255,255,255,${r.op}) 0%, rgba(79,195,247,${r.op * 0.6}) 40%, transparent 100%)`,
-                      borderRadius: `calc(${r.w * 4}px * var(--scale))`,
-                      filter: `blur(calc(${r.w * 1.5}px * var(--scale)))`,
-                    }} />
-                  ))}
-                </div>
-              )
-            })()}
-            <img
-              src="/logo-wtf.png"
-              alt="WTF!"
-              style={{
-                display: 'block',
-                width: S(160), height: S(160), objectFit: 'contain',
-                margin: '0 auto',
-                filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
-                position: 'relative',
-                zIndex: 1,
-              }}
-            />
-          </div>
+                  width: r.len,
+                  height: r.w * 4,
+                  transformOrigin: '0 50%',
+                  transform: `rotate(${r.angle}deg)`,
+                  background: `linear-gradient(90deg, rgba(255,255,255,${r.op}) 0%, rgba(79,195,247,${r.op * 0.6}) 40%, transparent 100%)`,
+                  borderRadius: r.w * 4,
+                  filter: `blur(${r.w * 1.5}px)`,
+                }} />
+              ))}
+            </div>
+          )
+        })()}
 
-          {/* Colonne droite — 27% */}
-          <div style={{
-            width: '27%', flexShrink: 0,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', gap: S(8),
-          }}>
-            <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
-            <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('amis')} />
-            <ModeIcon src="/assets/modes/blitz.png" label="Flash" onClick={() => nav('blitz')} />
-          </div>
+        {/* Colonne gauche — 70px */}
+        <div style={{
+          width: 70, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-evenly', alignItems: 'center',
+          height: '100%', zIndex: 1,
+        }}>
+          <ModeIcon src="/assets/modes/quete.png" label="Quête WTF!" onClick={() => nav('difficulty')} />
+          <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => nav('trophees')} />
+          <ModeIcon src="/assets/modes/wtf-semaine.png" label="WTF Semaine" onClick={() => nav('wtfDuJour')} />
         </div>
 
+        {/* Colonne centre — flex: 1 */}
+        <div style={{
+          flex: 1, minWidth: 0,
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'center', alignItems: 'center',
+          height: '100%', position: 'relative', zIndex: 1,
+        }}>
+          {/* 1. Logo WTF — aligné avec Série/Multi */}
+          <img
+            src="/assets/ui/wtf-logo.png?v=4"
+            alt="WTF!"
+            style={{
+              width: 130, maxHeight: 110, height: 'auto',
+              objectFit: 'contain', display: 'block',
+              filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
+              position: 'relative', zIndex: 1,
+            }}
+          />
+
+          {/* 2. Tagline — bas aligné avec Flash/WTF Semaine */}
+          <img
+            src="/assets/ui/100logo.png?v=5"
+            alt="Des f*cts 100% vrais, des réactions 100% fun !"
+            style={{
+              width: 180, maxHeight: 60, height: 'auto',
+              objectFit: 'contain', display: 'block',
+              position: 'absolute', bottom: 0, left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1,
+            }}
+          />
+        </div>
+
+        {/* Colonne droite — 70px */}
+        <div style={{
+          width: 70, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-evenly', alignItems: 'center',
+          height: '100%', zIndex: 1,
+        }}>
+          <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
+          <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('amis')} />
+          <ModeIcon src="/assets/modes/blitz.png" label="Flash" onClick={() => nav('blitz')} />
+        </div>
       </div>
 
-      {/* Tagline */}
+      {/* ═══ ZONE 4B — BOUTON FLASH (56px fixe) ═══════════════════════════ */}
       <div style={{
-        textAlign: 'center', padding: `${S(8)} ${S(16)}`,
-        flexShrink: 0,
-      }}>
-        <div style={{ fontSize: S(13), fontWeight: 700, color: textColor, textShadow, lineHeight: 1.5 }}>
-          Des f*cts 100% vrais,
-        </div>
-        <div style={{ fontSize: S(13), fontWeight: 700, color: textColor, textShadow, lineHeight: 1.5 }}>
-          des réactions 100% fun !
-        </div>
-      </div>
-
-      {/* ═══ BOUTON FLASH ══════════════════════════════════════════════════ */}
-      <div style={{
-        display: 'flex', justifyContent: 'center',
-        padding: `0 ${S(16)} ${S(8)}`,
-        flexShrink: 0, position: 'relative', zIndex: 10,
+        height: 56, flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '0 60px',
+        position: 'relative', zIndex: 10,
       }}>
         <button
           onClick={() => nav('categoryFlash')}
           style={{
-            width: '65%',
-            padding: `${S(14)} ${S(20)}`,
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
-            color: '#FF6B1A',
-            fontWeight: 900, fontSize: S(12),
-            border: 'none',
-            borderRadius: S(14),
-            cursor: 'pointer',
-            letterSpacing: '0.04em',
-            fontFamily: 'Nunito, sans-serif',
+            borderRadius: 14, border: 'none',
+            padding: '12px 24px', width: '100%',
+            textAlign: 'center', cursor: 'pointer',
             WebkitTapHighlightColor: 'transparent',
-            transition: 'transform 0.1s, box-shadow 0.1s',
             boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
+            transition: 'transform 0.1s, box-shadow 0.1s',
             position: 'relative',
           }}
-          onTouchStart={e => {
-            e.currentTarget.style.transform = 'translateY(4px)'
-            e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)'
-          }}
-          onTouchEnd={e => {
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)'
-          }}
-          onMouseDown={e => {
-            e.currentTarget.style.transform = 'translateY(4px)'
-            e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)'
-          }}
-          onMouseUp={e => {
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)'
-          }}
+          onTouchStart={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)' }}
+          onTouchEnd={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)' }}
+          onMouseDown={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)' }}
+          onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)' }}
         >
-          JOUER EN MODE FLASH
+          <span style={{
+            fontFamily: "'Fredoka One', cursive",
+            fontWeight: 400, fontSize: 14, color: '#FF6B1A',
+            letterSpacing: '0.04em',
+          }}>
+            JOUER UNE PARTIE RAPIDE
+          </span>
         </button>
       </div>
 

@@ -54,9 +54,9 @@ const DIFFICULTY_LEVELS = [
     subtitle: 'Pour les Cracks',
     icon: '/assets/ui/level-wtf.png',
     tag: 'ULTIME',
-    cardGradient: 'linear-gradient(135deg, #B91C1C, #8B0000)',
-    selectedGradient: 'linear-gradient(135deg, #DC2626, #A31515)',
-    ctaColor: '#8B0000',
+    cardGradient: 'linear-gradient(135deg, #22C55E, #15803D)',
+    selectedGradient: 'linear-gradient(135deg, #4ADE80, #22C55E)',
+    ctaColor: '#15803D',
     rules: [
       { icon: '/assets/ui/icon-qcm.png',  text: '6 choix de réponse' },
       { icon: '/assets/ui/icon-hint.png', text: '1 indice possible' },

@@ -331,7 +331,7 @@ export default function App() {
   // ─── HomeScreen navigation handler ──────────────────────────────────────────
   const handleHomeNavigate = useCallback((target) => {
     switch (target) {
-      case 'difficulty':    handlePlay(); break
+      case 'difficulty':    setGameMode('solo'); setSessionType('parcours'); setScreen(SCREENS.DIFFICULTY); break
       case 'wtfDuJour':     handleWTFDuJour(); break
       case 'categoryFlash': handleFlashSolo(); break
       case 'collection':    navigate('/collection'); break

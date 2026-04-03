@@ -6,9 +6,19 @@ import BoutiquePage from './pages/BoutiquePage'
 import RecompensesPage from './pages/RecompensesPage'
 import SocialPage from './pages/SocialPage'
 import BottomNav from './components/BottomNav'
+import { useScale } from './hooks/useScale'
 
 // Pages that show the bottom navigation
 const PAGES_WITH_NAV = ['/collection', '/profil', '/boutique', '/recompenses', '/social']
+
+function PageWrapper({ children }) {
+  const scale = useScale()
+  return (
+    <div className="w-full h-full max-w-md mx-auto relative overflow-hidden" style={{ '--scale': scale, height: '100dvh' }}>
+      {children}
+    </div>
+  )
+}
 
 export default function AppRouter() {
   const location = useLocation()
@@ -18,11 +28,11 @@ export default function AppRouter() {
     <>
       <Routes>
         <Route path="/*" element={<App />} />
-        <Route path="/collection" element={<CollectionPage />} />
-        <Route path="/profil" element={<ProfilPage />} />
-        <Route path="/boutique" element={<BoutiquePage />} />
-        <Route path="/recompenses" element={<RecompensesPage />} />
-        <Route path="/social" element={<SocialPage />} />
+        <Route path="/collection" element={<PageWrapper><CollectionPage /></PageWrapper>} />
+        <Route path="/profil" element={<PageWrapper><ProfilPage /></PageWrapper>} />
+        <Route path="/boutique" element={<PageWrapper><BoutiquePage /></PageWrapper>} />
+        <Route path="/recompenses" element={<PageWrapper><RecompensesPage /></PageWrapper>} />
+        <Route path="/social" element={<PageWrapper><SocialPage /></PageWrapper>} />
       </Routes>
       {showNav && <BottomNav />}
     </>

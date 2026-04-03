@@ -1071,28 +1071,40 @@ export default function FactsListPage({ toast }) {
           )}
         </div>
 
-        <select
-          value={filterVip}
-          onChange={e => setFilterVip(e.target.value)}
-          className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none"
-        >
-          <option value="all">Mode : Tous</option>
-          <option value="vip">⚔️ Quête WTF! seulement</option>
-          <option value="non-vip">⚡ Flash / Marathon</option>
-        </select>
-
-        {/* Status filter buttons */}
+        {/* VIP / Normal filter */}
         <div className="flex rounded-xl overflow-hidden border border-slate-700">
           {[
-            { value: 'all', label: 'Tous' },
-            ...STATUSES.map(s => ({ value: s.value, label: `${s.icon} ${s.label}s` })),
+            { value: 'all',    label: 'Tous' },
+            { value: 'vip',    label: '⭐ VIP', color: '#F59E0B' },
+            { value: 'non-vip', label: '⚡ Normal', color: '#7C3AED' },
+          ].map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setFilterVip(opt.value)}
+              className="px-3 py-2 text-xs font-bold transition-all"
+              style={{
+                background: filterVip === opt.value ? (opt.color || '#FF6B1A') : 'transparent',
+                color: filterVip === opt.value ? 'white' : '#94A3B8',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Status filter */}
+        <div className="flex rounded-xl overflow-hidden border border-slate-700">
+          {[
+            { value: 'all', label: 'Tous', color: '#FF6B1A' },
+            ...STATUSES.map(s => ({ value: s.value, label: `${s.icon}`, color: s.color, title: s.label })),
           ].map(opt => (
             <button
               key={opt.value}
               onClick={() => setFilterStatus(opt.value)}
               className="px-3 py-2 text-xs font-bold transition-all"
+              title={opt.title || opt.label}
               style={{
-                background: filterStatus === opt.value ? (STATUSES.find(s => s.value === opt.value)?.color || '#FF6B1A') : 'transparent',
+                background: filterStatus === opt.value ? (opt.color || '#FF6B1A') : 'transparent',
                 color: filterStatus === opt.value ? 'white' : '#94A3B8',
               }}
             >

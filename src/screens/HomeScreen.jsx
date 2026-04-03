@@ -471,7 +471,7 @@ export default function HomeScreen({
           }}>
             <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
             <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('amis')} />
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
+            <ModeIcon src="/assets/modes/blitz.png" label="Flash" onClick={() => nav('blitz')} />
           </div>
         </div>
 
@@ -531,7 +531,7 @@ export default function HomeScreen({
             e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)'
           }}
         >
-          ⚡ JOUER EN MODE FLASH
+          JOUER EN MODE FLASH
         </button>
       </div>
 

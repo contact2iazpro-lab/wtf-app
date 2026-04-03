@@ -375,16 +375,16 @@ export default function RevelationScreen({
         {renderHeader()}
 
         {/* Image floutée + stamp bienveillant par-dessus */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '35vh' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '35vh', padding: `0 ${S(12)}` }}>
           <div
             className="overflow-hidden relative"
-            style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%' }}
+            style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%', borderRadius: S(12) }}
           >
             {fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0, filter: 'blur(12px) brightness(0.5)' }}
+                style={{ objectFit: 'contain', width: '100%', height: '100%', position: 'absolute', inset: 0, filter: 'blur(12px) brightness(0.5)' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
@@ -492,16 +492,16 @@ export default function RevelationScreen({
       {renderHeader()}
 
       {/* Image pleine largeur + stamp FOU réduit en coin */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '30vh' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '30vh', padding: `0 ${S(12)}` }}>
         <div
           className={`overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%' }}
+          style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%', borderRadius: S(12) }}
         >
           {fact.imageUrl && !imgFailed ? (
             <img
               src={fact.imageUrl}
               alt={fact.question}
-              style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+              style={{ objectFit: 'contain', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
               onError={() => setImgFailed(true)}
             />
           ) : (

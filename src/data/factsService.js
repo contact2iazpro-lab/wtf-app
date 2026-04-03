@@ -126,6 +126,27 @@ function buildAll(rawFacts) {
   _rawFacts   = rawFacts
   _difficulty = buildDifficultyFrom(rawFacts)
 
+  // ── DEBUG TEMPORAIRE — tracer les facts exclus ──
+  console.log('[DEBUG] rawFacts reçus dans buildAll:', rawFacts.length)
+  const rejected = { noQuestion: 0, noCategory: 0, noOptions: 0, optionsLt2: 0, noCorrectIndex: 0, negativeCorrectIndex: 0 }
+  const rejectedExamples = []
+  for (const f of rawFacts) {
+    const reasons = []
+    if (!f?.question) reasons.push('noQuestion')
+    if (!f?.category) reasons.push('noCategory')
+    if (!Array.isArray(f?.options)) reasons.push('noOptions')
+    else if (f.options.length < 2) reasons.push('optionsLt2')
+    if (typeof f?.correctIndex !== 'number') reasons.push('noCorrectIndex')
+    else if (f.correctIndex < 0) reasons.push('negativeCorrectIndex')
+    if (reasons.length > 0) {
+      reasons.forEach(r => rejected[r]++)
+      if (rejectedExamples.length < 3) rejectedExamples.push({ id: f?.id, reasons, options: f?.options, correctIndex: f?.correctIndex, category: f?.category, question: f?.question?.slice(0, 50) })
+    }
+  }
+  console.log('[DEBUG] facts rejetés par raison:', rejected)
+  console.log('[DEBUG] exemples rejetés:', JSON.stringify(rejectedExamples))
+  // ── FIN DEBUG ──
+
   _validFacts = rawFacts
     .filter(f => {
       if (!f || !f.question || !f.category) return false

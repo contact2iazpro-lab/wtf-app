@@ -25,6 +25,8 @@ serve(async (req) => {
 
     // Parse body
     const { category, categoryLabel, count, difficulty_distribution } = await req.json()
+    // Limiter à 10 facts max par appel pour éviter les JSON tronqués
+    const safeCount = Math.min(count || 5, 10)
     if (!category || !count) {
       return new Response(JSON.stringify({ error: 'category et count requis' }), {
         status: 400,
@@ -76,7 +78,7 @@ serve(async (req) => {
     // ── Build prompt ────────────────────────────────────────────────────
     const prompt = `Tu es un créateur de contenu pour WTF! Facts, un jeu de quiz en français avec des anecdotes surprenantes et fascinantes.
 
-Génère exactement ${count} facts sur la catégorie "${categoryLabel || category}".
+Génère exactement ${safeCount} facts sur la catégorie "${categoryLabel || category}".
 
 POUR CHAQUE FACT, retourne un objet JSON avec ces champs :
 
@@ -110,7 +112,7 @@ RÈGLES DE QUALITÉ STRICTES :
 - Rédaction en français, ton fun et accessible
 - Chaque fact doit être UNIQUE — pas de doublons ni de reformulations${dedupBlock}
 
-Retourne UNIQUEMENT un tableau JSON valide de ${count} objets, SANS texte avant ni après.`
+Retourne UNIQUEMENT un tableau JSON valide de ${safeCount} objets, SANS texte avant ni après.`
 
     // ── Call Anthropic (Opus) ────────────────────────────────────────────
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -122,7 +124,7 @@ Retourne UNIQUEMENT un tableau JSON valide de ${count} objets, SANS texte avant 
       },
       body: JSON.stringify({
         model: 'claude-opus-4-6',
-        max_tokens: 8192,
+        max_tokens: 16384,
         messages: [{ role: 'user', content: prompt }],
       }),
     })
@@ -137,17 +139,65 @@ Retourne UNIQUEMENT un tableau JSON valide de ${count} objets, SANS texte avant 
 
     const data = await anthropicRes.json()
     const text = data.content[0].text.trim()
+    const stopReason = data.stop_reason // 'end_turn' or 'max_tokens'
 
     // Extract JSON array
-    const jsonMatch = text.match(/\[[\s\S]*\]/)
+    let jsonMatch = text.match(/\[[\s\S]*\]/)
+
+    // If no closing bracket found but we have an opening one, the response was truncated
+    if (!jsonMatch && text.includes('[')) {
+      let truncated = text.slice(text.indexOf('['))
+      // Try to repair: find last complete object (ends with })
+      const lastBrace = truncated.lastIndexOf('}')
+      if (lastBrace > 0) {
+        truncated = truncated.slice(0, lastBrace + 1) + ']'
+        jsonMatch = [truncated]
+        console.warn(`JSON tronqué (stop_reason: ${stopReason}) — réparé en coupant après le dernier objet complet`)
+      }
+    }
+
     if (!jsonMatch) {
-      return new Response(JSON.stringify({ error: 'Réponse API invalide — pas de JSON trouvé' }), {
+      return new Response(JSON.stringify({
+        error: 'Réponse API invalide — pas de JSON trouvé',
+        stop_reason: stopReason,
+        raw_length: text.length,
+      }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const facts = JSON.parse(jsonMatch[0])
+    let facts: any[]
+    try {
+      facts = JSON.parse(jsonMatch[0])
+    } catch (parseErr: any) {
+      // Last resort: try to salvage complete objects from the truncated JSON
+      try {
+        const objects: any[] = []
+        const objectRegex = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g
+        let match
+        while ((match = objectRegex.exec(jsonMatch[0])) !== null) {
+          try { objects.push(JSON.parse(match[0])) } catch { /* skip malformed */ }
+        }
+        if (objects.length > 0) {
+          facts = objects
+          console.warn(`JSON.parse échoué, ${objects.length} objets récupérés individuellement`)
+        } else {
+          throw parseErr
+        }
+      } catch {
+        return new Response(JSON.stringify({
+          error: `JSON invalide: ${parseErr.message}`,
+          stop_reason: stopReason,
+          raw_length: text.length,
+          hint: stopReason === 'max_tokens' ? 'Réponse tronquée — réduisez le nombre de facts par appel' : undefined,
+        }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
     if (!Array.isArray(facts)) {
       return new Response(JSON.stringify({ error: 'Réponse API invalide — pas un tableau' }), {
         status: 502,

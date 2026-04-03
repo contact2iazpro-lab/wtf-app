@@ -83,6 +83,29 @@ if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID))
       80% { opacity: 1; }
       100% { opacity: 0; transform: translate(var(--coin-dx), var(--coin-dy)) scale(0.3); }
     }
+    @keyframes goldShimmer {
+      0%   { transform: translateX(-100%) translateY(-100%) rotate(25deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(25deg); }
+    }
+    @keyframes goldSparkle {
+      0%, 100% { opacity: 0; transform: scale(0.5); }
+      50%      { opacity: 1; transform: scale(1.2); }
+    }
+    @keyframes goldBorderPulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(255,215,0,0.4), 0 0 30px rgba(255,215,0,0.2); }
+      50%      { box-shadow: 0 0 25px rgba(255,215,0,0.6), 0 0 45px rgba(255,215,0,0.3), 0 0 70px rgba(255,215,0,0.1); }
+    }
+    .gold-card {
+      border: 3px solid transparent !important;
+      border-image: linear-gradient(135deg, #FFD700, #FFA500, #FFD700, #FFEC8B, #FFD700) 1 !important;
+      border-radius: 0 !important;
+      animation: goldBorderPulse 2s ease-in-out infinite;
+    }
+    .gold-card-rounded {
+      border: 3px solid #FFD700 !important;
+      box-shadow: 0 0 15px rgba(255,215,0,0.4), 0 0 30px rgba(255,215,0,0.2);
+      animation: goldBorderPulse 2s ease-in-out infinite;
+    }
     .flip-card { perspective: 800px; }
     .flip-card-inner {
       position: relative; width: 100%; height: 100%;
@@ -494,8 +517,12 @@ export default function RevelationScreen({
       {/* Image pleine largeur + stamp FOU réduit en coin */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '30vh' }}>
         <div
-          className={`overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ background: catGradient, width: '100%', maxHeight: '30vh', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
+          className={`overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow gold-card-rounded' : ''}`}
+          style={{
+            background: catGradient, width: '100%', maxHeight: '30vh',
+            borderRadius: S(16), padding: 4,
+            border: !isDuel && flipped && isCorrect ? undefined : `3px solid ${cat?.color || '#1a3a5c'}`,
+          }}
         >
           {fact.imageUrl && !imgFailed ? (
             <img
@@ -507,6 +534,45 @@ export default function RevelationScreen({
           ) : (
             <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
           )}
+
+          {/* Gold overlay + shimmer (bonne réponse uniquement) */}
+          {!isDuel && flipped && isCorrect && (
+            <>
+              {/* Overlay gold semi-transparent */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                zIndex: 6,
+                background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,180,0,0.15) 25%, rgba(255,215,0,0.05) 50%, rgba(255,180,0,0.15) 75%, rgba(255,215,0,0.08) 100%)',
+                borderRadius: S(12),
+              }} />
+              {/* Shimmer diagonal gliding */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                zIndex: 7, overflow: 'hidden', borderRadius: S(12),
+              }}>
+                <div style={{
+                  position: 'absolute', inset: '-50%',
+                  background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.08) 45%, rgba(255,215,0,0.15) 50%, rgba(255,255,255,0.08) 55%, transparent 60%)',
+                  animation: 'goldShimmer 3s ease-in-out infinite',
+                }} />
+              </div>
+              {/* Sparkle particles */}
+              {[
+                { top: '-3px', left: '15%', delay: '0s' },
+                { top: '20%', right: '-3px', delay: '0.4s' },
+                { bottom: '10%', left: '-3px', delay: '0.8s' },
+                { bottom: '-3px', right: '25%', delay: '1.2s' },
+                { top: '50%', right: '10%', delay: '1.6s' },
+              ].map((pos, i) => (
+                <div key={i} className="absolute pointer-events-none" style={{
+                  ...pos, zIndex: 8,
+                  width: '5px', height: '5px', borderRadius: '50%',
+                  background: 'radial-gradient(circle, #FFD700, #FFA500)',
+                  boxShadow: '0 0 6px rgba(255,215,0,0.8)',
+                  animation: `goldSparkle 2s ${pos.delay} ease-in-out infinite`,
+                }} />
+              ))}
+            </>
+          )}
+
           {/* Stamp FOU — petit, coin bas droit */}
           {!isDuel && flipped && isCorrect && (
             <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
@@ -572,7 +638,7 @@ export default function RevelationScreen({
               background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
               borderRadius: S(10), padding: `${S(8)} ${S(10)}`, marginBottom: S(8),
             }}>
-              <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
+              <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2), textShadow: '0 0 10px rgba(255,215,0,0.5)' }}>✓ Bonne réponse :</div>
               <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{correctAnswerText}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>

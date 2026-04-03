@@ -132,6 +132,21 @@ export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
 
+  // ── Cache busting : force reload si nouvelle version déployée ──
+  useEffect(() => {
+    const currentVersion = import.meta.env.VITE_APP_VERSION
+    if (!currentVersion) return
+    const storedVersion = localStorage.getItem('wtf_app_version')
+    if (storedVersion && storedVersion !== currentVersion) {
+      localStorage.setItem('wtf_app_version', currentVersion)
+      window.location.reload(true)
+      return
+    }
+    if (!storedVersion) {
+      localStorage.setItem('wtf_app_version', currentVersion)
+    }
+  }, [])
+
   const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const [showSplash, setShowSplash] = useState(false)
   const handleSplashComplete = async () => {

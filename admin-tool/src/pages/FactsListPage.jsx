@@ -300,19 +300,20 @@ export default function FactsListPage({ toast }) {
     }
   }
 
-  async function executeBatch() {
+  async function executeBatch(actionOverride) {
     if (!selected.size) return
+    const action = actionOverride || batchAction
     const ids = Array.from(selected)
     setBatchLoading(true)
     try {
       let updateObj = {}
-      if (batchAction === 'category') updateObj = { category: batchValue }
-      else if (batchAction === 'mode_quete') updateObj = { is_vip: true, type: 'vip' }
-      else if (batchAction === 'mode_flash') updateObj = { is_vip: false, type: 'generated' }
-      else if (batchAction === 'status_published') updateObj = { status: 'published', is_published: true }
-      else if (batchAction === 'status_reserve') updateObj = { status: 'reserve', is_published: false }
-      else if (batchAction === 'status_draft') updateObj = { status: 'draft', is_published: false }
-      else if (batchAction === 'delete') {
+      if (action === 'category') updateObj = { category: batchValue }
+      else if (action === 'mode_quete') updateObj = { is_vip: true, type: 'vip' }
+      else if (action === 'mode_flash') updateObj = { is_vip: false, type: 'generated' }
+      else if (action === 'status_published') updateObj = { status: 'published', is_published: true }
+      else if (action === 'status_reserve') updateObj = { status: 'reserve', is_published: false }
+      else if (action === 'status_draft') updateObj = { status: 'draft', is_published: false }
+      else if (action === 'delete') {
         const { error } = await supabase.from('facts').delete().in('id', ids)
         if (error) throw error
         toast?.(`✓ ${ids.length} facts supprimés`)
@@ -320,9 +321,9 @@ export default function FactsListPage({ toast }) {
         await loadFacts()
         return
       }
-      else if (batchAction === 'pack') updateObj = { pack_id: batchValue }
-      // difficulty batch removed
+      else if (action === 'pack') updateObj = { pack_id: batchValue }
 
+      console.log('executeBatch:', action, 'ids:', ids.length, 'updateObj:', updateObj)
       const { error } = await supabase.from('facts').update(updateObj).in('id', ids)
       if (error) throw error
       toast?.(`✓ ${ids.length} facts mis à jour`)
@@ -916,7 +917,7 @@ export default function FactsListPage({ toast }) {
             <div className="flex gap-2">
               <button onClick={() => setBatchAction(null)} className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold">Annuler</button>
               <button
-                onClick={() => { if (batchValue) { setBatchAction(batchValue); setTimeout(() => executeBatch(), 0) } }}
+                onClick={() => { if (batchValue) executeBatch(batchValue) }}
                 disabled={!batchValue || batchLoading}
                 className="flex-1 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-40"
                 style={{ background: '#FF6B1A' }}

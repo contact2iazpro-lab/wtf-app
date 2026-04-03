@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import { getValidFacts, getPlayableCategories } from '../data/factsService'
+import { getValidFacts, getPlayableCategories, getVipFacts, getGeneratedFacts } from '../data/factsService'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 
@@ -34,20 +34,30 @@ const S = (px) => `calc(${px}px * var(--scale))`
 // ── Pinned IDs always at the end ─────────────────────────────────────────────
 const PINNED_IDS = new Set(['kids', 'random'])
 
-export default function CategoryScreen({ onSelectCategory, onBack, selectedDifficulty, unlockedFacts = new Set() }) {
+export default function CategoryScreen({ onSelectCategory, onBack, selectedDifficulty, unlockedFacts = new Set(), gameMode }) {
   const [showSettings, setShowSettings] = useState(false)
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const scale = useScale()
   const bgIndex = useRef(Math.floor(Math.random() * BACKGROUNDS.length))
 
+  // ── Pool de facts selon le mode de jeu ──────────────────────────────────
+  const factsPool = useMemo(() => {
+    switch (gameMode) {
+      case 'marathon': return getGeneratedFacts()
+      case 'blitz':    return getGeneratedFacts()
+      case 'flash':    return getGeneratedFacts()
+      default:         return getValidFacts()  // quête, etc. → tous les facts valides
+    }
+  }, [gameMode])
+
   const totalPerCategory = useMemo(() => {
     const counts = {}
-    for (const f of getValidFacts()) {
+    for (const f of factsPool) {
       counts[f.category] = (counts[f.category] || 0) + 1
     }
     return counts
-  }, [])
+  }, [factsPool])
 
   const unlockedPerCategory = useMemo(() => {
     const counts = {}

@@ -1109,6 +1109,7 @@ export default function App() {
           onBack={() => setScreen(SCREENS.HOME)}
           selectedDifficulty={selectedDifficulty}
           unlockedFacts={unlockedFacts}
+          gameMode={gameMode}
         />
       )}
 

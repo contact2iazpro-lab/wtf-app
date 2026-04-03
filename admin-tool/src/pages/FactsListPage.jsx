@@ -209,7 +209,6 @@ export default function FactsListPage({ toast }) {
   const [filterPublished, setFilterPublished] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterPack, setFilterPack] = useState('all')
-  const [filterDifficulty, setFilterDifficulty] = useState('all')
   const [filterImage, setFilterImage] = useState('all') // 'all' | 'with' | 'without'
   const [showCatDropdown, setShowCatDropdown] = useState(false)
 
@@ -280,10 +279,10 @@ export default function FactsListPage({ toast }) {
   }, [showCatDropdown])
 
   // Reset page on filter change
-  useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterDifficulty, filterImage, pageSize])
+  useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, pageSize])
 
   // Load facts
-  useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterDifficulty, filterImage, sortField, sortDir])
+  useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, sortField, sortDir])
 
   // Load difficulty counts when generate modal opens
   useEffect(() => {
@@ -295,7 +294,7 @@ export default function FactsListPage({ toast }) {
     try {
       let q = supabase
         .from('facts')
-        .select('id, category, question, is_vip, is_published, status, pack_id, updated_at, difficulty, image_url', { count: 'exact' })
+        .select('id, category, question, is_vip, is_published, status, pack_id, updated_at, image_url', { count: 'exact' })
 
       if (debouncedSearch) {
         q = q.or(`question.ilike.%${debouncedSearch}%,explanation.ilike.%${debouncedSearch}%,short_answer.ilike.%${debouncedSearch}%`)
@@ -307,7 +306,6 @@ export default function FactsListPage({ toast }) {
       if (filterPublished === 'unpublished') q = q.eq('is_published', false)
       if (filterStatus !== 'all') q = q.eq('status', filterStatus)
       if (filterPack !== 'all') q = q.eq('pack_id', filterPack)
-      if (filterDifficulty !== 'all') q = q.eq('difficulty', filterDifficulty)
       if (filterImage === 'with') q = q.not('image_url', 'is', null).neq('image_url', '')
       if (filterImage === 'without') q = q.or('image_url.is.null,image_url.eq.')
 
@@ -324,7 +322,7 @@ export default function FactsListPage({ toast }) {
     } finally {
       setLoading(false)
     }
-  }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterDifficulty, filterImage, sortField, sortDir])
+  }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, sortField, sortDir])
 
   async function loadDifficultyCounts() {
     try {
@@ -401,7 +399,7 @@ export default function FactsListPage({ toast }) {
         return
       }
       else if (batchAction === 'pack') updateObj = { pack_id: batchValue }
-      else if (batchAction === 'difficulty') updateObj = { difficulty: batchValue }
+      // difficulty batch removed
 
       const { error } = await supabase.from('facts').update(updateObj).in('id', ids)
       if (error) throw error
@@ -911,21 +909,16 @@ export default function FactsListPage({ toast }) {
       )}
 
       {/* ── Batch modals ──────────────────────────────────────────────── */}
-      {batchAction && (batchAction === 'category' || batchAction === 'pack' || batchAction === 'difficulty') && (
+      {batchAction && (batchAction === 'category' || batchAction === 'pack') && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60" onClick={() => setBatchAction(null)}>
           <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 w-80" onClick={e => e.stopPropagation()}>
             <h3 className="font-black text-white mb-4">
-              {batchAction === 'category' ? '🗂 Changer catégorie' : batchAction === 'pack' ? '📦 Changer pack' : '🎯 Changer difficulté'}
+              {batchAction === 'category' ? '🗂 Changer catégorie' : '📦 Changer pack'}
             </h3>
             {batchAction === 'category' ? (
               <select value={batchValue} onChange={e => setBatchValue(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm mb-4 focus:outline-none">
                 <option value="">Choisir une catégorie…</option>
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
-              </select>
-            ) : batchAction === 'difficulty' ? (
-              <select value={batchValue} onChange={e => setBatchValue(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm mb-4 focus:outline-none">
-                <option value="">Choisir un niveau…</option>
-                {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.value}</option>)}
               </select>
             ) : (
               <input value={batchValue} onChange={e => setBatchValue(e.target.value)} placeholder="ex: free, premium..." className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm mb-4 focus:outline-none" />
@@ -1101,18 +1094,6 @@ export default function FactsListPage({ toast }) {
           )}
         </div>
 
-        {/* Difficulty filter */}
-        <select
-          value={filterDifficulty}
-          onChange={e => setFilterDifficulty(e.target.value)}
-          className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none"
-        >
-          <option value="all">Difficulté : Tous</option>
-          <option value="Facile">Facile</option>
-          <option value="Normal">Normal</option>
-          <option value="Expert">Expert</option>
-        </select>
-
         <select
           value={filterVip}
           onChange={e => setFilterVip(e.target.value)}
@@ -1165,9 +1146,9 @@ export default function FactsListPage({ toast }) {
           <option value="without">❌ Sans image</option>
         </select>
 
-        {(search || filterCategories.length || filterVip !== 'all' || filterPublished !== 'all' || filterStatus !== 'all' || filterPack !== 'all' || filterDifficulty !== 'all' || filterImage !== 'all') && (
+        {(search || filterCategories.length || filterVip !== 'all' || filterPublished !== 'all' || filterStatus !== 'all' || filterPack !== 'all' || filterImage !== 'all') && (
           <button
-            onClick={() => { setSearch(''); setFilterCategories([]); setFilterVip('all'); setFilterPublished('all'); setFilterStatus('all'); setFilterPack('all'); setFilterDifficulty('all'); setFilterImage('all') }}
+            onClick={() => { setSearch(''); setFilterCategories([]); setFilterVip('all'); setFilterPublished('all'); setFilterStatus('all'); setFilterPack('all'); setFilterImage('all') }}
             className="px-3 py-2 rounded-xl bg-red-900/30 border border-red-800 text-red-400 text-sm hover:bg-red-900/50 transition-all"
           >
             ✕ Effacer
@@ -1191,7 +1172,6 @@ export default function FactsListPage({ toast }) {
               { key: 'status_doublon',   label: '🔄 Doublon',   color: '#6B7280' },
               { key: 'delete',           label: '🗑 Supprimer',  color: '#DC2626' },
               { key: 'category',         label: '🗂 Catégorie' },
-              { key: 'difficulty',       label: '🎯 Difficulté' },
               { key: 'pack',             label: '📦 Pack' },
             ].map(a => (
               <button
@@ -1225,9 +1205,6 @@ export default function FactsListPage({ toast }) {
               <th className="px-3 py-3 text-left cursor-pointer text-slate-400 hover:text-white" onClick={() => handleSort('question')}>
                 Question<SortIcon field="question" current={sortField} dir={sortDir} />
               </th>
-              <th className="px-3 py-3 text-left cursor-pointer text-slate-400 hover:text-white" onClick={() => handleSort('difficulty')}>
-                Difficulté<SortIcon field="difficulty" current={sortField} dir={sortDir} />
-              </th>
               <th className="px-3 py-3 text-center text-slate-400">Image</th>
               <th className="px-3 py-3 text-center text-slate-400">VIP</th>
               <th className="px-3 py-3 text-center text-slate-400">Statut</th>
@@ -1240,9 +1217,9 @@ export default function FactsListPage({ toast }) {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={11} className="text-center py-12 text-slate-500">Chargement…</td></tr>
+              <tr><td colSpan={10} className="text-center py-12 text-slate-500">Chargement…</td></tr>
             ) : facts.length === 0 ? (
-              <tr><td colSpan={11} className="text-center py-12 text-slate-500">Aucun fact trouvé</td></tr>
+              <tr><td colSpan={10} className="text-center py-12 text-slate-500">Aucun fact trouvé</td></tr>
             ) : (
               facts.map(fact => (
                 <tr
@@ -1261,9 +1238,6 @@ export default function FactsListPage({ toast }) {
                   </td>
                   <td className="px-3 py-2.5 text-slate-300 max-w-xs truncate">
                     {fact.question?.slice(0, 55)}{fact.question?.length > 55 ? '…' : ''}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <DifficultyBadge value={fact.difficulty || 'Normal'} />
                   </td>
                   {/* Indicateur image */}
                   <td className="px-3 py-2.5 text-center">

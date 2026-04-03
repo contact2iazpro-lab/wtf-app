@@ -56,8 +56,16 @@ function fromRow(row) {
     options,
     correctIndex: row.correct_index,
     imageUrl:     row.image_url    || null,
-    difficulty:   row.difficulty   || null,   // ← stocker la difficulté définie dans l'admin
-    type:         row.type         || null,   // 'vip' | 'generated'
+    difficulty:   row.difficulty   || null,
+    type:         row.type         || null,
+    teaser:       row.teaser       || null,
+    funnyWrong1:     row.funny_wrong_1     || null,
+    funnyWrong2:     row.funny_wrong_2     || null,
+    closeWrong1:     row.close_wrong_1     || null,
+    closeWrong2:     row.close_wrong_2     || null,
+    plausibleWrong1: row.plausible_wrong_1 || null,
+    plausibleWrong2: row.plausible_wrong_2 || null,
+    plausibleWrong3: row.plausible_wrong_3 || null,
   }
 }
 
@@ -168,7 +176,7 @@ export async function initFacts() {
     try {
       const { data, error } = await supabase
         .from('facts')
-        .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type')
+        .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
         .eq('is_published', true)
         .order('id')
 

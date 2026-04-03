@@ -156,6 +156,7 @@ export default function QuestionScreen({
     if (!pausedRef.current) onTimeout?.()
   }, [onTimeout])
 
+
   // ── Style injection: compact screen media query only ───────────────────────
   useEffect(() => {
     const styleId = '__qs-compact'

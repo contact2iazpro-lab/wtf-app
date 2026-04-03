@@ -40,14 +40,10 @@ const ALL_QUALITY_CHECKS = [
   { key: 'noImage',               emoji: '📷', label: 'Sans image' },
   { key: 'questionTooLong',       emoji: '📝', label: 'Question trop longue' },
   { key: 'explanationOutOfRange', emoji: '📖', label: 'Explication hors limites' },
-  { key: 'missingHints',          emoji: '💡', label: 'Indices manquants (hint1-4)' },
-  { key: 'hintsTooLong',         emoji: '📏', label: 'Indices trop longs (>1 mot)' },
-  { key: 'incompleteOptions',     emoji: '🎯', label: 'Options QCM incomplètes' },
+  { key: 'missingHints',          emoji: '💡', label: 'Indices manquants' },
   { key: 'noSourceUrl',           emoji: '🔗', label: 'Sans URL source' },
-  { key: 'missingWrongAnswers',  emoji: '❌', label: 'Fausses réponses manquantes' },
-  { key: 'closedQuestion',       emoji: '🚫', label: 'Question pas ouverte' },
-  { key: 'missingType',          emoji: '🏷️', label: 'Type manquant (vip/generated)' },
-  { key: 'notMigrated',          emoji: '🔄', label: 'Ancien format non migré' },
+  { key: 'missingWrongAnswers',   emoji: '🎭', label: 'Fausses réponses incomplètes' },
+  { key: 'legacyOptions',         emoji: '🗂️', label: 'Options QCM legacy vides' },
 ]
 
 function truncate(str, n) {
@@ -79,6 +75,9 @@ export default function DashboardPage({ toast }) {
   const [expandedIssue, setExpandedIssue] = useState(null)
   const [enrichStatus, setEnrichStatus] = useState(null)
   const [enrichMessage, setEnrichMessage] = useState('')
+  const [fillUrlsStatus, setFillUrlsStatus] = useState(null) // null | 'running' | 'done' | 'error'
+  const [fillUrlsResult, setFillUrlsResult] = useState(null)
+  const [fillUrlsError, setFillUrlsError] = useState('')
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
   const enrichCancelRef = useRef(false)
 
@@ -183,14 +182,14 @@ export default function DashboardPage({ toast }) {
     setQualityLoading(true)
     setQualityError(false)
     try {
-      // Fetch ALL facts (published + unpublished) with all relevant columns
+      // Fetch ALL facts with relevant columns for quality checks
       const all = []
       let from = 0
       const PAGE = 1000
       while (true) {
         const { data, error } = await supabase
           .from('facts')
-          .select('id, question, hint1, hint2, hint3, hint4, explanation, options, image_url, source_url, category, is_published, type, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
+          .select('id, question, hint1, hint2, explanation, options, image_url, source_url, category, is_published, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break
@@ -200,41 +199,20 @@ export default function DashboardPage({ toast }) {
       }
 
       const isEmpty = v => !v || (typeof v === 'string' && v.trim() === '')
-      const hasMultipleWords = v => v && typeof v === 'string' && v.trim().split(/\s+/).length > 1
 
-      // Unified quality checks on ALL facts (published + unpublished)
       setQualityIssues({
-        noImage:               all.filter(x => !x.image_url || x.image_url.trim() === ''),
+        noImage:               all.filter(x => isEmpty(x.image_url)),
         questionTooLong:       all.filter(x => x.question && x.question.length > 100),
         explanationOutOfRange: all.filter(x => !x.explanation || x.explanation.length < 100 || x.explanation.length > 300),
-        missingHints:          all.filter(x =>
-          isEmpty(x.hint1) || isEmpty(x.hint2) || isEmpty(x.hint3) || isEmpty(x.hint4)
-        ),
-        hintsTooLong:          all.filter(x =>
-          hasMultipleWords(x.hint1) || hasMultipleWords(x.hint2) || hasMultipleWords(x.hint3) || hasMultipleWords(x.hint4)
-        ),
-        incompleteOptions:     all.filter(x => !x.options || x.options.length < 4),
-        noSourceUrl:           all.filter(x => !x.source_url || x.source_url.trim() === ''),
+        missingHints:          all.filter(x => isEmpty(x.hint1) || isEmpty(x.hint2)),
+        noSourceUrl:           all.filter(x => isEmpty(x.source_url)),
         missingWrongAnswers:   all.filter(x =>
           isEmpty(x.funny_wrong_1) || isEmpty(x.funny_wrong_2) ||
           isEmpty(x.close_wrong_1) || isEmpty(x.close_wrong_2) ||
           isEmpty(x.plausible_wrong_1) || isEmpty(x.plausible_wrong_2) || isEmpty(x.plausible_wrong_3)
         ),
-        closedQuestion:        all.filter(x =>
-          x.question && (
-            /vrai ou faux/i.test(x.question) ||
-            /^est-ce que\b/i.test(x.question.trim())
-          )
-        ),
-        missingType:           all.filter(x =>
-          x.type !== 'vip' && x.type !== 'generated'
-        ),
-        notMigrated:           all.filter(x =>
-          x.options && x.options.length > 0 &&
-          isEmpty(x.funny_wrong_1) && isEmpty(x.funny_wrong_2) &&
-          isEmpty(x.close_wrong_1) && isEmpty(x.close_wrong_2) &&
-          isEmpty(x.plausible_wrong_1) && isEmpty(x.plausible_wrong_2) && isEmpty(x.plausible_wrong_3)
-        ),
+        legacyOptions:         all.filter(x => !x.options || !Array.isArray(x.options) || x.options.filter(Boolean).length < 4),
+        _total: all.length,
       })
     } catch (err) {
       console.error('Quality check error:', err)
@@ -425,18 +403,19 @@ export default function DashboardPage({ toast }) {
 
       {/* Quality Dashboard — unified */}
       {(() => {
+        const totalFacts = qualityIssues?._total || 351
         const totalAlerts = qualityIssues
-          ? Object.values(qualityIssues).reduce((sum, list) => sum + list.length, 0)
+          ? ALL_QUALITY_CHECKS.reduce((sum, c) => sum + (qualityIssues[c.key]?.length ?? 0), 0)
           : 0
         const expandedList = expandedIssue && qualityIssues ? qualityIssues[expandedIssue] : null
         const expandedCheck = ALL_QUALITY_CHECKS.find(c => c.key === expandedIssue)
 
         return (
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-8 overflow-hidden">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-4 overflow-hidden">
             {/* Section header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
               <div className="flex items-center gap-3">
-                <h2 className="text-base font-black text-white">🔍 Qualité des F*cts</h2>
+                <h2 className="text-base font-black text-white">🔍 Qualité des f*cts</h2>
                 {!qualityLoading && !qualityError && (
                   <span
                     className="px-2 py-0.5 rounded-full text-xs font-black"
@@ -445,7 +424,7 @@ export default function DashboardPage({ toast }) {
                       color: totalAlerts > 0 ? '#EF4444' : '#22C55E',
                     }}
                   >
-                    {totalAlerts > 0 ? `${totalAlerts} alertes sur tous les f*cts en base` : '✓ Tout est OK'}
+                    {totalAlerts > 0 ? `${totalAlerts} alertes` : '✓ Tout est OK'}
                   </span>
                 )}
               </div>
@@ -464,41 +443,45 @@ export default function DashboardPage({ toast }) {
               {qualityError ? (
                 <p className="text-red-400 text-sm">Erreur lors du chargement des données qualité.</p>
               ) : qualityLoading ? (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {ALL_QUALITY_CHECKS.map(c => (
-                    <div key={c.key} className="bg-slate-700/50 rounded-xl p-4 animate-pulse h-24" />
+                    <div key={c.key} className="bg-slate-700/50 rounded-xl p-4 animate-pulse h-28" />
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {ALL_QUALITY_CHECKS.map(c => {
-                    const count = qualityIssues?.[c.key]?.length ?? 0
+                    const badCount = qualityIssues?.[c.key]?.length ?? 0
+                    const okCount = totalFacts - badCount
+                    const pct = totalFacts > 0 ? Math.round((okCount / totalFacts) * 100) : 100
+                    const barColor = pct === 100 ? '#22C55E' : pct >= 90 ? '#F59E0B' : '#EF4444'
                     const isExpanded = expandedIssue === c.key
                     return (
-                      <div
+                      <button
                         key={c.key}
-                        className="bg-slate-700/50 rounded-xl p-4 border transition-all"
+                        onClick={() => setExpandedIssue(isExpanded ? null : c.key)}
+                        disabled={badCount === 0}
+                        className="bg-slate-700/50 rounded-xl p-4 border transition-all text-left disabled:cursor-default"
                         style={{ borderColor: isExpanded ? '#FF6B1A' : 'transparent' }}
                       >
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <span className="text-lg">{c.emoji}</span>
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <span className="text-base">{c.emoji}</span>
                           <span
-                            className="text-2xl font-black leading-none"
-                            style={{ color: count > 0 ? '#EF4444' : '#22C55E' }}
+                            className="text-xl font-black leading-none"
+                            style={{ color: badCount > 0 ? '#EF4444' : '#22C55E' }}
                           >
-                            {count}
+                            {badCount}
                           </span>
                         </div>
-                        <div className="text-xs font-semibold text-slate-300 mb-3 leading-tight">{c.label}</div>
-                        <button
-                          onClick={() => setExpandedIssue(isExpanded ? null : c.key)}
-                          disabled={count === 0}
-                          className="text-xs font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                          style={{ color: isExpanded ? '#FF6B1A' : '#94A3B8' }}
-                        >
-                          {isExpanded ? '▲ Masquer' : 'Voir les f*cts →'}
-                        </button>
-                      </div>
+                        <div className="text-[11px] font-semibold text-slate-300 mb-2 leading-tight">{c.label}</div>
+                        {/* Progress bar */}
+                        <div className="h-1.5 bg-slate-600 rounded-full overflow-hidden mb-1">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
+                        </div>
+                        <div className="text-[10px] font-bold" style={{ color: barColor }}>
+                          {okCount}/{totalFacts} OK
+                        </div>
+                      </button>
                     )
                   })}
                 </div>
@@ -547,6 +530,113 @@ export default function DashboardPage({ toast }) {
                 </div>
               )}
             </div>
+          </div>
+        )
+      })()}
+
+      {/* URLs sources manquantes */}
+      {(() => {
+        const vipNoSource = qualityIssues?.noSourceUrl?.length ?? 0
+
+        async function runFillUrls() {
+          if (fillUrlsStatus === 'running') return
+          setFillUrlsStatus('running')
+          setFillUrlsResult(null)
+          setFillUrlsError('')
+          try {
+            const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fill-missing-urls`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+                'Content-Type': 'application/json',
+              },
+            })
+            const data = await resp.json()
+            if (!resp.ok) {
+              setFillUrlsStatus('error')
+              setFillUrlsError(data.error || resp.statusText)
+            } else {
+              setFillUrlsStatus('done')
+              setFillUrlsResult(data)
+              fetchQualityIssues()
+            }
+          } catch (err) {
+            setFillUrlsStatus('error')
+            setFillUrlsError(err.message || 'Erreur réseau')
+          }
+        }
+
+        return (
+          <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-8 p-5">
+            <h2 className="text-base font-black text-white mb-3">🔗 URLs sources manquantes</h2>
+            <div className="flex items-center gap-3 mb-3">
+              <span
+                className="px-3 py-1 rounded-full text-sm font-black"
+                style={{
+                  background: vipNoSource > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
+                  color: vipNoSource > 0 ? '#EF4444' : '#22C55E',
+                }}
+              >
+                {vipNoSource} facts VIP sans URL source
+              </span>
+            </div>
+            <button
+              onClick={runFillUrls}
+              disabled={fillUrlsStatus === 'running'}
+              className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-50"
+              style={{ background: '#FF6B1A' }}
+            >
+              {fillUrlsStatus === 'running'
+                ? <><span className="inline-block animate-spin mr-2">⟳</span>Recherche en cours… (peut prendre 2-3 min)</>
+                : '🔍 Remplir les URLs manquantes (Opus)'}
+            </button>
+            <p className="text-xs text-slate-500 mt-2">
+              Le f*ct #351 recevra www.zebulo.com — les 25 autres seront recherchés automatiquement par Opus
+            </p>
+
+            {/* Erreur */}
+            {fillUrlsStatus === 'error' && fillUrlsError && (
+              <div className="mt-3 px-4 py-2.5 rounded-xl border border-red-700 text-sm font-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>
+                ❌ Erreur : {fillUrlsError}
+              </div>
+            )}
+
+            {/* Résultats */}
+            {fillUrlsStatus === 'done' && fillUrlsResult && (
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="px-3 py-1 rounded-full text-xs font-black" style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
+                    ✅ {fillUrlsResult.updated} URLs ajoutées
+                  </span>
+                  {fillUrlsResult.not_found > 0 && (
+                    <span className="px-3 py-1 rounded-full text-xs font-black" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }}>
+                      ⚠️ {fillUrlsResult.not_found} facts sans source trouvée
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-500">{fillUrlsResult.processed} traités au total</span>
+                </div>
+                {fillUrlsResult.details?.length > 0 && (
+                  <div className="border border-slate-700 rounded-xl overflow-hidden mt-2">
+                    <div className="divide-y divide-slate-700 max-h-60 overflow-y-auto">
+                      {fillUrlsResult.details.map(d => (
+                        <div key={d.id} className="flex items-center gap-3 px-4 py-2 text-xs hover:bg-slate-700/50 transition-colors">
+                          <Link to={`/facts/${d.id}`} className="font-black shrink-0 hover:underline" style={{ color: '#FF6B1A' }}>
+                            #{d.id}
+                          </Link>
+                          {d.url === 'INTROUVABLE' ? (
+                            <span className="text-amber-400 font-semibold">INTROUVABLE</span>
+                          ) : (
+                            <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white truncate flex-1 min-w-0">
+                              {d.url}
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )
       })()}

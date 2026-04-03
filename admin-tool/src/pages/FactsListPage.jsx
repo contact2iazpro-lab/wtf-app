@@ -349,12 +349,11 @@ export default function FactsListPage({ toast }) {
     try {
       let updateObj = {}
       if (batchAction === 'category') updateObj = { category: batchValue }
-      else if (batchAction === 'vip') updateObj = { is_vip: true }
+      else if (batchAction === 'mode_quete') updateObj = { is_vip: true, type: 'vip' }
+      else if (batchAction === 'mode_flash') updateObj = { is_vip: false, type: 'generated' }
       else if (batchAction === 'status_published') updateObj = { status: 'published', is_published: true }
-      else if (batchAction === 'status_unpublished') updateObj = { status: 'draft', is_published: false }
       else if (batchAction === 'status_reserve') updateObj = { status: 'reserve', is_published: false }
       else if (batchAction === 'status_draft') updateObj = { status: 'draft', is_published: false }
-      else if (batchAction === 'status_doublon') updateObj = { status: 'doublon', is_published: false }
       else if (batchAction === 'delete') {
         const { error } = await supabase.from('facts').delete().in('id', ids)
         if (error) throw error
@@ -875,39 +874,75 @@ export default function FactsListPage({ toast }) {
         </div>
       )}
 
-      {batchAction && (batchAction === 'vip' || batchAction === 'delete' || batchAction.startsWith('status_')) && (
+      {/* Modal — Mode de jeu (Quête / Flash) */}
+      {batchAction && (batchAction === 'mode_quete' || batchAction === 'mode_flash') && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60" onClick={() => setBatchAction(null)}>
           <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 w-80" onClick={e => e.stopPropagation()}>
             <h3 className="font-black text-white mb-3">
-              {batchAction === 'vip' && '⭐ Marquer VIP'}
-              {batchAction === 'status_published' && '✅ Publier'}
-              {batchAction === 'status_unpublished' && '⛔ Dépublier'}
-              {batchAction === 'status_reserve' && '🔒 Mettre en Réserve'}
-              {batchAction === 'status_draft' && '✏️ Mettre en Brouillon'}
-              {batchAction === 'status_doublon' && '🔄 Marquer comme Doublon'}
-              {batchAction === 'delete' && '🗑 Supprimer définitivement'}
+              {batchAction === 'mode_quete' ? '⚔️ Passer en Quête WTF!' : '⚡ Passer en Flash/Marathon'}
             </h3>
             <p className="text-slate-400 text-sm mb-5">
-              {batchAction === 'vip' && `Marquer ${selected.size} fact(s) comme VIP ?`}
-              {batchAction === 'status_published' && `Modifier ${selected.size} fact(s) en Publié ?`}
-              {batchAction === 'status_unpublished' && `Dépublier ${selected.size} fact(s) ? Ils passeront en Brouillon.`}
-              {batchAction === 'status_reserve' && `Modifier ${selected.size} fact(s) en Réserve ?`}
-              {batchAction === 'status_draft' && `Modifier ${selected.size} fact(s) en Brouillon ?`}
-              {batchAction === 'status_doublon' && `Marquer ${selected.size} fact(s) comme Doublon ?`}
-              {batchAction === 'delete' && `⚠️ Supprimer définitivement ${selected.size} fact(s) ? Cette action est irréversible.`}
+              {batchAction === 'mode_quete'
+                ? `Passer ${selected.size} fact(s) en mode Quête WTF! ?`
+                : `Passer ${selected.size} fact(s) en Flash/Marathon ?`}
             </p>
             <div className="flex gap-2">
               <button onClick={() => setBatchAction(null)} className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold">Annuler</button>
-              <button onClick={executeBatch} disabled={batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold" style={{
-                background: batchAction === 'status_unpublished' ? '#EF4444'
-                  : batchAction === 'status_published' ? '#10B981'
-                  : batchAction === 'status_reserve' ? '#F59E0B'
-                  : batchAction === 'status_draft' ? '#9CA3AF'
-                  : batchAction === 'status_doublon' ? '#6B7280'
-                  : batchAction === 'delete' ? '#DC2626'
-                  : '#FF6B1A'
-              }}>
+              <button onClick={executeBatch} disabled={batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold" style={{ background: batchAction === 'mode_quete' ? '#D97706' : '#7C3AED' }}>
                 {batchLoading ? '…' : 'Confirmer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal — Statut (radio) */}
+      {batchAction === 'status_change' && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60" onClick={() => setBatchAction(null)}>
+          <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 w-80" onClick={e => e.stopPropagation()}>
+            <h3 className="font-black text-white mb-4">📋 Changer le statut</h3>
+            <div className="space-y-2 mb-5">
+              {[
+                { value: 'status_published', label: '✅ Publié', color: '#10B981' },
+                { value: 'status_reserve', label: '🔒 Réserve', color: '#F59E0B' },
+                { value: 'status_draft', label: '✏️ Brouillon', color: '#9CA3AF' },
+              ].map(s => (
+                <label key={s.value} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all" style={{ background: batchValue === s.value ? `${s.color}20` : 'transparent', border: `1.5px solid ${batchValue === s.value ? s.color : 'transparent'}` }}>
+                  <input type="radio" name="batch_status" value={s.value} checked={batchValue === s.value} onChange={() => setBatchValue(s.value)} className="w-4 h-4" style={{ accentColor: s.color }} />
+                  <span className="text-sm font-bold" style={{ color: s.color }}>{s.label}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-slate-500 text-xs mb-4">{selected.size} fact(s) seront modifiés</p>
+            <div className="flex gap-2">
+              <button onClick={() => setBatchAction(null)} className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold">Annuler</button>
+              <button
+                onClick={() => { if (batchValue) { setBatchAction(batchValue); setTimeout(() => executeBatch(), 0) } }}
+                disabled={!batchValue || batchLoading}
+                className="flex-1 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-40"
+                style={{ background: '#FF6B1A' }}
+              >
+                {batchLoading ? '…' : 'Appliquer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal — Supprimer (danger) */}
+      {batchAction === 'delete' && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60" onClick={() => setBatchAction(null)}>
+          <div className="bg-slate-800 rounded-2xl p-6 border border-red-700 w-96" onClick={e => e.stopPropagation()}>
+            <div className="text-2xl mb-2">🗑</div>
+            <h3 className="font-black text-white mb-2">Supprimer définitivement ?</h3>
+            <p className="text-slate-400 text-sm mb-1">
+              <span className="text-red-400 font-bold">⚠️ Supprimer {selected.size} fact(s) définitivement ?</span>
+            </p>
+            <p className="text-slate-500 text-xs mb-5">Cette action est irréversible.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setBatchAction(null)} className="flex-1 py-2.5 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold hover:bg-slate-600 transition-all">Annuler</button>
+              <button onClick={executeBatch} disabled={batchLoading} className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-50 transition-all" style={{ background: '#DC2626' }}>
+                {batchLoading ? '…' : '🗑 Supprimer définitivement'}
               </button>
             </div>
           </div>
@@ -1041,9 +1076,9 @@ export default function FactsListPage({ toast }) {
           onChange={e => setFilterVip(e.target.value)}
           className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none"
         >
-          <option value="all">VIP : Tous</option>
-          <option value="vip">VIP seulement ⭐</option>
-          <option value="non-vip">Non-VIP</option>
+          <option value="all">Mode : Tous</option>
+          <option value="vip">⚔️ Quête WTF! seulement</option>
+          <option value="non-vip">⚡ Flash / Marathon</option>
         </select>
 
         {/* Status filter buttons */}
@@ -1101,32 +1136,25 @@ export default function FactsListPage({ toast }) {
       {/* ── Batch action bar ──────────────────────────────────────────── */}
       {someSelected && (
         <div className="flex items-center gap-3 mb-3 p-3 rounded-xl bg-slate-800 border shrink-0" style={{ borderColor: 'rgba(255,107,26,0.3)' }}>
-          <span className="text-sm font-bold" style={{ color: '#FF6B1A' }}>
+          <span className="text-sm font-bold shrink-0" style={{ color: '#FF6B1A' }}>
             {selected.size} sélectionné{selected.size > 1 ? 's' : ''}
           </span>
-          <div className="flex gap-2 flex-wrap">
-            {[
-              { key: 'vip',              label: '⭐ Marquer VIP' },
-              { key: 'status_published',   label: '✅ Publier',    color: '#10B981' },
-              { key: 'status_unpublished', label: '⛔ Dépublier',  color: '#EF4444' },
-              { key: 'status_reserve',   label: '🔒 Réserve',   color: '#F59E0B' },
-              { key: 'status_draft',     label: '✏️ Brouillon', color: '#9CA3AF' },
-              { key: 'status_doublon',   label: '🔄 Doublon',   color: '#6B7280' },
-              { key: 'delete',           label: '🗑 Supprimer',  color: '#DC2626' },
-              { key: 'category',         label: '🗂 Catégorie' },
-              { key: 'pack',             label: '📦 Pack' },
-            ].map(a => (
-              <button
-                key={a.key}
-                onClick={() => { setBatchAction(a.key); setBatchValue('') }}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all"
-                style={{ background: a.color || '#334155' }}
-              >
-                {a.label}
-              </button>
-            ))}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Groupe 1 — Mode de jeu */}
+            <button onClick={() => { setBatchAction('mode_quete'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#D97706' }}>⚔️ Quête</button>
+            <button onClick={() => { setBatchAction('mode_flash'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#7C3AED' }}>⚡ Flash/Marathon</button>
+            <span className="text-slate-600 mx-1">|</span>
+            {/* Groupe 2 — Statut */}
+            <button onClick={() => { setBatchAction('status_change'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#334155' }}>📋 Statut</button>
+            <span className="text-slate-600 mx-1">|</span>
+            {/* Groupe 3 — Organisation */}
+            <button onClick={() => { setBatchAction('category'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#334155' }}>🗂 Catégorie</button>
+            <button onClick={() => { setBatchAction('pack'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#334155' }}>📦 Pack</button>
+            <span className="text-slate-600 mx-1">|</span>
+            {/* Groupe 4 — Danger */}
+            <button onClick={() => { setBatchAction('delete'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#DC2626' }}>🗑 Supprimer</button>
           </div>
-          <button onClick={() => setSelected(new Set())} className="ml-auto text-slate-500 hover:text-white text-sm">✕</button>
+          <button onClick={() => setSelected(new Set())} className="ml-auto text-slate-500 hover:text-white text-sm shrink-0">✕</button>
         </div>
       )}
 

@@ -4,27 +4,14 @@
  * Full screen, no scroll, useScale responsive
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import { getTutorialState, advanceTutorial, TUTORIAL_STATES } from '../utils/tutorialManager'
 
-// ── Background aléatoire par session ──────────────────────────────────────────
-const HOME_BACKGROUNDS = [
-  { url: '/assets/backgrounds/home-orange.webp', textColor: '#FF6B1A', shadow: 'none' },
-  { url: '/assets/backgrounds/home-violet.webp', textColor: '#FF6B1A', shadow: 'none' },
-  { url: '/assets/backgrounds/home-bleu.webp',   textColor: '#FF6B1A', shadow: 'none' },
-  { url: '/assets/backgrounds/home-teal.webp',   textColor: '#FF6B1A', shadow: 'none' },
-]
-
-function getSessionBackground() {
-  const stored = sessionStorage.getItem('wtf_bg_idx')
-  if (stored !== null) return HOME_BACKGROUNDS[parseInt(stored)] || HOME_BACKGROUNDS[0]
-  const idx = Math.floor(Math.random() * HOME_BACKGROUNDS.length)
-  sessionStorage.setItem('wtf_bg_idx', String(idx))
-  return HOME_BACKGROUNDS[idx]
-}
+// ── Fond sombre fixe ─────────────────────────────────────────────────────────
+const HOME_BG_COLOR = '#1a0a2e'
 
 // ── Coffre quotidien ──────────────────────────────────────────────────────────
 const COFFRE_DAYS = [1, 2, 3, 4, 7]
@@ -123,10 +110,8 @@ export default function HomeScreen({
   const countdown = useCountdownToMidnight()
   const progress24h = get24hProgress()
   const scale = useScale()
-  const homeBgData = useMemo(() => getSessionBackground(), [])
-  const homeBg = homeBgData.url
-  const textColor = homeBgData.textColor
-  const textShadow = homeBgData.shadow
+  const textColor = '#FF6B1A'
+  const textShadow = 'none'
 
   // ── Toast premier f*ct découvert ──────────────────────────────────────────
   const [tutorialToast, setTutorialToast] = useState(null)
@@ -206,17 +191,14 @@ export default function HomeScreen({
     <div
       style={{
         position: 'relative',
-        height: '100%', width: '100%', overflow: 'hidden',
+        height: '100%', width: '100%', overflow: 'hidden', position: 'relative',
         display: 'flex', flexDirection: 'column',
         justifyContent: 'space-between',
         boxSizing: 'border-box',
         paddingTop: S(8),
         fontFamily: 'Nunito, sans-serif',
         '--scale': scale,
-        backgroundImage: `url(${homeBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundColor: '#1a1a2e',
+        background: HOME_BG_COLOR,
       }}
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
@@ -241,6 +223,14 @@ export default function HomeScreen({
           to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
         }
       `}</style>
+
+      {/* Overlay bas — profondeur */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        height: '40%',
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 100%)',
+        pointerEvents: 'none', zIndex: 0,
+      }} />
 
       {/* ═══ ZONE 1 — HEADER ═══════════════════════════════════════════════ */}
       <div style={{
@@ -441,12 +431,24 @@ export default function HomeScreen({
             <ModeIcon src="/assets/modes/wtf-semaine.png" label="WTF Semaine" onClick={() => nav('wtfDuJour')} />
           </div>
 
-          {/* Colonne centre — étoile + tagline */}
+          {/* Colonne centre — étoile + halo + tagline */}
           <div style={{
             flex: 1.5,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center',
+            position: 'relative',
           }}>
+            {/* Halo radial */}
+            <div style={{
+              position: 'absolute',
+              width: S(200), height: S(200),
+              top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,160,50,0.5) 0%, rgba(255,107,26,0.2) 35%, rgba(255,107,26,0.05) 65%, rgba(0,0,0,0) 100%)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }} />
             <img
               src="/logo-wtf.png"
               alt="WTF!"
@@ -455,6 +457,8 @@ export default function HomeScreen({
                 width: S(160), height: S(160), objectFit: 'contain',
                 margin: '0 auto',
                 filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
+                position: 'relative',
+                zIndex: 1,
               }}
             />
           </div>

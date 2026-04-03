@@ -7,7 +7,7 @@ import { resolveImageUrl } from '../utils/imageUrl'
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
   'source_url', 'options', 'correct_index', 'image_url',
-  'is_vip', 'status', 'pack_id', 'vip_usage', 'difficulty',
+  'is_vip', 'type', 'status', 'pack_id', 'vip_usage', 'difficulty',
   'funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2',
   'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
 ]
@@ -699,6 +699,38 @@ export default function FactEditorPage({ toast }) {
                 placeholder="free"
               />
             </div>
+          </div>
+
+          {/* Mode de jeu toggle */}
+          <div className="mt-3">
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Mode de jeu</label>
+            <div className="flex rounded-xl overflow-hidden border border-slate-700">
+              <button
+                onClick={() => { set('is_vip', true); set('type', 'vip') }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
+                style={{
+                  background: fact.is_vip ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'transparent',
+                  color: fact.is_vip ? 'white' : '#9CA3AF',
+                }}
+              >
+                <span>⭐</span> <span>⚔️ Quête WTF!</span>
+              </button>
+              <button
+                onClick={() => { set('is_vip', false); set('type', 'generated') }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
+                style={{
+                  background: !fact.is_vip ? 'linear-gradient(135deg, #7C3AED, #5B21B6)' : 'transparent',
+                  color: !fact.is_vip ? 'white' : '#9CA3AF',
+                }}
+              >
+                <span>⚡</span> <span>Flash / Marathon</span>
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 mt-1.5">
+              {fact.is_vip
+                ? 'Disponible uniquement en mode Quête WTF!'
+                : 'Disponible en Flash, Marathon, Blitz, Série'}
+            </p>
           </div>
         </Section>
 

@@ -1,5 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 const STORAGE_KEY = 'tutorial_state';
 
 export const TUTORIAL_STATES = {
@@ -19,8 +17,12 @@ const STATE_ORDER = [
 ];
 
 export async function getTutorialState() {
-  const state = await AsyncStorage.getItem(STORAGE_KEY);
-  return state || TUTORIAL_STATES.FIRST_FACT;
+  try {
+    const state = localStorage.getItem(STORAGE_KEY);
+    return state || TUTORIAL_STATES.FIRST_FACT;
+  } catch {
+    return TUTORIAL_STATES.FIRST_FACT;
+  }
 }
 
 export async function advanceTutorial() {
@@ -29,7 +31,9 @@ export async function advanceTutorial() {
 
   const idx = STATE_ORDER.indexOf(current);
   const next = STATE_ORDER[idx + 1] || TUTORIAL_STATES.COMPLETED;
-  await AsyncStorage.setItem(STORAGE_KEY, next);
+  try {
+    localStorage.setItem(STORAGE_KEY, next);
+  } catch { /* ignore */ }
   return next;
 }
 

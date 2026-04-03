@@ -12,7 +12,7 @@ function hexToRgb(hex) {
 
 export default function ProfilPage() {
   const navigate = useNavigate()
-  const { isConnected, user, login } = useAuth()
+  const { isConnected, user, signInWithGoogle } = useAuth()
 
   const playerData = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('wtf_data') || '{}') } catch { return {} }
@@ -77,7 +77,7 @@ export default function ProfilPage() {
           <span className="font-black text-base" style={{ color: '#1a1a2e' }}>{pseudo}</span>
           {!isConnected && (
             <button
-              onClick={login}
+              onClick={signInWithGoogle}
               className="mt-3 px-5 py-2.5 rounded-2xl font-black text-sm active:scale-95 transition-all"
               style={{ background: '#FF6B1A', color: 'white', border: 'none' }}
             >

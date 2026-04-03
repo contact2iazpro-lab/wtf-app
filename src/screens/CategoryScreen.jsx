@@ -43,19 +43,12 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
 
   // ── Pool de facts selon le mode de jeu ──────────────────────────────────
   const factsPool = useMemo(() => {
-    let pool
     switch (gameMode) {
-      case 'marathon': pool = getGeneratedFacts(); break
-      case 'blitz':    pool = getGeneratedFacts(); break
-      case 'flash':    pool = getGeneratedFacts(); break
-      default:         pool = getValidFacts(); break  // quête, etc. → tous les facts valides
+      case 'marathon': return getGeneratedFacts()
+      case 'blitz':    return getGeneratedFacts()
+      case 'flash':    return getGeneratedFacts()
+      default:         return getValidFacts()  // quête, etc. → tous les facts valides
     }
-    // ── DEBUG TEMPORAIRE ──
-    console.log('[DEBUG CategoryScreen] gameMode:', gameMode)
-    console.log('[DEBUG CategoryScreen] factsPool:', pool.length)
-    console.log('[DEBUG CategoryScreen] catégories:', [...new Set(pool.map(f => f.category))])
-    // ── FIN DEBUG ──
-    return pool
   }, [gameMode])
 
   const totalPerCategory = useMemo(() => {

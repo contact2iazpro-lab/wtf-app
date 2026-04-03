@@ -122,36 +122,20 @@ function buildDifficultyFrom(facts) {
   return map
 }
 
+function hasWrongAnswerFields(f) {
+  return !!(f.funnyWrong1 || f.closeWrong1 || f.plausibleWrong1)
+}
+
 function buildAll(rawFacts) {
   _rawFacts   = rawFacts
   _difficulty = buildDifficultyFrom(rawFacts)
 
-  // ── DEBUG TEMPORAIRE — tracer les facts exclus ──
-  console.log('[DEBUG] rawFacts reçus dans buildAll:', rawFacts.length)
-  const rejected = { noQuestion: 0, noCategory: 0, noOptions: 0, optionsLt2: 0, noCorrectIndex: 0, negativeCorrectIndex: 0 }
-  const rejectedExamples = []
-  for (const f of rawFacts) {
-    const reasons = []
-    if (!f?.question) reasons.push('noQuestion')
-    if (!f?.category) reasons.push('noCategory')
-    if (!Array.isArray(f?.options)) reasons.push('noOptions')
-    else if (f.options.length < 2) reasons.push('optionsLt2')
-    if (typeof f?.correctIndex !== 'number') reasons.push('noCorrectIndex')
-    else if (f.correctIndex < 0) reasons.push('negativeCorrectIndex')
-    if (reasons.length > 0) {
-      reasons.forEach(r => rejected[r]++)
-      if (rejectedExamples.length < 3) rejectedExamples.push({ id: f?.id, reasons, options: f?.options, correctIndex: f?.correctIndex, category: f?.category, question: f?.question?.slice(0, 50) })
-    }
-  }
-  console.log('[DEBUG] facts rejetés par raison:', rejected)
-  console.log('[DEBUG] exemples rejetés:', JSON.stringify(rejectedExamples))
-  // ── FIN DEBUG ──
-
   _validFacts = rawFacts
     .filter(f => {
       if (!f || !f.question || !f.category) return false
-      if (!Array.isArray(f.options) || f.options.length < 2) return false
-      if (typeof f.correctIndex !== 'number' || f.correctIndex < 0) return false
+      const hasOptions = Array.isArray(f.options) && f.options.length >= 2
+      if (!hasOptions && !hasWrongAnswerFields(f)) return false
+      if (hasOptions && (typeof f.correctIndex !== 'number' || f.correctIndex < 0)) return false
       return true
     })
     .map(f => {
@@ -165,10 +149,13 @@ function buildAll(rawFacts) {
     })
 
   _parcoursFacts = rawFacts
-    .filter(f =>
-      f && f.question && f.category &&
-      Array.isArray(f.options) && f.options.length >= 2 &&
-      typeof f.correctIndex === 'number' && _difficulty[f.id])
+    .filter(f => {
+      if (!f || !f.question || !f.category || !_difficulty[f.id]) return false
+      const hasOptions = Array.isArray(f.options) && f.options.length >= 2
+      if (!hasOptions && !hasWrongAnswerFields(f)) return false
+      if (hasOptions && typeof f.correctIndex !== 'number') return false
+      return true
+    })
     .map(f => {
       let imageUrl = f.imageUrl
       if (imageUrl !== null && imageUrl !== undefined && !imageUrl.startsWith('http')) {
@@ -177,15 +164,6 @@ function buildAll(rawFacts) {
       }
       return { ...f, imageUrl, difficulty: _difficulty[f.id], isSuperWTF: false }
     })
-
-  // ── DEBUG TEMPORAIRE ──
-  console.log('[DEBUG] validFacts total:', _validFacts.length)
-  console.log('[DEBUG] validFacts avec isVip:', _validFacts.filter(f => f.isVip === true).length)
-  console.log('[DEBUG] validFacts sans isVip:', _validFacts.filter(f => !f.isVip).length)
-  console.log('[DEBUG] validFacts isVip undefined:', _validFacts.filter(f => f.isVip === undefined).length)
-  console.log('[DEBUG] getGeneratedFacts:', getGeneratedFacts().length)
-  console.log('[DEBUG] sample fact:', JSON.stringify(_validFacts[0]))
-  // ── FIN DEBUG ──
 
   // Catégories jouables = celles qui ont au moins 1 fact valide
   const activeCatIds = new Set(_validFacts.map(f => f.category))

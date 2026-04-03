@@ -83,6 +83,18 @@ if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID))
       80% { opacity: 1; }
       100% { opacity: 0; transform: translate(var(--coin-dx), var(--coin-dy)) scale(0.3); }
     }
+    .flip-card { perspective: 800px; }
+    .flip-card-inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d; transition: transform 0.3s ease-in-out;
+    }
+    .flip-card-inner.flipped { transform: rotateX(180deg); }
+    .flip-card-face {
+      position: absolute; inset: 0; backface-visibility: hidden;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: inherit;
+    }
+    .flip-card-back { transform: rotateX(180deg); }
   `
   document.head.appendChild(style)
 }
@@ -104,8 +116,24 @@ export default function RevelationScreen({
   sessionScore,
   playerTickets = 0,
   playerHints = 0,
+  wrongAnswer,
+  correctAnswer,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
+
+  // ── Flip animation state (mauvaise réponse → bonne réponse) ───────────────
+  const hasFlipIntro = !isCorrect && !!wrongAnswer && !!correctAnswer
+  const [flipDone, setFlipDone] = useState(!hasFlipIntro)
+  const [flipCardFlipped, setFlipCardFlipped] = useState(false)
+
+  useEffect(() => {
+    if (!hasFlipIntro) return
+    // Petit délai avant de lancer le flip pour que l'utilisateur voie la mauvaise réponse
+    const startTimer = setTimeout(() => setFlipCardFlipped(true), 600)
+    // Une fois le flip terminé (300ms transition), on enchaîne sur l'écran normal
+    const doneTimer = setTimeout(() => setFlipDone(true), 1200)
+    return () => { clearTimeout(startTimer); clearTimeout(doneTimer) }
+  }, [hasFlipIntro])
 
   const [flipped, setFlipped] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -290,6 +318,41 @@ export default function RevelationScreen({
       </button>
     </div>
   )
+
+  // ── Flip intro overlay (mauvaise réponse → bonne réponse) ─────────────────
+  if (hasFlipIntro && !flipDone) {
+    return (
+      <div style={{
+        height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: catGradient,
+      }}>
+        <div className="flip-card" style={{ width: '80%', height: S(80) }}>
+          <div className={`flip-card-inner${flipCardFlipped ? ' flipped' : ''}`}>
+            {/* Face avant : mauvaise réponse */}
+            <div className="flip-card-face" style={{
+              background: 'rgba(244,67,54,0.15)', border: '2px solid #F44336',
+              borderRadius: S(16), padding: `${S(16)} ${S(20)}`,
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: S(10), fontWeight: 900, color: '#F44336', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(6) }}>✗ Ta réponse</div>
+                <div style={{ fontSize: S(15), fontWeight: 900, color: 'white', lineHeight: 1.3 }}>{wrongAnswer}</div>
+              </div>
+            </div>
+            {/* Face arrière : bonne réponse */}
+            <div className="flip-card-face flip-card-back" style={{
+              background: 'rgba(76,175,80,0.15)', border: '2px solid #4CAF50',
+              borderRadius: S(16), padding: `${S(16)} ${S(20)}`,
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(6) }}>✓ Bonne réponse</div>
+                <div style={{ fontSize: S(15), fontWeight: 900, color: 'white', lineHeight: 1.3 }}>{correctAnswer}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
   if (!isCorrect && !isDuel) {

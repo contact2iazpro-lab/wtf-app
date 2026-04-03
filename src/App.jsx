@@ -28,7 +28,7 @@ import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
 import SettingsModal from './components/SettingsModal'
 import HowToPlayModal from './components/HowToPlayModal'
-import TutorialOverlay from './components/TutorialOverlay'
+import { getTutorialState, getTutorialFactId, TUTORIAL_STATES } from './utils/tutorialManager'
 import { audio } from './utils/audio'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
@@ -131,8 +131,32 @@ export default function App() {
   const scale = useScale()
 
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
-  const handleSplashComplete = () => {
+  const handleSplashComplete = async () => {
     sessionStorage.setItem('wtf_splash_done', 'true')
+
+    // Vérifier l'état du tutoriel — si FIRST_FACT, envoyer directement sur QuestionScreen
+    try {
+      const tutorialState = await getTutorialState()
+      if (tutorialState === TUTORIAL_STATES.FIRST_FACT) {
+        const tutorialFactId = getTutorialFactId()
+        const allFacts = getValidFacts()
+        const tutorialFact = allFacts.find(f => f.id === tutorialFactId)
+        if (tutorialFact) {
+          const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, DIFFICULTY_LEVELS.HOT) }
+          setSessionType('parcours')
+          setGameMode('solo')
+          setIsQuickPlay(false)
+          setIsTutorialSession(true)
+          setSelectedDifficulty(DIFFICULTY_LEVELS.HOT)
+          setSelectedCategory(tutorialFact.category)
+          initSessionState([factWithOptions])
+          setScreen(SCREENS.QUESTION)
+          setShowSplash(false)
+          return
+        }
+      }
+    } catch { /* fallback to normal flow */ }
+
     setShowSplash(false)
   }
 
@@ -153,6 +177,8 @@ export default function App() {
   const dailyQuestsRemaining = Math.max(0, 3 - (sessionsToday || 0))
 
   // Session type tracking
+  const [isTutorialSession, setIsTutorialSession] = useState(false)
+  const [flipInfo, setFlipInfo] = useState(null) // { wrongAnswer, correctAnswer } for tutorial flip
   const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'marathon' | 'duel'
   const [coinsEarnedLastSession, setCoinsEarnedLastSession] = useState(0)
   const [dailyFact, setDailyFact] = useState(null)
@@ -168,10 +194,7 @@ export default function App() {
   const [duelPlayers, setDuelPlayers] = useState([])
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
-  // Tutorial (first visit — mandatory) + auto-show rules (once per session)
-  const [showTutorial, setShowTutorial] = useState(() => localStorage.getItem('hideWelcomeScreen') !== 'true')
   const [showHowToPlay, setShowHowToPlay] = useState(false)
-  const rulesAutoShownRef = useRef(false)
   const [showSettings, setShowSettings] = useState(false)
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
@@ -490,7 +513,7 @@ export default function App() {
 
   // ─── Answer handlers ─────────────────────────────────────────────────────
 
-  const handleSelectAnswer = useCallback((answerIndex) => {
+  const handleSelectAnswer = useCallback((answerIndex, tutorialFlipInfo) => {
     if (!currentFact) return
     const isAnswerCorrect = answerIndex === currentFact.correctIndex
 
@@ -505,6 +528,9 @@ export default function App() {
         points = Array.isArray(sc) ? (sc[hintsUsed] ?? sc[sc.length - 1]) : sc
       }
     }
+
+    // Tutorial flip info (wrongAnswer → correctAnswer)
+    setFlipInfo(tutorialFlipInfo || null)
 
     setSelectedAnswer(answerIndex)
     setIsCorrect(isAnswerCorrect)
@@ -769,6 +795,8 @@ export default function App() {
     setDuelPlayers([])
     setDuelCurrentPlayerIndex(0)
     setIsQuickPlay(false)
+    setIsTutorialSession(false)
+    setFlipInfo(null)
     setSessionType('parcours')
     setBlitzFacts([])
     setBlitzResults(null)
@@ -807,11 +835,6 @@ export default function App() {
 
   const handleShowRules = useCallback(() => setShowHowToPlay(true), [])
 
-  const handleTutorialComplete = useCallback(() => {
-    setShowTutorial(false)
-    // Don't auto-show rules right after tutorial (tutorial covered them)
-    rulesAutoShownRef.current = true
-  }, [])
 
   // ─── Dev Panel helpers ────────────────────────────────────────────────────
 
@@ -892,7 +915,6 @@ export default function App() {
   }, [streakRewardToast])
 
   // HowToPlayModal only opens manually (via Settings), not automatically
-  // TutorialOverlay covers onboarding — no duplicate auto-show needed
 
   // Push history entry on screen change (back button support)
   useEffect(() => {
@@ -1035,11 +1057,7 @@ export default function App() {
         </div>
       )}
 
-      {/* First-visit tutorial (mandatory, no skip) */}
-      {showTutorial && <TutorialOverlay onComplete={handleTutorialComplete} />}
-
-      {/* Auto-show rules on HOME (once per session, if toggle is ON) */}
-      {showHowToPlay && screen === SCREENS.HOME && !showTutorial && (
+      {showHowToPlay && screen === SCREENS.HOME && (
         <HowToPlayModal onClose={() => setShowHowToPlay(false)} />
       )}
 
@@ -1119,6 +1137,7 @@ export default function App() {
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
           playerCoins={wtfCoins}
+          isTutorial={isTutorialSession}
         />
       )}
 
@@ -1139,6 +1158,8 @@ export default function App() {
           sessionScore={gameMode === 'duel' ? 0 : sessionScore}
           playerTickets={tickets}
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
+          wrongAnswer={flipInfo?.wrongAnswer}
+          correctAnswer={flipInfo?.correctAnswer}
         />
       )}
 

@@ -119,11 +119,24 @@ export default function QuestionScreen({
   playerColor,
   playerEmoji,
   playerCoins = 0,
+  isTutorial = false,
 }) {
   // Solo et marathon → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
     (gameMode === 'solo' || gameMode === 'marathon') ? 'qcm' : null
   )
+
+  // ── Tutorial mode: only 2 options (correct + 1 wrong) ──────────────────────
+  const tutorialOptions = isTutorial ? (() => {
+    const correctIdx = fact.correctIndex
+    const wrongIndices = fact.options.map((_, i) => i).filter(i => i !== correctIdx)
+    const oneWrong = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]
+    // Garder l'ordre relatif : le plus petit index en premier
+    const indices = [correctIdx, oneWrong].sort((a, b) => a - b)
+    return indices.map(i => ({ originalIndex: i, text: fact.options[i] }))
+  })() : null
+  // Stabilise via useState pour ne pas re-randomiser à chaque render
+  const [stableTutorialOptions] = useState(() => tutorialOptions)
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showSettings, setShowSettings]       = useState(false)
@@ -502,6 +515,9 @@ export default function QuestionScreen({
   }
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
+  // En mode tutoriel : pas de timer, pas d'indices, pas de barre de progression, 2 réponses seulement
+  const optionsToRender = isTutorial && stableTutorialOptions ? stableTutorialOptions : fact.options.map((text, i) => ({ originalIndex: i, text }))
+
   return (
     <div
       className="qs-root relative screen-enter"
@@ -513,10 +529,10 @@ export default function QuestionScreen({
     >
       {quitModal}
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      {header}
+      {!isTutorial && header}
 
-      {/* Rappel du mode */}
-      {difficulty && (
+      {/* Rappel du mode — masqué en tutoriel */}
+      {!isTutorial && difficulty && (
         <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
           <span style={{
             fontSize: S(10), fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -527,57 +543,64 @@ export default function QuestionScreen({
         </div>
       )}
 
-      {progressBar}
+      {!isTutorial && progressBar}
 
       {/* Zone centrale : question + indices + QCM */}
       <div className="qs-m" style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'flex-start', gap: S(10),
+        justifyContent: isTutorial ? 'center' : 'flex-start', gap: S(10),
         padding: `0 ${S(16)}`,
       }}>
         {questionCard}
 
-        {/* Indices */}
-        {difficulty?.hintsAllowed && hintButtons}
+        {/* Indices — masqués en tutoriel */}
+        {!isTutorial && difficulty?.hintsAllowed && hintButtons}
 
         {/* Boutons QCM */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8) }}>
-          {fact.options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                const correct = index === fact.correctIndex
-                audio.play(correct ? 'correct' : 'wrong')
-                audio.vibrate(correct ? [40, 20, 40] : [120])
-                onSelectAnswer(index)
-              }}
-              className="btn-press transition-all active:scale-95"
-              style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: '1.5px solid rgba(255,255,255,0.4)',
-                borderRadius: S(12),
-                color: 'white',
-                fontWeight: 700,
-                fontSize: fact.options.length > 4 ? S(13) : S(14),
-                padding: `${S(12)} ${S(8)}`,
-                minHeight: fact.options.length > 4 ? S(48) : S(52),
-                width: '100%',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-              }}
-            >
-              {option}
-            </button>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: isTutorial ? '1fr' : '1fr 1fr', gap: S(8) }}>
+          {optionsToRender.map((opt) => {
+            const index = typeof opt.originalIndex === 'number' ? opt.originalIndex : opt
+            const text = typeof opt.text === 'string' ? opt.text : fact.options[index]
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  const correct = index === fact.correctIndex
+                  audio.play(correct ? 'correct' : 'wrong')
+                  audio.vibrate(correct ? [40, 20, 40] : [120])
+                  onSelectAnswer(index, isTutorial && !correct ? {
+                    wrongAnswer: text,
+                    correctAnswer: fact.options[fact.correctIndex],
+                  } : undefined)
+                }}
+                className="btn-press transition-all active:scale-95"
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '1.5px solid rgba(255,255,255,0.4)',
+                  borderRadius: S(12),
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: isTutorial ? S(15) : (fact.options.length > 4 ? S(13) : S(14)),
+                  padding: `${S(14)} ${S(10)}`,
+                  minHeight: isTutorial ? S(56) : (fact.options.length > 4 ? S(48) : S(52)),
+                  width: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                }}
+              >
+                {text}
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {timerZone}
+      {!isTutorial && timerZone}
     </div>
   )
 }

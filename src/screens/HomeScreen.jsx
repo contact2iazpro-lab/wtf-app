@@ -8,6 +8,7 @@ import { useState, useEffect, useMemo } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
+import { getTutorialState, advanceTutorial, TUTORIAL_STATES } from '../utils/tutorialManager'
 
 // ── Background aléatoire par session ──────────────────────────────────────────
 const HOME_BACKGROUNDS = [
@@ -127,6 +128,24 @@ export default function HomeScreen({
   const textColor = homeBgData.textColor
   const textShadow = homeBgData.shadow
 
+  // ── Toast premier f*ct découvert ──────────────────────────────────────────
+  const [tutorialToast, setTutorialToast] = useState(null)
+
+  useEffect(() => {
+    let mounted = true
+    getTutorialState().then(state => {
+      if (!mounted) return
+      if (state === TUTORIAL_STATES.FIRST_FACT) {
+        advanceTutorial().then(() => {
+          if (!mounted) return
+          setTutorialToast('1 f*ct découvert 🎉')
+          setTimeout(() => { if (mounted) setTutorialToast(null) }, 3000)
+        })
+      }
+    })
+    return () => { mounted = false }
+  }, [])
+
   const nav = (target) => {
     audio.play?.('click')
     if (onNavigate) onNavigate(target)
@@ -201,6 +220,27 @@ export default function HomeScreen({
       }}
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
+      {/* Toast tutoriel */}
+      {tutorialToast && (
+        <div style={{
+          position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 1000, background: '#FF6B1A', color: 'white',
+          borderRadius: 12, padding: '10px 20px',
+          fontWeight: 700, fontSize: 15, textAlign: 'center', whiteSpace: 'nowrap',
+          animation: 'tutorialToastSlide 0.35s ease',
+          pointerEvents: 'none',
+          boxShadow: '0 4px 20px rgba(255,107,26,0.4)',
+        }}>
+          {tutorialToast}
+        </div>
+      )}
+      <style>{`
+        @keyframes tutorialToastSlide {
+          from { transform: translateX(-50%) translateY(-60px); opacity: 0; }
+          to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+        }
+      `}</style>
 
       {/* ═══ ZONE 1 — HEADER ═══════════════════════════════════════════════ */}
       <div style={{

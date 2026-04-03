@@ -64,6 +64,7 @@ function fromRow(row) {
     imageUrl:     row.image_url    || null,
     difficulty:   row.difficulty   || null,
     type:         row.type         || null,
+    isVip:        !!row.is_vip,
     teaser:       row.teaser       || null,
     funnyWrong1:     row.funny_wrong_1     || null,
     funnyWrong2:     row.funny_wrong_2     || null,
@@ -176,7 +177,7 @@ const RETRY_DELAY = 1500 // ms
 async function fetchFromSupabase() {
   const { data, error } = await supabase
     .from('facts')
-    .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
+    .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
     .eq('is_published', true)
     .order('id')
 
@@ -242,7 +243,7 @@ export function getFactsByCategory(categoryId) {
 //   Generated = facts créés par IA (type = 'generated')
 
 export function getVipFacts() {
-  return getValidFacts().filter(f => !f.type || f.type === 'vip')
+  return getValidFacts().filter(f => f.isVip)
 }
 
 export function getVipFactsByCategory(categoryId) {
@@ -251,7 +252,7 @@ export function getVipFactsByCategory(categoryId) {
 }
 
 export function getGeneratedFacts() {
-  return getValidFacts().filter(f => f.type === 'generated')
+  return getValidFacts().filter(f => !f.isVip)
 }
 
 export function getGeneratedFactsByCategory(categoryId) {

@@ -60,11 +60,11 @@ export default function SplashScreen({ onComplete, isReady }) {
       opacity: fadeOut ? 0 : 1,
     }}>
       <img
-        src="/logo-wtf.png"
+        src="/assets/ui/wtf-logo.png?v=4"
         alt="WTF!"
         style={{
-          width: S(180),
-          height: S(180),
+          width: 160,
+          height: 'auto',
           objectFit: 'contain',
           transition: 'transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease',
           opacity: logoVisible ? 1 : 0,
@@ -73,19 +73,19 @@ export default function SplashScreen({ onComplete, isReady }) {
             : 'scale(0.2) rotate(-20deg)',
         }}
       />
-      <span style={{
-        fontFamily: 'Nunito, sans-serif',
-        fontWeight: 900,
-        fontSize: S(32),
-        color: 'white',
-        marginTop: S(20),
-        letterSpacing: S(1),
-        transition: 'opacity 0.5s ease, transform 0.5s ease',
-        opacity: taglineVisible ? 1 : 0,
-        transform: taglineVisible ? 'translateY(0)' : 'translateY(24px)',
-      }}>
-        Vrai ou Fou ?
-      </span>
+      <img
+        src="/assets/ui/vof-logo.png?v=4"
+        alt="Vrai ou fou ?"
+        style={{
+          width: 200,
+          height: 'auto',
+          objectFit: 'contain',
+          marginTop: S(20),
+          transition: 'opacity 0.5s ease, transform 0.5s ease',
+          opacity: taglineVisible ? 1 : 0,
+          transform: taglineVisible ? 'translateY(0)' : 'translateY(24px)',
+        }}
+      />
 
       {/* Barre de progression — même fade que la tagline */}
       <div style={{

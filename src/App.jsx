@@ -13,6 +13,7 @@ import { logDevEvent } from './utils/devLogger'
 import { getAnswerOptions } from './utils/answers'
 import HomeScreen from './screens/HomeScreen'
 import SplashScreen from './screens/SplashScreen'
+import FalkonIntroScreen from './screens/FalkonIntroScreen'
 import MarathonScreen from './screens/MarathonScreen'
 import DifficultyScreen from './screens/DifficultyScreen'
 import CategoryScreen from './screens/CategoryScreen'
@@ -130,7 +131,8 @@ export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
 
-  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
+  const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
+  const [showSplash, setShowSplash] = useState(false)
   const handleSplashComplete = async () => {
     sessionStorage.setItem('wtf_splash_done', 'true')
 
@@ -361,8 +363,10 @@ export default function App() {
     setSelectedDifficulty(difficulty)
 
     if (gameMode === 'marathon') {
-      // Marathon : 20 questions dans la catégorie choisie, pas de ticket consommé
-      const facts = [...getFactsByCategory(selectedCategory)]
+      // Marathon : 20 questions générées dans la catégorie choisie
+      const pool = getGeneratedFactsByCategory(selectedCategory)
+      const fallback = pool.length >= 4 ? pool : getFactsByCategory(selectedCategory)
+      const facts = [...fallback]
         .sort(() => Math.random() - 0.5)
         .slice(0, 20)
         .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
@@ -373,9 +377,9 @@ export default function App() {
       return
     }
 
-    // Parcours standard
+    // Parcours/Quête : VIP uniquement, filtrés par difficulté
     const available = getParcoursFacts().filter(f =>
-      f.difficulty === difficulty.id && !unlockedFacts.has(f.id) && !f.isSuperWTF
+      (!f.type || f.type === 'vip') && f.difficulty === difficulty.id && !unlockedFacts.has(f.id)
     )
     const facts = [...available]
       .sort(() => Math.random() - 0.5)
@@ -952,6 +956,12 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [screen, gameMode, handleHome])
 
+
+  if (showFalkon) {
+    return (
+      <FalkonIntroScreen onComplete={() => { setShowFalkon(false); setShowSplash(true) }} />
+    )
+  }
 
   if (showSplash) {
     return (

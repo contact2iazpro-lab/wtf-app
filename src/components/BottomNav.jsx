@@ -19,7 +19,8 @@ export default function BottomNav() {
     <div
       style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 480, zIndex: 50,
+        width: '100%', maxWidth: 448, zIndex: 50,
+        boxSizing: 'border-box',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around',
         padding: `${S(4)} ${S(4)} ${S(10)}`,
         background: 'rgba(255,255,255,0.95)',

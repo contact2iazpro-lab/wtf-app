@@ -179,7 +179,7 @@ export default function SettingsModal({ onClose }) {
 
       <div
         className="fixed inset-0 flex items-end justify-center"
-        style={{ zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+        style={{ zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', touchAction: 'manipulation' }}
         onClick={onClose}
       >
         <div
@@ -190,7 +190,11 @@ export default function SettingsModal({ onClose }) {
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
             <h2 className="font-black text-lg" style={{ color: '#1a1a2e' }}>⚙️ Paramètres</h2>
-            <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90" style={{ background: '#EF4444' }}>✕</button>
+            <button
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onClose() }}
+              className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90"
+              style={{ background: '#EF4444', position: 'relative', zIndex: 10, touchAction: 'manipulation' }}
+            >✕</button>
           </div>
 
           {/* Scrollable content */}

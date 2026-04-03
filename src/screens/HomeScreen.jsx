@@ -138,8 +138,8 @@ export default function HomeScreen({
 
   const handleSettings = () => {
     audio.play?.('click')
-    setShowSettings(true)
     if (onOpenSettings) onOpenSettings()
+    else setShowSettings(true)
   }
 
   // ── Mode icon component ────────────────────────────────────────────────────

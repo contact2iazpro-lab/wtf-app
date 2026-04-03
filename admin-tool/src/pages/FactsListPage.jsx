@@ -786,7 +786,11 @@ export default function FactsListPage({ toast }) {
 
       {/* ── Generate modal ───────────────────────────────────────────── */}
       {showGenerateModal && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70" onClick={() => !genLoading && setShowGenerateModal(false)}>
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/70"
+          onMouseDown={e => { e.currentTarget._mouseDownTarget = e.target }}
+          onClick={e => { if (e.target === e.currentTarget && e.currentTarget._mouseDownTarget === e.target && !genLoading) setShowGenerateModal(false) }}
+        >
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="px-6 pt-6 pb-4 border-b border-slate-700">
               <h2 className="text-lg font-black text-white">⚡ Générer des facts</h2>
@@ -806,16 +810,20 @@ export default function FactsListPage({ toast }) {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">
-                  Nombre de facts à générer (1–20)
+                  Nombre de facts à générer
                 </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={genCount}
-                  onChange={e => setGenCount(Math.min(20, Math.max(1, Number(e.target.value))))}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none"
-                />
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={1}
+                    max={10}
+                    value={genCount}
+                    onChange={e => setGenCount(Number(e.target.value))}
+                    className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
+                    style={{ background: `linear-gradient(to right, #FF6B1A 0%, #FF6B1A ${(genCount - 1) / 9 * 100}%, #374151 ${(genCount - 1) / 9 * 100}%, #374151 100%)` }}
+                  />
+                  <span className="text-white font-black text-lg tabular-nums w-8 text-center">{genCount}</span>
+                </div>
               </div>
 
               {(!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_ADMIN_PASSWORD) && (

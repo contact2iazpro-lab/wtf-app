@@ -160,7 +160,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
           textTransform: 'uppercase',
           marginTop: S(4), marginBottom: 0,
         }}>
-          QUÊTE WTF!
+          QUEST
         </p>
       </div>
 

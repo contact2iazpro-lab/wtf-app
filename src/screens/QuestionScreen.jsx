@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import CircularTimer from '../components/CircularTimer'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
+import HintFlipButton from '../components/HintFlipButton'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 
@@ -32,102 +33,6 @@ const CORRECT_MESSAGES = [
   "Incroyable mais vrai... comme toi ! ✨",
 ]
 
-// ── Hint flip card button ────────────────────────────────────────────────────
-// isFree    : indice gratuit (pas de coût)
-// cost      : coût en coins si payant
-// canAfford : le joueur a assez de coins pour cet indice payant
-function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, onReveal }) {
-  const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
-
-  const disabled = !isFree && !canAfford
-
-  const handleClick = () => {
-    if (phase !== 'front' || disabled) return
-    setPhase('flip')
-    onReveal()
-    setTimeout(() => setPhase('back'), 160)
-  }
-
-  const color = catColor || '#FF6B1A'
-
-  // Texte adaptatif selon luminosité de la couleur catégorie
-  const isLight = color.length >= 7
-    ? (parseInt(color.slice(1,3),16)*299 + parseInt(color.slice(3,5),16)*587 + parseInt(color.slice(5,7),16)*114) / 1000 > 128
-    : false
-  const labelColor = '#ffffff'
-
-  return (
-    <button
-      onClick={handleClick}
-      style={{
-        height: 48,
-        width: '100%',
-        borderRadius: 24,
-        border: (disabled && phase !== 'back') ? '2px solid #6B7280' : `2px solid ${color}`,
-        background: (disabled && phase !== 'back')
-          ? 'rgba(107,114,128,0.15)'
-          : phase === 'back' ? 'rgba(255,255,255,0.88)' : `${color}28`,
-        transform: phase === 'flip' ? 'scaleY(0.08)' : 'scaleY(1)',
-        transition: 'transform 0.15s ease, background 0.3s, border-color 0.3s',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '4px 12px',
-        cursor: (disabled && phase !== 'back') ? 'not-allowed' : 'pointer',
-        pointerEvents: phase !== 'front' ? 'none' : 'auto',
-        flexShrink: 0,
-        opacity: (disabled && phase !== 'back') ? 0.55 : 1,
-        gap: 1,
-      }}
-    >
-      {phase !== 'back' ? (
-        disabled ? (
-          // Payant + solde insuffisant
-          <>
-            <span style={{ fontWeight: 900, fontSize: 12, color: '#9CA3AF', textDecoration: 'line-through', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
-              Indice — {cost}
-              <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 'calc(14px * var(--scale))', height: 'calc(14px * var(--scale))', marginLeft: 'calc(4px * var(--scale))', verticalAlign: 'middle' }} />
-            </span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
-              Pas assez de coins
-            </span>
-          </>
-        ) : isFree ? (
-          // Gratuit
-          <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap' }}>
-            N°{num} — Indice offert
-          </span>
-        ) : (
-          // Payant + solde suffisant
-          <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
-            Indice — {cost}
-            <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 'calc(14px * var(--scale))', height: 'calc(14px * var(--scale))', marginLeft: 'calc(4px * var(--scale))', verticalAlign: 'middle' }} />
-          </span>
-        )
-      ) : (
-        <span
-          style={{
-            fontSize: 18,
-            fontWeight: 700,
-            color: color,
-            textAlign: 'center',
-            lineHeight: 1.35,
-            wordBreak: 'break-word',
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
-          {hint || '—'}
-        </span>
-      )}
-    </button>
-  )
-}
-
 // ── Main QuestionScreen ──────────────────────────────────────────────────────
 export default function QuestionScreen({
   fact,
@@ -146,6 +51,7 @@ export default function QuestionScreen({
   playerColor,
   playerEmoji,
   playerCoins = 0,
+  playerHints = 0,
   isTutorial = false,
 }) {
   // Solo et marathon → QCM direct, duel → sélection du mode
@@ -403,11 +309,12 @@ export default function QuestionScreen({
   )
 
   // ── Hints ──────────────────────────────────────────────────────────────────
-  // Nombre total d'indices = gratuits + payants (selon le niveau)
+  // Nombre d'indices disponibles selon la difficulté (max boutons affichés)
   const freeHints  = difficulty?.freeHints  ?? 0
   const paidHints  = difficulty?.paidHints  ?? 0
-  const hintCost   = difficulty?.hintCost   ?? 0
   const totalHints = freeHints + paidHints
+  // Stock restant = playerHints - indices déjà utilisés dans cette question
+  const stockRemaining = Math.max(0, playerHints - hintsUsed)
 
   const hintButtons = totalHints > 0 && (
     <div
@@ -416,7 +323,6 @@ export default function QuestionScreen({
     >
       {Array.from({ length: totalHints }, (_, i) => {
         const hintNum = i + 1
-        const isFree  = hintNum <= freeHints
         const hintText = hintNum === 1 ? fact.hint1 : fact.hint2
         return (
           <HintFlipButton
@@ -424,9 +330,8 @@ export default function QuestionScreen({
             num={hintNum}
             hint={hintText}
             catColor={cat?.color || '#FF6B1A'}
-            isFree={isFree}
-            cost={hintCost}
-            canAfford={playerCoins >= hintCost}
+            hasStock={stockRemaining > 0}
+            stockCount={stockRemaining}
             onReveal={() => { onUseHint(hintNum); audio.play('click') }}
           />
         )

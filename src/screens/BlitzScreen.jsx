@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { getCategoryById } from '../data/facts'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
+import HintFlipButton from '../components/HintFlipButton'
 
 // ── Lisibilité sur fond coloré ───────────────────────────────────────────────
 function isLightColor(hex) {
@@ -17,7 +18,7 @@ const CORRECT_BONUS = 2
 const WRONG_PENALTY = 3
 const FLASH_DURATION = 400
 
-export default function BlitzScreen({ facts, category, onFinish, onQuit, playerCoins }) {
+export default function BlitzScreen({ facts, category, onFinish, onQuit, playerCoins, playerHints = 0, onUseHint }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -32,6 +33,8 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
   const [coinsEarned, setCoinsEarned] = useState(0)
   const [flashAnswer, setFlashAnswer] = useState(null) // { index, correct }
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
+  const [hintUsedThisQ, setHintUsedThisQ] = useState(false)
+  const [hiddenOption, setHiddenOption] = useState(null)
 
   // Refs for timer
   const timeRef = useRef(INITIAL_TIME)
@@ -128,6 +131,8 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
     // Next question after flash
     flashTimeoutRef.current = setTimeout(() => {
       setFlashAnswer(null)
+      setHintUsedThisQ(false)
+      setHiddenOption(null)
       setCurrentIndex(i => i + 1)
     }, FLASH_DURATION)
   }, [currentFact, flashAnswer, onFinish])
@@ -263,6 +268,30 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
           </p>
         </div>
 
+        {/* ── Hint button ──────────────────────────────────────────────── */}
+        {!hintUsedThisQ && !flashAnswer && (
+          <div style={{ marginBottom: S(6) }}>
+            <HintFlipButton
+              num={1}
+              hint={currentFact?.hint1 || '—'}
+              catColor={cat?.color || '#FF6B1A'}
+              hasStock={playerHints > 0}
+              stockCount={playerHints}
+              onReveal={() => {
+                if (onUseHint) onUseHint(1)
+                setHintUsedThisQ(true)
+                // Éliminer une mauvaise réponse au hasard
+                const wrongIndices = currentFact.options
+                  .map((_, idx) => idx)
+                  .filter(idx => idx !== currentFact.correctIndex)
+                const randomWrong = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]
+                setHiddenOption(randomWrong)
+                audio.play('click')
+              }}
+            />
+          </div>
+        )}
+
         {/* ── QCM options ─────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col justify-center" style={{ gap: S(10) }}>
           {currentFact?.options?.map((option, i) => {
@@ -291,14 +320,15 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
               <button
                 key={`${currentIndex}-${i}`}
                 onClick={() => handleAnswer(i)}
-                disabled={flashAnswer !== null}
+                disabled={flashAnswer !== null || hiddenOption === i}
                 className="w-full rounded-2xl text-left transition-all active:scale-[0.97]"
                 style={{
-                  background: btnBg,
-                  border: `2px solid ${btnBorder}`,
+                  background: hiddenOption === i ? 'rgba(107,114,128,0.1)' : btnBg,
+                  border: `2px solid ${hiddenOption === i ? 'rgba(107,114,128,0.2)' : btnBorder}`,
                   padding: `${S(14)} ${S(18)}`,
-                  opacity: flashAnswer && !isFlashed && !isCorrectAnswer ? 0.5 : 1,
+                  opacity: hiddenOption === i ? 0.3 : (flashAnswer && !isFlashed && !isCorrectAnswer ? 0.5 : 1),
                   transition: 'all 0.15s ease',
+                  textDecoration: hiddenOption === i ? 'line-through' : 'none',
                 }}
               >
                 <span style={{

@@ -270,7 +270,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
         <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(16)}`, paddingBottom: S(80) }}>
           {unlockedFacts.length === 0 && (
             <p style={{ textAlign: 'center', fontSize: S(13), color: 'rgba(255,255,255,0.5)', padding: `${S(32)} 0` }}>
-              Aucun F*ct débloqué dans cette catégorie.<br />Lance une quête pour commencer !
+              Aucun F*ct débloqué dans cette catégorie.<br />Lance une Quest pour commencer !
             </p>
           )}
 

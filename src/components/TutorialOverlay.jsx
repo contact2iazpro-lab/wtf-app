@@ -9,7 +9,7 @@ const SLIDES = [
   {
     emoji: '🎮',
     title: 'Comment jouer ?',
-    text: 'Lance des quêtes pour débloquer les WTF VIP les plus fous.\nJoue en Flash, Marathon ou Blitz pour gagner des coins et des tickets',
+    text: 'Lance des Quest pour débloquer les WTF VIP les plus fous.\nJoue en Flash, Explorer ou Blitz pour gagner des coins et des tickets',
   },
   {
     emoji: '📚',

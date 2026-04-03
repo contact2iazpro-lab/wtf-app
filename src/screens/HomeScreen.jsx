@@ -58,10 +58,14 @@ function useDailyCoffre() {
 
 function applyCofreReward(reward) {
   try {
-    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    if (reward.type === 'coins') data.wtfCoins = (data.wtfCoins || 0) + reward.amount
-    else if (reward.type === 'hints') data.wtfHints = (data.wtfHints || 0) + reward.amount
-    localStorage.setItem('wtf_data', JSON.stringify(data))
+    if (reward.type === 'coins') {
+      const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      data.wtfCoins = (data.wtfCoins || 0) + reward.amount
+      localStorage.setItem('wtf_data', JSON.stringify(data))
+    } else if (reward.type === 'hints') {
+      const current = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
+      localStorage.setItem('wtf_hints_available', String(current + reward.amount))
+    }
   } catch { /* ignore */ }
 }
 
@@ -486,9 +490,9 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <ModeIcon src="/assets/modes/quete.png" label="Quête WTF!" onClick={() => nav('difficulty')} />
+          <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => nav('difficulty')} />
           <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => nav('trophees')} />
-          <ModeIcon src="/assets/modes/wtf-semaine.png" label="WTF Semaine" onClick={() => nav('wtfDuJour')} />
+          <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" onClick={() => nav('wtfDuJour')} />
         </div>
 
         {/* Colonne centre — flex: 1 */}
@@ -529,9 +533,9 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
+          <ModeIcon src="/assets/modes/marathon.png" label="Explorer" onClick={() => nav('marathon')} />
           <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('amis')} />
-          <ModeIcon src="/assets/modes/blitz.png" label="Flash" onClick={() => nav('blitz')} />
+          <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
         </div>
       </div>
 
@@ -567,7 +571,7 @@ export default function HomeScreen({
             fontWeight: 400, fontSize: 14, color: '#FF6B1A',
             letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2,
           }}>
-            JOUER<br />PARTIE RAPIDE
+            Jouer une partie rapide
           </span>
           <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
         </button>

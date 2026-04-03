@@ -37,17 +37,21 @@ export default function MarathonScreen({
   difficulty     = null,
   onReplay,
   onHome,
+  onContinue,
+  canContinue    = false,
+  hasTickets     = false,
+  remainingQuestions = 0,
 }) {
   const diffLabel = difficulty ? DIFFICULTY_LABELS[difficulty.id] : null
   const pct       = Math.round((correctCount / totalFacts) * 100)
 
   const praise =
-    isPerfect           ? '🏆 PARFAIT ! 20/20 !'
+    isPerfect           ? `🏆 PARFAIT ! ${totalFacts}/${totalFacts} !`
     : correctCount >= 18 ? '🔥 Quasi parfait !'
     : correctCount >= 15 ? '💪 Très belle course !'
     : correctCount >= 10 ? '👍 Pas mal du tout !'
     : correctCount >= 5  ? '😅 Continue à t\'entraîner !'
-    :                       '🧗 Le Marathon, ça se mérite !'
+    :                       '🧗 Explorer, ça se mérite !'
 
   return (
     <div style={{
@@ -78,7 +82,7 @@ export default function MarathonScreen({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.08em' }}>
-            🏃 KIDS — MARATHON
+            🧭 EXPLORER
           </span>
           {diffLabel && (
             <span style={{
@@ -108,9 +112,9 @@ export default function MarathonScreen({
 
         {/* Titre */}
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 32, marginBottom: 4 }}>🏃</div>
+          <div style={{ fontSize: 32, marginBottom: 4 }}>🧭</div>
           <div style={{ fontSize: 22, fontWeight: 900, color: '#FF6B1A', letterSpacing: 1 }}>
-            MARATHON TERMINÉ !
+            EXPLORER TERMINÉ !
           </div>
           <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginTop: 4 }}>
             {praise}
@@ -212,9 +216,35 @@ export default function MarathonScreen({
             boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
           }}
         >
-          🏃 Relancer le Marathon
+          🧭 Relancer Explorer
         </button>
       </div>
+
+      {/* ── Bouton Continuer ─────────────────────────────────────── */}
+      {remainingQuestions > 0 && (
+        <div style={{ padding: '0 20px 16px', textAlign: 'center' }}>
+          <button
+            onClick={canContinue ? onContinue : undefined}
+            disabled={!canContinue}
+            style={{
+              width: '100%', padding: '14px',
+              background: canContinue
+                ? 'linear-gradient(135deg, #8B5CF6, #A78BFA)'
+                : 'rgba(107,114,128,0.3)',
+              border: 'none', borderRadius: 14,
+              color: canContinue ? 'white' : '#9CA3AF',
+              fontWeight: 900, fontSize: 14,
+              cursor: canContinue ? 'pointer' : 'not-allowed',
+              fontFamily: 'Nunito, sans-serif',
+              boxShadow: canContinue ? '0 4px 16px rgba(139,92,246,0.4)' : 'none',
+            }}
+          >
+            {hasTickets
+              ? `🎫 Continuer (1 ticket) — ${remainingQuestions} questions restantes`
+              : '🎫 Pas de ticket'}
+          </button>
+        </div>
+      )}
 
     </div>
   )

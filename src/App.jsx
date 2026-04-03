@@ -28,6 +28,7 @@ import WTFDuJourRevealScreen from './screens/WTFDuJourRevealScreen'
 import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from './screens/DuelSetupScreen'
 import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
+import ModeLaunchScreen from './screens/ModeLaunchScreen'
 import SettingsModal from './components/SettingsModal'
 import HowToPlayModal from './components/HowToPlayModal'
 import { getTutorialState, getTutorialFactId, TUTORIAL_STATES } from './utils/tutorialManager'
@@ -50,14 +51,73 @@ const SCREENS = {
   MARATHON_RESULTS: 'marathon_results',
   BLITZ: 'blitz',
   BLITZ_RESULTS: 'blitz_results',
+  MODE_LAUNCH: 'mode_launch',
+}
+
+const MODE_CONFIGS = {
+  quest: {
+    modeId: 'quest', modeName: 'Quest', subtitle: 'Le mode principal', emoji: '⭐', color: '#FF6B1A',
+    rules: [
+      { icon: '🎫', text: 'Coûte 1 ticket par session' },
+      { icon: '🎯', text: 'Choisis un niveau de difficulté' },
+      { icon: '❄️', text: 'Cool : 4 choix · 2 indices disponibles · 3 coins/bonne réponse' },
+      { icon: '🔥', text: 'Hot : 4 choix · 2 indices disponibles · 3 coins/bonne réponse' },
+      { icon: '⚡', text: 'WTF! : 6 choix · 1 indice disponible · 5 coins/bonne réponse' },
+      { icon: '📚', text: '5 questions — les f*cts trouvés rejoignent ta Collection' },
+      { icon: '🏆', text: 'Score parfait = bonus 25 coins + 1 ticket !' },
+    ],
+  },
+  explorer: {
+    modeId: 'explorer', modeName: 'Explorer', subtitle: 'Découvre et apprends à ton rythme', emoji: '🧭', color: '#4CAF50',
+    rules: [
+      { icon: '🆓', text: 'Gratuit pour la première série de 10 questions' },
+      { icon: '🗂️', text: '10 questions dans la catégorie de ton choix' },
+      { icon: '🪙', text: '3 coins par bonne réponse' },
+      { icon: '💡', text: '2 indices disponibles par question' },
+      { icon: '🚪', text: 'Tes coins sont sauvegardés même si tu quittes' },
+      { icon: '🎫', text: 'Continue avec 1 ticket pour 10 questions de plus !' },
+    ],
+  },
+  blitz: {
+    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Chaque seconde compte !', emoji: '⚡', color: '#FF4444',
+    rules: [
+      { icon: '🆓', text: 'Gratuit — pas de ticket requis' },
+      { icon: '⏱️', text: 'Timer de 60 secondes' },
+      { icon: '✅', text: 'Bonne réponse = +2 secondes' },
+      { icon: '❌', text: 'Mauvaise réponse = -3 secondes' },
+      { icon: '💡', text: '1 indice disponible par question' },
+      { icon: '🪙', text: '1 coin par bonne réponse' },
+    ],
+  },
+  flash: {
+    modeId: 'flash', modeName: 'Flash', subtitle: '5 questions, c\'est rapide !', emoji: '🎯', color: '#FFD700',
+    rules: [
+      { icon: '🆓', text: 'Gratuit — pas de ticket requis' },
+      { icon: '⚡', text: 'Session rapide de 5 questions' },
+      { icon: '💡', text: '1 indice disponible par question' },
+      { icon: '🪙', text: '5 coins par bonne réponse (3 avec un indice)' },
+      { icon: '🏆', text: 'Score parfait sans indice = 25 coins bonus !' },
+    ],
+  },
+  hunt: {
+    modeId: 'hunt', modeName: 'Hunt', subtitle: 'La chasse au WTF du jour !', emoji: '🔥', color: '#E91E63',
+    rules: [
+      { icon: '🆓', text: 'Gratuit — pas de ticket requis' },
+      { icon: '🎯', text: 'Un f*ct WTF spécial à découvrir chaque jour' },
+      { icon: '📚', text: '5 questions pour le débloquer' },
+      { icon: '💡', text: '2 indices disponibles par question' },
+      { icon: '📅', text: 'Reviens chaque jour pour un nouveau WTF !' },
+    ],
+  },
 }
 
 const DIFFICULTY_LEVELS = {
-  WTF:   { id: 'wtf',   label: 'Quête WTF!', emoji: '⚡', choices: 6, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 8, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
-  HOT:   { id: 'hot',   label: 'Quête Hot',  emoji: '🔥', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 5, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
-  COOL:  { id: 'cool',  label: 'Quête Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 2, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
-  FLASH: { id: 'flash', label: 'Session Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 3, scoring: { correct: [5, 3, 2], wrong: 0 } },
-  BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 } },
+  WTF:   { id: 'wtf',   label: 'Quest WTF!', emoji: '⚡', choices: 6, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 8, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
+  HOT:   { id: 'hot',   label: 'Quest Hot',  emoji: '🔥', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 5, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
+  COOL:  { id: 'cool',  label: 'Quest Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 2, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
+  FLASH: { id: 'flash', label: 'Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0, scoring: { correct: [5, 3, 2], wrong: 0 } },
+  HUNT:  { id: 'hunt',  label: 'Hunt',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, scoring: { correct: [5, 3, 2], wrong: 0 } },
+  BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 } },
 }
 
 const TODAY = () => new Date().toISOString().slice(0, 10) // YYYY-MM-DD
@@ -98,7 +158,7 @@ function loadStorage() {
     const wtfDuJourFait = wtfDuJourDate === today
     const sessionsToday = saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0
 
-    const tickets = saved.tickets || 0
+    const tickets = saved.tickets ?? 3
 
     const devMode = localStorage.getItem('wtf_dev_mode') === 'true'
     if (devMode) {
@@ -218,6 +278,8 @@ export default function App() {
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
+  const [launchMode, setLaunchMode] = useState(null)
+  const [explorerPool, setExplorerPool] = useState([])
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
   const [completedLevels, setCompletedLevels] = useState([])
   const [sessionIsPerfect, setSessionIsPerfect] = useState(false)
@@ -263,28 +325,36 @@ export default function App() {
   const handleStartWTFSession = useCallback(() => {
     audio.play('click')
     const category = effectiveDailyFact.category
-    const facts = [...getValidFacts().filter(f => f.category === category && f.id !== effectiveDailyFact.id)]
+    // Session : Funny Facts (non-VIP) uniquement, même catégorie, exclure débloqués
+    let pool = getGeneratedFacts().filter(f => f.category === category && f.id !== effectiveDailyFact.id && !unlockedFacts.has(f.id))
+    // Si pas assez dans la catégorie, élargir à toutes les catégories
+    if (pool.length < 5) {
+      pool = getGeneratedFacts().filter(f => f.id !== effectiveDailyFact.id && !unlockedFacts.has(f.id))
+    }
+    const facts = [...pool]
       .sort(() => Math.random() - 0.5)
       .slice(0, 5)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
-
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.HUNT) }))
     setSessionType('wtf_du_jour')
     setGameMode('solo')
     setIsQuickPlay(false)
-    setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH)
+    setSelectedDifficulty(DIFFICULTY_LEVELS.HUNT)
     setSelectedCategory(category)
     initSessionState(facts)
     logDevEvent('session_started', { type: 'wtf_du_jour', category, factId: effectiveDailyFact.id })
     setScreen(SCREENS.QUESTION)
-  }, [effectiveDailyFact])
+  }, [effectiveDailyFact, unlockedFacts])
 
-  // Standalone Flash Solo session — generated facts only, 10 questions
+  // Standalone Flash Solo session — non-VIP facts only, 10 questions
   const handleFlashSolo = useCallback(() => {
     audio.play('click')
-    // Pool : facts générés uniquement
-    let pool = getValidFacts().filter(f => f.type === 'generated')
-    // Fallback si pas assez de generated
-    if (pool.length < 10) pool = getValidFacts()
+    // Pool : facts non-VIP uniquement, exclure les déjà débloqués
+    const pool = getGeneratedFacts().filter(f => !unlockedFacts.has(f.id))
+
+    if (pool.length < 5) {
+      alert('Bientôt de nouveaux f*cts ! Reviens vite 🎉')
+      return
+    }
 
     const facts = [...pool]
       .sort(() => Math.random() - 0.5)
@@ -298,7 +368,7 @@ export default function App() {
     setSelectedCategory(null)
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
-  }, [])
+  }, [unlockedFacts])
 
   // Quick play — no streak/score save (existing behavior kept)
   const handleQuickPlay = useCallback(() => {
@@ -323,7 +393,7 @@ export default function App() {
     setScreen(SCREENS.QUESTION)
   }, [])
 
-  // Solo parcours flow — Quête WTF! : VIP facts only, random toutes catégories, direct
+  // Solo parcours flow — Quest : VIP facts only, random toutes catégories, direct
   const handlePlay = useCallback(() => {
     audio.play('click')
     const difficulty = DIFFICULTY_LEVELS.HOT
@@ -348,11 +418,44 @@ export default function App() {
   }, [unlockedFacts])
 
   // ─── HomeScreen navigation handler ──────────────────────────────────────────
+  // ─── Launch mode start callback ─────────────────────────────────────────────
+  const launchModeDestination = useCallback((mode) => {
+    switch (mode) {
+      case 'quest':    setScreen(SCREENS.DIFFICULTY); break
+      case 'explorer': setScreen(SCREENS.CATEGORY); break
+      case 'blitz':    setScreen(SCREENS.CATEGORY); break
+      case 'flash':    handleFlashSolo(); break
+      case 'hunt':     handleStartWTFSession(); break
+      default: break
+    }
+  }, [handleFlashSolo, handleStartWTFSession])
+
+  const handleLaunchStart = useCallback(() => {
+    launchModeDestination(launchMode)
+  }, [launchMode, launchModeDestination])
+
+  // Show MODE_LAUNCH or skip if user opted out
+  const showOrSkipLaunch = useCallback((mode) => {
+    setLaunchMode(mode)
+    if (localStorage.getItem(`skip_launch_${mode}`) === 'true') {
+      launchModeDestination(mode)
+    } else {
+      setScreen(SCREENS.MODE_LAUNCH)
+    }
+  }, [launchModeDestination])
+
   const handleHomeNavigate = useCallback((target) => {
     switch (target) {
-      case 'difficulty':    setGameMode('solo'); setSessionType('parcours'); setScreen(SCREENS.DIFFICULTY); break
-      case 'wtfDuJour':     handleWTFDuJour(); break
-      case 'categoryFlash': handleFlashSolo(); break
+      case 'difficulty':
+        setGameMode('solo'); setSessionType('parcours')
+        showOrSkipLaunch('quest')
+        break
+      case 'wtfDuJour':
+        showOrSkipLaunch('hunt')
+        break
+      case 'categoryFlash':
+        showOrSkipLaunch('flash')
+        break
       case 'collection':    navigate('/collection'); break
       case 'trophees':      navigate('/recompenses'); break
       case 'profil':        navigate('/profil'); break
@@ -360,30 +463,30 @@ export default function App() {
       case 'amis':          navigate('/social'); break
       case 'streak':        navigate('/recompenses'); break
       case 'marathon':
-        setGameMode('marathon')
-        setSessionType('marathon')
-        setSelectedCategory(null)
-        setScreen(SCREENS.CATEGORY)
+        setGameMode('marathon'); setSessionType('marathon'); setSelectedCategory(null)
+        showOrSkipLaunch('explorer')
         break
       case 'blitz':
-        setGameMode('blitz')
-        setSessionType('blitz')
-        setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
-        setSelectedCategory(null)
-        setScreen(SCREENS.CATEGORY)
+        setGameMode('blitz'); setSessionType('blitz'); setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ); setSelectedCategory(null)
+        showOrSkipLaunch('blitz')
         break
       default: break
     }
-  }, [handlePlay, handleWTFDuJour, handleFlashSolo, navigate])
+  }, [handlePlay, handleWTFDuJour, handleFlashSolo, handleStartWTFSession, showOrSkipLaunch, navigate])
 
   const handleSelectDifficulty = useCallback((difficulty) => {
     setSelectedDifficulty(difficulty)
 
     if (gameMode === 'marathon') {
-      // Marathon : 20 questions générées dans la catégorie choisie
-      const pool = getGeneratedFactsByCategory(selectedCategory)
-      const fallback = pool.length >= 4 ? pool : getFactsByCategory(selectedCategory)
-      const facts = [...fallback]
+      // Marathon : 20 questions générées (non-VIP) dans la catégorie choisie
+      const pool = getGeneratedFactsByCategory(selectedCategory).filter(f => !unlockedFacts.has(f.id))
+
+      if (pool.length < 4) {
+        alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
+        return
+      }
+
+      const facts = [...pool]
         .sort(() => Math.random() - 0.5)
         .slice(0, 20)
         .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
@@ -394,7 +497,18 @@ export default function App() {
       return
     }
 
-    // Parcours/Quête : VIP uniquement, filtrés par difficulté
+    // Parcours/Quest : VIP uniquement, filtrés par difficulté — coûte 1 ticket
+    if ((tickets || 0) < 1) {
+      alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
+      return
+    }
+    // Décrémenter 1 ticket
+    setStorage(prev => {
+      const next = { ...prev, tickets: Math.max(0, (prev.tickets || 0) - 1) }
+      saveStorage(next)
+      return next
+    })
+
     const available = getParcoursFacts().filter(f =>
       (!f.type || f.type === 'vip') && f.difficulty === difficulty.id && !unlockedFacts.has(f.id)
     )
@@ -497,10 +611,26 @@ export default function App() {
       return
     }
 
-    // Marathon : on mémorise la catégorie puis on va choisir la difficulté
+    // Explorer : 10 questions, garder le pool restant pour continuation
     if (gameMode === 'marathon') {
+      const difficulty = DIFFICULTY_LEVELS.HOT
+      const pool = getGeneratedFactsByCategory(categoryId).filter(f => !unlockedFacts.has(f.id))
+
+      if (pool.length < 4) {
+        alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
+        return
+      }
+
+      const shuffled = [...pool].sort(() => Math.random() - 0.5)
+      const sessionFacts = shuffled.slice(0, 10).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+      const remaining = shuffled.slice(10) // pool restant pour continuation
+      setExplorerPool(remaining)
       setSelectedCategory(categoryId)
-      setScreen(SCREENS.DIFFICULTY)
+      setSelectedDifficulty(difficulty)
+      setIsQuickPlay(false)
+      setSessionType('marathon')
+      initSessionState(sessionFacts)
+      setScreen(SCREENS.QUESTION)
       return
     }
 
@@ -571,6 +701,14 @@ export default function App() {
     } else {
       setSessionScore(s => s + points)
       if (isAnswerCorrect) setCorrectCount(c => c + 1)
+      // Sauvegarde coins en temps réel
+      if (points > 0) {
+        setStorage(prev => {
+          const updated = { ...prev, wtfCoins: prev.wtfCoins + points }
+          saveStorage(updated)
+          return updated
+        })
+      }
     }
 
     setScreen(SCREENS.REVELATION)
@@ -592,6 +730,14 @@ export default function App() {
     } else {
       setSessionScore(s => s + points)
       if (isCorrect) setCorrectCount(c => c + 1)
+      // Sauvegarde coins en temps réel
+      if (points > 0) {
+        setStorage(prev => {
+          const updated = { ...prev, wtfCoins: prev.wtfCoins + points }
+          saveStorage(updated)
+          return updated
+        })
+      }
     }
 
     setScreen(SCREENS.REVELATION)
@@ -606,19 +752,13 @@ export default function App() {
   }, [selectedAnswer])
 
   const handleUseHint = useCallback((hintNum) => {
-    const freeHints = selectedDifficulty.freeHints ?? 1
-    const hintCost  = selectedDifficulty.hintCost  ?? 0
-    // Déduire les coins si l'indice est payant
-    if (hintNum > freeHints && hintCost > 0) {
-      setStorage(prev => {
-        const next = { ...prev, wtfCoins: Math.max(0, prev.wtfCoins - hintCost) }
-        saveStorage(next)
-        return next
-      })
-    }
+    // Indices = stock gratuit, décrémenté de 1 à chaque utilisation
+    const currentHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
+    if (currentHints < 1) return // stock vide, ne rien faire
+    localStorage.setItem('wtf_hints_available', String(currentHints - 1))
     setHintsUsed(hintNum)
     setSessionAnyHintUsed(true)
-  }, [selectedDifficulty])
+  }, [])
 
   // ─── Navigation (next question / session end) ─────────────────────────────
 
@@ -676,7 +816,7 @@ export default function App() {
         }
         setCompletedLevels(newlyCompleted)
 
-        // Badge Perfect (Quête WTF! uniquement) — indices autorisés
+        // Badge Perfect (Quest uniquement) — indices autorisés
         const isPerfectSession = sessionType === 'parcours' && correctCount === sessionFacts.length
         if (isPerfectSession) {
           const catKey = selectedCategory || 'all'
@@ -685,22 +825,20 @@ export default function App() {
         }
         setSessionIsPerfect(isPerfectSession)
 
-        // WTF Coins calculation
-        let coinsEarned = 0
+        // Bonus coins fin de session (les coins de base sont déjà sauvés en temps réel)
+        let bonusCoins = 0
         if (sessionType === 'wtf_du_jour') {
-          coinsEarned = 5 + (newStreak * 2) // 5 base + streak bonus
+          bonusCoins = 5 + (newStreak * 2) // Hunt: flat bonus + streak
         } else if (sessionType === 'flash_solo') {
           const isPerfectFlash = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
-          coinsEarned = isPerfectFlash ? 25 : 10
-          coinsEarned += newStreak * 2 // streak bonus
+          bonusCoins = isPerfectFlash ? 25 : 10
+          bonusCoins += newStreak * 2 // streak bonus
         } else if (sessionType === 'parcours') {
-          coinsEarned = sessionScore // coins égaux aux points marqués
+          bonusCoins = isPerfectSession ? 25 : 0 // Quest: perfect bonus only
         } else if (sessionType === 'marathon') {
-          // 3 coins par bonne réponse + 20 coins bonus si 20/20
-          coinsEarned = correctCount * 3
-          if (correctCount === 20) coinsEarned += 20
+          bonusCoins = (correctCount === 10) ? 10 : 0 // Explorer: perfect 10/10 bonus
         }
-        setCoinsEarnedLastSession(coinsEarned)
+        setCoinsEarnedLastSession(sessionScore + bonusCoins)
 
         // Récompenses fidélité Streak (uniquement si 1re session du jour → streak incrémenté)
         const streakReward = isFirstSessionToday ? getStreakReward(newStreak) : null
@@ -719,35 +857,33 @@ export default function App() {
           }
         }
 
-        const newTotalScore = totalScore + sessionScore
         const streakRewardCoins = streakReward?.coins ?? 0
-        const newWtfCoins = wtfCoins + coinsEarned + streakRewardCoins
         const newWtfDuJourDate = sessionType === 'wtf_du_jour' ? TODAY() : wtfDuJourDate
-        // Marathon ne consomme pas de ticket quête
         const marathonSessionsToday = sessionType === 'marathon' ? sessionsToday : newSessionsToday
 
-        const newStorage = {
-          totalScore: newTotalScore,
-          streak: newStreak,
-          unlockedFacts: newUnlocked,
-          wtfCoins: newWtfCoins,
-          wtfDuJourDate: newWtfDuJourDate,
-          sessionsToday: marathonSessionsToday,
-          tickets: (tickets || 0) + (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0),
-        }
-        saveStorage(newStorage)
-        setStorage({
-          ...newStorage,
-          wtfDuJourFait: newWtfDuJourDate === TODAY(),
-        })
-
-        if (user) {
-          for (const fact of toSync) {
-            updateCollection(user.id, fact.category, fact.id)
+        // Utiliser setStorage fonctionnel pour éviter la closure stale sur wtfCoins/tickets
+        setStorage(prev => {
+          const newStorage = {
+            totalScore: totalScore + sessionScore,
+            streak: newStreak,
+            unlockedFacts: newUnlocked,
+            wtfCoins: prev.wtfCoins + bonusCoins + streakRewardCoins,
+            wtfDuJourDate: newWtfDuJourDate,
+            sessionsToday: marathonSessionsToday,
+            tickets: (prev.tickets || 0) + (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0),
+            wtfDuJourFait: newWtfDuJourDate === TODAY(),
           }
-          // Sync player data to Supabase
-          syncPlayerDataAsync(user.id, newStorage)
-        }
+          saveStorage(newStorage)
+
+          if (user) {
+            for (const fact of toSync) {
+              updateCollection(user.id, fact.category, fact.id)
+            }
+            syncPlayerDataAsync(user.id, newStorage)
+          }
+
+          return newStorage
+        })
 
         // WTF du Jour: unlock the daily fact too
         if (sessionType === 'wtf_du_jour' && !newUnlocked.has(effectiveDailyFact.id)) {
@@ -828,11 +964,36 @@ export default function App() {
     setSessionType('parcours')
     setBlitzFacts([])
     setBlitzResults(null)
+    setLaunchMode(null)
+    setExplorerPool([])
   }, [])
 
   const handleBlitzReplay = useCallback(() => {
     handleBlitzStart(selectedCategory)
   }, [selectedCategory, handleBlitzStart])
+
+  const handleExplorerContinue = useCallback(() => {
+    if ((tickets || 0) < 1) {
+      alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
+      return
+    }
+    if (explorerPool.length === 0) {
+      alert('Plus de questions dans cette catégorie ! 🎉')
+      return
+    }
+    // Décrémenter 1 ticket
+    setStorage(prev => {
+      const next = { ...prev, tickets: Math.max(0, (prev.tickets || 0) - 1) }
+      saveStorage(next)
+      return next
+    })
+    const difficulty = DIFFICULTY_LEVELS.HOT
+    const next10 = explorerPool.slice(0, 10).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+    setExplorerPool(explorerPool.slice(10))
+    setSessionType('marathon')
+    initSessionState(next10)
+    setScreen(SCREENS.QUESTION)
+  }, [tickets, explorerPool])
 
   const handleReplay = useCallback(() => {
     if (sessionType === 'flash_solo') {
@@ -968,6 +1129,7 @@ export default function App() {
       window.history.pushState(null, '')
       switch (screen) {
         case SCREENS.HOME: break
+        case SCREENS.MODE_LAUNCH: setScreen(SCREENS.HOME); break
         case SCREENS.WTF_TEASER: setScreen(SCREENS.HOME); break
         case SCREENS.CATEGORY:
           setScreen(SCREENS.HOME)
@@ -1185,17 +1347,25 @@ export default function App() {
         />
       )}
 
+      {screen === SCREENS.MODE_LAUNCH && launchMode && (
+        <ModeLaunchScreen
+          {...MODE_CONFIGS[launchMode]}
+          onStart={handleLaunchStart}
+          onBack={() => setScreen(SCREENS.HOME)}
+        />
+      )}
+
       {screen === SCREENS.DIFFICULTY && (
         <DifficultyScreen
           onSelectDifficulty={handleSelectDifficulty}
-          onBack={() => setScreen(SCREENS.HOME)}
+          onBack={() => launchMode ? setScreen(SCREENS.MODE_LAUNCH) : setScreen(SCREENS.HOME)}
         />
       )}
 
       {screen === SCREENS.CATEGORY && (
         <CategoryScreen
           onSelectCategory={handleSelectCategory}
-          onBack={() => setScreen(SCREENS.HOME)}
+          onBack={() => launchMode ? setScreen(SCREENS.MODE_LAUNCH) : setScreen(SCREENS.HOME)}
           selectedDifficulty={selectedDifficulty}
           unlockedFacts={unlockedFacts}
           gameMode={gameMode}
@@ -1227,6 +1397,7 @@ export default function App() {
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
           playerCoins={wtfCoins + sessionScore}
+          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           isTutorial={isTutorialSession}
         />
       )}
@@ -1280,15 +1451,14 @@ export default function App() {
           totalFacts={sessionFacts.length}
           sessionScore={sessionScore}
           coinsEarned={coinsEarnedLastSession}
-          isPerfect={correctCount === 20}
+          isPerfect={correctCount === sessionFacts.length}
           difficulty={selectedDifficulty}
-          onReplay={() => {
-            setGameMode('marathon')
-            setSessionType('marathon')
-            setSelectedCategory('kids')
-            setScreen(SCREENS.DIFFICULTY)
-          }}
+          onReplay={handleReplay}
           onHome={handleHome}
+          onContinue={handleExplorerContinue}
+          canContinue={explorerPool.length > 0 && (tickets || 0) >= 1}
+          hasTickets={(tickets || 0) >= 1}
+          remainingQuestions={explorerPool.length}
         />
       )}
 
@@ -1299,6 +1469,8 @@ export default function App() {
           onFinish={handleBlitzFinish}
           onQuit={handleHome}
           playerCoins={wtfCoins}
+          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
+          onUseHint={handleUseHint}
         />
       )}
 

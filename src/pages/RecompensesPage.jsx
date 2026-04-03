@@ -8,7 +8,7 @@ const BADGES = [
   { label: 'Série de 5', emoji: '⚡' },
   { label: 'Série de 10', emoji: '🌟' },
   { label: 'Perfect', emoji: '👑' },
-  { label: 'Marathon', emoji: '🏃' },
+  { label: 'Explorer', emoji: '🧭' },
   { label: 'Blitz Master', emoji: '⏱️' },
   { label: 'Collectionneur', emoji: '📚' },
   { label: 'Expert WTF!', emoji: '🏆' },

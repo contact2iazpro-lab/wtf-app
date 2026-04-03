@@ -137,8 +137,7 @@ class AudioManager {
           '/sounds/wrong/What_the.mp4',
         ]
         const randomWrongSound = wrongSounds[Math.floor(Math.random() * wrongSounds.length)]
-        const wrongAudio = new Audio(randomWrongSound)
-        wrongAudio.play().catch(() => {})
+        this.playFile(randomWrongSound.slice(1))
         break
       }
       case 'reveal':

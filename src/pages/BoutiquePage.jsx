@@ -62,7 +62,7 @@ export default function BoutiquePage() {
         </div>
 
         {/* Tickets */}
-        <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Tickets de Quête</h2>
+        <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Tickets de Quest</h2>
         <div className="flex flex-col gap-2 mb-4">
           {TICKET_PACKS.map(pack => (
             <div key={pack.label} className="flex items-center gap-3 rounded-2xl p-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', opacity: 0.5 }}>

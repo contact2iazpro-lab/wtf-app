@@ -7,7 +7,7 @@ import { resolveImageUrl } from '../utils/imageUrl'
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
   'source_url', 'options', 'correct_index', 'image_url',
-  'is_vip', 'status', 'pack_id', 'vip_usage', 'difficulty',
+  'is_vip', 'status', 'pack_id', 'vip_usage',
   'funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2',
   'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
 ]
@@ -18,11 +18,6 @@ const STATUSES = [
   { value: 'published', label: 'Publié',    color: '#10B981', icon: '✅' },
 ]
 
-const DIFFICULTIES = [
-  { value: 'Facile', color: '#22C55E', bg: 'rgba(34,197,94,0.15)' },
-  { value: 'Normal', color: '#3B82F6', bg: 'rgba(59,130,246,0.15)' },
-  { value: 'Expert', color: '#EF4444', bg: 'rgba(239,68,68,0.15)' },
-]
 
 const CHAR_LIMITS = {
   question:     { max: 100 },
@@ -346,7 +341,6 @@ export default function FactEditorPage({ toast }) {
         options,
         status,
         vip_usage: data.vip_usage || 'available',
-        difficulty: data.difficulty || 'Normal',
       }
       setFact(f)
       setOriginalFact(JSON.parse(JSON.stringify(f)))
@@ -443,7 +437,6 @@ export default function FactEditorPage({ toast }) {
     if (!fact.short_answer?.trim()) e.short_answer = 'Réponse courte obligatoire'
     else if (fact.short_answer.length > CHAR_LIMITS.short_answer.max) e.short_answer = `Max ${CHAR_LIMITS.short_answer.max} caractères`
     if (!fact.category) e.category = 'Catégorie obligatoire'
-    if (!fact.difficulty) e.difficulty = 'Difficulté obligatoire'
     const validCats = CATEGORIES.map(c => c.id)
     if (fact.category && !validCats.includes(fact.category)) e.category = 'Catégorie invalide'
     if (fact.hint1?.length > CHAR_LIMITS.hint1.max) e.hint1 = `Max ${CHAR_LIMITS.hint1.max} caractères`
@@ -570,7 +563,6 @@ export default function FactEditorPage({ toast }) {
   }
 
   const isDirty = fact && originalFact && JSON.stringify(fact) !== JSON.stringify(originalFact)
-  const difficulty = DIFFICULTIES.find(d => d.value === fact?.difficulty) || DIFFICULTIES[1]
 
   if (loading) {
     return <div className="flex items-center justify-center h-full"><div className="text-slate-400 text-sm">Chargement…</div></div>
@@ -620,9 +612,6 @@ export default function FactEditorPage({ toast }) {
             Fact #{id}
             {isDirty && <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>modifié</span>}
           </h1>
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: difficulty.bg, color: difficulty.color }}>
-            {fact.difficulty}
-          </span>
         </div>
         <div className="flex items-center gap-2">
           {prevId && (
@@ -659,21 +648,6 @@ export default function FactEditorPage({ toast }) {
               <div className="px-3 py-2.5 rounded-xl bg-slate-900/50 border border-slate-700 text-slate-500 font-mono text-sm">
                 {fact.id}
               </div>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">
-                Niveau de difficulté {errors.difficulty && <span className="text-red-400 normal-case">— {errors.difficulty}</span>}
-              </label>
-              <select
-                value={fact.difficulty || 'Normal'}
-                onChange={e => set('difficulty', e.target.value)}
-                className={`${inputCls} ${errors.difficulty ? 'border-red-500' : ''}`}
-                style={{ color: DIFFICULTIES.find(d => d.value === fact.difficulty)?.color || 'white' }}
-              >
-                {DIFFICULTIES.map(d => (
-                  <option key={d.value} value={d.value}>{d.value}</option>
-                ))}
-              </select>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

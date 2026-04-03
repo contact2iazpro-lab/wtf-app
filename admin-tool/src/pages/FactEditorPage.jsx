@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, VIP_USAGES } from '../constants/categories'
 import { resolveImageUrl } from '../utils/imageUrl'
@@ -296,6 +296,7 @@ function FactPreviewStandalone({ fact }) {
 export default function FactEditorPage({ toast }) {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [fact, setFact] = useState(null)
   const [originalFact, setOriginalFact] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -320,6 +321,31 @@ export default function FactEditorPage({ toast }) {
     setErrors({})
     setShowDeleteConfirm(false)
     try {
+      // ── Build filtered prev/next queries ──────────────────────────
+      // Read filters from URL search params (priority) or localStorage (fallback for categories)
+      const filterCats = searchParams.get('categories')?.split(',').filter(Boolean)
+        || (() => { try { const s = localStorage.getItem('selectedCategories'); return s ? JSON.parse(s) : [] } catch { return [] } })()
+      const filterVip = searchParams.get('vip') || 'all'
+      const filterStatus = searchParams.get('status') || 'all'
+      const filterPack = searchParams.get('pack') || 'all'
+      const filterImage = searchParams.get('image') || 'all'
+
+      function applyFilters(q) {
+        if (filterCats.length) q = q.in('category', filterCats)
+        if (filterVip === 'vip') q = q.eq('is_vip', true)
+        if (filterVip === 'non-vip') q = q.eq('is_vip', false)
+        if (filterStatus !== 'all') q = q.eq('status', filterStatus)
+        if (filterPack !== 'all') q = q.eq('pack_id', filterPack)
+        if (filterImage === 'with') q = q.not('image_url', 'is', null).neq('image_url', '')
+        if (filterImage === 'without') q = q.or('image_url.is.null,image_url.eq.')
+        return q
+      }
+
+      let prevQ = supabase.from('facts').select('id').lt('id', id).order('id', { ascending: false }).limit(1)
+      let nextQ = supabase.from('facts').select('id').gt('id', id).order('id', { ascending: true }).limit(1)
+      prevQ = applyFilters(prevQ)
+      nextQ = applyFilters(nextQ)
+
       const [
         { data, error },
         { data: prevData },
@@ -327,8 +353,8 @@ export default function FactEditorPage({ toast }) {
         { data: hist },
       ] = await Promise.all([
         supabase.from('facts').select('*').eq('id', id).single(),
-        supabase.from('facts').select('id').lt('id', id).order('id', { ascending: false }).limit(1),
-        supabase.from('facts').select('id').gt('id', id).order('id', { ascending: true }).limit(1),
+        prevQ,
+        nextQ,
         supabase.from('edit_history').select('*').eq('fact_id', id).order('edited_at', { ascending: false }).limit(10),
       ])
       if (error) throw error
@@ -492,7 +518,7 @@ export default function FactEditorPage({ toast }) {
       toast?.(`✓ Fact #${id} sauvegardé`)
 
       if (fact.is_vip && fact.vip_usage === 'available') {
-        toast?.('⚠ Ce Fact VIP n\'a pas d\'usage assigné', 'warn', 5000)
+        toast?.('⚠ Ce Fact Quête n\'a pas d\'usage assigné', 'warn', 5000)
       }
     } catch (err) {
       console.error(err)
@@ -615,12 +641,12 @@ export default function FactEditorPage({ toast }) {
         </div>
         <div className="flex items-center gap-2">
           {prevId && (
-            <Link to={`/facts/${prevId}`} className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
+            <Link to={`/facts/${prevId}?${searchParams.toString()}`} className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
               ← #{prevId}
             </Link>
           )}
           {nextId && (
-            <Link to={`/facts/${nextId}`} className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
+            <Link to={`/facts/${nextId}?${searchParams.toString()}`} className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
               #{nextId} →
             </Link>
           )}
@@ -947,7 +973,7 @@ export default function FactEditorPage({ toast }) {
               <Toggle
                 on={fact.is_vip}
                 onChange={v => set('is_vip', v)}
-                label="⭐ Fact VIP — Récompense exclusive"
+                label="⭐ Fact Quête — Récompense exclusive"
                 color="#FFD700"
               />
             </div>
@@ -978,7 +1004,7 @@ export default function FactEditorPage({ toast }) {
 
             {fact.is_vip && (
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Usage VIP</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Usage Quête</label>
                 <select
                   value={fact.vip_usage || 'available'}
                   onChange={e => set('vip_usage', e.target.value)}
@@ -988,7 +1014,7 @@ export default function FactEditorPage({ toast }) {
                 </select>
                 {fact.vip_usage === 'available' && (
                   <p className="text-amber-400 text-xs mt-1.5 font-semibold">
-                    ⚠ Ce Fact VIP n'a pas d'usage assigné
+                    ⚠ Ce Fact Quête n'a pas d'usage assigné
                   </p>
                 )}
               </div>

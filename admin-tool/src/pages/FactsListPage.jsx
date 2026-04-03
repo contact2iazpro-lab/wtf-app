@@ -307,7 +307,7 @@ export default function FactsListPage({ toast }) {
     const newVal = !fact.is_vip
     setFacts(prev => prev.map(f => f.id === fact.id ? { ...f, is_vip: newVal } : f))
     const { error } = await supabase.from('facts').update({ is_vip: newVal }).eq('id', fact.id)
-    if (error) { toast?.('Erreur mise à jour VIP', 'error'); loadFacts() }
+    if (error) { toast?.('Erreur mise à jour mode', 'error'); loadFacts() }
   }
 
   async function togglePublished(fact) {
@@ -1071,12 +1071,12 @@ export default function FactsListPage({ toast }) {
           )}
         </div>
 
-        {/* VIP / Normal filter */}
+        {/* Quête / Flash-Marathon filter */}
         <div className="flex rounded-xl overflow-hidden border border-slate-700">
           {[
             { value: 'all',    label: 'Tous' },
-            { value: 'vip',    label: '⭐ VIP', color: '#F59E0B' },
-            { value: 'non-vip', label: '⚡ Normal', color: '#7C3AED' },
+            { value: 'vip',    label: '⭐ Quête', color: '#F59E0B' },
+            { value: 'non-vip', label: '⚡ Flash/Marathon', color: '#7C3AED' },
           ].map(opt => (
             <button
               key={opt.value}
@@ -1188,7 +1188,7 @@ export default function FactsListPage({ toast }) {
                 Question<SortIcon field="question" current={sortField} dir={sortDir} />
               </th>
               <th className="px-3 py-3 text-center text-slate-400">Image</th>
-              <th className="px-3 py-3 text-center text-slate-400">VIP</th>
+              <th className="px-3 py-3 text-center text-slate-400">Quête</th>
               <th className="px-3 py-3 text-center text-slate-400">Statut</th>
               <th className="px-3 py-3 text-left text-slate-400">Pack</th>
               <th className="px-3 py-3 text-left cursor-pointer text-slate-400 hover:text-white" onClick={() => handleSort('updated_at')}>
@@ -1243,7 +1243,7 @@ export default function FactsListPage({ toast }) {
                     }
                   </td>
                   <td className="px-3 py-2.5 text-center">
-                    <button onClick={() => toggleVip(fact)} title="Toggle VIP">
+                    <button onClick={() => toggleVip(fact)} title="Toggle Quête">
                       {fact.is_vip ? '⭐' : <span className="text-slate-700">☆</span>}
                     </button>
                   </td>

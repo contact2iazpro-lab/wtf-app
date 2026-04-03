@@ -120,7 +120,7 @@ export default function DashboardPage({ toast }) {
       // Category counts (will be recalculated via filter)
       updateCategoryData(allFacts || [], 'all')
 
-      // VIP by usage
+      // Quête by usage
       const usageCounts = {}
       for (const f of (allFacts || []).filter(f => f.is_vip)) {
         const u = f.vip_usage || 'available'
@@ -130,7 +130,7 @@ export default function DashboardPage({ toast }) {
         VIP_USAGES.map(u => ({ ...u, count: usageCounts[u.value] || 0 }))
       )
 
-      // Type distribution (VIP / Generated)
+      // Type distribution (Quête / Flash-Marathon)
       const typeCounts = { vip: 0, generated: 0 }
       for (const f of (allFacts || [])) {
         if (f.is_vip || f.type === 'vip' || !f.type) typeCounts.vip++
@@ -138,8 +138,8 @@ export default function DashboardPage({ toast }) {
       }
       const typeTotal = (allFacts || []).length || 1
       setTypeData([
-        { value: 'VIP', count: typeCounts.vip, color: '#FFD700', pct: Math.round((typeCounts.vip / typeTotal) * 100) },
-        { value: 'Générés', count: typeCounts.generated, color: '#8B5CF6', pct: Math.round((typeCounts.generated / typeTotal) * 100) },
+        { value: 'Quête', count: typeCounts.vip, color: '#FFD700', pct: Math.round((typeCounts.vip / typeTotal) * 100) },
+        { value: 'Flash/Marathon', count: typeCounts.generated, color: '#8B5CF6', pct: Math.round((typeCounts.generated / typeTotal) * 100) },
       ])
 
       setRecentEdits(history || [])
@@ -268,7 +268,7 @@ export default function DashboardPage({ toast }) {
     if (enrichStatus === 'running') return
     enrichCancelRef.current = false
     setEnrichStatus('running')
-    setEnrichMessage('⏳ Récupération des facts VIP à enrichir...')
+    setEnrichMessage('⏳ Récupération des facts Quête à enrichir...')
 
     try {
       const all = []
@@ -290,7 +290,7 @@ export default function DashboardPage({ toast }) {
 
       if (all.length === 0) {
         setEnrichStatus('done')
-        setEnrichMessage('✅ Aucun fact VIP à enrichir — tous sont déjà traités !')
+        setEnrichMessage('✅ Aucun fact Quête à enrichir — tous sont déjà traités !')
         return
       }
 
@@ -355,7 +355,7 @@ export default function DashboardPage({ toast }) {
       }
 
       setEnrichStatus('done')
-      setEnrichMessage(`✅ Enrichissement terminé — ${enriched}/${all.length} facts VIP traités`)
+      setEnrichMessage(`✅ Enrichissement terminé — ${enriched}/${all.length} facts Quête traités`)
       fetchQualityIssues()
     } catch (err) {
       setEnrichStatus('error')
@@ -398,7 +398,7 @@ export default function DashboardPage({ toast }) {
         <Link to="/archived" className="hover:ring-2 ring-red-500/30 rounded-2xl transition-all">
           <StatCard label="Non publiés / Archivés" value={stats?.unpublished} color="#EF4444" sub="Cliquer pour voir →" />
         </Link>
-        <StatCard label="Facts VIP ⭐" value={stats?.vipTotal} color="#FFD700" />
+        <StatCard label="Facts Quête ⭐" value={stats?.vipTotal} color="#FFD700" />
       </div>
 
       {/* Quality Dashboard — unified */}
@@ -577,7 +577,7 @@ export default function DashboardPage({ toast }) {
                   color: vipNoSource > 0 ? '#EF4444' : '#22C55E',
                 }}
               >
-                {vipNoSource} facts VIP sans URL source
+                {vipNoSource} facts Quête sans URL source
               </span>
             </div>
             <button
@@ -641,7 +641,7 @@ export default function DashboardPage({ toast }) {
         )
       })()}
 
-      {/* Type distribution (VIP / Générés) */}
+      {/* Type distribution (Quête / Flash/Marathon) */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
         <h2 className="text-base font-black text-white mb-4">🏷️ Répartition par type</h2>
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -670,7 +670,7 @@ export default function DashboardPage({ toast }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* VIP by usage */}
         <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-          <h2 className="text-base font-black text-white mb-4">⭐ VIP par usage</h2>
+          <h2 className="text-base font-black text-white mb-4">⭐ Quête par usage</h2>
           <div className="space-y-2">
             {vipByUsage.map(u => (
               <div key={u.value} className="flex items-center justify-between text-sm">
@@ -800,8 +800,8 @@ export default function DashboardPage({ toast }) {
                     <th className="text-left px-5 py-3 text-slate-500 font-bold">Catégorie</th>
                     <th className="text-center px-3 py-3 text-slate-500 font-bold">Total</th>
                     <th className="text-center px-3 py-3 font-bold" style={{ color: '#22C55E' }}>Publiés</th>
-                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#FFD700' }}>VIP</th>
-                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#8B5CF6' }}>Générés</th>
+                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#FFD700' }}>Quête</th>
+                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#8B5CF6' }}>Flash/Marathon</th>
                     <th className="px-5 py-3 text-slate-500 font-bold text-right" style={{ minWidth: 140 }}>Progression</th>
                   </tr>
                 </thead>
@@ -873,11 +873,11 @@ export default function DashboardPage({ toast }) {
         )
       })()}
 
-      {/* Enrichir VIP batch */}
+      {/* Enrichir Quête batch */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
-        <h2 className="text-base font-black text-white mb-2">🧠 Enrichir tous les VIP</h2>
+        <h2 className="text-base font-black text-white mb-2">🧠 Enrichir tous les Quête</h2>
         <p className="text-slate-400 text-sm mb-4">
-          Enrichit automatiquement tous les facts VIP sans fausses réponses
+          Enrichit automatiquement tous les facts Quête sans fausses réponses
           via Claude Opus. Chaque fact est sauvegardé immédiatement après enrichissement.
         </p>
 
@@ -923,7 +923,7 @@ export default function DashboardPage({ toast }) {
             className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
           >
-            {enrichStatus === 'running' ? 'Enrichissement…' : '🧠 Enrichir tous les VIP'}
+            {enrichStatus === 'running' ? 'Enrichissement…' : '🧠 Enrichir tous les Quête'}
           </button>
           {enrichStatus === 'running' && (
             <button

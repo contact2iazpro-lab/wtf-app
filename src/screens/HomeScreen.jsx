@@ -11,7 +11,7 @@ import { useScale } from '../hooks/useScale'
 import { getTutorialState, advanceTutorial, TUTORIAL_STATES } from '../utils/tutorialManager'
 
 // ── Fond sombre fixe ─────────────────────────────────────────────────────────
-const HOME_BG_COLOR = '#1a0a2e'
+const HOME_BG_COLOR = '#1E3A8A'
 
 // ── Coffre quotidien ──────────────────────────────────────────────────────────
 const COFFRE_DAYS = [1, 2, 3, 4, 7]
@@ -221,6 +221,10 @@ export default function HomeScreen({
         @keyframes tutorialToastSlide {
           from { transform: translateX(-50%) translateY(-60px); opacity: 0; }
           to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+        }
+        @keyframes starburst-rotate {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to   { transform: translate(-50%, -50%) rotate(360deg); }
         }
       `}</style>
 
@@ -438,17 +442,63 @@ export default function HomeScreen({
             alignItems: 'center',
             position: 'relative',
           }}>
-            {/* Halo radial */}
-            <div style={{
-              position: 'absolute',
-              width: S(200), height: S(200),
-              top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(255,160,50,0.5) 0%, rgba(255,107,26,0.2) 35%, rgba(255,107,26,0.05) 65%, rgba(0,0,0,0) 100%)',
-              pointerEvents: 'none',
-              zIndex: 0,
-            }} />
+            {/* Starburst light rays — tailles aléatoires */}
+            {(() => {
+              // Seed stable pour éviter le re-render flicker
+              const rays = [
+                { angle: 0, len: 140, w: 3, op: 0.5 },
+                { angle: 15, len: 180, w: 2, op: 0.35 },
+                { angle: 28, len: 120, w: 4, op: 0.45 },
+                { angle: 45, len: 170, w: 2.5, op: 0.4 },
+                { angle: 58, len: 110, w: 3, op: 0.3 },
+                { angle: 72, len: 190, w: 2, op: 0.5 },
+                { angle: 88, len: 130, w: 3.5, op: 0.35 },
+                { angle: 100, len: 160, w: 2, op: 0.45 },
+                { angle: 115, len: 200, w: 3, op: 0.4 },
+                { angle: 130, len: 100, w: 2.5, op: 0.3 },
+                { angle: 142, len: 175, w: 2, op: 0.5 },
+                { angle: 158, len: 125, w: 4, op: 0.35 },
+                { angle: 170, len: 185, w: 2, op: 0.45 },
+                { angle: 185, len: 145, w: 3, op: 0.4 },
+                { angle: 198, len: 165, w: 2.5, op: 0.5 },
+                { angle: 212, len: 115, w: 3, op: 0.35 },
+                { angle: 225, len: 195, w: 2, op: 0.45 },
+                { angle: 240, len: 135, w: 3.5, op: 0.3 },
+                { angle: 252, len: 180, w: 2, op: 0.5 },
+                { angle: 268, len: 105, w: 3, op: 0.4 },
+                { angle: 280, len: 170, w: 2.5, op: 0.35 },
+                { angle: 295, len: 150, w: 2, op: 0.45 },
+                { angle: 308, len: 190, w: 3, op: 0.5 },
+                { angle: 322, len: 120, w: 4, op: 0.3 },
+                { angle: 338, len: 160, w: 2, op: 0.4 },
+                { angle: 350, len: 185, w: 2.5, op: 0.45 },
+              ]
+              return (
+                <div style={{
+                  position: 'absolute',
+                  width: S(400), height: S(400),
+                  top: '50%', left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  pointerEvents: 'none',
+                  zIndex: 0,
+                  animation: 'starburst-rotate 40s linear infinite',
+                }}>
+                  {rays.map((r, i) => (
+                    <div key={i} style={{
+                      position: 'absolute',
+                      top: '50%', left: '50%',
+                      width: `calc(${r.len}px * var(--scale))`,
+                      height: `calc(${r.w * 4}px * var(--scale))`,
+                      transformOrigin: '0 50%',
+                      transform: `rotate(${r.angle}deg)`,
+                      background: `linear-gradient(90deg, rgba(255,255,255,${r.op}) 0%, rgba(79,195,247,${r.op * 0.6}) 40%, transparent 100%)`,
+                      borderRadius: `calc(${r.w * 4}px * var(--scale))`,
+                      filter: `blur(calc(${r.w * 1.5}px * var(--scale)))`,
+                    }} />
+                  ))}
+                </div>
+              )
+            })()}
             <img
               src="/logo-wtf.png"
               alt="WTF!"

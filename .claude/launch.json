@@ -5,8 +5,7 @@
       "name": "wtf-app",
       "runtimeExecutable": "node",
       "runtimeArgs": ["node_modules/vite/bin/vite.js", "--host"],
-      "port": 5176,
-      "autoPort": true
+      "port": 3000
     },
     {
       "name": "admin-tool",

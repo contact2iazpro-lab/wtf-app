@@ -520,6 +520,10 @@ export default function QuestionScreen({
   const [tutCorrect, setTutCorrect] = useState(false)
   const [tutWrongText, setTutWrongText] = useState('')
   const [tutFlipDone, setTutFlipDone] = useState(false)
+  const [tutImgFailed, setTutImgFailed] = useState(false)
+
+  // Image du fact : imageUrl ou fallback local /assets/facts/{id}.png
+  const tutorialImageUrl = fact.imageUrl || `/assets/facts/${fact.id}.png`
 
   // ── Tutorial mode: full self-contained screen ─────────────────────────────
   if (isTutorial) {
@@ -530,11 +534,16 @@ export default function QuestionScreen({
       setTutCorrect(correct)
       if (!correct) setTutWrongText(text)
       setTutAnswered(true)
+      if (correct) {
+        // Son + stamp comme RevelationScreen
+        setTimeout(() => audio.playFile('What the fact.mp3'), 350)
+      }
       if (!correct) {
-        // Flip: show wrong → correct, then done
         setTimeout(() => setTutFlipDone(true), 900)
       }
     }
+
+    const successRate = 15 + (fact.id % 40)
 
     return (
       <div
@@ -567,20 +576,36 @@ export default function QuestionScreen({
             from { transform: rotateX(90deg); }
             to   { transform: rotateX(0deg); }
           }
+          @keyframes tutStampImpact {
+            0%   { transform: scale(2.5) rotate(-12deg); opacity: 0; }
+            40%  { transform: scale(0.9) rotate(-12deg); opacity: 1; }
+            60%  { transform: scale(1.05) rotate(-12deg); opacity: 1; }
+            100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+          }
         `}</style>
 
-        {/* Background image — blurred then unblurred */}
-        {fact.imageUrl && (
-          <div style={{
+        {/* Background image — <img> absolue, floutée puis défloutée */}
+        <img
+          src={tutorialImageUrl}
+          alt=""
+          onError={() => setTutImgFailed(true)}
+          style={{
             position: 'absolute', inset: 0, zIndex: 0,
-            backgroundImage: `url(${fact.imageUrl})`,
-            backgroundSize: 'cover', backgroundPosition: 'center',
+            width: '100%', height: '100%', objectFit: 'cover',
             filter: tutAnswered ? 'blur(0px) brightness(0.45)' : 'blur(20px) brightness(0.3)',
             transition: 'filter 0.5s ease',
+            display: tutImgFailed ? 'none' : 'block',
+          }}
+        />
+        {/* Fallback gradient si image KO */}
+        {tutImgFailed && (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 0,
+            background: `linear-gradient(160deg, ${cat?.color || '#1a3a5c'}22 0%, ${cat?.color || '#1a3a5c'} 100%)`,
           }} />
         )}
         {/* Dark overlay */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: tutAnswered && tutCorrect ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.45)' , transition: 'background 0.5s' }} />
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: tutAnswered && tutCorrect ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.5)', transition: 'background 0.5s' }} />
 
         {/* Holographic glow effect — only on correct */}
         {tutAnswered && tutCorrect && (
@@ -589,14 +614,14 @@ export default function QuestionScreen({
           }}>
             <div style={{
               position: 'absolute', inset: '-50%', zIndex: 2,
-              background: 'conic-gradient(from 0deg, transparent, rgba(255,107,26,0.15), transparent, rgba(168,85,247,0.12), transparent, rgba(59,130,246,0.12), transparent)',
+              background: 'conic-gradient(from 0deg, transparent, rgba(255,107,26,0.2), transparent, rgba(168,85,247,0.15), transparent, rgba(59,130,246,0.15), transparent)',
               animation: 'tutGlow 4s linear infinite',
             }} />
             <div style={{
               position: 'absolute', inset: 0, zIndex: 3,
-              background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.08) 55%, transparent 60%)',
+              background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.06) 42%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.06) 58%, transparent 65%)',
               backgroundSize: '200% 100%',
-              animation: 'tutShimmer 2.5s ease-in-out infinite',
+              animation: 'tutShimmer 2s ease-in-out infinite',
             }} />
           </div>
         )}
@@ -609,24 +634,64 @@ export default function QuestionScreen({
           animation: 'tutFadeSlideUp 0.6s ease forwards',
         }}>
 
-          {/* Logo + intro text */}
+          {/* Logo WTF! texte + intro */}
           {!tutAnswered && (
             <div style={{
               flexShrink: 0, textAlign: 'center',
-              padding: `${S(24)} ${S(16)} ${S(8)}`,
+              padding: `${S(28)} ${S(16)} ${S(8)}`,
+              animation: 'tutFadeSlideUp 0.6s ease both',
             }}>
-              <img
-                src="/assets/ui/logo-wtf.png"
-                alt="WTF!"
-                style={{ height: S(48), margin: '0 auto', display: 'block' }}
-                onError={(e) => { e.target.style.display = 'none' }}
-              />
+              <div style={{
+                fontSize: S(42), fontWeight: 900, color: '#FF6B1A',
+                letterSpacing: '-0.02em', lineHeight: 1,
+                textShadow: '0 2px 16px rgba(255,107,26,0.5), 0 0 40px rgba(255,107,26,0.2)',
+              }}>
+                WTF!
+              </div>
+              <div style={{
+                fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.4)',
+                letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: S(4),
+              }}>
+                What The F*ct
+              </div>
               <p style={{
                 color: 'rgba(255,255,255,0.7)', fontWeight: 700,
-                fontSize: S(14), marginTop: S(8),
+                fontSize: S(14), marginTop: S(10),
               }}>
                 Prêt pour ton premier f*ct incroyable ?
               </p>
+            </div>
+          )}
+
+          {/* Post-answer: image défloutée visible + stamp FOU (comme RevelationScreen) */}
+          {tutAnswered && tutCorrect && (
+            <div style={{
+              flexShrink: 0, maxHeight: '30vh', overflow: 'hidden',
+              position: 'relative',
+              animation: 'tutFadeSlideUp 0.4s ease forwards',
+            }}>
+              {!tutImgFailed && (
+                <img
+                  src={tutorialImageUrl}
+                  alt={fact.question}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', maxHeight: '30vh' }}
+                />
+              )}
+              {/* Stamp FOU — comme RevelationScreen */}
+              <div style={{
+                position: 'absolute', right: S(8), bottom: S(8), zIndex: 10,
+                animation: 'tutStampImpact 0.5s ease-out forwards',
+              }}>
+                <div style={{
+                  fontSize: S(18), fontWeight: 900, color: '#4CAF50',
+                  textShadow: '0 2px 6px rgba(76, 175, 80, 0.5)',
+                  transform: 'rotate(-12deg)',
+                  border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`,
+                  backgroundColor: 'rgba(76, 175, 80, 0.15)', backdropFilter: 'blur(4px)',
+                }}>
+                  FOU
+                </div>
+              </div>
             </div>
           )}
 
@@ -651,7 +716,7 @@ export default function QuestionScreen({
             </div>
           </div>
 
-          {/* Flip card for wrong answer — or answer buttons */}
+          {/* Réponses ou post-answer */}
           {!tutAnswered ? (
             <div style={{
               flex: 1, display: 'flex', flexDirection: 'column',
@@ -681,15 +746,22 @@ export default function QuestionScreen({
             <div style={{
               flex: 1, display: 'flex', flexDirection: 'column',
               justifyContent: 'flex-start', overflow: 'auto',
-              padding: `${S(8)} ${S(16)}`,
+              padding: `${S(4)} ${S(16)}`,
               animation: 'tutFadeSlideUp 0.4s ease forwards',
             }}>
 
+              {/* Correct: message + social proof (comme RevelationScreen) */}
+              {tutCorrect && (
+                <div style={{ textAlign: 'center', marginBottom: S(6) }}>
+                  <span style={{ fontSize: S(13), fontWeight: 900, color: 'rgba(255,255,255,0.7)', display: 'block' }}>
+                    👥 Seulement {successRate}% des joueurs ont trouvé ce f*ct
+                  </span>
+                </div>
+              )}
+
               {/* Wrong answer: flip card */}
               {!tutCorrect && (
-                <div style={{
-                  perspective: '800px', marginBottom: S(10),
-                }}>
+                <div style={{ perspective: '800px', marginBottom: S(8) }}>
                   <div style={{
                     animation: !tutFlipDone
                       ? 'tutFlipHalf 0.4s 0.1s ease forwards'
@@ -714,25 +786,31 @@ export default function QuestionScreen({
                 </div>
               )}
 
-              {/* Correct answer badge */}
+              {/* Correct answer: encadré vert + explication (comme RevelationScreen) */}
               {tutCorrect && (
                 <div style={{
-                  background: 'rgba(76,175,80,0.15)', border: '2px solid #4CAF50',
-                  borderRadius: S(14), padding: `${S(12)} ${S(16)}`,
-                  textAlign: 'center', marginBottom: S(10),
+                  background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
                   animation: 'tutFadeSlideUp 0.4s ease forwards',
                 }}>
-                  <div style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4) }}>
-                    ✓ Bonne réponse
+                  <div style={{
+                    background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
+                    borderRadius: S(10), padding: `${S(8)} ${S(10)}`, marginBottom: S(8),
+                  }}>
+                    <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
+                    <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{fact.options[fact.correctIndex]}</div>
                   </div>
-                  <div style={{ fontSize: S(15), fontWeight: 900, color: 'white' }}>
-                    {fact.options[fact.correctIndex]}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>
+                    <span style={{ fontSize: S(14) }}>🧠</span>
+                    <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
                   </div>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
                 </div>
               )}
 
-              {/* Le saviez-vous */}
-              {(tutCorrect || tutFlipDone) && (
+              {/* Wrong: Le saviez-vous après flip */}
+              {!tutCorrect && tutFlipDone && (
                 <div style={{
                   background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(12px)',
                   border: '1px solid rgba(255,255,255,0.15)',

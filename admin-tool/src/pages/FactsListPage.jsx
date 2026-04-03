@@ -67,24 +67,8 @@ function SortIcon({ field, current, dir }) {
   return <span className="ml-1" style={{ color: '#FF6B1A' }}>{dir === 'asc' ? '↑' : '↓'}</span>
 }
 
-// ── Assign difficulty to maintain balance ──────────────────────────────────
-function assignDifficultiesToNewFacts(existingCounts, count) {
-  const counts = {
-    Facile: existingCounts.Facile || 0,
-    Normal: existingCounts.Normal || 0,
-    Expert: existingCounts.Expert || 0,
-  }
-  const assignments = []
-  for (let i = 0; i < count; i++) {
-    const min = Object.entries(counts).reduce((a, b) => a[1] <= b[1] ? a : b)[0]
-    assignments.push(min)
-    counts[min]++
-  }
-  return assignments
-}
-
 // ── Claude API generation via Supabase Edge Function ──────────────────────
-async function generateFactsWithClaude(category, count, difficulties) {
+async function generateFactsWithClaude(category, count) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
   const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD
   if (!supabaseUrl || !adminPassword) {
@@ -104,7 +88,6 @@ async function generateFactsWithClaude(category, count, difficulties) {
       category,
       categoryLabel,
       count,
-      difficulty_distribution: difficulties,
     }),
   })
 
@@ -235,7 +218,6 @@ export default function FactsListPage({ toast }) {
   const [genCategory, setGenCategory] = useState('')
   const [genCount, setGenCount] = useState(3)
   const [genLoading, setGenLoading] = useState(false)
-  const [difficultyCounts, setDifficultyCounts] = useState({ Facile: 0, Normal: 0, Expert: 0 })
 
   // Pending validation queue
   const [pendingFacts, setPendingFacts] = useState([])
@@ -284,10 +266,6 @@ export default function FactsListPage({ toast }) {
   // Load facts
   useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, sortField, sortDir])
 
-  // Load difficulty counts when generate modal opens
-  useEffect(() => {
-    if (showGenerateModal) loadDifficultyCounts()
-  }, [showGenerateModal])
 
   const loadFacts = useCallback(async () => {
     setLoading(true)
@@ -324,19 +302,6 @@ export default function FactsListPage({ toast }) {
     }
   }, [page, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, sortField, sortDir])
 
-  async function loadDifficultyCounts() {
-    try {
-      const { data } = await supabase.from('facts').select('difficulty')
-      const counts = { Facile: 0, Normal: 0, Expert: 0 }
-      for (const f of data || []) {
-        const d = f.difficulty || 'Normal'
-        if (counts[d] !== undefined) counts[d]++
-      }
-      setDifficultyCounts(counts)
-    } catch (err) {
-      console.error(err)
-    }
-  }
 
   async function toggleVip(fact) {
     const newVal = !fact.is_vip
@@ -517,15 +482,12 @@ export default function FactsListPage({ toast }) {
   }
 
   // ── Generate facts ─────────────────────────────────────────────────────
-  const plannedDifficulties = assignDifficultiesToNewFacts(difficultyCounts, genCount)
-  const plannedCounts = plannedDifficulties.reduce((acc, d) => { acc[d] = (acc[d] || 0) + 1; return acc }, {})
-
   async function startGeneration() {
     if (!genCategory) { toast?.('Choisir une catégorie', 'warn'); return }
     if (genCount < 1 || genCount > 20) { toast?.('Entre 1 et 20 facts', 'warn'); return }
     setGenLoading(true)
     try {
-      const generated = await generateFactsWithClaude(genCategory, genCount, plannedDifficulties)
+      const generated = await generateFactsWithClaude(genCategory, genCount)
       setPendingFacts(prev => [...prev, ...generated])
       setShowGenerateModal(false)
       toast?.(`✓ ${generated.length} facts générés — validez-les ci-dessous`)
@@ -855,26 +817,6 @@ export default function FactsListPage({ toast }) {
                   onChange={e => setGenCount(Math.min(20, Math.max(1, Number(e.target.value))))}
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none"
                 />
-              </div>
-
-              {/* Difficulty preview */}
-              <div className="bg-slate-900 rounded-xl p-4">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Répartition actuelle → assignation prévue</p>
-                <div className="space-y-2">
-                  {DIFFICULTIES.map(d => (
-                    <div key={d.value} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <DifficultyBadge value={d.value} />
-                      </div>
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="text-slate-500">{difficultyCounts[d.value]} existants</span>
-                        {plannedCounts[d.value] > 0 && (
-                          <span className="font-bold" style={{ color: d.color }}>+{plannedCounts[d.value]} nouveaux</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               {(!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_ADMIN_PASSWORD) && (

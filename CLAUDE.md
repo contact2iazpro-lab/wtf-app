@@ -13,6 +13,7 @@
 3. Un prompt = un fichier cible = une modification
 4. Toujours travailler sur master directement
 5. Si une branche de preview est créée → merger sur master immédiatement
+6. Branche unique : ne jamais créer de nouvelle branche. Si Claude Code crée une branche automatiquement → merger immédiatement sur master et supprimer la branche.
 
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts

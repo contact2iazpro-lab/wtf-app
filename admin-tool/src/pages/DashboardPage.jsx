@@ -268,7 +268,7 @@ export default function DashboardPage({ toast }) {
     if (enrichStatus === 'running') return
     enrichCancelRef.current = false
     setEnrichStatus('running')
-    setEnrichMessage('⏳ Récupération des facts Quête à enrichir...')
+    setEnrichMessage('⏳ Récupération des facts incomplets...')
 
     try {
       const all = []
@@ -278,7 +278,6 @@ export default function DashboardPage({ toast }) {
         const { data, error } = await supabase
           .from('facts')
           .select('id, question, short_answer, explanation, category, hint1, hint2')
-          .eq('is_vip', true)
           .or('funny_wrong_1.is.null,funny_wrong_1.eq.')
           .range(from, from + PAGE - 1)
         if (error) throw error
@@ -290,7 +289,7 @@ export default function DashboardPage({ toast }) {
 
       if (all.length === 0) {
         setEnrichStatus('done')
-        setEnrichMessage('✅ Aucun fact Quête à enrichir — tous sont déjà traités !')
+        setEnrichMessage('✅ Aucun fact incomplet à enrichir — tous sont déjà traités !')
         return
       }
 
@@ -873,12 +872,12 @@ export default function DashboardPage({ toast }) {
         )
       })()}
 
-      {/* Enrichir Quête batch */}
+      {/* Enrichir les incomplets */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
-        <h2 className="text-base font-black text-white mb-2">🧠 Enrichir tous les Quête</h2>
+        <h2 className="text-base font-black text-white mb-2">🧠 Enrichir les incomplets</h2>
         <p className="text-slate-400 text-sm mb-4">
-          Enrichit automatiquement tous les facts Quête sans fausses réponses
-          via Claude Opus. Chaque fact est sauvegardé immédiatement après enrichissement.
+          Enrichit automatiquement tous les facts sans fausses réponses via Claude Opus.
+          Chaque fact est sauvegardé immédiatement après enrichissement.
         </p>
 
         {/* Progress bar */}
@@ -923,7 +922,7 @@ export default function DashboardPage({ toast }) {
             className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
           >
-            {enrichStatus === 'running' ? 'Enrichissement…' : '🧠 Enrichir tous les Quête'}
+            {enrichStatus === 'running' ? 'Enrichissement…' : '🧠 Enrichir les incomplets'}
           </button>
           {enrichStatus === 'running' && (
             <button
@@ -944,54 +943,6 @@ export default function DashboardPage({ toast }) {
         </div>
       </div>
 
-      {/* Sync button */}
-      <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-        <h2 className="text-base font-black text-white mb-2">🔄 Sync Supabase → GitHub</h2>
-        <p className="text-slate-400 text-sm mb-4">
-          Régénère <code className="text-orange-400 bg-slate-900 px-1 rounded">src/data/facts.js</code> depuis
-          les facts <span className="text-green-400 font-semibold">publiés</span> dans Supabase,
-          puis pousse le fichier sur GitHub — Vercel redéploie automatiquement.
-        </p>
-
-        {syncMessage && (
-          <div
-            className="mb-4 px-4 py-3 rounded-xl text-sm font-semibold border"
-            style={{
-              background: syncStatus === 'error' ? 'rgba(239,68,68,0.1)' : syncStatus === 'done' ? 'rgba(34,197,94,0.1)' : 'rgba(255,107,26,0.1)',
-              borderColor: syncStatus === 'error' ? 'rgba(239,68,68,0.3)' : syncStatus === 'done' ? 'rgba(34,197,94,0.3)' : 'rgba(255,107,26,0.3)',
-              color: syncStatus === 'error' ? '#EF4444' : syncStatus === 'done' ? '#22C55E' : '#FF6B1A',
-            }}
-          >
-            {syncStatus === 'running' && (
-              <span className="inline-block animate-spin mr-2">⟳</span>
-            )}
-            {syncMessage}
-          </div>
-        )}
-
-        <div className="flex gap-3 flex-wrap">
-          <button
-            disabled={syncStatus === 'running'}
-            onClick={runSync}
-            className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
-          >
-            {syncStatus === 'running' ? 'Synchronisation…' : '🔄 Lancer la synchronisation'}
-          </button>
-          {syncStatus === 'error' && (
-            <button
-              onClick={runSync}
-              className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all"
-            >
-              ↺ Réessayer
-            </button>
-          )}
-        </div>
-
-        <p className="text-xs text-slate-600 mt-3">
-          Requiert <code className="text-slate-500">GITHUB_TOKEN</code> + <code className="text-slate-500">ADMIN_PASSWORD</code> dans les variables Vercel.
-        </p>
-      </div>
     </div>
   )
 }

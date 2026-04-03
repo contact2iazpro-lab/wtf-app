@@ -1,6 +1,7 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import SettingsModal from '../components/SettingsModal'
 
@@ -17,6 +18,16 @@ export default function ProfilPage() {
   const [showConnectedToast, setShowConnectedToast] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
 
+  // Edit name
+  const [editingName, setEditingName] = useState(false)
+  const [nameInput, setNameInput] = useState('')
+  const [savingName, setSavingName] = useState(false)
+
+  // Edit avatar
+  const avatarInputRef = useRef(null)
+  const [avatarUrl, setAvatarUrl] = useState(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+
   // Show toast when user just connected
   useEffect(() => {
     if (isConnected && user) {
@@ -25,6 +36,66 @@ export default function ProfilPage() {
       return () => clearTimeout(timer)
     }
   }, [isConnected, user])
+
+  // Load avatar from user metadata
+  useEffect(() => {
+    const url = user?.user_metadata?.avatar_url
+    if (url) setAvatarUrl(url)
+  }, [user])
+
+  async function handleSaveName() {
+    const clean = nameInput.replace(/[^a-zA-ZÀ-ÿ0-9 _-]/g, '').trim().slice(0, 20)
+    if (!clean) return
+    setSavingName(true)
+    try {
+      if (isConnected) {
+        await supabase.auth.updateUser({ data: { name: clean } })
+        await supabase.from('profiles').update({ username: clean }).eq('id', user.id)
+      }
+      const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      data.pseudo = clean
+      localStorage.setItem('wtf_data', JSON.stringify(data))
+      setEditingName(false)
+    } catch (err) {
+      console.error('Erreur mise à jour nom:', err)
+    } finally {
+      setSavingName(false)
+    }
+  }
+
+  async function handleAvatarUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file || !isConnected) return
+    setUploadingAvatar(true)
+    try {
+      // Resize to 200x200
+      const bitmap = await createImageBitmap(file)
+      const canvas = document.createElement('canvas')
+      canvas.width = 200; canvas.height = 200
+      const ctx = canvas.getContext('2d')
+      const scale = Math.max(200 / bitmap.width, 200 / bitmap.height)
+      const w = bitmap.width * scale, h = bitmap.height * scale
+      ctx.drawImage(bitmap, (200 - w) / 2, (200 - h) / 2, w, h)
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85))
+
+      const path = `avatars/${user.id}.jpg`
+      await supabase.storage.createBucket('avatars', { public: true }).catch(() => {})
+      const { error: upErr } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
+      if (upErr) throw upErr
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+      const urlWithBust = `${publicUrl}?v=${Date.now()}`
+
+      await supabase.auth.updateUser({ data: { avatar_url: urlWithBust } })
+      await supabase.from('profiles').update({ avatar_url: urlWithBust }).eq('id', user.id)
+      setAvatarUrl(urlWithBust)
+    } catch (err) {
+      console.error('Erreur upload avatar:', err)
+    } finally {
+      setUploadingAvatar(false)
+      if (avatarInputRef.current) avatarInputRef.current.value = ''
+    }
+  }
 
   const playerData = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('wtf_data') || '{}') } catch { return {} }
@@ -95,13 +166,64 @@ export default function ProfilPage() {
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-24">
         {/* Avatar + pseudo */}
         <div className="flex flex-col items-center py-4">
-          <img
-            src="/assets/ui/avatar-default.png"
-            alt="avatar"
-            className="rounded-full mb-2"
-            style={{ width: 72, height: 72, border: '3px solid #FF6B1A', objectFit: 'cover' }}
-          />
-          <span className="font-black text-base" style={{ color: '#1a1a2e' }}>{pseudo}</span>
+          {/* Avatar cliquable */}
+          <div style={{ position: 'relative', marginBottom: 8 }}>
+            <img
+              src={avatarUrl || '/assets/ui/avatar-default.png'}
+              alt="avatar"
+              className="rounded-full"
+              style={{
+                width: 72, height: 72, border: '3px solid white',
+                objectFit: 'cover', cursor: isConnected ? 'pointer' : 'default',
+                opacity: uploadingAvatar ? 0.5 : 1, transition: 'opacity 0.3s',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+              }}
+              onClick={() => isConnected && avatarInputRef.current?.click()}
+            />
+            {isConnected && (
+              <div style={{
+                position: 'absolute', bottom: -2, right: -2,
+                width: 24, height: 24, borderRadius: '50%',
+                background: '#FF6B1A', border: '2px solid white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, cursor: 'pointer',
+              }} onClick={() => avatarInputRef.current?.click()}>
+                📷
+              </div>
+            )}
+            {uploadingAvatar && (
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(0,0,0,0.4)', color: 'white', fontSize: 11, fontWeight: 700,
+              }}>⟳</div>
+            )}
+            <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
+          </div>
+
+          {/* Pseudo éditable */}
+          {editingName ? (
+            <div className="flex items-center gap-2">
+              <input
+                value={nameInput}
+                onChange={e => setNameInput(e.target.value.slice(0, 20))}
+                maxLength={20}
+                autoFocus
+                className="text-center font-black text-base px-2 py-1 rounded-lg"
+                style={{ color: '#1a1a2e', border: '2px solid #FF6B1A', outline: 'none', width: 160 }}
+                onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false) }}
+              />
+              <button onClick={handleSaveName} disabled={savingName} className="text-green-500 font-bold text-lg active:scale-90">{savingName ? '⟳' : '✓'}</button>
+              <button onClick={() => setEditingName(false)} className="text-red-400 font-bold text-lg active:scale-90">✗</button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <span className="font-black text-base" style={{ color: '#1a1a2e' }}>{pseudo}</span>
+              {isConnected && (
+                <button onClick={() => { setNameInput(pseudo); setEditingName(true) }} className="text-slate-400 hover:text-slate-600 active:scale-90 transition-all" style={{ fontSize: 14 }}>✏️</button>
+              )}
+            </div>
+          )}
           {isConnected ? (
             <>
               <span className="text-xs font-semibold mt-1" style={{ color: '#6B7280' }}>{user?.email}</span>

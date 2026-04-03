@@ -318,7 +318,7 @@ export default function HomeScreen({
       {/* ═══ ZONE 2 — BADGE PROGRESSION (32px fixe) ════════════════════════ */}
       <div style={{
         height: 32, flexShrink: 0,
-        margin: '0 14px',
+        margin: '8px 14px 0',
         background: 'rgba(255,255,255,0.2)',
         borderRadius: 8,
         padding: '0 12px',
@@ -341,7 +341,7 @@ export default function HomeScreen({
       <div style={{
         height: 60, flexShrink: 0,
         display: 'flex', alignItems: 'center',
-        gap: 6, padding: '0 14px',
+        gap: 6, padding: '6px 14px 0',
         justifyContent: 'center',
         position: 'relative', zIndex: 2,
       }}>
@@ -403,7 +403,7 @@ export default function HomeScreen({
       {/* ═══ ZONE 3B — LOGO VOF (fixe, juste sous les coffres) ════════════ */}
       <div style={{
         flexShrink: 0, display: 'flex', justifyContent: 'center',
-        padding: '2px 0 0',
+        padding: '8px 0 0',
       }}>
         <img
           src="/assets/ui/vof-logo.png?v=4"
@@ -456,7 +456,7 @@ export default function HomeScreen({
             <div style={{
               position: 'absolute',
               width: 400, height: 400,
-              top: '45%', left: '50%',
+              top: '38%', left: '50%',
               transform: 'translate(-50%, -50%)',
               pointerEvents: 'none',
               zIndex: 0,
@@ -540,7 +540,7 @@ export default function HomeScreen({
         height: 44, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 50px',
-        marginBottom: 8,
+        marginBottom: 20,
         position: 'relative', zIndex: 10,
       }}>
         <button
@@ -549,7 +549,8 @@ export default function HomeScreen({
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
             borderRadius: 14, border: 'none',
             padding: '12px 24px', width: '100%',
-            textAlign: 'center', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            cursor: 'pointer',
             WebkitTapHighlightColor: 'transparent',
             boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
             transition: 'transform 0.1s, box-shadow 0.1s',
@@ -567,6 +568,7 @@ export default function HomeScreen({
           }}>
             JOUER UNE PARTIE RAPIDE
           </span>
+          <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
         </button>
       </div>
 

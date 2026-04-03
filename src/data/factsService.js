@@ -157,6 +157,15 @@ function buildAll(rawFacts) {
       return { ...f, imageUrl, difficulty: _difficulty[f.id], isSuperWTF: false }
     })
 
+  // ── DEBUG TEMPORAIRE ──
+  console.log('[DEBUG] validFacts total:', _validFacts.length)
+  console.log('[DEBUG] validFacts avec isVip:', _validFacts.filter(f => f.isVip === true).length)
+  console.log('[DEBUG] validFacts sans isVip:', _validFacts.filter(f => !f.isVip).length)
+  console.log('[DEBUG] validFacts isVip undefined:', _validFacts.filter(f => f.isVip === undefined).length)
+  console.log('[DEBUG] getGeneratedFacts:', getGeneratedFacts().length)
+  console.log('[DEBUG] sample fact:', JSON.stringify(_validFacts[0]))
+  // ── FIN DEBUG ──
+
   // Catégories jouables = celles qui ont au moins 1 fact valide
   const activeCatIds = new Set(_validFacts.map(f => f.category))
   _playableCategories = CATEGORIES.filter(c => activeCatIds.has(c.id))

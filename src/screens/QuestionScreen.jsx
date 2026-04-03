@@ -27,7 +27,7 @@ function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, onReveal
   const isLight = color.length >= 7
     ? (parseInt(color.slice(1,3),16)*299 + parseInt(color.slice(3,5),16)*587 + parseInt(color.slice(5,7),16)*114) / 1000 > 128
     : false
-  const labelColor = isLight ? '#1a1a1a' : '#ffffff'
+  const labelColor = '#ffffff'
 
   return (
     <button
@@ -138,6 +138,20 @@ export default function QuestionScreen({
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showSettings, setShowSettings]       = useState(false)
+  const [coinFlash, setCoinFlash] = useState(null)
+  const prevCoinsRef = useRef(playerCoins)
+
+  useEffect(() => {
+    const diff = playerCoins - prevCoinsRef.current
+    if (diff > 0) {
+      setCoinFlash(`+${diff}`)
+      const t = setTimeout(() => setCoinFlash(null), 1200)
+      prevCoinsRef.current = playerCoins
+      return () => clearTimeout(t)
+    }
+    prevCoinsRef.current = playerCoins
+  }, [playerCoins])
+
   const cat = getCategoryById(fact.category)
 
   // ── Lisibilité sur fond coloré ─────────────────────────────────────────────
@@ -220,7 +234,7 @@ export default function QuestionScreen({
             Continuer le parcours
           </button>
           <button
-            onClick={onQuit}
+            onClick={() => { audio.stopAll(); onQuit() }}
             className="w-full py-3 rounded-2xl font-bold text-sm"
             style={{ background: 'transparent', color: '#9CA3AF' }}
           >
@@ -277,7 +291,18 @@ export default function QuestionScreen({
           alt=""
           style={{ width: S(20), height: S(20), marginRight: S(4) }}
         />
-        <span style={{ fontWeight: 700, color: 'white', fontSize: S(13) }}>{playerCoins}</span>
+        <span style={{ fontWeight: 700, color: 'white', fontSize: S(13), position: 'relative' }}>
+          {playerCoins}
+          {coinFlash && (
+            <span style={{
+              position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
+              color: '#22C55E', fontWeight: 900, fontSize: S(11), whiteSpace: 'nowrap',
+              animation: 'coinFlashUp 1.2s ease-out forwards', pointerEvents: 'none',
+            }}>
+              {coinFlash}
+            </span>
+          )}
+        </span>
       </div>
 
       {/* 4 — Bouton ⚙️ paramètres */}
@@ -556,6 +581,10 @@ export default function QuestionScreen({
       >
         {/* CSS animations for tutorial */}
         <style>{`
+          @keyframes coinFlashUp {
+            0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-18px); }
+          }
           @keyframes tutFadeSlideUp {
             from { opacity: 0; transform: translateY(30px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -836,7 +865,7 @@ export default function QuestionScreen({
               animation: 'tutFadeSlideUp 0.4s 0.2s ease both',
             }}>
               <button
-                onClick={() => { audio.play('click'); onQuit() }}
+                onClick={() => { audio.stopAll(); audio.play('click'); onQuit() }}
                 className="btn-press active:scale-95 transition-all"
                 style={{
                   width: '100%', padding: `${S(16)} 0`,
@@ -916,16 +945,18 @@ export default function QuestionScreen({
                 borderRadius: S(12),
                 color: 'white',
                 fontWeight: 700,
-                fontSize: fact.options.length > 4 ? S(13) : S(14),
-                padding: `${S(12)} ${S(8)}`,
-                minHeight: fact.options.length > 4 ? S(48) : S(52),
+                fontSize: fact.options.length > 4 ? S(12) : S(13),
+                padding: `${S(8)} ${S(8)}`,
+                minHeight: S(64),
                 width: '100%',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                wordBreak: 'break-word',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 textAlign: 'center',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
               {option}

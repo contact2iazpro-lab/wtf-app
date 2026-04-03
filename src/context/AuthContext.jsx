@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { syncPlayerDataAsync } from '../services/playerSyncService'
 
 const AuthContext = createContext(null)
 
@@ -61,6 +62,11 @@ export function AuthProvider({ children }) {
         if (u) {
           if (event === 'SIGNED_IN') await createProfile(u.id, u.email)
           loadProfile(u.id)
+          // Sync local data to Supabase on sign-in
+          try {
+            const local = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            syncPlayerDataAsync(u.id, local)
+          } catch { /* ignore */ }
         } else {
           setProfile(null)
         }

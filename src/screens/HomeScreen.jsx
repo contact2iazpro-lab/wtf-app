@@ -296,7 +296,7 @@ export default function HomeScreen({
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <span style={{ fontSize: S(12) }}>💡</span>
+            <img src="/assets/ui/icon-hint.png" alt="hints" style={{ width: S(14), height: S(14), objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{playerHints}</span>
           </button>
           <button
@@ -540,7 +540,7 @@ export default function HomeScreen({
         height: 44, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 50px',
-        marginBottom: 20,
+        marginBottom: 34,
         position: 'relative', zIndex: 10,
       }}>
         <button
@@ -561,12 +561,13 @@ export default function HomeScreen({
           onMouseDown={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)' }}
           onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)' }}
         >
+          <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
           <span style={{
             fontFamily: "'Fredoka One', cursive",
             fontWeight: 400, fontSize: 14, color: '#FF6B1A',
-            letterSpacing: '0.04em',
+            letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2,
           }}>
-            JOUER UNE PARTIE RAPIDE
+            JOUER<br />PARTIE RAPIDE
           </span>
           <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
         </button>

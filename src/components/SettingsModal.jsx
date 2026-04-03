@@ -209,19 +209,51 @@ export default function SettingsModal({ onClose }) {
               )}
 
               {/* ── Audio & Notifications ── */}
-              <p className="text-xs font-black uppercase tracking-wider mt-1" style={{ color: '#9CA3AF' }}>Audio & Notifications</p>
+              <p className="text-xs font-black uppercase tracking-wider mt-1 mb-2" style={{ color: '#9CA3AF' }}>Audio & Notifications</p>
 
-              <SettingRow icon="🔊" label="Son" right={<TogglePill on={soundOn} />} onClick={toggleSound} style={{ background: soundOn ? 'rgba(34,197,94,0.06)' : undefined, borderColor: soundOn ? 'rgba(34,197,94,0.3)' : undefined }} />
-              <SettingRow icon="🎵" label="Musique" right={<TogglePill on={musicOn} />} onClick={toggleMusic} style={{ background: musicOn ? 'rgba(34,197,94,0.06)' : undefined, borderColor: musicOn ? 'rgba(34,197,94,0.3)' : undefined }} />
-              <SettingRow icon="🔔" label="Notifications" right={<TogglePill on={notifOn} />} onClick={toggleNotif} style={{ background: notifOn ? 'rgba(34,197,94,0.06)' : undefined, borderColor: notifOn ? 'rgba(34,197,94,0.3)' : undefined }} />
-              <SettingRow icon="📳" label="Vibreur" right={<TogglePill on={vibrOn} />} onClick={toggleVibr} style={{ background: vibrOn ? 'rgba(34,197,94,0.06)' : undefined, borderColor: vibrOn ? 'rgba(34,197,94,0.3)' : undefined }} />
+              <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-start', padding: '4px 0 8px' }}>
+                {[
+                  { on: soundOn, toggle: toggleSound, icon: 'son', label: 'Son' },
+                  { on: musicOn, toggle: toggleMusic, icon: 'musique', label: 'Musique' },
+                  { on: notifOn, toggle: toggleNotif, icon: 'notifications', label: 'Notifs' },
+                  { on: vibrOn, toggle: toggleVibr, icon: 'vibreur', label: 'Vibreur' },
+                ].map(p => (
+                  <button
+                    key={p.icon}
+                    onClick={p.toggle}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <div style={{
+                      width: 62, height: 62, borderRadius: '50%',
+                      background: p.on ? '#F9FAFB' : '#F3F4F6',
+                      boxShadow: p.on ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      opacity: p.on ? 1 : 0.5,
+                      transition: 'all 0.15s ease',
+                    }}>
+                      <img
+                        src={`/assets/ui/icon-${p.icon}${p.on ? '' : '-off'}.png`}
+                        alt={p.label}
+                        style={{ width: 38, height: 38, objectFit: 'contain', transition: 'transform 0.15s' }}
+                        onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
+                        onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                      />
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: p.on ? '#1a1a2e' : '#9CA3AF' }}>{p.label}</span>
+                  </button>
+                ))}
+              </div>
 
               {/* ── Langue ── */}
               <p className="text-xs font-black uppercase tracking-wider mt-3" style={{ color: '#9CA3AF' }}>Langue</p>
 
               <div className="w-full flex items-center justify-between px-4 py-3 rounded-2xl" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
                 <span className="flex items-center gap-3">
-                  <span className="text-lg">🇫🇷</span>
+                  <img src="/assets/ui/icon-france.png" alt="🇫🇷" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                   <span className="font-bold text-sm" style={{ color: '#1a1a2e' }}>Français</span>
                 </span>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#E5E7EB', color: '#9CA3AF' }}>Unique</span>

@@ -7,6 +7,7 @@ import {
   getGeneratedFacts, getGeneratedFactsByCategory,
   initFacts, resetFacts,
 } from './data/factsService'
+import { syncPlayerDataAsync } from './services/playerSyncService'
 import DevPanel from './components/DevPanel'
 import { DEV_PANEL_ENABLED } from './config/devConfig'
 import { logDevEvent } from './utils/devLogger'
@@ -458,6 +459,11 @@ export default function App() {
       localStorage.setItem('wtf_hints_available', String(currentHints + 1))
     }
 
+    // Sync to Supabase
+    if (user) {
+      syncPlayerDataAsync(user.id, { ...storage, wtfCoins: storage.wtfCoins + totalCoinsGained })
+    }
+
     setBlitzResults({
       correctCount,
       totalAnswered,
@@ -724,6 +730,8 @@ export default function App() {
           for (const fact of toSync) {
             updateCollection(user.id, fact.category, fact.id)
           }
+          // Sync player data to Supabase
+          syncPlayerDataAsync(user.id, newStorage)
         }
 
         // WTF du Jour: unlock the daily fact too
@@ -911,6 +919,12 @@ export default function App() {
       }
     })
   }, [])
+
+  // Sync player data with Supabase after facts loaded
+  useEffect(() => {
+    if (!factsReady || !user) return
+    syncPlayerDataAsync(user.id, storage)
+  }, [factsReady, user])
 
   // Dev mode: unlock all facts in memory (no localStorage write)
   useEffect(() => {
@@ -1197,7 +1211,7 @@ export default function App() {
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
-          playerCoins={wtfCoins}
+          playerCoins={wtfCoins + sessionScore}
           isTutorial={isTutorialSession}
         />
       )}

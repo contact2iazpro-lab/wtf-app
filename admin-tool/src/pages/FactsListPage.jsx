@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, getCategoryEmoji } from '../constants/categories'
 
@@ -125,21 +125,22 @@ function emptyFact() {
 
 // ══════════════════════════════════════════════════════════════════════════
 export default function FactsListPage({ toast }) {
+  const [searchParams] = useSearchParams()
   const [facts, setFacts] = useState([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
   const [pageSize, setPageSize] = useState(100)
   const [loading, setLoading] = useState(true)
 
-  // Filters
+  // Filters — init from URL params if present
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterCategories, setFilterCategories] = useState(() => {
     try { const s = localStorage.getItem('selectedCategories'); return s ? JSON.parse(s) : [] } catch { return [] }
   })
   const [filterVip, setFilterVip] = useState('all')
-  const [filterPublished, setFilterPublished] = useState('all')
-  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterPublished, setFilterPublished] = useState(() => searchParams.get('status') === 'draft' ? 'unpublished' : 'all')
+  const [filterStatus, setFilterStatus] = useState(() => searchParams.get('status') || 'all')
   const [filterPack, setFilterPack] = useState('all')
   const [filterImage, setFilterImage] = useState('all') // 'all' | 'with' | 'without'
   const [showCatDropdown, setShowCatDropdown] = useState(false)
@@ -440,7 +441,7 @@ export default function FactsListPage({ toast }) {
   // ── Generate facts ─────────────────────────────────────────────────────
   async function startGeneration() {
     if (!genCategory) { toast?.('Choisir une catégorie', 'warn'); return }
-    if (genCount < 1 || genCount > 10) { toast?.('Entre 1 et 10 facts', 'warn'); return }
+    if (genCount < 1 || genCount > 20) { toast?.('Entre 1 et 20 facts', 'warn'); return }
     setGenLoading(true)
     try {
       const generated = await generateFactsWithClaude(genCategory, genCount)
@@ -784,7 +785,7 @@ export default function FactsListPage({ toast }) {
           <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="px-6 pt-6 pb-4 border-b border-slate-700">
               <h2 className="text-lg font-black text-white">⚡ Générer des facts</h2>
-              <p className="text-slate-500 text-xs mt-1">Les facts générés devront être validés avant d'être sauvegardés.</p>
+              <p className="text-slate-500 text-xs mt-1">Les facts générés seront ajoutés automatiquement en brouillon.</p>
             </div>
             <div className="p-6 space-y-4">
               <div>
@@ -806,11 +807,11 @@ export default function FactsListPage({ toast }) {
                   <input
                     type="range"
                     min={1}
-                    max={10}
+                    max={20}
                     value={genCount}
                     onChange={e => setGenCount(Number(e.target.value))}
                     className="flex-1 h-2 rounded-full appearance-none cursor-pointer"
-                    style={{ background: `linear-gradient(to right, #FF6B1A 0%, #FF6B1A ${(genCount - 1) / 9 * 100}%, #374151 ${(genCount - 1) / 9 * 100}%, #374151 100%)` }}
+                    style={{ background: `linear-gradient(to right, #FF6B1A 0%, #FF6B1A ${(genCount - 1) / 19 * 100}%, #374151 ${(genCount - 1) / 19 * 100}%, #374151 100%)` }}
                   />
                   <span className="text-white font-black text-lg tabular-nums w-8 text-center">{genCount}</span>
                 </div>
@@ -1076,6 +1077,24 @@ export default function FactsListPage({ toast }) {
           }}
         >
           🕐 Récents (24h)
+        </button>
+
+        {/* Brouillons filter */}
+        <button
+          onClick={() => {
+            const next = filterPublished === 'unpublished' ? 'all' : 'unpublished'
+            setFilterPublished(next)
+            if (next === 'unpublished') setFilterStatus('draft')
+            else setFilterStatus('all')
+          }}
+          className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+          style={{
+            background: filterPublished === 'unpublished' ? '#EF4444' : 'transparent',
+            color: filterPublished === 'unpublished' ? 'white' : '#94A3B8',
+            border: `1px solid ${filterPublished === 'unpublished' ? '#EF4444' : '#334155'}`,
+          }}
+        >
+          📝 Brouillons
         </button>
 
         {/* Status filter */}

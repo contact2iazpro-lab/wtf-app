@@ -394,7 +394,7 @@ export default function DashboardPage({ toast }) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="Facts total" value={stats?.total} color="#FF6B1A" />
         <StatCard label="Publiés" value={stats?.published} color="#22C55E" />
-        <Link to="/archived" className="hover:ring-2 ring-red-500/30 rounded-2xl transition-all">
+        <Link to="/facts?status=draft" className="hover:ring-2 ring-red-500/30 rounded-2xl transition-all">
           <StatCard label="Non publiés / Archivés" value={stats?.unpublished} color="#EF4444" sub="Cliquer pour voir →" />
         </Link>
         <StatCard label="Facts Quête ⭐" value={stats?.vipTotal} color="#FFD700" />
@@ -576,7 +576,7 @@ export default function DashboardPage({ toast }) {
                   color: vipNoSource > 0 ? '#EF4444' : '#22C55E',
                 }}
               >
-                {vipNoSource} facts Quête sans URL source
+                {vipNoSource} facts sans URL source
               </span>
             </div>
             <button
@@ -771,18 +771,20 @@ export default function DashboardPage({ toast }) {
         const catMap = {}
         for (const f of facts) {
           if (!f.category) continue
-          if (!catMap[f.category]) catMap[f.category] = { total: 0, published: 0, vip: 0, generated: 0 }
+          if (!catMap[f.category]) catMap[f.category] = { total: 0, published: 0, draftQuete: 0, draftFlash: 0, pubQuete: 0, pubFlash: 0 }
           const c = catMap[f.category]
+          const isVip = f.is_vip || f.type === 'vip' || !f.type
           c.total++
-          if (f.is_published) c.published++
-          if (f.is_vip || f.type === 'vip' || !f.type) c.vip++
-          if (f.type === 'generated') c.generated++
+          if (f.is_published) {
+            c.published++
+            if (isVip) c.pubQuete++; else c.pubFlash++
+          } else {
+            if (isVip) c.draftQuete++; else c.draftFlash++
+          }
         }
-        // Sort by total descending, merge with CATEGORIES for label/emoji
         const rows = CATEGORIES
-          .map(cat => ({ ...cat, ...(catMap[cat.id] || { total: 0, published: 0, vip: 0, generated: 0 }) }))
+          .map(cat => ({ ...cat, ...(catMap[cat.id] || { total: 0, published: 0, draftQuete: 0, draftFlash: 0, pubQuete: 0, pubFlash: 0 }) }))
           .sort((a, b) => a.label.localeCompare(b.label, 'fr'))
-        const maxTotal = rows.length > 0 ? rows[0].total : 1
 
         return (
           <div className="bg-slate-800 rounded-2xl border border-slate-700 mb-8 overflow-hidden">
@@ -791,48 +793,51 @@ export default function DashboardPage({ toast }) {
               <span className="text-xs text-slate-500 font-semibold">{rows.length} catégories · {facts.length} facts</span>
             </div>
 
-            {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-700 text-xs uppercase tracking-wider">
-                    <th className="text-left px-5 py-3 text-slate-500 font-bold">Catégorie</th>
-                    <th className="text-center px-3 py-3 text-slate-500 font-bold">Total</th>
-                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#22C55E' }}>Publiés</th>
-                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#FFD700' }}>Quête</th>
-                    <th className="text-center px-3 py-3 font-bold" style={{ color: '#8B5CF6' }}>Flash/Marathon</th>
-                    <th className="px-5 py-3 text-slate-500 font-bold text-right" style={{ minWidth: 140 }}>Progression</th>
+                    <th className="text-left px-4 py-3 text-slate-500 font-bold">Catégorie</th>
+                    <th className="text-center px-2 py-3 text-slate-500 font-bold">Total</th>
+                    <th className="text-center px-2 py-3 font-bold" style={{ color: '#F59E0B' }} colSpan={2}>Brouillons</th>
+                    <th className="text-center px-2 py-3 font-bold" style={{ color: '#22C55E' }} colSpan={2}>Publiés</th>
+                    <th className="px-4 py-3 text-slate-500 font-bold text-right" style={{ minWidth: 120 }}>Progression</th>
+                  </tr>
+                  <tr className="border-b border-slate-700/50 text-[10px] uppercase tracking-wider">
+                    <th></th>
+                    <th></th>
+                    <th className="text-center px-2 py-1" style={{ color: '#FFD700' }}>Quête</th>
+                    <th className="text-center px-2 py-1" style={{ color: '#8B5CF6' }}>Flash</th>
+                    <th className="text-center px-2 py-1" style={{ color: '#FFD700' }}>Quête</th>
+                    <th className="text-center px-2 py-1" style={{ color: '#8B5CF6' }}>Flash</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map(r => {
                     const pubPct = r.total > 0 ? Math.round((r.published / r.total) * 100) : 0
+                    const drafts = r.draftQuete + r.draftFlash
                     return (
                       <tr
                         key={r.id}
                         className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
                         onClick={() => { window.location.href = `/facts?category=${r.id}` }}
                       >
-                        <td className="px-5 py-3">
+                        <td className="px-4 py-2.5">
                           <div className="flex items-center gap-2">
                             <span className="text-base">{r.emoji}</span>
-                            <span className="text-slate-200 font-semibold">{r.label}</span>
+                            <span className="text-slate-200 font-semibold text-xs">{r.label}</span>
                           </div>
                         </td>
-                        <td className="text-center px-3 py-3 font-black text-slate-300">{r.total}</td>
-                        <td className="text-center px-3 py-3 font-bold" style={{ color: '#22C55E' }}>{r.published}</td>
-                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.vip > 0 ? '#FFD700' : '#475569' }}>{r.vip}</td>
-                        <td className="text-center px-3 py-3 font-bold" style={{ color: r.generated > 0 ? '#8B5CF6' : '#475569' }}>{r.generated}</td>
-                        <td className="px-5 py-3">
+                        <td className="text-center px-2 py-2.5 font-black text-slate-300">{r.total}</td>
+                        <td className="text-center px-2 py-2.5 font-bold" style={{ color: r.draftQuete > 0 ? '#F59E0B' : '#475569' }}>{r.draftQuete}</td>
+                        <td className="text-center px-2 py-2.5 font-bold" style={{ color: r.draftFlash > 0 ? '#F59E0B' : '#475569' }}>{r.draftFlash}</td>
+                        <td className="text-center px-2 py-2.5 font-bold" style={{ color: r.pubQuete > 0 ? '#22C55E' : '#475569' }}>{r.pubQuete}</td>
+                        <td className="text-center px-2 py-2.5 font-bold" style={{ color: r.pubFlash > 0 ? '#22C55E' : '#475569' }}>{r.pubFlash}</td>
+                        <td className="px-4 py-2.5">
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 h-2.5 bg-slate-700 rounded-full overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all"
-                                style={{
-                                  width: `${pubPct}%`,
-                                  background: pubPct === 100 ? '#22C55E' : pubPct >= 50 ? '#FF6B1A' : '#EF4444',
-                                }}
-                              />
+                            <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full transition-all" style={{ width: `${pubPct}%`, background: pubPct === 100 ? '#22C55E' : pubPct >= 50 ? '#FF6B1A' : '#EF4444' }} />
                             </div>
                             <span className="text-xs font-bold text-slate-500 w-9 text-right">{pubPct}%</span>
                           </div>
@@ -841,15 +846,15 @@ export default function DashboardPage({ toast }) {
                     )
                   })}
                 </tbody>
-                {/* Footer totals */}
                 <tfoot>
                   <tr className="border-t-2 border-slate-600 bg-slate-800/80">
-                    <td className="px-5 py-3 text-slate-300 font-black text-sm">TOTAL</td>
-                    <td className="text-center px-3 py-3 font-black text-white">{rows.reduce((s, r) => s + r.total, 0)}</td>
-                    <td className="text-center px-3 py-3 font-black" style={{ color: '#22C55E' }}>{rows.reduce((s, r) => s + r.published, 0)}</td>
-                    <td className="text-center px-3 py-3 font-black" style={{ color: '#FFD700' }}>{rows.reduce((s, r) => s + r.vip, 0)}</td>
-                    <td className="text-center px-3 py-3 font-black" style={{ color: '#8B5CF6' }}>{rows.reduce((s, r) => s + r.generated, 0)}</td>
-                    <td className="px-5 py-3">
+                    <td className="px-4 py-3 text-slate-300 font-black text-sm">TOTAL</td>
+                    <td className="text-center px-2 py-3 font-black text-white">{rows.reduce((s, r) => s + r.total, 0)}</td>
+                    <td className="text-center px-2 py-3 font-black" style={{ color: '#F59E0B' }}>{rows.reduce((s, r) => s + r.draftQuete, 0)}</td>
+                    <td className="text-center px-2 py-3 font-black" style={{ color: '#F59E0B' }}>{rows.reduce((s, r) => s + r.draftFlash, 0)}</td>
+                    <td className="text-center px-2 py-3 font-black" style={{ color: '#22C55E' }}>{rows.reduce((s, r) => s + r.pubQuete, 0)}</td>
+                    <td className="text-center px-2 py-3 font-black" style={{ color: '#22C55E' }}>{rows.reduce((s, r) => s + r.pubFlash, 0)}</td>
+                    <td className="px-4 py-3">
                       {(() => {
                         const totalAll = rows.reduce((s, r) => s + r.total, 0)
                         const totalPub = rows.reduce((s, r) => s + r.published, 0)

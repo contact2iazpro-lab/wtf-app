@@ -270,7 +270,7 @@ export default function RevelationScreen({
             style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>
             Annuler
           </button>
-          <button onClick={onQuit} className="flex-1 py-4 rounded-2xl font-black text-base"
+          <button onClick={() => { audio.stopAll(); onQuit() }} className="flex-1 py-4 rounded-2xl font-black text-base"
             style={{ background: 'rgba(244,67,54,0.1)', border: '1px solid #F44336', color: '#DC2626' }}>
             Quitter
           </button>
@@ -375,20 +375,20 @@ export default function RevelationScreen({
         {renderHeader()}
 
         {/* Image floutée + stamp bienveillant par-dessus */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '30vh' }}>
           <div
             className="overflow-hidden relative"
-            style={{ background: catGradient, width: '100%', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
+            style={{ background: catGradient, width: '100%', maxHeight: '30vh', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
           >
             {fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'contain', width: '100%', height: 'auto', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(30vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
-              <div style={{ width: '100%', aspectRatio: '4/3', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
+              <div style={{ width: '100%', height: 'calc(30vh - 14px)', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
                 <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
               </div>
             )}
@@ -416,15 +416,15 @@ export default function RevelationScreen({
 
         {/* Social proof */}
         {flipped && (
-          <div style={{ textAlign: 'center', padding: `${S(4)} ${S(16)} 0` }}>
-            <span style={{ fontSize: S(13), fontWeight: 900, color: 'rgba(255,255,255,0.7)', display: 'block' }}>
+          <div style={{ textAlign: 'center', padding: `${S(6)} ${S(16)} 0` }}>
+            <span style={{ fontSize: S(11), fontWeight: 900, color: 'rgba(255,255,255,0.7)', display: 'block' }}>
               👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
             </span>
           </div>
         )}
 
         {/* Encadré question */}
-        <div style={{ flex: 1, minHeight: 0, padding: `${S(4)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ flex: 1, minHeight: 0, padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.15)',
@@ -492,16 +492,16 @@ export default function RevelationScreen({
       {renderHeader()}
 
       {/* Image pleine largeur + stamp FOU réduit en coin */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '30vh' }}>
         <div
           className={`overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow' : ''}`}
-          style={{ background: catGradient, width: '100%', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
+          style={{ background: catGradient, width: '100%', maxHeight: '30vh', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
         >
           {fact.imageUrl && !imgFailed ? (
             <img
               src={fact.imageUrl}
               alt={fact.question}
-              style={{ objectFit: 'contain', width: '100%', height: 'auto', display: 'block', borderRadius: S(12) }}
+              style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(30vh - 14px)', display: 'block', borderRadius: S(12) }}
               onError={() => setImgFailed(true)}
             />
           ) : (
@@ -524,8 +524,8 @@ export default function RevelationScreen({
         </div>
       </div>
 
-      {/* Zone info — flex: 1, scroll si texte long */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: `${S(4)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(3) }}>
+      {/* Zone info — flex: 1, no scroll */}
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(3) }}>
         {/* Message de succès + social proof */}
         {flipped && !isDuel && isCorrect && (
           <div style={{ textAlign: 'center' }}>
@@ -579,7 +579,7 @@ export default function RevelationScreen({
               <span style={{ fontSize: S(14) }}>🧠</span>
               <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{fact.explanation}</p>
           </div>
         )}
 

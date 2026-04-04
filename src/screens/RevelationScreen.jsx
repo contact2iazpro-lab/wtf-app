@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
+import GameHeader from '../components/GameHeader'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
+import renderFormattedText from '../utils/renderFormattedText'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -137,8 +139,10 @@ export default function RevelationScreen({
   duelContext,
   gameMode,
   sessionScore,
+  playerCoins = 0,
   playerTickets = 0,
   playerHints = 0,
+  sessionType = 'parcours',
   wrongAnswer,
   correctAnswer,
 }) {
@@ -161,7 +165,7 @@ export default function RevelationScreen({
   const [flipped, setFlipped] = useState(true)
   const [copied, setCopied] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
-  const [displayedScore, setDisplayedScore] = useState(sessionScore - pointsEarned)
+  const [displayedScore, setDisplayedScore] = useState(playerCoins - pointsEarned)
   const [showScorePulse, setShowScorePulse] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
@@ -454,7 +458,7 @@ export default function RevelationScreen({
             borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
           }}>
             <div style={{ fontSize: S(9), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4) }}>La question :</div>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{fact.question}</div>
+            <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
             {isTimeout && (
               <div style={{ marginTop: S(6), fontSize: S(10), fontWeight: 700, color: '#FB923C' }}>⏱️ Temps écoulé</div>
             )}

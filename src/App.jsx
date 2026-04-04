@@ -1415,6 +1415,8 @@ export default function App() {
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
           playerCoins={wtfCoins}
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
+          playerTickets={tickets}
+          sessionType={sessionType}
           isTutorial={isTutorialSession}
         />
       )}
@@ -1434,8 +1436,10 @@ export default function App() {
           duelContext={duelContext}
           gameMode={gameMode}
           sessionScore={gameMode === 'duel' ? 0 : sessionScore}
+          playerCoins={wtfCoins}
           playerTickets={tickets}
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
+          sessionType={sessionType}
           wrongAnswer={flipInfo?.wrongAnswer}
           correctAnswer={flipInfo?.correctAnswer}
         />

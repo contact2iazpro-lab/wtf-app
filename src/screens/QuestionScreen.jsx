@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import CircularTimer from '../components/CircularTimer'
-import SettingsModal from '../components/SettingsModal'
+import GameHeader from '../components/GameHeader'
 import CoinsIcon from '../components/CoinsIcon'
 import HintFlipButton from '../components/HintFlipButton'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
+import renderFormattedText from '../utils/renderFormattedText'
 
 // ── Messages bienveillants (identiques à RevelationScreen) ──────────────────
 const WRONG_MESSAGES = [
@@ -52,6 +53,8 @@ export default function QuestionScreen({
   playerEmoji,
   playerCoins = 0,
   playerHints = 0,
+  playerTickets = 0,
+  sessionType = 'parcours',
   isTutorial = false,
 }) {
   // Solo et marathon → QCM direct, duel → sélection du mode
@@ -70,7 +73,6 @@ export default function QuestionScreen({
   })
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
-  const [showSettings, setShowSettings]       = useState(false)
   const [coinFlash, setCoinFlash] = useState(null)
   const prevCoinsRef = useRef(playerCoins)
 
@@ -178,81 +180,18 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Header: ✕ | catégorie | coins | ⚙️ ──────────────────────────────────
+  // ── Header: ✕ | catégorie | coins | tickets | hints | ⚙️ ─────────────────
   const header = (
-    <div className="qs-h" style={{
-      display: 'flex', flexDirection: 'row',
-      alignItems: 'center', justifyContent: 'space-between',
-      width: '100%', flexShrink: 0,
-      padding: `${S(8)} ${S(12)}`,
-    }}>
-
-      {/* 1 — Bouton ✕ quitter */}
-      <button
-        onClick={() => setShowQuitConfirm(true)}
-        title="Quitter"
-        style={{
-          width: S(36), height: S(36), borderRadius: '50%',
-          background: 'rgba(255,255,255,0.2)',
-          border: '1.5px solid rgba(255,255,255,0.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: S(16), color: 'white', cursor: 'pointer', flexShrink: 0,
-          WebkitTapHighlightColor: 'transparent',
-        }}
-      >✕</button>
-
-      {/* 2 — Nom de la catégorie */}
-      <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
-        <span style={{
-          fontWeight: 900, fontSize: S(13),
-          color: cat?.color || 'rgba(255,255,255,0.7)',
-          lineHeight: 1.2, whiteSpace: 'nowrap',
-          overflow: 'hidden', textOverflow: 'ellipsis',
-          display: 'block',
-        }}>
-          {cat?.label || 'Question'}
-        </span>
-      </div>
-
-      {/* 3 — Icône coins + solde */}
-      <div style={{
-        display: 'flex', flexDirection: 'row', alignItems: 'center',
-        flexShrink: 0, pointerEvents: 'none', userSelect: 'none',
-      }}>
-        <img
-          src="/assets/ui/icon-coins.png"
-          alt=""
-          style={{ width: S(20), height: S(20), marginRight: S(4) }}
-        />
-        <span style={{ fontWeight: 700, color: 'white', fontSize: S(13), position: 'relative' }}>
-          {playerCoins}
-          {coinFlash && (
-            <span style={{
-              position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
-              color: '#22C55E', fontWeight: 900, fontSize: S(11), whiteSpace: 'nowrap',
-              animation: 'coinFlashUp 1.2s ease-out forwards', pointerEvents: 'none',
-            }}>
-              {coinFlash}
-            </span>
-          )}
-        </span>
-      </div>
-
-      {/* 4 — Bouton ⚙️ paramètres */}
-      <button
-        onClick={() => { audio.play('click'); setShowSettings(true) }}
-        style={{
-          width: S(36), height: S(36), borderRadius: '50%',
-          background: 'rgba(255,255,255,0.2)',
-          border: '1.5px solid rgba(255,255,255,0.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0, cursor: 'pointer', marginLeft: S(8),
-          WebkitTapHighlightColor: 'transparent',
-        }}
-      >
-        <img src="/assets/ui/icon-settings.png" alt="" style={{ width: S(20), height: S(20) }} />
-      </button>
-    </div>
+    <GameHeader
+      playerCoins={playerCoins}
+      playerHints={playerHints}
+      playerTickets={playerTickets}
+      showTickets={sessionType === 'parcours'}
+      categoryLabel={cat?.label || 'Question'}
+      categoryColor={cat?.color}
+      onQuit={() => setShowQuitConfirm(true)}
+      coinFlash={coinFlash}
+    />
   )
 
   // ── Barre de progression ─────────────────────────────────────────────────────
@@ -304,7 +243,7 @@ export default function QuestionScreen({
         boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
       }}
     >
-      <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))' }}>{fact.question}</h2>
+      <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))' }}>{renderFormattedText(fact.question)}</h2>
     </div>
   )
 
@@ -366,7 +305,6 @@ export default function QuestionScreen({
         }}
       >
         {quitModal}
-        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {progressBar}
 
@@ -422,7 +360,6 @@ export default function QuestionScreen({
         }}
       >
         {quitModal}
-        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {header}
         {difficulty && (
           <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
@@ -721,7 +658,7 @@ export default function QuestionScreen({
                   fontSize: S(16), lineHeight: 1.35,
                   textAlign: 'center', margin: 0,
                 }}>
-                  {fact.question}
+                  {renderFormattedText(fact.question)}
                 </h2>
               </div>
             </div>
@@ -819,7 +756,7 @@ export default function QuestionScreen({
                   animation: 'tutFadeSlideUp 0.5s ease forwards',
                 }}>
                   <div style={{ fontSize: S(9), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4) }}>La question :</div>
-                  <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3, marginBottom: S(8) }}>{fact.question}</div>
+                  <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3, marginBottom: S(8) }}>{renderFormattedText(fact.question)}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>
                     <span style={{ fontSize: S(14) }}>🧠</span>
                     <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
@@ -881,7 +818,6 @@ export default function QuestionScreen({
       }}
     >
       {quitModal}
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {header}
 
       {/* Rappel du mode */}
@@ -942,7 +878,7 @@ export default function QuestionScreen({
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              {option}
+              {renderFormattedText(option)}
             </button>
           ))}
         </div>

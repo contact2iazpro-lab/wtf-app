@@ -2,7 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { getCategoryById } from '../data/facts'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
+import renderFormattedText from '../utils/renderFormattedText'
 import HintFlipButton from '../components/HintFlipButton'
+import GameHeader from '../components/GameHeader'
 
 // ── Lisibilité sur fond coloré ───────────────────────────────────────────────
 function isLightColor(hex) {
@@ -191,26 +193,13 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
       {quitModal}
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-2" style={{ paddingTop: S(12) }}>
-        <button
-          onClick={() => setShowQuitConfirm(true)}
-          className="w-10 h-10 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.25)' }}
-        >
-          <span style={{ color: catTextColor, fontSize: S(18), fontWeight: 900 }}>✕</span>
-        </button>
-
-        <div className="flex items-center gap-2">
-          <span style={{ fontSize: S(14), color: catTextColor, opacity: 0.8 }}>
-            {cat?.emoji} {cat?.label || 'Blitz'}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: 'rgba(0,0,0,0.25)' }}>
-          <span style={{ fontSize: S(14) }}>🪙</span>
-          <span style={{ fontSize: S(14), fontWeight: 800, color: catTextColor }}>{playerCoins + coinsEarned}</span>
-        </div>
-      </div>
+      <GameHeader
+        playerCoins={playerCoins + coinsEarned}
+        playerHints={playerHints}
+        categoryLabel={cat?.label || 'Blitz'}
+        categoryColor={cat?.color}
+        onQuit={() => setShowQuitConfirm(true)}
+      />
 
       {/* ── Timer bar ───────────────────────────────────────────────────── */}
       <div className="px-4 pb-2">
@@ -264,7 +253,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
             textAlign: 'center',
             lineHeight: 1.4,
           }}>
-            {currentFact?.question}
+            {renderFormattedText(currentFact?.question)}
           </p>
         </div>
 
@@ -336,7 +325,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
                   fontWeight: 700,
                   color: btnTextColor,
                 }}>
-                  {option}
+                  {renderFormattedText(option)}
                 </span>
               </button>
             )

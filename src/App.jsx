@@ -1429,7 +1429,28 @@ export default function App() {
       )}
 
       {showHowToPlay && screen === SCREENS.HOME && (
-        <HowToPlayModal onClose={() => setShowHowToPlay(false)} />
+        <HowToPlayModal
+          onClose={() => setShowHowToPlay(false)}
+          onRestartTutorial={() => {
+            // Reset tutorial state et relancer
+            localStorage.setItem('tutorial_state', 'FIRST_FACT')
+            setShowHowToPlay(false)
+            const tutorialFactId = getTutorialFactId()
+            const allFacts = getValidFacts()
+            const tutorialFact = allFacts.find(f => f.id === tutorialFactId)
+            if (tutorialFact) {
+              const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, DIFFICULTY_LEVELS.HOT) }
+              setSessionType('parcours')
+              setGameMode('solo')
+              setIsQuickPlay(false)
+              setIsTutorialSession(true)
+              setSelectedDifficulty(DIFFICULTY_LEVELS.HOT)
+              setSelectedCategory(tutorialFact.category)
+              initSessionState([factWithOptions])
+              setScreen(SCREENS.QUESTION)
+            }
+          }}
+        />
       )}
 
       {screen === SCREENS.HOME && (

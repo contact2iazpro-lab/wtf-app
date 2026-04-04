@@ -16,6 +16,18 @@ const CHAPTERS = [
     ],
   },
   {
+    id: 'tutorial',
+    emoji: '🎓',
+    shortTitle: 'Tutoriel',
+    title: 'Tutoriel',
+    content: [
+      { icon: '🎮', text: 'Lors de ta première partie, WTF! te guide **pas à pas** avec un f*ct spécial.' },
+      { icon: '💡', text: 'Tu découvres les bases : **question, indices, réponse et révélation**.' },
+      { icon: '🔄', text: 'Si tu veux revivre cette expérience, clique ci-dessous.' },
+    ],
+    tutorialButton: true,
+  },
+  {
     id: 'quest',
     emoji: '⭐',
     shortTitle: 'Quest',
@@ -141,7 +153,7 @@ function renderText(text) {
 }
 
 // ── Main component ──────────────────────────────────────────────────────────
-export default function HowToPlayModal({ onClose }) {
+export default function HowToPlayModal({ onClose, onRestartTutorial }) {
   const [activeId, setActiveId] = useState(CHAPTERS[0].id)
   const chapter = CHAPTERS.find(c => c.id === activeId) || CHAPTERS[0]
 
@@ -256,6 +268,17 @@ export default function HowToPlayModal({ onClose }) {
                   </p>
                 </div>
               ))}
+
+              {/* Bouton relancer tutoriel */}
+              {chapter.tutorialButton && onRestartTutorial && (
+                <button
+                  onClick={() => { audio.play('click'); onRestartTutorial(); onClose() }}
+                  className="w-full py-3 rounded-2xl font-black text-sm active:scale-95 transition-all mt-2"
+                  style={{ background: '#FF6B1A', color: 'white', border: 'none' }}
+                >
+                  🔄 Relancer le tutoriel
+                </button>
+              )}
             </div>
 
             {/* Chapter dots navigation */}

@@ -550,106 +550,80 @@ export default function QuestionScreen({
             </div>
           )}
 
-          {/* Post-answer: Image encadrée avec bordure catégorie (comme RevelationScreen) */}
+          {/* Post-answer: layout identique à RevelationScreen VIP */}
           {tutAnswered && (
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, padding: `${S(8)} ${S(16)}`, maxHeight: '30vh',
-              animation: 'tutFadeSlideUp 0.4s ease forwards',
-            }}>
-              <div
-                className="overflow-hidden relative"
-                style={{
-                  background: tutCatGradient, width: '100%', maxHeight: '30vh',
-                  borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4,
-                  animation: tutCorrect ? 'tutGlow 2s ease-in-out infinite' : 'none',
-                }}
-              >
-                {!tutImgFailed ? (
-                  <img
-                    src={tutorialImageUrl}
-                    alt={fact.question}
-                    onError={() => setTutImgFailed(true)}
-                    style={{
-                      objectFit: 'cover', width: '100%', maxHeight: 'calc(30vh - 14px)',
-                      display: 'block', borderRadius: S(12),
-                      filter: !tutCorrect ? 'blur(12px) brightness(0.5)' : 'none',
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    width: '100%', height: 'calc(30vh - 14px)',
-                    background: tutCatGradient,
-                    filter: !tutCorrect ? 'blur(8px) brightness(0.5)' : 'none',
-                    borderRadius: S(12),
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <div style={{ fontSize: '72px', fontWeight: 900, color: 'white', lineHeight: 1 }}>?</div>
-                  </div>
-                )}
+            <>
+              {/* Header factice avec GameHeader */}
+              <GameHeader
+                playerCoins={playerCoins}
+                playerHints={playerHints}
+                playerTickets={playerTickets}
+                categoryLabel={cat?.label || 'Tuto'}
+                categoryColor={cat?.color}
+                onQuit={() => { audio.stopAll(); onQuit() }}
+              />
 
-                {/* Wrong: overlay sombre + stamp bienveillant centré */}
-                {!tutCorrect && (
-                  <>
-                    <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
-                    <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 5 }}>
-                      <div style={{
-                        position: 'absolute', left: '50%', top: '50%',
-                        animation: 'tutStampImpact 0.5s ease-out forwards',
-                        background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)',
-                        border: '2px solid rgba(255,255,255,0.3)',
-                        borderRadius: S(14), padding: `${S(10)} ${S(16)}`,
-                        maxWidth: '85%', textAlign: 'center',
-                      }}>
-                        <span style={{ fontSize: S(13), fontWeight: 900, color: 'white', lineHeight: 1.4 }}>
-                          {tutWrongMsg}
-                        </span>
-                      </div>
+              {/* Image VIP glow + stamp FOU */}
+              <div style={{ flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '35vh' }}>
+                <div
+                  className={`overflow-hidden relative${tutCorrect ? ' wow-shine wow-glow gold-card-rounded' : ''}`}
+                  style={{
+                    background: tutCatGradient, width: '100%', maxHeight: '35vh',
+                    borderRadius: S(16), padding: 4,
+                    border: tutCorrect ? undefined : `3px solid ${cat?.color || '#1a3a5c'}`,
+                  }}
+                >
+                  {!tutImgFailed ? (
+                    <img
+                      src={tutorialImageUrl}
+                      alt={fact.question}
+                      onError={() => setTutImgFailed(true)}
+                      style={{
+                        objectFit: 'contain', width: '100%', maxHeight: 'calc(35vh - 14px)',
+                        display: 'block', borderRadius: S(12),
+                        filter: !tutCorrect ? 'blur(12px) brightness(0.5)' : 'none',
+                      }}
+                    />
+                  ) : (
+                    <div style={{ width: '100%', height: 'calc(30vh - 14px)', background: tutCatGradient, filter: !tutCorrect ? 'blur(8px) brightness(0.5)' : 'none', borderRadius: S(12), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 72, fontWeight: 900, color: 'white', opacity: 0.3 }}>?</span>
                     </div>
-                  </>
-                )}
-
-                {/* Correct: stamp FOU petit en coin bas droit + shimmer */}
-                {tutCorrect && (
-                  <>
-                    {/* Shimmer overlay on image */}
-                    <div className="absolute inset-0" style={{
-                      zIndex: 3, pointerEvents: 'none',
-                      background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.06) 42%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.06) 58%, transparent 65%)',
-                      backgroundSize: '200% 100%',
-                      animation: 'tutShimmer 2s ease-in-out infinite',
-                      borderRadius: S(12),
-                    }} />
-                    <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
-                      <div style={{
-                        fontSize: S(18), fontWeight: 900, color: '#4CAF50',
-                        textShadow: '0 2px 6px rgba(76, 175, 80, 0.5)',
-                        transform: 'rotate(-12deg)',
-                        border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`,
-                        backgroundColor: 'rgba(76, 175, 80, 0.15)', backdropFilter: 'blur(4px)',
-                        animation: 'tutStampCorner 0.5s ease-out forwards',
-                      }}>
-                        FOU
+                  )}
+                  {/* Wrong: overlay + stamp bienveillant */}
+                  {!tutCorrect && (
+                    <>
+                      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
+                      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 5 }}>
+                        <div style={{ position: 'absolute', left: '50%', top: '50%', animation: 'tutStampImpact 0.5s ease-out forwards', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', border: '2px solid rgba(255,255,255,0.3)', borderRadius: S(14), padding: `${S(10)} ${S(16)}`, maxWidth: '85%', textAlign: 'center' }}>
+                          <span style={{ fontSize: S(13), fontWeight: 900, color: 'white', lineHeight: 1.4 }}>{tutWrongMsg}</span>
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
+                  {/* Correct: shimmer + stamp FOU */}
+                  {tutCorrect && (
+                    <>
+                      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 7, overflow: 'hidden', borderRadius: S(12) }}>
+                        <div style={{ position: 'absolute', inset: '-50%', background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.08) 45%, rgba(255,215,0,0.15) 50%, rgba(255,255,255,0.08) 55%, transparent 60%)', animation: 'goldShimmer 3s ease-in-out infinite' }} />
+                      </div>
+                      <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
+                        <div style={{ fontSize: S(18), fontWeight: 900, color: '#4CAF50', textShadow: '0 2px 6px rgba(76,175,80,0.5)', transform: 'rotate(-12deg)', border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`, backgroundColor: 'rgba(76,175,80,0.15)', backdropFilter: 'blur(4px)', animation: 'tutStampCorner 0.5s ease-out forwards' }}>FOU</div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Message de succès/encouragement + social proof (post-answer) */}
-          {tutAnswered && (
-            <div style={{ textAlign: 'center', padding: `${S(4)} ${S(16)} 0` }}>
-              {tutCorrect && (
-                <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
-                  {tutCorrectMsg}
+              {/* Message succès + social proof */}
+              <div style={{ textAlign: 'center', padding: `${S(8)} ${S(16)} 0`, flexShrink: 0 }}>
+                {tutCorrect && (
+                  <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{tutCorrectMsg}</span>
+                )}
+                <span style={{ fontSize: S(14), fontWeight: 800, color: 'rgba(255,255,255,0.8)', display: 'block', marginTop: S(4), textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.3 }}>
+                  👥 {tutCorrect ? `Seulement ${successRate}` : `${100 - successRate}`}% des joueurs{'\n'}ont trouvé ce f*ct
                 </span>
-              )}
-              <span style={{ fontSize: tutCorrect ? S(13) : S(11), fontWeight: 900, color: 'rgba(255,255,255,0.7)', display: 'block', marginTop: tutCorrect ? S(2) : 0 }}>
-                👥 {tutCorrect ? `Seulement ${successRate}` : `${100 - successRate}`}% des joueurs ont trouvé ce f*ct
-              </span>
-            </div>
+              </div>
+            </>
           )}
 
           {/* Question card (pre-answer) */}
@@ -683,27 +657,35 @@ export default function QuestionScreen({
               padding: `0 ${S(16)}`,
               animation: 'tutFadeSlideUp 0.6s 0.3s ease both',
             }}>
-              {/* Indices tutoriel — gratuits, pré-remplis */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <HintFlipButton num={1} hint="Luxe" catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={99} onReveal={() => audio.play('click')} />
-                <HintFlipButton num={2} hint="Brillant" catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={99} onReveal={() => audio.play('click')} />
+              {/* Logo Vrai ou Fou dans l'espace vide */}
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <img src="/assets/ui/vof-logo.png?v=5" alt="Vrai ou Fou?" style={{ width: '60%', height: 'auto', objectFit: 'contain', opacity: 0.9 }} />
               </div>
-              {optionsToRender.map((opt) => (
-                <button
-                  key={opt.originalIndex}
-                  onClick={() => handleTutorialAnswer(opt.originalIndex, opt.text)}
-                  className="btn-press transition-all active:scale-95"
-                  style={{
-                    background: 'rgba(255,255,255,0.12)',
-                    border: '1.5px solid rgba(255,255,255,0.35)',
-                    borderRadius: S(14), color: 'white', fontWeight: 700,
-                    fontSize: S(16), padding: `${S(16)} ${S(12)}`,
-                    width: '100%', textAlign: 'center',
-                  }}
-                >
-                  {opt.text}
-                </button>
-              ))}
+              {/* Indices tutoriel — gratuits, label "Indice (gratuit)" */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {[{ hint: 'Luxe' }, { hint: 'Brillant' }].map((h, i) => (
+                  <HintFlipButton key={i} num={i + 1} hint={h.hint} catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={'gratuit'} onReveal={() => audio.play('click')} />
+                ))}
+              </div>
+              {optionsToRender.map((opt) => {
+                const cleanText = opt.text.replace(/[\u{1F600}-\u{1FFFF}]/gu, '').trim()
+                return (
+                  <button
+                    key={opt.originalIndex}
+                    onClick={() => handleTutorialAnswer(opt.originalIndex, opt.text)}
+                    className="btn-press transition-all active:scale-95"
+                    style={{
+                      background: 'rgba(255,255,255,0.12)',
+                      border: '1.5px solid rgba(255,255,255,0.35)',
+                      borderRadius: S(14), color: 'white', fontWeight: 700,
+                      fontSize: S(16), padding: `${S(16)} ${S(12)}`,
+                      width: '100%', textAlign: 'center',
+                    }}
+                  >
+                    {cleanText}
+                  </button>
+                )
+              })}
             </div>
           ) : (
             /* Post-answer zone */
@@ -730,25 +712,26 @@ export default function QuestionScreen({
                 </div>
               )}
 
-              {/* Encadré explication (correct) — comme RevelationScreen */}
+              {/* Encadré explication (correct) — identique RevelationScreen VIP */}
               {tutCorrect && (
                 <div style={{
-                  background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
+                  background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: S(14), padding: `${S(8)} ${S(10)}`,
+                  flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
                 }}>
                   <div style={{
                     background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
-                    borderRadius: S(10), padding: `${S(8)} ${S(10)}`, marginBottom: S(8),
+                    borderRadius: S(10), padding: `${S(6)} ${S(10)}`, marginBottom: S(6), flexShrink: 0,
                   }}>
                     <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
-                    <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{fact.options[fact.correctIndex]}</div>
+                    <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{fact.options[fact.correctIndex]}</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>
-                    <span style={{ fontSize: S(14) }}>🧠</span>
-                    <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
+                    <span style={{ fontSize: S(12) }}>🧠</span>
+                    <span style={{ color: 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
                   </div>
-                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.35, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
+                  <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>{fact.explanation}</p>
                 </div>
               )}
 

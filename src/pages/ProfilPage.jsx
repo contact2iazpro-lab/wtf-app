@@ -37,9 +37,9 @@ export default function ProfilPage() {
     }
   }, [isConnected, user])
 
-  // Load avatar from user metadata
+  // Load avatar from user metadata or localStorage
   useEffect(() => {
-    const url = user?.user_metadata?.avatar_url
+    const url = user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar')
     if (url) setAvatarUrl(url)
   }, [user])
 
@@ -48,13 +48,16 @@ export default function ProfilPage() {
     if (!clean) return
     setSavingName(true)
     try {
+      // Toujours sauvegarder en local
+      localStorage.setItem('wtf_player_name', clean)
+      const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      data.pseudo = clean
+      localStorage.setItem('wtf_data', JSON.stringify(data))
+      // Si connecté, sync vers Supabase
       if (isConnected) {
         await supabase.auth.updateUser({ data: { name: clean } })
         await supabase.from('profiles').update({ username: clean }).eq('id', user.id)
       }
-      const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      data.pseudo = clean
-      localStorage.setItem('wtf_data', JSON.stringify(data))
       setEditingName(false)
     } catch (err) {
       console.error('Erreur mise à jour nom:', err)
@@ -65,30 +68,36 @@ export default function ProfilPage() {
 
   async function handleAvatarUpload(e) {
     const file = e.target.files?.[0]
-    if (!file || !isConnected) return
+    if (!file) return
     setUploadingAvatar(true)
     try {
-      // Resize to 200x200
       const bitmap = await createImageBitmap(file)
+      const size = isConnected ? 200 : 100 // Plus petit en local pour limiter le base64
       const canvas = document.createElement('canvas')
-      canvas.width = 200; canvas.height = 200
+      canvas.width = size; canvas.height = size
       const ctx = canvas.getContext('2d')
-      const scale = Math.max(200 / bitmap.width, 200 / bitmap.height)
+      const scale = Math.max(size / bitmap.width, size / bitmap.height)
       const w = bitmap.width * scale, h = bitmap.height * scale
-      ctx.drawImage(bitmap, (200 - w) / 2, (200 - h) / 2, w, h)
-      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85))
+      ctx.drawImage(bitmap, (size - w) / 2, (size - h) / 2, w, h)
 
-      const path = `avatars/${user.id}.jpg`
-      await supabase.storage.createBucket('avatars', { public: true }).catch(() => {})
-      const { error: upErr } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
-      if (upErr) throw upErr
-
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-      const urlWithBust = `${publicUrl}?v=${Date.now()}`
-
-      await supabase.auth.updateUser({ data: { avatar_url: urlWithBust } })
-      await supabase.from('profiles').update({ avatar_url: urlWithBust }).eq('id', user.id)
-      setAvatarUrl(urlWithBust)
+      if (isConnected) {
+        // Upload vers Supabase Storage
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85))
+        const path = `avatars/${user.id}.jpg`
+        await supabase.storage.createBucket('avatars', { public: true }).catch(() => {})
+        const { error: upErr } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
+        if (upErr) throw upErr
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+        const urlWithBust = `${publicUrl}?v=${Date.now()}`
+        await supabase.auth.updateUser({ data: { avatar_url: urlWithBust } })
+        await supabase.from('profiles').update({ avatar_url: urlWithBust }).eq('id', user.id)
+        setAvatarUrl(urlWithBust)
+      } else {
+        // Sauvegarder en base64 dans localStorage (100x100)
+        const base64 = canvas.toDataURL('image/jpeg', 0.7)
+        localStorage.setItem('wtf_player_avatar', base64)
+        setAvatarUrl(base64)
+      }
     } catch (err) {
       console.error('Erreur upload avatar:', err)
     } finally {
@@ -104,7 +113,7 @@ export default function ProfilPage() {
   const unlockedIds = useMemo(() => new Set(playerData.unlockedFacts || []), [playerData])
   const allFacts = getValidFacts()
   const totalUnlocked = allFacts.filter(f => unlockedIds.has(f.id)).length
-  const pseudo = playerData.pseudo || user?.user_metadata?.name || 'Joueur WTF!'
+  const pseudo = user?.user_metadata?.name || localStorage.getItem('wtf_player_name') || playerData.pseudo || 'Joueur WTF!'
   const gamesPlayed = playerData.gamesPlayed || 0
   const bestStreak = playerData.bestStreak || 0
   const totalCorrect = playerData.totalCorrect || 0
@@ -174,14 +183,13 @@ export default function ProfilPage() {
               className="rounded-full"
               style={{
                 width: 72, height: 72, border: '3px solid white',
-                objectFit: 'cover', cursor: isConnected ? 'pointer' : 'default',
+                objectFit: 'cover', cursor: 'pointer',
                 opacity: uploadingAvatar ? 0.5 : 1, transition: 'opacity 0.3s',
                 boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
               }}
-              onClick={() => isConnected && avatarInputRef.current?.click()}
+              onClick={() => avatarInputRef.current?.click()}
             />
-            {isConnected && (
-              <div style={{
+            <div style={{
                 position: 'absolute', bottom: -2, right: -2,
                 width: 24, height: 24, borderRadius: '50%',
                 background: '#FF6B1A', border: '2px solid white',
@@ -190,7 +198,6 @@ export default function ProfilPage() {
               }} onClick={() => avatarInputRef.current?.click()}>
                 📷
               </div>
-            )}
             {uploadingAvatar && (
               <div style={{
                 position: 'absolute', inset: 0, borderRadius: '50%',
@@ -219,9 +226,7 @@ export default function ProfilPage() {
           ) : (
             <div className="flex items-center gap-1.5">
               <span className="font-black text-base" style={{ color: '#1a1a2e' }}>{pseudo}</span>
-              {isConnected && (
-                <button onClick={() => { setNameInput(pseudo); setEditingName(true) }} className="text-slate-400 hover:text-slate-600 active:scale-90 transition-all" style={{ fontSize: 14 }}>✏️</button>
-              )}
+              <button onClick={() => { setNameInput(pseudo); setEditingName(true) }} className="text-slate-400 hover:text-slate-600 active:scale-90 transition-all" style={{ fontSize: 14 }}>✏️</button>
             </div>
           )}
           {isConnected ? (
@@ -281,6 +286,50 @@ export default function ProfilPage() {
               </div>
             )
           })}
+        </div>
+
+        {/* ── Réinitialiser progression ───────────────────────────── */}
+        <div style={{ marginTop: 32, paddingBottom: 24, textAlign: 'center' }}>
+          <button
+            onClick={async () => {
+              if (!window.confirm('⚠️ ATTENTION : Cette action est IRRÉVERSIBLE.\nTu vas perdre tous tes coins, tickets, indices, ta collection et ta progression.\nEs-tu sûr de vouloir continuer ?')) return
+              if (!window.confirm('Dernière chance !\nToute ta progression sera définitivement perdue.\nConfirmer la réinitialisation ?')) return
+
+              // Reset Supabase si connecté
+              if (isConnected && user) {
+                try {
+                  await supabase.from('profiles').update({
+                    coins: 0, total_score: 0, streak_current: 0, streak_max: 0,
+                    tickets: 0, hints: 0, updated_at: new Date().toISOString(),
+                  }).eq('id', user.id)
+                } catch { /* ignore */ }
+              }
+
+              // Vider localStorage sauf les clés auth (sb-*, supabase.auth.*)
+              const kept = {}
+              for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i)
+                if (k && (k.startsWith('sb-') || k.startsWith('supabase.auth') || k === 'wtf_app_version' || k.startsWith('skip_launch_'))) {
+                  kept[k] = localStorage.getItem(k)
+                }
+              }
+              localStorage.clear()
+              Object.entries(kept).forEach(([k, v]) => localStorage.setItem(k, v))
+
+              window.location.reload()
+            }}
+            style={{
+              background: '#DC2626', color: 'white', border: 'none',
+              borderRadius: 12, padding: '12px 24px',
+              fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            Réinitialiser ma progression
+          </button>
+          <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8 }}>
+            Action irréversible. Toute ta progression sera perdue.
+          </p>
         </div>
       </div>
     </div>

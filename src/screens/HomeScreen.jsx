@@ -66,6 +66,8 @@ function applyCofreReward(reward) {
       const current = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
       localStorage.setItem('wtf_hints_available', String(current + reward.amount))
     }
+    // Notifier App.jsx de recharger le state depuis localStorage
+    window.dispatchEvent(new Event('wtf_storage_sync'))
   } catch { /* ignore */ }
 }
 
@@ -106,6 +108,7 @@ export default function HomeScreen({
   nextBadgeInfo = null,
   onNavigate,
   onOpenSettings,
+  playerAvatar = null,
 }) {
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
@@ -262,7 +265,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <img src="/assets/ui/avatar-default.png" alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={playerAvatar || '/assets/ui/avatar-default.png'} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </button>
 
         {/* Coins + Tickets + Settings */}

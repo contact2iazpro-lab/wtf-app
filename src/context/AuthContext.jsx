@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import { syncPlayerDataAsync } from '../services/playerSyncService'
+import { syncPlayerData } from '../services/playerSyncService'
 
 const AuthContext = createContext(null)
 
@@ -62,10 +62,22 @@ export function AuthProvider({ children }) {
         if (u) {
           if (event === 'SIGNED_IN') await createProfile(u.id, u.email)
           loadProfile(u.id)
-          // Sync local data to Supabase on sign-in
+          // Sync local data to/from Supabase on sign-in, then refresh App state
           try {
             const local = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            syncPlayerDataAsync(u.id, local)
+            await syncPlayerData(u.id, local)
+            // Sync local name/avatar to Supabase si pas de données cloud
+            const localName = localStorage.getItem('wtf_player_name')
+            const localAvatar = localStorage.getItem('wtf_player_avatar')
+            if (localName && !u.user_metadata?.name) {
+              await supabase.auth.updateUser({ data: { name: localName } })
+              await supabase.from('profiles').update({ username: localName }).eq('id', u.id).catch(() => {})
+            }
+            if (localAvatar && !u.user_metadata?.avatar_url && !localAvatar.startsWith('data:')) {
+              // Ne pas sync les base64 vers Supabase (trop gros)
+            }
+            // Notify App.jsx to reload storage from localStorage
+            window.dispatchEvent(new Event('wtf_storage_sync'))
           } catch { /* ignore */ }
         } else {
           setProfile(null)

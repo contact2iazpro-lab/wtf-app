@@ -158,7 +158,7 @@ function loadStorage() {
     const wtfDuJourFait = wtfDuJourDate === today
     const sessionsToday = saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0
 
-    const tickets = saved.tickets ?? 3
+    const tickets = saved.tickets || 0
 
     const devMode = localStorage.getItem('wtf_dev_mode') === 'true'
     if (devMode) {
@@ -1102,6 +1102,13 @@ export default function App() {
     syncPlayerDataAsync(user.id, storage)
   }, [factsReady, user])
 
+  // Refresh storage state when auth sync completes (sign-in / sign-out)
+  useEffect(() => {
+    const handleSync = () => setStorage(loadStorage())
+    window.addEventListener('wtf_storage_sync', handleSync)
+    return () => window.removeEventListener('wtf_storage_sync', handleSync)
+  }, [])
+
   // Dev mode: unlock all facts in memory (no localStorage write)
   useEffect(() => {
     if (!factsReady) return
@@ -1321,6 +1328,7 @@ export default function App() {
           nextBadgeInfo={null}
           onNavigate={handleHomeNavigate}
           onOpenSettings={() => setShowSettings(true)}
+          playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}
         />
       )}
 
@@ -1396,7 +1404,7 @@ export default function App() {
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
-          playerCoins={wtfCoins + sessionScore}
+          playerCoins={wtfCoins}
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           isTutorial={isTutorialSession}
         />

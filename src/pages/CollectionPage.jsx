@@ -50,6 +50,7 @@ const TAB_CONFIG = {
 // ─── Fact detail full-screen view ──────────────────────────────────────────
 
 function FactDetailView({ fact, onClose }) {
+  const [showLightbox, setShowLightbox] = useState(false)
   const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
   const catGradient = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
@@ -64,14 +65,16 @@ function FactDetailView({ fact, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col"
-      style={{
-        zIndex: 400, overflow: 'hidden',
+      className="fixed inset-0 flex justify-center"
+      style={{ zIndex: 400 }}
+    >
+      <div style={{
+        width: '100%', maxWidth: 430, height: '100%',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
         backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
         backgroundSize: 'cover', backgroundPosition: 'center',
-        backgroundColor: catColor,
-      }}
-    >
+        backgroundColor: catColor, position: 'relative',
+      }}>
       {/* Overlay catégorie */}
       <div style={{ position: 'absolute', inset: 0, background: `${catColor}cc`, zIndex: 0 }} />
 
@@ -111,38 +114,31 @@ function FactDetailView({ fact, onClose }) {
           </span>
         </div>
 
-        {/* Image pleine largeur — style RevelationScreen */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, maxHeight: '30vh' }}>
-          <div className="overflow-hidden relative" style={{ background: catGradient, width: '100%', height: '100%', aspectRatio: '4/3', maxHeight: '100%' }}>
+        {/* Image pleine largeur — format carré, cliquable lightbox */}
+        <div style={{ flexShrink: 0, padding: `0 ${S(16)}` }}>
+          <div
+            onClick={() => fact.imageUrl && setShowLightbox(true)}
+            style={{
+              width: '100%', aspectRatio: '1/1', borderRadius: S(16), overflow: 'hidden',
+              border: `3px solid ${catColor}`, position: 'relative',
+              background: catGradient, cursor: fact.imageUrl ? 'pointer' : 'default',
+            }}
+          >
             {fact.imageUrl ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+                style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
               />
             ) : (
               <div style={{
                 width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '24px',
-                background: catGradient,
+                alignItems: 'center', justifyContent: 'center', gap: 8,
               }}>
-                <div style={{ fontSize: '14px', fontWeight: 900, color: 'rgba(255,255,255,0.25)', letterSpacing: '4px' }}>WTF!</div>
-                <div style={{ fontSize: '72px', fontWeight: 900, color: 'white', lineHeight: 1 }}>?</div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>Image bientôt disponible</div>
+                <div style={{ fontSize: 72, fontWeight: 900, color: 'white', lineHeight: 1, opacity: 0.3 }}>?</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Image bientôt disponible</div>
               </div>
             )}
-            {/* Tampon FOU — coin bas droit */}
-            <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
-              <div style={{
-                fontSize: S(18), fontWeight: 900, color: '#4CAF50',
-                textShadow: '0 2px 6px rgba(76,175,80,0.5)',
-                transform: 'rotate(-12deg)',
-                border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`,
-                backgroundColor: 'rgba(76,175,80,0.15)', backdropFilter: 'blur(4px)',
-              }}>
-                FOU
-              </div>
-            </div>
           </div>
         </div>
 
@@ -206,6 +202,46 @@ function FactDetailView({ fact, onClose }) {
           </button>
         </div>
       </div>
+
+      {/* Lightbox image */}
+      </div>
+      {showLightbox && fact.imageUrl && (
+        <div
+          onClick={() => setShowLightbox(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 500,
+            background: 'rgba(0,0,0,0.9)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 16,
+          }}
+        >
+          <button
+            onClick={() => setShowLightbox(false)}
+            style={{
+              position: 'absolute', top: 16, right: 16, zIndex: 10,
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)', border: 'none',
+              color: 'white', fontSize: 18, fontWeight: 900,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}
+          >✕</button>
+          <img
+            src={fact.imageUrl}
+            alt={fact.question}
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '95%', maxHeight: '80vh', objectFit: 'contain', borderRadius: 12,
+              animation: 'factLightboxZoom 0.2s ease-out',
+            }}
+          />
+          <style>{`
+            @keyframes factLightboxZoom {
+              from { transform: scale(0.8); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   )
 }
@@ -224,14 +260,16 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
 
   return (
     <div
-      className="fixed inset-0 flex flex-col"
-      style={{
-        zIndex: 300,
+      className="fixed inset-0 flex justify-center"
+      style={{ zIndex: 300 }}
+    >
+      <div style={{
+        width: '100%', maxWidth: 430, height: '100%',
+        display: 'flex', flexDirection: 'column',
         backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
         backgroundSize: 'cover', backgroundPosition: 'center',
-        backgroundColor: cat.color,
-      }}
-    >
+        backgroundColor: cat.color, position: 'relative',
+      }}>
       {/* Overlay catégorie */}
       <div style={{ position: 'absolute', inset: 0, background: `${cat.color}cc`, zIndex: 0 }} />
 
@@ -279,7 +317,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
 
           {unlockedFacts.length > 0 && (
             <>
-              <p style={{ fontSize: S(10), fontWeight: 900, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: S(8) }}>
+              <p style={{ fontSize: 16, fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: S(8), textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                 F*cts débloqués — {unlockedFacts.length}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), marginBottom: S(16) }}>
@@ -289,21 +327,21 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                     onClick={() => { audio.play('click'); onSelectFact(fact) }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: S(10),
-                      padding: S(10), borderRadius: S(14), textAlign: 'left', width: '100%', border: 'none',
-                      background: `rgba(${rgb}, 0.15)`, backdropFilter: 'blur(8px)',
+                      padding: S(10), borderRadius: 12, textAlign: 'left', width: '100%',
+                      border: `2px solid ${cat.color}`,
+                      background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)',
                       cursor: 'pointer',
                     }}
                   >
                     {fact.imageUrl ? (
-                      <img src={fact.imageUrl} alt="" style={{ width: S(48), height: S(48), borderRadius: S(10), objectFit: 'contain', flexShrink: 0, background: `rgba(${rgb}, 0.2)` }} />
+                      <img src={fact.imageUrl} alt="" style={{ width: 60, height: 60, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
                     ) : (
-                      <img src="/assets/facts/fallback.svg" alt="" style={{ width: S(48), height: S(48), borderRadius: S(10), objectFit: 'cover', flexShrink: 0 }} />
+                      <div style={{ width: 60, height: 60, borderRadius: 8, flexShrink: 0, background: `rgba(${rgb}, 0.3)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, color: 'rgba(255,255,255,0.3)' }}>?</div>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontWeight: 900, fontSize: S(12), color: textColor, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.3 }}>{fact.question}</span>
-                      <span style={{ fontSize: S(10), color: subtextColor, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4, marginTop: S(2) }}>{fact.explanation}</span>
+                      <span style={{ fontWeight: 800, fontSize: S(12), color: 'white', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.3, textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>{fact.question}</span>
                     </div>
-                    <span style={{ fontSize: S(16), color: mutedColor, flexShrink: 0 }}>›</span>
+                    <span style={{ fontSize: 18, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>›</span>
                   </button>
                 ))}
               </div>
@@ -312,8 +350,8 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
 
           {lockedFacts.length > 0 && (
             <>
-              <p style={{ fontSize: S(10), fontWeight: 900, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: S(8) }}>
-                À découvrir — {lockedFacts.length}
+              <p style={{ fontSize: 16, fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: S(8), textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                À débloquer — {lockedFacts.length}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: S(8) }}>
                 {lockedFacts.map(fact => (
@@ -321,30 +359,30 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                     key={fact.id}
                     style={{
                       display: 'flex', alignItems: 'center', gap: S(10),
-                      padding: S(10), borderRadius: S(14),
+                      padding: S(10), borderRadius: 12,
                       background: 'rgba(0,0,0,0.2)',
                     }}
                   >
-                    <div style={{ width: S(48), height: S(48), borderRadius: S(10), overflow: 'hidden', position: 'relative', flexShrink: 0, background: 'rgba(0,0,0,0.3)' }}>
+                    <div style={{ width: 60, height: 60, borderRadius: 8, overflow: 'hidden', position: 'relative', flexShrink: 0, background: 'rgba(0,0,0,0.3)' }}>
                       {fact.imageUrl ? (
                         <img src={fact.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(8px) brightness(0.5)' }} />
                       ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: S(18) }}>?</div>
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 20 }}>?</div>
                       )}
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(16) }}>🔒</div>
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🔒</div>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ height: S(10), borderRadius: S(4), background: 'rgba(255,255,255,0.1)', width: '70%', marginBottom: S(4) }} />
-                      <div style={{ height: S(8), borderRadius: S(4), background: 'rgba(255,255,255,0.06)', width: '90%', marginBottom: S(3) }} />
-                      <div style={{ height: S(8), borderRadius: S(4), background: 'rgba(255,255,255,0.06)', width: '55%' }} />
+                      <div style={{ height: 10, borderRadius: 4, background: 'rgba(255,255,255,0.1)', width: '70%', marginBottom: 4 }} />
+                      <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', width: '90%', marginBottom: 3 }} />
+                      <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', width: '55%' }} />
                     </div>
-                    <span style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.2)', flexShrink: 0 }}>#{fact.id}</span>
                   </div>
                 ))}
               </div>
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   )
@@ -414,7 +452,7 @@ export default function CollectionPage() {
         return {
           cat, facts, unlocked: unlockedCount, total: facts.length,
           percentage: pct, isCompleted: facts.length > 0 && unlockedCount === facts.length,
-          isLocked: !isCatUnlocked,
+          isLocked: !isCatUnlocked && localStorage.getItem('wtf_dev_mode') !== 'true',
         }
       })
       .filter(s => s.total > 0)

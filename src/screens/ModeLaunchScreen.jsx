@@ -26,42 +26,38 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
       background: `linear-gradient(160deg, ${color}22, ${color})`,
       color: '#ffffff',
     }}>
-      {/* ── Header ──────────────────────────────────────────────────── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: `${S(8)} ${S(16)}`, flexShrink: 0,
-      }}>
+      {/* ── Bouton retour ──────────────────────────────────────────── */}
+      <div style={{ flexShrink: 0, padding: `${S(16)} ${S(16)} 0` }}>
         <button
           onClick={() => { audio.play('click'); onBack() }}
           style={{
             background: 'rgba(255,255,255,0.2)', border: 'none',
-            borderRadius: '50%', width: S(32), height: S(32),
+            borderRadius: '50%', width: S(36), height: S(36),
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: S(16), color: '#fff',
+            cursor: 'pointer', fontSize: S(18), color: '#fff',
             backdropFilter: 'blur(8px)',
           }}
         >
           ←
         </button>
-        <div style={{ width: S(32) }} />
       </div>
 
-      {/* ── Titre ───────────────────────────────────────────────────── */}
+      {/* ── Icône + Titre + Sous-titre ─────────────────────────────── */}
       <div style={{
         textAlign: 'center', flexShrink: 0,
-        padding: `${S(4)} ${S(20)} ${S(8)}`,
+        padding: `${S(12)} ${S(20)} ${S(16)}`,
       }}>
-        <div style={{ fontSize: S(36), marginBottom: S(2) }}>{emoji}</div>
+        <div style={{ fontSize: S(60), marginBottom: S(4), lineHeight: 1 }}>{emoji}</div>
         <h1 style={{
-          fontSize: S(22), fontWeight: 900, margin: 0,
+          fontSize: S(28), fontWeight: 900, margin: 0,
           letterSpacing: '0.02em',
           textShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
           {modeName}
         </h1>
         <p style={{
-          fontSize: S(11), fontWeight: 700, margin: `${S(2)} 0 0`,
-          opacity: 0.85,
+          fontSize: S(16), fontWeight: 700, margin: `${S(4)} 0 0`,
+          opacity: 0.8,
         }}>
           {subtitle}
         </p>
@@ -70,20 +66,20 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
       {/* ── Règles ──────────────────────────────────────────────────── */}
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
-        padding: `0 ${S(16)}`,
-        display: 'flex', flexDirection: 'column', gap: S(5),
+        padding: `0 ${S(20)}`,
+        display: 'flex', flexDirection: 'column', gap: S(10),
         justifyContent: 'center',
       }}>
         {rules.map((rule, i) => (
           <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: S(8),
-            background: 'rgba(255,255,255,0.15)',
+            display: 'flex', alignItems: 'center', gap: S(12),
+            background: 'rgba(255,255,255,0.12)',
             backdropFilter: 'blur(8px)',
-            borderRadius: S(10), padding: `${S(7)} ${S(10)}`,
+            borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
           }}>
-            <span style={{ fontSize: S(14), flexShrink: 0, lineHeight: 1 }}>{rule.icon}</span>
+            <span style={{ fontSize: S(24), flexShrink: 0, lineHeight: 1 }}>{rule.icon}</span>
             <span style={{
-              fontSize: S(11), fontWeight: 600, lineHeight: 1.3,
+              fontSize: S(15), fontWeight: 600, lineHeight: 1.35,
             }}>
               {rule.text}
             </span>
@@ -93,21 +89,22 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
 
       {/* ── Checkbox + Bouton ───────────────────────────────────────── */}
       <div style={{
-        flexShrink: 0, padding: `${S(8)} ${S(20)} ${S(16)}`,
+        flexShrink: 0, padding: `${S(12)} ${S(20)} ${S(20)}`,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}>
-        {/* Checkbox "Ne plus afficher" */}
+        {/* Checkbox */}
         <label style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: S(6), marginBottom: S(10), cursor: 'pointer',
+          gap: S(8), marginBottom: S(14), cursor: 'pointer',
         }}>
           <input
             type="checkbox"
             checked={skipNext}
             onChange={e => setSkipNext(e.target.checked)}
-            style={{ width: S(14), height: S(14), accentColor: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
+            style={{ width: S(16), height: S(16), accentColor: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
           />
           <span style={{
-            fontSize: S(10), fontWeight: 600,
+            fontSize: S(14), fontWeight: 600,
             color: 'rgba(255,255,255,0.5)',
           }}>
             Ne plus afficher ce message
@@ -118,11 +115,11 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
         <button
           onClick={handleStart}
           style={{
-            width: '100%', padding: `${S(12)} 0`,
+            width: '85%', padding: `${S(16)} 0`,
             background: '#ffffff',
-            border: 'none', borderRadius: S(14),
+            border: 'none', borderRadius: S(16),
             fontFamily: "'Fredoka One', cursive",
-            fontSize: S(15), fontWeight: 400,
+            fontSize: S(20), fontWeight: 400,
             color: color,
             cursor: 'pointer',
             boxShadow: '0 4px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(0,0,0,0.2)',

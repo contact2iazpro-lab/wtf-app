@@ -400,10 +400,11 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
             border: 'none',
             cursor: hasSelection ? 'pointer' : 'default',
             pointerEvents: hasSelection ? 'auto' : 'none',
-            background: hasSelection ? 'white' : 'rgba(255,255,255,0.25)',
-            color: hasSelection
-              ? (getCategoryColor(selectedCat) || '#FF6B1A')
-              : 'rgba(255,255,255,0.5)',
+            background: hasSelection
+              ? `linear-gradient(135deg, ${getCategoryColor(selectedCat) || '#FF6B1A'}, ${getCategoryColor(selectedCat) || '#FF6B1A'}cc)`
+              : 'rgba(255,255,255,0.25)',
+            color: hasSelection ? 'white' : 'rgba(255,255,255,0.5)',
+            boxShadow: hasSelection ? `0 6px 24px ${getCategoryColor(selectedCat) || '#FF6B1A'}50, 0 0 12px ${getCategoryColor(selectedCat) || '#FF6B1A'}30` : 'none',
             transition: 'all 0.2s ease',
             fontFamily: 'Nunito, sans-serif',
             WebkitTapHighlightColor: 'transparent',

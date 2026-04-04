@@ -198,7 +198,7 @@ export default function QuestionScreen({
 
   // ── Barre de progression ─────────────────────────────────────────────────────
   const progressBar = (
-    <div style={{ padding: `0 ${S(16)} ${S(4)}`, flexShrink: 0 }}>
+    <div style={{ padding: `0 ${S(16)}`, flexShrink: 0 }}>
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
         {Array.from({ length: displayTotalFacts }).map((_, i) => {
           const isActive = i === factIndex
@@ -207,8 +207,8 @@ export default function QuestionScreen({
               key={i}
               style={{
                 flex: 1,
-                height: isActive ? S(12) : S(6),
-                borderRadius: S(3),
+                height: isActive ? S(16) : S(8),
+                borderRadius: S(4),
                 background: isActive ? 'white' : 'rgba(255,255,255,0.3)',
                 position: isActive ? 'relative' : 'static',
                 transition: 'all 0.3s ease',
@@ -219,8 +219,8 @@ export default function QuestionScreen({
                   position: 'absolute',
                   top: '50%', left: '50%',
                   transform: 'translate(-50%, -50%)',
-                  fontSize: S(8),
-                  fontWeight: 700,
+                  fontSize: S(10),
+                  fontWeight: 800,
                   color: cat?.color || '#1a1a2e',
                   whiteSpace: 'nowrap',
                 }}>
@@ -237,7 +237,7 @@ export default function QuestionScreen({
   // ── Question card ──────────────────────────────────────────────────────────
   const questionCard = (
     <div
-      className="rounded-3xl p-4 border shrink-0"
+      className="rounded-2xl p-3 border shrink-0"
       style={{
         background: cardBg,
         borderColor: cat?.color + '70',
@@ -269,11 +269,11 @@ export default function QuestionScreen({
         if (isDevMode) {
           return (
             <div key={hintNum} style={{
-              height: 48, width: '100%', borderRadius: 24, background: 'rgba(255,255,255,0.88)',
+              height: 32, width: '100%', borderRadius: 16, background: 'rgba(255,255,255,0.92)',
               border: `2px solid ${cat?.color || '#FF6B1A'}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 8px',
             }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: cat?.color || '#FF6B1A', textAlign: 'center', lineHeight: 1.3 }}>
+              <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', textAlign: 'center', lineHeight: 1 }}>
                 {hintText || '—'}
               </span>
             </div>
@@ -297,11 +297,11 @@ export default function QuestionScreen({
 
   // ── Zone timer — COR 4 : flex:1 flottant entre QCM et bas ──────────────────
   const timerZone = (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0 }}>
-      <div className="qs-timer-wrap" style={{ width: S(120), height: S(120), flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `${S(8)} 0 ${S(12)}` }}>
+      <div className="qs-timer-wrap" style={{ width: S(64), height: S(64), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         <CircularTimer
           key={`${fact.id}-${answerMode}`}
-          size={120}
+          size={64}
           duration={timerDuration}
           onTimeout={handleTimeout}
         />
@@ -450,7 +450,7 @@ export default function QuestionScreen({
         setTimeout(() => audio.playFile('What the fact.mp3'), 350)
       }
       if (!correct) {
-        setTimeout(() => setTutFlipDone(true), 900)
+        setTutFlipDone(true) // Afficher les boutons immédiatement
       }
     }
 
@@ -526,29 +526,24 @@ export default function QuestionScreen({
           height: '100%', overflow: 'hidden',
         }}>
 
-          {/* Logo WTF! texte + intro (pre-answer only) */}
+          {/* Logos WTF + Vrai ou Fou + intro (pre-answer only) */}
           {!tutAnswered && (
             <div style={{
               flexShrink: 0, textAlign: 'center',
-              padding: `${S(28)} ${S(16)} ${S(8)}`,
+              padding: `${S(16)} ${S(16)} ${S(4)}`,
               animation: 'tutFadeSlideUp 0.6s ease both',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
             }}>
-              <div style={{
-                fontSize: S(42), fontWeight: 900, color: '#FF6B1A',
-                letterSpacing: '-0.02em', lineHeight: 1,
-                textShadow: '0 2px 16px rgba(255,107,26,0.5), 0 0 40px rgba(255,107,26,0.2)',
-              }}>
-                WTF!
-              </div>
-              <div style={{
-                fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.4)',
-                letterSpacing: '0.15em', textTransform: 'uppercase', marginTop: S(4),
-              }}>
-                What The F*ct
-              </div>
+              <img src="/assets/ui/wtf-logo.png?v=4" alt="WTF!" style={{
+                width: '40%', maxWidth: 100, height: 'auto', objectFit: 'contain',
+                filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
+              }} />
+              <img src="/assets/ui/100logo.png?v=5" alt="Vrai ou Fou?" style={{
+                width: '55%', maxWidth: 140, height: 'auto', objectFit: 'contain', marginTop: S(4),
+              }} />
               <p style={{
                 color: 'rgba(255,255,255,0.7)', fontWeight: 700,
-                fontSize: S(14), marginTop: S(10),
+                fontSize: S(13), marginTop: S(8), marginBottom: 0,
               }}>
                 Prêt pour ton premier f*ct incroyable ?
               </p>
@@ -684,10 +679,15 @@ export default function QuestionScreen({
           {!tutAnswered ? (
             <div style={{
               flex: 1, display: 'flex', flexDirection: 'column',
-              justifyContent: 'center', gap: S(10),
+              justifyContent: 'center', gap: S(8),
               padding: `0 ${S(16)}`,
               animation: 'tutFadeSlideUp 0.6s 0.3s ease both',
             }}>
+              {/* Indices tutoriel — gratuits, pré-remplis */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <HintFlipButton num={1} hint="Luxe" catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={99} onReveal={() => audio.play('click')} />
+                <HintFlipButton num={2} hint="Brillant" catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={99} onReveal={() => audio.play('click')} />
+              </div>
               {optionsToRender.map((opt) => (
                 <button
                   key={opt.originalIndex}
@@ -714,29 +714,18 @@ export default function QuestionScreen({
               animation: 'tutFadeSlideUp 0.4s ease forwards',
             }}>
 
-              {/* Wrong answer: flip card */}
+              {/* Wrong answer: ta réponse (pas de bonne réponse affichée) */}
               {!tutCorrect && (
-                <div style={{ perspective: '800px', marginBottom: S(8) }}>
-                  <div style={{
-                    animation: !tutFlipDone
-                      ? 'tutFlipHalf 0.4s 0.1s ease forwards'
-                      : 'tutFlipBack 0.4s ease forwards',
-                    transformStyle: 'preserve-3d',
-                    background: !tutFlipDone ? 'rgba(244,67,54,0.15)' : 'rgba(76,175,80,0.15)',
-                    border: `2px solid ${!tutFlipDone ? '#F44336' : '#4CAF50'}`,
-                    borderRadius: S(14), padding: `${S(14)} ${S(16)}`,
-                    textAlign: 'center', transition: 'background 0.01s, border-color 0.01s',
-                  }}>
-                    <div style={{
-                      fontSize: S(10), fontWeight: 900, textTransform: 'uppercase',
-                      letterSpacing: '0.05em', marginBottom: S(4),
-                      color: !tutFlipDone ? '#F44336' : '#4CAF50',
-                    }}>
-                      {!tutFlipDone ? '✗ Ta réponse' : '✓ Bonne réponse'}
-                    </div>
-                    <div style={{ fontSize: S(15), fontWeight: 900, color: 'white' }}>
-                      {!tutFlipDone ? tutWrongText : fact.options[fact.correctIndex]}
-                    </div>
+                <div style={{
+                  background: 'rgba(244,67,54,0.15)', border: '2px solid #F44336',
+                  borderRadius: S(14), padding: `${S(14)} ${S(16)}`,
+                  textAlign: 'center', marginBottom: S(8),
+                }}>
+                  <div style={{ fontSize: S(10), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4), color: '#F44336' }}>
+                    ✗ Ta réponse
+                  </div>
+                  <div style={{ fontSize: S(15), fontWeight: 900, color: 'white' }}>
+                    {tutWrongText}
                   </div>
                 </div>
               )}
@@ -759,11 +748,11 @@ export default function QuestionScreen({
                     <span style={{ fontSize: S(14) }}>🧠</span>
                     <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
                   </div>
-                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{fact.explanation}</p>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.35, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
                 </div>
               )}
 
-              {/* Wrong: question encadrée + Le saviez-vous après flip */}
+              {/* Wrong: question encadrée (pas de Le saviez-vous) */}
               {!tutCorrect && tutFlipDone && (
                 <div style={{
                   background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
@@ -772,14 +761,7 @@ export default function QuestionScreen({
                   animation: 'tutFadeSlideUp 0.5s ease forwards',
                 }}>
                   <div style={{ fontSize: S(9), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4) }}>La question :</div>
-                  <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3, marginBottom: S(8) }}>{renderFormattedText(fact.question)}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>
-                    <span style={{ fontSize: S(14) }}>🧠</span>
-                    <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
-                  </div>
-                  <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.45, fontWeight: 500, margin: 0 }}>
-                    {fact.explanation}
-                  </p>
+                  <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
                 </div>
               )}
             </div>
@@ -854,69 +836,82 @@ export default function QuestionScreen({
       <div className="qs-m" style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'flex-start', gap: S(10),
+        justifyContent: 'flex-start', gap: S(8),
         padding: `0 ${S(16)}`,
+        overflow: 'hidden',
       }}>
         {questionCard}
 
         {/* Indices */}
         {difficulty?.hintsAllowed && hintButtons}
 
-        {/* Boutons QCM */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8) }}>
-          {fact.options.map((option, index) => {
-            // Dev mode: identify answer type
-            let devType = null
-            let devBorder = '1.5px solid rgba(255,255,255,0.4)'
-            if (isDevMode) {
-              const funnyWrongs = [fact.funnyWrong1, fact.funnyWrong2].filter(Boolean)
-              const closeWrongs = [fact.closeWrong1, fact.closeWrong2].filter(Boolean)
-              const plausibleWrongs = [fact.plausibleWrong1, fact.plausibleWrong2, fact.plausibleWrong3].filter(Boolean)
-              if (index === fact.correctIndex) { devType = 'VRAIE'; devBorder = '3px solid #22C55E' }
-              else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; devBorder = '3px solid #EAB308' }
-              else if (closeWrongs.includes(option)) { devType = 'PROCHE'; devBorder = '3px solid #F97316' }
-              else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; devBorder = '3px solid #EF4444' }
-              else { devType = 'AUTRE'; devBorder = '2px solid rgba(255,255,255,0.3)' }
-            }
-            return (
-              <button
-                key={index}
-                onClick={() => {
-                  const correct = index === fact.correctIndex
-                  audio.play(correct ? 'correct' : 'wrong')
-                  audio.vibrate(correct ? [40, 20, 40] : [120])
-                  onSelectAnswer(index)
-                }}
-                className="btn-press transition-all active:scale-95"
-                style={{
-                  background: 'rgba(255,255,255,0.15)',
-                  border: devBorder,
-                  borderRadius: S(12),
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: fact.options.length > 4 ? S(12) : S(13),
-                  padding: `${S(8)} ${S(8)}`,
-                  minHeight: S(64),
-                  width: '100%',
-                  overflow: 'hidden',
-                  wordBreak: 'break-word',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                {renderFormattedText(option)}
-                {isDevMode && devType && (
-                  <span style={{ fontSize: 9, fontWeight: 900, opacity: 0.6, marginTop: 2, letterSpacing: '0.05em' }}>{devType}</span>
-                )}
-              </button>
-            )
-          })}
-        </div>
+        {/* Boutons QCM — taille fixe uniforme */}
+        {(() => {
+          const is6 = fact.options.length > 4
+          const btnH = is6 ? 50 : 64
+          const btnFont = is6 ? 11 : 13
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5), flexShrink: 0, position: 'relative', zIndex: 5 }}>
+              {fact.options.map((option, index) => {
+                let devType = null
+                let devBorder = '1.5px solid rgba(255,255,255,0.4)'
+                if (isDevMode) {
+                  try {
+                    const funnyWrongs = [fact?.funnyWrong1, fact?.funnyWrong2].filter(Boolean)
+                    const closeWrongs = [fact?.closeWrong1, fact?.closeWrong2].filter(Boolean)
+                    const plausibleWrongs = [fact?.plausibleWrong1, fact?.plausibleWrong2, fact?.plausibleWrong3].filter(Boolean)
+                    if (index === fact.correctIndex) { devType = 'VRAIE'; devBorder = '3px solid #22C55E' }
+                    else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; devBorder = '3px solid #EAB308' }
+                    else if (closeWrongs.includes(option)) { devType = 'PROCHE'; devBorder = '3px solid #F97316' }
+                    else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; devBorder = '3px solid #EF4444' }
+                    else { devType = 'AUTRE'; devBorder = '2px solid rgba(255,255,255,0.3)' }
+                  } catch (e) { console.warn('[DEV MODE] Erreur rendu dev:', e) }
+                }
+                return (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      const correct = index === fact.correctIndex
+                      audio.play(correct ? 'correct' : 'wrong')
+                      audio.vibrate(correct ? [40, 20, 40] : [120])
+                      onSelectAnswer(index)
+                    }}
+                    className="btn-press active:scale-95"
+                    style={{
+                      background: 'rgba(255,255,255,0.15)',
+                      border: devBorder,
+                      borderRadius: S(12),
+                      color: 'white',
+                      fontWeight: 700,
+                      fontSize: S(btnFont),
+                      lineHeight: 1.2,
+                      padding: `${S(4)} ${S(6)}`,
+                      height: S(btnH),
+                      width: '100%',
+                      overflow: 'hidden',
+                      wordBreak: 'break-word',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                      transition: 'transform 0.1s, background 0.15s',
+                    }}
+                  >
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: is6 ? 2 : 3, WebkitBoxOrient: 'vertical' }}>
+                      {renderFormattedText(option)}
+                    </span>
+                    {isDevMode && devType && (
+                      <span style={{ fontSize: 8, fontWeight: 900, opacity: 0.6, marginTop: 1, letterSpacing: '0.05em', flexShrink: 0 }}>{devType}</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )
+        })()}
       </div>
 
       {timerZone}

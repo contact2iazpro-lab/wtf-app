@@ -303,17 +303,19 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
             let btnBorder = 'rgba(255,255,255,0.2)'
             let btnTextColor = '#ffffff'
 
-            // Dev mode: colored borders by answer type
+            // Dev mode: colored borders by answer type (protected)
             let devType = null
             if (isDevMode && !flashAnswer) {
-              const funnyWrongs = [currentFact.funnyWrong1, currentFact.funnyWrong2].filter(Boolean)
-              const closeWrongs = [currentFact.closeWrong1, currentFact.closeWrong2].filter(Boolean)
-              const plausibleWrongs = [currentFact.plausibleWrong1, currentFact.plausibleWrong2, currentFact.plausibleWrong3].filter(Boolean)
-              if (i === currentFact.correctIndex) { devType = 'VRAIE'; btnBorder = '#22C55E' }
-              else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; btnBorder = '#EAB308' }
-              else if (closeWrongs.includes(option)) { devType = 'PROCHE'; btnBorder = '#F97316' }
-              else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; btnBorder = '#EF4444' }
-              else { devType = 'AUTRE'; btnBorder = 'rgba(255,255,255,0.3)' }
+              try {
+                const funnyWrongs = [currentFact?.funnyWrong1, currentFact?.funnyWrong2].filter(Boolean)
+                const closeWrongs = [currentFact?.closeWrong1, currentFact?.closeWrong2].filter(Boolean)
+                const plausibleWrongs = [currentFact?.plausibleWrong1, currentFact?.plausibleWrong2, currentFact?.plausibleWrong3].filter(Boolean)
+                if (i === currentFact.correctIndex) { devType = 'VRAIE'; btnBorder = '#22C55E' }
+                else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; btnBorder = '#EAB308' }
+                else if (closeWrongs.includes(option)) { devType = 'PROCHE'; btnBorder = '#F97316' }
+                else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; btnBorder = '#EF4444' }
+                else { devType = 'AUTRE'; btnBorder = 'rgba(255,255,255,0.3)' }
+              } catch (e) { console.warn('[DEV MODE] Erreur rendu dev:', e) }
             }
 
             if (flashAnswer) {

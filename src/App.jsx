@@ -144,7 +144,6 @@ function loadStorage() {
     const todayDateStr = TODAY_DATE_STR()
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
-    // Streak: unchanged from existing logic
     const streak = saved.lastDay === todayDateStr
       ? saved.streak
       : saved.lastDay === YESTERDAY_DATE_STR()
@@ -152,19 +151,11 @@ function loadStorage() {
         : 0
 
     const unlockedFacts = new Set(saved.unlockedFacts || [])
-
-    // New daily-reset fields
     const wtfCoins = saved.wtfCoins || 0
     const wtfDuJourDate = saved.wtfDuJourDate || null
     const wtfDuJourFait = wtfDuJourDate === today
     const sessionsToday = saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0
-
     const tickets = saved.tickets ?? 3
-
-    const devMode = localStorage.getItem('wtf_dev_mode') === 'true'
-    if (devMode) {
-      return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins: 9999, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 99 }
-    }
 
     return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets }
   } catch {
@@ -173,7 +164,6 @@ function loadStorage() {
 }
 
 function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, sessionsToday, tickets = 0 }) {
-  if (localStorage.getItem('wtf_dev_mode') === 'true') return
   try {
     localStorage.setItem('wtf_data', JSON.stringify({
       totalScore,
@@ -185,6 +175,7 @@ function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDat
       sessionsToday,
       sessionsTodayDate: TODAY(),
       tickets,
+      lastModified: Date.now(),
     }))
   } catch { /* ignore */ }
 }
@@ -358,13 +349,20 @@ export default function App() {
     audio.play('click')
     // Pool : facts non-VIP uniquement, exclure les déjà débloqués
     // Non connecté : catégories limitées
+    const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
     const pool = getGeneratedFacts().filter(f =>
-      !unlockedFacts.has(f.id) && (user ? true : GUEST_CATEGORIES.includes(f.category))
+      !unlockedFacts.has(f.id) && (user || isDevMode ? true : GUEST_CATEGORIES.includes(f.category))
     )
 
     if (pool.length < 5) {
-      alert('Bientôt de nouveaux f*cts ! Reviens vite 🎉')
-      return
+      if (isDevMode) {
+        // Dev mode fallback : inclure les déjà débloqués
+        pool.push(...getGeneratedFacts().filter(f => !pool.some(p => p.id === f.id)))
+      }
+      if (pool.length < 5) {
+        alert('Bientôt de nouveaux f*cts ! Reviens vite 🎉')
+        return
+      }
     }
 
     const facts = [...pool]
@@ -490,8 +488,11 @@ export default function App() {
 
     if (gameMode === 'marathon') {
       // Marathon : 20 questions générées (non-VIP) dans la catégorie choisie
-      const pool = getGeneratedFactsByCategory(selectedCategory).filter(f => !unlockedFacts.has(f.id))
-
+      let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => !unlockedFacts.has(f.id))
+      // Dev mode fallback : inclure les déjà débloqués
+      if (pool.length < 4 && localStorage.getItem('wtf_dev_mode') === 'true') {
+        pool = getGeneratedFactsByCategory(selectedCategory)
+      }
       if (pool.length < 4) {
         alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
         return
@@ -509,20 +510,38 @@ export default function App() {
     }
 
     // Parcours/Quest : VIP uniquement, filtrés par difficulté — coûte 1 ticket
-    if ((tickets || 0) < 1) {
-      alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
-      return
+    const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true'
+    if (!isDevModeQuest) {
+      if ((tickets || 0) < 1) {
+        alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
+        return
+      }
+      // Décrémenter 1 ticket
+      setStorage(prev => {
+        const next = { ...prev, tickets: Math.max(0, (prev.tickets || 0) - 1) }
+        saveStorage(next)
+        return next
+      })
     }
-    // Décrémenter 1 ticket
-    setStorage(prev => {
-      const next = { ...prev, tickets: Math.max(0, (prev.tickets || 0) - 1) }
-      saveStorage(next)
-      return next
-    })
 
-    const available = getParcoursFacts().filter(f =>
+    // Pool Quest : VIP avec difficulté, puis fallback élargi
+    let available = getParcoursFacts().filter(f =>
       (!f.type || f.type === 'vip') && f.difficulty === difficulty.id && !unlockedFacts.has(f.id)
     )
+    // Fallback 1 : ignorer le filtre difficulty
+    if (available.length < QUESTIONS_PER_GAME) {
+      available = getParcoursFacts().filter(f =>
+        (!f.type || f.type === 'vip') && !unlockedFacts.has(f.id)
+      )
+    }
+    // Fallback 2 : tous les VIP valides (sans filtre difficulty)
+    if (available.length < QUESTIONS_PER_GAME) {
+      available = getValidFacts().filter(f => (!f.type || f.type === 'vip') || f.isVip)
+    }
+    // Fallback 3 : tous les facts valides
+    if (available.length < QUESTIONS_PER_GAME) {
+      available = getValidFacts()
+    }
     const facts = [...available]
       .sort(() => Math.random() - 0.5)
       .slice(0, QUESTIONS_PER_GAME)
@@ -628,8 +647,11 @@ export default function App() {
     // Explorer : 10 questions, garder le pool restant pour continuation
     if (gameMode === 'marathon') {
       const difficulty = DIFFICULTY_LEVELS.HOT
-      const pool = getGeneratedFactsByCategory(categoryId).filter(f => !unlockedFacts.has(f.id))
-
+      let pool = getGeneratedFactsByCategory(categoryId).filter(f => !unlockedFacts.has(f.id))
+      // Dev mode fallback : inclure les déjà débloqués
+      if (pool.length < 4 && localStorage.getItem('wtf_dev_mode') === 'true') {
+        pool = getGeneratedFactsByCategory(categoryId)
+      }
       if (pool.length < 4) {
         alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
         return
@@ -802,10 +824,10 @@ export default function App() {
       const newSessionsToday = sessionsToday + 1
 
       if (!isQuickPlay) {
-        // Unlock correctly answered facts (joueurs connectés uniquement)
+        // Unlock correctly answered facts (joueurs connectés ou mode dev)
         const newUnlocked = new Set(unlockedFacts)
         const toSync = []
-        if (user) {
+        if (user || localStorage.getItem('wtf_dev_mode') === 'true') {
           for (const fact of sessionCorrectFacts) {
             if (!newUnlocked.has(fact.id)) {
               newUnlocked.add(fact.id)
@@ -1009,7 +1031,8 @@ export default function App() {
   }, [selectedCategory, handleBlitzStart])
 
   const handleExplorerContinue = useCallback(() => {
-    if ((tickets || 0) < 1) {
+    const isDevModeExplorer = localStorage.getItem('wtf_dev_mode') === 'true'
+    if (!isDevModeExplorer && (tickets || 0) < 1) {
       alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
       return
     }
@@ -1017,12 +1040,14 @@ export default function App() {
       alert('Plus de questions dans cette catégorie ! 🎉')
       return
     }
-    // Décrémenter 1 ticket
-    setStorage(prev => {
-      const next = { ...prev, tickets: Math.max(0, (prev.tickets || 0) - 1) }
-      saveStorage(next)
-      return next
-    })
+    // Décrémenter 1 ticket (sauf en mode dev)
+    if (!isDevModeExplorer) {
+      setStorage(prev => {
+        const next = { ...prev, tickets: Math.max(0, (prev.tickets || 0) - 1) }
+        saveStorage(next)
+        return next
+      })
+    }
     const difficulty = DIFFICULTY_LEVELS.HOT
     const next5 = explorerPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
     setExplorerPool(explorerPool.slice(5))
@@ -1091,8 +1116,16 @@ export default function App() {
     setTickets: (n) => applyStorage({ tickets: n }),
     setHints: (n) => localStorage.setItem('wtf_hints_available', String(n)),
     cheat999: () => {
+      const existing = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      existing.wtfCoins = 999
+      existing.tickets = 999
+      existing.streak = existing.streak || 0
+      existing.totalScore = existing.totalScore || 0
+      existing.unlockedFacts = existing.unlockedFacts || []
+      existing.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(existing))
       localStorage.setItem('wtf_hints_available', '999')
-      applyStorage({ wtfCoins: 999, tickets: 999 })
+      window.location.reload()
     },
     simulatePurchase: () => applyStorage({ wtfCoins: storage.wtfCoins + 100 }),
     unlockRandomFacts: (n = 10) => {
@@ -1144,7 +1177,11 @@ export default function App() {
   // Refresh storage state when auth sync completes (sign-in / sign-out)
   useEffect(() => {
     const handleSync = () => {
+      const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
       setStorage(loadStorage())
+
+      // En mode dev, ne pas toucher aux valeurs localStorage (pas de reset nouveau profil)
+      if (isDevMode) return
 
       // Restaurer les facts temporaires sauvegardés avant le redirect OAuth
       const tempFactsJson = localStorage.getItem('wtf_temp_facts')
@@ -1399,6 +1436,7 @@ export default function App() {
         <HomeScreen
           playerCoins={wtfCoins}
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
+          playerTickets={tickets}
           currentStreak={streak}
           dailyQuestsRemaining={dailyQuestsRemaining}
           nextBadgeInfo={null}

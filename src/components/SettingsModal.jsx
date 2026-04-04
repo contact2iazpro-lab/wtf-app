@@ -35,6 +35,31 @@ function DevModeToggleRow() {
 
   const toggle = () => {
     const next = !devMode
+    const existing = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+
+    if (next) {
+      // Activer : sauvegarder les vraies valeurs puis donner 999
+      localStorage.setItem('wtf_dev_backup_coins', String(existing.wtfCoins || 0))
+      localStorage.setItem('wtf_dev_backup_tickets', String(existing.tickets || 0))
+      localStorage.setItem('wtf_dev_backup_hints', localStorage.getItem('wtf_hints_available') || '0')
+      existing.wtfCoins = 999
+      existing.tickets = 999
+      localStorage.setItem('wtf_data', JSON.stringify(existing))
+      localStorage.setItem('wtf_hints_available', '999')
+    } else {
+      // Désactiver : restaurer les vraies valeurs depuis les backups individuels
+      const backupCoins = parseInt(localStorage.getItem('wtf_dev_backup_coins') || '0', 10)
+      const backupTickets = parseInt(localStorage.getItem('wtf_dev_backup_tickets') || '0', 10)
+      const backupHints = localStorage.getItem('wtf_dev_backup_hints') || '0'
+      existing.wtfCoins = backupCoins
+      existing.tickets = backupTickets
+      localStorage.setItem('wtf_data', JSON.stringify(existing))
+      localStorage.setItem('wtf_hints_available', backupHints)
+      localStorage.removeItem('wtf_dev_backup_coins')
+      localStorage.removeItem('wtf_dev_backup_tickets')
+      localStorage.removeItem('wtf_dev_backup_hints')
+    }
+
     localStorage.setItem('wtf_dev_mode', String(next))
     setDevMode(next)
     window.location.reload()

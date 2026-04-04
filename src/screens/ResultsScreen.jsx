@@ -278,10 +278,10 @@ export default function ResultsScreen({
       backgroundSize: 'cover', backgroundPosition: 'center',
       backgroundColor: '#0a0f1e',
     }}>
-      {/* Overlay sombre pour lisibilité */}
+      {/* Overlay léger */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 0,
-        background: 'linear-gradient(180deg, rgba(10,15,30,0.60) 0%, rgba(10,15,30,0.80) 100%)',
+        background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.35) 100%)',
         pointerEvents: 'none',
       }} />
 
@@ -418,7 +418,7 @@ export default function ResultsScreen({
       )}
 
       {/* Score card — compact */}
-      <div className="mx-4 mb-1 rounded-2xl border p-2 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.15)' }}>
+      <div className="mx-4 mb-1 rounded-2xl border p-2 shrink-0" style={{ background: 'rgba(0,0,0,0.3)', borderColor: 'rgba(255,255,255,0.15)', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
         <div className="flex items-center justify-between">
           <div className="text-center flex-1">
             <div className="text-2xl font-black" style={{ color: textOnBg }}>+{animatedScore} 🪙</div>
@@ -455,7 +455,7 @@ export default function ResultsScreen({
                 {locked.length > 0 ? ` · 🔒 ${locked.length} raté${locked.length > 1 ? 's' : ''}` : ''}
               </span>
             </div>
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide" style={{ paddingLeft: 16, paddingRight: 16 }}>
+            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingLeft: 16, paddingRight: 16, paddingBottom: 4 }} className="scrollbar-hide">
               {sorted.map((fact) => {
                 const isUnlocked = unlockedIds.has(fact.id)
                 const factCat = CATEGORIES.find(c => c.id === fact.category)
@@ -464,41 +464,27 @@ export default function ResultsScreen({
                   <div
                     key={fact.id}
                     onClick={() => isUnlocked && setSelectedFact(fact)}
-                    className="shrink-0 rounded-xl overflow-hidden flex flex-col"
                     style={{
-                      width: 100, height: 140,
-                      background: 'rgba(0,0,0,0.35)',
-                      border: isUnlocked ? '1.5px solid rgba(255,215,0,0.6)' : '1px solid rgba(107,114,128,0.3)',
-                      boxShadow: isUnlocked ? '0 0 8px rgba(255,215,0,0.15)' : 'none',
+                      width: 100, height: 100, flexShrink: 0,
+                      borderRadius: 12, overflow: 'hidden', position: 'relative',
+                      border: isUnlocked ? `3px solid ${factCatColor}` : '3px solid #6B7280',
                       cursor: isUnlocked ? 'pointer' : 'default',
+                      background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})`,
                     }}>
-                    <div className="w-full flex items-center justify-center overflow-hidden relative"
-                      style={{ height: 70, background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})` }}>
-                      {fact.imageUrl ? (
-                        <img src={fact.imageUrl} alt="" className="w-full h-full object-cover"
-                          style={!isUnlocked ? { filter: 'blur(8px) brightness(0.5)' } : undefined}
-                          onError={e => { e.target.style.display = 'none' }} />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"
-                          style={{ filter: !isUnlocked ? 'brightness(0.5)' : 'none' }}>
-                          <span style={{ fontSize: 24, opacity: 0.3 }}>?</span>
-                        </div>
-                      )}
-                      {isUnlocked ? (
-                        <div style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(255,215,0,0.9)', borderRadius: 4, padding: '1px 5px', fontWeight: 900, fontSize: 8, color: '#1a1a2e' }}>FOU</div>
-                      ) : (
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontSize: 22, opacity: 0.7 }}>🔒</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="px-1.5 py-1 flex-1 flex items-center justify-center">
-                      {isUnlocked ? (
-                        <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', lineHeight: 1.2, textAlign: 'center', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{fact.question}</span>
-                      ) : (
-                        <span style={{ fontSize: 8, fontWeight: 600, color: '#9CA3AF', textAlign: 'center' }}>À découvrir</span>
-                      )}
-                    </div>
+                    {fact.imageUrl ? (
+                      <img src={fact.imageUrl} alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', filter: !isUnlocked ? 'blur(6px) brightness(0.4)' : 'none' }}
+                        onError={e => { e.target.style.display = 'none' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: !isUnlocked ? 'brightness(0.4)' : 'none' }}>
+                        <span style={{ fontSize: 28, opacity: 0.3 }}>?</span>
+                      </div>
+                    )}
+                    {!isUnlocked && (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 24, opacity: 0.8 }}>🔒</span>
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -549,73 +535,53 @@ export default function ResultsScreen({
         </div>
 
         {/* COR 3 — Principal : Rejouer même catégorie + difficulté */}
-        <button
-          onClick={onReplay}
-          className="btn-press w-full py-4 rounded-2xl font-black text-base uppercase tracking-wide active:scale-95 transition-all"
-          style={{
-            background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
-            boxShadow: `0 8px 32px ${catColor}50`,
-            color: isLightColor(catColor) ? '#1a1a1a' : 'white',
-          }}>
-          🔄 Rejouer
-        </button>
-
-        {/* COR 4 — Défier sur difficulté supérieure */}
-        {difficulty && (
-          <button
-            onClick={() => onChallengeUp && onChallengeUp()}
-            className="btn-press w-full py-3.5 rounded-2xl font-black text-sm active:scale-95 transition-all border-2"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              borderColor: `${textOnBg}40`,
-              color: textOnBg,
-            }}>
-            {CHALLENGE_LABELS[difficulty.id || difficulty] || 'Changer de mode ⚡'}
-          </button>
-        )}
-
-        {/* COR 5 — Partager + Défier */}
-        <button
-          onClick={handleShare}
-          className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all border"
-          style={{ background: 'rgba(255,255,255,0.1)', borderColor: `${textOnBg}30`, color: textOnBg }}>
-          <span>{sharedCopied ? '✅' : '📤'}</span>
-          {sharedCopied ? 'Copié !' : 'Partager mon score & défier mes amis'}
-        </button>
-
-        {/* Bannière conversion compacte pour non-connectés */}
-        {sessionType === 'flash_solo' && !isConnected && (
+        {/* 1. Bouton Google — si non connecté */}
+        {!isConnected && (
           <button
             onClick={() => {
-              // Sauvegarder les facts temporaires AVANT le redirect OAuth
               if (unlockedFactsThisSession.length > 0) {
                 localStorage.setItem('wtf_temp_facts', JSON.stringify(unlockedFactsThisSession.map(f => f.id)))
               }
               setShowConnectBanner(true)
             }}
+            className="btn-press w-full py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all"
             style={{
-              width: '100%', padding: '10px 16px', borderRadius: 14,
-              background: 'linear-gradient(135deg, rgba(34,197,94,0.25), rgba(34,197,94,0.1))',
-              border: '1.5px solid rgba(34,197,94,0.4)',
-              display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif', textAlign: 'left',
+              background: '#fff', border: 'none', color: '#374151',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             }}
           >
-            <span style={{ fontSize: 20 }}>🔓</span>
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#fff' }}>
-                {unlockedFactsThisSession.length > 0 ? `${unlockedFactsThisSession.length} f*ct${unlockedFactsThisSession.length > 1 ? 's' : ''} à sauvegarder !` : 'Débloquer tous les modes'}
-              </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>Connecte-toi avec Google</div>
-            </div>
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Sauvegarder ma progression
           </button>
         )}
 
-        {/* Secondaire — Revenir, discret */}
+        {/* 2. Partager */}
+        <button
+          onClick={handleShare}
+          className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all border"
+          style={{ background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+          <span>{sharedCopied ? '✅' : '📤'}</span>
+          {sharedCopied ? 'Copié !' : 'Partager mon score'}
+        </button>
+
+        {/* 3. Rejouer — principal */}
+        <button
+          onClick={onReplay}
+          className="btn-press w-full py-4 rounded-2xl font-black text-base uppercase tracking-wide active:scale-95 transition-all"
+          style={{
+            background: '#FF6B1A',
+            boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+            color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+          }}>
+          🔄 Rejouer
+        </button>
+
+        {/* 4. Revenir — discret */}
         <button
           onClick={handleGoHome}
-          className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
-          style={{ background: 'transparent', color: textOnBg, opacity: 0.55 }}>
+          className="btn-press w-full py-2 rounded-2xl font-bold text-sm flex items-center justify-center active:scale-95 transition-all"
+          style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
           ← Revenir
         </button>
       </div>

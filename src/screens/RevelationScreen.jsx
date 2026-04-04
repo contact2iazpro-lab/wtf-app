@@ -166,6 +166,7 @@ export default function RevelationScreen({
   const [flipped, setFlipped] = useState(true)
   const [copied, setCopied] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
+  const [showLightbox, setShowLightbox] = useState(false)
   const [displayedScore, setDisplayedScore] = useState(playerCoins - pointsEarned)
   const [showScorePulse, setShowScorePulse] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -444,15 +445,15 @@ export default function RevelationScreen({
 
         {/* Social proof */}
         {flipped && (
-          <div style={{ textAlign: 'center', padding: `${S(6)} ${S(16)} 0` }}>
-            <span style={{ fontSize: S(11), fontWeight: 900, color: 'rgba(255,255,255,0.7)', display: 'block' }}>
-              👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
+          <div style={{ textAlign: 'center', padding: `${S(8)} ${S(16)} 0`, flexShrink: 0 }}>
+            <span style={{ fontSize: S(14), fontWeight: 800, color: 'rgba(255,255,255,0.8)', display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.3 }}>
+              👥 {100 - successRate}% des joueurs<br />ont trouvé ce f*ct
             </span>
           </div>
         )}
 
         {/* Encadré question */}
-        <div style={{ flex: 1, minHeight: 0, padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ flex: 1, minHeight: 0, padding: `${S(8)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.15)',
@@ -467,7 +468,7 @@ export default function RevelationScreen({
         </div>
 
         {/* Boutons */}
-        <div style={{ flexShrink: 0, padding: `${S(6)} ${S(16)} ${S(12)}` }}>
+        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}` }}>
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             <button
               onClick={handleNativeShare}
@@ -522,26 +523,27 @@ export default function RevelationScreen({
       {/* Image pleine largeur — contain, pas de crop */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '35vh' }}>
         <div
-          className={`overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow gold-card-rounded' : ''}`}
+          className={`overflow-hidden relative${!isDuel && flipped && isCorrect && fact.isVip ? ' wow-shine wow-glow gold-card-rounded' : ''}`}
           style={{
             background: catGradient, width: '100%', maxHeight: '35vh',
             borderRadius: S(16), padding: 4,
-            border: !isDuel && flipped && isCorrect ? undefined : `3px solid ${cat?.color || '#1a3a5c'}`,
+            border: !isDuel && flipped && isCorrect && fact.isVip ? undefined : `3px solid ${cat?.color || '#1a3a5c'}`,
           }}
         >
           {fact.imageUrl && !imgFailed ? (
             <img
               src={fact.imageUrl}
               alt={fact.question}
-              style={{ objectFit: 'contain', width: '100%', maxHeight: 'calc(35vh - 14px)', display: 'block', borderRadius: S(12) }}
+              onClick={() => isCorrect && setShowLightbox(true)}
+              style={{ objectFit: 'contain', width: '100%', maxHeight: 'calc(35vh - 14px)', display: 'block', borderRadius: S(12), cursor: isCorrect ? 'pointer' : 'default' }}
               onError={() => setImgFailed(true)}
             />
           ) : (
             <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
           )}
 
-          {/* Gold overlay + shimmer (bonne réponse uniquement) */}
-          {!isDuel && flipped && isCorrect && (
+          {/* Gold overlay + shimmer (VIP bonne réponse uniquement) */}
+          {!isDuel && flipped && isCorrect && fact.isVip && (
             <>
               {/* Overlay gold semi-transparent */}
               <div className="absolute inset-0 pointer-events-none" style={{
@@ -595,16 +597,16 @@ export default function RevelationScreen({
         </div>
       </div>
 
-      {/* Zone info — flex: 1, overflow auto si nécessaire */}
-      <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: `${S(4)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(2) }}>
+      {/* Zone info — flex: 1, gap 8px uniforme */}
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `0 ${S(16)}`, display: 'flex', flexDirection: 'column', gap: S(8) }}>
         {/* Message de succès + social proof */}
         {flipped && !isDuel && isCorrect && (
-          <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block' }}>
+          <div style={{ textAlign: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
               {correctMsg}
             </span>
-            <span style={{ fontSize: S(13), fontWeight: 900, color: 'rgba(255,255,255,0.7)', display: 'block', marginTop: S(2) }}>
-              👥 Seulement {successRate}% des joueurs ont trouvé ce f*ct
+            <span style={{ fontSize: S(14), fontWeight: 800, color: 'rgba(255,255,255,0.8)', display: 'block', marginTop: S(4), textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.3 }}>
+              👥 Seulement {successRate}% des joueurs<br />ont trouvé ce f*ct
             </span>
           </div>
         )}
@@ -632,25 +634,26 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Encadré explication — sans lien Source */}
+        {/* Encadré explication */}
         {!isDuel && isCorrect && (
           <div style={{
-            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
+            background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: S(14), padding: `${S(8)} ${S(10)}`,
+            flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
           }}>
             <div style={{
               background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
-              borderRadius: S(10), padding: `${S(8)} ${S(10)}`, marginBottom: S(8),
+              borderRadius: S(10), padding: `${S(6)} ${S(10)}`, marginBottom: S(6), flexShrink: 0,
             }}>
-              <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2), textShadow: '0 0 10px rgba(255,215,0,0.5)' }}>✓ Bonne réponse :</div>
-              <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{correctAnswerText}</div>
+              <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
+              <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{correctAnswerText}</div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>
-              <span style={{ fontSize: S(14) }}>🧠</span>
-              <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
+              <span style={{ fontSize: S(12) }}>🧠</span>
+              <span style={{ color: 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.35, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>{fact.explanation}</p>
           </div>
         )}
 
@@ -717,6 +720,47 @@ export default function RevelationScreen({
           </button>
         )}
       </div>
+
+      {/* Lightbox image — bonne réponse uniquement */}
+      {showLightbox && fact.imageUrl && (
+        <div
+          onClick={() => setShowLightbox(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 500,
+            background: 'rgba(0,0,0,0.9)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 16,
+          }}
+        >
+          <button
+            onClick={() => setShowLightbox(false)}
+            style={{
+              position: 'absolute', top: 16, right: 16, zIndex: 10,
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)', border: 'none',
+              color: 'white', fontSize: 18, fontWeight: 900,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >✕</button>
+          <img
+            src={fact.imageUrl}
+            alt={fact.question}
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '95%', maxHeight: '80vh', objectFit: 'contain',
+              borderRadius: 12,
+              animation: 'lightboxZoom 0.2s ease-out',
+            }}
+          />
+          <style>{`
+            @keyframes lightboxZoom {
+              from { transform: scale(0.8); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
       </div>
     </div>
   )

@@ -63,6 +63,7 @@ function applyCofreReward(reward) {
     if (reward.type === 'coins') {
       const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       data.wtfCoins = (data.wtfCoins || 0) + reward.amount
+      data.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(data))
     } else if (reward.type === 'hints') {
       const current = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
@@ -105,6 +106,7 @@ const S = (px) => `calc(${px}px * var(--scale))`
 export default function HomeScreen({
   playerCoins = 0,
   playerHints = 0,
+  playerTickets = 0,
   dailyQuestsRemaining = 3,
   currentStreak = 0,
   nextBadgeInfo = null,
@@ -113,6 +115,8 @@ export default function HomeScreen({
   playerAvatar = null,
 }) {
   const { isConnected } = useAuth()
+  const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
+  const canAccess = isConnected || isDevMode
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
@@ -326,7 +330,7 @@ export default function HomeScreen({
             }}
           >
             <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: S(14), height: S(14), flexShrink: 0 }} />
-            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{dailyQuestsRemaining}</span>
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{playerTickets}</span>
           </button>
           <button
             onClick={() => nav('boutique')}
@@ -382,7 +386,7 @@ export default function HomeScreen({
       <div style={{
         height: 60, flexShrink: 0,
         display: 'flex', alignItems: 'center',
-        opacity: isConnected ? 1 : 0.4,
+        opacity: canAccess ? 1 : 0.4,
         gap: 6, padding: '6px 14px 0',
         justifyContent: 'center',
         position: 'relative', zIndex: 2,
@@ -403,7 +407,7 @@ export default function HomeScreen({
             <button
               key={day}
               onClick={() => {
-                if (!isConnected) { setShowConnectBanner(true); return }
+                if (!canAccess) { setShowConnectBanner(true); return }
                 if (!isAvail) return
                 audio.play?.('click')
                 const reward = claim()
@@ -529,9 +533,9 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!isConnected} onClick={() => isConnected ? nav('difficulty') : setShowConnectBanner(true)} />
-          <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!isConnected} onClick={() => isConnected ? nav('trophees') : setShowConnectBanner(true)} />
-          <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!isConnected} onClick={() => isConnected ? nav('wtfDuJour') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canAccess} onClick={() => canAccess ? nav('difficulty') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!canAccess} onClick={() => canAccess ? nav('trophees') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canAccess} onClick={() => canAccess ? nav('wtfDuJour') : setShowConnectBanner(true)} />
         </div>
 
         {/* Colonne centre — flex: 1 */}
@@ -572,9 +576,9 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!isConnected} onClick={() => isConnected ? nav('marathon') : setShowConnectBanner(true)} />
-          <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!isConnected} onClick={() => isConnected ? nav('amis') : setShowConnectBanner(true)} />
-          <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!isConnected} onClick={() => isConnected ? nav('blitz') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canAccess} onClick={() => canAccess ? nav('marathon') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canAccess} onClick={() => canAccess ? nav('amis') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canAccess} onClick={() => canAccess ? nav('blitz') : setShowConnectBanner(true)} />
         </div>
       </div>
 

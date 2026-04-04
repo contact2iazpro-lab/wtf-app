@@ -79,6 +79,7 @@ export default function ResultsScreen({
   const [showSettings, setShowSettings] = useState(false)
   const [showConnectBanner, setShowConnectBanner] = useState(false)
   const [savedAfterConnect, setSavedAfterConnect] = useState(false)
+  const [selectedFact, setSelectedFact] = useState(null)
 
   // Persister les facts temporaires quand le joueur se connecte depuis ResultsScreen
   useEffect(() => {
@@ -364,13 +365,13 @@ export default function ResultsScreen({
         </button>
       </div>
 
-      {/* scrollable zone */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide" style={{ position: 'relative', zIndex: 2 }}>
+      {/* Content zone — fullscreen, no scroll */}
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ position: 'relative', zIndex: 2 }}>
 
-      {/* MOD 6 — Rang avec effet tampon scale 0→1 */}
-      <div className="flex flex-col items-center pt-4 pb-1 px-6 shrink-0">
+      {/* MOD 6 — Rang compact */}
+      <div className="flex flex-col items-center pt-1 pb-0 px-6 shrink-0">
         <div
-          className="text-5xl mb-1"
+          className="text-4xl mb-0"
           style={{
             transform: rankVisible ? 'scale(1)' : 'scale(0)',
             transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -378,7 +379,7 @@ export default function ResultsScreen({
           {currentRank.emoji}
         </div>
         <div
-          className="text-lg font-black mb-0.5 text-center"
+          className="text-sm font-black text-center"
           style={{
             color: textOnBg,
             transform: rankVisible ? 'scale(1)' : 'scale(0)',
@@ -386,17 +387,14 @@ export default function ResultsScreen({
           }}>
           {currentRank.label}
         </div>
-        <div className="text-xs font-semibold text-center px-6 leading-relaxed" style={{ color: textOnBg, opacity: 0.75 }}>
-          {currentRank.message}
-        </div>
       </div>
 
-      {/* MOD 6 — Étoiles qui poppent une par une (délai 200ms) */}
-      <div className="flex justify-center gap-3 pb-2 shrink-0">
+      {/* Étoiles */}
+      <div className="flex justify-center gap-2 pb-1 shrink-0">
         {[1, 2, 3].map((s) => (
           <span
             key={s}
-            className="text-3xl"
+            className="text-2xl"
             style={{
               transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
               transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -408,115 +406,56 @@ export default function ResultsScreen({
         ))}
       </div>
 
-      {/* ── Badge Perfect ───────────────────────────────────────────────── */}
+      {/* Badge Perfect — compact */}
       {isPerfect && (
-        <div
-          className="mx-5 mb-3 rounded-3xl p-4 shrink-0"
-          style={{
-            background: 'linear-gradient(135deg, rgba(253,224,71,0.22) 0%, rgba(245,158,11,0.35) 100%)',
-            border: '2px solid rgba(253,224,71,0.6)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 4px 24px rgba(245,158,11,0.35)',
-          }}
-        >
-          {/* Titre badge */}
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span style={{ fontSize: 28 }}>⭐</span>
-            <span
-              className="font-black uppercase tracking-widest"
-              style={{ fontSize: 22, color: '#FDE047', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
-            >
-              PERFECT !
-            </span>
-            <span style={{ fontSize: 28 }}>⭐</span>
-          </div>
-
-          {/* Message */}
-          <p
-            className="text-center font-bold leading-relaxed mb-3"
-            style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)' }}
-          >
-            Incroyable ! Tu as répondu correctement à toutes les questions !
-          </p>
-
-          {/* Récompense ticket */}
-          {ticketEarned && (
-            <div
-              className="flex items-center justify-center gap-2 rounded-2xl py-2 px-4"
-              style={{
-                background: 'rgba(253,224,71,0.18)',
-                border: '1px solid rgba(253,224,71,0.4)',
-                transform: ticketPopVisible ? 'scale(1)' : 'scale(0)',
-                transition: 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              }}
-            >
-              <span style={{ fontSize: 20 }}>🎟️</span>
-              <span className="font-black" style={{ fontSize: 15, color: '#FDE047' }}>
-                +1 ticket bonus !
-              </span>
-            </div>
-          )}
+        <div className="mx-4 mb-1 rounded-2xl p-2 shrink-0 flex items-center justify-center gap-2"
+          style={{ background: 'linear-gradient(135deg, rgba(253,224,71,0.22), rgba(245,158,11,0.35))', border: '1.5px solid rgba(253,224,71,0.6)' }}>
+          <span style={{ fontSize: 18 }}>⭐</span>
+          <span className="font-black uppercase tracking-wider" style={{ fontSize: 14, color: '#FDE047' }}>PERFECT !</span>
+          {ticketEarned && <span style={{ fontSize: 14 }}>🎟️ +1</span>}
+          <span style={{ fontSize: 18 }}>⭐</span>
         </div>
       )}
 
-      {/* Score card */}
-      <div className="mx-5 mb-2 rounded-3xl border p-3 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)' }}>
-        {/* MOD 6 — Score animé count-up */}
-        <div className="text-center mb-2">
-          <div className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: textOnBg, opacity: 0.6 }}>Coins gagnés</div>
-          <div className="text-4xl font-black" style={{ color: textOnBg }}>{animatedScore}</div>
-        </div>
-
-        {/* Progress bar couleur catégorie */}
-        <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.15)' }}>
-          <div
-            className="h-full rounded-full transition-all duration-1000"
-            style={{ width: `${precision}%`, background: `linear-gradient(90deg, ${catColor}cc, ${catColor})` }}
-          />
-        </div>
-
-        {/* Stats — renommés */}
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <div>
-            <div className="text-xl font-black" style={{ color: textOnBg }}>{correctCount}</div>
-            <div className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.6 }}>F*cts débloqués</div>
+      {/* Score card — compact */}
+      <div className="mx-4 mb-1 rounded-2xl border p-2 shrink-0" style={{ background: 'rgba(0,0,0,0.25)', borderColor: 'rgba(255,255,255,0.15)' }}>
+        <div className="flex items-center justify-between">
+          <div className="text-center flex-1">
+            <div className="text-2xl font-black" style={{ color: textOnBg }}>+{animatedScore} 🪙</div>
           </div>
-          <div>
-            <div className="text-xl font-black" style={{ color: textOnBg }}>{totalFacts - correctCount}</div>
-            <div className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.6 }}>F*cts à découvrir</div>
-          </div>
-          <div>
-            {/* MOD 3 — Précision basée sur correctCount / totalFacts */}
-            <div className="text-xl font-black" style={{ color: catColor }}>{precision}%</div>
-            <div className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.6 }}>Précision</div>
+          <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.15)' }} />
+          <div className="grid grid-cols-3 gap-1 flex-1 text-center">
+            <div>
+              <div className="text-lg font-black" style={{ color: textOnBg }}>{correctCount}</div>
+              <div style={{ fontSize: 9, fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Trouvés</div>
+            </div>
+            <div>
+              <div className="text-lg font-black" style={{ color: textOnBg }}>{totalFacts - correctCount}</div>
+              <div style={{ fontSize: 9, fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Ratés</div>
+            </div>
+            <div>
+              <div className="text-lg font-black" style={{ color: catColor }}>{precision}%</div>
+              <div style={{ fontSize: 9, fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Précision</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* COR 6 — Stats joueurs sous le score */}
-      <div className="text-center px-5 mb-1 shrink-0">
-        <span className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.55 }}>
-          👥 En moyenne, les joueurs réussissent {avgSuccessRate}% des f*cts de cette catégorie
-        </span>
-      </div>
-
-      {/* Carrousel de facts — débloqués en premier, verrouillés ensuite */}
+      {/* Carrousel compact — 100x140px cards */}
       {allSessionFacts.length > 0 && (() => {
         const unlockedIds = new Set(unlockedFactsThisSession.map(f => f.id))
         const unlocked = allSessionFacts.filter(f => unlockedIds.has(f.id))
         const locked = allSessionFacts.filter(f => !unlockedIds.has(f.id))
         const sorted = [...unlocked, ...locked]
         return (
-          <div className="mb-3 shrink-0">
-            <div className="px-5 mb-2">
-              <span className="text-xs font-black uppercase tracking-widest" style={{ color: textOnBg, opacity: 0.8 }}>
-                {unlocked.length > 0 ? `🔓 ${unlocked.length} f*ct${unlocked.length > 1 ? 's' : ''} débloqué${unlocked.length > 1 ? 's' : ''}` : 'Aucun f*ct débloqué'}
-                {locked.length > 0 && ` · 🔒 ${locked.length} raté${locked.length > 1 ? 's' : ''}`}
+          <div className="mb-1 shrink-0">
+            <div className="px-4 mb-1">
+              <span style={{ fontSize: 10, fontWeight: 800, color: textOnBg, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                {unlocked.length > 0 ? `🔓 ${unlocked.length} trouvé${unlocked.length > 1 ? 's' : ''}` : ''}
+                {locked.length > 0 ? ` · 🔒 ${locked.length} raté${locked.length > 1 ? 's' : ''}` : ''}
               </span>
             </div>
-            <div
-              className="flex gap-2.5 overflow-x-auto scrollbar-hide"
-              style={{ paddingLeft: 20, paddingRight: 20 }}>
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide" style={{ paddingLeft: 16, paddingRight: 16 }}>
               {sorted.map((fact) => {
                 const isUnlocked = unlockedIds.has(fact.id)
                 const factCat = CATEGORIES.find(c => c.id === fact.category)
@@ -524,61 +463,40 @@ export default function ResultsScreen({
                 return (
                   <div
                     key={fact.id}
-                    className="shrink-0 rounded-2xl overflow-hidden flex flex-col"
+                    onClick={() => isUnlocked && setSelectedFact(fact)}
+                    className="shrink-0 rounded-xl overflow-hidden flex flex-col"
                     style={{
-                      width: 150,
+                      width: 100, height: 140,
                       background: 'rgba(0,0,0,0.35)',
-                      border: isUnlocked ? '2px solid rgba(255,215,0,0.6)' : '1.5px solid rgba(107,114,128,0.4)',
-                      backdropFilter: 'blur(8px)',
-                      boxShadow: isUnlocked ? '0 0 12px rgba(255,215,0,0.2)' : 'none',
+                      border: isUnlocked ? '1.5px solid rgba(255,215,0,0.6)' : '1px solid rgba(107,114,128,0.3)',
+                      boxShadow: isUnlocked ? '0 0 8px rgba(255,215,0,0.15)' : 'none',
+                      cursor: isUnlocked ? 'pointer' : 'default',
                     }}>
-                    {/* Image */}
-                    <div
-                      className="w-full flex items-center justify-center overflow-hidden relative"
-                      style={{ height: 90, background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})` }}>
+                    <div className="w-full flex items-center justify-center overflow-hidden relative"
+                      style={{ height: 70, background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})` }}>
                       {fact.imageUrl ? (
-                        <img
-                          src={fact.imageUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
+                        <img src={fact.imageUrl} alt="" className="w-full h-full object-cover"
                           style={!isUnlocked ? { filter: 'blur(8px) brightness(0.5)' } : undefined}
-                          onError={e => { e.target.style.display = 'none' }}
-                        />
+                          onError={e => { e.target.style.display = 'none' }} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"
                           style={{ filter: !isUnlocked ? 'brightness(0.5)' : 'none' }}>
-                          <span style={{ fontSize: 32, opacity: 0.3 }}>?</span>
+                          <span style={{ fontSize: 24, opacity: 0.3 }}>?</span>
                         </div>
                       )}
-                      {/* Stamp FOU ou cadenas */}
                       {isUnlocked ? (
-                        <div style={{
-                          position: 'absolute', top: 6, right: 6,
-                          background: 'rgba(255,215,0,0.9)', borderRadius: 6,
-                          padding: '2px 6px', fontWeight: 900, fontSize: 9,
-                          color: '#1a1a2e', letterSpacing: '0.05em',
-                        }}>FOU</div>
+                        <div style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(255,215,0,0.9)', borderRadius: 4, padding: '1px 5px', fontWeight: 900, fontSize: 8, color: '#1a1a2e' }}>FOU</div>
                       ) : (
-                        <div style={{
-                          position: 'absolute', inset: 0,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                          <span style={{ fontSize: 28, opacity: 0.7 }}>🔒</span>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: 22, opacity: 0.7 }}>🔒</span>
                         </div>
                       )}
                     </div>
-                    {/* Texte */}
-                    <div className="px-2 py-2 flex-1 flex items-center justify-center">
+                    <div className="px-1.5 py-1 flex-1 flex items-center justify-center">
                       {isUnlocked ? (
-                        <span style={{
-                          fontSize: 10, fontWeight: 700, color: '#fff', lineHeight: 1.3,
-                          textAlign: 'center', display: '-webkit-box', WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                        }}>{fact.question}</span>
+                        <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', lineHeight: 1.2, textAlign: 'center', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{fact.question}</span>
                       ) : (
-                        <span style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', textAlign: 'center' }}>
-                          À découvrir
-                        </span>
+                        <span style={{ fontSize: 8, fontWeight: 600, color: '#9CA3AF', textAlign: 'center' }}>À découvrir</span>
                       )}
                     </div>
                   </div>
@@ -589,38 +507,6 @@ export default function ResultsScreen({
         )
       })()}
 
-      {/* MOD 7 — Coins gagnés (avec bonus parfait si 10/10) */}
-      {totalCoins > 0 && (
-        <div className="mx-5 mb-3 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
-          <div className="flex items-center gap-3">
-            <CoinsIcon size={32} />
-            <div className="flex-1">
-              <div className="text-yellow-200 font-black text-base">+{totalCoins} WTF! Coins</div>
-              {isPerfect && perfectBonus > 0 ? (
-                <div className="text-yellow-300/80 text-xs font-semibold">
-                  {coinsEarned} coins + {perfectBonus} bonus score parfait 🌟
-                </div>
-              ) : (
-                <div className="text-xs font-semibold" style={{ color: textOnBg, opacity: 0.5 }}>Ajoutés à ton solde</div>
-              )}
-            </div>
-            {isPerfect && <span className="text-2xl">🏆</span>}
-          </div>
-        </div>
-      )}
-
-      {/* MOD 8 — Bandeau prochain micro-objectif */}
-      <div className="mx-5 mb-2 rounded-2xl border p-3 shrink-0" style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.15)' }}>
-        {cat ? (
-          <div className="text-xs font-semibold text-center leading-relaxed" style={{ color: textOnBg, opacity: 0.8 }}>
-            🏅 <span style={{ color: catColor }}>{cat.label}</span> — continue les quêtes pour débloquer ton prochain badge !
-          </div>
-        ) : (
-          <div className="text-xs font-semibold text-center leading-relaxed" style={{ color: textOnBg, opacity: 0.7 }}>
-            Lance une nouvelle quête pour débloquer ton premier badge !
-          </div>
-        )}
-      </div>
 
       {/* Completion rewards */}
       {completedCategoryLevels.length > 0 && (
@@ -697,65 +583,32 @@ export default function ResultsScreen({
           {sharedCopied ? 'Copié !' : 'Partager mon score & défier mes amis'}
         </button>
 
-        {/* Bannière conversion pour joueurs non connectés */}
-        {sessionType === 'flash_solo' && !isConnected && unlockedFactsThisSession.length > 0 && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.08))',
-            borderRadius: 16, padding: '16px', textAlign: 'center',
-            border: '1.5px solid rgba(34,197,94,0.4)',
-          }}>
-            <div style={{ fontSize: 28, marginBottom: 6 }}>🎉</div>
-            <p style={{ fontSize: 15, fontWeight: 900, color: '#fff', margin: '0 0 4px' }}>
-              Tu as débloqué {unlockedFactsThisSession.length} f*ct{unlockedFactsThisSession.length > 1 ? 's' : ''} !
-            </p>
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', margin: '0 0 12px', lineHeight: 1.4 }}>
-              Connecte-toi pour les sauvegarder dans ta collection
-            </p>
-            <button
-              onClick={() => setShowConnectBanner(true)}
-              style={{
-                width: '100%', padding: '12px 0', borderRadius: 14,
-                background: '#22C55E', border: 'none', cursor: 'pointer',
-                fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 14,
-                color: '#fff', boxShadow: '0 3px 12px rgba(34,197,94,0.4)',
-              }}
-            >
-              Sauvegarder ma collection
-            </button>
-            <button
-              onClick={handleGoHome}
-              style={{
-                width: '100%', marginTop: 8, padding: '8px 0',
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                fontFamily: 'Nunito, sans-serif', fontWeight: 600, fontSize: 12,
-                color: 'rgba(255,255,255,0.4)',
-              }}
-            >
-              Tant pis, continuer sans compte
-            </button>
-          </div>
-        )}
-        {sessionType === 'flash_solo' && !isConnected && unlockedFactsThisSession.length === 0 && (
-          <div style={{
-            background: 'rgba(255,255,255,0.1)', borderRadius: 16,
-            padding: '14px 16px', textAlign: 'center',
-            border: '1px solid rgba(255,255,255,0.15)',
-          }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: textOnBg, margin: '0 0 10px', lineHeight: 1.4 }}>
-              Connecte-toi pour débloquer tous les modes et sauvegarder ta progression !
-            </p>
-            <button
-              onClick={() => setShowConnectBanner(true)}
-              style={{
-                width: '100%', padding: '10px 0', borderRadius: 12,
-                background: '#fff', border: 'none', cursor: 'pointer',
-                fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 13,
-                color: '#FF6B1A',
-              }}
-            >
-              Se connecter avec Google
-            </button>
-          </div>
+        {/* Bannière conversion compacte pour non-connectés */}
+        {sessionType === 'flash_solo' && !isConnected && (
+          <button
+            onClick={() => {
+              // Sauvegarder les facts temporaires AVANT le redirect OAuth
+              if (unlockedFactsThisSession.length > 0) {
+                localStorage.setItem('wtf_temp_facts', JSON.stringify(unlockedFactsThisSession.map(f => f.id)))
+              }
+              setShowConnectBanner(true)
+            }}
+            style={{
+              width: '100%', padding: '10px 16px', borderRadius: 14,
+              background: 'linear-gradient(135deg, rgba(34,197,94,0.25), rgba(34,197,94,0.1))',
+              border: '1.5px solid rgba(34,197,94,0.4)',
+              display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif', textAlign: 'left',
+            }}
+          >
+            <span style={{ fontSize: 20 }}>🔓</span>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: '#fff' }}>
+                {unlockedFactsThisSession.length > 0 ? `${unlockedFactsThisSession.length} f*ct${unlockedFactsThisSession.length > 1 ? 's' : ''} à sauvegarder !` : 'Débloquer tous les modes'}
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>Connecte-toi avec Google</div>
+            </div>
+          </button>
         )}
 
         {/* Secondaire — Revenir, discret */}
@@ -766,6 +619,54 @@ export default function ResultsScreen({
           ← Revenir
         </button>
       </div>
+
+      {/* Fact detail modal */}
+      {selectedFact && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)', padding: 16 }}
+          onClick={() => setSelectedFact(null)}
+        >
+          <div
+            style={{ background: '#fff', borderRadius: 20, maxWidth: 360, width: '90%', maxHeight: '85vh', overflow: 'auto', position: 'relative' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button onClick={() => setSelectedFact(null)} style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+
+            {/* Image */}
+            {selectedFact.imageUrl ? (
+              <img src={selectedFact.imageUrl} alt="" style={{ width: '100%', maxHeight: '35vh', objectFit: 'cover', borderRadius: '20px 20px 0 0' }} onError={e => { e.target.style.display = 'none' }} />
+            ) : (
+              <div style={{ height: 120, background: `linear-gradient(135deg, ${catColor}44, ${catColor})`, borderRadius: '20px 20px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 40, opacity: 0.3 }}>?</span>
+              </div>
+            )}
+
+            <div style={{ padding: '16px 20px 20px' }}>
+              {/* Question */}
+              <p style={{ fontSize: 14, fontWeight: 800, color: '#1a1a2e', lineHeight: 1.4, margin: '0 0 12px' }}>{selectedFact.question}</p>
+
+              {/* Bonne réponse */}
+              <div style={{ background: 'rgba(34,197,94,0.1)', border: '1.5px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '10px 14px', marginBottom: 12 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#22C55E', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Bonne réponse</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e' }}>{selectedFact.shortAnswer || selectedFact.options?.[selectedFact.correctIndex]}</div>
+              </div>
+
+              {/* Explication */}
+              {selectedFact.explanation && (
+                <div style={{ background: '#F9FAFB', borderRadius: 12, padding: '10px 14px', marginBottom: 12 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#FF6B1A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>🧠 Le saviez-vous ?</div>
+                  <p style={{ fontSize: 12, fontWeight: 500, color: '#374151', lineHeight: 1.5, margin: 0 }}>{selectedFact.explanation}</p>
+                </div>
+              )}
+
+              {/* Source */}
+              {selectedFact.sourceUrl && (
+                <a href={selectedFact.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: '#9CA3AF', textDecoration: 'underline' }}>Source</a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
     </div>

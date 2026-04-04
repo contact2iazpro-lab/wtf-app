@@ -57,6 +57,8 @@ export default function QuestionScreen({
   sessionType = 'parcours',
   isTutorial = false,
 }) {
+  const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
+
   // Solo et marathon → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
     (gameMode === 'solo' || gameMode === 'marathon') ? 'qcm' : null
@@ -263,6 +265,20 @@ export default function QuestionScreen({
       {Array.from({ length: totalHints }, (_, i) => {
         const hintNum = i + 1
         const hintText = hintNum === 1 ? fact.hint1 : fact.hint2
+        // Dev mode: show hints pre-revealed
+        if (isDevMode) {
+          return (
+            <div key={hintNum} style={{
+              height: 48, width: '100%', borderRadius: 24, background: 'rgba(255,255,255,0.88)',
+              border: `2px solid ${cat?.color || '#FF6B1A'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px',
+            }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: cat?.color || '#FF6B1A', textAlign: 'center', lineHeight: 1.3 }}>
+                {hintText || '—'}
+              </span>
+            </div>
+          )
+        }
         return (
           <HintFlipButton
             key={hintNum}
@@ -848,39 +864,58 @@ export default function QuestionScreen({
 
         {/* Boutons QCM */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8) }}>
-          {fact.options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                const correct = index === fact.correctIndex
-                audio.play(correct ? 'correct' : 'wrong')
-                audio.vibrate(correct ? [40, 20, 40] : [120])
-                onSelectAnswer(index)
-              }}
-              className="btn-press transition-all active:scale-95"
-              style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: '1.5px solid rgba(255,255,255,0.4)',
-                borderRadius: S(12),
-                color: 'white',
-                fontWeight: 700,
-                fontSize: fact.options.length > 4 ? S(12) : S(13),
-                padding: `${S(8)} ${S(8)}`,
-                minHeight: S(64),
-                width: '100%',
-                overflow: 'hidden',
-                wordBreak: 'break-word',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                cursor: 'pointer',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
-              {renderFormattedText(option)}
-            </button>
-          ))}
+          {fact.options.map((option, index) => {
+            // Dev mode: identify answer type
+            let devType = null
+            let devBorder = '1.5px solid rgba(255,255,255,0.4)'
+            if (isDevMode) {
+              const funnyWrongs = [fact.funnyWrong1, fact.funnyWrong2].filter(Boolean)
+              const closeWrongs = [fact.closeWrong1, fact.closeWrong2].filter(Boolean)
+              const plausibleWrongs = [fact.plausibleWrong1, fact.plausibleWrong2, fact.plausibleWrong3].filter(Boolean)
+              if (index === fact.correctIndex) { devType = 'VRAIE'; devBorder = '3px solid #22C55E' }
+              else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; devBorder = '3px solid #EAB308' }
+              else if (closeWrongs.includes(option)) { devType = 'PROCHE'; devBorder = '3px solid #F97316' }
+              else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; devBorder = '3px solid #EF4444' }
+              else { devType = 'AUTRE'; devBorder = '2px solid rgba(255,255,255,0.3)' }
+            }
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  const correct = index === fact.correctIndex
+                  audio.play(correct ? 'correct' : 'wrong')
+                  audio.vibrate(correct ? [40, 20, 40] : [120])
+                  onSelectAnswer(index)
+                }}
+                className="btn-press transition-all active:scale-95"
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: devBorder,
+                  borderRadius: S(12),
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: fact.options.length > 4 ? S(12) : S(13),
+                  padding: `${S(8)} ${S(8)}`,
+                  minHeight: S(64),
+                  width: '100%',
+                  overflow: 'hidden',
+                  wordBreak: 'break-word',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {renderFormattedText(option)}
+                {isDevMode && devType && (
+                  <span style={{ fontSize: 9, fontWeight: 900, opacity: 0.6, marginTop: 2, letterSpacing: '0.05em' }}>{devType}</span>
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
 

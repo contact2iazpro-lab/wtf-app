@@ -18,11 +18,12 @@ function isLightColor(hex) {
 const INITIAL_TIME = 60
 const CORRECT_BONUS = 2
 const WRONG_PENALTY = 3
-const FLASH_DURATION = 400
+const FLASH_DURATION = 300
 
 export default function BlitzScreen({ facts, category, onFinish, onQuit, playerCoins, playerHints = 0, onUseHint }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
+  const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
 
   const cat = getCategoryById(category)
   const catTextColor = cat?.color ? (isLightColor(cat.color) ? '#1a1a1a' : '#ffffff') : '#ffffff'
@@ -260,24 +261,35 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
         {/* ── Hint button ──────────────────────────────────────────────── */}
         {!hintUsedThisQ && !flashAnswer && (
           <div style={{ marginBottom: S(6) }}>
-            <HintFlipButton
-              num={1}
-              hint={currentFact?.hint1 || '—'}
-              catColor={cat?.color || '#FF6B1A'}
-              hasStock={playerHints > 0}
-              stockCount={playerHints}
-              onReveal={() => {
-                if (onUseHint) onUseHint(1)
-                setHintUsedThisQ(true)
-                // Éliminer une mauvaise réponse au hasard
-                const wrongIndices = currentFact.options
-                  .map((_, idx) => idx)
-                  .filter(idx => idx !== currentFact.correctIndex)
-                const randomWrong = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]
-                setHiddenOption(randomWrong)
-                audio.play('click')
-              }}
-            />
+            {isDevMode ? (
+              <div style={{
+                height: 48, width: '100%', borderRadius: 24, background: 'rgba(255,255,255,0.88)',
+                border: `2px solid ${cat?.color || '#FF6B1A'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px',
+              }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: cat?.color || '#FF6B1A', textAlign: 'center', lineHeight: 1.3 }}>
+                  {currentFact?.hint1 || '—'}
+                </span>
+              </div>
+            ) : (
+              <HintFlipButton
+                num={1}
+                hint={currentFact?.hint1 || '—'}
+                catColor={cat?.color || '#FF6B1A'}
+                hasStock={playerHints > 0}
+                stockCount={playerHints}
+                onReveal={() => {
+                  if (onUseHint) onUseHint(1)
+                  setHintUsedThisQ(true)
+                  const wrongIndices = currentFact.options
+                    .map((_, idx) => idx)
+                    .filter(idx => idx !== currentFact.correctIndex)
+                  const randomWrong = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]
+                  setHiddenOption(randomWrong)
+                  audio.play('click')
+                }}
+              />
+            )}
           </div>
         )}
 
@@ -291,6 +303,19 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
             let btnBorder = 'rgba(255,255,255,0.2)'
             let btnTextColor = '#ffffff'
 
+            // Dev mode: colored borders by answer type
+            let devType = null
+            if (isDevMode && !flashAnswer) {
+              const funnyWrongs = [currentFact.funnyWrong1, currentFact.funnyWrong2].filter(Boolean)
+              const closeWrongs = [currentFact.closeWrong1, currentFact.closeWrong2].filter(Boolean)
+              const plausibleWrongs = [currentFact.plausibleWrong1, currentFact.plausibleWrong2, currentFact.plausibleWrong3].filter(Boolean)
+              if (i === currentFact.correctIndex) { devType = 'VRAIE'; btnBorder = '#22C55E' }
+              else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; btnBorder = '#EAB308' }
+              else if (closeWrongs.includes(option)) { devType = 'PROCHE'; btnBorder = '#F97316' }
+              else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; btnBorder = '#EF4444' }
+              else { devType = 'AUTRE'; btnBorder = 'rgba(255,255,255,0.3)' }
+            }
+
             if (flashAnswer) {
               if (isFlashed && flashAnswer.correct) {
                 btnBg = 'rgba(34,197,94,0.4)'
@@ -298,11 +323,8 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
               } else if (isFlashed && !flashAnswer.correct) {
                 btnBg = 'rgba(239,68,68,0.4)'
                 btnBorder = '#EF4444'
-              } else if (isCorrectAnswer) {
-                btnBg = 'rgba(34,197,94,0.25)'
-                btnBorder = '#22C55E'
-                btnTextColor = '#22C55E'
               }
+              // Ne PAS montrer la bonne réponse sur mauvaise réponse — vitesse Blitz
             }
 
             return (
@@ -313,7 +335,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
                 className="w-full rounded-2xl text-left transition-all active:scale-[0.97]"
                 style={{
                   background: hiddenOption === i ? 'rgba(107,114,128,0.1)' : btnBg,
-                  border: `2px solid ${hiddenOption === i ? 'rgba(107,114,128,0.2)' : btnBorder}`,
+                  border: `${isDevMode && !flashAnswer ? '3px' : '2px'} solid ${hiddenOption === i ? 'rgba(107,114,128,0.2)' : btnBorder}`,
                   padding: `${S(14)} ${S(18)}`,
                   opacity: hiddenOption === i ? 0.3 : (flashAnswer && !isFlashed && !isCorrectAnswer ? 0.5 : 1),
                   transition: 'all 0.15s ease',
@@ -327,6 +349,9 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
                 }}>
                   {renderFormattedText(option)}
                 </span>
+                {isDevMode && devType && (
+                  <span style={{ display: 'block', fontSize: 9, fontWeight: 900, opacity: 0.6, marginTop: 2, letterSpacing: '0.05em', color: '#fff' }}>{devType}</span>
+                )}
               </button>
             )
           })}

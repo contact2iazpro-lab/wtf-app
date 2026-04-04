@@ -84,8 +84,7 @@ function SaveProgressModal({ onClose }) {
   const handleSignOut = async () => {
     setLoading('signout')
     await signOut()
-    setLoading(null)
-    onClose()
+    window.location.reload()
   }
 
   const confirmSignIn = async () => {

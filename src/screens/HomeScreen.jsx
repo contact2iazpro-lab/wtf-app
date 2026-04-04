@@ -124,6 +124,21 @@ export default function HomeScreen({
   const textColor = '#ffffff'
   const textShadow = '0 1px 4px rgba(0,0,0,0.3)'
 
+  // ── Musique de fond — démarre au premier clic (contourne l'autoplay block) ─
+  useEffect(() => {
+    if (!audio.musicEnabled) return
+    // Tenter de démarrer immédiatement (fonctionne si le joueur a déjà interagi)
+    audio.startMusic()
+    // Fallback : au premier clic/tap, démarrer la musique
+    const start = () => { if (audio.musicEnabled && !audio._playing) audio.startMusic() }
+    document.addEventListener('click', start, { once: true })
+    document.addEventListener('touchstart', start, { once: true })
+    return () => {
+      document.removeEventListener('click', start)
+      document.removeEventListener('touchstart', start)
+    }
+  }, [])
+
   // ── Toast premier f*ct découvert ──────────────────────────────────────────
   const [tutorialToast, setTutorialToast] = useState(null)
 

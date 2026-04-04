@@ -149,8 +149,9 @@ export default function RevelationScreen({
   const S = (px) => `calc(${px}px * var(--scale))`
 
   // ── Flip animation state (mauvaise réponse → bonne réponse) ───────────────
-  const hasFlipIntro = !isCorrect && !!wrongAnswer && !!correctAnswer
-  const [flipDone, setFlipDone] = useState(!hasFlipIntro)
+  // Désactivé : ne pas montrer la bonne réponse sur mauvaise réponse
+  const hasFlipIntro = false
+  const [flipDone, setFlipDone] = useState(true)
   const [flipCardFlipped, setFlipCardFlipped] = useState(false)
 
   useEffect(() => {
@@ -402,7 +403,7 @@ export default function RevelationScreen({
         {renderHeader()}
 
         {/* Image floutée + stamp bienveillant par-dessus */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '30vh' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '35vh' }}>
           <div
             className="overflow-hidden relative"
             style={{ background: catGradient, width: '100%', maxHeight: '30vh', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
@@ -411,7 +412,7 @@ export default function RevelationScreen({
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(30vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
+                style={{ objectFit: 'contain', width: '100%', maxHeight: 'calc(35vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
@@ -518,12 +519,12 @@ export default function RevelationScreen({
       {/* Header */}
       {renderHeader()}
 
-      {/* Image pleine largeur + stamp FOU réduit en coin */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '30vh' }}>
+      {/* Image pleine largeur — contain, pas de crop */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '35vh' }}>
         <div
           className={`overflow-hidden relative${!isDuel && flipped && isCorrect ? ' wow-shine wow-glow gold-card-rounded' : ''}`}
           style={{
-            background: catGradient, width: '100%', maxHeight: '30vh',
+            background: catGradient, width: '100%', maxHeight: '35vh',
             borderRadius: S(16), padding: 4,
             border: !isDuel && flipped && isCorrect ? undefined : `3px solid ${cat?.color || '#1a3a5c'}`,
           }}
@@ -532,7 +533,7 @@ export default function RevelationScreen({
             <img
               src={fact.imageUrl}
               alt={fact.question}
-              style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(30vh - 14px)', display: 'block', borderRadius: S(12) }}
+              style={{ objectFit: 'contain', width: '100%', maxHeight: 'calc(35vh - 14px)', display: 'block', borderRadius: S(12) }}
               onError={() => setImgFailed(true)}
             />
           ) : (
@@ -594,8 +595,8 @@ export default function RevelationScreen({
         </div>
       </div>
 
-      {/* Zone info — flex: 1, no scroll */}
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(3) }}>
+      {/* Zone info — flex: 1, overflow auto si nécessaire */}
+      <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: `${S(4)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(2) }}>
         {/* Message de succès + social proof */}
         {flipped && !isDuel && isCorrect && (
           <div style={{ textAlign: 'center' }}>
@@ -649,7 +650,7 @@ export default function RevelationScreen({
               <span style={{ fontSize: S(14) }}>🧠</span>
               <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{fact.explanation}</p>
+            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.35, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
           </div>
         )}
 
@@ -671,8 +672,8 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* Boutons — flexShrink: 0 */}
-      <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(12)}` }}>
+      {/* Boutons — compact */}
+      <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
         {!isDuel && isCorrect && (
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             <button

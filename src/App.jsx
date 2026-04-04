@@ -29,6 +29,7 @@ import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from './screens/DuelSet
 import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
 import ModeLaunchScreen from './screens/ModeLaunchScreen'
+import WelcomeModal from './components/WelcomeModal'
 import SettingsModal from './components/SettingsModal'
 import HowToPlayModal from './components/HowToPlayModal'
 import { getTutorialState, getTutorialFactId, TUTORIAL_STATES } from './utils/tutorialManager'
@@ -115,7 +116,7 @@ const DIFFICULTY_LEVELS = {
   WTF:   { id: 'wtf',   label: 'Quest WTF!', emoji: '⚡', choices: 6, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
   HOT:   { id: 'hot',   label: 'Quest Hot',  emoji: '🔥', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
   COOL:  { id: 'cool',  label: 'Quest Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
-  FLASH: { id: 'flash', label: 'Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, scoring: { correct: [5, 3, 2], wrong: 0 } },
+  FLASH: { id: 'flash', label: 'Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
   HUNT:  { id: 'hunt',  label: 'Hunt',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, scoring: { correct: [5, 3, 2], wrong: 0 } },
   BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 } },
 }
@@ -290,6 +291,7 @@ export default function App() {
   const [sessionIsPerfect, setSessionIsPerfect] = useState(false)
   const [streakRewardToast, setStreakRewardToast] = useState(null)
   const [showStreakSpecialModal, setShowStreakSpecialModal] = useState(false)
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
 
   const { user } = useAuth()
 
@@ -542,14 +544,17 @@ export default function App() {
   // ─── Blitz start ───────────────────────────────────────────────────────────
   const handleBlitzStart = useCallback((categoryId) => {
     audio.play('click')
-    // Load generated facts (fallback to all valid facts if no generated ones)
-    let pool = categoryId
+    // Load generated facts, exclure les déjà débloqués
+    let pool = (categoryId
       ? getGeneratedFactsByCategory(categoryId)
       : getGeneratedFacts()
+    ).filter(f => !unlockedFacts.has(f.id))
 
-    // Fallback: if no generated facts, use all valid facts
+    // Fallback: si pas assez après exclusion, inclure les déjà débloqués
     if (pool.length < 4) {
-      pool = categoryId ? getFactsByCategory(categoryId) : getValidFacts()
+      pool = categoryId
+        ? getGeneratedFactsByCategory(categoryId)
+        : getGeneratedFacts()
     }
 
     const shuffled = [...pool]
@@ -1085,7 +1090,10 @@ export default function App() {
     },
     setTickets: (n) => applyStorage({ tickets: n }),
     setHints: (n) => localStorage.setItem('wtf_hints_available', String(n)),
-    cheat999: () => { applyStorage({ wtfCoins: 999, tickets: 999 }); localStorage.setItem('wtf_hints_available', '999') },
+    cheat999: () => {
+      localStorage.setItem('wtf_hints_available', '999')
+      applyStorage({ wtfCoins: 999, tickets: 999 })
+    },
     simulatePurchase: () => applyStorage({ wtfCoins: storage.wtfCoins + 100 }),
     unlockRandomFacts: (n = 10) => {
       const locked = getValidFacts().filter(f => !storage.unlockedFacts.has(f.id))
@@ -1135,7 +1143,44 @@ export default function App() {
 
   // Refresh storage state when auth sync completes (sign-in / sign-out)
   useEffect(() => {
-    const handleSync = () => setStorage(loadStorage())
+    const handleSync = () => {
+      setStorage(loadStorage())
+
+      // Restaurer les facts temporaires sauvegardés avant le redirect OAuth
+      const tempFactsJson = localStorage.getItem('wtf_temp_facts')
+      if (tempFactsJson) {
+        try {
+          const tempIds = JSON.parse(tempFactsJson)
+          if (Array.isArray(tempIds) && tempIds.length > 0) {
+            setStorage(prev => {
+              const newUnlocked = new Set(prev.unlockedFacts)
+              for (const id of tempIds) newUnlocked.add(id)
+              const next = { ...prev, unlockedFacts: newUnlocked }
+              saveStorage(next)
+              // Sync vers Supabase si connecté
+              const currentUser = JSON.parse(localStorage.getItem('sb-znoceotakhynqcqhpwgz-auth-token') || '{}')?.user
+              if (currentUser?.id) {
+                const allFacts = getValidFacts()
+                for (const id of tempIds) {
+                  const fact = allFacts.find(f => f.id === id)
+                  if (fact) updateCollection(currentUser.id, fact.category, fact.id)
+                }
+                syncPlayerDataAsync(currentUser.id, next)
+              }
+              return next
+            })
+          }
+        } catch { /* ignore */ }
+        localStorage.removeItem('wtf_temp_facts')
+        localStorage.removeItem('wtf_temp_session')
+      }
+
+      // Première connexion ? Afficher le WelcomeModal
+      if (localStorage.getItem('wtf_first_login_done') === null) {
+        localStorage.setItem('wtf_first_login_done', 'true')
+        setShowWelcomeModal(true)
+      }
+    }
     window.addEventListener('wtf_storage_sync', handleSync)
     return () => window.removeEventListener('wtf_storage_sync', handleSync)
   }, [])
@@ -1578,6 +1623,32 @@ export default function App() {
       )}
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onShowRules={handleShowRules} />}
+
+      {showWelcomeModal && (
+        <WelcomeModal
+          onStartQuest={() => {
+            // Offrir 1 ticket + naviguer vers Quest
+            setStorage(prev => {
+              const next = { ...prev, tickets: (prev.tickets || 0) + 1 }
+              saveStorage(next)
+              return next
+            })
+            setShowWelcomeModal(false)
+            setGameMode('solo')
+            setSessionType('parcours')
+            showOrSkipLaunch('quest')
+          }}
+          onClose={() => {
+            // Offrir le ticket quand même
+            setStorage(prev => {
+              const next = { ...prev, tickets: (prev.tickets || 0) + 1 }
+              saveStorage(next)
+              return next
+            })
+            setShowWelcomeModal(false)
+          }}
+        />
+      )}
 
       {showDevPanel && DEV_PANEL_ENABLED && (
         <DevPanel

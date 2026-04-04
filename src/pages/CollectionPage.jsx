@@ -357,6 +357,7 @@ export default function CollectionPage() {
   const { isConnected } = useAuth()
   const [showLogin, setShowLogin] = useState(false)
   const [showConnectBanner, setShowConnectBanner] = useState(false)
+  const [activeTab, setActiveTab] = useState('vip')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
 
@@ -379,38 +380,61 @@ export default function CollectionPage() {
     return ids
   }, [localUnlocked, unlockedByCategory])
 
-  // Unified category stats — all facts, all categories
-  const catStats = useMemo(() => {
+  // Determine which categories are unlocked (base 5 + any with >= 1 fact unlocked)
+  const unlockedCatIds = useMemo(() => {
     const allFacts = getValidFacts()
+    const cats = new Set(GUEST_CATEGORIES)
+    for (const f of allFacts) {
+      if (allUnlockedIds.has(f.id) && f.category) cats.add(f.category)
+    }
+    return cats
+  }, [allUnlockedIds])
+
+  // Index facts by type + category
+  const factsIndex = useMemo(() => {
+    const idx = {}
+    for (const f of getValidFacts()) {
+      const type = f.isVip ? 'vip' : 'generated'
+      const key = `${type}_${f.category}`
+      if (!idx[key]) idx[key] = []
+      idx[key].push(f)
+    }
+    return idx
+  }, [])
+
+  // Stats for active tab, per category
+  const catStats = useMemo(() => {
     return getPlayableCategories()
       .filter(cat => cat.id !== 'crimes')
       .map(cat => {
-        const facts = allFacts.filter(f => f.category === cat.id)
+        const facts = factsIndex[`${activeTab}_${cat.id}`] || []
         const unlockedCount = facts.filter(f => allUnlockedIds.has(f.id)).length
         const pct = facts.length > 0 ? Math.round((unlockedCount / facts.length) * 100) : 0
-        const isGuestCat = GUEST_CATEGORIES.includes(cat.id)
-        const isLocked = !isConnected && !isGuestCat
+        const isCatUnlocked = unlockedCatIds.has(cat.id)
         return {
           cat, facts, unlocked: unlockedCount, total: facts.length,
           percentage: pct, isCompleted: facts.length > 0 && unlockedCount === facts.length,
-          isLocked,
+          isLocked: !isCatUnlocked,
         }
       })
       .filter(s => s.total > 0)
       .sort((a, b) => {
-        // Locked at the end
         if (a.isLocked !== b.isLocked) return a.isLocked ? 1 : -1
-        // Then by progression (highest first)
         if (b.percentage !== a.percentage) return b.percentage - a.percentage
         return a.cat.label.localeCompare(b.cat.label, 'fr', { sensitivity: 'base' })
       })
-  }, [allUnlockedIds, isConnected])
+  }, [activeTab, allUnlockedIds, factsIndex, unlockedCatIds])
 
-  // Global progress (only unlocked facts in collection)
+  // Global progress — only facts in UNLOCKED categories
   const allFacts = getValidFacts()
-  const overallUnlocked = allFacts.filter(f => allUnlockedIds.has(f.id)).length
-  const overallTotal = allFacts.length
+  const factsInUnlockedCats = allFacts.filter(f => unlockedCatIds.has(f.category))
+  const overallUnlocked = factsInUnlockedCats.filter(f => allUnlockedIds.has(f.id)).length
+  const overallTotal = factsInUnlockedCats.length
   const overallPercentage = overallTotal > 0 ? Math.round((overallUnlocked / overallTotal) * 100) : 0
+
+  // Tab progress
+  const tabTotalFacts = catStats.filter(s => !s.isLocked).reduce((a, s) => a + s.total, 0)
+  const tabTotalUnlocked = catStats.filter(s => !s.isLocked).reduce((a, s) => a + s.unlocked, 0)
 
   // Selected category for fact list
   const selectedCatStats = selectedCatId ? catStats.find(s => s.cat.id === selectedCatId) : null
@@ -426,7 +450,7 @@ export default function CollectionPage() {
         cat={selectedCatStats.cat}
         facts={selectedCatStats.facts}
         unlockedIds={allUnlockedIds}
-        activeTab="vip"
+        activeTab={activeTab}
         onSelectFact={setSelectedFact}
         onClose={() => setSelectedCatId(null)}
       />
@@ -470,6 +494,43 @@ export default function CollectionPage() {
           </div>
         </div>
 
+        {/* WTF / Funny tabs */}
+        <div className="flex gap-2 mb-2">
+          <button
+            onClick={() => { audio.play('click'); setActiveTab('vip') }}
+            className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
+            style={{
+              background: activeTab === 'vip' ? '#FFD700' : '#F3F4F6',
+              color: activeTab === 'vip' ? '#1a1a2e' : '#9CA3AF',
+              border: activeTab === 'vip' ? 'none' : '1px solid #E5E7EB',
+              boxShadow: activeTab === 'vip' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
+            }}
+          >
+            ⭐ WTF!
+          </button>
+          <button
+            onClick={() => { audio.play('click'); setActiveTab('generated') }}
+            className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
+            style={{
+              background: activeTab === 'generated' ? '#8B5CF6' : '#F3F4F6',
+              color: activeTab === 'generated' ? 'white' : '#9CA3AF',
+              border: activeTab === 'generated' ? 'none' : '1px solid #E5E7EB',
+              boxShadow: activeTab === 'generated' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
+            }}
+          >
+            🤖 Funny F*cts
+          </button>
+        </div>
+
+        {/* Tab progress */}
+        <div className="flex items-center justify-between px-1 mb-1">
+          <span className="text-xs" style={{ color: '#9CA3AF' }}>
+            {activeTab === 'vip' ? '⭐ WTF!' : '🤖 Funny F*cts'}
+          </span>
+          <span className="text-xs font-bold" style={{ color: activeTab === 'vip' ? '#FFD700' : '#8B5CF6' }}>
+            {tabTotalUnlocked} / {tabTotalFacts}
+          </span>
+        </div>
       </div>
 
       {/* Category list */}
@@ -484,7 +545,7 @@ export default function CollectionPage() {
                 key={cat.id}
                 onClick={() => {
                   audio.play('click')
-                  if (isLocked) { setShowConnectBanner(true); return }
+                  if (isLocked) { alert('Continue à jouer pour débloquer cette catégorie ! 🎮'); return }
                   setSelectedCatId(cat.id)
                 }}
                 className="rounded-2xl p-3 flex items-center gap-3 text-left w-full active:scale-98 transition-all"
@@ -526,7 +587,7 @@ export default function CollectionPage() {
                     {isCompleted && !isLocked && <span className="text-sm shrink-0">🏆</span>}
                   </div>
                   {isLocked ? (
-                    <span className="text-xs" style={{ color: '#9CA3AF' }}>Connecte-toi pour débloquer</span>
+                    <span className="text-xs" style={{ color: '#9CA3AF' }}>Débloquer cette catégorie</span>
                   ) : (
                     <>
                       <ProgressBar percentage={percentage} color={cat.color} />

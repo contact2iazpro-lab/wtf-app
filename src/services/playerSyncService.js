@@ -30,16 +30,40 @@ export async function syncPlayerData(userId, localData) {
     // Read local hints (stored separately)
     const localHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
 
-    // Merge strategy: MAX of each value
-    const merged = {
-      coins: Math.max(localData.wtfCoins || 0, remote?.coins || 0),
-      total_score: Math.max(localData.totalScore || 0, remote?.total_score || 0),
-      streak_current: Math.max(localData.streak || 0, remote?.streak_current || 0),
-      streak_max: Math.max(localData.streak || 0, remote?.streak_max || 0),
-      tickets: Math.max(localData.tickets || 0, remote?.tickets || 0),
-      hints: Math.max(localHints, remote?.hints || 0),
-      last_played_date: new Date().toISOString().slice(0, 10),
-      updated_at: new Date().toISOString(),
+    // Detect fresh profile (just created by trigger, all zeros)
+    const isNewProfile = (remote?.coins || 0) === 0
+      && (remote?.total_score || 0) === 0
+      && (remote?.tickets || 0) === 0
+      && (remote?.hints || 0) === 0
+      && (remote?.streak_current || 0) === 0
+
+    console.log('[SYNC] profil Supabase:', remote, 'isNewProfile:', isNewProfile, 'action:', isNewProfile ? 'RESET' : 'MERGE MAX')
+
+    let merged
+    if (isNewProfile) {
+      // Nouveau profil → valeurs de départ, écraser le local
+      merged = {
+        coins: 0,
+        total_score: 0,
+        streak_current: 0,
+        streak_max: 0,
+        tickets: 3,
+        hints: 3,
+        last_played_date: new Date().toISOString().slice(0, 10),
+        updated_at: new Date().toISOString(),
+      }
+    } else {
+      // Profil existant → merge MAX
+      merged = {
+        coins: Math.max(localData.wtfCoins || 0, remote?.coins || 0),
+        total_score: Math.max(localData.totalScore || 0, remote?.total_score || 0),
+        streak_current: Math.max(localData.streak || 0, remote?.streak_current || 0),
+        streak_max: Math.max(localData.streak || 0, remote?.streak_max || 0),
+        tickets: Math.max(localData.tickets || 0, remote?.tickets || 0),
+        hints: Math.max(localHints, remote?.hints || 0),
+        last_played_date: new Date().toISOString().slice(0, 10),
+        updated_at: new Date().toISOString(),
+      }
     }
 
     // Write to Supabase

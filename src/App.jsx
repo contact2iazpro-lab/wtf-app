@@ -158,7 +158,7 @@ function loadStorage() {
     const wtfDuJourFait = wtfDuJourDate === today
     const sessionsToday = saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0
 
-    const tickets = saved.tickets || 0
+    const tickets = saved.tickets ?? 3
 
     const devMode = localStorage.getItem('wtf_dev_mode') === 'true'
     if (devMode) {
@@ -191,6 +191,11 @@ function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDat
 export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
+
+  // Initialiser les indices à 3 pour les nouveaux joueurs
+  if (localStorage.getItem('wtf_hints_available') === null) {
+    localStorage.setItem('wtf_hints_available', '3')
+  }
 
   // ── Cache busting : force reload si nouvelle version déployée ──
   useEffect(() => {
@@ -346,10 +351,14 @@ export default function App() {
   }, [effectiveDailyFact, unlockedFacts])
 
   // Standalone Flash Solo session — non-VIP facts only, 10 questions
+  const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
   const handleFlashSolo = useCallback(() => {
     audio.play('click')
     // Pool : facts non-VIP uniquement, exclure les déjà débloqués
-    const pool = getGeneratedFacts().filter(f => !unlockedFacts.has(f.id))
+    // Non connecté : catégories limitées
+    const pool = getGeneratedFacts().filter(f =>
+      !unlockedFacts.has(f.id) && (user ? true : GUEST_CATEGORIES.includes(f.category))
+    )
 
     if (pool.length < 5) {
       alert('Bientôt de nouveaux f*cts ! Reviens vite 🎉')
@@ -368,7 +377,7 @@ export default function App() {
     setSelectedCategory(null)
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts])
+  }, [unlockedFacts, user])
 
   // Quick play — no streak/score save (existing behavior kept)
   const handleQuickPlay = useCallback(() => {
@@ -788,10 +797,10 @@ export default function App() {
       const newSessionsToday = sessionsToday + 1
 
       if (!isQuickPlay) {
-        // Unlock correctly answered facts — sauf en mode marathon (f*cts joués mais non collectés)
+        // Unlock correctly answered facts — sauf en mode marathon et joueurs non connectés
         const newUnlocked = new Set(unlockedFacts)
         const toSync = []
-        if (sessionType !== 'marathon') {
+        if (sessionType !== 'marathon' && user) {
           for (const fact of sessionCorrectFacts) {
             if (!newUnlocked.has(fact.id)) {
               newUnlocked.add(fact.id)

@@ -3,6 +3,8 @@ import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
+import { useAuth } from '../context/AuthContext'
+import ConnectBanner from '../components/ConnectBanner'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -71,7 +73,9 @@ export default function ResultsScreen({
   playerHints = 0,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
+  const { isConnected, signInWithGoogle } = useAuth()
   const [showSettings, setShowSettings] = useState(false)
+  const [showConnectBanner, setShowConnectBanner] = useState(false)
   const [coinAnimActive, setCoinAnimActive] = useState(false)
   const [audioDuration, setAudioDuration] = useState(2.5)
   const [rankVisible, setRankVisible] = useState(false)      // MOD 6
@@ -654,6 +658,30 @@ export default function ResultsScreen({
           {sharedCopied ? 'Copié !' : 'Partager mon score & défier mes amis'}
         </button>
 
+        {/* Bannière connexion pour joueurs non connectés après Flash */}
+        {sessionType === 'flash_solo' && !isConnected && (
+          <div style={{
+            background: 'rgba(255,255,255,0.15)', borderRadius: 16,
+            padding: '14px 16px', textAlign: 'center',
+            border: '1px solid rgba(255,255,255,0.2)',
+          }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: textOnBg, margin: '0 0 10px', lineHeight: 1.4 }}>
+              Tu as aimé ? Connecte-toi pour débloquer tous les modes et sauvegarder ta progression !
+            </p>
+            <button
+              onClick={() => setShowConnectBanner(true)}
+              style={{
+                width: '100%', padding: '10px 0', borderRadius: 12,
+                background: '#fff', border: 'none', cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 13,
+                color: '#FF6B1A',
+              }}
+            >
+              Se connecter avec Google
+            </button>
+          </div>
+        )}
+
         {/* Secondaire — Revenir, discret */}
         <button
           onClick={handleGoHome}
@@ -663,6 +691,7 @@ export default function ResultsScreen({
         </button>
       </div>
 
+      {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
     </div>
   )
 }

@@ -6,6 +6,8 @@
 
 import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
+import ConnectBanner from '../components/ConnectBanner'
+import { useAuth } from '../context/AuthContext'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import { getTutorialState, advanceTutorial, TUTORIAL_STATES } from '../utils/tutorialManager'
@@ -110,9 +112,11 @@ export default function HomeScreen({
   onOpenSettings,
   playerAvatar = null,
 }) {
+  const { isConnected } = useAuth()
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
+  const [showConnectBanner, setShowConnectBanner] = useState(false)
   const { claim, getStatus } = useDailyCoffre()
   const countdown = useCountdownToMidnight()
   const progress24h = get24hProgress()
@@ -150,52 +154,67 @@ export default function HomeScreen({
   }
 
   // ── Mode icon component ────────────────────────────────────────────────────
-  const ModeIcon = ({ src, label, onClick, disabled }) => (
-    <button
-      onClick={disabled ? undefined : onClick}
-      style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(3),
-        background: 'none', border: 'none', padding: 0,
-        cursor: disabled ? 'default' : 'pointer',
-        WebkitTapHighlightColor: 'transparent',
-        opacity: disabled ? 0.4 : 1,
-        filter: disabled ? 'grayscale(0.5)' : 'none',
-        transition: 'transform 0.1s',
-      }}
-      onTouchStart={e => !disabled && (e.currentTarget.style.transform = 'scale(0.92)')}
-      onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
-    >
-      <img
-        src={src}
-        alt={label}
+  const ModeIcon = ({ src, label, onClick, disabled, locked }) => {
+    const dimmed = disabled || locked
+    return (
+      <button
+        onClick={dimmed && !locked ? undefined : onClick}
         style={{
-          width: S(48), height: S(48),
-          borderRadius: '50%',
-          overflow: 'hidden',
-          objectFit: 'cover',
-          flexShrink: 0,
-          boxShadow: disabled ? 'none' : '0 2px 8px rgba(0,0,0,0.2)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(3),
+          background: 'none', border: 'none', padding: 0,
+          cursor: dimmed && !locked ? 'default' : 'pointer',
+          WebkitTapHighlightColor: 'transparent',
+          opacity: disabled ? 0.4 : locked ? 0.5 : 1,
+          filter: disabled ? 'grayscale(0.5)' : 'none',
+          transition: 'transform 0.1s',
+          position: 'relative',
         }}
-      />
-      <span style={{
-        fontFamily: "'Fredoka One', cursive",
-        fontSize: 9, fontWeight: 400, color: 'white',
-        textAlign: 'center', lineHeight: 1.2,
-        letterSpacing: '0.5px',
-        maxWidth: 70, wordWrap: 'break-word',
-        whiteSpace: 'normal',
-        marginTop: 3,
-        opacity: disabled ? 0.5 : 1,
-        textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-      }}>{label}</span>
-      {disabled && (
+        onTouchStart={e => !dimmed && (e.currentTarget.style.transform = 'scale(0.92)')}
+        onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
+      >
+        <div style={{ position: 'relative' }}>
+          <img
+            src={src}
+            alt={label}
+            style={{
+              width: S(48), height: S(48),
+              borderRadius: '50%',
+              overflow: 'hidden',
+              objectFit: 'cover',
+              flexShrink: 0,
+              boxShadow: dimmed ? 'none' : '0 2px 8px rgba(0,0,0,0.2)',
+            }}
+          />
+          {locked && (
+            <div style={{
+              position: 'absolute', bottom: -2, right: -2,
+              width: 18, height: 18, borderRadius: '50%',
+              background: 'rgba(0,0,0,0.6)', border: '1.5px solid white',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 9,
+            }}>🔒</div>
+          )}
+        </div>
         <span style={{
-          fontSize: S(6), fontWeight: 700, color: 'white', opacity: 0.6,
-          marginTop: S(-2),
-        }}>Bientôt</span>
-      )}
-    </button>
-  )
+          fontFamily: "'Fredoka One', cursive",
+          fontSize: 9, fontWeight: 400, color: 'white',
+          textAlign: 'center', lineHeight: 1.2,
+          letterSpacing: '0.5px',
+          maxWidth: 70, wordWrap: 'break-word',
+          whiteSpace: 'normal',
+          marginTop: 3,
+          opacity: dimmed ? 0.5 : 1,
+          textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+        }}>{label}</span>
+        {disabled && (
+          <span style={{
+            fontSize: S(6), fontWeight: 700, color: 'white', opacity: 0.6,
+            marginTop: S(-2),
+          }}>Bientôt</span>
+        )}
+      </button>
+    )
+  }
 
   return (
     <div
@@ -348,6 +367,7 @@ export default function HomeScreen({
       <div style={{
         height: 60, flexShrink: 0,
         display: 'flex', alignItems: 'center',
+        opacity: isConnected ? 1 : 0.4,
         gap: 6, padding: '6px 14px 0',
         justifyContent: 'center',
         position: 'relative', zIndex: 2,
@@ -368,6 +388,7 @@ export default function HomeScreen({
             <button
               key={day}
               onClick={() => {
+                if (!isConnected) { setShowConnectBanner(true); return }
                 if (!isAvail) return
                 audio.play?.('click')
                 const reward = claim()
@@ -493,9 +514,9 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => nav('difficulty')} />
-          <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => nav('trophees')} />
-          <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" onClick={() => nav('wtfDuJour')} />
+          <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!isConnected} onClick={() => isConnected ? nav('difficulty') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!isConnected} onClick={() => isConnected ? nav('trophees') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!isConnected} onClick={() => isConnected ? nav('wtfDuJour') : setShowConnectBanner(true)} />
         </div>
 
         {/* Colonne centre — flex: 1 */}
@@ -536,9 +557,9 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <ModeIcon src="/assets/modes/marathon.png" label="Explorer" onClick={() => nav('marathon')} />
-          <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('amis')} />
-          <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
+          <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!isConnected} onClick={() => isConnected ? nav('marathon') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!isConnected} onClick={() => isConnected ? nav('amis') : setShowConnectBanner(true)} />
+          <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!isConnected} onClick={() => isConnected ? nav('blitz') : setShowConnectBanner(true)} />
         </div>
       </div>
 
@@ -698,6 +719,8 @@ export default function HomeScreen({
           </div>
         </div>
       )}
+
+      {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
     </div>
   )
 }

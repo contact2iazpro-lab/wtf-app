@@ -4,7 +4,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   define: {
-    'import.meta.env.VITE_APP_VERSION': JSON.stringify(Date.now().toString()),
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify('1.5.0'),
+    'import.meta.env.VITE_BUILD_ID': JSON.stringify(Date.now().toString()),
   },
   server: {
     port: 3000,

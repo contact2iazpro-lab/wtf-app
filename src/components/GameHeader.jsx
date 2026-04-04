@@ -78,9 +78,7 @@ export default function GameHeader({
               </span>
             )}
           </div>
-          {showTickets && (
-            <Pill icon="/assets/ui/icon-tickets.png" value={playerTickets} alt="tickets" />
-          )}
+          <Pill icon="/assets/ui/icon-tickets.png" value={playerTickets} alt="tickets" />
           <Pill icon="/assets/ui/icon-hint.png" value={playerHints} alt="hints" />
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}

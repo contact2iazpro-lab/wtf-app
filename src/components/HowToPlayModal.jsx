@@ -36,12 +36,12 @@ const CHAPTERS = [
     shortTitle: 'Explorer',
     title: 'Explorer',
     content: [
-      { icon: '🆓', text: '**Gratuit** pour la première série de 10 questions.' },
-      { icon: '🗂️', text: '**10 questions** dans la catégorie de ton choix.' },
+      { icon: '🆓', text: '**Gratuit** pour la première série de 5 questions.' },
+      { icon: '🗂️', text: '**5 questions** dans la catégorie de ton choix.' },
       { icon: '🪙', text: '**3 coins** par bonne réponse.' },
       { icon: '💡', text: '**2 indices** disponibles par question.' },
-      { icon: '🚪', text: 'Tes coins sont sauvegardés même si tu quittes.' },
-      { icon: '🎫', text: 'Continue avec **1 ticket** pour 10 questions de plus !' },
+      { icon: '🚪', text: 'Tes coins et f*cts sont sauvegardés même si tu quittes.' },
+      { icon: '🎫', text: 'Continue avec **1 ticket** pour 5 questions de plus !' },
     ],
   },
   {
@@ -52,9 +52,9 @@ const CHAPTERS = [
     content: [
       { icon: '🆓', text: '**Gratuit** — pas de ticket requis.' },
       { icon: '⚡', text: 'Session rapide de **5 questions**.' },
-      { icon: '💡', text: '**1 indice** disponible par question.' },
+      { icon: '💡', text: '**2 indices** disponibles par question.' },
       { icon: '🪙', text: '**5 coins** par bonne réponse (3 si tu utilises un indice).' },
-      { icon: '🏆', text: 'Score parfait sans indice = **25 coins bonus** !' },
+      { icon: '🏆', text: 'Score parfait sans indice = **10 coins bonus** !' },
     ],
   },
   {
@@ -67,7 +67,7 @@ const CHAPTERS = [
       { icon: '⏱️', text: 'Timer de **60 secondes**.' },
       { icon: '✅', text: 'Bonne réponse = **+2 secondes**.' },
       { icon: '❌', text: 'Mauvaise réponse = **-3 secondes**.' },
-      { icon: '💡', text: '**1 indice** disponible par question.' },
+      { icon: '💡', text: '**2 indices** disponibles par question.' },
       { icon: '🪙', text: '**1 coin** par bonne réponse.' },
     ],
   },

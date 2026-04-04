@@ -67,15 +67,26 @@ export default function ResultsScreen({
   onFactDetail = null,
   onChallengeUp = null,
   unlockedFactsThisSession = [],
+  allSessionFacts = [],
   sessionsToday = 0,
   playerCoins = 0,
   playerTickets = 0,
   playerHints = 0,
+  onSaveTempFacts = null,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
   const { isConnected, signInWithGoogle } = useAuth()
   const [showSettings, setShowSettings] = useState(false)
   const [showConnectBanner, setShowConnectBanner] = useState(false)
+  const [savedAfterConnect, setSavedAfterConnect] = useState(false)
+
+  // Persister les facts temporaires quand le joueur se connecte depuis ResultsScreen
+  useEffect(() => {
+    if (isConnected && !savedAfterConnect && onSaveTempFacts && sessionType === 'flash_solo') {
+      onSaveTempFacts()
+      setSavedAfterConnect(true)
+    }
+  }, [isConnected, savedAfterConnect, onSaveTempFacts, sessionType])
   const [coinAnimActive, setCoinAnimActive] = useState(false)
   const [audioDuration, setAudioDuration] = useState(2.5)
   const [rankVisible, setRankVisible] = useState(false)      // MOD 6
@@ -88,7 +99,7 @@ export default function ResultsScreen({
   // Category color (MOD 1)
   const cat = categoryId ? getCategoryById(categoryId) : null
   const catColor = cat?.color || '#FF5C1A'
-  const textOnBg = isLightColor(catColor) ? '#1a1a1a' : '#ffffff'
+  const textOnBg = '#ffffff' // Toujours blanc sur fond sombre (overlay garanti)
 
   // MOD 5 — Rank based on correct answers
   const currentRank = RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
@@ -264,8 +275,14 @@ export default function ResultsScreen({
     <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{
       backgroundImage: 'url(/assets/backgrounds/results-victory.webp)',
       backgroundSize: 'cover', backgroundPosition: 'center',
-      backgroundColor: catColor,
+      backgroundColor: '#0a0f1e',
     }}>
+      {/* Overlay sombre pour lisibilité */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 0,
+        background: 'linear-gradient(180deg, rgba(10,15,30,0.60) 0%, rgba(10,15,30,0.80) 100%)',
+        pointerEvents: 'none',
+      }} />
 
       {/* COR 4 — Confetti overlay */}
       {confettiActive && (
@@ -313,7 +330,7 @@ export default function ResultsScreen({
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* Header — pas de catégorie, on n'est plus en jeu */}
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}`, position: 'relative', zIndex: 2 }}>
         <button
           onClick={handleGoHome}
           style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
@@ -348,7 +365,7 @@ export default function ResultsScreen({
       </div>
 
       {/* scrollable zone */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-y-auto scrollbar-hide" style={{ position: 'relative', zIndex: 2 }}>
 
       {/* MOD 6 — Rang avec effet tampon scale 0→1 */}
       <div className="flex flex-col items-center pt-4 pb-1 px-6 shrink-0">
@@ -483,72 +500,94 @@ export default function ResultsScreen({
         </span>
       </div>
 
-      {/* COR 2 — Carrousel horizontal des facts débloqués + non débloqués */}
-      {unlockedFactsThisSession.length > 0 && (
-        <div className="mb-3 shrink-0">
-          <div className="px-5 mb-2">
-            <span className="text-xs font-black uppercase tracking-widest" style={{ color: textOnBg, opacity: 0.8 }}>
-              🔓 F*cts débloqués ({unlockedFactsThisSession.length})
-            </span>
-          </div>
-          <div
-            className="flex gap-2.5 overflow-x-auto scrollbar-hide"
-            style={{ paddingLeft: 20, paddingRight: 20 }}>
-            {unlockedFactsThisSession.map((fact) => {
-              const factCat = CATEGORIES.find(c => c.id === fact.category)
-              const factCatColor = factCat?.color || catColor
-              const isUnlocked = fact._unlocked !== false
-              return (
-                <div
-                  key={fact.id}
-                  className="shrink-0 rounded-2xl overflow-hidden flex flex-col active:scale-95 transition-all"
-                  style={{
-                    width: 110,
-                    background: 'rgba(0,0,0,0.3)',
-                    border: '1px solid rgba(255,255,255,0.18)',
-                    backdropFilter: 'blur(8px)',
-                    cursor: onFactDetail ? 'pointer' : 'default',
-                  }}
-                  onClick={() => onFactDetail && onFactDetail(fact)}>
-                  {/* Image — floutée si non débloqué */}
+      {/* Carrousel de facts — débloqués en premier, verrouillés ensuite */}
+      {allSessionFacts.length > 0 && (() => {
+        const unlockedIds = new Set(unlockedFactsThisSession.map(f => f.id))
+        const unlocked = allSessionFacts.filter(f => unlockedIds.has(f.id))
+        const locked = allSessionFacts.filter(f => !unlockedIds.has(f.id))
+        const sorted = [...unlocked, ...locked]
+        return (
+          <div className="mb-3 shrink-0">
+            <div className="px-5 mb-2">
+              <span className="text-xs font-black uppercase tracking-widest" style={{ color: textOnBg, opacity: 0.8 }}>
+                {unlocked.length > 0 ? `🔓 ${unlocked.length} f*ct${unlocked.length > 1 ? 's' : ''} débloqué${unlocked.length > 1 ? 's' : ''}` : 'Aucun f*ct débloqué'}
+                {locked.length > 0 && ` · 🔒 ${locked.length} raté${locked.length > 1 ? 's' : ''}`}
+              </span>
+            </div>
+            <div
+              className="flex gap-2.5 overflow-x-auto scrollbar-hide"
+              style={{ paddingLeft: 20, paddingRight: 20 }}>
+              {sorted.map((fact) => {
+                const isUnlocked = unlockedIds.has(fact.id)
+                const factCat = CATEGORIES.find(c => c.id === fact.category)
+                const factCatColor = factCat?.color || catColor
+                return (
                   <div
-                    className="w-full flex items-center justify-center overflow-hidden relative"
-                    style={{ height: 70, background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})` }}>
-                    {fact.imageUrl ? (
-                      <img
-                        src={fact.imageUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        style={!isUnlocked ? { filter: 'blur(8px) brightness(0.6)' } : undefined}
-                        onError={e => {
-                          e.target.style.display = 'none'
-                          e.target.nextSibling.style.display = 'flex'
-                        }}
-                      />
-                    ) : null}
-                    {/* Fallback flouté — gradient catégorie */}
+                    key={fact.id}
+                    className="shrink-0 rounded-2xl overflow-hidden flex flex-col"
+                    style={{
+                      width: 150,
+                      background: 'rgba(0,0,0,0.35)',
+                      border: isUnlocked ? '2px solid rgba(255,215,0,0.6)' : '1.5px solid rgba(107,114,128,0.4)',
+                      backdropFilter: 'blur(8px)',
+                      boxShadow: isUnlocked ? '0 0 12px rgba(255,215,0,0.2)' : 'none',
+                    }}>
+                    {/* Image */}
                     <div
-                      className="w-full h-full items-center justify-center absolute inset-0"
-                      style={{
-                        display: fact.imageUrl ? 'none' : 'flex',
-                        background: `linear-gradient(135deg, ${factCatColor}66, ${factCatColor})`,
-                        filter: !isUnlocked ? 'blur(4px) brightness(0.6)' : 'none',
-                      }}>
-                      <span style={{ fontSize: 28, color: 'white', fontWeight: 900, opacity: 0.3 }}>?</span>
+                      className="w-full flex items-center justify-center overflow-hidden relative"
+                      style={{ height: 90, background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})` }}>
+                      {fact.imageUrl ? (
+                        <img
+                          src={fact.imageUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          style={!isUnlocked ? { filter: 'blur(8px) brightness(0.5)' } : undefined}
+                          onError={e => { e.target.style.display = 'none' }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"
+                          style={{ filter: !isUnlocked ? 'brightness(0.5)' : 'none' }}>
+                          <span style={{ fontSize: 32, opacity: 0.3 }}>?</span>
+                        </div>
+                      )}
+                      {/* Stamp FOU ou cadenas */}
+                      {isUnlocked ? (
+                        <div style={{
+                          position: 'absolute', top: 6, right: 6,
+                          background: 'rgba(255,215,0,0.9)', borderRadius: 6,
+                          padding: '2px 6px', fontWeight: 900, fontSize: 9,
+                          color: '#1a1a2e', letterSpacing: '0.05em',
+                        }}>FOU</div>
+                      ) : (
+                        <div style={{
+                          position: 'absolute', inset: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <span style={{ fontSize: 28, opacity: 0.7 }}>🔒</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* Texte */}
+                    <div className="px-2 py-2 flex-1 flex items-center justify-center">
+                      {isUnlocked ? (
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, color: '#fff', lineHeight: 1.3,
+                          textAlign: 'center', display: '-webkit-box', WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                        }}>{fact.question}</span>
+                      ) : (
+                        <span style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', textAlign: 'center' }}>
+                          À découvrir
+                        </span>
+                      )}
                     </div>
                   </div>
-                  {/* Numéro du f*ct en couleur catégorie */}
-                  <div className="px-2 py-1.5 flex-1 flex items-center justify-center">
-                    <span className="font-black text-sm" style={{ color: factCatColor }}>
-                      #{fact.id}
-                    </span>
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* MOD 7 — Coins gagnés (avec bonus parfait si 10/10) */}
       {totalCoins > 0 && (
@@ -614,7 +653,7 @@ export default function ResultsScreen({
       </div>{/* end scrollable zone */}
 
       {/* COR 5 + COR 6 — CTA avec ticket count, pb-4 */}
-      <div className="px-5 pb-4 flex flex-col gap-2 shrink-0">
+      <div className="px-5 pb-4 flex flex-col gap-2 shrink-0" style={{ position: 'relative', zIndex: 2 }}>
 
         {/* COR 5 — Message tickets restants */}
         <div className="text-center text-xs font-bold mb-1" style={{ color: textOnBg, opacity: 0.75 }}>
@@ -658,15 +697,52 @@ export default function ResultsScreen({
           {sharedCopied ? 'Copié !' : 'Partager mon score & défier mes amis'}
         </button>
 
-        {/* Bannière connexion pour joueurs non connectés après Flash */}
-        {sessionType === 'flash_solo' && !isConnected && (
+        {/* Bannière conversion pour joueurs non connectés */}
+        {sessionType === 'flash_solo' && !isConnected && unlockedFactsThisSession.length > 0 && (
           <div style={{
-            background: 'rgba(255,255,255,0.15)', borderRadius: 16,
+            background: 'linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.08))',
+            borderRadius: 16, padding: '16px', textAlign: 'center',
+            border: '1.5px solid rgba(34,197,94,0.4)',
+          }}>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>🎉</div>
+            <p style={{ fontSize: 15, fontWeight: 900, color: '#fff', margin: '0 0 4px' }}>
+              Tu as débloqué {unlockedFactsThisSession.length} f*ct{unlockedFactsThisSession.length > 1 ? 's' : ''} !
+            </p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', margin: '0 0 12px', lineHeight: 1.4 }}>
+              Connecte-toi pour les sauvegarder dans ta collection
+            </p>
+            <button
+              onClick={() => setShowConnectBanner(true)}
+              style={{
+                width: '100%', padding: '12px 0', borderRadius: 14,
+                background: '#22C55E', border: 'none', cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 14,
+                color: '#fff', boxShadow: '0 3px 12px rgba(34,197,94,0.4)',
+              }}
+            >
+              Sauvegarder ma collection
+            </button>
+            <button
+              onClick={handleGoHome}
+              style={{
+                width: '100%', marginTop: 8, padding: '8px 0',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif', fontWeight: 600, fontSize: 12,
+                color: 'rgba(255,255,255,0.4)',
+              }}
+            >
+              Tant pis, continuer sans compte
+            </button>
+          </div>
+        )}
+        {sessionType === 'flash_solo' && !isConnected && unlockedFactsThisSession.length === 0 && (
+          <div style={{
+            background: 'rgba(255,255,255,0.1)', borderRadius: 16,
             padding: '14px 16px', textAlign: 'center',
-            border: '1px solid rgba(255,255,255,0.2)',
+            border: '1px solid rgba(255,255,255,0.15)',
           }}>
             <p style={{ fontSize: 13, fontWeight: 700, color: textOnBg, margin: '0 0 10px', lineHeight: 1.4 }}>
-              Tu as aimé ? Connecte-toi pour débloquer tous les modes et sauvegarder ta progression !
+              Connecte-toi pour débloquer tous les modes et sauvegarder ta progression !
             </p>
             <button
               onClick={() => setShowConnectBanner(true)}

@@ -4,7 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useCollection'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import LoginModal from '../components/Auth/LoginModal'
+import ConnectBanner from '../components/ConnectBanner'
 import { audio } from '../utils/audio'
+
+const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -353,7 +356,7 @@ export default function CollectionPage() {
   const navigate = useNavigate()
   const { isConnected } = useAuth()
   const [showLogin, setShowLogin] = useState(false)
-  const [activeTab, setActiveTab] = useState('vip')
+  const [showConnectBanner, setShowConnectBanner] = useState(false)
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
 
@@ -376,55 +379,41 @@ export default function CollectionPage() {
     return ids
   }, [localUnlocked, unlockedByCategory])
 
-  // Index facts by type + category
-  const factsIndex = useMemo(() => {
-    const idx = {}
-    for (const f of getValidFacts()) {
-      const type = f.type || 'vip' // facts without type default to vip
-      const key = `${type}_${f.category}`
-      if (!idx[key]) idx[key] = []
-      idx[key].push(f)
-    }
-    return idx
-  }, [])
-
-  // Stats for active tab, per category — hide empty categories and "crimes"
-  const tabStats = useMemo(() => {
+  // Unified category stats — all facts, all categories
+  const catStats = useMemo(() => {
+    const allFacts = getValidFacts()
     return getPlayableCategories()
-      .filter(cat => cat.id !== 'crimes') // Masquer Crimes & Faits Divers
+      .filter(cat => cat.id !== 'crimes')
       .map(cat => {
-        const facts = factsIndex[`${activeTab}_${cat.id}`] || []
+        const facts = allFacts.filter(f => f.category === cat.id)
         const unlockedCount = facts.filter(f => allUnlockedIds.has(f.id)).length
         const pct = facts.length > 0 ? Math.round((unlockedCount / facts.length) * 100) : 0
+        const isGuestCat = GUEST_CATEGORIES.includes(cat.id)
+        const isLocked = !isConnected && !isGuestCat
         return {
-          cat,
-          facts,
-          unlocked: unlockedCount,
-          total: facts.length,
-          percentage: pct,
-          isCompleted: facts.length > 0 && unlockedCount === facts.length,
+          cat, facts, unlocked: unlockedCount, total: facts.length,
+          percentage: pct, isCompleted: facts.length > 0 && unlockedCount === facts.length,
+          isLocked,
         }
       })
-      .filter(s => s.total > 0) // Masquer les catégories vides
+      .filter(s => s.total > 0)
       .sort((a, b) => {
+        // Locked at the end
+        if (a.isLocked !== b.isLocked) return a.isLocked ? 1 : -1
+        // Then by progression (highest first)
         if (b.percentage !== a.percentage) return b.percentage - a.percentage
         return a.cat.label.localeCompare(b.cat.label, 'fr', { sensitivity: 'base' })
       })
-  }, [activeTab, allUnlockedIds, factsIndex])
+  }, [allUnlockedIds, isConnected])
 
-  // Global progress for active tab
-  const tabTotalFacts = tabStats.reduce((a, s) => a + s.total, 0)
-  const tabTotalUnlocked = tabStats.reduce((a, s) => a + s.unlocked, 0)
-  const tabPercentage = tabTotalFacts > 0 ? Math.round((tabTotalUnlocked / tabTotalFacts) * 100) : 0
-
-  // Global overall progress (all facts)
+  // Global progress (only unlocked facts in collection)
   const allFacts = getValidFacts()
   const overallUnlocked = allFacts.filter(f => allUnlockedIds.has(f.id)).length
   const overallTotal = allFacts.length
   const overallPercentage = overallTotal > 0 ? Math.round((overallUnlocked / overallTotal) * 100) : 0
 
   // Selected category for fact list
-  const selectedCatStats = selectedCatId ? tabStats.find(s => s.cat.id === selectedCatId) : null
+  const selectedCatStats = selectedCatId ? catStats.find(s => s.cat.id === selectedCatId) : null
 
   // ── Sub-views ──
   if (selectedFact) {
@@ -437,7 +426,7 @@ export default function CollectionPage() {
         cat={selectedCatStats.cat}
         facts={selectedCatStats.facts}
         unlockedIds={allUnlockedIds}
-        activeTab={activeTab}
+        activeTab="vip"
         onSelectFact={setSelectedFact}
         onClose={() => setSelectedCatId(null)}
       />
@@ -481,99 +470,93 @@ export default function CollectionPage() {
           </div>
         </div>
 
-        {/* VIP / Générés tabs */}
-        <div className="flex gap-2 mb-2">
-          {Object.entries(TAB_CONFIG).map(([key, cfg]) => {
-            const isActive = activeTab === key
-            return (
-              <button
-                key={key}
-                onClick={() => { audio.play('click'); setActiveTab(key) }}
-                className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
-                style={{
-                  background: isActive ? cfg.color : '#F3F4F6',
-                  color: isActive ? (key === 'vip' ? '#1a1a2e' : 'white') : '#9CA3AF',
-                  border: isActive ? 'none' : '1px solid #E5E7EB',
-                  boxShadow: isActive ? `0 4px 12px rgba(0,0,0,0.3)` : 'none',
-                }}
-              >
-                {cfg.emoji} {cfg.label}
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Tab progress */}
-        <div className="flex items-center justify-between px-1 mb-1">
-          <span className="text-xs" style={{ color: '#9CA3AF' }}>
-            {TAB_CONFIG[activeTab].emoji} {TAB_CONFIG[activeTab].label}
-          </span>
-          <span className="text-xs font-bold" style={{ color: TAB_CONFIG[activeTab].color }}>
-            {tabTotalUnlocked} / {tabTotalFacts} — {tabPercentage}%
-          </span>
-        </div>
       </div>
 
       {/* Category list */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-24">
         <div className="flex flex-col gap-2">
-          {tabStats.map(({ cat, unlocked, total, percentage, isCompleted }) => {
+          {catStats.map(({ cat, unlocked, total, percentage, isCompleted, isLocked }) => {
             const rgb = hexToRgb(cat.color)
             const remaining = total - unlocked
 
             return (
               <button
                 key={cat.id}
-                onClick={() => { audio.play('click'); setSelectedCatId(cat.id) }}
+                onClick={() => {
+                  audio.play('click')
+                  if (isLocked) { setShowConnectBanner(true); return }
+                  setSelectedCatId(cat.id)
+                }}
                 className="rounded-2xl p-3 flex items-center gap-3 text-left w-full active:scale-98 transition-all"
                 style={{
-                  background: percentage > 0 ? `rgba(${rgb}, 0.08)` : '#F9FAFB',
-                  border: isCompleted
-                    ? '1px solid rgba(255,215,0,0.35)'
-                    : percentage > 0
-                      ? `1px solid rgba(${rgb}, 0.25)`
-                      : '1px solid rgba(255,255,255,0.06)',
+                  background: isLocked ? '#F3F4F6' : percentage > 0 ? `rgba(${rgb}, 0.08)` : '#F9FAFB',
+                  border: isLocked
+                    ? '1px solid #E5E7EB'
+                    : isCompleted
+                      ? '1px solid rgba(255,215,0,0.35)'
+                      : percentage > 0
+                        ? `1px solid rgba(${rgb}, 0.25)`
+                        : '1px solid rgba(229,231,235,0.5)',
+                  opacity: isLocked ? 0.5 : (isConnected ? 1 : (percentage > 0 ? 1 : 0.7)),
                 }}
               >
-                {/* Icône catégorie */}
-                <img
-                  src={`/assets/categories/${cat.id}.png`}
-                  alt={cat.label}
-                  style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
-                  onError={(e) => { e.target.style.display = 'none' }}
-                />
+                {/* Icône catégorie + cadenas */}
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <img
+                    src={`/assets/categories/${cat.id}.png`}
+                    alt={cat.label}
+                    style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', filter: isLocked ? 'grayscale(0.6)' : 'none' }}
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                  {isLocked && (
+                    <div style={{
+                      position: 'absolute', bottom: -2, right: -2,
+                      width: 18, height: 18, borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.5)', border: '1.5px solid white',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 9,
+                    }}>🔒</div>
+                  )}
+                </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="font-black text-sm truncate" style={{ color: '#1a1a2e' }}>{cat.label}</span>
-                    {isCompleted && <span className="text-sm shrink-0">🏆</span>}
+                    <span className="font-black text-sm truncate" style={{ color: isLocked ? '#9CA3AF' : '#1a1a2e' }}>{cat.label}</span>
+                    {isCompleted && !isLocked && <span className="text-sm shrink-0">🏆</span>}
                   </div>
-                  <ProgressBar percentage={percentage} color={cat.color} />
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs" style={{ color: '#6B7280' }}>
-                      {isCompleted
-                        ? <span style={{ color: '#FFD700', fontWeight: 700 }}>✓ Complété !</span>
-                        : percentage >= 80
-                          ? <span style={{ color: '#FF8C00', fontWeight: 700 }}>Plus que {remaining} !</span>
-                          : `${unlocked}/${total} F*cts`
-                      }
-                    </span>
-                    <span className="text-xs font-bold" style={{
-                      color: isCompleted ? '#FFD700' : percentage > 0 ? `rgba(${rgb}, 1)` : '#D1D5DB'
-                    }}>
-                      {percentage}%
-                    </span>
-                  </div>
+                  {isLocked ? (
+                    <span className="text-xs" style={{ color: '#9CA3AF' }}>Connecte-toi pour débloquer</span>
+                  ) : (
+                    <>
+                      <ProgressBar percentage={percentage} color={cat.color} />
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs" style={{ color: '#6B7280' }}>
+                          {isCompleted
+                            ? <span style={{ color: '#FFD700', fontWeight: 700 }}>✓ Complété !</span>
+                            : percentage >= 80
+                              ? <span style={{ color: '#FF8C00', fontWeight: 700 }}>Plus que {remaining} !</span>
+                              : `${unlocked}/${total} F*cts`
+                          }
+                        </span>
+                        <span className="text-xs font-bold" style={{
+                          color: isCompleted ? '#FFD700' : percentage > 0 ? `rgba(${rgb}, 1)` : '#D1D5DB'
+                        }}>
+                          {percentage}%
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                <span className="text-xl shrink-0" style={{ color: 'rgba(0,0,0,0.2)' }}>›</span>
+                <span className="text-xl shrink-0" style={{ color: isLocked ? '#D1D5DB' : 'rgba(0,0,0,0.2)' }}>›</span>
               </button>
             )
           })}
         </div>
       </div>
 
+      {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
     </div>
   )
 }

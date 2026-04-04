@@ -105,7 +105,7 @@ export default function QuestionScreen({
   const timerDuration = answerMode === 'open' ? 60 : isFlash ? 20 : (difficulty?.duration || 20)
 
   // Progress display — Flash shows X/10
-  const displayTotalFacts = isFlash ? 10 : totalFacts
+  const displayTotalFacts = totalFacts
 
   // Pause ref — synced to quit modal state (no re-render of CircularTimer)
   const pausedRef = useRef(false)

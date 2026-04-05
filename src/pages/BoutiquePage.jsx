@@ -35,6 +35,7 @@ export default function BoutiquePage() {
     try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').tickets || 0 } catch { return 0 }
   })
   const [toast, setToast] = useState(null)
+  const [confirmPurchase, setConfirmPurchase] = useState(null)
 
   const showToast = (msg) => {
     setToast(msg)
@@ -107,6 +108,45 @@ export default function BoutiquePage() {
         }}>{toast}</div>
       )}
 
+      {/* Modale confirmation achat */}
+      {confirmPurchase && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={() => setConfirmPurchase(null)}
+        >
+          <div
+            style={{ background: 'white', borderRadius: 20, padding: 24, maxWidth: 300, width: '100%', textAlign: 'center', fontFamily: 'Nunito, sans-serif' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 12px' }}>Confirmer l'achat ?</h3>
+            <p style={{ fontSize: 14, color: '#555', margin: '0 0 6px' }}>
+              {confirmPurchase.label} pour {confirmPurchase.price} 🪙
+            </p>
+            <p style={{ fontSize: 12, color: '#888', margin: '0 0 20px' }}>
+              Solde restant : {playerCoins - confirmPurchase.price} 🪙
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setConfirmPurchase(null)}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  if (confirmPurchase.type === 'hint') buyHintPack(confirmPurchase.quantity, confirmPurchase.price)
+                  else buyTicketPack(confirmPurchase.quantity, confirmPurchase.price)
+                  setConfirmPurchase(null)
+                }}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: '#FF6B1A', border: 'none', color: 'white', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+              >
+                Acheter ✅
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3">
@@ -144,7 +184,7 @@ export default function BoutiquePage() {
                 price={pack.price}
                 discount={pack.discount}
                 canBuy={playerCoins >= pack.price}
-                onClick={() => buyHintPack(pack.quantity, pack.price)}
+                onClick={() => setConfirmPurchase({ type: 'hint', quantity: pack.quantity, price: pack.price, label: pack.label })}
               />
             ))}
           </div>
@@ -169,7 +209,7 @@ export default function BoutiquePage() {
                 price={pack.price}
                 discount={pack.discount}
                 canBuy={playerCoins >= pack.price}
-                onClick={() => buyTicketPack(pack.quantity, pack.price)}
+                onClick={() => setConfirmPurchase({ type: 'ticket', quantity: pack.quantity, price: pack.price, label: pack.label })}
               />
             ))}
           </div>

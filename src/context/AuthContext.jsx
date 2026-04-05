@@ -119,29 +119,21 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }, [])
 
-  const signOut = useCallback(async () => {
-    // 1. Supprimer le token AVANT le signOut (empêche getSession de le retrouver au reload)
+  const signOut = useCallback(() => {
+    // Supprimer le token Supabase
     localStorage.removeItem('sb-znoceotakhynqcqhpwgz-auth-token')
-
-    // 2. Appeler signOut côté serveur (peut échouer si réseau down — pas grave)
-    try { await supabase.auth.signOut() } catch (e) { console.warn('signOut server error (ignored):', e) }
-
-    // 3. Nettoyer tout résidu sb-* (itération inverse pour éviter le bug de skip)
+    // Nettoyer toute clé sb-*
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i)
       if (key && key.startsWith('sb-')) localStorage.removeItem(key)
     }
-
-    // 4. Nettoyer aussi sessionStorage
     for (let i = sessionStorage.length - 1; i >= 0; i--) {
       const key = sessionStorage.key(i)
       if (key && key.startsWith('sb-')) sessionStorage.removeItem(key)
     }
-
-    // 5. Supprimer le flag de première connexion
+    // Supprimer le flag de connexion
     localStorage.removeItem('wtf_first_login_done')
-
-    // 6. Mettre à jour le state
+    // Reset state
     setUser(null)
     setProfile(null)
   }, [])

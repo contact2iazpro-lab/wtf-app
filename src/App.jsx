@@ -189,23 +189,19 @@ function loadStorage() {
   }
 }
 
-function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, sessionsToday, tickets = 0 }) {
+function saveStorage(params) {
   try {
     const existing = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    const bestStreak = Math.max(existing.bestStreak || 0, streak || 0)
+    const bestStreak = Math.max(existing.bestStreak || 0, params.streak || 0)
     localStorage.setItem('wtf_data', JSON.stringify({
       ...existing,
-      totalScore,
-      streak,
+      ...params,
       bestStreak,
       lastDay: TODAY_DATE_STR(),
-      unlockedFacts: [...unlockedFacts],
-      wtfCoins,
-      wtfDuJourDate,
-      sessionsToday,
       sessionsTodayDate: TODAY(),
-      tickets,
       lastModified: Date.now(),
+      // unlockedFacts doit être un array (pas un Set)
+      unlockedFacts: params.unlockedFacts ? [...params.unlockedFacts] : (existing.unlockedFacts || []),
     }))
   } catch { /* ignore */ }
 }

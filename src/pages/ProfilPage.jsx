@@ -252,7 +252,7 @@ export default function ProfilPage() {
                 <span className="text-xs font-bold" style={{ color: '#22C55E' }}>Progression sauvegardée</span>
               </div>
               <button
-                onClick={async () => { try { await signOut() } catch (e) { console.warn('signOut error:', e) } localStorage.removeItem('wtf_first_login_done'); window.location.href = '/' }}
+                onClick={() => { signOut(); window.location.href = '/' }}
                 className="mt-2 px-4 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all"
                 style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444' }}
               >

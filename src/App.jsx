@@ -83,14 +83,14 @@ const MODE_CONFIGS = {
     ],
   },
   blitz: {
-    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Chaque seconde compte !', emoji: '⚡', color: '#FF4444',
+    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Bats ton record de vitesse !', emoji: '⚡', color: '#FF4444',
     rules: [
-      { icon: '🆓', text: 'Gratuit — pas de ticket requis' },
-      { icon: '⏱️', text: 'Timer de 60 secondes' },
-      { icon: '✅', text: 'Bonne réponse = +2 secondes' },
-      { icon: '❌', text: 'Mauvaise réponse = -3 secondes' },
-      { icon: '💡', text: '2 indices disponibles par question' },
-      { icon: '🪙', text: '1 coin par bonne réponse' },
+      { icon: '⏱️', text: 'Réponds à tes f*cts le plus vite possible !' },
+      { icon: '❌', text: 'Mauvaise réponse = +3 secondes de pénalité' },
+      { icon: '🚫', text: 'Pas d\'indices — c\'est la mémoire pure' },
+      { icon: '🏆', text: 'Bats ton record de vitesse' },
+      { icon: '🆓', text: 'Jeu illimité, pas de tickets' },
+      { icon: '💰', text: 'Pas de coins — c\'est le prestige' },
     ],
   },
   flash: {
@@ -324,6 +324,7 @@ export default function App() {
   const [streakRewardToast, setStreakRewardToast] = useState(null)
   const [showStreakSpecialModal, setShowStreakSpecialModal] = useState(false)
   const [newlyEarnedBadges, setNewlyEarnedBadges] = useState([])
+  const [miniParcours, setMiniParcours] = useState(null)
 
   const { user } = useAuth()
 
@@ -412,11 +413,17 @@ export default function App() {
 
     if (pool.length < 5) {
       if (isDevMode) {
-        // Dev mode fallback : inclure les déjà débloqués
         pool.push(...getGeneratedFacts().filter(f => !pool.some(p => p.id === f.id)))
       }
-      if (pool.length < 5) {
+      if (pool.length === 0) {
         alert('Bientôt de nouveaux f*cts ! Reviens vite 🎉')
+        return
+      }
+      if (pool.length < 5) {
+        const price = pool.length === 1 ? 5 : 10
+        const preparedFacts = [...pool].sort(() => Math.random() - 0.5)
+          .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
+        setMiniParcours({ pool: preparedFacts, price, mode: 'flash', categoryId: null, difficulty: DIFFICULTY_LEVELS.FLASH })
         return
       }
     }
@@ -554,8 +561,15 @@ export default function App() {
       if (pool.length < 4 && skipUnlockM) {
         pool = getGeneratedFactsByCategory(selectedCategory)
       }
-      if (pool.length < 4) {
+      if (pool.length === 0) {
         alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
+        return
+      }
+      if (pool.length < 4) {
+        const price = pool.length === 1 ? 5 : 10
+        const preparedFacts = [...pool].sort(() => Math.random() - 0.5)
+          .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+        setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId: selectedCategory, difficulty })
         return
       }
 
@@ -649,10 +663,11 @@ export default function App() {
   }, [])
 
   const handleBlitzFinish = useCallback((results) => {
-    const { correctCount, totalAnswered } = results
+    const { finalTime, correctCount, totalAnswered, penalties } = results
 
-    // Track Blitz stats + bestBlitzScore
+    // Track Blitz stats + bestBlitzTime
     let isNewRecord = false
+    let bestTime = null
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       if (!wtfData.statsByMode) wtfData.statsByMode = {}
@@ -664,10 +679,12 @@ export default function App() {
       ms.totalCorrect += correctCount
       ms.totalAnswered += totalAnswered
       if (correctCount > ms.bestStreak) ms.bestStreak = correctCount
-      if (correctCount > (wtfData.bestBlitzScore || 0)) {
-        wtfData.bestBlitzScore = correctCount
+      // Record = meilleur temps (le plus bas)
+      if (!wtfData.bestBlitzTime || finalTime < wtfData.bestBlitzTime) {
+        wtfData.bestBlitzTime = finalTime
         isNewRecord = true
       }
+      bestTime = wtfData.bestBlitzTime
       wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
       wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount
       wtfData.totalAnswered = (wtfData.totalAnswered || 0) + totalAnswered
@@ -679,14 +696,7 @@ export default function App() {
     const newBadges = checkBadges()
     if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
 
-    const bestScore = JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzScore || correctCount
-
-    setBlitzResults({
-      correctCount,
-      totalAnswered,
-      bestScore,
-      isNewRecord,
-    })
+    setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)
   }, [])
 
@@ -706,8 +716,15 @@ export default function App() {
       if (pool.length < 4 && skipUnlockE) {
         pool = getGeneratedFactsByCategory(categoryId)
       }
-      if (pool.length < 4) {
+      if (pool.length === 0) {
         alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
+        return
+      }
+      if (pool.length < 4) {
+        const price = pool.length === 1 ? 5 : 10
+        const preparedFacts = [...pool].sort(() => Math.random() - 0.5)
+          .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+        setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId, difficulty })
         return
       }
 
@@ -1740,7 +1757,7 @@ export default function App() {
           onSelectCategory={handleBlitzStart}
           onBack={handleHome}
           unlockedFacts={unlockedFacts}
-          bestBlitzScore={JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzScore || 0}
+          bestBlitzTime={JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzTime || null}
         />
       )}
 
@@ -1758,9 +1775,11 @@ export default function App() {
 
       {screen === SCREENS.BLITZ_RESULTS && blitzResults && (
         <BlitzResultsScreen
+          finalTime={blitzResults.finalTime}
           correctCount={blitzResults.correctCount}
           totalAnswered={blitzResults.totalAnswered}
-          bestScore={blitzResults.bestScore}
+          penalties={blitzResults.penalties}
+          bestTime={blitzResults.bestTime}
           isNewRecord={blitzResults.isNewRecord}
           onHome={handleHome}
           onReplay={handleBlitzReplay}
@@ -1830,6 +1849,80 @@ export default function App() {
           setScreen(SCREENS.QUESTION)
         }
       }} />}
+
+      {/* Modale mini parcours */}
+      {miniParcours && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={() => setMiniParcours(null)}
+        >
+          <div
+            style={{ background: 'white', borderRadius: 20, padding: 24, maxWidth: 320, width: '100%', textAlign: 'center', fontFamily: 'Nunito, sans-serif' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>
+              Plus que {miniParcours.pool.length} f*ct{miniParcours.pool.length > 1 ? 's' : ''} !
+            </h3>
+            <p style={{ fontSize: 14, color: '#555', margin: '0 0 6px' }}>
+              Lance un mini parcours pour compléter cette catégorie
+            </p>
+            <p style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', margin: '0 0 16px' }}>
+              {miniParcours.price} 🪙
+            </p>
+            {wtfCoins < miniParcours.price ? (
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#EF4444', margin: '0 0 16px' }}>
+                Pas assez de coins (tu as {wtfCoins} 🪙)
+              </p>
+            ) : null}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setMiniParcours(null)}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+              >
+                Plus tard
+              </button>
+              <button
+                onClick={() => {
+                  if (wtfCoins < miniParcours.price) return
+                  // Déduire les coins
+                  setStorage(prev => {
+                    const next = { ...prev, wtfCoins: prev.wtfCoins - miniParcours.price }
+                    saveStorage(next)
+                    return next
+                  })
+                  // Lancer la session
+                  const { pool, mode, categoryId, difficulty } = miniParcours
+                  if (mode === 'flash') {
+                    setSessionType('flash_solo'); setGameMode('solo'); setIsQuickPlay(false)
+                    setSelectedDifficulty(difficulty); setSelectedCategory(null)
+                  } else if (mode === 'explorer') {
+                    setSessionType('marathon'); setGameMode('marathon'); setIsQuickPlay(false)
+                    setSelectedDifficulty(difficulty); setSelectedCategory(categoryId)
+                    setExplorerPool([])
+                  } else if (mode === 'quest') {
+                    setSessionType('parcours'); setGameMode('solo'); setIsQuickPlay(false)
+                    setSelectedDifficulty(difficulty); setSelectedCategory(categoryId)
+                  }
+                  initSessionState(pool)
+                  setMiniParcours(null)
+                  setScreen(SCREENS.QUESTION)
+                }}
+                disabled={wtfCoins < miniParcours.price}
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14,
+                  background: wtfCoins >= miniParcours.price ? '#FF6B1A' : '#E5E7EB',
+                  border: 'none', color: wtfCoins >= miniParcours.price ? 'white' : '#9CA3AF',
+                  cursor: wtfCoins >= miniParcours.price ? 'pointer' : 'not-allowed',
+                  fontFamily: 'Nunito, sans-serif',
+                }}
+              >
+                Lancer ! 🚀
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showDevPanel && DEV_PANEL_ENABLED && (
         <DevPanel

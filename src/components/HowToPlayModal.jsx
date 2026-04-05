@@ -75,12 +75,12 @@ const CHAPTERS = [
     shortTitle: 'Blitz',
     title: 'Blitz',
     content: [
-      { icon: '🆓', text: '**Gratuit** — pas de ticket requis.' },
-      { icon: '⏱️', text: 'Timer de **60 secondes**.' },
-      { icon: '✅', text: 'Bonne réponse = **+2 secondes**.' },
-      { icon: '❌', text: 'Mauvaise réponse = **-3 secondes**.' },
-      { icon: '💡', text: '**2 indices** disponibles par question.' },
-      { icon: '🪙', text: '**1 coin** par bonne réponse.' },
+      { icon: '⏱️', text: 'Réponds à tes **f*cts débloqués** le plus vite possible !' },
+      { icon: '❌', text: 'Mauvaise réponse = **+3 secondes** de pénalité.' },
+      { icon: '🚫', text: '**Pas d\'indices** — c\'est la mémoire pure.' },
+      { icon: '🏆', text: 'Bats ton **record de vitesse** !' },
+      { icon: '🆓', text: '**Jeu illimité**, pas de tickets.' },
+      { icon: '💰', text: '**Pas de coins** — c\'est le prestige.' },
     ],
   },
   {

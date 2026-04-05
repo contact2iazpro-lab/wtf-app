@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { useScale } from '../hooks/useScale'
 
 export default function BlitzResultsScreen({
-  correctCount,
-  totalAnswered,
-  bestScore = 0,
+  finalTime = 0,
+  correctCount = 0,
+  totalAnswered = 0,
+  penalties = 0,
+  bestTime = null,
   isNewRecord = false,
   onHome,
   onReplay,
@@ -13,29 +15,39 @@ export default function BlitzResultsScreen({
   const S = (px) => `calc(${px}px * var(--scale))`
 
   const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0
+  const pureTime = Math.max(0, finalTime - penalties)
 
-  // Animated count-up
-  const [displayCount, setDisplayCount] = useState(0)
+  // Animated count-up for time
+  const [displayTime, setDisplayTime] = useState(0)
 
   useEffect(() => {
-    const steps = Math.min(correctCount, 30)
-    if (steps === 0) return
-    let i = 0
-    const interval = setInterval(() => {
-      i++
-      setDisplayCount(Math.round((i / steps) * correctCount))
-      if (i >= steps) clearInterval(interval)
-    }, 50)
-    return () => clearInterval(interval)
-  }, [correctCount])
+    if (finalTime <= 0) return
+    const duration = 1200
+    const interval = 16
+    const steps = duration / interval
+    const increment = finalTime / steps
+    let current = 0
+    const timer = setInterval(() => {
+      current = Math.min(current + increment, finalTime)
+      setDisplayTime(current)
+      if (current >= finalTime) clearInterval(timer)
+    }, interval)
+    return () => clearInterval(timer)
+  }, [finalTime])
 
-  // Rank based on score
-  const rank = correctCount >= 30 ? { emoji: '🏆', label: 'Légende Blitz !' }
-    : correctCount >= 20 ? { emoji: '🔥', label: 'Machine infernale !' }
-    : correctCount >= 15 ? { emoji: '⚡', label: 'Foudre de guerre !' }
-    : correctCount >= 10 ? { emoji: '💪', label: 'Bonne performance !' }
-    : correctCount >= 5  ? { emoji: '👍', label: 'Pas mal !' }
-    : { emoji: '🎮', label: 'Prochaine fois !' }
+  const formatTime = (t) => {
+    if (t < 60) return t.toFixed(2) + 's'
+    const m = Math.floor(t / 60)
+    const s = (t % 60).toFixed(2)
+    return `${m}:${s.padStart(5, '0')}`
+  }
+
+  // Rank based on accuracy + speed
+  const rank = accuracy === 100 && finalTime < 30 ? { emoji: '🏆', label: 'Légende Blitz !' }
+    : accuracy === 100 ? { emoji: '⚡', label: 'Sans faute !' }
+    : accuracy >= 80 ? { emoji: '🔥', label: 'Impressionnant !' }
+    : accuracy >= 60 ? { emoji: '💪', label: 'Bien joué !' }
+    : { emoji: '🎮', label: 'Continue comme ça !' }
 
   return (
     <div
@@ -72,61 +84,61 @@ export default function BlitzResultsScreen({
           </div>
         )}
 
-        {/* Score */}
+        {/* Time final */}
         <div
           className="rounded-3xl w-full p-5"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
         >
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span style={{ fontSize: S(48), fontWeight: 900, color: '#FF6B1A' }}>{displayCount}</span>
-            <span style={{ fontSize: S(16), fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>
-              bonne{correctCount !== 1 ? 's' : ''} réponse{correctCount !== 1 ? 's' : ''}
+          <div className="text-center mb-3">
+            <span style={{ fontSize: S(14), color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>⏱️ Temps final</span>
+          </div>
+          <div className="text-center mb-3">
+            <span style={{ fontSize: S(48), fontWeight: 900, color: '#FF6B1A', fontVariantNumeric: 'tabular-nums' }}>
+              {formatTime(displayTime)}
             </span>
           </div>
-          <div className="flex justify-center gap-4">
-            <span style={{ fontSize: S(12), color: 'rgba(255,255,255,0.4)' }}>
-              {correctCount}/{totalAnswered} ({accuracy}%)
-            </span>
+          <div className="flex justify-center gap-6">
+            <div className="text-center">
+              <span style={{ fontSize: S(16), fontWeight: 900, color: 'white', display: 'block' }}>{correctCount}/{totalAnswered}</span>
+              <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)' }}>Bonnes réponses</span>
+            </div>
+            <div className="text-center">
+              <span style={{ fontSize: S(16), fontWeight: 900, color: 'white', display: 'block' }}>{accuracy}%</span>
+              <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)' }}>Précision</span>
+            </div>
+            {penalties > 0 && (
+              <div className="text-center">
+                <span style={{ fontSize: S(16), fontWeight: 900, color: '#EF4444', display: 'block' }}>+{penalties}s</span>
+                <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)' }}>Pénalités</span>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Record */}
-        <div
-          className="rounded-2xl w-full p-4 flex items-center justify-between"
-          style={{
-            background: 'rgba(255,215,0,0.08)',
-            border: '1px solid rgba(255,215,0,0.2)',
-          }}
-        >
-          <span style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
-          <span style={{ fontSize: S(20), fontWeight: 900, color: '#FFD700' }}>{bestScore}</span>
-        </div>
+        {bestTime !== null && (
+          <div
+            className="rounded-2xl w-full p-4 flex items-center justify-between"
+            style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)' }}
+          >
+            <span style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
+            <span style={{ fontSize: S(20), fontWeight: 900, color: '#FFD700' }}>{formatTime(bestTime)}</span>
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="w-full flex flex-col gap-3 mt-2">
           <button
             onClick={onReplay}
             className="w-full py-4 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
-            style={{
-              background: 'linear-gradient(135deg, #FF6B1A, #D94A10)',
-              color: 'white',
-              fontSize: S(16),
-            }}
+            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16) }}
           >
             ⚡ Rejouer en Blitz
           </button>
           <button
             onClick={onHome}
             className="w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              color: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              fontSize: S(14),
-            }}
+            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', fontSize: S(14) }}
           >
             Accueil
           </button>

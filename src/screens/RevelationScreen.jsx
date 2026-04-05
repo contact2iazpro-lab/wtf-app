@@ -53,6 +53,16 @@ const WRONG_MESSAGES = [
   "Un de perdu, dix de retrouvés — rejoue ! 🎯",
   "La prochaine fois tu épateras tes amis avec ce f*ct ! 🤩",
   "Raté mais instruit ! C'est le principe de WTF! 😎",
+  "What the... non ! 🤯",
+  "Ton cerveau a bugué 🧠💥",
+  "Même Google aurait hésité 🤖",
+  "C'est un f*ct, pas une fiction ! 📖",
+  "Presque... dans un univers parallèle 🌀",
+  "Le f*ct a gagné cette manche 💪",
+  "Ton doigt a glissé, avoue 👆",
+  "WTF! Tu y étais presque ! 🎯",
+  "Le savoir, ça se cultive 🌱",
+  "Erreur 404 : bonne réponse non trouvée 🔍",
 ]
 
 const CORRECT_MESSAGES = [
@@ -441,12 +451,12 @@ export default function RevelationScreen({
                 <div style={{
                   position: 'absolute', left: '50%', top: '50%',
                   animation: 'stampImpact 0.5s ease-out forwards',
-                  background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  borderRadius: S(14), padding: `${S(10)} ${S(16)}`,
-                  maxWidth: '85%', textAlign: 'center',
+                  background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+                  border: '3px solid #EF4444',
+                  borderRadius: S(14), padding: `${S(14)} ${S(20)}`,
+                  maxWidth: '90%', textAlign: 'center',
                 }}>
-                  <span style={{ fontSize: S(13), fontWeight: 900, color: 'white', lineHeight: 1.4 }}>
+                  <span style={{ fontSize: S(16), fontWeight: 900, color: '#EF4444', lineHeight: 1.4 }}>
                     {wrongMsg}
                   </span>
                 </div>
@@ -465,7 +475,7 @@ export default function RevelationScreen({
         )}
 
         {/* Encadré question */}
-        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} 0`, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, minHeight: 0, padding: `${S(8)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.15)',
@@ -480,7 +490,7 @@ export default function RevelationScreen({
         </div>
 
         {/* Boutons */}
-        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(12)}` }}>
+        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             <button
               onClick={handleNativeShare}

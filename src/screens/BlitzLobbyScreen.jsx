@@ -7,7 +7,7 @@ const S = (px) => `calc(${px}px * var(--scale))`
 
 const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 
-export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFacts = new Set(), bestBlitzScore = 0 }) {
+export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFacts = new Set(), bestBlitzTime = null }) {
   const scale = useScale()
   const [selectedCatId, setSelectedCatId] = useState('all')
 
@@ -66,9 +66,9 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
 
       {/* Record */}
       <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${S(16)} ${S(8)}` }}>
-        {bestBlitzScore > 0 ? (
+        {bestBlitzTime ? (
           <div style={{ fontSize: S(18), fontWeight: 900, color: '#FFD700' }}>
-            🏆 Ton record : {bestBlitzScore} bonnes réponses
+            🏆 Ton record : {bestBlitzTime < 60 ? bestBlitzTime.toFixed(2) + 's' : Math.floor(bestBlitzTime / 60) + ':' + (bestBlitzTime % 60).toFixed(2).padStart(5, '0')}
           </div>
         ) : (
           <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>

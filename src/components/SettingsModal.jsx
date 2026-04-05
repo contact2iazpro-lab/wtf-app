@@ -51,6 +51,7 @@ function GameModeSelector() {
       localStorage.removeItem('wtf_dev_backup_hints')
       localStorage.removeItem('wtf_dev_mode')
       localStorage.removeItem('wtf_test_mode')
+      localStorage.removeItem('wtf_dev_access')
     } else {
       // Sauvegarder si pas déjà fait
       if (currentMode === 'player') {

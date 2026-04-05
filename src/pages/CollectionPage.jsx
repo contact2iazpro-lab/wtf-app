@@ -66,7 +66,7 @@ function FactDetailView({ fact, onClose }) {
   return (
     <div
       className="fixed inset-0 flex justify-center"
-      style={{ zIndex: 400 }}
+      style={{ zIndex: 400, background: '#000' }}
     >
       <div style={{
         width: '100%', maxWidth: 430, height: '100%',
@@ -125,11 +125,23 @@ function FactDetailView({ fact, onClose }) {
             }}
           >
             {fact.imageUrl ? (
-              <img
-                src={fact.imageUrl}
-                alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
-              />
+              <>
+                <img
+                  src={fact.imageUrl}
+                  alt={fact.question}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
+                />
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+                  style={{
+                    position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                    width: 28, height: 28, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.5)', border: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', fontSize: 14,
+                  }}
+                >🔍</button>
+              </>
             ) : (
               <div style={{
                 width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
@@ -261,7 +273,7 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
   return (
     <div
       className="fixed inset-0 flex justify-center"
-      style={{ zIndex: 300 }}
+      style={{ zIndex: 300, background: '#000' }}
     >
       <div style={{
         width: '100%', maxWidth: 430, height: '100%',
@@ -390,6 +402,8 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
 
 // ─── Main collection page ───────────────────────────────────────────────────
 
+const S_main = (px) => `calc(${px}px * var(--scale))`
+
 export default function CollectionPage() {
   const navigate = useNavigate()
   const { isConnected } = useAuth()
@@ -497,7 +511,7 @@ export default function CollectionPage() {
 
   // ── Main view ──
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: 72 }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S_main(80) }}>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} message="Connecte-toi pour sauvegarder ta progression dans le cloud ☁️" />}
 
       {/* Header */}
@@ -572,7 +586,7 @@ export default function CollectionPage() {
       </div>
 
       {/* Category list */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-24">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
         <div className="flex flex-col gap-2">
           {catStats.map(({ cat, unlocked, total, percentage, isCompleted, isLocked }) => {
             const rgb = hexToRgb(cat.color)

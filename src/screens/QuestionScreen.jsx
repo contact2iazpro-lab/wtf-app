@@ -56,6 +56,7 @@ export default function QuestionScreen({
   playerTickets = 0,
   sessionType = 'parcours',
   isTutorial = false,
+  onTutoComplete = null,
 }) {
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
 
@@ -455,6 +456,7 @@ export default function QuestionScreen({
   const [tutFlipDone, setTutFlipDone] = useState(false)
   const [tutImgFailed, setTutImgFailed] = useState(false)
   const [tutLightbox, setTutLightbox] = useState(false)
+  const [tutCelebrate, setTutCelebrate] = useState(false)
   const [tutoStep, setTutoStep] = useState('intro') // 'intro' | 'hint' | 'answer' | 'done'
   const [spotRect, setSpotRect] = useState(null) // { top, left, width, height } for spotlight hole
   const hintRef = useRef(null)
@@ -894,7 +896,19 @@ export default function QuestionScreen({
                   {tutCorrect ? '🎩 Partager ce WTF!' : '🤝 Demander de l\'aide'}
                 </button>
                 <button
-                  onClick={() => { audio.stopAll(); audio.play('click'); onQuit() }}
+                  onClick={() => {
+                    audio.play('click')
+                    // Sauvegarder le fact tuto dans la collection
+                    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                    const unlocked = new Set(wtfData.unlockedFacts || [])
+                    unlocked.add(fact.id)
+                    wtfData.unlockedFacts = [...unlocked]
+                    wtfData.lastModified = Date.now()
+                    localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+                    localStorage.setItem('wtf_first_login_done', 'true')
+                    window.dispatchEvent(new Event('wtf_storage_sync'))
+                    setTutCelebrate(true)
+                  }}
                   className="btn-press active:scale-95 transition-all"
                   style={{
                     flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
@@ -903,6 +917,35 @@ export default function QuestionScreen({
                   }}
                 >
                   CONTINUER →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Modale de célébration — premier f*ct dans la collection */}
+          {tutCelebrate && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', padding: 20 }}>
+              <div style={{ background: 'white', borderRadius: 20, padding: '28px 24px', maxWidth: '85%', width: 340, textAlign: 'center' }}>
+                {!tutImgFailed && (
+                  <img src={tutorialImageUrl} alt="" style={{ width: '40%', borderRadius: 12, border: `3px solid ${cat?.color || '#FF6B1A'}`, marginBottom: 16, display: 'block', margin: '0 auto 16px' }} />
+                )}
+                <h2 style={{ fontFamily: 'Nunito, sans-serif', fontSize: 20, fontWeight: 900, color: '#FF6B1A', margin: '0 0 10px' }}>Ton premier f*ct WTF! 🏆</h2>
+                <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: 14, color: '#555', lineHeight: 1.5, margin: '0 0 6px' }}>
+                  Ce f*ct est maintenant dans ta collection.
+                </p>
+                <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: 13, color: '#888', lineHeight: 1.4, margin: '0 0 18px' }}>
+                  Plus tu joues, plus ta collection grandit !
+                </p>
+                <button
+                  onClick={() => { audio.stopAll(); audio.play('click'); onTutoComplete ? onTutoComplete() : onQuit() }}
+                  style={{
+                    width: '80%', padding: '14px 0', borderRadius: 14,
+                    background: '#FF6B1A', color: 'white', border: 'none',
+                    fontFamily: 'Nunito, sans-serif', fontSize: 16, fontWeight: 900,
+                    cursor: 'pointer', boxShadow: '0 4px 12px rgba(255,107,26,0.3)',
+                  }}
+                >
+                  Voir ma collection 📚
                 </button>
               </div>
             </div>

@@ -29,10 +29,10 @@ import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from './screens/DuelSet
 import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
 import ModeLaunchScreen from './screens/ModeLaunchScreen'
-import WelcomeModal from './components/WelcomeModal'
+// WelcomeModal supprimé — le tuto gère l'onboarding
 import SettingsModal from './components/SettingsModal'
 import HowToPlayModal from './components/HowToPlayModal'
-import { getTutorialState, getTutorialFactId, TUTORIAL_STATES } from './utils/tutorialManager'
+import { getTutorialState, getTutorialFactId, advanceTutorial, TUTORIAL_STATES } from './utils/tutorialManager'
 import { audio } from './utils/audio'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
@@ -282,7 +282,6 @@ export default function App() {
   const [sessionIsPerfect, setSessionIsPerfect] = useState(false)
   const [streakRewardToast, setStreakRewardToast] = useState(null)
   const [showStreakSpecialModal, setShowStreakSpecialModal] = useState(false)
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
 
   const { user } = useAuth()
 
@@ -1039,6 +1038,15 @@ export default function App() {
     setExplorerPool([])
   }, [])
 
+  const handleTutoComplete = useCallback(() => {
+    advanceTutorial() // FIRST_FACT → HOME_DISCOVERED
+    setIsTutorialSession(false)
+    setSessionFacts([])
+    setCurrentIndex(0)
+    setScreen(SCREENS.HOME)
+    navigate('/collection?fromTuto=true')
+  }, [navigate])
+
   const handleBlitzReplay = useCallback(() => {
     handleBlitzStart(selectedCategory)
   }, [selectedCategory, handleBlitzStart])
@@ -1226,11 +1234,6 @@ export default function App() {
         localStorage.removeItem('wtf_temp_session')
       }
 
-      // Première connexion ? Afficher le WelcomeModal
-      if (localStorage.getItem('wtf_first_login_done') === null) {
-        localStorage.setItem('wtf_first_login_done', 'true')
-        setShowWelcomeModal(true)
-      }
     }
     window.addEventListener('wtf_storage_sync', handleSync)
     return () => window.removeEventListener('wtf_storage_sync', handleSync)
@@ -1558,6 +1561,7 @@ export default function App() {
           playerTickets={tickets}
           sessionType={sessionType}
           isTutorial={isTutorialSession}
+          onTutoComplete={isTutorialSession ? handleTutoComplete : null}
         />
       )}
 
@@ -1713,32 +1717,6 @@ export default function App() {
           setScreen(SCREENS.QUESTION)
         }
       }} />}
-
-      {showWelcomeModal && (
-        <WelcomeModal
-          onStartQuest={() => {
-            // Offrir 1 ticket + naviguer vers Quest
-            setStorage(prev => {
-              const next = { ...prev, tickets: (prev.tickets || 0) + 1 }
-              saveStorage(next)
-              return next
-            })
-            setShowWelcomeModal(false)
-            setGameMode('solo')
-            setSessionType('parcours')
-            showOrSkipLaunch('quest')
-          }}
-          onClose={() => {
-            // Offrir le ticket quand même
-            setStorage(prev => {
-              const next = { ...prev, tickets: (prev.tickets || 0) + 1 }
-              saveStorage(next)
-              return next
-            })
-            setShowWelcomeModal(false)
-          }}
-        />
-      )}
 
       {showDevPanel && DEV_PANEL_ENABLED && (
         <DevPanel

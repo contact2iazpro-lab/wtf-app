@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CoinsIcon from '../components/CoinsIcon'
 
+const S = (px) => `calc(${px}px * var(--scale))`
+
 const COIN_PACKS = [
   { label: '50 Coins', price: '0,99 €', emoji: '🪙' },
   { label: '200 Coins', price: '2,99 €', emoji: '💰' },
@@ -45,7 +47,7 @@ export default function BoutiquePage() {
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: 72, fontFamily: 'Nunito, sans-serif' }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
       {/* Toast */}
       {toast && (
         <div style={{

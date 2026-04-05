@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 
+const S = (px) => `calc(${px}px * var(--scale))`
+
 const BADGES = [
   { label: 'Premier F*ct', emoji: '🎯' },
   { label: '10 F*cts', emoji: '🧠' },
@@ -19,7 +21,7 @@ export default function RecompensesPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: 72 }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80) }}>
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3">

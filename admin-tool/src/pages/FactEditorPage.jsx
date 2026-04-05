@@ -598,7 +598,7 @@ export default function FactEditorPage({ toast }) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
       {/* Delete confirmation modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowDeleteConfirm(false)}>
@@ -653,7 +653,9 @@ export default function FactEditorPage({ toast }) {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="flex gap-6 items-start">
+        {/* COLONNE GAUCHE */}
+        <div className="flex-1 space-y-4 min-w-0">
         {/* Warning bandeau si fausses réponses incomplètes */}
         {(() => {
           const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
@@ -750,33 +752,6 @@ export default function FactEditorPage({ toast }) {
             />
           </Field>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field
-              label={`Indice 1 (20 max)${errors.hint1 ? ' — ' + errors.hint1 : ''}`}
-              hint={<CharCounter value={fact.hint1} max={CHAR_LIMITS.hint1.max} />}
-            >
-              <input
-                value={fact.hint1 || ''}
-                onChange={e => set('hint1', e.target.value)}
-                className={isOverLimit('hint1', fact.hint1) || errors.hint1 ? inputClsOver : inputCls}
-                placeholder="Premier indice…"
-                maxLength={25}
-              />
-            </Field>
-            <Field
-              label={`Indice 2 (20 max)${errors.hint2 ? ' — ' + errors.hint2 : ''}`}
-              hint={<CharCounter value={fact.hint2} max={CHAR_LIMITS.hint2.max} />}
-            >
-              <input
-                value={fact.hint2 || ''}
-                onChange={e => set('hint2', e.target.value)}
-                className={isOverLimit('hint2', fact.hint2) || errors.hint2 ? inputClsOver : inputCls}
-                placeholder="Deuxième indice…"
-                maxLength={25}
-              />
-            </Field>
-          </div>
-
           <Field
             label={`Réponse courte (50 max)${errors.short_answer ? ' — ' + errors.short_answer : ''}`}
             hint={<CharCounter value={fact.short_answer} max={CHAR_LIMITS.short_answer.max} />}
@@ -831,6 +806,10 @@ export default function FactEditorPage({ toast }) {
           </Field>
         </Section>
 
+        </div>{/* END COLONNE GAUCHE */}
+
+        {/* COLONNE DROITE — sticky */}
+        <div className="w-96 flex-shrink-0 space-y-4 sticky top-4">
         {/* RÉPONSES (8 au total) */}
         <Section title="🎯 Réponses (8 au total)">
           {/* Vraie réponse — lecture seule */}
@@ -944,28 +923,55 @@ export default function FactEditorPage({ toast }) {
           </div>
         </Section>
 
-        {/* INDICES SUPPLÉMENTAIRES */}
-        <Section title="🧠 Indices supplémentaires">
+        {/* INDICES (4 au total) */}
+        <Section title="💡 Indices (4 au total)">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Indice 3 (1 mot)">
+            <Field
+              label={`Indice 1 (20 max)${errors.hint1 ? ' — ' + errors.hint1 : ''}`}
+              hint={<CharCounter value={fact.hint1} max={CHAR_LIMITS.hint1.max} />}
+            >
+              <input
+                value={fact.hint1 || ''}
+                onChange={e => set('hint1', e.target.value)}
+                className={isOverLimit('hint1', fact.hint1) || errors.hint1 ? inputClsOver : inputCls}
+                placeholder="Premier indice…"
+                maxLength={25}
+              />
+            </Field>
+            <Field
+              label={`Indice 2 (20 max)${errors.hint2 ? ' — ' + errors.hint2 : ''}`}
+              hint={<CharCounter value={fact.hint2} max={CHAR_LIMITS.hint2.max} />}
+            >
+              <input
+                value={fact.hint2 || ''}
+                onChange={e => set('hint2', e.target.value)}
+                className={isOverLimit('hint2', fact.hint2) || errors.hint2 ? inputClsOver : inputCls}
+                placeholder="Deuxième indice…"
+                maxLength={25}
+              />
+            </Field>
+            <Field label="Indice 3">
               <input
                 value={fact.hint3 || ''}
                 onChange={e => set('hint3', e.target.value)}
                 className={inputCls}
-                placeholder="Un seul mot…"
+                placeholder="Troisième indice…"
               />
             </Field>
-            <Field label="Indice 4 (1 mot)">
+            <Field label="Indice 4">
               <input
                 value={fact.hint4 || ''}
                 onChange={e => set('hint4', e.target.value)}
                 className={inputCls}
-                placeholder="Un seul mot…"
+                placeholder="Quatrième indice…"
               />
             </Field>
           </div>
         </Section>
+        </div>{/* END COLONNE DROITE */}
+      </div>{/* END FLEX 2 COLONNES */}
 
+      <div className="space-y-4 mt-4">
         {/* STATUTS */}
         <Section title="⚙️ Statuts">
           <div className="space-y-4">

@@ -949,6 +949,14 @@ export default function App() {
         setScreen(SCREENS.MARATHON_RESULTS)
       } else {
         setScreen(SCREENS.RESULTS)
+        // Avancer le tuto après la première partie Flash ou Quest
+        getTutorialState().then(state => {
+          if (sessionType === 'flash_solo' && state === TUTORIAL_STATES.HOME_DISCOVERED) {
+            advanceTutorial() // HOME_DISCOVERED → FLASH_DONE
+          } else if (sessionType === 'parcours' && state === TUTORIAL_STATES.FLASH_DONE) {
+            advanceTutorial() // FLASH_DONE → QUEST_DONE
+          }
+        })
       }
     } else {
       setCurrentIndex(nextIndex)
@@ -1044,8 +1052,7 @@ export default function App() {
     setSessionFacts([])
     setCurrentIndex(0)
     setScreen(SCREENS.HOME)
-    navigate('/collection?fromTuto=true')
-  }, [navigate])
+  }, [])
 
   const handleBlitzReplay = useCallback(() => {
     handleBlitzStart(selectedCategory)
@@ -1609,6 +1616,7 @@ export default function App() {
           playerTickets={tickets}
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           onSaveTempFacts={handleSaveTempFacts}
+          onCollection={() => { handleHome(); navigate('/collection') }}
         />
       )}
 

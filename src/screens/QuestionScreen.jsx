@@ -945,7 +945,7 @@ export default function QuestionScreen({
                     cursor: 'pointer', boxShadow: '0 4px 12px rgba(255,107,26,0.3)',
                   }}
                 >
-                  Voir ma collection 📚
+                  Jouer ma première partie ⚡
                 </button>
               </div>
             </div>

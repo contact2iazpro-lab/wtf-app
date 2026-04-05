@@ -4,13 +4,13 @@
  * Full screen, no scroll, useScale responsive
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import ConnectBanner from '../components/ConnectBanner'
 import { useAuth } from '../context/AuthContext'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
-import { getTutorialState, advanceTutorial, TUTORIAL_STATES } from '../utils/tutorialManager'
+import { getTutorialState, TUTORIAL_STATES } from '../utils/tutorialManager'
 
 // ── Fond sombre fixe ─────────────────────────────────────────────────────────
 const HOME_BG_COLOR = '#1E3A8A'
@@ -144,23 +144,45 @@ export default function HomeScreen({
     }
   }, [])
 
-  // ── Toast premier f*ct découvert ──────────────────────────────────────────
-  const [tutorialToast, setTutorialToast] = useState(null)
+  // ── Spotlight Flash — quand tutorial_state === HOME_DISCOVERED ─────────────
+  const flashBtnRef = useRef(null)
+  const [showFlashSpotlight, setShowFlashSpotlight] = useState(false)
+  const [spotRect, setSpotRect] = useState(null)
+
+  // ── Spotlight Quest — quand tutorial_state === FLASH_DONE ─────────────────
+  const questBtnRef = useRef(null)
+  const [showQuestSpotlight, setShowQuestSpotlight] = useState(false)
+  const [questSpotRect, setQuestSpotRect] = useState(null)
 
   useEffect(() => {
-    let mounted = true
     getTutorialState().then(state => {
-      if (!mounted) return
-      if (state === TUTORIAL_STATES.FIRST_FACT) {
-        advanceTutorial().then(() => {
-          if (!mounted) return
-          setTutorialToast('1 f*ct découvert 🎉')
-          setTimeout(() => { if (mounted) setTutorialToast(null) }, 3000)
-        })
+      if (state === TUTORIAL_STATES.HOME_DISCOVERED) {
+        setShowFlashSpotlight(true)
+      } else if (state === TUTORIAL_STATES.FLASH_DONE) {
+        setShowQuestSpotlight(true)
       }
     })
-    return () => { mounted = false }
   }, [])
+
+  useEffect(() => {
+    if (!showFlashSpotlight || !flashBtnRef.current) return
+    const pad = 10
+    const timer = setTimeout(() => {
+      const r = flashBtnRef.current.getBoundingClientRect()
+      setSpotRect({ top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 })
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [showFlashSpotlight])
+
+  useEffect(() => {
+    if (!showQuestSpotlight || !questBtnRef.current) return
+    const pad = 10
+    const timer = setTimeout(() => {
+      const r = questBtnRef.current.getBoundingClientRect()
+      setQuestSpotRect({ top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 })
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [showQuestSpotlight])
 
   const nav = (target) => {
     audio.play?.('click')
@@ -251,24 +273,79 @@ export default function HomeScreen({
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Toast tutoriel */}
-      {tutorialToast && (
-        <div style={{
-          position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 1000, background: '#FF6B1A', color: 'white',
-          borderRadius: 12, padding: '10px 20px',
-          fontWeight: 700, fontSize: 15, textAlign: 'center', whiteSpace: 'nowrap',
-          animation: 'tutorialToastSlide 0.35s ease',
-          pointerEvents: 'none',
-          boxShadow: '0 4px 20px rgba(255,107,26,0.4)',
-        }}>
-          {tutorialToast}
-        </div>
+      {/* Spotlight Flash — quand tutorial_state === HOME_DISCOVERED */}
+      {showFlashSpotlight && spotRect && (
+        <>
+          {/* Trou découpé */}
+          <div style={{
+            position: 'fixed',
+            top: spotRect.top, left: spotRect.left,
+            width: spotRect.width, height: spotRect.height,
+            borderRadius: 16, background: 'transparent',
+            boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)',
+            zIndex: 100, pointerEvents: 'none',
+            transition: 'all 0.6s ease',
+          }} />
+          {/* Doigt animé */}
+          <div style={{
+            position: 'fixed',
+            top: spotRect.top + spotRect.height + 8,
+            left: spotRect.left + spotRect.width / 2,
+            transform: 'translateX(-50%)',
+            fontSize: 32, zIndex: 102, pointerEvents: 'none',
+            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
+          }}>👆</div>
+          {/* Texte guide */}
+          <div style={{
+            position: 'fixed',
+            bottom: 'clamp(24px, 5vh, 48px)',
+            left: '50%', transform: 'translateX(-50%)',
+            zIndex: 102, textAlign: 'center',
+          }}>
+            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
+              Lance ta première partie ! 🎮
+            </div>
+          </div>
+        </>
       )}
+
+      {/* Spotlight Quest — quand tutorial_state === FLASH_DONE */}
+      {showQuestSpotlight && questSpotRect && (
+        <>
+          <div style={{
+            position: 'fixed',
+            top: questSpotRect.top, left: questSpotRect.left,
+            width: questSpotRect.width, height: questSpotRect.height,
+            borderRadius: 16, background: 'transparent',
+            boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)',
+            zIndex: 100, pointerEvents: 'none',
+            transition: 'all 0.6s ease',
+          }} />
+          <div style={{
+            position: 'fixed',
+            top: questSpotRect.top + questSpotRect.height + 8,
+            left: questSpotRect.left + questSpotRect.width / 2,
+            transform: 'translateX(-50%)',
+            fontSize: 32, zIndex: 102, pointerEvents: 'none',
+            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
+          }}>👆</div>
+          <div style={{
+            position: 'fixed',
+            bottom: 'clamp(24px, 5vh, 48px)',
+            left: '50%', transform: 'translateX(-50%)',
+            zIndex: 102, textAlign: 'center',
+          }}>
+            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
+              Tu as un ticket ! Découvre les WTF! les plus dingues 🏆
+            </div>
+          </div>
+        </>
+      )}
+
       <style>{`
-        @keyframes tutorialToastSlide {
-          from { transform: translateX(-50%) translateY(-60px); opacity: 0; }
-          to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+        @keyframes homeFingerBounce {
+          0%, 100% { transform: translateX(-50%) translateY(0); }
+          50% { transform: translateX(-50%) translateY(-6px); }
         }
         @keyframes starburst-rotate {
           from { transform: translate(-50%, -50%) rotate(0deg); }
@@ -534,7 +611,9 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canAccess} onClick={() => canAccess ? nav('difficulty') : setShowConnectBanner(true)} />
+          <div ref={questBtnRef} style={{ position: 'relative', zIndex: showQuestSpotlight ? 101 : 'auto' }}>
+            <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canAccess} onClick={() => { setShowQuestSpotlight(false); canAccess ? nav('difficulty') : setShowConnectBanner(true) }} />
+          </div>
           <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!canAccess} onClick={() => canAccess ? nav('trophees') : setShowConnectBanner(true)} />
           <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canAccess} onClick={() => canAccess ? nav('wtfDuJour') : setShowConnectBanner(true)} />
         </div>
@@ -589,10 +668,11 @@ export default function HomeScreen({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 50px',
         marginBottom: 34,
-        position: 'relative', zIndex: 10,
+        position: 'relative', zIndex: showFlashSpotlight ? 101 : 10,
       }}>
         <button
-          onClick={() => nav('categoryFlash')}
+          ref={flashBtnRef}
+          onClick={() => { setShowFlashSpotlight(false); nav('categoryFlash') }}
           style={{
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
             borderRadius: 14, border: 'none',

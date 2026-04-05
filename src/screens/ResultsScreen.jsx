@@ -5,6 +5,7 @@ import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
 import { useAuth } from '../context/AuthContext'
 import ConnectBanner from '../components/ConnectBanner'
+import { getTutorialState, advanceTutorial, TUTORIAL_STATES } from '../utils/tutorialManager'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -73,6 +74,7 @@ export default function ResultsScreen({
   playerTickets = 0,
   playerHints = 0,
   onSaveTempFacts = null,
+  onCollection = null,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
   const { isConnected, signInWithGoogle } = useAuth()
@@ -95,6 +97,15 @@ export default function ResultsScreen({
   const [animatedScore, setAnimatedScore] = useState(0)      // MOD 6
   const [sharedCopied, setSharedCopied] = useState(false)    // MOD 10
   const [confettiActive, setConfettiActive] = useState(false) // COR 4
+  const [isTutoQuestDone, setIsTutoQuestDone] = useState(false)
+
+  useEffect(() => {
+    getTutorialState().then(state => {
+      if (state === TUTORIAL_STATES.QUEST_DONE) {
+        setIsTutoQuestDone(true)
+      }
+    })
+  }, [])
   const [ticketPopVisible, setTicketPopVisible] = useState(false)
 
   // Category color (MOD 1)
@@ -565,11 +576,14 @@ export default function ResultsScreen({
           {sharedCopied ? 'Copié !' : 'Partager mon score'}
         </button>
 
-        {/* 3. Rejouer — principal */}
+        {/* 3. Rejouer */}
         <button
           onClick={onReplay}
           className="btn-press w-full py-4 rounded-2xl font-black text-base uppercase tracking-wide active:scale-95 transition-all"
-          style={{
+          style={isTutoQuestDone ? {
+            background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.3)',
+            color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+          } : {
             background: '#FF6B1A',
             boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
             color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)',
@@ -577,13 +591,31 @@ export default function ResultsScreen({
           🔄 Rejouer
         </button>
 
-        {/* 4. Revenir — discret */}
-        <button
-          onClick={handleGoHome}
-          className="btn-press w-full py-2 rounded-2xl font-bold text-sm flex items-center justify-center active:scale-95 transition-all"
-          style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-          ← Revenir
-        </button>
+        {/* 4. Collection (tuto QUEST_DONE) ou Revenir */}
+        {isTutoQuestDone && onCollection ? (
+          <button
+            onClick={() => {
+              advanceTutorial() // QUEST_DONE → COMPLETED
+              audio.stopAll()
+              audio.play('click')
+              onCollection()
+            }}
+            className="btn-press w-full py-4 rounded-2xl font-black text-sm active:scale-95 transition-all"
+            style={{
+              background: '#FF6B1A',
+              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+              color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+            }}>
+            Voir ma collection 📚
+          </button>
+        ) : (
+          <button
+            onClick={handleGoHome}
+            className="btn-press w-full py-2 rounded-2xl font-bold text-sm flex items-center justify-center active:scale-95 transition-all"
+            style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+            ← Revenir
+          </button>
+        )}
       </div>
 
       {/* Fact detail modal */}

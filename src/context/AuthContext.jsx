@@ -120,24 +120,25 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    // Supprimer la session Supabase (global = côté serveur + client)
-    try {
-      await supabase.auth.signOut()
-    } catch (e) {
-      console.warn('signOut error (ignored):', e)
-    }
+    // 1. Supprimer le token AVANT le signOut (empêche getSession de le retrouver au reload)
+    localStorage.removeItem('sb-znoceotakhynqcqhpwgz-auth-token')
 
-    // Forcer le nettoyage du token JWT dans localStorage
-    // Supabase stocke le token sous une clé commençant par 'sb-'
-    const keysToRemove = []
-    for (let i = 0; i < localStorage.length; i++) {
+    // 2. Appeler signOut côté serveur (peut échouer si réseau down — pas grave)
+    try { await supabase.auth.signOut() } catch (e) { console.warn('signOut server error (ignored):', e) }
+
+    // 3. Nettoyer tout résidu sb-* (itération inverse pour éviter le bug de skip)
+    for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i)
-      if (key && key.startsWith('sb-')) {
-        keysToRemove.push(key)
-      }
+      if (key && key.startsWith('sb-')) localStorage.removeItem(key)
     }
-    keysToRemove.forEach(key => localStorage.removeItem(key))
 
+    // 4. Nettoyer aussi sessionStorage
+    for (let i = sessionStorage.length - 1; i >= 0; i--) {
+      const key = sessionStorage.key(i)
+      if (key && key.startsWith('sb-')) sessionStorage.removeItem(key)
+    }
+
+    // 5. Mettre à jour le state
     setUser(null)
     setProfile(null)
   }, [])

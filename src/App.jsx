@@ -22,6 +22,7 @@ import QuestionScreen from './screens/QuestionScreen'
 import RevelationScreen from './screens/RevelationScreen'
 import ResultsScreen from './screens/ResultsScreen'
 import BlitzScreen from './screens/BlitzScreen'
+import BlitzLobbyScreen from './screens/BlitzLobbyScreen'
 import BlitzResultsScreen from './screens/BlitzResultsScreen'
 import WTFDuJourTeaserScreen from './screens/WTFDuJourTeaserScreen'
 import WTFDuJourRevealScreen from './screens/WTFDuJourRevealScreen'
@@ -53,6 +54,7 @@ const SCREENS = {
   MARATHON_RESULTS: 'marathon_results',
   BLITZ: 'blitz',
   BLITZ_RESULTS: 'blitz_results',
+  BLITZ_LOBBY: 'blitz_lobby',
   MODE_LAUNCH: 'mode_launch',
 }
 
@@ -188,6 +190,21 @@ function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDat
 export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
+
+  // Dev mode URL param: ?devmode=wtf2026 to enable, ?devmode=off to disable
+  useState(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const devCode = urlParams.get('devmode')
+    if (devCode === 'wtf2026') {
+      localStorage.setItem('wtf_dev_access', 'true')
+      window.history.replaceState({}, '', window.location.pathname)
+    } else if (devCode === 'off') {
+      localStorage.removeItem('wtf_dev_access')
+      localStorage.removeItem('wtf_dev_mode')
+      localStorage.removeItem('wtf_test_mode')
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  })
 
   // Initialiser les indices à 3 pour les nouveaux joueurs
   if (localStorage.getItem('wtf_hints_available') === null) {
@@ -341,10 +358,11 @@ export default function App() {
       }
     }
     const category = huntFact.category
+    const skipUnlock = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     // Session : Funny Facts (non-VIP) uniquement, même catégorie, exclure débloqués
-    let pool = getGeneratedFacts().filter(f => f.category === category && f.id !== huntFact.id && !unlockedFacts.has(f.id))
+    let pool = getGeneratedFacts().filter(f => f.category === category && f.id !== huntFact.id && (skipUnlock || !unlockedFacts.has(f.id)))
     if (pool.length < 5) {
-      pool = getGeneratedFacts().filter(f => f.id !== huntFact.id && !unlockedFacts.has(f.id))
+      pool = getGeneratedFacts().filter(f => f.id !== huntFact.id && (skipUnlock || !unlockedFacts.has(f.id)))
     }
     const facts = [...pool]
       .sort(() => Math.random() - 0.5)
@@ -368,8 +386,9 @@ export default function App() {
     // Non connecté : catégories limitées
     const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
     const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
+    const skipUnlock = isDevMode || isTestMode
     const pool = getGeneratedFacts().filter(f =>
-      !unlockedFacts.has(f.id)
+      skipUnlock || !unlockedFacts.has(f.id)
     )
 
     if (pool.length < 5) {
@@ -427,8 +446,11 @@ export default function App() {
     // Pool : facts VIP uniquement (type = 'vip' ou sans type = VIP par défaut)
     let pool = getValidFacts().filter(f => !f.type || f.type === 'vip')
     // Exclure les facts déjà débloqués pour plus de variété
-    const unplayed = pool.filter(f => !unlockedFacts.has(f.id))
-    if (unplayed.length >= QUESTIONS_PER_GAME) pool = unplayed
+    const skipUnlockQ = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+    if (!skipUnlockQ) {
+      const unplayed = pool.filter(f => !unlockedFacts.has(f.id))
+      if (unplayed.length >= QUESTIONS_PER_GAME) pool = unplayed
+    }
 
     const facts = [...pool]
       .sort(() => Math.random() - 0.5)
@@ -450,7 +472,7 @@ export default function App() {
     switch (mode) {
       case 'quest':    setScreen(SCREENS.DIFFICULTY); break
       case 'explorer': setScreen(SCREENS.CATEGORY); break
-      case 'blitz':    setScreen(SCREENS.CATEGORY); break
+      case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
       case 'flash':    handleFlashSolo(); break
       case 'hunt':     handleStartWTFSession(); break
       default: break
@@ -504,11 +526,13 @@ export default function App() {
   const handleSelectDifficulty = useCallback((difficulty) => {
     setSelectedDifficulty(difficulty)
 
+    const skipUnlockM = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+
     if (gameMode === 'marathon') {
       // Marathon : 20 questions générées (non-VIP) dans la catégorie choisie
-      let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => !unlockedFacts.has(f.id))
+      let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
       // Dev mode fallback : inclure les déjà débloqués
-      if (pool.length < 4 && (localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true')) {
+      if (pool.length < 4 && skipUnlockM) {
         pool = getGeneratedFactsByCategory(selectedCategory)
       }
       if (pool.length < 4) {
@@ -542,14 +566,15 @@ export default function App() {
       })
     }
 
+    const skipUnlockD = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     // Pool Quest : VIP avec difficulté, puis fallback élargi
     let available = getParcoursFacts().filter(f =>
-      (!f.type || f.type === 'vip') && f.difficulty === difficulty.id && !unlockedFacts.has(f.id)
+      (!f.type || f.type === 'vip') && f.difficulty === difficulty.id && (skipUnlockD || !unlockedFacts.has(f.id))
     )
     // Fallback 1 : ignorer le filtre difficulty
     if (available.length < QUESTIONS_PER_GAME) {
       available = getParcoursFacts().filter(f =>
-        (!f.type || f.type === 'vip') && !unlockedFacts.has(f.id)
+        (!f.type || f.type === 'vip') && (skipUnlockD || !unlockedFacts.has(f.id))
       )
     }
     // Fallback 2 : tous les VIP valides (sans filtre difficulty)
@@ -656,9 +681,10 @@ export default function App() {
     // Explorer : 10 questions, garder le pool restant pour continuation
     if (gameMode === 'marathon') {
       const difficulty = DIFFICULTY_LEVELS.HOT
-      let pool = getGeneratedFactsByCategory(categoryId).filter(f => !unlockedFacts.has(f.id))
+      const skipUnlockE = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+      let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
       // Dev mode fallback : inclure les déjà débloqués
-      if (pool.length < 4 && (localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true')) {
+      if (pool.length < 4 && skipUnlockE) {
         pool = getGeneratedFactsByCategory(categoryId)
       }
       if (pool.length < 4) {
@@ -1268,12 +1294,19 @@ export default function App() {
     return () => window.removeEventListener('wtf_storage_sync', handleSync)
   }, [])
 
-  // Dev mode: unlock all facts in memory (no localStorage write)
+  // Dev/Test mode: unlock all facts in memory + localStorage
   useEffect(() => {
     if (!factsReady) return
-    if (localStorage.getItem('wtf_dev_mode') !== 'true') return
+    const isDev = localStorage.getItem('wtf_dev_mode') === 'true'
+    const isTest = localStorage.getItem('wtf_test_mode') === 'true'
+    if (!isDev && !isTest) return
     const allIds = new Set(getValidFacts().map(f => f.id))
     setStorage(prev => ({ ...prev, unlockedFacts: allIds }))
+    // Persist to localStorage for Blitz pool + Collection
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    wtfData.unlockedFacts = [...allIds]
+    wtfData.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(wtfData))
   }, [factsReady])
 
   // Auto-dismiss streak reward toast après 3 secondes
@@ -1298,6 +1331,7 @@ export default function App() {
         case SCREENS.MODE_LAUNCH: setScreen(SCREENS.HOME); break
         case SCREENS.WTF_TEASER: setScreen(SCREENS.HOME); break
         case SCREENS.CATEGORY:
+        case SCREENS.BLITZ_LOBBY:
           setScreen(SCREENS.HOME)
           setGameMode('solo')
           break
@@ -1657,6 +1691,15 @@ export default function App() {
           canContinue={explorerPool.length > 0 && (tickets || 0) >= 1}
           hasTickets={(tickets || 0) >= 1}
           remainingQuestions={explorerPool.length}
+        />
+      )}
+
+      {screen === SCREENS.BLITZ_LOBBY && (
+        <BlitzLobbyScreen
+          onSelectCategory={handleBlitzStart}
+          onBack={handleHome}
+          unlockedFacts={unlockedFacts}
+          bestBlitzScore={JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzScore || 0}
         />
       )}
 

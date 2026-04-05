@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { audio } from '../utils/audio'
 import { useAuth } from '../context/AuthContext'
 import HowToPlayModal from './HowToPlayModal'
@@ -211,6 +211,26 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [vibrOn, setVibrOn] = useState(() => localStorage.getItem('wtf_vibration') !== 'false')
 
+  // Cheat code: tap 5× on version to unlock dev selector
+  const [tapCount, setTapCount] = useState(0)
+  const [devAccess, setDevAccess] = useState(() => localStorage.getItem('wtf_dev_access') === 'true')
+  const [devToast, setDevToast] = useState(false)
+
+  useEffect(() => {
+    if (tapCount > 0 && tapCount < 5) {
+      const timer = setTimeout(() => setTapCount(0), 3000)
+      return () => clearTimeout(timer)
+    }
+    if (tapCount >= 5) {
+      localStorage.setItem('wtf_dev_access', 'true')
+      setDevAccess(true)
+      setDevToast(true)
+      setTimeout(() => setDevToast(false), 2000)
+    }
+  }, [tapCount])
+
+  const showDevSelector = import.meta.env.DEV || devAccess
+
   const toggleSound = () => { const n = !soundOn; setSoundOn(n); audio.setSfxEnabled(n); if (n) audio.play('click') }
   const toggleMusic = () => { const n = !musicOn; setMusicOn(n); audio.setMusicEnabled(n) }
   const toggleNotif = () => { const n = !notifOn; setNotifOn(n); localStorage.setItem('wtf_notifications', String(n)) }
@@ -247,8 +267,8 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
           <div className="overflow-y-auto px-5 py-4" style={{ maxHeight: 'calc(90vh - 60px)' }}>
             <div className="flex flex-col gap-2.5">
 
-              {/* Dev mode — DEV only */}
-              {import.meta.env.DEV && (
+              {/* Dev mode — accessible via cheat code */}
+              {showDevSelector && (
                 <div className="mb-1 p-3 rounded-2xl" style={{ background: 'rgba(255,100,0,0.08)', border: '1px solid rgba(255,100,0,0.2)' }}>
                   <GameModeSelector />
                 </div>
@@ -343,10 +363,15 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
               <SettingRow icon="📋" label="CGU" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
               <SettingRow icon="🔒" label="Politique de confidentialité" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
 
-              {/* Version */}
-              <div className="text-center mt-4 mb-2">
-                <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v0.1.0</span>
+              {/* Version — tap 5× to unlock dev mode */}
+              <div className="text-center mt-4 mb-2" onClick={() => setTapCount(c => c + 1)} style={{ cursor: 'default', userSelect: 'none' }}>
+                <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.9'}</span>
               </div>
+              {devToast && (
+                <div className="text-center mb-2">
+                  <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>🔓 Mode développeur activé !</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

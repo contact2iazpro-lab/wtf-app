@@ -3,7 +3,6 @@ import { getCategoryById } from '../data/facts'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
-import HintFlipButton from '../components/HintFlipButton'
 import GameHeader from '../components/GameHeader'
 
 // ── Lisibilité sur fond coloré ───────────────────────────────────────────────
@@ -35,8 +34,6 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
   const [totalAnswered, setTotalAnswered] = useState(0)
   const [flashAnswer, setFlashAnswer] = useState(null) // { index, correct }
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
-  const [hintUsedThisQ, setHintUsedThisQ] = useState(false)
-  const [hiddenOption, setHiddenOption] = useState(null)
 
   // Refs for timer
   const timeRef = useRef(INITIAL_TIME)
@@ -60,12 +57,13 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
 
       setTimeLeft(t)
 
-      // Audio feedback
-      if (t === 10) {
+      // Audio feedback progressif
+      if (t <= 5 && t > 0) {
         audio.play('tick')
-        setTimeout(() => audio.play('tick'), 130)
-        setTimeout(() => audio.play('tick'), 260)
-      } else if (t <= 5 && t > 0) {
+        setTimeout(() => audio.play('tick'), 500)
+      } else if (t <= 10 && t > 5) {
+        audio.play('tick')
+      } else if (t <= 20 && t > 10) {
         audio.play('tick')
       }
 
@@ -128,19 +126,17 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
     // Next question after flash
     flashTimeoutRef.current = setTimeout(() => {
       setFlashAnswer(null)
-      setHintUsedThisQ(false)
-      setHiddenOption(null)
       setCurrentIndex(i => i + 1)
     }, FLASH_DURATION)
   }, [currentFact, flashAnswer, onFinish])
 
-  // ── Timer bar color ───────────────────────────────────────────────────────
-  const timerPercent = Math.max(0, timeLeft / INITIAL_TIME) * 100
-  const timerColor = timeLeft > 30 ? '#22C55E' : timeLeft > 10 ? '#F97316' : '#EF4444'
-
-  const screenBg = cat
-    ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
-    : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
+  const getBlitzBackground = (score) => {
+    if (score >= 30) return 'linear-gradient(160deg, #6a0a0a 0%, #8a1a1a 100%)'
+    if (score >= 20) return 'linear-gradient(160deg, #4a1a0a 0%, #6a2a0a 100%)'
+    if (score >= 10) return 'linear-gradient(160deg, #1a0a2e 0%, #3a0a4e 100%)'
+    return 'linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 100%)'
+  }
+  const screenBg = getBlitzBackground(correctCount)
 
   // ── Quit modal ────────────────────────────────────────────────────────────
   const quitModal = showQuitConfirm && (
@@ -183,7 +179,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-hidden"
-      style={{ '--scale': scale, background: screenBg, fontFamily: 'Nunito, sans-serif' }}
+      style={{ '--scale': scale, background: screenBg, fontFamily: 'Nunito, sans-serif', transition: 'background 1s ease' }}
     >
       {quitModal}
 
@@ -197,37 +193,42 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
         onQuit={() => setShowQuitConfirm(true)}
       />
 
-      {/* ── Timer bar ───────────────────────────────────────────────────── */}
-      <div className="px-4 pb-2">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.25)' }}>
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${timerPercent}%`,
-                background: timerColor,
-                transition: 'width 0.3s ease, background 0.5s ease',
-                boxShadow: `0 0 8px ${timerColor}80`,
-              }}
-            />
+      {/* ── Timer bar segmentée (60 segments) ──────────────────────────── */}
+      <div style={{ padding: `0 ${S(12)} ${S(4)}`, flexShrink: 0 }}>
+        <div className="flex items-center gap-2">
+          <div style={{ flex: 1, display: 'flex', gap: 1, height: S(8) }}>
+            {Array.from({ length: INITIAL_TIME }, (_, i) => {
+              const active = timeLeft > i
+              const segColor = timeLeft > 20 ? '#4CAF50' : timeLeft > 10 ? '#FF9800' : '#f44336'
+              return (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1, borderRadius: 2,
+                    background: active ? segColor : 'rgba(255,255,255,0.08)',
+                    opacity: active ? 1 : 0.15,
+                    transition: 'opacity 0.3s, background 0.3s',
+                    ...(active && timeLeft <= 5 ? { animation: 'blitzSegPulse 0.5s ease-in-out infinite' } : {}),
+                  }}
+                />
+              )
+            })}
           </div>
           <span style={{
-            fontSize: S(22),
-            fontWeight: 900,
-            color: timeLeft <= 5 ? '#EF4444' : catTextColor,
-            minWidth: S(36),
-            textAlign: 'right',
+            fontSize: S(22), fontWeight: 900,
+            color: timeLeft <= 5 ? '#f44336' : timeLeft <= 10 ? '#FF9800' : '#ffffff',
+            minWidth: S(32), textAlign: 'right',
             fontVariantNumeric: 'tabular-nums',
           }}>
             {timeLeft}
           </span>
         </div>
         <div className="flex items-center justify-between mt-1">
-          <span style={{ fontSize: S(11), color: catTextColor, opacity: 0.6 }}>
-            +{CORRECT_BONUS}s bonne r&eacute;ponse &middot; -{WRONG_PENALTY}s mauvaise
+          <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.5)' }}>
+            +{CORRECT_BONUS}s ✓  −{WRONG_PENALTY}s ✗
           </span>
-          <span style={{ fontSize: S(11), color: catTextColor, opacity: 0.6 }}>
-            {correctCount}/{totalAnswered} bonnes
+          <span style={{ fontSize: S(11), fontWeight: 800, color: 'rgba(255,255,255,0.7)' }}>
+            {correctCount}/{totalAnswered}
           </span>
         </div>
       </div>
@@ -253,116 +254,52 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
           </p>
         </div>
 
-        {/* ── Hint button ──────────────────────────────────────────────── */}
-        {!hintUsedThisQ && !flashAnswer && (
-          <div style={{ marginBottom: S(6) }}>
-            {isDevMode ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                {[currentFact?.hint1, currentFact?.hint2].map((h, i) => (
-                  <div key={i} style={{
-                    height: 32, width: '100%', borderRadius: 16, background: 'rgba(235,235,235,0.95)',
-                    border: `2px solid ${cat?.color || '#FF6B1A'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px',
-                  }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: '#1a1a2e', textAlign: 'center', lineHeight: 1 }}>
-                      {h || '—'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <HintFlipButton
-                num={1}
-                hint={currentFact?.hint1 || '—'}
-                catColor={cat?.color || '#FF6B1A'}
-                hasStock={playerHints > 0}
-                stockCount={playerHints}
-                onReveal={() => {
-                  if (onUseHint) onUseHint(1)
-                  setHintUsedThisQ(true)
-                  const wrongIndices = currentFact.options
-                    .map((_, idx) => idx)
-                    .filter(idx => idx !== currentFact.correctIndex)
-                  const randomWrong = wrongIndices[Math.floor(Math.random() * wrongIndices.length)]
-                  setHiddenOption(randomWrong)
-                  audio.play('click')
-                }}
-              />
-            )}
-          </div>
-        )}
+        {/* ── QCM grille 2×2 ──────────────────────────────────────────── */}
+        <div className="flex-1 flex items-center">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8), width: '100%' }}>
+            {currentFact?.options?.map((option, i) => {
+              const isFlashed = flashAnswer?.index === i
 
-        {/* ── QCM options ─────────────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col justify-center" style={{ gap: S(10) }}>
-          {/* Dev mode: 8 propositions complètes */}
-          {isDevMode && !flashAnswer ? (() => {
-            const devOpts = [
-              { text: currentFact.shortAnswer || currentFact.options?.[currentFact.correctIndex], type: 'VRAIE', color: '#22C55E', idx: currentFact.correctIndex },
-              { text: currentFact.funnyWrong1, type: 'DRÔLE', color: '#EAB308' },
-              { text: currentFact.funnyWrong2, type: 'DRÔLE', color: '#EAB308' },
-              { text: currentFact.closeWrong1, type: 'PROCHE', color: '#F97316' },
-              { text: currentFact.closeWrong2, type: 'PROCHE', color: '#F97316' },
-              { text: currentFact.plausibleWrong1, type: 'PLAUSIBLE', color: '#EF4444' },
-              { text: currentFact.plausibleWrong2, type: 'PLAUSIBLE', color: '#EF4444' },
-              { text: currentFact.plausibleWrong3, type: 'PLAUSIBLE', color: '#EF4444' },
-            ].filter(o => o.text)
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(4) }}>
-                {devOpts.map((opt, i) => (
-                  <button key={i} onClick={() => handleAnswer(opt.idx ?? -1)}
-                    className="w-full rounded-xl text-center active:scale-[0.97]"
-                    style={{
-                      background: 'rgba(255,255,255,0.15)', border: `3px solid ${opt.color}`,
-                      padding: `${S(4)} ${S(6)}`, height: S(44),
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                    <span style={{ fontSize: S(10), fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                      {renderFormattedText(opt.text)}
-                    </span>
-                    <span style={{ fontSize: 7, fontWeight: 900, opacity: 0.6, color: '#fff' }}>{opt.type}</span>
-                  </button>
-                ))}
-              </div>
-            )
-          })() : currentFact?.options?.map((option, i) => {
-            const isFlashed = flashAnswer?.index === i
-            const isCorrectAnswer = flashAnswer && i === currentFact.correctIndex
+              let btnBg = 'rgba(255,255,255,0.15)'
+              let btnBorder = 'rgba(255,255,255,0.2)'
 
-            let btnBg = 'rgba(255,255,255,0.15)'
-            let btnBorder = 'rgba(255,255,255,0.2)'
-            let btnTextColor = '#ffffff'
-
-            if (flashAnswer) {
-              if (isFlashed && flashAnswer.correct) {
-                btnBg = 'rgba(34,197,94,0.4)'
-                btnBorder = '#22C55E'
-              } else if (isFlashed && !flashAnswer.correct) {
-                btnBg = 'rgba(239,68,68,0.4)'
-                btnBorder = '#EF4444'
+              if (flashAnswer) {
+                if (isFlashed && flashAnswer.correct) {
+                  btnBg = 'rgba(34,197,94,0.4)'
+                  btnBorder = '#22C55E'
+                } else if (isFlashed && !flashAnswer.correct) {
+                  btnBg = 'rgba(239,68,68,0.4)'
+                  btnBorder = '#EF4444'
+                }
               }
-            }
 
-            return (
-              <button
-                key={`${currentIndex}-${i}`}
-                onClick={() => handleAnswer(i)}
-                disabled={flashAnswer !== null || hiddenOption === i}
-                className="w-full rounded-2xl text-left transition-all active:scale-[0.97]"
-                style={{
-                  background: hiddenOption === i ? 'rgba(107,114,128,0.1)' : btnBg,
-                  border: `2px solid ${hiddenOption === i ? 'rgba(107,114,128,0.2)' : btnBorder}`,
-                  padding: `${S(14)} ${S(18)}`,
-                  opacity: hiddenOption === i ? 0.3 : (flashAnswer && !isFlashed && !isCorrectAnswer ? 0.5 : 1),
-                  transition: 'all 0.15s ease',
-                  textDecoration: hiddenOption === i ? 'line-through' : 'none',
-                }}
-              >
-                <span style={{ fontSize: S(15), fontWeight: 700, color: btnTextColor }}>
-                  {renderFormattedText(option)}
-                </span>
-              </button>
-            )
-          })}
+              return (
+                <button
+                  key={`${currentIndex}-${i}`}
+                  onClick={() => handleAnswer(i)}
+                  disabled={flashAnswer !== null}
+                  className="rounded-2xl text-center transition-all active:scale-[0.97]"
+                  style={{
+                    background: btnBg,
+                    border: `2px solid ${btnBorder}`,
+                    height: S(60), padding: S(10),
+                    borderRadius: S(14),
+                    opacity: flashAnswer && !isFlashed ? 0.5 : 1,
+                    transition: 'all 0.15s ease',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <span style={{
+                    fontSize: S(13), fontWeight: 700, color: '#ffffff',
+                    overflow: 'hidden', textOverflow: 'ellipsis',
+                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                  }}>
+                    {renderFormattedText(option)}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* ── Time bonus/penalty flash ──────────────────────────────── */}
@@ -381,12 +318,38 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
         )}
       </div>
 
+      {/* ── Particules "on fire" (score >= 30) ───────────────────────── */}
+      {correctCount >= 30 && (
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+          {Array.from({ length: 10 }, (_, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              top: `${(i * 31 + 5) % 90}%`,
+              left: `${(i * 43 + 11) % 95}%`,
+              width: i % 2 === 0 ? 5 : 4,
+              height: i % 2 === 0 ? 5 : 4,
+              borderRadius: '50%',
+              background: `rgba(255,${80 + (i * 20) % 100},0,${0.15 + (i % 4) * 0.08})`,
+              animation: `blitzParticle ${1.5 + (i % 3) * 0.5}s ${(i * 0.3).toFixed(1)}s ease-in-out infinite`,
+            }} />
+          ))}
+        </div>
+      )}
+
       {/* ── Animations ──────────────────────────────────────────────────── */}
       <style>{`
         @keyframes blitzFlash {
           0% { opacity: 0; transform: scale(0.5); }
           30% { opacity: 1; transform: scale(1.2); }
           100% { opacity: 0; transform: scale(1) translateY(-20px); }
+        }
+        @keyframes blitzSegPulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+        @keyframes blitzParticle {
+          0%, 100% { opacity: 0.1; transform: scale(0.8); }
+          50% { opacity: 0.4; transform: scale(1.3); }
         }
       `}</style>
     </div>

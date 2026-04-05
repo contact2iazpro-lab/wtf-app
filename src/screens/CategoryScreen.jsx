@@ -32,12 +32,11 @@ const isLightColor = (hex) => {
 const S = (px) => `calc(${px}px * var(--scale))`
 
 // ── Pinned IDs always at the end ─────────────────────────────────────────────
-const PINNED_IDS = new Set(['kids', 'random'])
+const PINNED_IDS = new Set(['random'])
 
 export default function CategoryScreen({ onSelectCategory, onBack, selectedDifficulty, unlockedFacts = new Set(), gameMode }) {
   const [showSettings, setShowSettings] = useState(false)
   const [selectedCatId, setSelectedCatId] = useState(null)
-  const [showConfirm, setShowConfirm] = useState(false)
   const scale = useScale()
   const bgIndex = useRef(Math.floor(Math.random() * BACKGROUNDS.length))
 
@@ -92,11 +91,6 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
 
   const handleValider = () => {
     audio.play('click')
-    setShowConfirm(true)
-  }
-
-  const handleConfirm = () => {
-    audio.play('click')
     onSelectCategory(selectedCatId === 'random' ? null : selectedCatId)
   }
 
@@ -113,93 +107,6 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
       backgroundColor: '#1a1a2e',
     }}>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-
-      {/* ── Confirmation modal ────────────────────────────────────────── */}
-      {showConfirm && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            padding: 20, zIndex: 100,
-            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
-          }}
-          onClick={() => setShowConfirm(false)}>
-          <div
-            style={{
-              background: '#fff', borderRadius: S(20),
-              padding: S(24), maxWidth: 420, width: '100%',
-              border: '1px solid rgba(0,0,0,0.1)',
-            }}
-            onClick={(e) => e.stopPropagation()}>
-            <div style={{ textAlign: 'center', fontSize: S(36), marginBottom: S(12) }}>🚀</div>
-            <h2 style={{
-              fontSize: S(18), fontWeight: 900, textAlign: 'center',
-              color: '#1a1a2e', marginBottom: S(16), marginTop: 0,
-            }}>Confirmer la partie ?</h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), marginBottom: S(20) }}>
-              {selectedDifficulty && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: S(10),
-                  padding: `${S(10)} ${S(14)}`, borderRadius: S(14),
-                  background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)',
-                }}>
-                  <span style={{ fontSize: S(24), flexShrink: 0 }}>{selectedDifficulty.emoji}</span>
-                  <div>
-                    <div style={{ fontSize: S(9), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'rgba(0,0,0,0.35)', marginBottom: 2 }}>Parcours</div>
-                    <div style={{ fontSize: S(13), fontWeight: 900, color: '#1a1a2e' }}>{selectedDifficulty.label}</div>
-                  </div>
-                </div>
-              )}
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: S(10),
-                padding: `${S(10)} ${S(14)}`, borderRadius: S(14),
-                background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)',
-              }}>
-                {selectedCatId === 'random'
-                  ? <span style={{ fontSize: S(24), flexShrink: 0 }}>🎲</span>
-                  : <img
-                      src={getCategoryIcon(selectedCat?.id)}
-                      alt=""
-                      style={{ width: S(32), height: S(32), borderRadius: '20%', objectFit: 'cover', flexShrink: 0 }}
-                    />
-                }
-                <div>
-                  <div style={{ fontSize: S(9), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'rgba(0,0,0,0.35)', marginBottom: 2 }}>Catégorie</div>
-                  <div style={{ fontSize: S(13), fontWeight: 900, color: '#1a1a2e' }}>{selectedCat?.label}</div>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: S(10) }}>
-              <button
-                onClick={() => { audio.play('click'); setShowConfirm(false) }}
-                style={{
-                  flex: 1, padding: S(12), borderRadius: S(14),
-                  fontWeight: 900, fontSize: S(13),
-                  background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.1)',
-                  color: 'rgba(0,0,0,0.45)', cursor: 'pointer',
-                  fontFamily: 'Nunito, sans-serif',
-                  WebkitTapHighlightColor: 'transparent',
-                }}>
-                Annuler
-              </button>
-              <button
-                onClick={handleConfirm}
-                style={{
-                  flex: 1, padding: S(12), borderRadius: S(14),
-                  fontWeight: 900, fontSize: S(13),
-                  background: '#FF6B1A', color: 'white', border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: 'Nunito, sans-serif',
-                  WebkitTapHighlightColor: 'transparent',
-                }}>
-                C'est parti ! 🚀
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Header ────────────────────────────────────────────────────── */}
       <div style={{
@@ -256,7 +163,47 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
 
-          {/* Aléatoire — pinned at end but we render all in order */}
+          {/* Aléatoire — toujours en premier */}
+          {visibleCategories.length > 0 && (
+            <button
+              onClick={() => handleCategoryClick('random')}
+              style={{
+                background: selectedCatId === 'random'
+                  ? 'linear-gradient(135deg, rgba(255,107,26,0.95) 0%, rgba(255,51,133,0.95) 30%, rgba(155,89,182,0.95) 60%, rgba(52,152,219,0.95) 80%, rgba(46,204,113,0.95) 100%)'
+                  : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)',
+                borderRadius: S(14),
+                padding: `${S(10)} ${S(12)}`,
+                width: '100%', boxSizing: 'border-box',
+                display: 'flex', alignItems: 'center', gap: S(10),
+                border: selectedCatId === 'random' ? '2.5px solid white' : '2.5px solid transparent',
+                boxShadow: selectedCatId === 'random'
+                  ? '0 0 20px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
+                  : '0 2px 8px rgba(0,0,0,0.15)',
+                opacity: selectedCatId === null || selectedCatId === 'random' ? 1 : 0.6,
+                transform: selectedCatId === 'random' ? 'scale(1.02)' : 'scale(1)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                WebkitTapHighlightColor: 'transparent',
+                fontFamily: 'Nunito, sans-serif',
+                textAlign: 'left',
+              }}
+            >
+              <span style={{ fontSize: S(28), flexShrink: 0 }}>🎲</span>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontWeight: 900, fontSize: S(13), color: 'white',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                }}>
+                  Aléatoire
+                </div>
+                <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.75)', fontWeight: 700, marginTop: S(2) }}>
+                  Catégorie surprise !
+                </div>
+              </div>
+            </button>
+          )}
+
+          {/* Catégories triées alphabétiquement */}
           {visibleCategories.map((cat) => {
             const isSelected = selectedCatId === cat.id
             const total = totalPerCategory[cat.id] || 0
@@ -344,45 +291,6 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
             )
           })}
 
-          {/* Aléatoire — always last */}
-          {visibleCategories.length > 0 && (
-            <button
-              onClick={() => handleCategoryClick('random')}
-              style={{
-                background: selectedCatId === 'random'
-                  ? 'linear-gradient(135deg, rgba(255,107,26,0.95) 0%, rgba(255,51,133,0.95) 30%, rgba(155,89,182,0.95) 60%, rgba(52,152,219,0.95) 80%, rgba(46,204,113,0.95) 100%)'
-                  : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)',
-                borderRadius: S(14),
-                padding: `${S(10)} ${S(12)}`,
-                width: '100%', boxSizing: 'border-box',
-                display: 'flex', alignItems: 'center', gap: S(10),
-                border: selectedCatId === 'random' ? '2.5px solid white' : '2.5px solid transparent',
-                boxShadow: selectedCatId === 'random'
-                  ? '0 0 20px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
-                  : '0 2px 8px rgba(0,0,0,0.15)',
-                opacity: selectedCatId === null || selectedCatId === 'random' ? 1 : 0.6,
-                transform: selectedCatId === 'random' ? 'scale(1.02)' : 'scale(1)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                WebkitTapHighlightColor: 'transparent',
-                fontFamily: 'Nunito, sans-serif',
-                textAlign: 'left',
-              }}
-            >
-              <span style={{ fontSize: S(28), flexShrink: 0 }}>🎲</span>
-              <div style={{ flex: 1 }}>
-                <div style={{
-                  fontWeight: 900, fontSize: S(13), color: 'white',
-                  textShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                }}>
-                  Aléatoire
-                </div>
-                <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.75)', fontWeight: 700, marginTop: S(2) }}>
-                  Catégorie surprise !
-                </div>
-              </div>
-            </button>
-          )}
         </div>
       </div>
 

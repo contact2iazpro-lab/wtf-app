@@ -605,43 +605,10 @@ export default function App() {
   }, [])
 
   const handleBlitzFinish = useCallback((results) => {
-    const { correctCount, totalAnswered, coinsEarned } = results
+    const { correctCount, totalAnswered } = results
 
-    // Tier bonuses
-    let bonusCoins = 0
-    if (correctCount >= 10) bonusCoins += 5
-    if (correctCount >= 20) bonusCoins += 15
-    if (correctCount >= 30) bonusCoins += 50 // Blitz perfect bonus
-
-    // Random bonus rewards
-    const bonusTicket = Math.random() < 0.10
-    const bonusHint = Math.random() < 0.20
-
-    const totalCoinsGained = coinsEarned + bonusCoins
-
-    // Update storage
-    setStorage(prev => {
-      const newCoins = prev.wtfCoins + totalCoinsGained
-      let newTickets = prev.tickets || 0
-      if (bonusTicket) newTickets += 1
-
-      const next = { ...prev, wtfCoins: newCoins, tickets: newTickets }
-      saveStorage(next)
-      return next
-    })
-
-    // Award hint if won
-    if (bonusHint) {
-      const currentHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
-      localStorage.setItem('wtf_hints_available', String(currentHints + 1))
-    }
-
-    // Sync to Supabase
-    if (user) {
-      syncPlayerDataAsync(user.id, { ...storage, wtfCoins: storage.wtfCoins + totalCoinsGained })
-    }
-
-    // Track Blitz stats
+    // Track Blitz stats + bestBlitzScore
+    let isNewRecord = false
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       if (!wtfData.statsByMode) wtfData.statsByMode = {}
@@ -653,6 +620,10 @@ export default function App() {
       ms.totalCorrect += correctCount
       ms.totalAnswered += totalAnswered
       if (correctCount > ms.bestStreak) ms.bestStreak = correctCount
+      if (correctCount > (wtfData.bestBlitzScore || 0)) {
+        wtfData.bestBlitzScore = correctCount
+        isNewRecord = true
+      }
       wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
       wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount
       wtfData.totalAnswered = (wtfData.totalAnswered || 0) + totalAnswered
@@ -664,13 +635,13 @@ export default function App() {
     const newBadges = checkBadges()
     if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
 
+    const bestScore = JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzScore || correctCount
+
     setBlitzResults({
       correctCount,
       totalAnswered,
-      coinsEarned,
-      bonusCoins,
-      bonusTicket,
-      bonusHint,
+      bestScore,
+      isNewRecord,
     })
     setScreen(SCREENS.BLITZ_RESULTS)
   }, [])
@@ -1705,10 +1676,8 @@ export default function App() {
         <BlitzResultsScreen
           correctCount={blitzResults.correctCount}
           totalAnswered={blitzResults.totalAnswered}
-          coinsEarned={blitzResults.coinsEarned}
-          bonusCoins={blitzResults.bonusCoins}
-          bonusTicket={blitzResults.bonusTicket}
-          bonusHint={blitzResults.bonusHint}
+          bestScore={blitzResults.bestScore}
+          isNewRecord={blitzResults.isNewRecord}
           onHome={handleHome}
           onReplay={handleBlitzReplay}
         />

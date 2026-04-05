@@ -33,7 +33,6 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
   const [currentIndex, setCurrentIndex] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
   const [totalAnswered, setTotalAnswered] = useState(0)
-  const [coinsEarned, setCoinsEarned] = useState(0)
   const [flashAnswer, setFlashAnswer] = useState(null) // { index, correct }
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [hintUsedThisQ, setHintUsedThisQ] = useState(false)
@@ -48,7 +47,6 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
   // Results refs to avoid stale closures
   const correctRef = useRef(0)
   const totalRef = useRef(0)
-  const coinsRef = useRef(0)
 
   const currentFact = facts[currentIndex % facts.length]
 
@@ -78,7 +76,6 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
         onFinish({
           correctCount: correctRef.current,
           totalAnswered: totalRef.current,
-          coinsEarned: coinsRef.current,
         })
       }
     }, 1000)
@@ -103,9 +100,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
       timeRef.current = Math.min(timeRef.current + CORRECT_BONUS, 99)
       setTimeLeft(timeRef.current)
       correctRef.current += 1
-      coinsRef.current += 1
       setCorrectCount(c => c + 1)
-      setCoinsEarned(c => c + 1)
       audio.play('correct')
     } else {
       timeRef.current = Math.max(timeRef.current - WRONG_PENALTY, 0)
@@ -125,7 +120,6 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
         onFinish({
           correctCount: correctRef.current,
           totalAnswered: totalRef.current,
-          coinsEarned: coinsRef.current,
         })
       }, FLASH_DURATION)
       return
@@ -195,10 +189,11 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <GameHeader
-        playerCoins={playerCoins + coinsEarned}
+        playerCoins={playerCoins}
         playerHints={playerHints}
         categoryLabel={cat?.label || 'Blitz'}
         categoryColor={cat?.color}
+        categoryIcon={category ? `/assets/categories/${category}.png` : null}
         onQuit={() => setShowQuitConfirm(true)}
       />
 

@@ -288,6 +288,18 @@ export function getMarathonFacts(categoryId) {
   return getGeneratedFactsByCategory(categoryId)
 }
 
+/** Mode Blitz : uniquement les facts déjà débloqués par le joueur */
+export function getBlitzFacts() {
+  try {
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const unlockedIds = new Set(wtfData.unlockedFacts || [])
+    if (unlockedIds.size === 0) return []
+    return getValidFacts().filter(f => unlockedIds.has(f.id))
+  } catch {
+    return []
+  }
+}
+
 /** Mode Série : Generated uniquement, toutes catégories */
 export function getSeriesFacts() {
   return getGeneratedFacts()

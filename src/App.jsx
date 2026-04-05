@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
   getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories,
-  getGeneratedFacts, getGeneratedFactsByCategory,
+  getGeneratedFacts, getGeneratedFactsByCategory, getBlitzFacts,
   initFacts, resetFacts,
 } from './data/factsService'
 import { syncPlayerDataAsync } from './services/playerSyncService'
@@ -575,17 +575,14 @@ export default function App() {
   // ─── Blitz start ───────────────────────────────────────────────────────────
   const handleBlitzStart = useCallback((categoryId) => {
     audio.play('click')
-    // Load generated facts, exclure les déjà débloqués
-    let pool = (categoryId
-      ? getGeneratedFactsByCategory(categoryId)
-      : getGeneratedFacts()
-    ).filter(f => !unlockedFacts.has(f.id))
+    // Blitz = facts déjà débloqués uniquement (mode rapidité)
+    let pool = getBlitzFacts()
+    if (categoryId) pool = pool.filter(f => f.category === categoryId)
 
-    // Fallback: si pas assez après exclusion, inclure les déjà débloqués
     if (pool.length < 4) {
-      pool = categoryId
-        ? getGeneratedFactsByCategory(categoryId)
-        : getGeneratedFacts()
+      // Pas assez de facts débloqués pour jouer en Blitz
+      alert('Débloque plus de f*cts pour jouer en Blitz ! 🔓')
+      return
     }
 
     const shuffled = [...pool]

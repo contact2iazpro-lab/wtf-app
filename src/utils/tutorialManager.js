@@ -18,8 +18,27 @@ const STATE_ORDER = [
 
 export async function getTutorialState() {
   try {
-    const state = localStorage.getItem(STORAGE_KEY);
-    return state || TUTORIAL_STATES.FIRST_FACT;
+    const stateFromDirect = localStorage.getItem(STORAGE_KEY);
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}');
+    const stateFromWtfData = wtfData.tutorialState || null;
+
+    if (stateFromDirect) {
+      // Sync vers wtf_data si différent
+      if (stateFromWtfData !== stateFromDirect) {
+        wtfData.tutorialState = stateFromDirect;
+        wtfData.lastModified = Date.now();
+        localStorage.setItem('wtf_data', JSON.stringify(wtfData));
+      }
+      return stateFromDirect;
+    }
+
+    if (stateFromWtfData) {
+      // Restaurer depuis wtf_data (ex: sync Supabase)
+      localStorage.setItem(STORAGE_KEY, stateFromWtfData);
+      return stateFromWtfData;
+    }
+
+    return TUTORIAL_STATES.FIRST_FACT;
   } catch {
     return TUTORIAL_STATES.FIRST_FACT;
   }
@@ -33,6 +52,11 @@ export async function advanceTutorial() {
   const next = STATE_ORDER[idx + 1] || TUTORIAL_STATES.COMPLETED;
   try {
     localStorage.setItem(STORAGE_KEY, next);
+    // Persister dans wtf_data pour sync Supabase
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}');
+    wtfData.tutorialState = next;
+    wtfData.lastModified = Date.now();
+    localStorage.setItem('wtf_data', JSON.stringify(wtfData));
   } catch { /* ignore */ }
   return next;
 }

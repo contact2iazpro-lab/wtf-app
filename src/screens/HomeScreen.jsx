@@ -162,6 +162,21 @@ export default function HomeScreen({
   const textColor = '#ffffff'
   const textShadow = '0 1px 4px rgba(0,0,0,0.3)'
 
+  // ── Long press logo WTF! → active mode dev ────────────────────────────────
+  const longPressTimer = useRef(null)
+  const [devActivated, setDevActivated] = useState(false)
+
+  const handleLogoLongPressStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      localStorage.setItem('wtf_dev_access', 'true')
+      setDevActivated(true)
+      setTimeout(() => setDevActivated(false), 2000)
+    }, 3000)
+  }
+  const handleLogoLongPressEnd = () => {
+    if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null }
+  }
+
   // ── Musique de fond — démarre au premier clic (contourne l'autoplay block) ─
   useEffect(() => {
     if (!audio.musicEnabled) return
@@ -694,15 +709,23 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', position: 'relative', zIndex: 1,
         }}>
-          {/* 1. Logo WTF */}
+          {/* 1. Logo WTF — long press 3s = dev mode */}
           <img
             src="/assets/ui/wtf-logo.png?v=4"
             alt="WTF!"
+            onTouchStart={handleLogoLongPressStart}
+            onTouchEnd={handleLogoLongPressEnd}
+            onMouseDown={handleLogoLongPressStart}
+            onMouseUp={handleLogoLongPressEnd}
+            onContextMenu={e => e.preventDefault()}
             style={{
               width: '55%', maxWidth: 130, height: 'auto',
               objectFit: 'contain', display: 'block',
               filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
               position: 'relative', zIndex: 1,
+              WebkitUserSelect: 'none', userSelect: 'none',
+              transform: devActivated ? 'scale(1.1)' : 'scale(1)',
+              transition: 'transform 0.3s ease',
             }}
           />
 
@@ -892,6 +915,19 @@ export default function HomeScreen({
       )}
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
+
+      {/* Toast dev mode activé */}
+      {devActivated && (
+        <div style={{
+          position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 1000, background: '#FF6B1A', color: 'white',
+          borderRadius: 12, padding: '10px 20px',
+          fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap',
+          boxShadow: '0 4px 20px rgba(255,107,26,0.4)',
+        }}>
+          🔓 Mode développeur activé
+        </div>
+      )}
 
       {/* ═══ MODAL NOUVEAU BADGE ════════════════════════════════════════════ */}
       {showBadgeModal && badgeToShow && (

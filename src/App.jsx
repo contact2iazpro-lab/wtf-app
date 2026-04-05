@@ -163,6 +163,19 @@ function loadStorage() {
         ? saved.streak || 0
         : 0
 
+    // Filet de sécurité : en mode joueur, détecter les unlockedFacts anormalement élevés
+    if (!isDev && !isTest) {
+      const unlocked = saved.unlockedFacts || []
+      const gamesPlayed = saved.gamesPlayed || 0
+      const maxReasonable = Math.max(50, gamesPlayed * 6)
+      if (unlocked.length > maxReasonable && !saved._savedUnlockedFacts) {
+        console.warn('[WTF] unlockedFacts anormalement élevé (' + unlocked.length + ') pour ' + gamesPlayed + ' parties jouées. Reset automatique.')
+        saved.unlockedFacts = []
+        saved.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(saved))
+      }
+    }
+
     const unlockedFacts = new Set(saved.unlockedFacts || [])
     const wtfCoins = saved.wtfCoins || 0
     const wtfDuJourDate = saved.wtfDuJourDate || null

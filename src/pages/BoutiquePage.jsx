@@ -4,15 +4,22 @@ import CoinsIcon from '../components/CoinsIcon'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
+const HINT_PACKS = [
+  { quantity: 1, price: 5,  label: '1 indice',   discount: null },
+  { quantity: 3, price: 12, label: '3 indices',   discount: '-20%' },
+  { quantity: 5, price: 18, label: '5 indices',   discount: '-28%' },
+]
+
+const TICKET_PACKS = [
+  { quantity: 1, price: 10, label: '1 ticket',    discount: null },
+  { quantity: 3, price: 25, label: '3 tickets',   discount: '-17%' },
+  { quantity: 5, price: 35, label: '5 tickets',   discount: '-30%' },
+]
+
 const COIN_PACKS = [
   { label: '50 Coins', price: '0,99 €', emoji: '🪙' },
   { label: '200 Coins', price: '2,99 €', emoji: '💰' },
   { label: '500 Coins', price: '5,99 €', emoji: '🏆' },
-]
-
-const TICKET_PACKS = [
-  { label: '3 Tickets', price: '20 coins', emoji: '🎟️' },
-  { label: '10 Tickets', price: '60 coins', emoji: '🎫' },
 ]
 
 export default function BoutiquePage() {
@@ -24,27 +31,70 @@ export default function BoutiquePage() {
   const [playerHints, setPlayerHints] = useState(() => {
     return parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
   })
+  const [playerTickets, setPlayerTickets] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').tickets || 0 } catch { return 0 }
+  })
   const [toast, setToast] = useState(null)
 
-  const buyHint = () => {
-    if (playerCoins < 5) return
-    // Décrémenter coins
-    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    data.wtfCoins = (data.wtfCoins || 0) - 5
-    data.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(data))
-    // Incrémenter hints
-    const newHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10) + 1
-    localStorage.setItem('wtf_hints_available', String(newHints))
-    // Update state
-    setPlayerCoins(data.wtfCoins)
-    setPlayerHints(newHints)
-    // Refresh App state
-    window.dispatchEvent(new Event('wtf_storage_sync'))
-    // Toast
-    setToast('✅ +1 indice !')
+  const showToast = (msg) => {
+    setToast(msg)
     setTimeout(() => setToast(null), 2000)
   }
+
+  const buyHintPack = (quantity, price) => {
+    if (playerCoins < price) return
+    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    data.wtfCoins = (data.wtfCoins || 0) - price
+    data.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(data))
+    const newHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10) + quantity
+    localStorage.setItem('wtf_hints_available', String(newHints))
+    setPlayerCoins(data.wtfCoins)
+    setPlayerHints(newHints)
+    window.dispatchEvent(new Event('wtf_storage_sync'))
+    showToast(`✅ +${quantity} indice${quantity > 1 ? 's' : ''} !`)
+  }
+
+  const buyTicketPack = (quantity, price) => {
+    if (playerCoins < price) return
+    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    data.wtfCoins = (data.wtfCoins || 0) - price
+    data.tickets = (data.tickets || 0) + quantity
+    data.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(data))
+    setPlayerCoins(data.wtfCoins)
+    setPlayerTickets(data.tickets)
+    window.dispatchEvent(new Event('wtf_storage_sync'))
+    showToast(`✅ +${quantity} ticket${quantity > 1 ? 's' : ''} !`)
+  }
+
+  const PackButton = ({ emoji, label, price, discount, canBuy, onClick }) => (
+    <button
+      onClick={onClick}
+      disabled={!canBuy}
+      className="w-full flex items-center gap-3 rounded-xl active:scale-95 transition-all"
+      style={{
+        padding: '12px 16px',
+        background: canBuy ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)',
+        border: '1px solid rgba(0,0,0,0.08)',
+        cursor: canBuy ? 'pointer' : 'not-allowed',
+        opacity: canBuy ? 1 : 0.4,
+      }}
+    >
+      <span style={{ fontSize: 22, flexShrink: 0 }}>{emoji}</span>
+      <span className="flex-1 text-left font-bold text-sm" style={{ color: '#1a1a2e' }}>{label}</span>
+      <div className="flex items-center gap-2 shrink-0">
+        {discount && (
+          <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-black" style={{ background: 'rgba(34,197,94,0.15)', color: '#16a34a' }}>
+            {discount}
+          </span>
+        )}
+        <span className="flex items-center gap-1 font-black text-sm" style={{ color: '#FF6B1A' }}>
+          {price} <CoinsIcon size={14} />
+        </span>
+      </div>
+    </button>
+  )
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
@@ -73,56 +123,56 @@ export default function BoutiquePage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-24">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
 
-        {/* ── Section Indices — FONCTIONNELLE ── */}
+        {/* ── Section Indices ── */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
             <span style={{ fontSize: 20 }}>💡</span>
             <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Indices</h2>
+            <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(255,107,26,0.1)', color: '#FF6B1A' }}>
+              Stock : {playerHints}
+            </span>
           </div>
           <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Aide-toi pendant les questions difficiles</p>
-
-          {/* Stock actuel */}
-          <div className="flex items-center gap-4 mb-3">
-            <div className="flex items-center gap-1.5">
-              <span style={{ fontSize: 14 }}>💡</span>
-              <span className="font-bold text-sm" style={{ color: '#1a1a2e' }}>{playerHints} indices</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CoinsIcon size={14} />
-              <span className="font-bold text-sm" style={{ color: '#FF6B1A' }}>{playerCoins} coins</span>
-            </div>
+          <div className="flex flex-col gap-2">
+            {HINT_PACKS.map(pack => (
+              <PackButton
+                key={pack.quantity}
+                emoji="💡"
+                label={pack.label}
+                price={pack.price}
+                discount={pack.discount}
+                canBuy={playerCoins >= pack.price}
+                onClick={() => buyHintPack(pack.quantity, pack.price)}
+              />
+            ))}
           </div>
-
-          {/* Bouton achat */}
-          <button
-            onClick={buyHint}
-            disabled={playerCoins < 5}
-            className="w-full py-3 rounded-xl font-black text-sm active:scale-95 transition-all flex items-center justify-center gap-2"
-            style={{
-              background: playerCoins >= 5 ? '#FF6B1A' : '#E5E7EB',
-              color: playerCoins >= 5 ? 'white' : '#9CA3AF',
-              border: 'none',
-              cursor: playerCoins >= 5 ? 'pointer' : 'not-allowed',
-              opacity: playerCoins >= 5 ? 1 : 0.5,
-            }}
-          >
-            <span>💡 1 indice</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              — 5 <CoinsIcon size={14} />
-            </span>
-          </button>
-          {playerCoins < 5 && (
-            <p className="text-xs text-center mt-2" style={{ color: '#EF4444', fontWeight: 700 }}>Pas assez de coins</p>
-          )}
         </div>
 
-        {/* Bandeau bientôt disponible */}
-        <div className="rounded-2xl p-4 mb-4 text-center" style={{ background: 'linear-gradient(135deg, #FF6B1A 0%, #FF3385 100%)' }}>
-          <span className="text-2xl block mb-1">🚧</span>
-          <span className="font-black text-base text-white block">Bientôt disponible</span>
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>Plus d'achats arrivent prochainement !</span>
+        {/* ── Section Tickets ── */}
+        <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <span style={{ fontSize: 20 }}>🎟️</span>
+            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Tickets de Quest</h2>
+            <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(139,92,246,0.1)', color: '#7C3AED' }}>
+              Stock : {playerTickets}
+            </span>
+          </div>
+          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Lance des parties Quest pour débloquer des WTF! rares</p>
+          <div className="flex flex-col gap-2">
+            {TICKET_PACKS.map(pack => (
+              <PackButton
+                key={pack.quantity}
+                emoji="🎟️"
+                label={pack.label}
+                price={pack.price}
+                discount={pack.discount}
+                canBuy={playerCoins >= pack.price}
+                onClick={() => buyTicketPack(pack.quantity, pack.price)}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Packs de Coins */}
@@ -140,24 +190,9 @@ export default function BoutiquePage() {
           ))}
         </div>
 
-        {/* Tickets */}
-        <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Tickets de Quest</h2>
-        <div className="flex flex-col gap-2 mb-4">
-          {TICKET_PACKS.map(pack => (
-            <div key={pack.label} className="flex items-center gap-3 rounded-2xl p-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', opacity: 0.5 }}>
-              <span className="text-2xl">{pack.emoji}</span>
-              <div className="flex-1">
-                <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>{pack.label}</span>
-                <span className="text-xs" style={{ color: '#9CA3AF' }}>{pack.price}</span>
-              </div>
-              <span className="text-lg" style={{ color: '#D1D5DB' }}>🔒</span>
-            </div>
-          ))}
-        </div>
-
         {/* Abonnement */}
         <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Abonnement Premium</h2>
-        <div className="rounded-2xl p-4 text-center" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', opacity: 0.5 }}>
+        <div className="rounded-2xl p-4 text-center mb-4" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', opacity: 0.5 }}>
           <span className="text-3xl block mb-2">👑</span>
           <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>WTF! Premium</span>
           <span className="text-xs block mb-2" style={{ color: '#9CA3AF' }}>Coins illimités, indices gratuits, pas de pub</span>

@@ -148,9 +148,9 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
       </div>
 
       {/* ── Titre + sous-titre ─────────────────────────────────────────── */}
-      <div style={{ textAlign: 'center', flexShrink: 0, marginBottom: S(10) }}>
+      <div style={{ textAlign: 'center', flexShrink: 0, marginBottom: S(6) }}>
         <h1 style={{
-          fontSize: S(26), fontWeight: 900, color: 'white',
+          fontSize: S(22), fontWeight: 900, color: 'white',
           textShadow: '0 2px 10px rgba(0,0,0,0.3)',
           margin: 0,
         }}>
@@ -183,8 +183,8 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                 position: 'relative',
                 background: isSelected ? d.selectedGradient : d.cardGradient,
                 borderRadius: S(16),
-                padding: S(12),
-                marginBottom: S(8),
+                padding: S(10),
+                marginBottom: S(6),
                 width: '100%', boxSizing: 'border-box',
                 border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
                 boxShadow: isSelected
@@ -193,7 +193,6 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                 transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                 cursor: 'pointer',
                 textAlign: 'left',
-                flexShrink: 0,
                 transition: 'all 0.2s ease',
                 WebkitTapHighlightColor: 'transparent',
                 fontFamily: 'Nunito, sans-serif',
@@ -216,14 +215,14 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                   />
                   <div>
                     <span style={{
-                      fontSize: S(20), fontWeight: 900, color: 'white',
+                      fontSize: S(18), fontWeight: 900, color: 'white',
                       textShadow: '0 1px 4px rgba(0,0,0,0.3)',
                       display: 'block', lineHeight: 1.1,
                     }}>
                       {d.label}
                     </span>
                     <span style={{
-                      fontSize: S(10), fontWeight: 700,
+                      fontSize: S(9), fontWeight: 700,
                       color: 'rgba(255,255,255,0.7)',
                       display: 'block', marginTop: S(1),
                     }}>
@@ -254,18 +253,18 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
               {d.rules.map((rule, i) => (
                 <div key={i} style={{
                   display: 'flex', alignItems: 'center',
-                  gap: S(8), marginBottom: i < d.rules.length - 1 ? S(4) : 0,
+                  gap: S(6), marginBottom: i < d.rules.length - 1 ? S(3) : 0,
                 }}>
                   <img
                     src={rule.icon}
                     alt=""
                     style={{
-                      width: S(18), height: S(18),
+                      width: S(16), height: S(16),
                       objectFit: 'contain', flexShrink: 0,
                     }}
                   />
                   <span style={{
-                    fontSize: S(12), fontWeight: 700,
+                    fontSize: S(11), fontWeight: 700,
                     color: 'white',
                   }}>
                     {rule.text}
@@ -277,17 +276,17 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         })}
 
         {/* ── CTA — poussé en bas, pas d'espace mort ───────────────────── */}
-        <div style={{ marginTop: 'auto', paddingBottom: S(12) }}>
+        <div style={{ marginTop: 'auto', paddingBottom: S(8) }}>
           <button
             onClick={() => hasSelection && handleSelect(selectedId)}
             disabled={!hasSelection}
             style={{
               width: '100%',
               boxSizing: 'border-box',
-              minHeight: S(52),
-              padding: S(14),
+              minHeight: S(44),
+              padding: S(12),
               borderRadius: S(16),
-              fontSize: S(18), fontWeight: 900,
+              fontSize: S(16), fontWeight: 900,
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
               border: 'none',

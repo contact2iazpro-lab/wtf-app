@@ -34,6 +34,7 @@ import SettingsModal from './components/SettingsModal'
 import HowToPlayModal from './components/HowToPlayModal'
 import { getTutorialState, getTutorialFactId, advanceTutorial, TUTORIAL_STATES } from './utils/tutorialManager'
 import { audio } from './utils/audio'
+import { checkBadges } from './utils/badgeManager'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
 
@@ -165,9 +166,13 @@ function loadStorage() {
 
 function saveStorage({ totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, sessionsToday, tickets = 0 }) {
   try {
+    const existing = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const bestStreak = Math.max(existing.bestStreak || 0, streak || 0)
     localStorage.setItem('wtf_data', JSON.stringify({
+      ...existing,
       totalScore,
       streak,
+      bestStreak,
       lastDay: TODAY_DATE_STR(),
       unlockedFacts: [...unlockedFacts],
       wtfCoins,
@@ -282,6 +287,7 @@ export default function App() {
   const [sessionIsPerfect, setSessionIsPerfect] = useState(false)
   const [streakRewardToast, setStreakRewardToast] = useState(null)
   const [showStreakSpecialModal, setShowStreakSpecialModal] = useState(false)
+  const [newlyEarnedBadges, setNewlyEarnedBadges] = useState([])
 
   const { user } = useAuth()
 
@@ -635,6 +641,29 @@ export default function App() {
       syncPlayerDataAsync(user.id, { ...storage, wtfCoins: storage.wtfCoins + totalCoinsGained })
     }
 
+    // Track Blitz stats
+    try {
+      const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      if (!wtfData.statsByMode) wtfData.statsByMode = {}
+      if (!wtfData.statsByMode.blitz) {
+        wtfData.statsByMode.blitz = { gamesPlayed: 0, totalCorrect: 0, totalAnswered: 0, bestStreak: 0 }
+      }
+      const ms = wtfData.statsByMode.blitz
+      ms.gamesPlayed += 1
+      ms.totalCorrect += correctCount
+      ms.totalAnswered += totalAnswered
+      if (correctCount > ms.bestStreak) ms.bestStreak = correctCount
+      wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
+      wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount
+      wtfData.totalAnswered = (wtfData.totalAnswered || 0) + totalAnswered
+      wtfData.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+    } catch { /* ignore */ }
+
+    // Check badges après Blitz
+    const newBadges = checkBadges()
+    if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
+
     setBlitzResults({
       correctCount,
       totalAnswered,
@@ -938,6 +967,31 @@ export default function App() {
           if (user) updateCollection(user.id, effectiveDailyFact.category, effectiveDailyFact.id)
         }
       }
+
+      // Track stats par mode
+      try {
+        const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        if (!wtfData.statsByMode) wtfData.statsByMode = {}
+        if (!wtfData.statsByMode[sessionType]) {
+          wtfData.statsByMode[sessionType] = { gamesPlayed: 0, totalCorrect: 0, totalAnswered: 0, bestStreak: 0 }
+        }
+        const ms = wtfData.statsByMode[sessionType]
+        ms.gamesPlayed += 1
+        ms.totalCorrect += correctCount + (isCorrect ? 1 : 0)
+        ms.totalAnswered += sessionFacts.length
+        const currentStreak = wtfData.streak || 0
+        if (currentStreak > ms.bestStreak) ms.bestStreak = currentStreak
+        // Stats globales
+        wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
+        wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount + (isCorrect ? 1 : 0)
+        wtfData.totalAnswered = (wtfData.totalAnswered || 0) + sessionFacts.length
+        wtfData.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+      } catch { /* ignore */ }
+
+      // Check badges après mise à jour des stats
+      const newBadges = checkBadges()
+      if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
 
       // Route to appropriate end screen
       if (sessionType === 'wtf_du_jour') {
@@ -1481,7 +1535,8 @@ export default function App() {
           playerTickets={tickets}
           currentStreak={streak}
           dailyQuestsRemaining={dailyQuestsRemaining}
-          nextBadgeInfo={null}
+          newlyEarnedBadges={newlyEarnedBadges}
+          onBadgeSeen={() => setNewlyEarnedBadges([])}
           onNavigate={handleHomeNavigate}
           onOpenSettings={() => setShowSettings(true)}
           playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}

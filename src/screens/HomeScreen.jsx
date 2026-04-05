@@ -11,65 +11,83 @@ import { useAuth } from '../context/AuthContext'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import { getTutorialState, TUTORIAL_STATES } from '../utils/tutorialManager'
+import { getNextBadge } from '../utils/badgeManager'
 
 // ── Fond sombre fixe ─────────────────────────────────────────────────────────
 const HOME_BG_COLOR = '#1E3A8A'
 
 // ── Coffre quotidien ──────────────────────────────────────────────────────────
-const COFFRE_DAYS = [1, 2, 3, 4, 7]
+const COFFRE_REWARDS = [
+  { day: 'L', reward: { type: 'coins', amount: 5 } },
+  { day: 'M', reward: { type: 'coins', amount: 5 } },
+  { day: 'M', reward: { type: 'coins', amount: 5 } },
+  { day: 'J', reward: { type: 'hints', amount: 1 } },
+  { day: 'V', reward: { type: 'coins', amount: 10 } },
+  { day: 'S', reward: { type: 'hints', amount: 1 } },
+  { day: 'D', reward: { type: 'coins', amount: 15, bonus: { type: 'tickets', amount: 1 } } },
+]
+
+function getWeekStart() {
+  const now = new Date()
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1))
+  return monday.toISOString().slice(0, 10)
+}
 
 function useDailyCoffre() {
-  const today = new Date().toISOString().slice(0, 10)
+  const now = new Date()
+  const todayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1 // lundi=0 ... dimanche=6
+  const weekStart = getWeekStart()
 
   const read = () => {
-    const lastDate = localStorage.getItem('wtf_coffre_last_date') || null
-    const lastIndex = parseInt(localStorage.getItem('wtf_coffre_index') ?? '-1')
-    const claimedToday = lastDate === today
-    const availableIndex = claimedToday ? -1 : (lastIndex + 1) % COFFRE_DAYS.length
-    return { lastIndex, claimedToday, availableIndex }
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    let claimedDays = wtfData.coffreClaimedDays || []
+    const storedWeekStart = wtfData.coffreWeekStart || ''
+    if (storedWeekStart !== weekStart) claimedDays = [] // nouvelle semaine
+    return { claimedDays, weekStart }
   }
 
   const [coffreData, setCoffreData] = useState(read)
 
-  const claim = () => {
-    const { availableIndex } = coffreData
-    if (availableIndex < 0) return null
-    const REWARDS = [
-      { type: 'coins', amount: 5 },
-      { type: 'coins', amount: 10 },
-      { type: 'hints', amount: 1 },
-      { type: 'hints', amount: 2 },
-    ]
-    const reward = REWARDS[Math.floor(Math.random() * REWARDS.length)]
-    localStorage.setItem('wtf_coffre_last_date', today)
-    localStorage.setItem('wtf_coffre_index', String(availableIndex))
-    setCoffreData({ lastIndex: availableIndex, claimedToday: true, availableIndex: -1 })
-    return reward
-  }
-
   const getStatus = (i) => {
-    const { lastIndex, claimedToday, availableIndex } = coffreData
-    const isTrophy = COFFRE_DAYS[i] === 7
-    if (!claimedToday && i === availableIndex) return 'available'
-    if (i <= lastIndex) return 'collected'
-    return isTrophy ? 'locked-trophy' : 'locked'
+    const { claimedDays } = coffreData
+    if (claimedDays.includes(i)) return 'collected'
+    if (i === todayIndex) return 'available'
+    if (i < todayIndex) return 'missed'
+    return 'locked'
   }
 
-  return { ...coffreData, claim, getStatus }
+  const openCoffre = () => {
+    if (coffreData.claimedDays.includes(todayIndex)) return null
+    const newClaimed = [...coffreData.claimedDays, todayIndex]
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    wtfData.coffreClaimedDays = newClaimed
+    wtfData.coffreWeekStart = weekStart
+    wtfData.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+    setCoffreData({ claimedDays: newClaimed, weekStart })
+    const coffreConfig = COFFRE_REWARDS[todayIndex]
+    applyCofreReward(coffreConfig.reward)
+    if (coffreConfig.reward.bonus) applyCofreReward(coffreConfig.reward.bonus)
+    return coffreConfig.reward
+  }
+
+  return { coffres: COFFRE_REWARDS, todayIndex, getStatus, openCoffre }
 }
 
 function applyCofreReward(reward) {
   try {
+    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     if (reward.type === 'coins') {
-      const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       data.wtfCoins = (data.wtfCoins || 0) + reward.amount
-      data.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(data))
     } else if (reward.type === 'hints') {
       const current = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
       localStorage.setItem('wtf_hints_available', String(current + reward.amount))
+    } else if (reward.type === 'tickets') {
+      data.tickets = (data.tickets || 0) + reward.amount
     }
-    // Notifier App.jsx de recharger le state depuis localStorage
+    data.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(data))
     window.dispatchEvent(new Event('wtf_storage_sync'))
   } catch { /* ignore */ }
 }
@@ -109,7 +127,8 @@ export default function HomeScreen({
   playerTickets = 0,
   dailyQuestsRemaining = 3,
   currentStreak = 0,
-  nextBadgeInfo = null,
+  newlyEarnedBadges = [],
+  onBadgeSeen = null,
   onNavigate,
   onOpenSettings,
   playerAvatar = null,
@@ -122,7 +141,21 @@ export default function HomeScreen({
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
   const [showConnectBanner, setShowConnectBanner] = useState(false)
-  const { claim, getStatus } = useDailyCoffre()
+  const { coffres, todayIndex, getStatus, openCoffre } = useDailyCoffre()
+  const [nextBadgeInfo, setNextBadgeInfo] = useState(() => getNextBadge())
+  const [showBadgeModal, setShowBadgeModal] = useState(false)
+  const [badgeToShow, setBadgeToShow] = useState(null)
+
+  // Show badge modal when returning to HomeScreen with new badges
+  useEffect(() => {
+    if (newlyEarnedBadges.length > 0) {
+      setBadgeToShow(newlyEarnedBadges[0])
+      setShowBadgeModal(true)
+    }
+  }, [newlyEarnedBadges])
+
+  // Refresh next badge info on mount
+  useEffect(() => { setNextBadgeInfo(getNextBadge()) }, [])
   const countdown = useCountdownToMidnight()
   const progress24h = get24hProgress()
   const scale = useScale()
@@ -438,59 +471,95 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ═══ ZONE 2 — BADGE PROGRESSION (32px fixe) ════════════════════════ */}
+      {/* ═══ ZONE 2 — STREAK + COUNTDOWN (32px fixe) ═════════════════════ */}
       <div style={{
         height: 32, flexShrink: 0,
         margin: '8px 14px 0',
-        background: 'rgba(255,255,255,0.2)',
-        borderRadius: 8,
-        padding: '0 12px',
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
+        display: 'flex', alignItems: 'center', gap: 6,
         position: 'relative', zIndex: 2,
       }}>
-        <span style={{ fontSize: 10, fontWeight: 800, color: textColor, textShadow, flexShrink: 0 }}>Prochain badge</span>
-        <div style={{ flex: 1, background: 'rgba(255,255,255,0.2)', borderRadius: 4, height: 5, margin: '0 10px', overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', width: `${progress24h}%`,
-            background: 'white', borderRadius: 4,
-            transition: 'width 0.5s ease',
-          }} />
+        {/* Streak badge */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 4,
+          background: currentStreak > 0 ? 'rgba(255,107,26,0.25)' : 'rgba(255,255,255,0.15)',
+          borderRadius: 8, padding: '4px 10px',
+          ...(currentStreak >= 7 ? { boxShadow: '0 0 8px rgba(255,107,26,0.4)' } : {}),
+        }}>
+          <span style={{ fontSize: 12 }}>🔥</span>
+          <span style={{
+            fontSize: S(11), fontWeight: 900,
+            color: currentStreak > 0 ? '#FF6B1A' : 'rgba(255,255,255,0.4)',
+          }}>
+            {currentStreak} jour{currentStreak !== 1 ? 's' : ''}
+          </span>
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, color: textColor, opacity: 0.7, textShadow, flexShrink: 0 }}>{countdown}</span>
+        {/* Countdown prochain coffre */}
+        <div style={{
+          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+          gap: 4,
+        }}>
+          <span style={{ fontSize: S(9), fontWeight: 700, color: textColor, opacity: 0.5, textShadow }}>Prochain coffre</span>
+          <span style={{ fontSize: S(10), fontWeight: 800, color: textColor, opacity: 0.7, textShadow }}>{countdown}</span>
+        </div>
+      </div>
+
+      {/* ═══ ZONE 2B — PROCHAIN BADGE (28px fixe) ═════════════════════════ */}
+      <div style={{
+        height: 28, flexShrink: 0,
+        margin: '4px 14px 0',
+        background: 'rgba(255,255,255,0.15)',
+        borderRadius: 8, padding: '0 10px',
+        display: 'flex', alignItems: 'center',
+        position: 'relative', zIndex: 2,
+      }}>
+        {nextBadgeInfo ? (
+          <>
+            <span style={{ fontSize: S(10), fontWeight: 700, color: textColor, textShadow, flexShrink: 0, whiteSpace: 'nowrap' }}>
+              {nextBadgeInfo.badge.emoji} {nextBadgeInfo.badge.label}
+            </span>
+            <div style={{ flex: 1, background: 'rgba(255,255,255,0.2)', borderRadius: 2, height: 4, margin: '0 8px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${nextBadgeInfo.progress}%`, background: 'white', borderRadius: 2, transition: 'width 0.5s ease' }} />
+            </div>
+            <span style={{ fontSize: S(10), fontWeight: 700, color: textColor, opacity: 0.7, textShadow, flexShrink: 0 }}>
+              {nextBadgeInfo.current}/{nextBadgeInfo.target}
+            </span>
+          </>
+        ) : (
+          <span style={{ fontSize: S(10), fontWeight: 800, color: '#FFD700', textShadow, flex: 1, textAlign: 'center' }}>
+            🏆 Tous les badges débloqués !
+          </span>
+        )}
       </div>
 
       {/* ═══ ZONE 3 — COFFRES QUOTIDIENS (60px fixe) ═══════════════════════ */}
       <div style={{
         height: 60, flexShrink: 0,
         display: 'flex', alignItems: 'center',
-        opacity: canAccess ? 1 : 0.4,
-        gap: 6, padding: '6px 14px 0',
+        gap: 2, padding: '6px 10px 0',
         justifyContent: 'center',
         position: 'relative', zIndex: 2,
       }}>
-        {COFFRE_DAYS.map((day, i) => {
+        {coffres.map((c, i) => {
           const status = getStatus(i)
           const isAvail = status === 'available'
           const isColl = status === 'collected'
-          const isTrophy = status === 'locked-trophy'
+          const isMissed = status === 'missed'
+          const isSunday = i === 6
 
           const chestSrc = isAvail
             ? '/assets/ui/chest-open.png'
-            : isTrophy
+            : isSunday && !isColl
               ? '/assets/ui/chest-trophy.png?v=2'
               : '/assets/ui/chest-locked.png'
 
           return (
             <button
-              key={day}
+              key={i}
               onClick={() => {
-                if (!canAccess) { setShowConnectBanner(true); return }
                 if (!isAvail) return
                 audio.play?.('click')
-                const reward = claim()
+                const reward = openCoffre()
                 if (reward) {
-                  applyCofreReward(reward)
                   setCoffreReward(reward)
                   setShowCoffreModal(true)
                 }
@@ -499,26 +568,26 @@ export default function HomeScreen({
                 flex: 1,
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                gap: S(1), padding: `${S(4)} ${S(2)}`,
-                borderRadius: S(8),
-                background: isAvail ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
-                border: `1px solid ${isAvail ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                gap: S(1), padding: `${S(3)} ${S(1)}`,
+                borderRadius: S(6),
+                background: isAvail ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)',
+                border: `1px solid ${isAvail ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.08)'}`,
                 cursor: isAvail ? 'pointer' : 'default',
-                opacity: isColl ? 0.35 : (status === 'locked' || status === 'locked-trophy') ? 0.5 : 1,
+                opacity: isColl ? 0.35 : isMissed ? 0.25 : status === 'locked' ? 0.5 : 1,
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'opacity 0.2s, background 0.2s',
               }}
             >
               <img
                 src={chestSrc}
-                alt={isAvail ? 'coffre disponible' : isTrophy ? 'coffre trophée' : 'coffre verrouillé'}
-                style={{ width: S(36), height: S(36), objectFit: 'contain', flexShrink: 0, background: 'transparent', display: 'block' }}
+                alt={c.day}
+                style={{ width: S(28), height: S(28), objectFit: 'contain', flexShrink: 0, background: 'transparent', display: 'block' }}
               />
               <span style={{
-                fontSize: S(8), fontWeight: 800, lineHeight: 1,
+                fontSize: S(7), fontWeight: 800, lineHeight: 1,
                 color: textColor, textShadow,
               }}>
-                {isAvail ? 'NOUVEAU' : `J-${day}`}{isColl ? ' ✓' : ''}
+                {isColl ? '✓' : c.day}
               </span>
             </button>
           )
@@ -798,9 +867,11 @@ export default function HomeScreen({
               Coffre du jour !
             </div>
             <div style={{ fontSize: 17, fontWeight: 800, color: 'white', marginBottom: 24, lineHeight: 1.4 }}>
-              {coffreReward.type === 'coins'
-                ? `Tu as gagné ${coffreReward.amount} coins !`
-                : `Tu as gagné ${coffreReward.amount} indice${coffreReward.amount > 1 ? 's' : ''} !`}
+              {coffreReward.type === 'coins' && coffreReward.bonus
+                ? `Tu as gagné ${coffreReward.amount} coins et ${coffreReward.bonus.amount} ticket ! 🎉`
+                : coffreReward.type === 'coins'
+                  ? `Tu as gagné ${coffreReward.amount} coins !`
+                  : `Tu as gagné ${coffreReward.amount} indice${coffreReward.amount > 1 ? 's' : ''} !`}
             </div>
             <button
               onClick={() => setShowCoffreModal(false)}
@@ -821,6 +892,55 @@ export default function HomeScreen({
       )}
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
+
+      {/* ═══ MODAL NOUVEAU BADGE ════════════════════════════════════════════ */}
+      {showBadgeModal && badgeToShow && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20,
+          }}
+          onClick={() => { setShowBadgeModal(false); setNextBadgeInfo(getNextBadge()); onBadgeSeen?.() }}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)',
+              border: '2px solid #FFD700',
+              borderRadius: 24, padding: '32px 28px',
+              textAlign: 'center', maxWidth: 300, width: '100%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,215,0,0.25)',
+              fontFamily: 'Nunito, sans-serif',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 48, marginBottom: 12, lineHeight: 1 }}>{badgeToShow.emoji}</div>
+            <div style={{
+              fontSize: 20, fontWeight: 900, color: '#FFD700',
+              marginBottom: 10, letterSpacing: '0.05em',
+            }}>
+              Badge débloqué ! 🎉
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: 'white', marginBottom: 24 }}>
+              {badgeToShow.label}
+            </div>
+            <button
+              onClick={() => { setShowBadgeModal(false); setNextBadgeInfo(getNextBadge()); onBadgeSeen?.() }}
+              style={{
+                background: 'linear-gradient(135deg, #FF6B1A 0%, #FF8C42 100%)',
+                color: 'white', border: 'none',
+                borderRadius: 16, padding: '13px 36px',
+                fontWeight: 900, fontSize: 15, cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+                boxShadow: '0 4px 16px rgba(255,107,26,0.45)',
+              }}
+            >
+              Super !
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -120,7 +120,24 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut({ scope: 'local' })
+    // Supprimer la session Supabase (global = côté serveur + client)
+    try {
+      await supabase.auth.signOut()
+    } catch (e) {
+      console.warn('signOut error (ignored):', e)
+    }
+
+    // Forcer le nettoyage du token JWT dans localStorage
+    // Supabase stocke le token sous une clé commençant par 'sb-'
+    const keysToRemove = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('sb-')) {
+        keysToRemove.push(key)
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key))
+
     setUser(null)
     setProfile(null)
   }, [])

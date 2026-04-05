@@ -147,6 +147,16 @@ function loadStorage() {
     const todayDateStr = TODAY_DATE_STR()
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
+    // Si on revient de dev/test en mode joueur, restaurer immédiatement les vrais unlockedFacts
+    const isDev = localStorage.getItem('wtf_dev_mode') === 'true'
+    const isTest = localStorage.getItem('wtf_test_mode') === 'true'
+    if (!isDev && !isTest && saved._savedUnlockedFacts) {
+      saved.unlockedFacts = saved._savedUnlockedFacts
+      delete saved._savedUnlockedFacts
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    }
+
     const streak = saved.lastDay === todayDateStr
       ? saved.streak
       : saved.lastDay === YESTERDAY_DATE_STR()
@@ -1001,6 +1011,13 @@ export default function App() {
         getTutorialState().then(state => {
           if (sessionType === 'flash_solo' && state === TUTORIAL_STATES.HOME_DISCOVERED) {
             advanceTutorial() // HOME_DISCOVERED → FLASH_DONE
+            // Garantir 1 ticket pour lancer la Quest (spotlight suivant)
+            const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            if ((wtfData.tickets || 0) === 0) {
+              wtfData.tickets = 1
+              wtfData.lastModified = Date.now()
+              localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+            }
           } else if (sessionType === 'parcours' && state === TUTORIAL_STATES.FLASH_DONE) {
             advanceTutorial() // FLASH_DONE → QUEST_DONE
           }
@@ -1294,19 +1311,34 @@ export default function App() {
     return () => window.removeEventListener('wtf_storage_sync', handleSync)
   }, [])
 
-  // Dev/Test mode: unlock all facts in memory + localStorage
+  // Dev/Test mode: unlock all facts — restore real ones when back to player mode
   useEffect(() => {
     if (!factsReady) return
     const isDev = localStorage.getItem('wtf_dev_mode') === 'true'
     const isTest = localStorage.getItem('wtf_test_mode') === 'true'
-    if (!isDev && !isTest) return
-    const allIds = new Set(getValidFacts().map(f => f.id))
-    setStorage(prev => ({ ...prev, unlockedFacts: allIds }))
-    // Persist to localStorage for Blitz pool + Collection
     const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    wtfData.unlockedFacts = [...allIds]
-    wtfData.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+
+    if (isDev || isTest) {
+      // Sauvegarder les vrais unlockedFacts du joueur (seulement si pas déjà sauvegardés)
+      if (!wtfData._savedUnlockedFacts) {
+        wtfData._savedUnlockedFacts = wtfData.unlockedFacts || []
+      }
+      // Débloquer tous les facts
+      const allIds = [...new Set(getValidFacts().map(f => f.id))]
+      wtfData.unlockedFacts = allIds
+      wtfData.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+      setStorage(prev => ({ ...prev, unlockedFacts: new Set(allIds) }))
+    } else {
+      // Mode joueur — restaurer les vrais unlockedFacts si on revient de dev/test
+      if (wtfData._savedUnlockedFacts) {
+        wtfData.unlockedFacts = wtfData._savedUnlockedFacts
+        delete wtfData._savedUnlockedFacts
+        wtfData.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+        setStorage(prev => ({ ...prev, unlockedFacts: new Set(wtfData.unlockedFacts) }))
+      }
+    }
   }, [factsReady])
 
   // Auto-dismiss streak reward toast après 3 secondes

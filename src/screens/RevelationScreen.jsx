@@ -558,11 +558,11 @@ export default function RevelationScreen({
       {/* Image pleine largeur — cover, plein cadre */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0, maxHeight: '42vh' }}>
         <div
-          className={`overflow-hidden relative${!isDuel && flipped && isCorrect && fact.isVip ? ' wow-shine wow-glow gold-card-rounded' : ''}`}
+          className="overflow-hidden relative"
           style={{
             background: catGradient, width: '100%', maxHeight: '42vh',
             borderRadius: S(16), padding: 4,
-            border: !isDuel && flipped && isCorrect && fact.isVip ? undefined : `3px solid ${cat?.color || '#1a3a5c'}`,
+            border: `3px solid ${cat?.color || '#1a3a5c'}`,
           }}
         >
           {fact.imageUrl && !imgFailed ? (
@@ -593,68 +593,8 @@ export default function RevelationScreen({
             </div>
           )}
 
-          {/* Gold overlay + shimmer (VIP bonne réponse uniquement) */}
-          {!isDuel && flipped && isCorrect && fact.isVip && (
-            <>
-              {/* Overlay gold semi-transparent */}
-              <div className="absolute inset-0 pointer-events-none" style={{
-                zIndex: 6,
-                background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,180,0,0.15) 25%, rgba(255,215,0,0.05) 50%, rgba(255,180,0,0.15) 75%, rgba(255,215,0,0.08) 100%)',
-                borderRadius: S(12),
-              }} />
-              {/* Shimmer diagonal gliding */}
-              <div className="absolute inset-0 pointer-events-none" style={{
-                zIndex: 7, overflow: 'hidden', borderRadius: S(12),
-              }}>
-                <div style={{
-                  position: 'absolute', inset: '-50%',
-                  background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.08) 45%, rgba(255,215,0,0.15) 50%, rgba(255,255,255,0.08) 55%, transparent 60%)',
-                  animation: 'goldShimmer 3s ease-in-out infinite',
-                }} />
-              </div>
-              {/* Holographic conic overlay */}
-              <div className="absolute inset-0 pointer-events-none" style={{
-                zIndex: 8, borderRadius: S(12), overflow: 'hidden',
-                mixBlendMode: 'overlay', opacity: 0.6,
-                background: `conic-gradient(from 0deg, ${cat?.color || '#FFD700'}00 0%, ${cat?.color || '#FFD700'}40 10%, transparent 20%, ${cat?.color || '#FFD700'}60 40%, transparent 50%, ${cat?.color || '#FFD700'}30 70%, transparent 80%, ${cat?.color || '#FFD700'}50 100%)`,
-                animation: 'holoRotate 4s linear infinite',
-              }} />
-              {/* Prismatic reflex */}
-              <div className="absolute inset-0 pointer-events-none" style={{
-                zIndex: 9, borderRadius: S(12), overflow: 'hidden',
-              }}>
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
-                  animation: 'holoPrism 3s ease-in-out infinite',
-                }} />
-              </div>
-              {/* Sparkle particles — doubled for VIP intensity */}
-              {[
-                { top: '-3px', left: '15%', delay: '0s' },
-                { top: '20%', right: '-3px', delay: '0.4s' },
-                { bottom: '10%', left: '-3px', delay: '0.8s' },
-                { bottom: '-3px', right: '25%', delay: '1.2s' },
-                { top: '50%', right: '10%', delay: '1.6s' },
-                { top: '10%', left: '40%', delay: '0.2s' },
-                { top: '40%', left: '-3px', delay: '0.6s' },
-                { bottom: '30%', right: '-3px', delay: '1.0s' },
-                { bottom: '-3px', left: '60%', delay: '1.4s' },
-                { top: '-3px', right: '40%', delay: '1.8s' },
-              ].map((pos, i) => (
-                <div key={i} className="absolute pointer-events-none" style={{
-                  ...pos, zIndex: 11,
-                  width: '5px', height: '5px', borderRadius: '50%',
-                  background: 'radial-gradient(circle, #FFD700, #FFA500)',
-                  boxShadow: '0 0 6px rgba(255,215,0,0.8)',
-                  animation: `goldSparkle 2s ${pos.delay} ease-in-out infinite`,
-                }} />
-              ))}
-            </>
-          )}
-
-          {/* Stamp FOU — petit, coin bas droit */}
-          {!isDuel && flipped && isCorrect && (
+          {/* Stamp FOU — Funny facts uniquement (pas VIP) */}
+          {!isDuel && flipped && isCorrect && !fact.isVip && (
             <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
               <div style={{
                 fontSize: S(18), fontWeight: 900, color: '#4CAF50',

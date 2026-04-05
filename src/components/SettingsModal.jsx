@@ -365,7 +365,7 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
 
               {/* Version — tap 5× to unlock dev mode */}
               <div className="text-center mt-4 mb-2" onClick={() => setTapCount(c => c + 1)} style={{ cursor: 'default', userSelect: 'none' }}>
-                <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.9'}</span>
+                <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v{import.meta.env.VITE_APP_VERSION || '0.0.0'}</span>
               </div>
               {devToast && (
                 <div className="text-center mb-2">

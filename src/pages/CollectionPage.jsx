@@ -54,7 +54,7 @@ function FactDetailView({ fact, onClose }) {
   const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
   const catGradient = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
-  const catTextColor = isLightColor(catColor) ? '#1a1a1a' : '#ffffff'
+  const isVip = !!fact.isVip
   const S = (px) => `calc(${px}px * var(--scale))`
 
   const share = () => {
@@ -71,16 +71,45 @@ function FactDetailView({ fact, onClose }) {
       <div style={{
         width: '100%', maxWidth: 430, height: '100%',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
-        backgroundSize: 'cover', backgroundPosition: 'center',
-        backgroundColor: catColor, position: 'relative',
+        ...(isVip ? {
+          background: catGradient,
+        } : {
+          backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
+          backgroundSize: 'cover', backgroundPosition: 'center',
+          backgroundColor: catColor,
+        }),
+        position: 'relative',
       }}>
-      {/* Overlay catégorie */}
-      <div style={{ position: 'absolute', inset: 0, background: `${catColor}cc`, zIndex: 0 }} />
+      {/* Overlay catégorie (non-VIP) ou particules VIP */}
+      {isVip ? (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          {Array.from({ length: 12 }, (_, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              top: `${(i * 31 + 7) % 90}%`,
+              left: `${(i * 43 + 13) % 95}%`,
+              width: i % 3 === 0 ? 6 : 4,
+              height: i % 3 === 0 ? 6 : 4,
+              borderRadius: '50%',
+              background: `rgba(255,255,255,${0.1 + (i % 4) * 0.07})`,
+              animation: `vipDetailPulse ${2 + (i % 3) * 0.5}s ${(i * 0.3).toFixed(1)}s ease-in-out infinite`,
+            }} />
+          ))}
+        </div>
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, background: `${catColor}cc`, zIndex: 0 }} />
+      )}
+
+      <style>{`
+        @keyframes vipDetailPulse {
+          0%, 100% { opacity: 0.1; transform: scale(0.8); }
+          50% { opacity: 0.35; transform: scale(1.2); }
+        }
+      `}</style>
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
-        {/* Header — ← | #ID centre | ⚙️ */}
+        {/* Header — ← | ⚙️ */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}` }}>
           <button
             onClick={onClose}
@@ -90,11 +119,9 @@ function FactDetailView({ fact, onClose }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}
           >
-            <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>←</span>
+            <span style={{ fontSize: S(16), color: '#ffffff', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>←</span>
           </button>
-          <span style={{ fontWeight: 900, fontSize: S(13), color: catTextColor }}>
-            F*ct #{fact.id}
-          </span>
+          <div style={{ flex: 1 }} />
           <button
             onClick={() => { audio.play('click') }}
             style={{
@@ -107,19 +134,25 @@ function FactDetailView({ fact, onClose }) {
           </button>
         </div>
 
-        {/* Question en titre */}
-        <div style={{ flexShrink: 0, padding: `0 ${S(16)} ${S(6)}`, textAlign: 'center' }}>
-          <span style={{ fontWeight: 900, fontSize: S(14), color: catTextColor, lineHeight: 1.3, display: 'block' }}>
-            {fact.question}
-          </span>
+        {/* Question dans un encadré sombre */}
+        <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(6)}` }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
+            borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
+            border: '1px solid rgba(255,255,255,0.12)',
+          }}>
+            <span style={{ fontWeight: 900, fontSize: S(14), color: '#ffffff', lineHeight: 1.3, display: 'block', textAlign: 'center' }}>
+              {fact.question}
+            </span>
+          </div>
         </div>
 
-        {/* Image pleine largeur — format carré, cliquable lightbox */}
-        <div style={{ flexShrink: 0, padding: `0 ${S(16)}` }}>
+        {/* Image — maxHeight 35vh, cliquable lightbox */}
+        <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
           <div
             onClick={() => fact.imageUrl && setShowLightbox(true)}
             style={{
-              width: '100%', aspectRatio: '1/1', borderRadius: S(16), overflow: 'hidden',
+              width: '100%', maxHeight: '35vh', borderRadius: S(16), overflow: 'hidden',
               border: `3px solid ${catColor}`, position: 'relative',
               background: catGradient, cursor: fact.imageUrl ? 'pointer' : 'default',
             }}
@@ -129,22 +162,22 @@ function FactDetailView({ fact, onClose }) {
                 <img
                   src={fact.imageUrl}
                   alt={fact.question}
-                  style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
+                  style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
                 />
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
                   style={{
                     position: 'absolute', top: S(8), right: S(8), zIndex: 10,
-                    width: 28, height: 28, borderRadius: '50%',
+                    width: 36, height: 36, borderRadius: '50%',
                     background: 'rgba(0,0,0,0.5)', border: 'none',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', fontSize: 14,
+                    cursor: 'pointer', fontSize: 18,
                   }}
                 >🔍</button>
               </>
             ) : (
               <div style={{
-                width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
+                width: '100%', height: 'calc(35vh - 6px)', display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center', gap: 8,
               }}>
                 <div style={{ fontSize: 72, fontWeight: 900, color: 'white', lineHeight: 1, opacity: 0.3 }}>?</div>
@@ -154,20 +187,20 @@ function FactDetailView({ fact, onClose }) {
           </div>
         </div>
 
-        {/* Encadrés réponse + Le saviez-vous — style RevelationScreen */}
-        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(6) }}>
+        {/* Encadrés réponse + Le saviez-vous */}
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(4)} ${S(12)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
           {/* Encadré réponse */}
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
+            borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
           }}>
             <div style={{
               background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
-              borderRadius: S(10), padding: `${S(8)} ${S(10)}`,
+              borderRadius: S(8), padding: `${S(6)} ${S(8)}`,
             }}>
               <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>Réponse :</div>
-              <div style={{ fontSize: S(13), fontWeight: 700, color: 'white' }}>{fact.shortAnswer || fact.options?.[fact.correctIndex]}</div>
+              <div style={{ fontSize: S(12), fontWeight: 700, color: '#ffffff' }}>{fact.shortAnswer || fact.options?.[fact.correctIndex]}</div>
             </div>
           </div>
 
@@ -175,13 +208,14 @@ function FactDetailView({ fact, onClose }) {
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
+            borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+            flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(4) }}>
-              <span style={{ fontSize: S(14) }}>🧠</span>
-              <span style={{ color: 'white', fontWeight: 900, fontSize: S(10), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
+              <span style={{ fontSize: S(12) }}>🧠</span>
+              <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0 }}>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(10), lineHeight: 1.4, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>
               {fact.explanation}
             </p>
             {fact.sourceUrl && (
@@ -189,7 +223,7 @@ function FactDetailView({ fact, onClose }) {
                 href={fact.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(6), textDecoration: 'underline', textAlign: 'right' }}
+                style={{ fontSize: S(9), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(4), textDecoration: 'underline', textAlign: 'right', flexShrink: 0 }}
               >
                 Source
               </a>
@@ -198,13 +232,13 @@ function FactDetailView({ fact, onClose }) {
         </div>
 
         {/* Bouton partager — fixe en bas */}
-        <div style={{ flexShrink: 0, padding: `${S(6)} ${S(16)} ${S(12)}` }}>
+        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
           <button
             onClick={share}
             className="active:scale-95 transition-all"
             style={{
               width: '100%', height: S(44), borderRadius: S(14),
-              fontWeight: 900, fontSize: S(13), color: 'white', border: 'none',
+              fontWeight: 900, fontSize: S(13), color: '#ffffff', border: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
               background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
               boxShadow: `0 4px 16px ${catColor}50`,

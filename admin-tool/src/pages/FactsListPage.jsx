@@ -263,8 +263,9 @@ export default function FactsListPage({ toast }) {
 
   async function toggleVip(fact) {
     const newVal = !fact.is_vip
-    setFacts(prev => prev.map(f => f.id === fact.id ? { ...f, is_vip: newVal } : f))
-    const { error } = await supabase.from('facts').update({ is_vip: newVal }).eq('id', fact.id)
+    const newType = newVal ? 'vip' : 'generated'
+    setFacts(prev => prev.map(f => f.id === fact.id ? { ...f, is_vip: newVal, type: newType } : f))
+    const { error } = await supabase.from('facts').update({ is_vip: newVal, type: newType }).eq('id', fact.id)
     if (error) { toast?.('Erreur mise à jour mode', 'error'); loadFacts() }
   }
 
@@ -866,7 +867,7 @@ export default function FactsListPage({ toast }) {
             )}
             <div className="flex gap-2">
               <button onClick={() => setBatchAction(null)} className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold">Annuler</button>
-              <button onClick={executeBatch} disabled={!batchValue || batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-40" style={{ background: '#FF6B1A' }}>
+              <button onClick={() => executeBatch()} disabled={!batchValue || batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold disabled:opacity-40" style={{ background: '#FF6B1A' }}>
                 {batchLoading ? '…' : 'Appliquer'}
               </button>
             </div>
@@ -874,21 +875,21 @@ export default function FactsListPage({ toast }) {
         </div>
       )}
 
-      {/* Modal — Mode de jeu (Quête / Flash) */}
+      {/* Modal — Mode de jeu (WTF! / Funny) */}
       {batchAction && (batchAction === 'mode_quete' || batchAction === 'mode_flash') && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60" onClick={() => setBatchAction(null)}>
           <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 w-80" onClick={e => e.stopPropagation()}>
             <h3 className="font-black text-white mb-3">
-              {batchAction === 'mode_quete' ? '⚔️ Passer en Quête WTF!' : '⚡ Passer en Flash/Marathon'}
+              {batchAction === 'mode_quete' ? '⚔️ Passer en WTF!' : '⚡ Passer en Funny F*cts'}
             </h3>
             <p className="text-slate-400 text-sm mb-5">
               {batchAction === 'mode_quete'
-                ? `Passer ${selected.size} fact(s) en mode Quête WTF! ?`
-                : `Passer ${selected.size} fact(s) en Flash/Marathon ?`}
+                ? `Passer ${selected.size} fact(s) en mode WTF! ?`
+                : `Passer ${selected.size} fact(s) en Funny F*cts ?`}
             </p>
             <div className="flex gap-2">
               <button onClick={() => setBatchAction(null)} className="flex-1 py-2 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold">Annuler</button>
-              <button onClick={executeBatch} disabled={batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold" style={{ background: batchAction === 'mode_quete' ? '#D97706' : '#7C3AED' }}>
+              <button onClick={() => executeBatch()} disabled={batchLoading} className="flex-1 py-2 rounded-xl text-white text-sm font-bold" style={{ background: batchAction === 'mode_quete' ? '#D97706' : '#7C3AED' }}>
                 {batchLoading ? '…' : 'Confirmer'}
               </button>
             </div>
@@ -941,7 +942,7 @@ export default function FactsListPage({ toast }) {
             <p className="text-slate-500 text-xs mb-5">Cette action est irréversible.</p>
             <div className="flex gap-3">
               <button onClick={() => setBatchAction(null)} className="flex-1 py-2.5 rounded-xl bg-slate-700 text-slate-300 text-sm font-bold hover:bg-slate-600 transition-all">Annuler</button>
-              <button onClick={executeBatch} disabled={batchLoading} className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-50 transition-all" style={{ background: '#DC2626' }}>
+              <button onClick={() => executeBatch()} disabled={batchLoading} className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold disabled:opacity-50 transition-all" style={{ background: '#DC2626' }}>
                 {batchLoading ? '…' : '🗑 Supprimer définitivement'}
               </button>
             </div>
@@ -1046,12 +1047,12 @@ export default function FactsListPage({ toast }) {
           )}
         </div>
 
-        {/* Quête / Flash-Marathon filter */}
+        {/* WTF! / Funny filter */}
         <div className="flex rounded-xl overflow-hidden border border-slate-700">
           {[
             { value: 'all',    label: 'Tous' },
-            { value: 'vip',    label: '⭐ Quête', color: '#F59E0B' },
-            { value: 'non-vip', label: '⚡ Flash/Marathon', color: '#7C3AED' },
+            { value: 'vip',    label: '⭐ WTF!', color: '#F59E0B' },
+            { value: 'non-vip', label: '⚡ Funny F*cts', color: '#7C3AED' },
           ].map(opt => (
             <button
               key={opt.value}
@@ -1159,8 +1160,8 @@ export default function FactsListPage({ toast }) {
           </span>
           <div className="flex items-center gap-1.5 flex-wrap">
             {/* Groupe 1 — Mode de jeu */}
-            <button onClick={() => { setBatchAction('mode_quete'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#D97706' }}>⚔️ Quête</button>
-            <button onClick={() => { setBatchAction('mode_flash'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#7C3AED' }}>⚡ Flash/Marathon</button>
+            <button onClick={() => { setBatchAction('mode_quete'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#D97706' }}>⚔️ WTF!</button>
+            <button onClick={() => { setBatchAction('mode_flash'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#7C3AED' }}>⚡ Funny</button>
             <span className="text-slate-600 mx-1">|</span>
             {/* Groupe 2 — Statut */}
             <button onClick={() => { setBatchAction('status_change'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#334155' }}>📋 Statut</button>
@@ -1194,7 +1195,7 @@ export default function FactsListPage({ toast }) {
                 Question<SortIcon field="question" current={sortField} dir={sortDir} />
               </th>
               <th className="px-3 py-3 text-center text-slate-400">Image</th>
-              <th className="px-3 py-3 text-center text-slate-400">Quête</th>
+              <th className="px-3 py-3 text-center text-slate-400">WTF!</th>
               <th className="px-3 py-3 text-center text-slate-400">Statut</th>
               <th className="px-3 py-3 text-left text-slate-400">Pack</th>
               <th className="px-3 py-3 text-left cursor-pointer text-slate-400 hover:text-white" onClick={() => handleSort('updated_at')}>
@@ -1249,7 +1250,7 @@ export default function FactsListPage({ toast }) {
                     }
                   </td>
                   <td className="px-3 py-2.5 text-center">
-                    <button onClick={() => toggleVip(fact)} title="Toggle Quête">
+                    <button onClick={() => toggleVip(fact)} title="Toggle WTF!">
                       {fact.is_vip ? '⭐' : <span className="text-slate-700">☆</span>}
                     </button>
                   </td>

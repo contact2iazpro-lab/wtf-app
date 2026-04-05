@@ -64,6 +64,13 @@ export default function BlitzResultsScreen({
         playerName: user.user_metadata?.name || 'Joueur WTF!',
       })
       setChallengeCreated(challenge)
+      // Track challengesSent pour les trophées
+      try {
+        const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        wtfData.challengesSent = (wtfData.challengesSent || 0) + 1
+        wtfData.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+      } catch { /* ignore */ }
     } catch (e) {
       console.error('Challenge creation error:', e)
       alert('Erreur lors de la création du défi. Réessaie !')

@@ -10,6 +10,7 @@ const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFacts = new Set(), bestBlitzTime = null }) {
   const scale = useScale()
   const [selectedCatId, setSelectedCatId] = useState('all')
+  const [questionCount, setQuestionCount] = useState(null)
 
   const allFacts = getValidFacts()
   const totalUnlocked = allFacts.filter(f => unlockedFacts.has(f.id)).length
@@ -26,12 +27,19 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
       .sort((a, b) => b.count - a.count)
   }, [allFacts, unlockedFacts])
 
-  const hasSelection = selectedCatId !== null
+  // Pool size for selected category
+  const poolSize = selectedCatId === 'all'
+    ? totalUnlocked
+    : (categories.find(c => c.id === selectedCatId)?.count || 0)
+
+  const questionOptions = [5, 10, 20]
+  const effectiveCount = questionCount || (poolSize >= 20 ? 20 : poolSize >= 10 ? 10 : poolSize >= 5 ? 5 : poolSize)
+  const hasSelection = selectedCatId !== null && poolSize >= 4
 
   const handleGo = () => {
     if (!hasSelection) return
     audio.play('click')
-    onSelectCategory(selectedCatId === 'all' ? null : selectedCatId)
+    onSelectCategory(selectedCatId === 'all' ? null : selectedCatId, effectiveCount)
   }
 
   return (
@@ -158,6 +166,38 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
           )}
         </div>
       </div>
+
+      {/* Question count selector */}
+      {poolSize >= 4 && (
+        <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(8)}` }}>
+          <div style={{ fontSize: S(14), fontWeight: 900, color: 'white', marginBottom: S(8), textAlign: 'center' }}>Nombre de questions</div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+            {questionOptions.map(n => {
+              const available = poolSize >= n
+              const selected = effectiveCount === n
+              return (
+                <button
+                  key={n}
+                  onClick={() => available && setQuestionCount(n)}
+                  disabled={!available}
+                  style={{
+                    borderRadius: 12, padding: `${S(10)} ${S(20)}`,
+                    fontSize: S(16), fontWeight: 900, cursor: available ? 'pointer' : 'default',
+                    background: selected ? '#FF6B1A' : 'rgba(255,255,255,0.1)',
+                    color: available ? 'white' : 'rgba(255,255,255,0.25)',
+                    border: selected ? '2px solid #FF6B1A' : '1px solid rgba(255,255,255,0.2)',
+                    opacity: available ? 1 : 0.4,
+                    transition: 'all 0.2s ease',
+                    fontFamily: 'Nunito, sans-serif',
+                  }}
+                >
+                  {n}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* CTA */}
       <div style={{ flexShrink: 0, padding: `${S(8)} ${S(12)} ${S(14)}` }}>

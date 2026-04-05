@@ -74,7 +74,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
       setElapsed(elapsedRef.current)
       setPenalties(p => p + WRONG_PENALTY)
       setAnsweredResults(prev => [...prev, 'wrong'])
-      audio.play('wrong')
+      audio.play('buzzer')
     }
 
     // Check if last question

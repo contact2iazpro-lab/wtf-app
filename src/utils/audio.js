@@ -140,6 +140,11 @@ class AudioManager {
         this.playFile(randomWrongSound.slice(1), 0.2)
         break
       }
+      case 'buzzer':
+        // Buzzer court style jeu TV — son procédural
+        this._tone(150, 0.15, 'square', 0.3)
+        this._tone(100, 0.15, 'square', 0.25, 0.05)
+        break
       case 'reveal':
         this._tone(440, 0.10, 'sine', 0.10)
         this._tone(554, 0.14, 'sine', 0.15, 0.09)

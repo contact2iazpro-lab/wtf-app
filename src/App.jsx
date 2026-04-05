@@ -206,6 +206,36 @@ function saveStorage(params) {
   } catch { /* ignore */ }
 }
 
+function updateTrophyData() {
+  try {
+    const allFacts = getValidFacts()
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const unlockedIds = new Set(wtfData.unlockedFacts || [])
+
+    const unlockedFactsByCategory = {}
+    const totalFactsByCategory = {}
+    let vipCount = 0
+    let funnyCount = 0
+
+    for (const fact of allFacts) {
+      const cat = fact.category || 'unknown'
+      totalFactsByCategory[cat] = (totalFactsByCategory[cat] || 0) + 1
+      if (unlockedIds.has(fact.id)) {
+        unlockedFactsByCategory[cat] = (unlockedFactsByCategory[cat] || 0) + 1
+        if (fact.isVip) vipCount++
+        else funnyCount++
+      }
+    }
+
+    wtfData.unlockedFactsByCategory = unlockedFactsByCategory
+    wtfData.totalFactsByCategory = totalFactsByCategory
+    wtfData.vipCount = vipCount
+    wtfData.funnyCount = funnyCount
+    wtfData.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+  } catch { /* ignore */ }
+}
+
 export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
@@ -668,20 +698,21 @@ export default function App() {
   }, [])
 
   // ─── Blitz start ───────────────────────────────────────────────────────────
-  const handleBlitzStart = useCallback((categoryId) => {
+  const handleBlitzStart = useCallback((categoryId, questionCount) => {
     audio.play('click')
     // Blitz = facts déjà débloqués uniquement (mode rapidité)
     let pool = getBlitzFacts()
     if (categoryId) pool = pool.filter(f => f.category === categoryId)
 
     if (pool.length < 4) {
-      // Pas assez de facts débloqués pour jouer en Blitz
       alert('Débloque plus de f*cts pour jouer en Blitz ! 🔓')
       return
     }
 
+    const count = questionCount || pool.length
     const shuffled = [...pool]
       .sort(() => Math.random() - 0.5)
+      .slice(0, count)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
 
     setSessionType('blitz')
@@ -719,9 +750,15 @@ export default function App() {
       wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
       wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount
       wtfData.totalAnswered = (wtfData.totalAnswered || 0) + totalAnswered
+      // Blitz perfect (0 erreurs)
+      if (correctCount === totalAnswered && totalAnswered > 0) {
+        wtfData.blitzPerfects = (wtfData.blitzPerfects || 0) + 1
+      }
       wtfData.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(wtfData))
     } catch { /* ignore */ }
+
+    updateTrophyData()
 
     // Check badges après Blitz
     const newBadges = checkBadges()
@@ -1070,6 +1107,9 @@ export default function App() {
         localStorage.setItem('wtf_data', JSON.stringify(wtfData))
       } catch { /* ignore */ }
 
+      // Recalculer les données trophées (facts par catégorie, VIP/Funny counts)
+      updateTrophyData()
+
       // Check badges après mise à jour des stats
       const newBadges = checkBadges()
       if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
@@ -1329,6 +1369,8 @@ export default function App() {
         setDailyFact(getDailyFact())
         setFactsReady(true)
         setFactsError(null)
+        // Calculer les données pour les trophées
+        updateTrophyData()
       } else {
         setFactsError(result?.error || 'Erreur inconnue')
       }

@@ -14,7 +14,7 @@ import { getTutorialState, TUTORIAL_STATES } from '../utils/tutorialManager'
 import { getNextBadge } from '../utils/badgeManager'
 
 // ── Fond sombre fixe ─────────────────────────────────────────────────────────
-const HOME_BG_COLOR = '#1E3A8A'
+const HOME_BG_COLOR = 'linear-gradient(160deg, #1a3a5c 0%, #1e4d7a 40%, #2a5f8f 70%, #1a3a5c 100%)'
 
 // ── Coffre quotidien ──────────────────────────────────────────────────────────
 const COFFRE_REWARDS = [

@@ -56,6 +56,8 @@ function fromRow(row) {
     question:     row.question,
     hint1:        row.hint1        || null,
     hint2:        row.hint2        || null,
+    hint3:        row.hint3        || null,
+    hint4:        row.hint4        || null,
     shortAnswer:  row.short_answer || row.answer || null,
     explanation:  row.explanation  || null,
     sourceUrl:    row.source_url   || null,
@@ -185,7 +187,7 @@ const RETRY_DELAY = 1500 // ms
 async function fetchFromSupabase() {
   const { data, error } = await supabase
     .from('facts')
-    .select('id, category, question, hint1, hint2, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
+    .select('id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
     .eq('is_published', true)
     .order('id')
 

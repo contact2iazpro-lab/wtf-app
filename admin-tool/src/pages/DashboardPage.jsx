@@ -40,10 +40,9 @@ const ALL_QUALITY_CHECKS = [
   { key: 'noImage',               emoji: '📷', label: 'Sans image' },
   { key: 'questionTooLong',       emoji: '📝', label: 'Question trop longue' },
   { key: 'explanationOutOfRange', emoji: '📖', label: 'Explication hors limites' },
-  { key: 'missingHints',          emoji: '💡', label: 'Indices manquants' },
+  { key: 'incompleteHints',       emoji: '💡', label: 'Indices incomplets (< 4)' },
   { key: 'noSourceUrl',           emoji: '🔗', label: 'Sans URL source' },
   { key: 'missingWrongAnswers',   emoji: '🎭', label: 'Fausses réponses incomplètes' },
-  { key: 'legacyOptions',         emoji: '🗂️', label: 'Options QCM legacy vides' },
 ]
 
 function truncate(str, n) {
@@ -189,7 +188,7 @@ export default function DashboardPage({ toast }) {
       while (true) {
         const { data, error } = await supabase
           .from('facts')
-          .select('id, question, hint1, hint2, explanation, options, image_url, source_url, category, is_published, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
+          .select('id, question, hint1, hint2, hint3, hint4, explanation, options, image_url, source_url, category, is_published, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break
@@ -204,14 +203,17 @@ export default function DashboardPage({ toast }) {
         noImage:               all.filter(x => isEmpty(x.image_url)),
         questionTooLong:       all.filter(x => x.question && x.question.length > 100),
         explanationOutOfRange: all.filter(x => !x.explanation || x.explanation.length < 100 || x.explanation.length > 300),
-        missingHints:          all.filter(x => isEmpty(x.hint1) || isEmpty(x.hint2)),
+        incompleteHints:       all.filter(x => {
+          const filled = [x.hint1, x.hint2, x.hint3, x.hint4]
+            .filter(h => h && h.trim() !== '').length
+          return filled < 4
+        }),
         noSourceUrl:           all.filter(x => isEmpty(x.source_url)),
         missingWrongAnswers:   all.filter(x =>
           isEmpty(x.funny_wrong_1) || isEmpty(x.funny_wrong_2) ||
           isEmpty(x.close_wrong_1) || isEmpty(x.close_wrong_2) ||
           isEmpty(x.plausible_wrong_1) || isEmpty(x.plausible_wrong_2) || isEmpty(x.plausible_wrong_3)
         ),
-        legacyOptions:         all.filter(x => !x.options || !Array.isArray(x.options) || x.options.filter(Boolean).length < 4),
         _total: all.length,
       })
     } catch (err) {

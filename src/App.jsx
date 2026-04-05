@@ -322,12 +322,24 @@ export default function App() {
   // From teaser: start the 5-question Flash session for WTF du Jour
   const handleStartWTFSession = useCallback(() => {
     audio.play('click')
-    const category = effectiveDailyFact.category
+    // Fallback si dailyFact null (mode dev/test)
+    let huntFact = effectiveDailyFact
+    if (!huntFact) {
+      const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+      if (isDevOrTest) {
+        const allValid = getValidFacts().filter(f => f.isVip || (!f.type || f.type === 'vip'))
+        huntFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
+      }
+      if (!huntFact) {
+        alert('Le f*ct du jour n\'est pas encore chargé. Réessaie dans quelques secondes !')
+        return
+      }
+    }
+    const category = huntFact.category
     // Session : Funny Facts (non-VIP) uniquement, même catégorie, exclure débloqués
-    let pool = getGeneratedFacts().filter(f => f.category === category && f.id !== effectiveDailyFact.id && !unlockedFacts.has(f.id))
-    // Si pas assez dans la catégorie, élargir à toutes les catégories
+    let pool = getGeneratedFacts().filter(f => f.category === category && f.id !== huntFact.id && !unlockedFacts.has(f.id))
     if (pool.length < 5) {
-      pool = getGeneratedFacts().filter(f => f.id !== effectiveDailyFact.id && !unlockedFacts.has(f.id))
+      pool = getGeneratedFacts().filter(f => f.id !== huntFact.id && !unlockedFacts.has(f.id))
     }
     const facts = [...pool]
       .sort(() => Math.random() - 0.5)
@@ -339,7 +351,7 @@ export default function App() {
     setSelectedDifficulty(DIFFICULTY_LEVELS.HUNT)
     setSelectedCategory(category)
     initSessionState(facts)
-    logDevEvent('session_started', { type: 'wtf_du_jour', category, factId: effectiveDailyFact.id })
+    logDevEvent('session_started', { type: 'wtf_du_jour', category, factId: huntFact.id })
     setScreen(SCREENS.QUESTION)
   }, [effectiveDailyFact, unlockedFacts])
 
@@ -350,8 +362,9 @@ export default function App() {
     // Pool : facts non-VIP uniquement, exclure les déjà débloqués
     // Non connecté : catégories limitées
     const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
+    const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
     const pool = getGeneratedFacts().filter(f =>
-      !unlockedFacts.has(f.id) && (user || isDevMode ? true : GUEST_CATEGORIES.includes(f.category))
+      !unlockedFacts.has(f.id) && (user || isDevMode || isTestMode ? true : GUEST_CATEGORIES.includes(f.category))
     )
 
     if (pool.length < 5) {
@@ -490,7 +503,7 @@ export default function App() {
       // Marathon : 20 questions générées (non-VIP) dans la catégorie choisie
       let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => !unlockedFacts.has(f.id))
       // Dev mode fallback : inclure les déjà débloqués
-      if (pool.length < 4 && localStorage.getItem('wtf_dev_mode') === 'true') {
+      if (pool.length < 4 && (localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true')) {
         pool = getGeneratedFactsByCategory(selectedCategory)
       }
       if (pool.length < 4) {
@@ -510,7 +523,7 @@ export default function App() {
     }
 
     // Parcours/Quest : VIP uniquement, filtrés par difficulté — coûte 1 ticket
-    const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true'
+    const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     if (!isDevModeQuest) {
       if ((tickets || 0) < 1) {
         alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
@@ -649,7 +662,7 @@ export default function App() {
       const difficulty = DIFFICULTY_LEVELS.HOT
       let pool = getGeneratedFactsByCategory(categoryId).filter(f => !unlockedFacts.has(f.id))
       // Dev mode fallback : inclure les déjà débloqués
-      if (pool.length < 4 && localStorage.getItem('wtf_dev_mode') === 'true') {
+      if (pool.length < 4 && (localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true')) {
         pool = getGeneratedFactsByCategory(categoryId)
       }
       if (pool.length < 4) {
@@ -827,7 +840,7 @@ export default function App() {
         // Unlock correctly answered facts (joueurs connectés ou mode dev)
         const newUnlocked = new Set(unlockedFacts)
         const toSync = []
-        if (user || localStorage.getItem('wtf_dev_mode') === 'true') {
+        if (user || localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true') {
           for (const fact of sessionCorrectFacts) {
             if (!newUnlocked.has(fact.id)) {
               newUnlocked.add(fact.id)
@@ -1031,7 +1044,7 @@ export default function App() {
   }, [selectedCategory, handleBlitzStart])
 
   const handleExplorerContinue = useCallback(() => {
-    const isDevModeExplorer = localStorage.getItem('wtf_dev_mode') === 'true'
+    const isDevModeExplorer = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     if (!isDevModeExplorer && (tickets || 0) < 1) {
       alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
       return
@@ -1178,10 +1191,11 @@ export default function App() {
   useEffect(() => {
     const handleSync = () => {
       const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
+      const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
       setStorage(loadStorage())
 
-      // En mode dev, ne pas toucher aux valeurs localStorage (pas de reset nouveau profil)
-      if (isDevMode) return
+      // En mode dev/test, ne pas toucher aux valeurs localStorage
+      if (isDevMode || isTestMode) return
 
       // Restaurer les facts temporaires sauvegardés avant le redirect OAuth
       const tempFactsJson = localStorage.getItem('wtf_temp_facts')
@@ -1535,7 +1549,7 @@ export default function App() {
           }
           category={selectedCategory}
           gameMode={gameMode}
-          difficulty={gameMode === 'solo' ? selectedDifficulty : null}
+          difficulty={(gameMode === 'solo' || gameMode === 'marathon') ? selectedDifficulty : null}
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
@@ -1681,7 +1695,24 @@ export default function App() {
         />
       )}
 
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onShowRules={handleShowRules} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onShowRules={handleShowRules} onRestartTutorial={() => {
+        localStorage.setItem('tutorial_state', 'FIRST_FACT')
+        setShowSettings(false)
+        const tutorialFactId = getTutorialFactId()
+        const allFacts = getValidFacts()
+        const tutorialFact = allFacts.find(f => f.id === tutorialFactId)
+        if (tutorialFact) {
+          const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, DIFFICULTY_LEVELS.HOT) }
+          setSessionType('parcours')
+          setGameMode('solo')
+          setIsQuickPlay(false)
+          setIsTutorialSession(true)
+          setSelectedDifficulty(DIFFICULTY_LEVELS.HOT)
+          setSelectedCategory(tutorialFact.category)
+          initSessionState([factWithOptions])
+          setScreen(SCREENS.QUESTION)
+        }
+      }} />}
 
       {showWelcomeModal && (
         <WelcomeModal

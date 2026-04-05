@@ -1,20 +1,55 @@
 import { useState } from 'react'
 
 // Shared hint flip card button — used by QuestionScreen and BlitzScreen
-export default function HintFlipButton({ num, hint, catColor, hasStock, stockCount, onReveal }) {
+// hasStock: player has hints in stock
+// stockCount: number of hints (or string like 'gratuit')
+// canBuyWithCoins: player has >= 5 coins to buy a hint
+// onBuyHint: callback when buying with coins (null if not applicable)
+export default function HintFlipButton({ num, hint, catColor, hasStock, stockCount, canBuyWithCoins, onReveal, onBuyHint }) {
   const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
 
-  const disabled = !hasStock
+  const canUse = hasStock || canBuyWithCoins
+  const disabled = !canUse
 
   const handleClick = () => {
     if (phase !== 'front' || disabled) return
+    // If no stock but can buy with coins, buy first
+    if (!hasStock && canBuyWithCoins && onBuyHint) {
+      onBuyHint()
+    }
     setPhase('flip')
     onReveal()
     setTimeout(() => setPhase('back'), 160)
   }
 
   const color = catColor || '#FF6B1A'
-  const labelColor = '#ffffff'
+
+  // Front label depends on stock state
+  let frontLabel
+  if (hasStock) {
+    frontLabel = (
+      <span style={{ fontWeight: 900, fontSize: 13, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+        💡 {stockCount}
+      </span>
+    )
+  } else if (canBuyWithCoins) {
+    frontLabel = (
+      <span style={{ fontWeight: 900, fontSize: 12, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
+        Indice 5 🪙
+      </span>
+    )
+  } else {
+    frontLabel = (
+      <>
+        <span style={{ fontWeight: 900, fontSize: 11, color: '#9CA3AF', whiteSpace: 'nowrap', textDecoration: 'line-through', display: 'flex', alignItems: 'center', gap: 3 }}>
+          Indice 5 🪙
+        </span>
+        <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
+          Pas assez
+        </span>
+      </>
+    )
+  }
 
   return (
     <button
@@ -26,7 +61,7 @@ export default function HintFlipButton({ num, hint, catColor, hasStock, stockCou
         border: (disabled && phase !== 'back') ? '2px solid #6B7280' : `2px solid ${color}`,
         background: (disabled && phase !== 'back')
           ? 'rgba(107,114,128,0.15)'
-          : phase === 'back' ? 'rgba(255,255,255,0.88)' : `${color}28`,
+          : phase === 'back' ? 'rgba(235,235,235,0.95)' : `${color}28`,
         transform: phase === 'flip' ? 'scaleY(0.08)' : 'scaleY(1)',
         transition: 'transform 0.15s ease, background 0.3s, border-color 0.3s',
         overflow: 'hidden',
@@ -43,26 +78,13 @@ export default function HintFlipButton({ num, hint, catColor, hasStock, stockCou
       }}
     >
       {phase !== 'back' ? (
-        disabled ? (
-          <>
-            <span style={{ fontWeight: 900, fontSize: 12, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
-              Indice
-            </span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
-              Stock épuisé
-            </span>
-          </>
-        ) : (
-          <span style={{ fontWeight: 900, fontSize: 13, color: labelColor, whiteSpace: 'nowrap' }}>
-            Indice ({stockCount})
-          </span>
-        )
+        frontLabel
       ) : (
         <span
           style={{
             fontSize: 18,
             fontWeight: 700,
-            color: color,
+            color: '#1a1a2e',
             textAlign: 'center',
             lineHeight: 1.35,
             wordBreak: 'break-word',

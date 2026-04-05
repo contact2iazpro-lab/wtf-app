@@ -30,58 +30,77 @@ function SettingRow({ icon, label, right, onClick, style }) {
 }
 
 // ─── Dev mode toggle — visible only in DEV ──────────────────────────────────
-function DevModeToggleRow() {
-  const [devMode, setDevMode] = useState(() => localStorage.getItem('wtf_dev_mode') === 'true')
+function GameModeSelector() {
+  const currentMode = localStorage.getItem('wtf_dev_mode') === 'true' ? 'dev'
+    : localStorage.getItem('wtf_test_mode') === 'true' ? 'test' : 'player'
 
-  const toggle = () => {
-    const next = !devMode
+  const select = (mode) => {
+    if (mode === currentMode) return
     const existing = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
-    if (next) {
-      // Activer : sauvegarder les vraies valeurs puis donner 999
-      localStorage.setItem('wtf_dev_backup_coins', String(existing.wtfCoins || 0))
-      localStorage.setItem('wtf_dev_backup_tickets', String(existing.tickets || 0))
-      localStorage.setItem('wtf_dev_backup_hints', localStorage.getItem('wtf_hints_available') || '0')
-      existing.wtfCoins = 999
-      existing.tickets = 999
+    if (mode === 'player') {
+      // Restaurer les vraies valeurs
+      const bc = parseInt(localStorage.getItem('wtf_dev_backup_coins') || '0', 10)
+      const bt = parseInt(localStorage.getItem('wtf_dev_backup_tickets') || '0', 10)
+      const bh = localStorage.getItem('wtf_dev_backup_hints') || '0'
+      existing.wtfCoins = bc; existing.tickets = bt
       localStorage.setItem('wtf_data', JSON.stringify(existing))
-      localStorage.setItem('wtf_hints_available', '999')
-    } else {
-      // Désactiver : restaurer les vraies valeurs depuis les backups individuels
-      const backupCoins = parseInt(localStorage.getItem('wtf_dev_backup_coins') || '0', 10)
-      const backupTickets = parseInt(localStorage.getItem('wtf_dev_backup_tickets') || '0', 10)
-      const backupHints = localStorage.getItem('wtf_dev_backup_hints') || '0'
-      existing.wtfCoins = backupCoins
-      existing.tickets = backupTickets
-      localStorage.setItem('wtf_data', JSON.stringify(existing))
-      localStorage.setItem('wtf_hints_available', backupHints)
+      localStorage.setItem('wtf_hints_available', bh)
       localStorage.removeItem('wtf_dev_backup_coins')
       localStorage.removeItem('wtf_dev_backup_tickets')
       localStorage.removeItem('wtf_dev_backup_hints')
+      localStorage.removeItem('wtf_dev_mode')
+      localStorage.removeItem('wtf_test_mode')
+    } else {
+      // Sauvegarder si pas déjà fait
+      if (currentMode === 'player') {
+        localStorage.setItem('wtf_dev_backup_coins', String(existing.wtfCoins || 0))
+        localStorage.setItem('wtf_dev_backup_tickets', String(existing.tickets || 0))
+        localStorage.setItem('wtf_dev_backup_hints', localStorage.getItem('wtf_hints_available') || '0')
+      }
+      existing.wtfCoins = 999; existing.tickets = 999
+      localStorage.setItem('wtf_data', JSON.stringify(existing))
+      localStorage.setItem('wtf_hints_available', '999')
+      localStorage.setItem('wtf_dev_mode', String(mode === 'dev'))
+      localStorage.setItem('wtf_test_mode', String(mode === 'test'))
+      if (mode === 'dev') localStorage.removeItem('wtf_test_mode')
+      if (mode === 'test') localStorage.removeItem('wtf_dev_mode')
     }
-
-    localStorage.setItem('wtf_dev_mode', String(next))
-    setDevMode(next)
     window.location.reload()
   }
 
+  const modes = [
+    { id: 'player', icon: '👤', label: 'Joueur', sub: 'Expérience réelle' },
+    { id: 'test', icon: '🎮', label: 'Test', sub: 'Accès total' },
+    { id: 'dev', icon: '🔧', label: 'Dev', sub: 'Debug contenu' },
+  ]
+
   return (
-    <button
-      onClick={toggle}
-      className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border transition-all active:scale-95"
-      style={{
-        background: devMode ? 'rgba(255,107,26,0.12)' : '#F9FAFB',
-        borderColor: devMode ? '#FF6B1A' : '#E5E7EB',
-      }}
-    >
-      <span className="flex items-center gap-3">
-        <span className="text-lg">{devMode ? '🛠' : '👤'}</span>
-        <span className="font-bold text-sm" style={{ color: devMode ? '#FF6B1A' : '#9CA3AF' }}>
-          {devMode ? 'MODE DEV ACTIF' : 'MODE JOUEUR'}
-        </span>
-      </span>
-      <TogglePill on={devMode} />
-    </button>
+    <div>
+      <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#9CA3AF' }}>🎮 Mode de jeu</p>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {modes.map(m => {
+          const active = currentMode === m.id
+          return (
+            <button
+              key={m.id}
+              onClick={() => select(m.id)}
+              className="active:scale-95 transition-all"
+              style={{
+                flex: 1, borderRadius: 10, padding: '10px 4px', textAlign: 'center',
+                background: active ? '#FF6B1A' : 'transparent',
+                border: active ? '2px solid #FF6B1A' : '1.5px solid #E5E7EB',
+                cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+              }}
+            >
+              <div style={{ fontSize: 18 }}>{m.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: active ? 'white' : '#6B7280', marginTop: 2 }}>{m.label}</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: active ? 'rgba(255,255,255,0.7)' : '#9CA3AF', marginTop: 1 }}>{m.sub}</div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -185,7 +204,7 @@ function SaveProgressModal({ onClose }) {
 }
 
 // ─── Main settings modal ────────────────────────────────────────────────────
-export default function SettingsModal({ onClose }) {
+export default function SettingsModal({ onClose, onRestartTutorial }) {
   const [soundOn, setSoundOn] = useState(audio.sfxEnabled)
   const [musicOn, setMusicOn] = useState(audio.musicEnabled)
   const [notifOn, setNotifOn] = useState(() => localStorage.getItem('wtf_notifications') !== 'false')
@@ -199,7 +218,10 @@ export default function SettingsModal({ onClose }) {
 
   return (
     <>
-      {showRulesModal && <HowToPlayModal onClose={() => setShowRulesModal(false)} />}
+      {showRulesModal && <HowToPlayModal onClose={() => setShowRulesModal(false)} onRestartTutorial={() => {
+        setShowRulesModal(false)
+        if (onRestartTutorial) onRestartTutorial()
+      }} />}
 
       <div
         className="fixed inset-0 flex items-end justify-center"
@@ -227,8 +249,8 @@ export default function SettingsModal({ onClose }) {
 
               {/* Dev mode — DEV only */}
               {import.meta.env.DEV && (
-                <div className="mb-1 p-2 rounded-2xl" style={{ background: 'rgba(255,100,0,0.1)', border: '1px solid rgba(255,100,0,0.3)' }}>
-                  <DevModeToggleRow />
+                <div className="mb-1 p-3 rounded-2xl" style={{ background: 'rgba(255,100,0,0.08)', border: '1px solid rgba(255,100,0,0.2)' }}>
+                  <GameModeSelector />
                 </div>
               )}
 

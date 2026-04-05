@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import CircularTimer from '../components/CircularTimer'
 import GameHeader from '../components/GameHeader'
 import CoinsIcon from '../components/CoinsIcon'
@@ -207,8 +207,8 @@ export default function QuestionScreen({
               key={i}
               style={{
                 flex: 1,
-                height: isActive ? S(16) : S(8),
-                borderRadius: S(4),
+                height: isActive ? S(20) : S(10),
+                borderRadius: S(5),
                 background: isActive ? 'white' : 'rgba(255,255,255,0.3)',
                 position: isActive ? 'relative' : 'static',
                 transition: 'all 0.3s ease',
@@ -219,8 +219,8 @@ export default function QuestionScreen({
                   position: 'absolute',
                   top: '50%', left: '50%',
                   transform: 'translate(-50%, -50%)',
-                  fontSize: S(10),
-                  fontWeight: 800,
+                  fontSize: S(12),
+                  fontWeight: 900,
                   color: cat?.color || '#1a1a2e',
                   whiteSpace: 'nowrap',
                 }}>
@@ -249,36 +249,48 @@ export default function QuestionScreen({
     </div>
   )
 
+  // ── Tirage aléatoire de 2 indices parmi 4 (stable par question) ────────────
+  const selectedHints = useMemo(() => {
+    const pool = [fact.hint1, fact.hint2, fact.hint3, fact.hint4]
+      .filter(h => h && h.trim() !== '')
+    const shuffled = [...pool].sort(() => Math.random() - 0.5)
+    return shuffled.slice(0, 2)
+  }, [fact.id])
+
   // ── Hints ──────────────────────────────────────────────────────────────────
   // Nombre d'indices disponibles selon la difficulté (max boutons affichés)
   const freeHints  = difficulty?.freeHints  ?? 0
   const paidHints  = difficulty?.paidHints  ?? 0
-  const totalHints = freeHints + paidHints
+  const totalHints = Math.min(freeHints + paidHints, selectedHints.length)
   // Stock restant = playerHints - indices déjà utilisés dans cette question
   const stockRemaining = Math.max(0, playerHints - hintsUsed)
 
-  const hintButtons = totalHints > 0 && (
+  // Dev mode: 4 indices pré-révélés
+  const devHintButtons = isDevMode && (
+    <div className="shrink-0" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+      {[fact.hint1, fact.hint2, fact.hint3, fact.hint4].map((h, i) => (
+        <div key={i} style={{
+          height: 28, width: '100%', borderRadius: 14, background: 'rgba(235,235,235,0.95)',
+          border: `2px solid ${cat?.color || '#FF6B1A'}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px',
+        }}>
+          <span style={{ fontSize: 10, fontWeight: 800, color: '#1a1a2e', textAlign: 'center', lineHeight: 1 }}>
+            {h || '—'}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+
+  const hintButtons = totalHints > 0 && !isDevMode && (
     <div
       className="shrink-0"
       style={{ display: 'grid', gridTemplateColumns: totalHints === 1 ? '1fr' : '1fr 1fr', gap: 8 }}
     >
       {Array.from({ length: totalHints }, (_, i) => {
         const hintNum = i + 1
-        const hintText = hintNum === 1 ? fact.hint1 : fact.hint2
-        // Dev mode: show hints pre-revealed
-        if (isDevMode) {
-          return (
-            <div key={hintNum} style={{
-              height: 32, width: '100%', borderRadius: 16, background: 'rgba(255,255,255,0.92)',
-              border: `2px solid ${cat?.color || '#FF6B1A'}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 8px',
-            }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', textAlign: 'center', lineHeight: 1 }}>
-                {hintText || '—'}
-              </span>
-            </div>
-          )
-        }
+        const hintText = selectedHints[hintNum - 1] ?? null
+        const currentCoins = parseInt(JSON.parse(localStorage.getItem('wtf_data') || '{}').wtfCoins || '0', 10)
         return (
           <HintFlipButton
             key={hintNum}
@@ -287,7 +299,18 @@ export default function QuestionScreen({
             catColor={cat?.color || '#FF6B1A'}
             hasStock={stockRemaining > 0}
             stockCount={stockRemaining}
+            canBuyWithCoins={stockRemaining <= 0 && currentCoins >= 5}
             onReveal={() => { onUseHint(hintNum); audio.play('click') }}
+            onBuyHint={() => {
+              // Acheter 1 indice avec 5 coins
+              const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+              data.wtfCoins = (data.wtfCoins || 0) - 5
+              data.lastModified = Date.now()
+              localStorage.setItem('wtf_data', JSON.stringify(data))
+              const newH = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10) + 1
+              localStorage.setItem('wtf_hints_available', String(newH))
+              window.dispatchEvent(new Event('wtf_storage_sync'))
+            }}
           />
         )
       })}
@@ -431,11 +454,34 @@ export default function QuestionScreen({
   const [tutWrongText, setTutWrongText] = useState('')
   const [tutFlipDone, setTutFlipDone] = useState(false)
   const [tutImgFailed, setTutImgFailed] = useState(false)
+  const [tutLightbox, setTutLightbox] = useState(false)
+  const [tutoStep, setTutoStep] = useState('intro') // 'intro' | 'hint' | 'answer' | 'done'
+  const [spotRect, setSpotRect] = useState(null) // { top, left, width, height } for spotlight hole
+  const hintRef = useRef(null)
+  const correctBtnRef = useRef(null)
   const [tutWrongMsg] = useState(() => WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)])
   const [tutCorrectMsg] = useState(() => CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)])
 
   // Image du fact : imageUrl ou fallback local /assets/facts/{id}.png
   const tutorialImageUrl = fact.imageUrl || `/assets/facts/${fact.id}.png`
+
+  // Update spotlight rect when tutoStep changes
+  useEffect(() => {
+    if (!isTutorial) return
+    const pad = 8
+    const timer = setTimeout(() => {
+      if (tutoStep === 'hint' && hintRef.current) {
+        const r = hintRef.current.getBoundingClientRect()
+        setSpotRect({ top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 })
+      } else if (tutoStep === 'answer' && correctBtnRef.current) {
+        const r = correctBtnRef.current.getBoundingClientRect()
+        setSpotRect({ top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 })
+      } else {
+        setSpotRect(null)
+      }
+    }, 200) // small delay for layout to settle
+    return () => clearTimeout(timer)
+  }, [tutoStep, isTutorial])
 
   // ── Tutorial mode: full self-contained screen ─────────────────────────────
   if (isTutorial) {
@@ -475,14 +521,11 @@ export default function QuestionScreen({
         style={{
           height: '100%', width: '100%', overflow: 'hidden',
           display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
-          backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
-          backgroundSize: 'cover', backgroundPosition: 'center',
-          backgroundColor: cat?.color || '#1a1a2e',
+          background: cat
+            ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
+            : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)',
         }}
       >
-        {/* Overlay couleur catégorie */}
-        <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />
-
         {/* CSS animations for tutorial */}
         <style>{`
           @keyframes tutFadeSlideUp {
@@ -517,60 +560,136 @@ export default function QuestionScreen({
             60%  { transform: scale(1.05) rotate(-12deg); opacity: 1; }
             100% { transform: scale(1) rotate(-12deg); opacity: 1; }
           }
+          @keyframes tutFingerBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+          }
+          @keyframes tutPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
+          @keyframes tutFingerToHint {
+            0% { top: 40%; left: 50%; opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+            40% { opacity: 1; }
+            100% { top: 58%; left: 30%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          }
+          @keyframes tutFingerToAnswer {
+            0% { top: 58%; left: 30%; opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+            40% { opacity: 1; }
+            100% { top: 75%; left: 50%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          }
         `}</style>
 
         {/* Content */}
         <div style={{
           position: 'relative', zIndex: 1,
-          display: 'flex', flexDirection: 'column',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
+          gap: 'clamp(12px, 2.5vh, 24px)',
           height: '100%', overflow: 'hidden',
+          paddingTop: 'clamp(16px, 3vh, 32px)',
         }}>
 
-          {/* Logos WTF + Vrai ou Fou + intro (pre-answer only) */}
+          {/* Spotlight hole — box-shadow technique */}
+          {(tutoStep === 'hint' || tutoStep === 'answer') && !tutAnswered && spotRect && (
+            <>
+              {/* Hole with giant box-shadow = overlay */}
+              <div style={{
+                position: 'fixed',
+                top: spotRect.top, left: spotRect.left,
+                width: spotRect.width, height: spotRect.height,
+                borderRadius: 14,
+                background: 'transparent',
+                boxShadow: `0 0 0 9999px rgba(0,0,0,0.35), 0 0 24px 6px ${tutoStep === 'hint' ? 'rgba(255,165,0,0.5)' : 'rgba(76,175,80,0.5)'}`,
+                zIndex: 100,
+                pointerEvents: 'none',
+                transition: 'all 0.6s ease',
+              }} />
+
+              {/* Doigt animé — positionné sous le trou */}
+              <div style={{
+                position: 'fixed',
+                top: spotRect.top + spotRect.height + 8,
+                left: spotRect.left + spotRect.width / 2,
+                transform: 'translateX(-50%)',
+                fontSize: 32, zIndex: 102, pointerEvents: 'none',
+                animation: 'tutFingerBounce 0.8s ease-in-out infinite',
+                transition: 'top 0.6s ease, left 0.6s ease',
+              }}>👆</div>
+
+              {/* Texte guide — en bas de l'écran */}
+              <div style={{
+                position: 'fixed',
+                bottom: 'clamp(24px, 5vh, 48px)',
+                left: '50%', transform: 'translateX(-50%)',
+                zIndex: 102, textAlign: 'center',
+              }}>
+                <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
+                  {tutoStep === 'hint' ? 'Clique sur un indice 💡' : 'À toi de jouer ! 🎯'}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Modale d'introduction tuto */}
+          {tutoStep === 'intro' && !tutAnswered && (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.75)', padding: 20 }}>
+              <div style={{ background: 'white', borderRadius: 20, padding: '28px 24px', maxWidth: '85%', width: 340, textAlign: 'center' }}>
+                <img src="/assets/ui/vof-logo.png?v=5" alt="Vrai ou Fou?" style={{ width: '60%', height: 'auto', marginBottom: 16, display: 'block', margin: '0 auto 16px' }} />
+                <h2 style={{ fontFamily: 'Nunito, sans-serif', fontSize: 18, fontWeight: 900, color: '#FF6B1A', margin: '0 0 12px' }}>Prêt à découvrir des infos<br/>What the...... ? 🤯</h2>
+                <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: 14, color: '#555', lineHeight: 1.5, margin: '0 0 16px' }}>
+                  Utilise des indices, trouve la bonne réponse et découvre un f*ct incroyable !
+                </p>
+                <button
+                  onClick={() => { audio.play('click'); setTutoStep('hint') }}
+                  style={{
+                    width: '80%', padding: '14px 0', borderRadius: 14,
+                    background: '#FF6B1A', color: 'white', border: 'none',
+                    fontFamily: 'Nunito, sans-serif', fontSize: 16, fontWeight: 900,
+                    cursor: 'pointer', boxShadow: '0 4px 12px rgba(255,107,26,0.3)',
+                  }}
+                >
+                  C'est parti ! 🚀
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Logos WTF + tagline + catégorie (pre-answer only) */}
           {!tutAnswered && (
             <div style={{
               flexShrink: 0, textAlign: 'center',
-              padding: `${S(16)} ${S(16)} ${S(4)}`,
+              padding: `${S(10)} ${S(16)} ${S(2)}`,
               animation: 'tutFadeSlideUp 0.6s ease both',
               display: 'flex', flexDirection: 'column', alignItems: 'center',
             }}>
               <img src="/assets/ui/wtf-logo.png?v=4" alt="WTF!" style={{
-                width: '40%', maxWidth: 100, height: 'auto', objectFit: 'contain',
+                width: '30%', maxWidth: 80, height: 'auto', objectFit: 'contain',
                 filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
               }} />
               <img src="/assets/ui/100logo.png?v=5" alt="Vrai ou Fou?" style={{
-                width: '55%', maxWidth: 140, height: 'auto', objectFit: 'contain', marginTop: S(4),
+                width: '50%', maxWidth: 130, height: 'auto', objectFit: 'contain', marginTop: S(4),
               }} />
-              <p style={{
-                color: 'rgba(255,255,255,0.7)', fontWeight: 700,
-                fontSize: S(13), marginTop: S(8), marginBottom: 0,
-              }}>
-                Prêt pour ton premier f*ct incroyable ?
-              </p>
+              {/* Icône + nom catégorie */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: S(6) }}>
+                <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
+                <span style={{ fontSize: S(13), fontWeight: 800, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                  {cat?.label || fact.category}
+                </span>
+              </div>
             </div>
           )}
 
           {/* Post-answer: layout identique à RevelationScreen VIP */}
           {tutAnswered && (
             <>
-              {/* Header factice avec GameHeader */}
-              <GameHeader
-                playerCoins={playerCoins}
-                playerHints={playerHints}
-                playerTickets={playerTickets}
-                categoryLabel={cat?.label || 'Tuto'}
-                categoryColor={cat?.color}
-                onQuit={() => { audio.stopAll(); onQuit() }}
-              />
-
-              {/* Image VIP glow + stamp FOU */}
-              <div style={{ flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '35vh' }}>
+              {/* Image + stamp FOU */}
+              <div style={{ flexShrink: 0, padding: 0, maxHeight: '42vh' }}>
                 <div
-                  className={`overflow-hidden relative${tutCorrect ? ' wow-shine wow-glow gold-card-rounded' : ''}`}
+                  className="overflow-hidden relative"
                   style={{
-                    background: tutCatGradient, width: '100%', maxHeight: '35vh',
+                    background: tutCatGradient, width: '100%', maxHeight: '42vh',
                     borderRadius: S(16), padding: 4,
-                    border: tutCorrect ? undefined : `3px solid ${cat?.color || '#1a3a5c'}`,
+                    border: `3px solid ${cat?.color || '#1a3a5c'}`,
                   }}
                 >
                   {!tutImgFailed ? (
@@ -578,10 +697,12 @@ export default function QuestionScreen({
                       src={tutorialImageUrl}
                       alt={fact.question}
                       onError={() => setTutImgFailed(true)}
+                      onClick={() => tutCorrect && setTutLightbox(true)}
                       style={{
-                        objectFit: 'contain', width: '100%', maxHeight: 'calc(35vh - 14px)',
+                        objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)',
                         display: 'block', borderRadius: S(12),
                         filter: !tutCorrect ? 'blur(12px) brightness(0.5)' : 'none',
+                        cursor: tutCorrect ? 'pointer' : 'default',
                       }}
                     />
                   ) : (
@@ -600,29 +721,52 @@ export default function QuestionScreen({
                       </div>
                     </>
                   )}
-                  {/* Correct: shimmer + stamp FOU */}
+                  {/* Correct: stamp FOU */}
                   {tutCorrect && (
-                    <>
-                      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 7, overflow: 'hidden', borderRadius: S(12) }}>
-                        <div style={{ position: 'absolute', inset: '-50%', background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.08) 45%, rgba(255,215,0,0.15) 50%, rgba(255,255,255,0.08) 55%, transparent 60%)', animation: 'goldShimmer 3s ease-in-out infinite' }} />
-                      </div>
-                      <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
-                        <div style={{ fontSize: S(18), fontWeight: 900, color: '#4CAF50', textShadow: '0 2px 6px rgba(76,175,80,0.5)', transform: 'rotate(-12deg)', border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`, backgroundColor: 'rgba(76,175,80,0.15)', backdropFilter: 'blur(4px)', animation: 'tutStampCorner 0.5s ease-out forwards' }}>FOU</div>
-                      </div>
-                    </>
+                    <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
+                      <div style={{ fontSize: S(18), fontWeight: 900, color: '#4CAF50', textShadow: '0 2px 6px rgba(76,175,80,0.5)', transform: 'rotate(-12deg)', border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`, backgroundColor: 'rgba(76,175,80,0.15)', backdropFilter: 'blur(4px)', animation: 'tutStampCorner 0.5s ease-out forwards' }}>FOU</div>
+                    </div>
+                  )}
+                  {/* Bouton loupe */}
+                  {tutCorrect && !tutImgFailed && (
+                    <button
+                      onClick={() => setTutLightbox(true)}
+                      style={{
+                        position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                        width: 28, height: 28, borderRadius: '50%',
+                        background: 'rgba(0,0,0,0.5)', border: 'none',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', fontSize: 14,
+                      }}
+                    >🔍</button>
                   )}
                 </div>
               </div>
 
-              {/* Message succès + social proof */}
-              <div style={{ textAlign: 'center', padding: `${S(8)} ${S(16)} 0`, flexShrink: 0 }}>
-                {tutCorrect && (
-                  <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{tutCorrectMsg}</span>
-                )}
-                <span style={{ fontSize: S(14), fontWeight: 800, color: 'rgba(255,255,255,0.8)', display: 'block', marginTop: S(4), textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.3 }}>
-                  👥 {tutCorrect ? `Seulement ${successRate}` : `${100 - successRate}`}% des joueurs{'\n'}ont trouvé ce f*ct
-                </span>
-              </div>
+              {/* Lightbox fullscreen */}
+              {tutLightbox && (
+                <div
+                  onClick={() => setTutLightbox(false)}
+                  style={{
+                    position: 'fixed', inset: 0, zIndex: 300,
+                    background: 'rgba(0,0,0,0.92)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <img src={tutorialImageUrl} alt={fact.question} style={{ objectFit: 'contain', maxWidth: '95vw', maxHeight: '90vh', borderRadius: 8 }} />
+                  <button
+                    onClick={() => setTutLightbox(false)}
+                    style={{
+                      position: 'absolute', top: 16, right: 16,
+                      width: 36, height: 36, borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.15)', border: 'none',
+                      color: 'white', fontSize: 24, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >✕</button>
+                </div>
+              )}
+
             </>
           )}
 
@@ -652,40 +796,47 @@ export default function QuestionScreen({
           {/* Réponses ou post-answer content */}
           {!tutAnswered ? (
             <div style={{
-              flex: 1, display: 'flex', flexDirection: 'column',
-              justifyContent: 'center', gap: S(8),
+              flexShrink: 0, display: 'flex', flexDirection: 'column',
+              justifyContent: 'flex-start', gap: 'clamp(10px, 2vh, 16px)',
               padding: `0 ${S(16)}`,
               animation: 'tutFadeSlideUp 0.6s 0.3s ease both',
             }}>
-              {/* Logo Vrai ou Fou dans l'espace vide */}
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <img src="/assets/ui/vof-logo.png?v=5" alt="Vrai ou Fou?" style={{ width: '60%', height: 'auto', objectFit: 'contain', opacity: 0.9 }} />
-              </div>
-              {/* Indices tutoriel — gratuits, label "Indice (gratuit)" */}
+              {/* Indices tutoriel — gratuits, spotlight sur le premier en step 'hint' */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {[{ hint: 'Luxe' }, { hint: 'Brillant' }].map((h, i) => (
-                  <HintFlipButton key={i} num={i + 1} hint={h.hint} catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={'gratuit'} onReveal={() => audio.play('click')} />
+                {[{ hint: fact.hint1 }, { hint: fact.hint2 }].map((h, i) => (
+                  <div key={i} ref={i === 0 ? hintRef : undefined} style={{ position: 'relative' }}>
+                    <HintFlipButton num={i + 1} hint={h.hint} catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={'Utilise un indice'} onReveal={() => { audio.play('click'); setTutoStep('answer') }} />
+                  </div>
                 ))}
               </div>
-              {optionsToRender.map((opt) => {
-                const cleanText = opt.text.replace(/[\u{1F600}-\u{1FFFF}]/gu, '').trim()
-                return (
-                  <button
-                    key={opt.originalIndex}
-                    onClick={() => handleTutorialAnswer(opt.originalIndex, opt.text)}
-                    className="btn-press transition-all active:scale-95"
-                    style={{
-                      background: 'rgba(255,255,255,0.12)',
-                      border: '1.5px solid rgba(255,255,255,0.35)',
-                      borderRadius: S(14), color: 'white', fontWeight: 700,
-                      fontSize: S(16), padding: `${S(16)} ${S(12)}`,
-                      width: '100%', textAlign: 'center',
-                    }}
-                  >
-                    {cleanText}
-                  </button>
-                )
-              })}
+              {/* QCM — spotlight sur la bonne réponse en step 'answer', bloqués sinon */}
+              <div style={{ transition: 'opacity 0.3s' }}>
+                {optionsToRender.map((opt) => {
+                  const cleanText = opt.text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim()
+                  const isCorrectOpt = opt.originalIndex === fact.correctIndex
+                  const isBlocked = (tutoStep === 'hint') || (tutoStep === 'answer' && !isCorrectOpt)
+                  return (
+                    <button
+                      key={opt.originalIndex}
+                      ref={isCorrectOpt ? correctBtnRef : undefined}
+                      onClick={() => { if (!isBlocked) handleTutorialAnswer(opt.originalIndex, opt.text) }}
+                      className="btn-press transition-all active:scale-95"
+                      style={{
+                        background: 'rgba(255,255,255,0.12)',
+                        border: '1.5px solid rgba(255,255,255,0.35)',
+                        borderRadius: S(14), color: 'white', fontWeight: 700,
+                        fontSize: S(14), padding: `${S(12)} ${S(10)}`,
+                        width: '100%', textAlign: 'center', marginBottom: 'clamp(6px, 1.5vh, 10px)',
+                        opacity: isBlocked ? 0.3 : 1,
+                        pointerEvents: isBlocked ? 'none' : 'auto',
+                        cursor: isBlocked ? 'default' : 'pointer',
+                      }}
+                    >
+                      {cleanText}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           ) : (
             /* Post-answer zone */
@@ -696,28 +847,12 @@ export default function QuestionScreen({
               animation: 'tutFadeSlideUp 0.4s ease forwards',
             }}>
 
-              {/* Wrong answer: ta réponse (pas de bonne réponse affichée) */}
-              {!tutCorrect && (
-                <div style={{
-                  background: 'rgba(244,67,54,0.15)', border: '2px solid #F44336',
-                  borderRadius: S(14), padding: `${S(14)} ${S(16)}`,
-                  textAlign: 'center', marginBottom: S(8),
-                }}>
-                  <div style={{ fontSize: S(10), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4), color: '#F44336' }}>
-                    ✗ Ta réponse
-                  </div>
-                  <div style={{ fontSize: S(15), fontWeight: 900, color: 'white' }}>
-                    {tutWrongText}
-                  </div>
-                </div>
-              )}
-
-              {/* Encadré explication (correct) — identique RevelationScreen VIP */}
+              {/* Encadré explication (correct uniquement — joueur forcé sur la bonne réponse) */}
               {tutCorrect && (
                 <div style={{
                   background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
                   border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: S(14), padding: `${S(8)} ${S(10)}`,
+                  borderRadius: S(14), padding: `${S(6)} ${S(8)}`,
                   flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
                 }}>
                   <div style={{
@@ -731,27 +866,16 @@ export default function QuestionScreen({
                     <span style={{ fontSize: S(12) }}>🧠</span>
                     <span style={{ color: 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
                   </div>
-                  <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>{fact.explanation}</p>
+                  <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(11), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>{fact.explanation}</p>
                 </div>
               )}
 
               {/* Wrong: question encadrée (pas de Le saviez-vous) */}
-              {!tutCorrect && tutFlipDone && (
-                <div style={{
-                  background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
-                  animation: 'tutFadeSlideUp 0.5s ease forwards',
-                }}>
-                  <div style={{ fontSize: S(9), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4) }}>La question :</div>
-                  <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
-                </div>
-              )}
             </div>
           )}
 
           {/* Boutons — comme RevelationScreen (deux boutons côte à côte) */}
-          {tutAnswered && (tutCorrect || tutFlipDone) && (
+          {tutAnswered && tutCorrect && (
             <div style={{
               flexShrink: 0, padding: `${S(6)} ${S(16)} ${S(12)}`,
               animation: 'tutFadeSlideUp 0.4s 0.2s ease both',
@@ -763,8 +887,8 @@ export default function QuestionScreen({
                   style={{
                     flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-                    background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                    color: 'white', border: 'none',
+                    background: 'transparent',
+                    color: 'rgba(255,255,255,0.8)', border: '1.5px solid rgba(255,255,255,0.4)',
                   }}
                 >
                   {tutCorrect ? '🎩 Partager ce WTF!' : '🤝 Demander de l\'aide'}
@@ -794,42 +918,82 @@ export default function QuestionScreen({
       className="qs-root relative screen-enter"
       style={{
         height: '100%', width: '100%', overflow: 'hidden',
-        display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
-        background: screenBg,
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        boxSizing: 'border-box', background: screenBg,
       }}
     >
       {quitModal}
       {header}
 
-      {/* Rappel du mode */}
-      {difficulty && (
-        <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
-          <span style={{
-            fontSize: S(10), fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.4)',
-          }}>
-            {difficulty.emoji || ''} Mode {difficulty.label || difficulty.id}
-          </span>
-        </div>
-      )}
+      {/* Rappel du mode — nom basé sur sessionType */}
+      {(() => {
+        const modeLabels = { flash_solo: '⚡ MODE FLASH', marathon: '🗺️ MODE EXPLORER', wtf_du_jour: '🔥 MODE HUNT', parcours: '' }
+        const label = modeLabels[sessionType] || (difficulty ? `${difficulty.emoji || ''} Mode ${difficulty.label || difficulty.id}` : '')
+        return label ? (
+          <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
+            <span style={{
+              fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}>
+              {label}
+            </span>
+          </div>
+        ) : null
+      })()}
 
       {progressBar}
 
-      {/* Zone centrale : question + indices + QCM */}
+      {/* Zone centrale : question + indices + QCM + timer */}
       <div className="qs-m" style={{
-        flex: 1, minHeight: 0,
+        flexShrink: 0,
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'flex-start', gap: S(8),
+        justifyContent: 'flex-start', gap: 'clamp(8px, 2vh, 16px)',
         padding: `0 ${S(16)}`,
-        overflow: 'hidden',
+        overflow: 'auto',
       }}>
         {questionCard}
 
         {/* Indices */}
-        {difficulty?.hintsAllowed && hintButtons}
+        {isDevMode ? devHintButtons : (difficulty?.hintsAllowed && hintButtons)}
 
         {/* Boutons QCM — taille fixe uniforme */}
         {(() => {
+          // Dev mode: afficher les 8 propositions complètes
+          const devAllOptions = isDevMode ? [
+            { text: fact.shortAnswer || fact.options?.[fact.correctIndex] || '?', type: 'VRAIE', color: '#22C55E' },
+            { text: fact.funnyWrong1, type: 'DRÔLE', color: '#EAB308' },
+            { text: fact.funnyWrong2, type: 'DRÔLE', color: '#EAB308' },
+            { text: fact.closeWrong1, type: 'PROCHE', color: '#F97316' },
+            { text: fact.closeWrong2, type: 'PROCHE', color: '#F97316' },
+            { text: fact.plausibleWrong1, type: 'PLAUSIBLE', color: '#EF4444' },
+            { text: fact.plausibleWrong2, type: 'PLAUSIBLE', color: '#EF4444' },
+            { text: fact.plausibleWrong3, type: 'PLAUSIBLE', color: '#EF4444' },
+          ].filter(o => o.text) : null
+
+          if (isDevMode && devAllOptions) {
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(4), flexShrink: 0, position: 'relative', zIndex: 5 }}>
+                {devAllOptions.map((opt, i) => (
+                  <button key={i} onClick={() => { audio.play(i === 0 ? 'correct' : 'wrong'); onSelectAnswer(i === 0 ? fact.correctIndex : -1) }}
+                    className="btn-press active:scale-95"
+                    style={{
+                      background: 'rgba(255,255,255,0.15)', border: `3px solid ${opt.color}`,
+                      borderRadius: S(10), color: 'white', fontWeight: 700, fontSize: S(10), lineHeight: 1.15,
+                      padding: `${S(2)} ${S(4)}`, height: S(44), width: '100%', overflow: 'hidden',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      textAlign: 'center', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {renderFormattedText(opt.text)}
+                    </span>
+                    <span style={{ fontSize: 7, fontWeight: 900, opacity: 0.6, marginTop: 1, letterSpacing: '0.05em', flexShrink: 0 }}>{opt.type}</span>
+                  </button>
+                ))}
+              </div>
+            )
+          }
+
           const is6 = fact.options.length > 4
           const btnH = is6 ? 50 : 64
           const btnFont = is6 ? 11 : 13
@@ -895,9 +1059,18 @@ export default function QuestionScreen({
             </div>
           )
         })()}
+        {/* Timer — inside the flow, same gap */}
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: S(64), height: S(64), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <CircularTimer
+              key={`${fact.id}-${answerMode}`}
+              size={64}
+              duration={timerDuration}
+              onTimeout={handleTimeout}
+            />
+          </div>
+        </div>
       </div>
-
-      {timerZone}
     </div>
   )
 }

@@ -116,7 +116,8 @@ export default function HomeScreen({
 }) {
   const { isConnected } = useAuth()
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
-  const canAccess = isConnected || isDevMode
+  const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
+  const canAccess = isConnected || isDevMode || isTestMode
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)

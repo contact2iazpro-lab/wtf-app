@@ -54,10 +54,9 @@ export default function GameHeader({
           )}
           {categoryLabel && (
             <span style={{
-              fontWeight: 900, fontSize: S(12),
+              fontWeight: 900, fontSize: categoryLabel.length > 15 ? S(9) : S(11),
               color: categoryColor || 'rgba(255,255,255,0.7)',
               lineHeight: 1.2, whiteSpace: 'nowrap',
-              overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               {categoryLabel}
             </span>

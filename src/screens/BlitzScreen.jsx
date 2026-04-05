@@ -262,14 +262,18 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
         {!hintUsedThisQ && !flashAnswer && (
           <div style={{ marginBottom: S(6) }}>
             {isDevMode ? (
-              <div style={{
-                height: 48, width: '100%', borderRadius: 24, background: 'rgba(255,255,255,0.88)',
-                border: `2px solid ${cat?.color || '#FF6B1A'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px',
-              }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: cat?.color || '#FF6B1A', textAlign: 'center', lineHeight: 1.3 }}>
-                  {currentFact?.hint1 || '—'}
-                </span>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                {[currentFact?.hint1, currentFact?.hint2].map((h, i) => (
+                  <div key={i} style={{
+                    height: 32, width: '100%', borderRadius: 16, background: 'rgba(235,235,235,0.95)',
+                    border: `2px solid ${cat?.color || '#FF6B1A'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px',
+                  }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#1a1a2e', textAlign: 'center', lineHeight: 1 }}>
+                      {h || '—'}
+                    </span>
+                  </div>
+                ))}
               </div>
             ) : (
               <HintFlipButton
@@ -295,28 +299,43 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
 
         {/* ── QCM options ─────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col justify-center" style={{ gap: S(10) }}>
-          {currentFact?.options?.map((option, i) => {
+          {/* Dev mode: 8 propositions complètes */}
+          {isDevMode && !flashAnswer ? (() => {
+            const devOpts = [
+              { text: currentFact.shortAnswer || currentFact.options?.[currentFact.correctIndex], type: 'VRAIE', color: '#22C55E', idx: currentFact.correctIndex },
+              { text: currentFact.funnyWrong1, type: 'DRÔLE', color: '#EAB308' },
+              { text: currentFact.funnyWrong2, type: 'DRÔLE', color: '#EAB308' },
+              { text: currentFact.closeWrong1, type: 'PROCHE', color: '#F97316' },
+              { text: currentFact.closeWrong2, type: 'PROCHE', color: '#F97316' },
+              { text: currentFact.plausibleWrong1, type: 'PLAUSIBLE', color: '#EF4444' },
+              { text: currentFact.plausibleWrong2, type: 'PLAUSIBLE', color: '#EF4444' },
+              { text: currentFact.plausibleWrong3, type: 'PLAUSIBLE', color: '#EF4444' },
+            ].filter(o => o.text)
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(4) }}>
+                {devOpts.map((opt, i) => (
+                  <button key={i} onClick={() => handleAnswer(opt.idx ?? -1)}
+                    className="w-full rounded-xl text-center active:scale-[0.97]"
+                    style={{
+                      background: 'rgba(255,255,255,0.15)', border: `3px solid ${opt.color}`,
+                      padding: `${S(4)} ${S(6)}`, height: S(44),
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                    <span style={{ fontSize: S(10), fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {renderFormattedText(opt.text)}
+                    </span>
+                    <span style={{ fontSize: 7, fontWeight: 900, opacity: 0.6, color: '#fff' }}>{opt.type}</span>
+                  </button>
+                ))}
+              </div>
+            )
+          })() : currentFact?.options?.map((option, i) => {
             const isFlashed = flashAnswer?.index === i
             const isCorrectAnswer = flashAnswer && i === currentFact.correctIndex
 
             let btnBg = 'rgba(255,255,255,0.15)'
             let btnBorder = 'rgba(255,255,255,0.2)'
             let btnTextColor = '#ffffff'
-
-            // Dev mode: colored borders by answer type (protected)
-            let devType = null
-            if (isDevMode && !flashAnswer) {
-              try {
-                const funnyWrongs = [currentFact?.funnyWrong1, currentFact?.funnyWrong2].filter(Boolean)
-                const closeWrongs = [currentFact?.closeWrong1, currentFact?.closeWrong2].filter(Boolean)
-                const plausibleWrongs = [currentFact?.plausibleWrong1, currentFact?.plausibleWrong2, currentFact?.plausibleWrong3].filter(Boolean)
-                if (i === currentFact.correctIndex) { devType = 'VRAIE'; btnBorder = '#22C55E' }
-                else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; btnBorder = '#EAB308' }
-                else if (closeWrongs.includes(option)) { devType = 'PROCHE'; btnBorder = '#F97316' }
-                else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; btnBorder = '#EF4444' }
-                else { devType = 'AUTRE'; btnBorder = 'rgba(255,255,255,0.3)' }
-              } catch (e) { console.warn('[DEV MODE] Erreur rendu dev:', e) }
-            }
 
             if (flashAnswer) {
               if (isFlashed && flashAnswer.correct) {
@@ -326,7 +345,6 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
                 btnBg = 'rgba(239,68,68,0.4)'
                 btnBorder = '#EF4444'
               }
-              // Ne PAS montrer la bonne réponse sur mauvaise réponse — vitesse Blitz
             }
 
             return (
@@ -337,23 +355,16 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
                 className="w-full rounded-2xl text-left transition-all active:scale-[0.97]"
                 style={{
                   background: hiddenOption === i ? 'rgba(107,114,128,0.1)' : btnBg,
-                  border: `${isDevMode && !flashAnswer ? '3px' : '2px'} solid ${hiddenOption === i ? 'rgba(107,114,128,0.2)' : btnBorder}`,
+                  border: `2px solid ${hiddenOption === i ? 'rgba(107,114,128,0.2)' : btnBorder}`,
                   padding: `${S(14)} ${S(18)}`,
                   opacity: hiddenOption === i ? 0.3 : (flashAnswer && !isFlashed && !isCorrectAnswer ? 0.5 : 1),
                   transition: 'all 0.15s ease',
                   textDecoration: hiddenOption === i ? 'line-through' : 'none',
                 }}
               >
-                <span style={{
-                  fontSize: S(15),
-                  fontWeight: 700,
-                  color: btnTextColor,
-                }}>
+                <span style={{ fontSize: S(15), fontWeight: 700, color: btnTextColor }}>
                   {renderFormattedText(option)}
                 </span>
-                {isDevMode && devType && (
-                  <span style={{ display: 'block', fontSize: 9, fontWeight: 900, opacity: 0.6, marginTop: 2, letterSpacing: '0.05em', color: '#fff' }}>{devType}</span>
-                )}
               </button>
             )
           })}

@@ -3,7 +3,7 @@ import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
-  getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories,
+  getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories, getCategoryById,
   getGeneratedFacts, getGeneratedFactsByCategory, getBlitzFacts,
   initFacts, resetFacts,
 } from './data/factsService'
@@ -211,6 +211,7 @@ export default function App() {
   const scale = useScale()
 
   // Dev mode URL param: ?devmode=wtf2026 to enable, ?devmode=off to disable
+  // Challenge Blitz: ?startChallengeBlitz=true to start a challenge Blitz
   useState(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const devCode = urlParams.get('devmode')
@@ -223,12 +224,42 @@ export default function App() {
       localStorage.removeItem('wtf_test_mode')
       window.history.replaceState({}, '', window.location.pathname)
     }
+    // Challenge Blitz from ChallengeScreen
+    if (urlParams.get('startChallengeBlitz') === 'true') {
+      window.history.replaceState({}, '', window.location.pathname)
+      try {
+        const facts = JSON.parse(localStorage.getItem('wtf_challenge_facts') || '[]')
+        localStorage.removeItem('wtf_challenge_facts')
+        if (facts.length > 0) {
+          // Will be picked up by the useEffect below
+          localStorage.setItem('wtf_pending_challenge_blitz', JSON.stringify(facts))
+        }
+      } catch { /* ignore */ }
+    }
   })
 
   // Initialiser les indices à 3 pour les nouveaux joueurs
   if (localStorage.getItem('wtf_hints_available') === null) {
     localStorage.setItem('wtf_hints_available', '3')
   }
+
+  // ── Challenge Blitz : démarrer un défi depuis ChallengeScreen ──
+  useEffect(() => {
+    const pendingJson = localStorage.getItem('wtf_pending_challenge_blitz')
+    if (!pendingJson) return
+    localStorage.removeItem('wtf_pending_challenge_blitz')
+    try {
+      const facts = JSON.parse(pendingJson)
+      if (facts.length > 0) {
+        setSessionType('blitz')
+        setGameMode('blitz')
+        setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
+        setBlitzFacts(facts)
+        setBlitzResults(null)
+        setScreen(SCREENS.BLITZ)
+      }
+    } catch { /* ignore */ }
+  }, [])
 
   // ── Cache busting : force reload si nouvelle version déployée ──
   useEffect(() => {
@@ -696,9 +727,26 @@ export default function App() {
     const newBadges = checkBadges()
     if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
 
+    // Complete challenge if active
+    const challengeJson = localStorage.getItem('wtf_active_challenge')
+    if (challengeJson && user) {
+      try {
+        const challengeInfo = JSON.parse(challengeJson)
+        localStorage.removeItem('wtf_active_challenge')
+        import('./data/challengeService').then(({ completeChallenge: complete }) => {
+          complete({
+            challengeId: challengeInfo.challengeId,
+            playerTime: finalTime,
+            playerId: user.id,
+            playerName: user.user_metadata?.name || 'Joueur WTF!',
+          }).catch(e => console.warn('Challenge complete error:', e))
+        })
+      } catch { /* ignore */ }
+    }
+
     setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)
-  }, [])
+  }, [user, navigate])
 
   const handleSelectCategory = useCallback((categoryId) => {
     // Blitz : démarrer directement sans choisir la difficulté
@@ -1781,6 +1829,10 @@ export default function App() {
           penalties={blitzResults.penalties}
           bestTime={blitzResults.bestTime}
           isNewRecord={blitzResults.isNewRecord}
+          categoryId={selectedCategory}
+          categoryLabel={getCategoryById(selectedCategory)?.label || ''}
+          questionCount={blitzResults.totalAnswered}
+          user={user}
           onHome={handleHome}
           onReplay={handleBlitzReplay}
         />

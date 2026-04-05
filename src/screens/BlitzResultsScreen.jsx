@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useScale } from '../hooks/useScale'
+import { createChallenge } from '../data/challengeService'
 
 export default function BlitzResultsScreen({
   finalTime = 0,
@@ -8,6 +9,10 @@ export default function BlitzResultsScreen({
   penalties = 0,
   bestTime = null,
   isNewRecord = false,
+  categoryId = null,
+  categoryLabel = '',
+  questionCount = 0,
+  user = null,
   onHome,
   onReplay,
 }) {
@@ -15,17 +20,15 @@ export default function BlitzResultsScreen({
   const S = (px) => `calc(${px}px * var(--scale))`
 
   const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0
-  const pureTime = Math.max(0, finalTime - penalties)
 
-  // Animated count-up for time
   const [displayTime, setDisplayTime] = useState(0)
+  const [challengeCreated, setChallengeCreated] = useState(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (finalTime <= 0) return
-    const duration = 1200
-    const interval = 16
-    const steps = duration / interval
-    const increment = finalTime / steps
+    const duration = 1200, interval = 16, steps = duration / interval, increment = finalTime / steps
     let current = 0
     const timer = setInterval(() => {
       current = Math.min(current + increment, finalTime)
@@ -42,60 +45,78 @@ export default function BlitzResultsScreen({
     return `${m}:${s.padStart(5, '0')}`
   }
 
-  // Rank based on accuracy + speed
   const rank = accuracy === 100 && finalTime < 30 ? { emoji: '🏆', label: 'Légende Blitz !' }
     : accuracy === 100 ? { emoji: '⚡', label: 'Sans faute !' }
     : accuracy >= 80 ? { emoji: '🔥', label: 'Impressionnant !' }
     : accuracy >= 60 ? { emoji: '💪', label: 'Bien joué !' }
     : { emoji: '🎮', label: 'Continue comme ça !' }
 
+  const handleCreateChallenge = async () => {
+    if (!user || isCreating) return
+    setIsCreating(true)
+    try {
+      const challenge = await createChallenge({
+        categoryId: categoryId || 'all',
+        categoryLabel: categoryLabel || 'Toutes catégories',
+        questionCount,
+        playerTime: finalTime,
+        playerId: user.id,
+        playerName: user.user_metadata?.name || 'Joueur WTF!',
+      })
+      setChallengeCreated(challenge)
+    } catch (e) {
+      console.error('Challenge creation error:', e)
+      alert('Erreur lors de la création du défi. Réessaie !')
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  const handleShare = () => {
+    if (!challengeCreated) return
+    const text = `🎯 Je t'ai défié sur WTF! Blitz !\n${questionCount} questions ${categoryLabel || 'toutes catégories'} en ${finalTime.toFixed(2)}s.\nCode : ${challengeCreated.code}\nRelève le défi → https://wtf-app-production.up.railway.app/`
+    if (navigator.share) {
+      navigator.share({ title: 'Défi WTF! Blitz', text }).catch(() => {})
+    } else {
+      navigator.clipboard?.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const handleCopyCode = () => {
+    if (!challengeCreated) return
+    navigator.clipboard?.writeText(challengeCreated.code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-auto"
-      style={{
-        '--scale': scale,
-        background: 'linear-gradient(160deg, #0A0F1E 0%, #1a0a35 100%)',
-        fontFamily: 'Nunito, sans-serif',
-      }}
+      style={{ '--scale': scale, background: 'linear-gradient(160deg, #0A0F1E 0%, #1a0a35 100%)', fontFamily: 'Nunito, sans-serif' }}
     >
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8" style={{ gap: S(16) }}>
 
-        {/* Rank emoji */}
         <div style={{ fontSize: S(56) }}>{rank.emoji}</div>
+        <h1 style={{ fontSize: S(26), fontWeight: 900, color: 'white', textAlign: 'center' }}>{rank.label}</h1>
 
-        {/* Title */}
-        <h1 style={{ fontSize: S(26), fontWeight: 900, color: 'white', textAlign: 'center' }}>
-          {rank.label}
-        </h1>
-
-        {/* New record banner */}
         {isNewRecord && (
-          <div
-            className="rounded-2xl w-full py-3 text-center"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,165,0,0.25) 100%)',
-              border: '2px solid rgba(255,215,0,0.5)',
-              animation: 'blitzRecordPulse 1.5s ease-in-out infinite',
-            }}
-          >
-            <span style={{ fontSize: S(16), fontWeight: 900, color: '#FFD700' }}>
-              🎉 NOUVEAU RECORD !
-            </span>
+          <div className="rounded-2xl w-full py-3 text-center" style={{
+            background: 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.25))',
+            border: '2px solid rgba(255,215,0,0.5)', animation: 'blitzRecordPulse 1.5s ease-in-out infinite',
+          }}>
+            <span style={{ fontSize: S(16), fontWeight: 900, color: '#FFD700' }}>🎉 NOUVEAU RECORD !</span>
           </div>
         )}
 
-        {/* Time final */}
-        <div
-          className="rounded-3xl w-full p-5"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-        >
+        {/* Time */}
+        <div className="rounded-3xl w-full p-5" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <div className="text-center mb-3">
             <span style={{ fontSize: S(14), color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>⏱️ Temps final</span>
           </div>
           <div className="text-center mb-3">
-            <span style={{ fontSize: S(48), fontWeight: 900, color: '#FF6B1A', fontVariantNumeric: 'tabular-nums' }}>
-              {formatTime(displayTime)}
-            </span>
+            <span style={{ fontSize: S(48), fontWeight: 900, color: '#FF6B1A', fontVariantNumeric: 'tabular-nums' }}>{formatTime(displayTime)}</span>
           </div>
           <div className="flex justify-center gap-6">
             <div className="text-center">
@@ -115,16 +136,49 @@ export default function BlitzResultsScreen({
           </div>
         </div>
 
-        {/* Record */}
         {bestTime !== null && (
-          <div
-            className="rounded-2xl w-full p-4 flex items-center justify-between"
-            style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)' }}
-          >
+          <div className="rounded-2xl w-full p-4 flex items-center justify-between" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)' }}>
             <span style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
             <span style={{ fontSize: S(20), fontWeight: 900, color: '#FFD700' }}>{formatTime(bestTime)}</span>
           </div>
         )}
+
+        {/* Challenge created — share screen */}
+        {challengeCreated ? (
+          <div className="w-full rounded-2xl p-5" style={{ background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)' }}>
+            <div className="text-center mb-3">
+              <span style={{ fontSize: S(18), fontWeight: 900, color: '#FF6B1A' }}>🎯 Défi créé !</span>
+            </div>
+            <div className="text-center mb-3">
+              <span style={{
+                fontSize: S(28), fontWeight: 900, color: 'white',
+                background: 'rgba(0,0,0,0.3)', padding: '12px 20px', borderRadius: 12,
+                display: 'inline-block', fontFamily: 'monospace', letterSpacing: 4,
+              }}>
+                {challengeCreated.code}
+              </span>
+            </div>
+            <p className="text-center mb-4" style={{ fontSize: S(13), color: 'rgba(255,255,255,0.6)' }}>
+              Partage ce code à ton ami !
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleShare}
+                className="w-full py-3 rounded-2xl font-black text-sm active:scale-[0.97] transition-transform"
+                style={{ background: '#FF6B1A', color: 'white', border: 'none', fontSize: S(14) }}
+              >
+                {copied ? '✅ Copié !' : '📤 Partager le défi'}
+              </button>
+              <button
+                onClick={handleCopyCode}
+                className="w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
+                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', fontSize: S(13) }}
+              >
+                📋 Copier le code
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         {/* Action buttons */}
         <div className="w-full flex flex-col gap-3 mt-2">
@@ -135,6 +189,20 @@ export default function BlitzResultsScreen({
           >
             ⚡ Rejouer en Blitz
           </button>
+          {user && !challengeCreated && (
+            <button
+              onClick={handleCreateChallenge}
+              disabled={isCreating}
+              className="w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
+              style={{
+                background: 'transparent', color: 'white',
+                border: '2px solid rgba(255,255,255,0.4)', borderRadius: S(14),
+                fontSize: S(14), opacity: isCreating ? 0.5 : 1,
+              }}
+            >
+              {isCreating ? '⏳ Création...' : '🎯 Défier un ami'}
+            </button>
+          )}
           <button
             onClick={onHome}
             className="w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"

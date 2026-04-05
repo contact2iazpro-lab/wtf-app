@@ -6,6 +6,7 @@ import BoutiquePage from './pages/BoutiquePage'
 import RecompensesPage from './pages/RecompensesPage'
 import SocialPage from './pages/SocialPage'
 import BottomNav from './components/BottomNav'
+import ChallengeScreen from './screens/ChallengeScreen'
 import { useScale } from './hooks/useScale'
 
 // Pages that show the bottom navigation
@@ -33,6 +34,7 @@ export default function AppRouter() {
         <Route path="/boutique" element={<PageWrapper><BoutiquePage /></PageWrapper>} />
         <Route path="/recompenses" element={<PageWrapper><RecompensesPage /></PageWrapper>} />
         <Route path="/social" element={<PageWrapper><SocialPage /></PageWrapper>} />
+        <Route path="/challenge/:code" element={<PageWrapper><ChallengeScreen /></PageWrapper>} />
       </Routes>
       {showNav && <BottomNav />}
     </>

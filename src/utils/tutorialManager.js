@@ -43,5 +43,5 @@ export async function isTutorialComplete() {
 }
 
 export function getTutorialFactId() {
-  return 340;
+  return 999;
 }

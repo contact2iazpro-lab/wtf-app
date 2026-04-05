@@ -120,6 +120,18 @@ if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID))
       border-radius: inherit;
     }
     .flip-card-back { transform: rotateX(180deg); }
+    @keyframes holoRotate {
+      from { --holo-angle: 0deg; }
+      to   { --holo-angle: 360deg; }
+    }
+    @keyframes holoPrism {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    @keyframes vipParticlePulse {
+      0%, 100% { opacity: 0.1; transform: scale(0.8); }
+      50%      { opacity: 0.35; transform: scale(1.2); }
+    }
   `
   document.head.appendChild(style)
 }
@@ -318,12 +330,12 @@ export default function RevelationScreen({
         <span style={{ fontSize: S(16), color: 'white', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>✕</span>
       </button>
       <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
-        <span style={{
-          fontWeight: 900, fontSize: S(13), color: catTextColor,
-          whiteSpace: 'normal', overflow: 'visible', display: 'block',
-        }}>
-          {cat?.label || 'Question'}
-        </span>
+        <img
+          src={`/assets/categories/${cat?.id || 'kids'}.png`}
+          alt={cat?.label || ''}
+          style={{ width: S(24), height: S(24), borderRadius: 4, objectFit: 'cover' }}
+          onError={e => { e.target.style.display = 'none' }}
+        />
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
@@ -404,20 +416,20 @@ export default function RevelationScreen({
         {renderHeader()}
 
         {/* Image floutée + stamp bienveillant par-dessus */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '35vh' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0, maxHeight: '42vh' }}>
           <div
             className="overflow-hidden relative"
-            style={{ background: catGradient, width: '100%', maxHeight: '30vh', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
+            style={{ background: catGradient, width: '100%', maxHeight: '42vh', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
           >
             {fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'contain', width: '100%', maxHeight: 'calc(35vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
-              <div style={{ width: '100%', height: 'calc(30vh - 14px)', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
+              <div style={{ width: '100%', height: 'calc(42vh - 14px)', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
                 <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
               </div>
             )}
@@ -446,21 +458,21 @@ export default function RevelationScreen({
         {/* Social proof */}
         {flipped && (
           <div style={{ textAlign: 'center', padding: `${S(8)} ${S(16)} 0`, flexShrink: 0 }}>
-            <span style={{ fontSize: S(14), fontWeight: 800, color: 'rgba(255,255,255,0.8)', display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.3 }}>
+            <span style={{ fontSize: S(14), fontWeight: 800, color: catTextColor, opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
               👥 {100 - successRate}% des joueurs<br />ont trouvé ce f*ct
             </span>
           </div>
         )}
 
         {/* Encadré question */}
-        <div style={{ flex: 1, minHeight: 0, padding: `${S(8)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} 0`, display: 'flex', flexDirection: 'column' }}>
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
           }}>
             <div style={{ fontSize: S(9), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4) }}>La question :</div>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
+            <div style={{ fontSize: S(12), fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
             {isTimeout && (
               <div style={{ marginTop: S(6), fontSize: S(10), fontWeight: 700, color: '#FB923C' }}>⏱️ Temps écoulé</div>
             )}
@@ -477,7 +489,7 @@ export default function RevelationScreen({
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                color: 'white', border: 'none',
+                color: 'white', border: '2px solid rgba(255,255,255,0.4)',
               }}
             >
               🤝 Demander de l'aide
@@ -487,7 +499,8 @@ export default function RevelationScreen({
               className="btn-press active:scale-95 transition-all"
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
+                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
+                border: '2px solid rgba(255,255,255,0.4)',
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
               }}
             >
@@ -501,16 +514,38 @@ export default function RevelationScreen({
   }
 
   // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
+  const isVipReveal = !isDuel && isCorrect && fact.isVip
   return (
     <div className="relative screen-enter" style={{
       height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
       boxSizing: 'border-box', width: '100%',
-      backgroundImage: `url(/assets/backgrounds/question-default.webp)`,
-      backgroundSize: 'cover', backgroundPosition: 'center',
-      backgroundColor: cat?.color || '#1a1a2e',
+      ...(isVipReveal ? {
+        background: catGradient,
+      } : {
+        backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        backgroundColor: cat?.color || '#1a1a2e',
+      }),
     }}>
-      {/* Overlay couleur catégorie */}
-      <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />
+      {/* Overlay couleur catégorie (non-VIP) ou particules VIP */}
+      {isVipReveal ? (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          {Array.from({ length: 12 }, (_, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              top: `${(i * 31 + 7) % 90}%`,
+              left: `${(i * 43 + 13) % 95}%`,
+              width: i % 3 === 0 ? 6 : 4,
+              height: i % 3 === 0 ? 6 : 4,
+              borderRadius: '50%',
+              background: `rgba(255,255,255,${0.1 + (i % 4) * 0.07})`,
+              animation: `vipParticlePulse ${2 + (i % 3) * 0.5}s ${(i * 0.3).toFixed(1)}s ease-in-out infinite`,
+            }} />
+          ))}
+        </div>
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />
+      )}
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {quitModal}
@@ -520,26 +555,42 @@ export default function RevelationScreen({
       {/* Header */}
       {renderHeader()}
 
-      {/* Image pleine largeur — contain, pas de crop */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '35vh' }}>
+      {/* Image pleine largeur — cover, plein cadre */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0, maxHeight: '42vh' }}>
         <div
           className={`overflow-hidden relative${!isDuel && flipped && isCorrect && fact.isVip ? ' wow-shine wow-glow gold-card-rounded' : ''}`}
           style={{
-            background: catGradient, width: '100%', maxHeight: '35vh',
+            background: catGradient, width: '100%', maxHeight: '42vh',
             borderRadius: S(16), padding: 4,
             border: !isDuel && flipped && isCorrect && fact.isVip ? undefined : `3px solid ${cat?.color || '#1a3a5c'}`,
           }}
         >
           {fact.imageUrl && !imgFailed ? (
-            <img
-              src={fact.imageUrl}
-              alt={fact.question}
-              onClick={() => isCorrect && setShowLightbox(true)}
-              style={{ objectFit: 'contain', width: '100%', maxHeight: 'calc(35vh - 14px)', display: 'block', borderRadius: S(12), cursor: isCorrect ? 'pointer' : 'default' }}
-              onError={() => setImgFailed(true)}
-            />
+            <>
+              <img
+                src={fact.imageUrl}
+                alt={fact.question}
+                onClick={() => isCorrect && setShowLightbox(true)}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)', display: 'block', borderRadius: S(12), cursor: isCorrect ? 'pointer' : 'default' }}
+                onError={() => setImgFailed(true)}
+              />
+              {isCorrect && (
+                <button
+                  onClick={() => setShowLightbox(true)}
+                  style={{
+                    position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                    width: 28, height: 28, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.5)', border: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', fontSize: 14,
+                  }}
+                >🔍</button>
+              )}
+            </>
           ) : (
-            <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
+            <div style={{ width: '100%', height: 'calc(42vh - 14px)', borderRadius: S(12), overflow: 'hidden' }}>
+              <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
+            </div>
           )}
 
           {/* Gold overlay + shimmer (VIP bonne réponse uniquement) */}
@@ -561,16 +612,38 @@ export default function RevelationScreen({
                   animation: 'goldShimmer 3s ease-in-out infinite',
                 }} />
               </div>
-              {/* Sparkle particles */}
+              {/* Holographic conic overlay */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                zIndex: 8, borderRadius: S(12), overflow: 'hidden',
+                mixBlendMode: 'overlay', opacity: 0.6,
+                background: `conic-gradient(from 0deg, ${cat?.color || '#FFD700'}00 0%, ${cat?.color || '#FFD700'}40 10%, transparent 20%, ${cat?.color || '#FFD700'}60 40%, transparent 50%, ${cat?.color || '#FFD700'}30 70%, transparent 80%, ${cat?.color || '#FFD700'}50 100%)`,
+                animation: 'holoRotate 4s linear infinite',
+              }} />
+              {/* Prismatic reflex */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                zIndex: 9, borderRadius: S(12), overflow: 'hidden',
+              }}>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+                  animation: 'holoPrism 3s ease-in-out infinite',
+                }} />
+              </div>
+              {/* Sparkle particles — doubled for VIP intensity */}
               {[
                 { top: '-3px', left: '15%', delay: '0s' },
                 { top: '20%', right: '-3px', delay: '0.4s' },
                 { bottom: '10%', left: '-3px', delay: '0.8s' },
                 { bottom: '-3px', right: '25%', delay: '1.2s' },
                 { top: '50%', right: '10%', delay: '1.6s' },
+                { top: '10%', left: '40%', delay: '0.2s' },
+                { top: '40%', left: '-3px', delay: '0.6s' },
+                { bottom: '30%', right: '-3px', delay: '1.0s' },
+                { bottom: '-3px', left: '60%', delay: '1.4s' },
+                { top: '-3px', right: '40%', delay: '1.8s' },
               ].map((pos, i) => (
                 <div key={i} className="absolute pointer-events-none" style={{
-                  ...pos, zIndex: 8,
+                  ...pos, zIndex: 11,
                   width: '5px', height: '5px', borderRadius: '50%',
                   background: 'radial-gradient(circle, #FFD700, #FFA500)',
                   boxShadow: '0 0 6px rgba(255,215,0,0.8)',
@@ -599,13 +672,10 @@ export default function RevelationScreen({
 
       {/* Zone info — flex: 1, gap 8px uniforme */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `0 ${S(16)}`, display: 'flex', flexDirection: 'column', gap: S(8) }}>
-        {/* Message de succès + social proof */}
+        {/* Social proof */}
         {flipped && !isDuel && isCorrect && (
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: S(12), fontWeight: 700, color: 'white', lineHeight: 1.4, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-              {correctMsg}
-            </span>
-            <span style={{ fontSize: S(14), fontWeight: 800, color: 'rgba(255,255,255,0.8)', display: 'block', marginTop: S(4), textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.3 }}>
+            <span style={{ fontSize: S(14), fontWeight: 800, color: catTextColor, opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
               👥 Seulement {successRate}% des joueurs<br />ont trouvé ce f*ct
             </span>
           </div>
@@ -647,7 +717,7 @@ export default function RevelationScreen({
               borderRadius: S(10), padding: `${S(6)} ${S(10)}`, marginBottom: S(6), flexShrink: 0,
             }}>
               <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
-              <div style={{ fontSize: S(12), fontWeight: 700, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{correctAnswerText}</div>
+              <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{correctAnswerText}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
               <span style={{ fontSize: S(12) }}>🧠</span>
@@ -686,7 +756,7 @@ export default function RevelationScreen({
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                color: 'white', border: 'none',
+                color: 'white', border: '2px solid rgba(255,255,255,0.4)',
               }}
             >
               🎩 Partager ce WTF!
@@ -696,7 +766,8 @@ export default function RevelationScreen({
               className="btn-press active:scale-95 transition-all"
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
+                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
+                border: '2px solid rgba(255,255,255,0.4)',
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
               }}
             >

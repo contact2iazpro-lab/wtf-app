@@ -26,10 +26,11 @@ const DIFFICULTY_LEVELS = [
     rules: [
       { icon: '/assets/ui/icon-qcm.png',  text: '4 choix de réponse' },
       { icon: '/assets/ui/icon-hint.png', text: '2 indices possibles' },
-      { icon: '/assets/ui/icon-coins.png', text: '3 coins / bonne réponse' },
+      { icon: '/assets/ui/icon-coins.png', text: '5 coins / bonne réponse' },
+      { icon: '⏱️', text: '30 secondes' },
     ],
-    choices: 4, freeHints: 0, paidHints: 2, hintCost: 2, coinsPerCorrect: 3,
-    scoring: { correct: 3, wrong: 0 },
+    choices: 4, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 5,
+    scoring: { correct: 5, wrong: 0 },
   },
   {
     id: 'hot',
@@ -44,8 +45,9 @@ const DIFFICULTY_LEVELS = [
       { icon: '/assets/ui/icon-qcm.png',  text: '4 choix de réponse' },
       { icon: '/assets/ui/icon-hint.png', text: '2 indices possibles' },
       { icon: '/assets/ui/icon-coins.png', text: '3 coins / bonne réponse' },
+      { icon: '⏱️', text: '20 secondes' },
     ],
-    choices: 4, freeHints: 0, paidHints: 2, hintCost: 5, coinsPerCorrect: 3,
+    choices: 4, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3,
     scoring: { correct: 3, wrong: 0 },
   },
   {
@@ -60,10 +62,11 @@ const DIFFICULTY_LEVELS = [
     rules: [
       { icon: '/assets/ui/icon-qcm.png',  text: '6 choix de réponse' },
       { icon: '/assets/ui/icon-hint.png', text: '1 indice possible' },
-      { icon: '/assets/ui/icon-coins.png', text: '5 coins / bonne réponse' },
+      { icon: '/assets/ui/icon-coins.png', text: '2 coins / bonne réponse' },
+      { icon: '⏱️', text: '20 secondes' },
     ],
-    choices: 6, freeHints: 0, paidHints: 1, hintCost: 8, coinsPerCorrect: 5,
-    scoring: { correct: 5, wrong: 0 },
+    choices: 6, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 2,
+    scoring: { correct: 2, wrong: 0 },
   },
 ]
 

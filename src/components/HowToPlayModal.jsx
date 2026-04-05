@@ -35,9 +35,9 @@ const CHAPTERS = [
     content: [
       { icon: '🎫', text: '**Coûte 1 ticket** par session.' },
       { icon: '🎯', text: 'Choisis un **niveau de difficulté**.' },
-      { icon: '❄️', text: '**Cool** — 4 choix · 2 indices disponibles · 3 coins/bonne réponse' },
-      { icon: '🔥', text: '**Hot** — 4 choix · 2 indices disponibles · 3 coins/bonne réponse' },
-      { icon: '⚡', text: '**WTF!** — 6 choix · 1 indice disponible · 5 coins/bonne réponse' },
+      { icon: '❄️', text: '**Cool** — 4 choix · 2 indices · 30s · 5 coins/bonne réponse' },
+      { icon: '🔥', text: '**Hot** — 4 choix · 2 indices · 20s · 3 coins/bonne réponse' },
+      { icon: '⚡', text: '**WTF!** — 6 choix · 1 indice · 20s · 2 coins/bonne réponse' },
       { icon: '📚', text: '**5 questions** par session. Les f*cts trouvés rejoignent ta **Collection**.' },
       { icon: '🏆', text: 'Score parfait (5/5) = **bonus de 25 coins + 1 ticket** !' },
     ],
@@ -65,8 +65,8 @@ const CHAPTERS = [
       { icon: '🆓', text: '**Gratuit** — pas de ticket requis.' },
       { icon: '⚡', text: 'Session rapide de **5 questions**.' },
       { icon: '💡', text: '**2 indices** disponibles par question.' },
-      { icon: '🪙', text: '**5 coins** par bonne réponse (3 si tu utilises un indice).' },
-      { icon: '🏆', text: 'Score parfait sans indice = **10 coins bonus** !' },
+      { icon: '🪙', text: '**5 coins** par bonne réponse.' },
+      { icon: '🏆', text: 'Score parfait = **10 coins bonus** !' },
     ],
   },
   {

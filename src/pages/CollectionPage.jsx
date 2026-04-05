@@ -610,7 +610,7 @@ export default function CollectionPage() {
                       : percentage > 0
                         ? `1px solid rgba(${rgb}, 0.25)`
                         : '1px solid rgba(229,231,235,0.5)',
-                  opacity: isLocked ? 0.5 : (isConnected ? 1 : (percentage > 0 ? 1 : 0.7)),
+                  opacity: isLocked ? 0.5 : 1,
                 }}
               >
                 {/* Icône catégorie + cadenas */}

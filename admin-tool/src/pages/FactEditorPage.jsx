@@ -655,7 +655,7 @@ export default function FactEditorPage({ toast }) {
 
       <div className="flex gap-6 items-start">
         {/* COLONNE GAUCHE */}
-        <div className="flex-1 space-y-4 min-w-0">
+        <div className="w-80 flex-shrink-0 space-y-4">
         {/* Warning bandeau si fausses réponses incomplètes */}
         {(() => {
           const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
@@ -809,7 +809,7 @@ export default function FactEditorPage({ toast }) {
         </div>{/* END COLONNE GAUCHE */}
 
         {/* COLONNE DROITE — sticky */}
-        <div className="w-96 flex-shrink-0 space-y-4 sticky top-4">
+        <div className="flex-1 min-w-0 space-y-4 sticky top-4">
         {/* RÉPONSES (8 au total) */}
         <Section title="🎯 Réponses (8 au total)">
           {/* Vraie réponse — lecture seule */}

@@ -22,6 +22,7 @@ export default function GameHeader({
   showTickets = false,
   categoryLabel = null,
   categoryColor = null,
+  categoryIcon = null,
   onQuit = null,
   coinFlash = null,
 }) {
@@ -52,7 +53,14 @@ export default function GameHeader({
               }}
             >✕</button>
           )}
-          {categoryLabel && (
+          {categoryIcon ? (
+            <img
+              src={categoryIcon}
+              alt={categoryLabel || ''}
+              style={{ width: S(24), height: S(24), borderRadius: S(6), objectFit: 'cover', flexShrink: 0 }}
+              onError={e => { e.target.style.display = 'none' }}
+            />
+          ) : categoryLabel ? (
             <span style={{
               fontWeight: 900, fontSize: categoryLabel.length > 15 ? S(9) : S(11),
               color: categoryColor || 'rgba(255,255,255,0.7)',
@@ -60,7 +68,7 @@ export default function GameHeader({
             }}>
               {categoryLabel}
             </span>
-          )}
+          ) : null}
         </div>
 
         {/* Droite : pills + settings */}

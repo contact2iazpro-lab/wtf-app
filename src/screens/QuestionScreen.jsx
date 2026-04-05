@@ -132,7 +132,7 @@ export default function QuestionScreen({
       .qs-root .qs-m  { padding-left: 0.75rem !important; padding-right: 0.75rem !important; gap: 0.5rem !important; }
       .qs-root .qs-m .rounded-3xl { padding: 0.75rem !important; }
     }
-    .qs-timer-wrap svg text { font-size: 42px !important; font-weight: 900 !important; }`
+    .qs-timer-wrap svg text { font-size: clamp(48px, 8vh, 64px) !important; font-weight: 900 !important; }`
     document.head.appendChild(s)
     return () => { const el = document.getElementById(styleId); if (el) el.remove() }
   }, [])
@@ -192,6 +192,7 @@ export default function QuestionScreen({
       showTickets={sessionType === 'parcours'}
       categoryLabel={cat?.label || 'Question'}
       categoryColor={cat?.color}
+      categoryIcon={fact.category ? `/assets/categories/${fact.category}.png` : null}
       onQuit={() => setShowQuitConfirm(true)}
       coinFlash={coinFlash}
     />
@@ -299,7 +300,7 @@ export default function QuestionScreen({
             hint={hintText}
             catColor={cat?.color || '#FF6B1A'}
             hasStock={stockRemaining > 0}
-            stockCount={stockRemaining}
+            stockCount={stockRemaining > 0 ? 'Indice' : stockRemaining}
             canBuyWithCoins={stockRemaining <= 0 && currentCoins >= 5}
             onReveal={() => { onUseHint(hintNum); audio.play('click') }}
             onBuyHint={() => {
@@ -961,7 +962,7 @@ export default function QuestionScreen({
       className="qs-root relative screen-enter"
       style={{
         height: '100%', width: '100%', overflow: 'hidden',
-        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
         boxSizing: 'border-box', background: screenBg,
       }}
     >
@@ -970,7 +971,7 @@ export default function QuestionScreen({
 
       {/* Rappel du mode — nom basé sur sessionType */}
       {(() => {
-        const modeLabels = { flash_solo: '⚡ MODE FLASH', marathon: '🗺️ MODE EXPLORER', wtf_du_jour: '🔥 MODE HUNT', parcours: '' }
+        const modeLabels = { flash_solo: '⚡ MODE FLASH', marathon: '🗺️ MODE EXPLORER', wtf_du_jour: '🔥 MODE HUNT', parcours: '⭐ MODE QUEST' }
         const label = modeLabels[sessionType] || (difficulty ? `${difficulty.emoji || ''} Mode ${difficulty.label || difficulty.id}` : '')
         return label ? (
           <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
@@ -986,12 +987,14 @@ export default function QuestionScreen({
 
       {progressBar}
 
-      {/* Zone centrale : question + indices + QCM + timer */}
+      {/* Zone centrale : question + indices + QCM */}
       <div className="qs-m" style={{
         flexShrink: 0,
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'flex-start', gap: 'clamp(8px, 2vh, 16px)',
+        justifyContent: 'flex-start',
+        gap: fact.options.length > 4 ? 'clamp(12px, 2.5vh, 20px)' : 'clamp(16px, 3vh, 28px)',
         padding: `0 ${S(16)}`,
+        marginTop: 'clamp(8px, 2vh, 16px)',
         overflow: 'auto',
       }}>
         {questionCard}
@@ -1102,16 +1105,17 @@ export default function QuestionScreen({
             </div>
           )
         })()}
-        {/* Timer — inside the flow, same gap */}
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: S(64), height: S(64), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            <CircularTimer
-              key={`${fact.id}-${answerMode}`}
-              size={64}
-              duration={timerDuration}
-              onTimeout={handleTimeout}
-            />
-          </div>
+      </div>
+
+      {/* Timer — centré dans l'espace restant sous les QCM */}
+      <div className="qs-timer-wrap" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: S(72), height: S(72), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <CircularTimer
+            key={`${fact.id}-${answerMode}`}
+            size={72}
+            duration={timerDuration}
+            onTimeout={handleTimeout}
+          />
         </div>
       </div>
     </div>

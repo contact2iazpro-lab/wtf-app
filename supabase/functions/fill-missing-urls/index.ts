@@ -79,8 +79,9 @@ Question : ${fact.question}
 Réponse : ${fact.short_answer}
 Explication : ${fact.explanation || ""}
 
-Trouve une URL de source fiable et réelle qui confirme ce fait.
+Recherche sur le web une URL de source fiable qui confirme ce fait.
 Priorité : Wikipedia FR, Wikipedia EN, sites gouvernementaux, musées, encyclopédies scientifiques reconnues, grands médias.
+Vérifie que l'URL existe bien avant de la proposer.
 
 Réponds UNIQUEMENT avec l'URL complète (https://...), rien d'autre.
 Si tu ne trouves pas de source fiable, réponds : INTROUVABLE`;
@@ -95,13 +96,15 @@ Si tu ne trouves pas de source fiable, réponds : INTROUVABLE`;
           },
           body: JSON.stringify({
             model: "claude-opus-4-20250514",
-            max_tokens: 256,
+            max_tokens: 1000,
+            tools: [{ type: "web_search_20250305", name: "web_search" }],
             messages: [{ role: "user", content: prompt }],
           }),
         });
 
         const data = await response.json();
-        const answer = (data.content?.[0]?.text || "").trim();
+        const textBlock = data.content?.find((b: any) => b.type === "text");
+        const answer = (textBlock?.text || "").trim();
 
         if (answer.startsWith("http")) {
           await supabase

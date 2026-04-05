@@ -137,7 +137,7 @@ class AudioManager {
           '/sounds/wrong/What_the.mp4',
         ]
         const randomWrongSound = wrongSounds[Math.floor(Math.random() * wrongSounds.length)]
-        this.playFile(randomWrongSound.slice(1))
+        this.playFile(randomWrongSound.slice(1), 0.2)
         break
       }
       case 'reveal':
@@ -321,11 +321,11 @@ class AudioManager {
   }
 
   // Play audio files from public directory
-  playFile(filename) {
+  playFile(filename, volume = 0.25) {
     if (!this._sfxEnabled) return
     try {
       const a = new Audio(`/${filename}`)
-      a.volume = 0.7
+      a.volume = volume
       this._activeFileAudios.add(a)
       a.addEventListener('ended', () => this._activeFileAudios.delete(a))
       a.addEventListener('error', () => this._activeFileAudios.delete(a))

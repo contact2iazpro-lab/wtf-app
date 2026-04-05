@@ -61,9 +61,9 @@ const MODE_CONFIGS = {
     rules: [
       { icon: '🎫', text: 'Coûte 1 ticket par session' },
       { icon: '🎯', text: 'Choisis un niveau de difficulté' },
-      { icon: '❄️', text: 'Cool : 4 choix · 2 indices disponibles · 3 coins/bonne réponse' },
-      { icon: '🔥', text: 'Hot : 4 choix · 2 indices disponibles · 3 coins/bonne réponse' },
-      { icon: '⚡', text: 'WTF! : 6 choix · 1 indice disponible · 5 coins/bonne réponse' },
+      { icon: '❄️', text: 'Cool : 4 choix · 2 indices · 30s · 5 coins/bonne réponse' },
+      { icon: '🔥', text: 'Hot : 4 choix · 2 indices · 20s · 3 coins/bonne réponse' },
+      { icon: '⚡', text: 'WTF! : 6 choix · 1 indice · 20s · 2 coins/bonne réponse' },
       { icon: '📚', text: '5 questions — les f*cts trouvés rejoignent ta Collection' },
       { icon: '🏆', text: 'Score parfait = bonus 25 coins + 1 ticket !' },
     ],
@@ -96,8 +96,8 @@ const MODE_CONFIGS = {
       { icon: '🆓', text: 'Gratuit — pas de ticket requis' },
       { icon: '⚡', text: 'Session rapide de 5 questions' },
       { icon: '💡', text: '2 indices disponibles par question' },
-      { icon: '🪙', text: '5 coins par bonne réponse (3 avec un indice)' },
-      { icon: '🏆', text: 'Score parfait sans indice = 10 coins bonus !' },
+      { icon: '🪙', text: '5 coins par bonne réponse' },
+      { icon: '🏆', text: 'Score parfait = 10 coins bonus !' },
     ],
   },
   hunt: {
@@ -113,9 +113,9 @@ const MODE_CONFIGS = {
 }
 
 const DIFFICULTY_LEVELS = {
-  WTF:   { id: 'wtf',   label: 'Quest WTF!', emoji: '⚡', choices: 6, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
-  HOT:   { id: 'hot',   label: 'Quest Hot',  emoji: '🔥', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
-  COOL:  { id: 'cool',  label: 'Quest Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
+  WTF:   { id: 'wtf',   label: 'Quest WTF!', emoji: '⚡', choices: 6, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 } },
+  HOT:   { id: 'hot',   label: 'Quest Hot',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
+  COOL:  { id: 'cool',  label: 'Quest Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
   FLASH: { id: 'flash', label: 'Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
   HUNT:  { id: 'hunt',  label: 'Hunt',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, scoring: { correct: [5, 3, 2], wrong: 0 } },
   BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 } },
@@ -363,7 +363,7 @@ export default function App() {
     const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
     const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
     const pool = getGeneratedFacts().filter(f =>
-      !unlockedFacts.has(f.id) && (user || isDevMode || isTestMode ? true : GUEST_CATEGORIES.includes(f.category))
+      !unlockedFacts.has(f.id)
     )
 
     if (pool.length < 5) {
@@ -839,7 +839,7 @@ export default function App() {
         // Unlock correctly answered facts (joueurs connectés ou mode dev)
         const newUnlocked = new Set(unlockedFacts)
         const toSync = []
-        if (user || localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true') {
+        {
           for (const fact of sessionCorrectFacts) {
             if (!newUnlocked.has(fact.id)) {
               newUnlocked.add(fact.id)

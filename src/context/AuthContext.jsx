@@ -138,7 +138,10 @@ export function AuthProvider({ children }) {
       if (key && key.startsWith('sb-')) sessionStorage.removeItem(key)
     }
 
-    // 5. Mettre à jour le state
+    // 5. Supprimer le flag de première connexion
+    localStorage.removeItem('wtf_first_login_done')
+
+    // 6. Mettre à jour le state
     setUser(null)
     setProfile(null)
   }, [])

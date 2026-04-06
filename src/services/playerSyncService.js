@@ -1,177 +1,102 @@
-// ─── Player Data Sync Service ────────────────────────────────────────────────
-// SERVER-AUTHORITATIVE : Supabase = source de vérité.
-// localStorage = cache rapide, jamais prioritaire sur le serveur.
-// Fire-and-forget : ne bloque jamais le gameplay.
-
+// ─── Player Data Sync Service — Server-Authoritative ─────────────────────────
+// Supabase = source de vérité unique.
+// Le local (localStorage) est un cache rapide, pas un concurrent.
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
-// ─── Throttle pour syncAfterAction ──────────────────────────────────────────
+const SYNC_QUEUE_KEY = 'wtf_sync_queue'
 let _lastSyncTime = 0
-const SYNC_THROTTLE_MS = 5000
+const THROTTLE_MS = 5000
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function readLocal() {
-  try {
-    const raw = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    return {
-      coins:      raw.wtfCoins    || 0,
-      totalScore: raw.totalScore  || 0,
-      streak:     raw.streak      || 0,
-      bestStreak: raw.bestStreak  || 0,
-      tickets:    raw.tickets     || 0,
-      hints:      parseInt(localStorage.getItem('wtf_hints_available') || '0', 10),
-    }
-  } catch {
-    return { coins: 0, totalScore: 0, streak: 0, bestStreak: 0, tickets: 0, hints: 0 }
-  }
-}
-
-function writeLocal(data) {
+// ── pushToServer : local → Supabase (upsert) ────────────────────────────────
+export async function pushToServer(userId) {
+  if (!isSupabaseConfigured || !userId) return null
   try {
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    saved.wtfCoins   = data.coins
-    saved.totalScore = data.totalScore
-    saved.streak     = data.streak
-    saved.bestStreak = data.bestStreak
-    saved.tickets    = data.tickets
-    localStorage.setItem('wtf_data', JSON.stringify(saved))
-    localStorage.setItem('wtf_hints_available', String(data.hints))
-    // Notify App.jsx
-    window.dispatchEvent(new Event('wtf_storage_sync'))
-  } catch { /* localStorage write failed — continue */ }
-}
-
-async function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-// ─── Push : local → Supabase ────────────────────────────────────────────────
-
-export async function pushToServer(userId, localData) {
-  if (!isSupabaseConfigured || !userId) return
-
-  const data = localData || readLocal()
-  const payload = {
-    coins:          data.coins      ?? data.wtfCoins ?? 0,
-    total_score:    data.totalScore ?? 0,
-    streak_current: data.streak     ?? 0,
-    streak_max:     Math.max(data.bestStreak || 0, data.streak || 0),
-    tickets:        data.tickets    ?? 0,
-    hints:          data.hints      ?? parseInt(localStorage.getItem('wtf_hints_available') || '0', 10),
-    last_played_date: new Date().toISOString().slice(0, 10),
-    last_modified:  Date.now(),
-    updated_at:     new Date().toISOString(),
-  }
-
-  // Retry up to 2 times
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ id: userId, ...payload }, { onConflict: 'id' })
-
-      if (error) throw error
-      return // success
-    } catch (err) {
-      console.warn(`[sync] pushToServer attempt ${attempt + 1} failed:`, err.message)
-      if (attempt < 2) await wait(1500)
+    const hints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
+    const payload = {
+      coins: saved.wtfCoins || 0,
+      total_score: saved.totalScore || 0,
+      streak_current: saved.streak || 0,
+      streak_max: Math.max(saved.streak || 0, saved.bestStreak || 0),
+      tickets: saved.tickets || 0,
+      hints,
+      last_played_date: new Date().toISOString().slice(0, 10),
+      updated_at: new Date().toISOString(),
+      last_modified: Date.now(),
     }
+    const { error } = await supabase.from('profiles').update(payload).eq('id', userId)
+    if (error) throw error
+    // Mettre à jour lastModified local
+    saved.lastModified = payload.last_modified
+    localStorage.setItem('wtf_data', JSON.stringify(saved))
+    // Vider la queue si push réussi
+    localStorage.removeItem(SYNC_QUEUE_KEY)
+    return payload
+  } catch (err) {
+    console.warn('[sync] pushToServer échoué:', err.message)
+    // Stocker en queue pour retry
+    localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify({ userId, timestamp: Date.now() }))
+    return null
   }
-
-  // All retries failed → queue for later
-  try {
-    localStorage.setItem('wtf_sync_queue', JSON.stringify({ userId, payload, timestamp: Date.now() }))
-    console.warn('[sync] Push queued for later replay')
-  } catch { /* localStorage full — drop */ }
 }
 
-// ─── Pull : Supabase → local ────────────────────────────────────────────────
-
+// ── pullFromServer : Supabase → local (sens unique, pas de merge) ────────────
 export async function pullFromServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
-
   try {
     const { data: remote, error } = await supabase
       .from('profiles')
       .select('coins, total_score, streak_current, streak_max, tickets, hints, last_played_date, last_modified')
       .eq('id', userId)
       .single()
-
-    if (error) {
-      console.warn('[sync] pullFromServer error:', error.message)
-      return null
-    }
-
+    if (error) throw error
     if (!remote) return null
-
-    const merged = {
-      coins:      remote.coins          || 0,
-      totalScore: remote.total_score    || 0,
-      streak:     remote.streak_current || 0,
-      bestStreak: remote.streak_max     || 0,
-      tickets:    remote.tickets        || 0,
-      hints:      remote.hints          || 0,
-    }
-
-    writeLocal(merged)
-    return merged
+    // Écraser le local avec les valeurs Supabase
+    const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    saved.wtfCoins = remote.coins || 0
+    saved.totalScore = remote.total_score || 0
+    saved.streak = remote.streak_current || 0
+    saved.bestStreak = Math.max(saved.bestStreak || 0, remote.streak_max || 0)
+    saved.tickets = remote.tickets || 0
+    saved.lastModified = remote.last_modified || Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(saved))
+    localStorage.setItem('wtf_hints_available', String(remote.hints || 0))
+    // Notifier App.jsx de recharger le state
+    window.dispatchEvent(new Event('wtf_storage_sync'))
+    return remote
   } catch (err) {
-    console.warn('[sync] pullFromServer failed:', err.message)
+    console.warn('[sync] pullFromServer échoué:', err.message)
     return null
   }
 }
 
-// ─── Replay queued sync ─────────────────────────────────────────────────────
-
+// ── replaySyncQueue : rejouer les syncs en attente au montage ─────────────────
 export async function replaySyncQueue(userId) {
-  if (!isSupabaseConfigured || !userId) return
-
+  if (!userId) return
   try {
-    const raw = localStorage.getItem('wtf_sync_queue')
-    if (!raw) return
-
-    const queued = JSON.parse(raw)
-    if (queued.userId !== userId) {
-      localStorage.removeItem('wtf_sync_queue')
-      return
+    const queueJson = localStorage.getItem(SYNC_QUEUE_KEY)
+    if (!queueJson) return
+    const queue = JSON.parse(queueJson)
+    if (queue.userId === userId) {
+      await pushToServer(userId)
     }
-
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ id: userId, ...queued.payload }, { onConflict: 'id' })
-
-    if (error) {
-      console.warn('[sync] replaySyncQueue failed, keeping queue:', error.message)
-      return
-    }
-
-    localStorage.removeItem('wtf_sync_queue')
-  } catch (err) {
-    console.warn('[sync] replaySyncQueue error:', err.message)
-  }
+  } catch { /* ignore */ }
 }
 
-// ─── Sync after action (throttled) ──────────────────────────────────────────
-
+// ── syncAfterAction : wrapper throttlé pour le gameplay ──────────────────────
 export function syncAfterAction(userId) {
+  if (!userId) return
   const now = Date.now()
-  if (now - _lastSyncTime < SYNC_THROTTLE_MS) return
+  if (now - _lastSyncTime < THROTTLE_MS) return
   _lastSyncTime = now
   pushToServer(userId).catch(() => {})
 }
 
-// ─── Backward-compatible exports ────────────────────────────────────────────
-// App.jsx uses syncPlayerDataAsync(userId, localData)
-// AuthContext.jsx uses syncPlayerData(userId, localData)
-
+// ── Rétro-compatibilité (utilisé par AuthContext et App.jsx) ─────────────────
 export async function syncPlayerData(userId, localData) {
-  if (!userId) return null
-  await pushToServer(userId, localData)
-  return await pullFromServer(userId)
+  return pullFromServer(userId)
 }
-
 export function syncPlayerDataAsync(userId, localData) {
   if (!userId) return
-  pushToServer(userId, localData).catch(() => {})
+  pullFromServer(userId).catch(() => {})
 }

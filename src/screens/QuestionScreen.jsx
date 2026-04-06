@@ -653,6 +653,46 @@ export default function QuestionScreen({
                 >
                   C'est parti ! 🚀
                 </button>
+                <button
+                  onClick={() => {
+                    audio.play('click')
+                    // Créditer les devises de départ (comme si le joueur avait fait le tuto + 1ère partie Flash)
+                    try {
+                      const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                      if ((wtfData.tickets || 0) === 0) wtfData.tickets = 3
+                      if ((wtfData.wtfCoins || 0) === 0) wtfData.wtfCoins = 0
+                      wtfData.lastModified = Date.now()
+                      localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+                      if (!localStorage.getItem('wtf_hints_available') || localStorage.getItem('wtf_hints_available') === '0') {
+                        localStorage.setItem('wtf_hints_available', '3')
+                      }
+                    } catch { /* ignore */ }
+                    // Skip le tuto → marquer comme COMPLETED
+                    import('../utils/tutorialManager').then(({ advanceTutorial, getTutorialState, TUTORIAL_STATES }) => {
+                      const advance = async () => {
+                        let state = await getTutorialState()
+                        while (state !== TUTORIAL_STATES.COMPLETED) {
+                          advanceTutorial()
+                          state = await getTutorialState()
+                        }
+                      }
+                      advance().then(() => {
+                        localStorage.setItem('wtf_first_login_done', 'true')
+                        window.dispatchEvent(new Event('wtf_storage_sync'))
+                        if (onTutoComplete) onTutoComplete()
+                        else if (onQuit) onQuit()
+                      })
+                    })
+                  }}
+                  style={{
+                    marginTop: 12, padding: '8px 0',
+                    background: 'transparent', border: 'none',
+                    fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 700,
+                    color: '#9CA3AF', cursor: 'pointer',
+                  }}
+                >
+                  Passer le tutoriel →
+                </button>
               </div>
             </div>
           )}

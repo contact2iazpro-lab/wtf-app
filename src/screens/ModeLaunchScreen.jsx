@@ -95,17 +95,24 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
         {/* Checkbox */}
         <label style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: S(8), marginBottom: S(14), cursor: 'pointer',
-        }}>
-          <input
-            type="checkbox"
-            checked={skipNext}
-            onChange={e => setSkipNext(e.target.checked)}
-            style={{ width: S(16), height: S(16), accentColor: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
-          />
+          gap: S(10), marginBottom: S(14), cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+          onClick={() => setSkipNext(!skipNext)}
+        >
+          <div style={{
+            width: S(22), height: S(22), borderRadius: S(6),
+            border: `2.5px solid ${skipNext ? '#ffffff' : 'rgba(255,255,255,0.5)'}`,
+            background: skipNext ? 'rgba(255,255,255,0.25)' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s ease',
+            flexShrink: 0,
+          }}>
+            {skipNext && <span style={{ fontSize: S(14), color: '#ffffff', fontWeight: 900, lineHeight: 1 }}>✓</span>}
+          </div>
           <span style={{
-            fontSize: S(12), fontWeight: 600,
-            color: 'rgba(255,255,255,0.5)',
+            fontSize: S(12), fontWeight: 700,
+            color: 'rgba(255,255,255,0.8)',
           }}>
             Ne plus afficher ce message
           </span>

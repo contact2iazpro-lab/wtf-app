@@ -71,7 +71,7 @@ export default function QuestionScreen({
     const correctText = fact.options[fact.correctIndex]
     return [
       { originalIndex: fact.correctIndex, text: correctText },
-      { originalIndex: -1, text: 'Il neige des pizzas 🍕' },
+      { originalIndex: -1, text: 'Aaron' },
     ]
   })
 

@@ -611,9 +611,14 @@ export default function ResultsScreen({
         ) : (
           <button
             onClick={handleGoHome}
-            className="btn-press w-full py-2 rounded-2xl font-bold text-sm flex items-center justify-center active:scale-95 transition-all"
-            style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-            ← Revenir
+            className="btn-press w-full py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              border: '1.5px solid rgba(255,255,255,0.3)',
+              color: '#ffffff',
+              textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+            }}>
+            🏠 Revenir à l'accueil
           </button>
         )}
       </div>

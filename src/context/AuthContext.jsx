@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import { pullFromServer, replaySyncQueue } from '../services/playerSyncService'
+import { pullFromServer } from '../services/playerSyncService'
 
 const AuthContext = createContext(null)
 
@@ -65,7 +65,6 @@ export function AuthProvider({ children }) {
           // Sync local data to/from Supabase on sign-in, then refresh App state
           try {
             await pullFromServer(u.id)
-            replaySyncQueue(u.id)
             // Sync local name/avatar to Supabase si pas de données cloud
             const localName = localStorage.getItem('wtf_player_name')
             const localAvatar = localStorage.getItem('wtf_player_avatar')

@@ -41,6 +41,7 @@ export function resetFacts() {
   _parcoursFacts = null
   _categoryLevelIds = null
   _difficulty = null
+  _playableCategories = null
   _initPromise = null
 }
 
@@ -157,7 +158,7 @@ function buildAll(rawFacts) {
 // ─── Cache localStorage ─────────────────────────────────────────────────────
 const CACHE_KEY = 'wtf_facts_cache'
 const CACHE_VERSION_KEY = 'wtf_facts_cache_version'
-const CACHE_VERSION = '1' // Incrémenter si le format fromRow change
+const CACHE_VERSION = '2'
 
 function saveCacheToLocal(rawRows) {
   try {

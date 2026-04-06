@@ -1,13 +1,13 @@
-// ─── Player Data Sync Service — Server-Authoritative ─────────────────────────
-// Supabase = source de vérité unique.
-// Le local (localStorage) est un cache rapide, pas un concurrent.
+// ─── Player Sync Service — Simplifié ─────────────────────────────────────────
+// Rôle unique : synchroniser le profil joueur entre localStorage et Supabase.
+// Les devises (coins/tickets/hints) sont gérées par currencyService.js.
+//
+// pushToServer(userId) — local → Supabase (après chaque action gameplay)
+// pullFromServer(userId) — Supabase → local (uniquement au login)
+
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
-const SYNC_QUEUE_KEY = 'wtf_sync_queue'
-let _lastSyncTime = 0
-const THROTTLE_MS = 5000
-
-// ── pushToServer : local → Supabase (upsert) ────────────────────────────────
+// ── pushToServer : lit localStorage, push vers Supabase ──────────────────────
 export async function pushToServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
@@ -29,18 +29,14 @@ export async function pushToServer(userId) {
     // Mettre à jour lastModified local
     saved.lastModified = payload.last_modified
     localStorage.setItem('wtf_data', JSON.stringify(saved))
-    // Vider la queue si push réussi
-    localStorage.removeItem(SYNC_QUEUE_KEY)
     return payload
   } catch (err) {
     console.warn('[sync] pushToServer échoué:', err.message)
-    // Stocker en queue pour retry
-    localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify({ userId, timestamp: Date.now() }))
     return null
   }
 }
 
-// ── pullFromServer : Supabase → local (sens unique, pas de merge) ────────────
+// ── pullFromServer : Supabase → local (UNIQUEMENT au login) ──────────────────
 export async function pullFromServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
@@ -51,7 +47,22 @@ export async function pullFromServer(userId) {
       .single()
     if (error) throw error
     if (!remote) return null
-    // Écraser le local avec les valeurs Supabase
+
+    // Détecter un profil vierge (vient d'être créé par le trigger Supabase)
+    const isNewProfile = (remote.coins || 0) === 0
+      && (remote.total_score || 0) === 0
+      && (remote.tickets || 0) === 0
+      && (remote.hints || 0) === 0
+      && (remote.streak_current || 0) === 0
+
+    if (isNewProfile) {
+      // Nouveau profil → ne pas écraser le local (le joueur a peut-être déjà joué avant de se connecter)
+      // Au lieu de ça, pusher le local vers Supabase pour initialiser le profil
+      console.log('[sync] Nouveau profil détecté — push local vers Supabase')
+      return pushToServer(userId)
+    }
+
+    // Profil existant → écraser le local avec Supabase
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     saved.wtfCoins = remote.coins || 0
     saved.totalScore = remote.total_score || 0
@@ -61,7 +72,8 @@ export async function pullFromServer(userId) {
     saved.lastModified = remote.last_modified || Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(saved))
     localStorage.setItem('wtf_hints_available', String(remote.hints || 0))
-    // Notifier App.jsx de recharger le state
+
+    // Notifier l'UI
     window.dispatchEvent(new Event('wtf_storage_sync'))
     return remote
   } catch (err) {
@@ -70,20 +82,10 @@ export async function pullFromServer(userId) {
   }
 }
 
-// ── replaySyncQueue : rejouer les syncs en attente au montage ─────────────────
-export async function replaySyncQueue(userId) {
-  if (!userId) return
-  try {
-    const queueJson = localStorage.getItem(SYNC_QUEUE_KEY)
-    if (!queueJson) return
-    const queue = JSON.parse(queueJson)
-    if (queue.userId === userId) {
-      await pushToServer(userId)
-    }
-  } catch { /* ignore */ }
-}
+// ── syncAfterAction : push throttlé pour le gameplay courant ─────────────────
+let _lastSyncTime = 0
+const THROTTLE_MS = 5000
 
-// ── syncAfterAction : wrapper throttlé pour le gameplay ──────────────────────
 export function syncAfterAction(userId) {
   if (!userId) return
   const now = Date.now()
@@ -92,11 +94,7 @@ export function syncAfterAction(userId) {
   pushToServer(userId).catch(() => {})
 }
 
-// ── Rétro-compatibilité (utilisé par AuthContext et App.jsx) ─────────────────
-export async function syncPlayerData(userId, localData) {
-  return pullFromServer(userId)
-}
-export function syncPlayerDataAsync(userId, localData) {
-  if (!userId) return
-  pullFromServer(userId).catch(() => {})
-}
+// ── Stubs rétro-compat (importés par App.jsx et AuthContext) ─────────────────
+export async function replaySyncQueue() {}
+export async function syncPlayerData(userId) { return pullFromServer(userId) }
+export function syncPlayerDataAsync(userId) { if (userId) pullFromServer(userId).catch(() => {}) }

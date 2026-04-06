@@ -5,9 +5,10 @@ import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
   getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories, getCategoryById,
   getGeneratedFacts, getGeneratedFactsByCategory, getBlitzFacts,
+  getQuestFacts, getFlashFacts,
   initFacts, resetFacts,
 } from './data/factsService'
-import { syncAfterAction, pullFromServer, replaySyncQueue } from './services/playerSyncService'
+import { pushToServer, syncAfterAction, pullFromServer } from './services/playerSyncService'
 import { updateCoins, updateTickets, updateHints, updateMultiple, setAbsolute, getBalances } from './services/currencyService'
 import DevPanel from './components/DevPanel'
 import { DEV_PANEL_ENABLED } from './config/devConfig'
@@ -445,7 +446,7 @@ export default function App() {
     if (!huntFact) {
       const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
       if (isDevOrTest) {
-        const allValid = getValidFacts().filter(f => f.isVip)
+        const allValid = getQuestFacts()
         huntFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
       }
       if (!huntFact) {
@@ -546,7 +547,7 @@ export default function App() {
     audio.play('click')
     const difficulty = DIFFICULTY_LEVELS.HOT
     // Pool : facts VIP uniquement (type = 'vip' ou sans type = VIP par défaut)
-    let pool = getValidFacts().filter(f => f.isVip)
+    let pool = getQuestFacts()
     // Exclure les facts déjà débloqués pour plus de variété
     const skipUnlockQ = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     if (!skipUnlockQ) {
@@ -685,7 +686,7 @@ export default function App() {
     }
     // Fallback 2 : tous les VIP valides (sans filtre difficulty)
     if (available.length < QUESTIONS_PER_GAME) {
-      available = getValidFacts().filter(f => f.isVip)
+      available = getQuestFacts()
     }
     // Fallback 3 : tous les facts valides
     if (available.length < QUESTIONS_PER_GAME) {
@@ -1384,8 +1385,7 @@ export default function App() {
   // Sync player data with Supabase after facts loaded
   useEffect(() => {
     if (!factsReady || !user) return
-    pullFromServer(user.id)
-    replaySyncQueue(user.id)
+    pushToServer(user.id)
   }, [factsReady, user])
 
   // Refresh storage state when auth sync completes (sign-in / sign-out)

@@ -105,6 +105,7 @@ export default function SocialPage() {
               <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>📩 Inviter un ami</h2>
               <button
                 onClick={async () => {
+                  if (!myCode) return
                   const inviteUrl = `https://wtf-app-production.up.railway.app/invite/${myCode}`
                   if (navigator.share) {
                     try {

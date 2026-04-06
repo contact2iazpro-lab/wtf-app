@@ -13,6 +13,7 @@ export default function BlitzResultsScreen({
   categoryLabel = '',
   questionCount = 0,
   user = null,
+  isChallengeMode = false,
   onHome,
   onReplay,
 }) {
@@ -23,6 +24,7 @@ export default function BlitzResultsScreen({
 
   const [displayTime, setDisplayTime] = useState(0)
   const [challengeCreated, setChallengeCreated] = useState(null)
+  const [autoChallenge, setAutoChallenge] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -43,6 +45,36 @@ export default function BlitzResultsScreen({
     const m = Math.floor(t / 60)
     const s = (t % 60).toFixed(2)
     return `${m}:${s.padStart(5, '0')}`
+  }
+
+  useEffect(() => {
+    if (!isChallengeMode) return
+    const handleCreated = () => {
+      try {
+        const challenge = JSON.parse(localStorage.getItem('wtf_auto_challenge') || 'null')
+        if (challenge) {
+          setAutoChallenge(challenge)
+          localStorage.removeItem('wtf_auto_challenge')
+        }
+      } catch { /* ignore */ }
+    }
+    // Vérifier immédiatement (si déjà créé avant le mount)
+    handleCreated()
+    window.addEventListener('wtf_challenge_created', handleCreated)
+    return () => window.removeEventListener('wtf_challenge_created', handleCreated)
+  }, [isChallengeMode])
+
+  const handleShareChallenge = () => {
+    if (!autoChallenge) return
+    const challengeUrl = `https://wtf-app-production.up.railway.app/challenge/${autoChallenge.code}`
+    const text = `🎯 Défi WTF! Blitz !\n\n${questionCount} questions en ${finalTime.toFixed(2)}s. Tu fais mieux ? 😏\n\nRelève le défi :`
+    if (navigator.share) {
+      navigator.share({ title: 'Défi WTF! Blitz ⚡', text, url: challengeUrl }).catch(() => {})
+    } else {
+      navigator.clipboard?.writeText(`${text}\n${challengeUrl}`)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   const rank = accuracy === 100 && finalTime < 30 ? { emoji: '🏆', label: 'Légende Blitz !' }
@@ -97,6 +129,61 @@ export default function BlitzResultsScreen({
     navigator.clipboard?.writeText(challengeCreated.code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  if (isChallengeMode) {
+    return (
+      <div
+        className="absolute inset-0 flex flex-col overflow-hidden"
+        style={{ '--scale': scale, background: 'linear-gradient(160deg, #0A0F1E 0%, #1a0a35 100%)', fontFamily: 'Nunito, sans-serif' }}
+      >
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8" style={{ gap: S(20) }}>
+          <div style={{ fontSize: S(56) }}>🎯</div>
+          <h1 style={{ fontSize: S(26), fontWeight: 900, color: 'white', textAlign: 'center' }}>
+            {autoChallenge ? 'Défi créé !' : 'Création du défi...'}
+          </h1>
+
+          {/* Résumé du score */}
+          <div className="rounded-3xl w-full p-5" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
+            <div className="text-center mb-3">
+              <span style={{ fontSize: S(40), fontWeight: 900, color: '#FF6B1A', fontVariantNumeric: 'tabular-nums' }}>{formatTime(finalTime)}</span>
+            </div>
+            <div className="flex justify-center gap-6">
+              <div className="text-center">
+                <span style={{ fontSize: S(16), fontWeight: 900, color: 'white' }}>{correctCount}/{totalAnswered}</span>
+                <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block' }}>Bonnes réponses</span>
+              </div>
+              <div className="text-center">
+                <span style={{ fontSize: S(16), fontWeight: 900, color: 'white' }}>{accuracy}%</span>
+                <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block' }}>Précision</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bouton partager */}
+          {autoChallenge ? (
+            <button
+              onClick={handleShareChallenge}
+              className="w-full py-4 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
+              style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16), maxWidth: 340 }}
+            >
+              {copied ? '✅ Lien copié !' : '📤 Partager le défi'}
+            </button>
+          ) : (
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(14) }}>⏳ Envoi en cours...</div>
+          )}
+
+          {/* Bouton accueil */}
+          <button
+            onClick={onHome}
+            className="w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
+            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', fontSize: S(14), maxWidth: 340 }}
+          >
+            🏠 Revenir à l'accueil
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (

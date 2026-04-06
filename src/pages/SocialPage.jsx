@@ -149,7 +149,7 @@ export default function SocialPage() {
                       <button
                         onClick={() => {
                           audio.play('click')
-                          localStorage.setItem('wtf_pending_action', 'blitz')
+                          localStorage.setItem('wtf_pending_action', 'challenge')
                           navigate('/')
                         }}
                         className="active:scale-90"
@@ -182,7 +182,7 @@ export default function SocialPage() {
                   <button
                     onClick={() => {
                       audio.play('click')
-                      localStorage.setItem('wtf_pending_action', 'blitz')
+                      localStorage.setItem('wtf_pending_action', 'challenge')
                       navigate('/')
                     }}
                     className="active:scale-95 transition-all"
@@ -194,7 +194,7 @@ export default function SocialPage() {
                   <button
                     onClick={() => {
                       audio.play('click')
-                      localStorage.setItem('wtf_pending_action', 'blitz')
+                      localStorage.setItem('wtf_pending_action', 'challenge')
                       navigate('/')
                     }}
                     className="active:scale-95 transition-all"

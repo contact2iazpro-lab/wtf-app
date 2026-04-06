@@ -298,7 +298,21 @@ export default function App() {
     const action = localStorage.getItem('wtf_pending_action')
     if (!action) return
     localStorage.removeItem('wtf_pending_action')
-    if (action === 'blitz') {
+    if (action === 'challenge') {
+      // Mode défi : vérifier le ticket
+      const balances = getBalances()
+      if (balances.tickets < 1) {
+        alert('Tu n\'as pas de ticket pour lancer un défi ! 🎫')
+        return
+      }
+      updateTickets(-1)
+      setIsChallengeMode(true)
+      setGameMode('blitz')
+      setSessionType('blitz')
+      setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
+      setSelectedCategory(null)
+      setScreen(SCREENS.BLITZ_LOBBY)
+    } else if (action === 'blitz') {
       setGameMode('blitz')
       setSessionType('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
@@ -371,6 +385,7 @@ export default function App() {
 
   // Session type tracking
   const [isTutorialSession, setIsTutorialSession] = useState(false)
+  const [isChallengeMode, setIsChallengeMode] = useState(false)
   const [flipInfo, setFlipInfo] = useState(null) // { wrongAnswer, correctAnswer } for tutorial flip
   const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'marathon' | 'duel'
   const [coinsEarnedLastSession, setCoinsEarnedLastSession] = useState(0)
@@ -794,9 +809,41 @@ export default function App() {
       } catch { /* ignore */ }
     }
 
+    if (isChallengeMode) {
+      // Mode défi : créer le défi automatiquement et afficher l'écran de partage
+      const challengeData = {
+        finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord,
+        categoryId: selectedCategory,
+        categoryLabel: selectedCategory ? (getCategoryById(selectedCategory)?.label || selectedCategory) : 'Toutes catégories',
+        questionCount: totalAnswered,
+      }
+      setBlitzResults(challengeData)
+      setScreen(SCREENS.BLITZ_RESULTS)
+
+      // Créer le défi dans Supabase automatiquement
+      if (user) {
+        import('./data/challengeService').then(({ createChallenge }) => {
+          createChallenge({
+            categoryId: selectedCategory || 'all',
+            categoryLabel: challengeData.categoryLabel,
+            questionCount: totalAnswered,
+            playerTime: finalTime,
+            playerId: user.id,
+            playerName: user.user_metadata?.name || 'Joueur WTF!',
+          }).then(challenge => {
+            // Stocker le challenge créé pour que BlitzResultsScreen puisse le partager
+            localStorage.setItem('wtf_auto_challenge', JSON.stringify(challenge))
+            window.dispatchEvent(new Event('wtf_challenge_created'))
+          }).catch(e => console.warn('Auto challenge creation failed:', e))
+        })
+      }
+      setIsChallengeMode(false)
+      return
+    }
+
     setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)
-  }, [user, navigate])
+  }, [user, navigate, isChallengeMode, selectedCategory])
 
   const handleSelectCategory = useCallback((categoryId) => {
     // Blitz : démarrer directement sans choisir la difficulté
@@ -1248,6 +1295,7 @@ export default function App() {
     setSessionType('parcours')
     setBlitzFacts([])
     setBlitzResults(null)
+    setIsChallengeMode(false)
     setLaunchMode(null)
     setExplorerPool([])
   }, [])
@@ -1901,6 +1949,7 @@ export default function App() {
           categoryLabel={getCategoryById(selectedCategory)?.label || ''}
           questionCount={blitzResults.totalAnswered}
           user={user}
+          isChallengeMode={isChallengeMode}
           onHome={handleHome}
           onReplay={handleBlitzReplay}
         />

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getOrCreateFriendCode, acceptFriendRequest, rejectFriendRequest, getFriends, getPendingRequests, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
+import { getPlayerChallenges } from '../data/challengeService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -13,7 +14,7 @@ export default function SocialPage() {
   const [myCode, setMyCode] = useState(null)
   const [friends, setFriends] = useState([])
   const [pendingRequests, setPendingRequests] = useState([])
-  const [copied, setCopied] = useState(false)
+  const [pendingChallenges, setPendingChallenges] = useState([])
   const [toast, setToast] = useState(null)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
@@ -21,14 +22,17 @@ export default function SocialPage() {
   const loadData = useCallback(async () => {
     if (!user) return
     try {
-      const [codeResult, friendsList, pendingList] = await Promise.all([
+      const [codeResult, friendsList, pendingList, challengesList] = await Promise.all([
         getOrCreateFriendCode(user.id, user.user_metadata?.name || 'Joueur WTF!', user.user_metadata?.avatar_url),
         getFriends(user.id),
         getPendingRequests(user.id),
+        getPlayerChallenges(user.id),
       ])
       if (codeResult?.code) setMyCode(codeResult.code)
       setFriends(friendsList || [])
       setPendingRequests(pendingList || [])
+      const received = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id !== user.id)
+      setPendingChallenges(received)
     } catch (e) { console.warn('Social load error:', e) }
   }, [user])
 
@@ -102,61 +106,93 @@ export default function SocialPage() {
           </div>
         ) : (
           <>
-            {/* 1) Inviter un ami */}
+            {/* A) 📩 Inviter un ami */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>📩 Inviter un ami</h2>
+              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>📩 Inviter un ami</h2>
               <button
-                onClick={async () => {
+                onClick={() => {
                   if (!myCode) {
                     showToast('⏳ Chargement en cours, réessaie dans quelques secondes...')
                     return
                   }
+                  audio.play('click')
                   const inviteUrl = `https://wtf-app-production.up.railway.app/invite/${myCode}`
                   if (navigator.share) {
-                    try {
-                      await navigator.share({
-                        title: 'What The F*ct!',
-                        text: 'Rejoins-moi sur What The F*ct! 🤯 Des faits 100% vrais, des réactions 100% fun !',
-                        url: inviteUrl,
-                      })
-                    } catch { /* user cancelled */ }
+                    navigator.share({ title: 'What The F*ct!', text: 'Rejoins-moi sur What The F*ct! 🤯 Des faits 100% vrais, des réactions 100% fun !', url: inviteUrl }).catch(() => {})
                   } else {
-                    await navigator.clipboard.writeText(inviteUrl)
+                    navigator.clipboard?.writeText(inviteUrl)
                     showToast('Lien copié ! 📋')
                   }
                 }}
-                style={{
-                  width: '100%', padding: '12px 0', borderRadius: 12,
-                  border: 'none', background: '#FF6B1A', color: 'white',
-                  fontSize: 14, fontWeight: 900, cursor: 'pointer',
-                  fontFamily: 'Nunito, sans-serif',
-                  opacity: myCode ? 1 : 0.5,
-                }}
-              >📩 Inviter un ami</button>
-              <p style={{ fontSize: S(11), color: '#9CA3AF', margin: '8px 0 0', textAlign: 'center' }}>Envoie ton lien par WhatsApp, SMS ou autre</p>
+                className="active:scale-95 transition-all"
+                style={{ width: '100%', padding: '14px 0', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer', opacity: myCode ? 1 : 0.5 }}
+              >
+                📩 Inviter un ami
+              </button>
+              <p style={{ fontSize: S(10), color: '#9CA3AF', margin: '8px 0 0', textAlign: 'center' }}>Envoie ton lien par WhatsApp, SMS ou autre</p>
             </div>
 
-            {/* 2) Défier un ami */}
+            {/* B) 🎯 Défier un ami */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>🎯 Défier un ami</h2>
               {friends.length === 0 ? (
                 <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Ajoute des amis pour les défier ! 🤝</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {friends.map(friend => (
                     <div key={friend.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
                       <Initial name={friend.displayName} size={36} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
                       </div>
-                      <button onClick={() => { audio.play('click'); localStorage.setItem('wtf_pending_action', 'blitz'); navigate('/') }} className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>⚡ Défier</button>
+                      <button
+                        onClick={() => {
+                          audio.play('click')
+                          localStorage.setItem('wtf_pending_action', 'blitz')
+                          navigate('/')
+                        }}
+                        className="active:scale-90"
+                        style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
+                      >⚡ Défier</button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* 3) Demandes reçues */}
+            {/* B2) ⚡ Défis reçus en attente */}
+            {pendingChallenges.length > 0 && (
+              <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  ⚡ Défis à relever
+                  <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingChallenges.length}</span>
+                </h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {pendingChallenges.map(challenge => (
+                    <button
+                      key={challenge.id}
+                      onClick={() => { audio.play('click'); navigate(`/challenge/${challenge.code}`) }}
+                      className="active:scale-95 transition-all"
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      <Initial name={challenge.player1_name} size={36} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{challenge.player1_name}</span>
+                        <span style={{ fontSize: 11, color: '#6B7280' }}>{challenge.category_label} · {challenge.question_count} questions</span>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <span style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', display: 'block' }}>
+                          {challenge.player1_time < 60 ? challenge.player1_time.toFixed(1) + 's' : Math.floor(challenge.player1_time / 60) + ':' + (challenge.player1_time % 60).toFixed(0).padStart(2, '0')}
+                        </span>
+                        <span style={{ fontSize: 9, color: '#9CA3AF' }}>à battre</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* C) Demandes reçues */}
             {pendingRequests.length > 0 && (
               <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>

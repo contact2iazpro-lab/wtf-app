@@ -11,7 +11,9 @@ export default function SocialPage() {
   const navigate = useNavigate()
   const { user, isConnected, signInWithGoogle } = useAuth()
 
-  const [myCode, setMyCode] = useState(null)
+  const [myCode, setMyCode] = useState(() => {
+    try { return localStorage.getItem('wtf_my_friend_code') || null } catch { return null }
+  })
   const [friends, setFriends] = useState([])
   const [pendingRequests, setPendingRequests] = useState([])
   const [pendingChallenges, setPendingChallenges] = useState([])
@@ -29,7 +31,10 @@ export default function SocialPage() {
         getPendingRequests(user.id),
         getPlayerChallenges(user.id),
       ])
-      if (codeResult?.code) setMyCode(codeResult.code)
+      if (codeResult?.code) {
+        setMyCode(codeResult.code)
+        try { localStorage.setItem('wtf_my_friend_code', codeResult.code) } catch {}
+      }
       setFriends(friendsList || [])
       // Mettre à jour friendCount pour les trophées sociaux
       try {

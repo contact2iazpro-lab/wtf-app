@@ -776,6 +776,14 @@ export default function App() {
         isNewRecord = true
       }
       bestTime = wtfData.bestBlitzTime
+      // Sauvegarder le record par catégorie + palier
+      if (!wtfData.blitzRecords) wtfData.blitzRecords = {}
+      const catKey = selectedCategory || 'all'
+      const palierKey = `${catKey}_${totalAnswered}`
+      const existingRecord = wtfData.blitzRecords[palierKey]
+      if (!existingRecord || finalTime < existingRecord) {
+        wtfData.blitzRecords[palierKey] = finalTime
+      }
       wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
       wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount
       wtfData.totalAnswered = (wtfData.totalAnswered || 0) + totalAnswered

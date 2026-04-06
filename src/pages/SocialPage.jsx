@@ -15,6 +15,7 @@ export default function SocialPage() {
   const [friends, setFriends] = useState([])
   const [pendingRequests, setPendingRequests] = useState([])
   const [pendingChallenges, setPendingChallenges] = useState([])
+  const [showChallengeSection, setShowChallengeSection] = useState(false)
   const [toast, setToast] = useState(null)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
@@ -132,11 +133,11 @@ export default function SocialPage() {
               <p style={{ fontSize: S(10), color: '#9CA3AF', margin: '8px 0 0', textAlign: 'center' }}>Envoie ton lien par WhatsApp, SMS ou autre</p>
             </div>
 
-            {/* B) 🎯 Défier un ami */}
+            {/* B) 👥 Mes amis */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>🎯 Défier un ami</h2>
+              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>👥 Mes amis ({friends.length})</h2>
               {friends.length === 0 ? (
-                <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Ajoute des amis pour les défier ! 🤝</p>
+                <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Pas encore d'amis. Invite quelqu'un ! 🤝</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {friends.map(friend => (
@@ -152,47 +153,89 @@ export default function SocialPage() {
                           navigate('/')
                         }}
                         className="active:scale-90"
-                        style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}
+                        style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}
                       >⚡ Défier</button>
+                      <button onClick={() => handleRemove(friend.friendshipId)} className="active:scale-90" style={{ padding: '4px 8px', borderRadius: 6, background: 'transparent', border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer' }}>✕</button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* B2) ⚡ Défis reçus en attente */}
-            {pendingChallenges.length > 0 && (
-              <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  ⚡ Défis à relever
-                  <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingChallenges.length}</span>
+            {/* C) 🎯 Défier (accordéon) */}
+            <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <button
+                onClick={() => setShowChallengeSection(!showChallengeSection)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  🎯 Défier
+                  {pendingChallenges.length > 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingChallenges.length}</span>
+                  )}
                 </h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {pendingChallenges.map(challenge => (
-                    <button
-                      key={challenge.id}
-                      onClick={() => { audio.play('click'); navigate(`/challenge/${challenge.code}`) }}
-                      className="active:scale-95 transition-all"
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)', width: '100%', cursor: 'pointer', textAlign: 'left' }}
-                    >
-                      <Initial name={challenge.player1_name} size={36} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{challenge.player1_name}</span>
-                        <span style={{ fontSize: 11, color: '#6B7280' }}>{challenge.category_label} · {challenge.question_count} questions</span>
-                      </div>
-                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <span style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', display: 'block' }}>
-                          {challenge.player1_time < 60 ? challenge.player1_time.toFixed(1) + 's' : Math.floor(challenge.player1_time / 60) + ':' + (challenge.player1_time % 60).toFixed(0).padStart(2, '0')}
-                        </span>
-                        <span style={{ fontSize: 9, color: '#9CA3AF' }}>à battre</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+                <span style={{ fontSize: 18, color: '#9CA3AF', transition: 'transform 0.2s', transform: showChallengeSection ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
+              </button>
 
-            {/* C) Demandes reçues */}
+              {showChallengeSection && (
+                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <button
+                    onClick={() => {
+                      audio.play('click')
+                      localStorage.setItem('wtf_pending_action', 'blitz')
+                      navigate('/')
+                    }}
+                    className="active:scale-95 transition-all"
+                    style={{ width: '100%', padding: '12px 0', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}
+                  >
+                    ⚡ Défier un ami
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      audio.play('click')
+                      localStorage.setItem('wtf_pending_action', 'blitz')
+                      navigate('/')
+                    }}
+                    className="active:scale-95 transition-all"
+                    style={{ width: '100%', padding: '12px 0', borderRadius: 12, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151', fontWeight: 800, fontSize: 13, cursor: 'pointer' }}
+                  >
+                    🔗 Défier quelqu'un (même sans être ami)
+                  </button>
+                  <p style={{ fontSize: S(10), color: '#9CA3AF', margin: 0, textAlign: 'center' }}>Lance un Blitz, puis partage le lien du défi</p>
+
+                  {pendingChallenges.length > 0 && (
+                    <div style={{ marginTop: 4 }}>
+                      <p style={{ fontSize: S(12), fontWeight: 800, color: '#1a1a2e', margin: '0 0 8px' }}>Défis à relever :</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {pendingChallenges.map(challenge => (
+                          <button
+                            key={challenge.id}
+                            onClick={() => { audio.play('click'); navigate(`/challenge/${challenge.code}`) }}
+                            className="active:scale-95 transition-all"
+                            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)', width: '100%', cursor: 'pointer', textAlign: 'left' }}
+                          >
+                            <Initial name={challenge.player1_name} size={36} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{challenge.player1_name}</span>
+                              <span style={{ fontSize: 11, color: '#6B7280' }}>{challenge.category_label} · {challenge.question_count} questions</span>
+                            </div>
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                              <span style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', display: 'block' }}>
+                                {challenge.player1_time < 60 ? challenge.player1_time.toFixed(1) + 's' : Math.floor(challenge.player1_time / 60) + ':' + (challenge.player1_time % 60).toFixed(0).padStart(2, '0')}
+                              </span>
+                              <span style={{ fontSize: 9, color: '#9CA3AF' }}>à battre</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* D) Demandes reçues */}
             {pendingRequests.length > 0 && (
               <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -213,26 +256,6 @@ export default function SocialPage() {
                 </div>
               </div>
             )}
-
-            {/* 4) Mes amis */}
-            <div className="rounded-2xl mb-4" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>👥 Mes amis ({friends.length})</h2>
-              {friends.length === 0 ? (
-                <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Pas encore d'amis. Invite quelqu'un ! 🤝</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {friends.map(friend => (
-                    <div key={friend.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
-                      <Initial name={friend.displayName} size={36} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
-                      </div>
-                      <button onClick={() => handleRemove(friend.friendshipId)} className="active:scale-90" style={{ padding: '4px 8px', borderRadius: 6, background: 'transparent', border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer' }}>✕</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </>
         )}
       </div>

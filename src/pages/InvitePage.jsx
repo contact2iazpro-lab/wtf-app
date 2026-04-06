@@ -41,7 +41,7 @@ export default function InvitePage() {
     setStatus('processing')
     ;(async () => {
       try {
-        const result = await sendFriendRequest(inviter.user_id, user.id)
+        const result = await sendFriendRequest(user.id, inviter.user_id)
         if (result.alreadyExists) {
           if (result.friendship.status === 'accepted') {
             setStatus('already_friends')

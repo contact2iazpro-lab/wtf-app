@@ -137,7 +137,7 @@ export default function SplashScreen({ onComplete, isReady }) {
         color: 'white', opacity: 0.5, fontSize: 12,
         fontFamily: 'Nunito, sans-serif', fontWeight: 700,
       }}>
-        v{import.meta.env.VITE_APP_VERSION || '1.0.0'}
+        v{import.meta.env.VITE_APP_VERSION || 'dev'}
       </span>
     </div>
   )

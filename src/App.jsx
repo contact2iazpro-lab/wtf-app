@@ -7,7 +7,7 @@ import {
   getGeneratedFacts, getGeneratedFactsByCategory, getBlitzFacts,
   initFacts, resetFacts,
 } from './data/factsService'
-import { syncPlayerDataAsync } from './services/playerSyncService'
+import { syncAfterAction, pullFromServer, replaySyncQueue } from './services/playerSyncService'
 import DevPanel from './components/DevPanel'
 import { DEV_PANEL_ENABLED } from './config/devConfig'
 import { logDevEvent } from './utils/devLogger'
@@ -1071,7 +1071,7 @@ export default function App() {
             for (const fact of toSync) {
               updateCollection(user.id, fact.category, fact.id)
             }
-            syncPlayerDataAsync(user.id, newStorage)
+            syncAfterAction(user.id)
           }
 
           return newStorage
@@ -1199,7 +1199,7 @@ export default function App() {
       saveStorage(next)
       if (user) {
         for (const fact of toSync) updateCollection(user.id, fact.category, fact.id)
-        syncPlayerDataAsync(user.id, next)
+        syncAfterAction(user.id)
       }
       return next
     })
@@ -1380,7 +1380,8 @@ export default function App() {
   // Sync player data with Supabase after facts loaded
   useEffect(() => {
     if (!factsReady || !user) return
-    syncPlayerDataAsync(user.id, storage)
+    pullFromServer(user.id)
+    replaySyncQueue(user.id)
   }, [factsReady, user])
 
   // Refresh storage state when auth sync completes (sign-in / sign-out)
@@ -1412,7 +1413,7 @@ export default function App() {
                   const fact = allFacts.find(f => f.id === id)
                   if (fact) updateCollection(currentUser.id, fact.category, fact.id)
                 }
-                syncPlayerDataAsync(currentUser.id, next)
+                syncAfterAction(currentUser.id)
               }
               return next
             })

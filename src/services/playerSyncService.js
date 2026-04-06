@@ -1,9 +1,4 @@
 // ─── Player Sync Service — Simplifié & Sécurisé ─────────────────────────────
-// Supabase = source de vérité pour les joueurs connectés.
-// pushToServer(userId) — local → Supabase
-// pullFromServer(userId) — Supabase → local (uniquement au login)
-// syncAfterAction(userId) — push throttlé 5s
-
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 export async function pushToServer(userId) {
@@ -43,18 +38,15 @@ export async function pullFromServer(userId) {
       .single()
     if (error) throw error
     if (!remote) return null
-
     const isNewProfile = (remote.coins || 0) === 0
       && (remote.total_score || 0) === 0
       && (remote.tickets || 0) === 0
       && (remote.hints || 0) === 0
       && (remote.streak_current || 0) === 0
-
     if (isNewProfile) {
       console.log('[sync] New profile detected — pushing local to Supabase')
       return pushToServer(userId)
     }
-
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     saved.wtfCoins = remote.coins || 0
     saved.totalScore = remote.total_score || 0
@@ -64,7 +56,6 @@ export async function pullFromServer(userId) {
     saved.lastModified = remote.last_modified || Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(saved))
     localStorage.setItem('wtf_hints_available', String(remote.hints || 0))
-
     try {
       const { data: collections } = await supabase
         .from('collections')
@@ -85,7 +76,6 @@ export async function pullFromServer(userId) {
         }
       }
     } catch (err) { console.warn('[sync] unlockedFacts sync failed:', err.message) }
-
     window.dispatchEvent(new Event('wtf_storage_sync'))
     return remote
   } catch (err) {

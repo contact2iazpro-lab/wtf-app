@@ -154,6 +154,29 @@ function buildAll(rawFacts) {
   })
 }
 
+// ─── Cache localStorage ─────────────────────────────────────────────────────
+const CACHE_KEY = 'wtf_facts_cache'
+const CACHE_VERSION_KEY = 'wtf_facts_cache_version'
+const CACHE_VERSION = '1' // Incrémenter si le format fromRow change
+
+function saveCacheToLocal(rawRows) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(rawRows))
+    localStorage.setItem(CACHE_VERSION_KEY, CACHE_VERSION)
+  } catch { /* localStorage plein ou indisponible — pas grave */ }
+}
+
+function loadCacheFromLocal() {
+  try {
+    if (localStorage.getItem(CACHE_VERSION_KEY) !== CACHE_VERSION) return null
+    const cached = localStorage.getItem(CACHE_KEY)
+    if (!cached) return null
+    const rows = JSON.parse(cached)
+    if (!Array.isArray(rows) || rows.length < 10) return null
+    return rows
+  } catch { return null }
+}
+
 // ─── initFacts() — appeler une fois dans App.jsx au montage ─────────────────
 // Retourne { success: true } ou { success: false, error: '...' }
 const MAX_RETRIES = 3
@@ -187,14 +210,23 @@ export async function initFacts() {
 
   _initPromise = (async () => {
     if (!isSupabaseConfigured) {
-      console.error('[factsService] Supabase non configuré — impossible de charger les facts')
+      console.error('[factsService] Supabase non configuré')
       return { success: false, error: 'Supabase non configuré' }
     }
 
+    // Étape 1 : charger le cache local (instantané)
+    const cached = loadCacheFromLocal()
+    if (cached) {
+      buildAll(cached.map(fromRow))
+      console.log(`[factsService] ${cached.length} facts chargés depuis le cache local`)
+    }
+
+    // Étape 2 : fetch Supabase (mise à jour en background)
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         const data = await fetchFromSupabase()
         buildAll(data.map(fromRow))
+        saveCacheToLocal(data)
         console.log(`[factsService] ${data.length} facts chargés depuis Supabase (tentative ${attempt})`)
         return { success: true }
       } catch (err) {
@@ -203,6 +235,12 @@ export async function initFacts() {
           await new Promise(r => setTimeout(r, RETRY_DELAY))
         }
       }
+    }
+
+    // Étape 3 : si Supabase échoue mais qu'on a un cache → succès partiel
+    if (cached) {
+      console.warn('[factsService] Supabase indisponible — utilisation du cache local')
+      return { success: true }
     }
 
     console.error('[factsService] Échec après 3 tentatives — aucun fact chargé')

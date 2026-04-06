@@ -81,11 +81,12 @@ export default function BlitzResultsScreen({
 
   const handleShare = () => {
     if (!challengeCreated) return
-    const text = `🎯 Je t'ai défié sur WTF! Blitz !\n${questionCount} questions ${categoryLabel || 'toutes catégories'} en ${finalTime.toFixed(2)}s.\nCode : ${challengeCreated.code}\nRelève le défi → https://wtf-app-production.up.railway.app/`
+    const challengeUrl = `https://wtf-app-production.up.railway.app/challenge/${challengeCreated.code}`
+    const text = `🎯 Défi WTF! Blitz !\n\n${questionCount} questions en ${finalTime.toFixed(2)}s. Tu fais mieux ? 😏\n\nRelève le défi :`
     if (navigator.share) {
-      navigator.share({ title: 'Défi WTF! Blitz', text }).catch(() => {})
+      navigator.share({ title: 'Défi WTF! Blitz ⚡', text, url: challengeUrl }).catch(() => {})
     } else {
-      navigator.clipboard?.writeText(text)
+      navigator.clipboard?.writeText(`${text}\n${challengeUrl}`)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }

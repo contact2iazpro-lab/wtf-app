@@ -105,7 +105,10 @@ export default function SocialPage() {
               <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>📩 Inviter un ami</h2>
               <button
                 onClick={async () => {
-                  if (!myCode) return
+                  if (!myCode) {
+                    showToast('⏳ Chargement en cours, réessaie dans quelques secondes...')
+                    return
+                  }
                   const inviteUrl = `https://wtf-app-production.up.railway.app/invite/${myCode}`
                   if (navigator.share) {
                     try {
@@ -125,6 +128,7 @@ export default function SocialPage() {
                   border: 'none', background: '#FF6B1A', color: 'white',
                   fontSize: 14, fontWeight: 900, cursor: 'pointer',
                   fontFamily: 'Nunito, sans-serif',
+                  opacity: myCode ? 1 : 0.5,
                 }}
               >📩 Inviter un ami</button>
               <p style={{ fontSize: S(11), color: '#9CA3AF', margin: '8px 0 0', textAlign: 'center' }}>Envoie ton lien par WhatsApp, SMS ou autre</p>

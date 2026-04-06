@@ -73,6 +73,33 @@ export async function pullFromServer(userId) {
     localStorage.setItem('wtf_data', JSON.stringify(saved))
     localStorage.setItem('wtf_hints_available', String(remote.hints || 0))
 
+    // Synchroniser les unlockedFacts depuis la table collections
+    try {
+      const { data: collections } = await supabase
+        .from('collections')
+        .select('facts_completed')
+        .eq('user_id', userId)
+      if (collections && collections.length > 0) {
+        const allUnlockedIds = []
+        for (const row of collections) {
+          if (Array.isArray(row.facts_completed)) {
+            allUnlockedIds.push(...row.facts_completed)
+          }
+        }
+        if (allUnlockedIds.length > 0) {
+          const savedForFacts = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          // Merger : garder les locaux + ajouter ceux de Supabase
+          const existingUnlocked = new Set(savedForFacts.unlockedFacts || [])
+          for (const id of allUnlockedIds) existingUnlocked.add(id)
+          savedForFacts.unlockedFacts = [...existingUnlocked]
+          savedForFacts.lastModified = Date.now()
+          localStorage.setItem('wtf_data', JSON.stringify(savedForFacts))
+        }
+      }
+    } catch (err) {
+      console.warn('[sync] Sync unlockedFacts depuis collections échoué:', err.message)
+    }
+
     // Notifier l'UI
     window.dispatchEvent(new Event('wtf_storage_sync'))
     return remote

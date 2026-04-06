@@ -12,3 +12,6 @@ sources_temp.json
 .env*.local
 supabase/.temp/
 .claude/worktrees/
+
+# Images facts migrées vers Supabase Storage
+public/assets/facts/

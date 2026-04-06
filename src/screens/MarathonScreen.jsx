@@ -37,10 +37,6 @@ export default function MarathonScreen({
   difficulty     = null,
   onReplay,
   onHome,
-  onContinue,
-  canContinue    = false,
-  hasTickets     = false,
-  remainingQuestions = 0,
 }) {
   const diffLabel = difficulty ? DIFFICULTY_LABELS[difficulty.id] : null
   const pct       = Math.round((correctCount / totalFacts) * 100)
@@ -219,32 +215,6 @@ export default function MarathonScreen({
           🧭 Relancer Explorer
         </button>
       </div>
-
-      {/* ── Bouton Continuer ─────────────────────────────────────── */}
-      {remainingQuestions > 0 && (
-        <div style={{ padding: '0 20px 16px', textAlign: 'center' }}>
-          <button
-            onClick={canContinue ? onContinue : undefined}
-            disabled={!canContinue}
-            style={{
-              width: '100%', padding: '14px',
-              background: canContinue
-                ? 'linear-gradient(135deg, #8B5CF6, #A78BFA)'
-                : 'rgba(107,114,128,0.3)',
-              border: 'none', borderRadius: 14,
-              color: canContinue ? 'white' : '#9CA3AF',
-              fontWeight: 900, fontSize: 14,
-              cursor: canContinue ? 'pointer' : 'not-allowed',
-              fontFamily: 'Nunito, sans-serif',
-              boxShadow: canContinue ? '0 4px 16px rgba(139,92,246,0.4)' : 'none',
-            }}
-          >
-            {hasTickets
-              ? `🎫 Continuer (1 ticket) — ${remainingQuestions} questions restantes`
-              : '🎫 Pas de ticket'}
-          </button>
-        </div>
-      )}
 
     </div>
   )

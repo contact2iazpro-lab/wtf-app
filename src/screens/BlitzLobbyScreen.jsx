@@ -32,8 +32,8 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
     ? totalUnlocked
     : (categories.find(c => c.id === selectedCatId)?.count || 0)
 
-  const questionOptions = [5, 10, 20]
-  const effectiveCount = questionCount || (poolSize >= 20 ? 20 : poolSize >= 10 ? 10 : poolSize >= 5 ? 5 : poolSize)
+  const questionOptions = [5, 10, 20, 30, 40, 50]
+  const effectiveCount = questionCount || (poolSize >= 50 ? 50 : poolSize >= 40 ? 40 : poolSize >= 30 ? 30 : poolSize >= 20 ? 20 : poolSize >= 10 ? 10 : poolSize >= 5 ? 5 : poolSize)
   const hasSelection = selectedCatId !== null && poolSize >= 4
 
   const handleGo = () => {
@@ -171,7 +171,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
       {poolSize >= 4 && (
         <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(8)}` }}>
           <div style={{ fontSize: S(14), fontWeight: 900, color: 'white', marginBottom: S(8), textAlign: 'center' }}>Nombre de questions</div>
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
             {questionOptions.map(n => {
               const available = poolSize >= n
               const selected = effectiveCount === n
@@ -181,17 +181,19 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
                   onClick={() => available && setQuestionCount(n)}
                   disabled={!available}
                   style={{
-                    borderRadius: 12, padding: `${S(10)} ${S(20)}`,
+                    borderRadius: 12, padding: `${S(10)} 0`,
                     fontSize: S(16), fontWeight: 900, cursor: available ? 'pointer' : 'default',
-                    background: selected ? '#FF6B1A' : 'rgba(255,255,255,0.1)',
-                    color: available ? 'white' : 'rgba(255,255,255,0.25)',
-                    border: selected ? '2px solid #FF6B1A' : '1px solid rgba(255,255,255,0.2)',
-                    opacity: available ? 1 : 0.4,
+                    background: selected ? '#FF6B1A' : available ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: available ? 'white' : 'rgba(255,255,255,0.2)',
+                    border: selected ? '2px solid #FF6B1A' : available ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.08)',
+                    opacity: available ? 1 : 0.35,
                     transition: 'all 0.2s ease',
                     fontFamily: 'Nunito, sans-serif',
+                    position: 'relative',
                   }}
                 >
                   {n}
+                  {!available && <span style={{ display: 'block', fontSize: S(8), color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>🔒</span>}
                 </button>
               )
             })}

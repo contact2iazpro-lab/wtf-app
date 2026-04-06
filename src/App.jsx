@@ -911,10 +911,29 @@ export default function App() {
         updateCoins(points)
         setStorage(prev => ({ ...prev, wtfCoins: (prev.wtfCoins || 0) + points }))
       }
+
+      // Explorer/Marathon : sauvegarder le f*ct débloqué immédiatement (pas attendre la fin de session)
+      if (isAnswerCorrect && currentFact && (sessionType === 'marathon' || sessionType === 'flash_solo')) {
+        setStorage(prev => {
+          const newUnlocked = new Set(prev.unlockedFacts)
+          if (!newUnlocked.has(currentFact.id)) {
+            newUnlocked.add(currentFact.id)
+            const next = { ...prev, unlockedFacts: newUnlocked }
+            saveStorage(next)
+            if (user) {
+              import('./services/collectionService').then(({ updateCollection }) => {
+                updateCollection(user.id, currentFact.category, currentFact.id)
+              })
+            }
+            return next
+          }
+          return prev
+        })
+      }
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty])
+  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty, sessionType, user])
 
   const handleOpenValidate = useCallback((isCorrect) => {
     const points = isCorrect ? (hintsUsed === 0 ? 5 : hintsUsed === 1 ? 3 : 2) : 0
@@ -1246,19 +1265,9 @@ export default function App() {
   }, [selectedCategory, handleBlitzStart])
 
   const handleExplorerContinue = useCallback(() => {
-    const isDevModeExplorer = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    if (!isDevModeExplorer && (tickets || 0) < 1) {
-      alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
-      return
-    }
     if (explorerPool.length === 0) {
       alert('Plus de questions dans cette catégorie ! 🎉')
       return
-    }
-    // Décrémenter 1 ticket (sauf en mode dev)
-    if (!isDevModeExplorer) {
-      updateTickets(-1)
-      setStorage(loadStorage())
     }
     const difficulty = DIFFICULTY_LEVELS.HOT
     const next5 = explorerPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
@@ -1856,10 +1865,6 @@ export default function App() {
           difficulty={selectedDifficulty}
           onReplay={handleReplay}
           onHome={handleHome}
-          onContinue={handleExplorerContinue}
-          canContinue={explorerPool.length > 0 && (tickets || 0) >= 1}
-          hasTickets={(tickets || 0) >= 1}
-          remainingQuestions={explorerPool.length}
         />
       )}
 

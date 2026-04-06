@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { getOrCreateFriendCode, acceptFriendRequest, rejectFriendRequest, getFriends, getPendingRequests, removeFriend } from '../data/friendService'
+import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -141,12 +142,13 @@ export default function SocialPage() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
                       </div>
-                      <button className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>⚡ Défier</button>
+                      <button onClick={() => { audio.play('click'); localStorage.setItem('wtf_pending_action', 'blitz'); navigate('/') }} className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>⚡ Défier</button>
                     </div>
                   ))}
                 </div>
               )}
               <button
+                onClick={() => { audio.play('click'); localStorage.setItem('wtf_pending_action', 'blitz'); navigate('/') }}
                 style={{
                   width: '100%', padding: '12px 0', borderRadius: 12,
                   background: '#F3F4F6', border: '1px solid #E5E7EB',

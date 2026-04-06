@@ -291,6 +291,20 @@ export default function App() {
     } catch { /* ignore */ }
   }, [])
 
+  // ── Pending action depuis SocialPage : lancer un Blitz défi ──
+  useEffect(() => {
+    const action = localStorage.getItem('wtf_pending_action')
+    if (!action) return
+    localStorage.removeItem('wtf_pending_action')
+    if (action === 'blitz') {
+      setGameMode('blitz')
+      setSessionType('blitz')
+      setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
+      setSelectedCategory(null)
+      setScreen(SCREENS.BLITZ_LOBBY)
+    }
+  }, [])
+
   // ── Cache busting : force reload si nouvelle version déployée ──
   useEffect(() => {
     const currentVersion = import.meta.env.VITE_BUILD_ID

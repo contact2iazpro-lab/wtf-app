@@ -1,14 +1,11 @@
 // ─── Player Sync Service — Simplifié & Sécurisé ─────────────────────────────
 // Supabase = source de vérité pour les joueurs connectés.
-// Le local (localStorage) est un cache rapide.
-//
-// pushToServer(userId) — local → Supabase (après chaque action gameplay)
+// pushToServer(userId) — local → Supabase
 // pullFromServer(userId) — Supabase → local (uniquement au login)
 // syncAfterAction(userId) — push throttlé 5s
 
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
-// ── pushToServer ─────────────────────────────────────────────────────────────
 export async function pushToServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
@@ -31,12 +28,11 @@ export async function pushToServer(userId) {
     localStorage.setItem('wtf_data', JSON.stringify(saved))
     return payload
   } catch (err) {
-    console.warn('[sync] pushToServer échoué:', err.message)
+    console.warn('[sync] pushToServer failed:', err.message)
     return null
   }
 }
 
-// ── pullFromServer ───────────────────────────────────────────────────────────
 export async function pullFromServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
@@ -48,7 +44,6 @@ export async function pullFromServer(userId) {
     if (error) throw error
     if (!remote) return null
 
-    // Détecter un profil vierge (vient d'être créé)
     const isNewProfile = (remote.coins || 0) === 0
       && (remote.total_score || 0) === 0
       && (remote.tickets || 0) === 0
@@ -56,12 +51,10 @@ export async function pullFromServer(userId) {
       && (remote.streak_current || 0) === 0
 
     if (isNewProfile) {
-      // Nouveau profil → push le local vers Supabase au lieu d'écraser
-      console.log('[sync] Nouveau profil détecté — push local vers Supabase')
+      console.log('[sync] New profile detected — pushing local to Supabase')
       return pushToServer(userId)
     }
 
-    // Profil existant → écraser le local avec Supabase
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     saved.wtfCoins = remote.coins || 0
     saved.totalScore = remote.total_score || 0
@@ -72,7 +65,6 @@ export async function pullFromServer(userId) {
     localStorage.setItem('wtf_data', JSON.stringify(saved))
     localStorage.setItem('wtf_hints_available', String(remote.hints || 0))
 
-    // Synchroniser les unlockedFacts depuis la table collections
     try {
       const { data: collections } = await supabase
         .from('collections')
@@ -81,35 +73,29 @@ export async function pullFromServer(userId) {
       if (collections && collections.length > 0) {
         const allUnlockedIds = []
         for (const row of collections) {
-          if (Array.isArray(row.facts_completed)) {
-            allUnlockedIds.push(...row.facts_completed)
-          }
+          if (Array.isArray(row.facts_completed)) allUnlockedIds.push(...row.facts_completed)
         }
         if (allUnlockedIds.length > 0) {
-          const savedForFacts = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          const existingUnlocked = new Set(savedForFacts.unlockedFacts || [])
-          for (const id of allUnlockedIds) existingUnlocked.add(id)
-          savedForFacts.unlockedFacts = [...existingUnlocked]
-          savedForFacts.lastModified = Date.now()
-          localStorage.setItem('wtf_data', JSON.stringify(savedForFacts))
+          const s = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          const existing = new Set(s.unlockedFacts || [])
+          for (const id of allUnlockedIds) existing.add(id)
+          s.unlockedFacts = [...existing]
+          s.lastModified = Date.now()
+          localStorage.setItem('wtf_data', JSON.stringify(s))
         }
       }
-    } catch (err) {
-      console.warn('[sync] Sync unlockedFacts échoué:', err.message)
-    }
+    } catch (err) { console.warn('[sync] unlockedFacts sync failed:', err.message) }
 
     window.dispatchEvent(new Event('wtf_storage_sync'))
     return remote
   } catch (err) {
-    console.warn('[sync] pullFromServer échoué:', err.message)
+    console.warn('[sync] pullFromServer failed:', err.message)
     return null
   }
 }
 
-// ── syncAfterAction ──────────────────────────────────────────────────────────
 let _lastSyncTime = 0
 const THROTTLE_MS = 5000
-
 export function syncAfterAction(userId) {
   if (!userId) return
   const now = Date.now()
@@ -118,6 +104,5 @@ export function syncAfterAction(userId) {
   pushToServer(userId).catch(() => {})
 }
 
-// ── Rétro-compat (pour les fichiers qui importent encore les anciens noms) ──
 export async function syncPlayerData(userId) { return pullFromServer(userId) }
 export function syncPlayerDataAsync(userId) { if (userId) pullFromServer(userId).catch(() => {}) }

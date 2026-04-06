@@ -78,6 +78,17 @@ export default function ResultsScreen({
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
   const { isConnected, signInWithGoogle } = useAuth()
+  const googleDismissed = (() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').googlePromptDismissed || 0 } catch { return 0 } })()
+  const [showGoogleBanner, setShowGoogleBanner] = useState(!isConnected && googleDismissed < 2)
+  const dismissGoogle = () => {
+    try {
+      const d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      d.googlePromptDismissed = (d.googlePromptDismissed || 0) + 1
+      d.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(d))
+    } catch {}
+    setShowGoogleBanner(false)
+  }
   const [showSettings, setShowSettings] = useState(false)
   const [showConnectBanner, setShowConnectBanner] = useState(false)
   const [savedAfterConnect, setSavedAfterConnect] = useState(false)
@@ -672,6 +683,42 @@ export default function ResultsScreen({
       )}
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
+
+      {showGoogleBanner && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          background: 'rgba(255,255,255,0.95)',
+          borderTop: '1px solid rgba(0,0,0,0.1)',
+          padding: '12px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 10,
+          zIndex: 50,
+          fontFamily: 'Nunito, sans-serif',
+        }}>
+          <div style={{ flex: 1 }}>
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e' }}>Sauvegarde ta progression</span>
+            <span style={{ fontSize: 11, color: '#6B7280', display: 'block', marginTop: 2 }}>Connecte-toi pour ne rien perdre</span>
+          </div>
+          <button
+            onClick={() => { dismissGoogle(); signInWithGoogle() }}
+            style={{
+              padding: '8px 16px', borderRadius: 10,
+              background: '#FF6B1A', color: 'white', border: 'none',
+              fontWeight: 800, fontSize: 12, cursor: 'pointer',
+              whiteSpace: 'nowrap', flexShrink: 0,
+            }}
+          >
+            Google
+          </button>
+          <button
+            onClick={dismissGoogle}
+            style={{
+              background: 'none', border: 'none', color: '#9CA3AF',
+              fontSize: 18, cursor: 'pointer', padding: '4px 8px', flexShrink: 0,
+            }}
+          >✕</button>
+        </div>
+      )}
     </div>
   )
 }

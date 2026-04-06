@@ -6,7 +6,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import ConnectBanner from '../components/ConnectBanner'
 import { useAuth } from '../context/AuthContext'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
@@ -126,11 +125,38 @@ export default function HomeScreen({
   onOpenSettings,
   playerAvatar = null,
   gamesPlayed = 0,
+  unlockedFactsCount = 0,
+  blitzPlayed = 0,
+  questsPlayed = 0,
   onModeSeen,
 }) {
   const { isConnected } = useAuth()
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
   const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
+
+  const seenFlags = (() => {
+    try {
+      const d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      return {
+        seenQuest: d.hasSeenQuest || false,
+        seenBlitz: d.hasSeenBlitz || false,
+        seenHunt: d.hasSeenHunt || false,
+        seenCollection: d.hasSeenCollection || false,
+        seenTrophees: d.hasSeenTrophees || false,
+        seenBoutique: d.hasSeenBoutique || false,
+        seenAmis: d.hasSeenAmis || false,
+      }
+    } catch { return {} }
+  })()
+
+  const markSeen = (key) => {
+    try {
+      const d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      d[key] = true
+      d.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(d))
+    } catch {}
+  }
 
   // ⚠️ PHASE TEST — désactiver l'onboarding progressif (tous modes visibles)
   // Remettre à false avant le lancement en production
@@ -165,7 +191,6 @@ export default function HomeScreen({
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
-  const [showConnectBanner, setShowConnectBanner] = useState(false)
   const { coffres, todayIndex, getStatus, openCoffre } = useDailyCoffre()
   const [nextBadgeInfo, setNextBadgeInfo] = useState(() => getNextBadge())
   const [showBadgeModal, setShowBadgeModal] = useState(false)
@@ -428,6 +453,10 @@ export default function HomeScreen({
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.15); opacity: 0.85; }
         }
+        @keyframes coffreSlideIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         @keyframes starburst-rotate {
           from { transform: translate(-50%, -50%) rotate(0deg); }
           to   { transform: translate(-50%, -50%) rotate(360deg); }
@@ -520,6 +549,7 @@ export default function HomeScreen({
       </div>
 
       {/* ═══ ZONE 2 — STREAK + COUNTDOWN (32px fixe) ═════════════════════ */}
+      {gamesPlayed >= 3 && (
       <div style={{
         height: 32, flexShrink: 0,
         margin: '8px 14px 0',
@@ -550,8 +580,10 @@ export default function HomeScreen({
           <span style={{ fontSize: S(10), fontWeight: 800, color: textColor, opacity: 0.7, textShadow }}>{countdown}</span>
         </div>
       </div>
+      )}
 
       {/* ═══ ZONE 2B — PROCHAIN BADGE (28px fixe) ═════════════════════════ */}
+      {gamesPlayed >= 3 && (
       <div style={{
         height: 28, flexShrink: 0,
         margin: '4px 14px 0',
@@ -578,14 +610,17 @@ export default function HomeScreen({
           </span>
         )}
       </div>
+      )}
 
       {/* ═══ ZONE 3 — COFFRES QUOTIDIENS (60px fixe) ═══════════════════════ */}
+      {questsPlayed >= 1 && (
       <div style={{
         height: 60, flexShrink: 0,
         display: 'flex', alignItems: 'center',
         gap: 2, padding: '6px 10px 0',
         justifyContent: 'center',
         position: 'relative', zIndex: 2,
+        animation: 'coffreSlideIn 0.5s ease-out',
       }}>
         {coffres.map((c, i) => {
           const status = getStatus(i)
@@ -624,6 +659,7 @@ export default function HomeScreen({
                 opacity: isColl ? 0.35 : isMissed ? 0.25 : status === 'locked' ? 0.5 : 1,
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'opacity 0.2s, background 0.2s',
+                ...(isAvail ? { animation: 'newBadgePulse 2s ease-in-out infinite' } : {}),
               }}
             >
               <img
@@ -641,6 +677,7 @@ export default function HomeScreen({
           )
         })}
       </div>
+      )}
 
       {/* ═══ ZONE 3B — LOGO VOF (fixe, juste sous les coffres) ════════════ */}
       <div style={{
@@ -721,19 +758,6 @@ export default function HomeScreen({
           )
         })()}
 
-        {/* Colonne gauche — 70px */}
-        <div style={{
-          width: 70, flexShrink: 0,
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-evenly', alignItems: 'center',
-          height: '100%', zIndex: 1,
-        }}>
-          <div ref={questBtnRef} style={{ position: 'relative', zIndex: showQuestSpotlight ? 101 : 'auto', ...(!modeVisible.quest ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
-            {modeIsNew('quest') && <NewBadge />}
-            <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => { setShowQuestSpotlight(false); handleModeTap('quest', 'difficulty') }} />
-          </div>
-        </div>
-
         {/* Colonne centre — flex: 1 */}
         <div style={{
           flex: 1, minWidth: 0,
@@ -775,14 +799,24 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <div style={{ position: 'relative', ...(!modeVisible.explorer ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
-            {modeIsNew('explorer') && <NewBadge />}
-            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" onClick={() => handleModeTap('explorer', 'marathon')} />
-          </div>
-          <div style={{ position: 'relative', ...(!modeVisible.blitz ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
-            {modeIsNew('blitz') && <NewBadge />}
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => handleModeTap('blitz', 'blitz')} />
-          </div>
+          {gamesPlayed >= 1 && (
+            <div ref={questBtnRef} style={{ position: 'relative', zIndex: showQuestSpotlight ? 101 : 'auto' }}>
+              {!seenFlags.seenQuest && <NewBadge />}
+              <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => { setShowQuestSpotlight(false); markSeen('hasSeenQuest'); nav('difficulty') }} />
+            </div>
+          )}
+          {unlockedFactsCount >= 5 && (
+            <div style={{ position: 'relative' }}>
+              {!seenFlags.seenBlitz && <NewBadge />}
+              <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => { markSeen('hasSeenBlitz'); nav('blitz') }} />
+            </div>
+          )}
+          {gamesPlayed >= 10 && (
+            <div style={{ position: 'relative' }}>
+              {!seenFlags.seenHunt && <NewBadge />}
+              <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" onClick={() => { markSeen('hasSeenHunt'); nav('wtfDuJour') }} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -819,7 +853,7 @@ export default function HomeScreen({
             fontWeight: 400, fontSize: 14, color: '#FF6B1A',
             letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2,
           }}>
-            Jouer une partie rapide
+            Jouer
           </span>
           <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
         </button>
@@ -835,17 +869,17 @@ export default function HomeScreen({
         position: 'relative', zIndex: 10,
       }}>
         {[
-          { slug: 'boutique',   label: 'Boutique',   target: 'boutique',   center: false },
-          { slug: 'trophees',   label: 'Trophées',   target: 'trophees',   center: false },
-          { slug: 'accueil',    label: 'Accueil',    target: null,         center: true  },
-          { slug: 'amis',       label: 'Amis',       target: 'amis',       center: false },
-          { slug: 'collection', label: 'Collection', target: 'collection', center: false },
-        ].map((item) => {
+          { slug: 'boutique',   label: 'Boutique',   target: 'boutique',   center: false, visible: gamesPlayed >= 2, seenKey: 'hasSeenBoutique', showNew: !seenFlags.seenBoutique && gamesPlayed >= 2 },
+          { slug: 'trophees',   label: 'Trophées',   target: 'trophees',   center: false, visible: gamesPlayed >= 3, seenKey: 'hasSeenTrophees', showNew: !seenFlags.seenTrophees && gamesPlayed >= 3 },
+          { slug: 'accueil',    label: 'Accueil',    target: null,         center: true,  visible: true },
+          { slug: 'amis',       label: 'Amis',       target: 'amis',       center: false, visible: blitzPlayed >= 1, seenKey: 'hasSeenAmis', showNew: !seenFlags.seenAmis && blitzPlayed >= 1 },
+          { slug: 'collection', label: 'Collection', target: 'collection', center: false, visible: questsPlayed >= 1, seenKey: 'hasSeenCollection', showNew: !seenFlags.seenCollection && questsPlayed >= 1 },
+        ].filter(item => item.visible).map((item) => {
           const isActive = item.center
           return (
             <button
               key={item.slug}
-              onClick={() => item.target && nav(item.target)}
+              onClick={() => { if (item.seenKey) markSeen(item.seenKey); if (item.target) nav(item.target) }}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(2),
                 background: 'none', border: 'none',
@@ -871,15 +905,18 @@ export default function HomeScreen({
                   />
                 </div>
               ) : (
-                <img
-                  src={`/assets/nav/${item.slug}.png`}
-                  alt={item.label}
-                  style={{
-                    width: S(22), height: S(22),
-                    opacity: 0.6,
-                    transition: 'all 0.2s ease',
-                  }}
-                />
+                <div style={{ position: 'relative' }}>
+                  {item.showNew && <NewBadge />}
+                  <img
+                    src={`/assets/nav/${item.slug}.png`}
+                    alt={item.label}
+                    style={{
+                      width: S(22), height: S(22),
+                      opacity: 0.6,
+                      transition: 'all 0.2s ease',
+                    }}
+                  />
+                </div>
               )}
               <span style={{
                 fontSize: S(10), fontWeight: 700,
@@ -945,8 +982,6 @@ export default function HomeScreen({
           </div>
         </div>
       )}
-
-      {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
 
 
       {/* ═══ MODAL NOUVEAU BADGE ════════════════════════════════════════════ */}

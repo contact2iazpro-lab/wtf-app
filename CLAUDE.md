@@ -1,3 +1,5 @@
+AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jamais créer de worktree ni de branche. Travailler directement sur master.
+
 # WTF! — What The F*ct
 
 ## Projet

@@ -72,17 +72,6 @@ const MODE_CONFIGS = {
       { icon: '🏆', text: 'Score parfait = 25 coins bonus + 1 ticket !' },
     ],
   },
-  explorer: {
-    modeId: 'explorer', modeName: 'Explorer', subtitle: 'Découvre à ton rythme — gratuit et illimité', emoji: '🧭', color: '#4CAF50',
-    rules: [
-      { icon: '🆓', text: 'Gratuit — joue autant que tu veux' },
-      { icon: '🗂️', text: '5 questions dans la catégorie de ton choix' },
-      { icon: '⏱️', text: '20 secondes par question' },
-      { icon: '🪙', text: '3 coins par bonne réponse' },
-      { icon: '💡', text: '2 indices disponibles par question' },
-      { icon: '📚', text: 'Les f*cts trouvés sont sauvegardés immédiatement' },
-    ],
-  },
   blitz: {
     modeId: 'blitz', modeName: 'Blitz', subtitle: 'Bats ton record de vitesse !', emoji: '⚡', color: '#FF4444',
     rules: [
@@ -95,14 +84,14 @@ const MODE_CONFIGS = {
     ],
   },
   flash: {
-    modeId: 'flash', modeName: 'Flash', subtitle: 'Partie rapide, gratuite', emoji: '🎯', color: '#FFD700',
+    modeId: 'flash', modeName: 'Jouer', subtitle: 'Partie rapide, gratuite', emoji: '🎯', color: '#FFD700',
     rules: [
-      { icon: '🆓', text: 'Gratuit — pas de ticket requis' },
-      { icon: '⚡', text: '5 questions aléatoires' },
+      { icon: '🆓', text: 'Gratuit — joue autant que tu veux' },
+      { icon: '⚡', text: '5 questions' },
       { icon: '⏱️', text: '20 secondes par question' },
-      { icon: '💡', text: '2 indices disponibles par question' },
-      { icon: '🪙', text: '5 coins par bonne réponse' },
-      { icon: '🏆', text: 'Score parfait = 10 coins bonus !' },
+      { icon: '💡', text: '2 indices disponibles' },
+      { icon: '🎲', text: 'Aléatoire : 5 coins par bonne réponse' },
+      { icon: '📂', text: 'Catégorie choisie : 3 coins par bonne réponse' },
     ],
   },
   hunt: {
@@ -590,9 +579,8 @@ export default function App() {
   const launchModeDestination = useCallback((mode) => {
     switch (mode) {
       case 'quest':    setScreen(SCREENS.DIFFICULTY); break
-      case 'explorer': setScreen(SCREENS.CATEGORY); break
       case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
-      case 'flash':    handleFlashSolo(); break
+      case 'flash':    setScreen(SCREENS.CATEGORY); break
       case 'hunt':     handleStartWTFSession(); break
       default: break
     }
@@ -614,14 +602,28 @@ export default function App() {
 
   const handleHomeNavigate = useCallback((target) => {
     switch (target) {
-      case 'difficulty':
+      case 'difficulty': {
         setGameMode('solo'); setSessionType('parcours')
+        // Première Quest : skip launch + difficulty, forcer Cool 2 QCM
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        if ((wd.questsPlayed || 0) === 0) {
+          const firstQuestDifficulty = {
+            id: 'cool', label: 'Cool', emoji: '❄️',
+            choices: 2, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
+            coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 },
+          }
+          setSelectedDifficulty(firstQuestDifficulty)
+          handleSelectDifficulty(firstQuestDifficulty)
+          return
+        }
         showOrSkipLaunch('quest')
         break
+      }
       case 'wtfDuJour':
         showOrSkipLaunch('hunt')
         break
       case 'categoryFlash':
+        setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
         showOrSkipLaunch('flash')
         break
       case 'collection':    navigate('/collection'); break
@@ -630,10 +632,6 @@ export default function App() {
       case 'boutique':      navigate('/boutique'); break
       case 'amis':          navigate('/social'); break
       case 'streak':        navigate('/recompenses'); break
-      case 'marathon':
-        setGameMode('marathon'); setSessionType('marathon'); setSelectedCategory(null)
-        showOrSkipLaunch('explorer')
-        break
       case 'blitz':
         setGameMode('blitz'); setSessionType('blitz'); setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ); setSelectedCategory(null)
         showOrSkipLaunch('blitz')
@@ -679,7 +677,8 @@ export default function App() {
 
     // Parcours/Quest : VIP uniquement, filtrés par difficulté — coûte 1 ticket
     const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    if (!isDevModeQuest) {
+    const isFirstQuestEver = (JSON.parse(localStorage.getItem('wtf_data') || '{}').questsPlayed || 0) === 0
+    if (!isDevModeQuest && !isFirstQuestEver) {
       if ((tickets || 0) < 1) {
         alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
         return
@@ -939,6 +938,10 @@ export default function App() {
       if (selectedDifficulty.coinsPerCorrect !== undefined) {
         // Nouveau système : récompense fixe, pas de dégradation par indice
         points = selectedDifficulty.coinsPerCorrect
+        // Mode Jouer avec catégorie choisie → 3 coins au lieu de 5
+        if (sessionType === 'flash_solo' && selectedCategory !== null) {
+          points = 3
+        }
       } else {
         // Legacy (Flash) : dégradation selon les indices utilisés
         const sc = selectedDifficulty.scoring.correct
@@ -1098,6 +1101,22 @@ export default function App() {
         }
         setSessionIsPerfect(isPerfectSession)
 
+        // Première partie "Jouer" : offrir 1 ticket pour débloquer Quest
+        let firstFlashTicketGiven = false
+        if (sessionType === 'flash_solo') {
+          try {
+            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            const isFirstFlash = (wd.gamesPlayed || 0) <= 1 && !wd.firstFlashTicketGiven
+            if (isFirstFlash) {
+              wd.firstFlashTicketGiven = true
+              wd.lastModified = Date.now()
+              localStorage.setItem('wtf_data', JSON.stringify(wd))
+              updateTickets(1)
+              firstFlashTicketGiven = true
+            }
+          } catch {}
+        }
+
         // Bonus coins fin de session (les coins de base sont déjà sauvés en temps réel)
         let bonusCoins = 0
         if (sessionType === 'wtf_du_jour') {
@@ -1187,6 +1206,9 @@ export default function App() {
         if (currentStreak > ms.bestStreak) ms.bestStreak = currentStreak
         // Stats globales
         wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
+        if (sessionType === 'parcours') {
+          wtfData.questsPlayed = (wtfData.questsPlayed || 0) + 1
+        }
         wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount + (isCorrect ? 1 : 0)
         wtfData.totalAnswered = (wtfData.totalAnswered || 0) + sessionFacts.length
         wtfData.lastModified = Date.now()
@@ -1772,6 +1794,9 @@ export default function App() {
           onOpenSettings={() => setShowSettings(true)}
           playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}
           gamesPlayed={storage.gamesPlayed || 0}
+          unlockedFactsCount={storage.unlockedFacts instanceof Set ? storage.unlockedFacts.size : Array.isArray(storage.unlockedFacts) ? storage.unlockedFacts.length : 0}
+          blitzPlayed={(() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').statsByMode?.blitz?.gamesPlayed || 0 } catch { return 0 } })()}
+          questsPlayed={(() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').questsPlayed || 0 } catch { return 0 } })()}
           onModeSeen={(modeId) => {
             setStorage(prev => {
               const seenModes = [...new Set([...(prev.seenModes || []), modeId])]
@@ -1909,6 +1934,7 @@ export default function App() {
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           onSaveTempFacts={handleSaveTempFacts}
           onCollection={() => { handleHome(); navigate('/collection') }}
+          isFirstGame={(() => { try { const d = JSON.parse(localStorage.getItem('wtf_data') || '{}'); return d.firstFlashTicketGiven && (d.gamesPlayed || 0) <= 1 } catch { return false } })()}
         />
       )}
 

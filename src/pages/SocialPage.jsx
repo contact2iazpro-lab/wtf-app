@@ -21,12 +21,14 @@ export default function SocialPage() {
   const loadData = useCallback(async () => {
     if (!user) return
     try {
-      const code = await getOrCreateFriendCode(user.id, user.user_metadata?.name || 'Joueur WTF!', user.user_metadata?.avatar_url)
-      setMyCode(code?.code || null)
-      const f = await getFriends(user.id)
-      setFriends(f)
-      const p = await getPendingRequests(user.id)
-      setPendingRequests(p)
+      const [codeResult, friendsList, pendingList] = await Promise.all([
+        getOrCreateFriendCode(user.id, user.user_metadata?.name || 'Joueur WTF!', user.user_metadata?.avatar_url),
+        getFriends(user.id),
+        getPendingRequests(user.id),
+      ])
+      if (codeResult?.code) setMyCode(codeResult.code)
+      setFriends(friendsList || [])
+      setPendingRequests(pendingList || [])
     } catch (e) { console.warn('Social load error:', e) }
   }, [user])
 
@@ -152,15 +154,6 @@ export default function SocialPage() {
                   ))}
                 </div>
               )}
-              <button
-                onClick={() => { audio.play('click'); localStorage.setItem('wtf_pending_action', 'blitz'); navigate('/') }}
-                style={{
-                  width: '100%', padding: '12px 0', borderRadius: 12,
-                  background: '#F3F4F6', border: '1px solid #E5E7EB',
-                  color: '#374151', fontWeight: 800, fontSize: 13, cursor: 'pointer',
-                  fontFamily: 'Nunito, sans-serif',
-                }}
-              >🔗 Défier par lien (WhatsApp, SMS...)</button>
             </div>
 
             {/* 3) Demandes reçues */}

@@ -135,18 +135,45 @@ export default function SocialPage() {
           </div>
         ) : (
           <>
-            {/* A) Mon code ami */}
+            {/* A) Inviter un ami */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>👤 Mon code ami</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: S(24), fontWeight: 900, fontFamily: 'monospace', letterSpacing: 4, color: '#1a1a2e', background: 'rgba(0,0,0,0.04)', padding: '8px 16px', borderRadius: 10, flex: 1, textAlign: 'center' }}>
+              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>👥 Inviter un ami</h2>
+              <button
+                onClick={async () => {
+                  const inviteUrl = `https://wtf-app-production.up.railway.app/invite/${myCode}`
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: 'What The F*ct!',
+                        text: 'Rejoins-moi sur What The F*ct! 🤯 Des faits 100% vrais, des réactions 100% fun !',
+                        url: inviteUrl,
+                      })
+                    } catch { /* user cancelled */ }
+                  } else {
+                    await navigator.clipboard.writeText(inviteUrl)
+                    setToast('Lien copié ! 📋')
+                  }
+                }}
+                style={{
+                  width: '100%', padding: '12px 0', borderRadius: 12,
+                  border: 'none', background: '#FF6B1A', color: 'white',
+                  fontSize: 14, fontWeight: 900, cursor: 'pointer',
+                  fontFamily: 'Nunito, sans-serif',
+                }}
+              >📩 Inviter un ami</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '12px 0 8px' }}>
+                <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF' }}>ou partage ton code</span>
+                <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: S(18), fontWeight: 900, fontFamily: 'monospace', letterSpacing: 4, color: '#1a1a2e', background: 'rgba(0,0,0,0.04)', padding: '6px 12px', borderRadius: 10, flex: 1, textAlign: 'center' }}>
                   {myCode || '...'}
                 </span>
                 <button onClick={copyMyCode} className="active:scale-90 transition-transform" style={{ padding: '8px 14px', borderRadius: 10, background: '#F3F4F6', border: '1px solid #E5E7EB', fontWeight: 800, fontSize: 12, cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap' }}>
                   {copied ? '✅' : '📋'} Copier
                 </button>
               </div>
-              <p style={{ fontSize: S(11), color: '#9CA3AF', margin: 0 }}>Partage ce code à tes amis pour qu'ils t'ajoutent</p>
             </div>
 
             {/* B) Ajouter un ami */}

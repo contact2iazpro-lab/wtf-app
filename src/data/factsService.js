@@ -91,15 +91,6 @@ function normalizeDifficulty(d) {
 
 // ─── Dérivés : construits une seule fois après chargement ────────────────────
 
-// Images 1-350 seulement (mêmes règles que facts.js)
-const EXISTING_IMAGE_IDS = new Set(Array.from({ length: 350 }, (_, i) => i + 1))
-
-function getImageId(url) {
-  if (!url || url.startsWith('http')) return null
-  const m = url.match(/\/(\d+)\.png$/)
-  return m ? parseInt(m[1]) : null
-}
-
 function buildDifficultyFrom(facts) {
   const map = {}
 
@@ -140,15 +131,6 @@ function buildAll(rawFacts) {
       if (hasOptions && (typeof f.correctIndex !== 'number' || f.correctIndex < 0)) return false
       return true
     })
-    .map(f => {
-      // Image locale manquante → null (ne pas rejeter le fact)
-      let imageUrl = f.imageUrl
-      if (imageUrl && !imageUrl.startsWith('http')) {
-        const id = getImageId(imageUrl)
-        if (!id || !EXISTING_IMAGE_IDS.has(id)) imageUrl = null
-      }
-      return imageUrl !== f.imageUrl ? { ...f, imageUrl } : f
-    })
 
   _parcoursFacts = rawFacts
     .filter(f => {
@@ -158,14 +140,7 @@ function buildAll(rawFacts) {
       if (hasOptions && typeof f.correctIndex !== 'number') return false
       return true
     })
-    .map(f => {
-      let imageUrl = f.imageUrl
-      if (imageUrl !== null && imageUrl !== undefined && !imageUrl.startsWith('http')) {
-        const id = getImageId(imageUrl)
-        if (!id || !EXISTING_IMAGE_IDS.has(id)) imageUrl = null
-      }
-      return { ...f, imageUrl, difficulty: _difficulty[f.id], isSuperWTF: false }
-    })
+    .map(f => ({ ...f, difficulty: _difficulty[f.id], isSuperWTF: false }))
 
   // Catégories jouables = celles qui ont au moins 1 fact valide
   const activeCatIds = new Set(_validFacts.map(f => f.category))

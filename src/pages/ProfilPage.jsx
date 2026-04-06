@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { getValidFacts } from '../data/factsService'
 import SettingsModal from '../components/SettingsModal'
 import { getAllBadges } from '../utils/badgeManager'
+import { readWtfData } from '../utils/storageHelper'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -110,7 +111,7 @@ export default function ProfilPage() {
   }
 
   const playerData = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('wtf_data') || '{}') } catch { return {} }
+    return readWtfData()
   }, [])
 
   const unlockedIds = useMemo(() => new Set(playerData.unlockedFacts || []), [playerData])

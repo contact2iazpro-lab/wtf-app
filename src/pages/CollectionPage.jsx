@@ -6,6 +6,7 @@ import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import LoginModal from '../components/Auth/LoginModal'
 import ConnectBanner from '../components/ConnectBanner'
 import { audio } from '../utils/audio'
+import { readWtfData } from '../utils/storageHelper'
 
 const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
 
@@ -450,7 +451,7 @@ export default function CollectionPage() {
   // Local unlocked facts
   const localUnlocked = useMemo(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      const saved = readWtfData()
       return new Set(saved.unlockedFacts || [])
     } catch { return new Set() }
   }, [])

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CoinsIcon from '../components/CoinsIcon'
 import { updateCoins, updateHints, updateTickets, getBalances } from '../services/currencyService'
+import { readWtfField } from '../utils/storageHelper'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -27,13 +28,13 @@ export default function BoutiquePage() {
   const navigate = useNavigate()
 
   const [playerCoins, setPlayerCoins] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').wtfCoins || 0 } catch { return 0 }
+    return readWtfField('wtfCoins', 0)
   })
   const [playerHints, setPlayerHints] = useState(() => {
     return parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
   })
   const [playerTickets, setPlayerTickets] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').tickets || 0 } catch { return 0 }
+    return readWtfField('tickets', 0)
   })
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)

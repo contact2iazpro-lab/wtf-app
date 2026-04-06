@@ -1,3 +1,5 @@
+import { readWtfData } from '../utils/storageHelper'
+
 // ─── WTF! Facts Service ──────────────────────────────────────────────────────
 // Source UNIQUE des facts : Supabase. Pas de fallback local.
 // Si Supabase échoue après 3 retries, l'app affiche un écran d'erreur.
@@ -315,7 +317,7 @@ export function getMarathonFacts(categoryId) {
 /** Mode Blitz : uniquement les facts déjà débloqués par le joueur */
 export function getBlitzFacts() {
   try {
-    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const wtfData = readWtfData()
     const unlockedIds = new Set(wtfData.unlockedFacts || [])
     if (unlockedIds.size === 0) return []
     return getValidFacts().filter(f => unlockedIds.has(f.id))

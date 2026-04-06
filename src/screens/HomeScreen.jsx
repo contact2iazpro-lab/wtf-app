@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import ConnectBanner from '../components/ConnectBanner'
 import { useAuth } from '../context/AuthContext'
+import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import { getTutorialState, TUTORIAL_STATES } from '../utils/tutorialManager'
@@ -41,7 +42,7 @@ function useDailyCoffre() {
   const weekStart = getWeekStart()
 
   const read = () => {
-    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const wtfData = readWtfData()
     let claimedDays = wtfData.coffreClaimedDays || []
     const storedWeekStart = wtfData.coffreWeekStart || ''
     if (storedWeekStart !== weekStart) claimedDays = [] // nouvelle semaine
@@ -147,7 +148,7 @@ export default function HomeScreen({
   )
 
   const seenModes = (() => {
-    try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').seenModes || [] } catch { return [] }
+    try { return readWtfData().seenModes || [] } catch { return [] }
   })()
 
   const modeVisible = {

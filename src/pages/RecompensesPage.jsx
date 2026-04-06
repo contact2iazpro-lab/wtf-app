@@ -206,7 +206,10 @@ export default function RecompensesPage() {
               }} />
             </div>
             <div style={{ fontSize: 12, fontWeight: 700, color: '#6B7280' }}>
-              {selectedTrophy.current} / {selectedTrophy.target === 'all' ? '∞' : selectedTrophy.target}
+              {selectedTrophy.invertedProgress
+                ? `${(() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzTime?.toFixed(1) || '—' } catch { return '—' } })()} / ${selectedTrophy.target}s`
+                : `${selectedTrophy.current} / ${selectedTrophy.target === 'all' ? '∞' : selectedTrophy.target}`
+              }
             </div>
             <button
               onClick={() => setSelectedTrophy(null)}

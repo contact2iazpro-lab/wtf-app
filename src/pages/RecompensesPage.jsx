@@ -191,6 +191,11 @@ export default function RecompensesPage() {
             }}>
               {selectedTrophy.earned ? '✅ Débloqué !' : '🔒 Pas encore débloqué'}
             </div>
+            {selectedTrophy.description && (
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', margin: '8px 0 12px', lineHeight: 1.4 }}>
+                {selectedTrophy.description}
+              </p>
+            )}
             {/* Barre de progression */}
             <div style={{ background: '#F3F4F6', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
               <div style={{

@@ -29,70 +29,70 @@ const CATEGORY_TROPHIES = []
 for (const cat of CATEGORIES) {
   const label = CATEGORY_LABELS[cat]
   CATEGORY_TROPHIES.push(
-    { id: `cat_${cat}_5`, label: `Découvreur ${label}`, emoji: '🔰', section: 'categories', category: cat, condition: (data) => countFactsByCategory(data, cat) >= 5, target: 5, getCurrent: (data) => countFactsByCategory(data, cat) },
-    { id: `cat_${cat}_10`, label: `Connaisseur ${label}`, emoji: '🥉', section: 'categories', category: cat, condition: (data) => countFactsByCategory(data, cat) >= 10, target: 10, getCurrent: (data) => countFactsByCategory(data, cat) },
-    { id: `cat_${cat}_15`, label: `Expert ${label}`, emoji: '🥈', section: 'categories', category: cat, condition: (data) => countFactsByCategory(data, cat) >= 15, target: 15, getCurrent: (data) => countFactsByCategory(data, cat) },
-    { id: `cat_${cat}_20`, label: `Maître ${label}`, emoji: '🥇', section: 'categories', category: cat, condition: (data) => countFactsByCategory(data, cat) >= 20, target: 20, getCurrent: (data) => countFactsByCategory(data, cat) },
-    { id: `cat_${cat}_all`, label: `Légende ${label}`, emoji: '👑', section: 'categories', category: cat, condition: (data) => isAllFactsInCategory(data, cat), target: 'all', getCurrent: (data) => countFactsByCategory(data, cat) },
+    { id: `cat_${cat}_5`, label: `Découvreur ${label}`, emoji: '🔰', section: 'categories', category: cat, description: `Débloque 5 f*cts dans ${label}`, condition: (data) => countFactsByCategory(data, cat) >= 5, target: 5, getCurrent: (data) => countFactsByCategory(data, cat) },
+    { id: `cat_${cat}_10`, label: `Connaisseur ${label}`, emoji: '🥉', section: 'categories', category: cat, description: `Débloque 10 f*cts dans ${label}`, condition: (data) => countFactsByCategory(data, cat) >= 10, target: 10, getCurrent: (data) => countFactsByCategory(data, cat) },
+    { id: `cat_${cat}_15`, label: `Expert ${label}`, emoji: '🥈', section: 'categories', category: cat, description: `Débloque 15 f*cts dans ${label}`, condition: (data) => countFactsByCategory(data, cat) >= 15, target: 15, getCurrent: (data) => countFactsByCategory(data, cat) },
+    { id: `cat_${cat}_20`, label: `Maître ${label}`, emoji: '🥇', section: 'categories', category: cat, description: `Débloque 20 f*cts dans ${label}`, condition: (data) => countFactsByCategory(data, cat) >= 20, target: 20, getCurrent: (data) => countFactsByCategory(data, cat) },
+    { id: `cat_${cat}_all`, label: `Légende ${label}`, emoji: '👑', section: 'categories', category: cat, description: `Débloque tous les f*cts dans ${label}`, condition: (data) => isAllFactsInCategory(data, cat), target: 'all', getCurrent: (data) => countFactsByCategory(data, cat) },
   )
 }
 
 // ===== TROPHÉES WTF! vs FUNNY (8 trophées) =====
 const TYPE_TROPHIES = [
-  { id: 'wtf_1', label: 'Premier WTF!', emoji: '⭐', section: 'type', condition: (data) => (data.vipCount || 0) >= 1, target: 1, getCurrent: (data) => data.vipCount || 0 },
-  { id: 'wtf_10', label: 'Collectionneur WTF!', emoji: '🌟', section: 'type', condition: (data) => (data.vipCount || 0) >= 10, target: 10, getCurrent: (data) => data.vipCount || 0 },
-  { id: 'wtf_25', label: 'Chasseur WTF!', emoji: '💫', section: 'type', condition: (data) => (data.vipCount || 0) >= 25, target: 25, getCurrent: (data) => data.vipCount || 0 },
-  { id: 'wtf_50', label: 'Roi des WTF!', emoji: '🏆', section: 'type', condition: (data) => (data.vipCount || 0) >= 50, target: 50, getCurrent: (data) => data.vipCount || 0 },
-  { id: 'funny_1', label: 'Premier Funny', emoji: '🎭', section: 'type', condition: (data) => (data.funnyCount || 0) >= 1, target: 1, getCurrent: (data) => data.funnyCount || 0 },
-  { id: 'funny_10', label: 'Fan de Funny', emoji: '😂', section: 'type', condition: (data) => (data.funnyCount || 0) >= 10, target: 10, getCurrent: (data) => data.funnyCount || 0 },
-  { id: 'funny_25', label: 'Expert Funny', emoji: '🤣', section: 'type', condition: (data) => (data.funnyCount || 0) >= 25, target: 25, getCurrent: (data) => data.funnyCount || 0 },
-  { id: 'funny_50', label: 'Maître Funny', emoji: '👏', section: 'type', condition: (data) => (data.funnyCount || 0) >= 50, target: 50, getCurrent: (data) => data.funnyCount || 0 },
+  { id: 'wtf_1', label: 'Premier WTF!', emoji: '⭐', section: 'type', description: 'Débloque ton premier f*ct WTF!', condition: (data) => (data.vipCount || 0) >= 1, target: 1, getCurrent: (data) => data.vipCount || 0 },
+  { id: 'wtf_10', label: 'Collectionneur WTF!', emoji: '🌟', section: 'type', description: 'Débloque 10 f*cts WTF!', condition: (data) => (data.vipCount || 0) >= 10, target: 10, getCurrent: (data) => data.vipCount || 0 },
+  { id: 'wtf_25', label: 'Chasseur WTF!', emoji: '💫', section: 'type', description: 'Débloque 25 f*cts WTF!', condition: (data) => (data.vipCount || 0) >= 25, target: 25, getCurrent: (data) => data.vipCount || 0 },
+  { id: 'wtf_50', label: 'Roi des WTF!', emoji: '🏆', section: 'type', description: 'Débloque 50 f*cts WTF!', condition: (data) => (data.vipCount || 0) >= 50, target: 50, getCurrent: (data) => data.vipCount || 0 },
+  { id: 'funny_1', label: 'Premier Funny', emoji: '🎭', section: 'type', description: 'Débloque ton premier Funny F*ct', condition: (data) => (data.funnyCount || 0) >= 1, target: 1, getCurrent: (data) => data.funnyCount || 0 },
+  { id: 'funny_10', label: 'Fan de Funny', emoji: '😂', section: 'type', description: 'Débloque 10 Funny F*cts', condition: (data) => (data.funnyCount || 0) >= 10, target: 10, getCurrent: (data) => data.funnyCount || 0 },
+  { id: 'funny_25', label: 'Expert Funny', emoji: '🤣', section: 'type', description: 'Débloque 25 Funny F*cts', condition: (data) => (data.funnyCount || 0) >= 25, target: 25, getCurrent: (data) => data.funnyCount || 0 },
+  { id: 'funny_50', label: 'Maître Funny', emoji: '👏', section: 'type', description: 'Débloque 50 Funny F*cts', condition: (data) => (data.funnyCount || 0) >= 50, target: 50, getCurrent: (data) => data.funnyCount || 0 },
 ]
 
 // ===== TROPHÉES PROGRESSION GLOBALE (5 trophées) =====
 const GLOBAL_TROPHIES = [
-  { id: 'premier_fact', label: 'Premier F*ct', emoji: '🎯', section: 'global', condition: (data) => (data.unlockedFacts?.length || 0) >= 1, target: 1, getCurrent: (data) => data.unlockedFacts?.length || 0 },
-  { id: 'curieux', label: 'Curieux', emoji: '🧠', section: 'global', condition: (data) => (data.unlockedFacts?.length || 0) >= 10, target: 10, getCurrent: (data) => data.unlockedFacts?.length || 0 },
-  { id: 'passionne', label: 'Passionné', emoji: '🔥', section: 'global', condition: (data) => (data.unlockedFacts?.length || 0) >= 50, target: 50, getCurrent: (data) => data.unlockedFacts?.length || 0 },
-  { id: 'collectionneur', label: 'Collectionneur', emoji: '💎', section: 'global', condition: (data) => (data.unlockedFacts?.length || 0) >= 100, target: 100, getCurrent: (data) => data.unlockedFacts?.length || 0 },
-  { id: 'encyclopedie', label: 'Encyclopédie', emoji: '📚', section: 'global', condition: (data) => (data.unlockedFacts?.length || 0) >= 200, target: 200, getCurrent: (data) => data.unlockedFacts?.length || 0 },
+  { id: 'premier_fact', label: 'Premier F*ct', emoji: '🎯', section: 'global', description: 'Débloque ton tout premier f*ct', condition: (data) => (data.unlockedFacts?.length || 0) >= 1, target: 1, getCurrent: (data) => data.unlockedFacts?.length || 0 },
+  { id: 'curieux', label: 'Curieux', emoji: '🧠', section: 'global', description: 'Débloque 10 f*cts au total', condition: (data) => (data.unlockedFacts?.length || 0) >= 10, target: 10, getCurrent: (data) => data.unlockedFacts?.length || 0 },
+  { id: 'passionne', label: 'Passionné', emoji: '🔥', section: 'global', description: 'Débloque 50 f*cts au total', condition: (data) => (data.unlockedFacts?.length || 0) >= 50, target: 50, getCurrent: (data) => data.unlockedFacts?.length || 0 },
+  { id: 'collectionneur', label: 'Collectionneur', emoji: '💎', section: 'global', description: 'Débloque 100 f*cts au total', condition: (data) => (data.unlockedFacts?.length || 0) >= 100, target: 100, getCurrent: (data) => data.unlockedFacts?.length || 0 },
+  { id: 'encyclopedie', label: 'Encyclopédie', emoji: '📚', section: 'global', description: 'Débloque 200 f*cts au total', condition: (data) => (data.unlockedFacts?.length || 0) >= 200, target: 200, getCurrent: (data) => data.unlockedFacts?.length || 0 },
 ]
 
 // ===== TROPHÉES STREAK (3 trophées) =====
 const STREAK_TROPHIES = [
-  { id: 'serie_7', label: 'Série de 7', emoji: '⚡', section: 'streak', condition: (data) => (data.bestStreak || 0) >= 7, target: 7, getCurrent: (data) => data.bestStreak || 0 },
-  { id: 'serie_30', label: 'Série de 30', emoji: '🌟', section: 'streak', condition: (data) => (data.bestStreak || 0) >= 30, target: 30, getCurrent: (data) => data.bestStreak || 0 },
-  { id: 'serie_100', label: 'Série de 100', emoji: '🏅', section: 'streak', condition: (data) => (data.bestStreak || 0) >= 100, target: 100, getCurrent: (data) => data.bestStreak || 0 },
+  { id: 'serie_7', label: 'Série de 7', emoji: '⚡', section: 'streak', description: 'Maintiens une série de 7 jours consécutifs', condition: (data) => (data.bestStreak || 0) >= 7, target: 7, getCurrent: (data) => data.bestStreak || 0 },
+  { id: 'serie_30', label: 'Série de 30', emoji: '🌟', section: 'streak', description: 'Maintiens une série de 30 jours consécutifs', condition: (data) => (data.bestStreak || 0) >= 30, target: 30, getCurrent: (data) => data.bestStreak || 0 },
+  { id: 'serie_100', label: 'Série de 100', emoji: '🏅', section: 'streak', description: 'Maintiens une série de 100 jours consécutifs', condition: (data) => (data.bestStreak || 0) >= 100, target: 100, getCurrent: (data) => data.bestStreak || 0 },
 ]
 
 // ===== TROPHÉES BLITZ (5 trophées) =====
 const BLITZ_TROPHIES = [
-  { id: 'blitz_rookie', label: 'Blitz Rookie', emoji: '⏱️', section: 'blitz', condition: (data) => (data.statsByMode?.blitz?.gamesPlayed || 0) >= 1, target: 1, getCurrent: (data) => data.statsByMode?.blitz?.gamesPlayed || 0 },
-  { id: 'blitz_pro', label: 'Blitz Pro', emoji: '🚀', section: 'blitz', condition: (data) => (data.bestBlitzTime || 999) <= 30 && data.bestBlitzTime > 0, target: 30, getCurrent: (data) => data.bestBlitzTime || 0 },
-  { id: 'blitz_master', label: 'Blitz Master', emoji: '⚡', section: 'blitz', condition: (data) => (data.bestBlitzTime || 999) <= 20 && data.bestBlitzTime > 0, target: 20, getCurrent: (data) => data.bestBlitzTime || 0 },
-  { id: 'blitz_legend', label: 'Blitz Légende', emoji: '👑', section: 'blitz', condition: (data) => (data.bestBlitzTime || 999) <= 15 && data.bestBlitzTime > 0, target: 15, getCurrent: (data) => data.bestBlitzTime || 0 },
-  { id: 'blitz_perfect', label: 'Sans faute Blitz', emoji: '💯', section: 'blitz', condition: (data) => (data.blitzPerfects || 0) >= 1, target: 1, getCurrent: (data) => data.blitzPerfects || 0 },
+  { id: 'blitz_rookie', label: 'Blitz Rookie', emoji: '⏱️', section: 'blitz', description: 'Termine ta première partie Blitz', condition: (data) => (data.statsByMode?.blitz?.gamesPlayed || 0) >= 1, target: 1, getCurrent: (data) => data.statsByMode?.blitz?.gamesPlayed || 0 },
+  { id: 'blitz_pro', label: 'Blitz Pro', emoji: '🚀', section: 'blitz', description: 'Finis un Blitz en moins de 30 secondes', condition: (data) => (data.bestBlitzTime || 999) <= 30 && data.bestBlitzTime > 0, target: 30, getCurrent: (data) => data.bestBlitzTime || 0 },
+  { id: 'blitz_master', label: 'Blitz Master', emoji: '⚡', section: 'blitz', description: 'Finis un Blitz en moins de 20 secondes', condition: (data) => (data.bestBlitzTime || 999) <= 20 && data.bestBlitzTime > 0, target: 20, getCurrent: (data) => data.bestBlitzTime || 0 },
+  { id: 'blitz_legend', label: 'Blitz Légende', emoji: '👑', section: 'blitz', description: 'Finis un Blitz en moins de 15 secondes', condition: (data) => (data.bestBlitzTime || 999) <= 15 && data.bestBlitzTime > 0, target: 15, getCurrent: (data) => data.bestBlitzTime || 0 },
+  { id: 'blitz_perfect', label: 'Sans faute Blitz', emoji: '💯', section: 'blitz', description: 'Termine un Blitz sans aucune erreur', condition: (data) => (data.blitzPerfects || 0) >= 1, target: 1, getCurrent: (data) => data.blitzPerfects || 0 },
 ]
 
 // ===== TROPHÉES PARTIES JOUÉES (4 trophées) =====
 const GAMES_TROPHIES = [
-  { id: 'debutant', label: 'Débutant', emoji: '🎮', section: 'games', condition: (data) => (data.gamesPlayed || 0) >= 10, target: 10, getCurrent: (data) => data.gamesPlayed || 0 },
-  { id: 'regulier', label: 'Régulier', emoji: '🕹️', section: 'games', condition: (data) => (data.gamesPlayed || 0) >= 50, target: 50, getCurrent: (data) => data.gamesPlayed || 0 },
-  { id: 'veteran', label: 'Vétéran', emoji: '🎖️', section: 'games', condition: (data) => (data.gamesPlayed || 0) >= 100, target: 100, getCurrent: (data) => data.gamesPlayed || 0 },
-  { id: 'legende_wtf', label: 'Légende WTF!', emoji: '🏆', section: 'games', condition: (data) => (data.gamesPlayed || 0) >= 500, target: 500, getCurrent: (data) => data.gamesPlayed || 0 },
+  { id: 'debutant', label: 'Débutant', emoji: '🎮', section: 'games', description: 'Joue 10 parties', condition: (data) => (data.gamesPlayed || 0) >= 10, target: 10, getCurrent: (data) => data.gamesPlayed || 0 },
+  { id: 'regulier', label: 'Régulier', emoji: '🕹️', section: 'games', description: 'Joue 50 parties', condition: (data) => (data.gamesPlayed || 0) >= 50, target: 50, getCurrent: (data) => data.gamesPlayed || 0 },
+  { id: 'veteran', label: 'Vétéran', emoji: '🎖️', section: 'games', description: 'Joue 100 parties', condition: (data) => (data.gamesPlayed || 0) >= 100, target: 100, getCurrent: (data) => data.gamesPlayed || 0 },
+  { id: 'legende_wtf', label: 'Légende WTF!', emoji: '🏆', section: 'games', description: 'Joue 500 parties', condition: (data) => (data.gamesPlayed || 0) >= 500, target: 500, getCurrent: (data) => data.gamesPlayed || 0 },
 ]
 
 // ===== TROPHÉES SOCIAUX (4 trophées) =====
 const SOCIAL_TROPHIES = [
-  { id: 'premier_ami', label: 'Premier ami', emoji: '🤝', section: 'social', condition: (data) => (data.friendCount || 0) >= 1, target: 1, getCurrent: (data) => data.friendCount || 0 },
-  { id: 'sociable', label: 'Sociable', emoji: '👥', section: 'social', condition: (data) => (data.friendCount || 0) >= 5, target: 5, getCurrent: (data) => data.friendCount || 0 },
-  { id: 'premier_defi', label: 'Premier défi', emoji: '🎯', section: 'social', condition: (data) => (data.challengesSent || 0) >= 1, target: 1, getCurrent: (data) => data.challengesSent || 0 },
-  { id: 'competiteur', label: 'Compétiteur', emoji: '⚔️', section: 'social', condition: (data) => (data.challengesSent || 0) >= 10, target: 10, getCurrent: (data) => data.challengesSent || 0 },
+  { id: 'premier_ami', label: 'Premier ami', emoji: '🤝', section: 'social', description: 'Ajoute ton premier ami', condition: (data) => (data.friendCount || 0) >= 1, target: 1, getCurrent: (data) => data.friendCount || 0 },
+  { id: 'sociable', label: 'Sociable', emoji: '👥', section: 'social', description: 'Ajoute 5 amis', condition: (data) => (data.friendCount || 0) >= 5, target: 5, getCurrent: (data) => data.friendCount || 0 },
+  { id: 'premier_defi', label: 'Premier défi', emoji: '🎯', section: 'social', description: 'Envoie ton premier défi', condition: (data) => (data.challengesSent || 0) >= 1, target: 1, getCurrent: (data) => data.challengesSent || 0 },
+  { id: 'competiteur', label: 'Compétiteur', emoji: '⚔️', section: 'social', description: 'Envoie 10 défis', condition: (data) => (data.challengesSent || 0) >= 10, target: 10, getCurrent: (data) => data.challengesSent || 0 },
 ]
 
 // ===== TROPHÉE PERFECT (1 trophée) =====
 const PERFECT_TROPHIES = [
-  { id: 'perfect', label: 'Perfect', emoji: '👑', section: 'perfect', condition: (data) => (data.totalPerfects || 0) >= 1, target: 1, getCurrent: (data) => data.totalPerfects || 0 },
+  { id: 'perfect', label: 'Perfect', emoji: '👑', section: 'perfect', description: 'Fais un score parfait en Quest', condition: (data) => (data.totalPerfects || 0) >= 1, target: 1, getCurrent: (data) => data.totalPerfects || 0 },
 ]
 
 // ===== TOUT COMBINER =====

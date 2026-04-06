@@ -430,7 +430,7 @@ export default function App() {
     if (!huntFact) {
       const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
       if (isDevOrTest) {
-        const allValid = getValidFacts().filter(f => f.isVip || (!f.type || f.type === 'vip'))
+        const allValid = getValidFacts().filter(f => f.isVip)
         huntFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
       }
       if (!huntFact) {
@@ -531,7 +531,7 @@ export default function App() {
     audio.play('click')
     const difficulty = DIFFICULTY_LEVELS.HOT
     // Pool : facts VIP uniquement (type = 'vip' ou sans type = VIP par défaut)
-    let pool = getValidFacts().filter(f => !f.type || f.type === 'vip')
+    let pool = getValidFacts().filter(f => f.isVip)
     // Exclure les facts déjà débloqués pour plus de variété
     const skipUnlockQ = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     if (!skipUnlockQ) {
@@ -663,17 +663,17 @@ export default function App() {
     const skipUnlockD = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     // Pool Quest : VIP avec difficulté, puis fallback élargi
     let available = getParcoursFacts().filter(f =>
-      (!f.type || f.type === 'vip') && f.difficulty === difficulty.id && (skipUnlockD || !unlockedFacts.has(f.id))
+      f.isVip && f.difficulty === difficulty.id && (skipUnlockD || !unlockedFacts.has(f.id))
     )
     // Fallback 1 : ignorer le filtre difficulty
     if (available.length < QUESTIONS_PER_GAME) {
       available = getParcoursFacts().filter(f =>
-        (!f.type || f.type === 'vip') && (skipUnlockD || !unlockedFacts.has(f.id))
+        f.isVip && (skipUnlockD || !unlockedFacts.has(f.id))
       )
     }
     // Fallback 2 : tous les VIP valides (sans filtre difficulty)
     if (available.length < QUESTIONS_PER_GAME) {
-      available = getValidFacts().filter(f => (!f.type || f.type === 'vip') || f.isVip)
+      available = getValidFacts().filter(f => f.isVip)
     }
     // Fallback 3 : tous les facts valides
     if (available.length < QUESTIONS_PER_GAME) {

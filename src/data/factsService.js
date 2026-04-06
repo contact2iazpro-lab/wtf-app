@@ -185,15 +185,25 @@ const MAX_RETRIES = 3
 const RETRY_DELAY = 1500 // ms
 
 async function fetchFromSupabase() {
-  const { data, error } = await supabase
-    .from('facts')
-    .select('id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
-    .eq('is_published', true)
-    .order('id')
-
-  if (error) throw new Error(error.message)
-  if (!data || data.length < 10) throw new Error(`Seulement ${data?.length || 0} facts retournés`)
-  return data
+  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3'
+  const all = []
+  let from = 0
+  const PAGE = 1000
+  while (true) {
+    const { data, error } = await supabase
+      .from('facts')
+      .select(SELECT_COLS)
+      .eq('is_published', true)
+      .order('id')
+      .range(from, from + PAGE - 1)
+    if (error) throw new Error(error.message)
+    if (!data || data.length === 0) break
+    all.push(...data)
+    if (data.length < PAGE) break
+    from += PAGE
+  }
+  if (all.length < 10) throw new Error(`Seulement ${all.length} facts retournés`)
+  return all
 }
 
 export async function initFacts() {

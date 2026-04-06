@@ -132,13 +132,13 @@ export default function DashboardPage({ toast }) {
       // Type distribution (Quête / Flash-Marathon)
       const typeCounts = { vip: 0, generated: 0 }
       for (const f of (allFacts || [])) {
-        if (f.is_vip || f.type === 'vip' || !f.type) typeCounts.vip++
-        if (f.type === 'generated') typeCounts.generated++
+        if (f.is_vip) typeCounts.vip++
+        else typeCounts.generated++
       }
       const typeTotal = (allFacts || []).length || 1
       setTypeData([
-        { value: 'Quête', count: typeCounts.vip, color: '#FFD700', pct: Math.round((typeCounts.vip / typeTotal) * 100) },
-        { value: 'Flash/Marathon', count: typeCounts.generated, color: '#8B5CF6', pct: Math.round((typeCounts.generated / typeTotal) * 100) },
+        { value: 'WTF!', count: typeCounts.vip, color: '#FFD700', pct: Math.round((typeCounts.vip / typeTotal) * 100) },
+        { value: 'Funny F*cts', count: typeCounts.generated, color: '#8B5CF6', pct: Math.round((typeCounts.generated / typeTotal) * 100) },
       ])
 
       setRecentEdits(history || [])
@@ -356,7 +356,7 @@ export default function DashboardPage({ toast }) {
       }
 
       setEnrichStatus('done')
-      setEnrichMessage(`✅ Enrichissement terminé — ${enriched}/${all.length} facts Quête traités`)
+      setEnrichMessage(`✅ Enrichissement terminé — ${enriched}/${all.length} facts WTF! traités`)
       fetchQualityIssues()
     } catch (err) {
       setEnrichStatus('error')
@@ -399,7 +399,7 @@ export default function DashboardPage({ toast }) {
         <Link to="/facts?status=draft" className="hover:ring-2 ring-red-500/30 rounded-2xl transition-all">
           <StatCard label="Non publiés / Archivés" value={stats?.unpublished} color="#EF4444" sub="Cliquer pour voir →" />
         </Link>
-        <StatCard label="Facts Quête ⭐" value={stats?.vipTotal} color="#FFD700" />
+        <StatCard label="Facts WTF! ⭐" value={stats?.vipTotal} color="#FFD700" />
       </div>
 
       {/* Quality Dashboard — unified */}
@@ -671,7 +671,7 @@ export default function DashboardPage({ toast }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* VIP by usage */}
         <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-          <h2 className="text-base font-black text-white mb-4">⭐ Quête par usage</h2>
+          <h2 className="text-base font-black text-white mb-4">⭐ WTF! par usage</h2>
           <div className="space-y-2">
             {vipByUsage.map(u => (
               <div key={u.value} className="flex items-center justify-between text-sm">
@@ -775,7 +775,7 @@ export default function DashboardPage({ toast }) {
           if (!f.category) continue
           if (!catMap[f.category]) catMap[f.category] = { total: 0, published: 0, draftQuete: 0, draftFlash: 0, pubQuete: 0, pubFlash: 0 }
           const c = catMap[f.category]
-          const isVip = f.is_vip || f.type === 'vip' || !f.type
+          const isVip = !!f.is_vip
           c.total++
           if (f.is_published) {
             c.published++
@@ -808,10 +808,10 @@ export default function DashboardPage({ toast }) {
                   <tr className="border-b border-slate-700/50 text-[10px] uppercase tracking-wider">
                     <th></th>
                     <th></th>
-                    <th className="text-center px-2 py-1" style={{ color: '#FFD700' }}>Quête</th>
-                    <th className="text-center px-2 py-1" style={{ color: '#8B5CF6' }}>Flash</th>
-                    <th className="text-center px-2 py-1" style={{ color: '#FFD700' }}>Quête</th>
-                    <th className="text-center px-2 py-1" style={{ color: '#8B5CF6' }}>Flash</th>
+                    <th className="text-center px-2 py-1" style={{ color: '#FFD700' }}>WTF!</th>
+                    <th className="text-center px-2 py-1" style={{ color: '#8B5CF6' }}>Funny</th>
+                    <th className="text-center px-2 py-1" style={{ color: '#FFD700' }}>WTF!</th>
+                    <th className="text-center px-2 py-1" style={{ color: '#8B5CF6' }}>Funny</th>
                     <th></th>
                   </tr>
                 </thead>

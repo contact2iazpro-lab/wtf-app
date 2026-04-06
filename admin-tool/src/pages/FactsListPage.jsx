@@ -984,8 +984,6 @@ export default function FactsListPage({ toast }) {
         </div>
       </div>
 
-      )}
-
       {/* ── Filters ───────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-2 mb-4 shrink-0">
         <div className="relative">

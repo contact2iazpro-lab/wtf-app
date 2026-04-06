@@ -68,9 +68,8 @@ export async function pullFromServer(userId) {
         }
         if (allUnlockedIds.length > 0) {
           const s = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          const existing = new Set(s.unlockedFacts || [])
-          for (const id of allUnlockedIds) existing.add(id)
-          s.unlockedFacts = [...existing]
+          // REMPLACER les unlockedFacts (pas merger — évite la contamination entre comptes)
+          s.unlockedFacts = [...new Set(allUnlockedIds)]
           s.lastModified = Date.now()
           localStorage.setItem('wtf_data', JSON.stringify(s))
         }

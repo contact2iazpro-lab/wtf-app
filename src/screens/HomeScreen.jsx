@@ -732,14 +732,6 @@ export default function HomeScreen({
             {modeIsNew('quest') && <NewBadge />}
             <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => { setShowQuestSpotlight(false); handleModeTap('quest', 'difficulty') }} />
           </div>
-          <div style={{ position: 'relative', ...(!modeVisible.serie ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
-            {modeIsNew('serie') && <NewBadge />}
-            <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => handleModeTap('serie', 'trophees')} />
-          </div>
-          <div style={{ position: 'relative', ...(!modeVisible.hunt ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
-            {modeIsNew('hunt') && <NewBadge />}
-            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" onClick={() => handleModeTap('hunt', 'wtfDuJour')} />
-          </div>
         </div>
 
         {/* Colonne centre — flex: 1 */}
@@ -786,10 +778,6 @@ export default function HomeScreen({
           <div style={{ position: 'relative', ...(!modeVisible.explorer ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
             {modeIsNew('explorer') && <NewBadge />}
             <ModeIcon src="/assets/modes/marathon.png" label="Explorer" onClick={() => handleModeTap('explorer', 'marathon')} />
-          </div>
-          <div style={{ position: 'relative', ...(!modeVisible.multi ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
-            {modeIsNew('multi') && <NewBadge />}
-            <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => handleModeTap('multi', 'amis')} />
           </div>
           <div style={{ position: 'relative', ...(!modeVisible.blitz ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
             {modeIsNew('blitz') && <NewBadge />}

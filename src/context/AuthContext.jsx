@@ -152,6 +152,21 @@ export function AuthProvider({ children }) {
     }
     // Supprimer le flag de connexion
     localStorage.removeItem('wtf_first_login_done')
+    // Nettoyer les données du joueur précédent
+    try {
+      const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      // Garder les settings (son, musique, etc.) mais vider les données de progression
+      const cleanData = {
+        coffreClaimedDays: wtfData.coffreClaimedDays,
+        coffreWeekStart: wtfData.coffreWeekStart,
+        seenModes: wtfData.seenModes,
+      }
+      localStorage.setItem('wtf_data', JSON.stringify(cleanData))
+      localStorage.removeItem('wtf_hints_available')
+      localStorage.removeItem('wtf_my_friend_code')
+      localStorage.removeItem('wtf_facts_cache')
+      localStorage.removeItem('wtf_tutorial_state')
+    } catch { /* ignore */ }
     // Reset state
     setUser(null)
     setProfile(null)

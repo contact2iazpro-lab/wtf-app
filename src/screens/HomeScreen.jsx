@@ -139,14 +139,20 @@ export default function HomeScreen({
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
   const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
 
+  // ⚠️ PHASE TEST — désactiver l'onboarding progressif (tous modes visibles)
+  // Remettre à false avant le lancement en production
+  const SKIP_PROGRESSIVE_UNLOCK = true
+
   // Onboarding progressif — paliers de déverrouillage
   const effectiveGames = (isDevMode || isTestMode) ? 999 : gamesPlayed
-  const unlockLevel = effectiveGames >= 50 ? 'veteran'
+  const unlockLevel = SKIP_PROGRESSIVE_UNLOCK ? 'veteran' : (
+    effectiveGames >= 50 ? 'veteran'
     : effectiveGames >= 20 ? 'expert'
     : effectiveGames >= 10 ? 'advanced'
     : effectiveGames >= 5 ? 'intermediate'
     : effectiveGames >= 2 ? 'beginner'
     : 'newbie'
+  )
 
   const seenModes = (() => {
     try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').seenModes || [] } catch { return [] }

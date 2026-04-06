@@ -212,23 +212,7 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [vibrOn, setVibrOn] = useState(() => localStorage.getItem('wtf_vibration') !== 'false')
 
-  // Cheat code: tap 5× on version to unlock dev selector
-  const [tapCount, setTapCount] = useState(0)
-  const [devAccess, setDevAccess] = useState(() => localStorage.getItem('wtf_dev_access') === 'true')
-  const [devToast, setDevToast] = useState(false)
-
-  useEffect(() => {
-    if (tapCount > 0 && tapCount < 5) {
-      const timer = setTimeout(() => setTapCount(0), 3000)
-      return () => clearTimeout(timer)
-    }
-    if (tapCount >= 5) {
-      localStorage.setItem('wtf_dev_access', 'true')
-      setDevAccess(true)
-      setDevToast(true)
-      setTimeout(() => setDevToast(false), 2000)
-    }
-  }, [tapCount])
+  const [devAccess] = useState(() => localStorage.getItem('wtf_dev_access') === 'true')
 
   const showDevSelector = import.meta.env.DEV || devAccess
 
@@ -364,15 +348,10 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
               <SettingRow icon="📋" label="CGU" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
               <SettingRow icon="🔒" label="Politique de confidentialité" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
 
-              {/* Version — tap 5× to unlock dev mode */}
-              <div className="text-center mt-4 mb-2" onClick={() => setTapCount(c => c + 1)} style={{ cursor: 'default', userSelect: 'none' }}>
+              {/* Version */}
+              <div className="text-center mt-4 mb-2" style={{ userSelect: 'none' }}>
                 <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v{import.meta.env.VITE_APP_VERSION || '0.0.0'}</span>
               </div>
-              {devToast && (
-                <div className="text-center mb-2">
-                  <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>🔓 Mode développeur activé !</span>
-                </div>
-              )}
             </div>
           </div>
         </div>

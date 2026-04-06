@@ -9,6 +9,7 @@ export default function RecompensesPage() {
   const [sections, setSections] = useState([])
   const [nextTrophy, setNextTrophy] = useState(null)
   const [expanded, setExpanded] = useState({ global: true, type: true, categories: false, streak: true, blitz: true, games: true, social: true, perfect: true })
+  const [selectedTrophy, setSelectedTrophy] = useState(null)
 
   useEffect(() => {
     setSections(getTrophySections())
@@ -107,8 +108,9 @@ export default function RecompensesPage() {
                             {trophies.map(trophy => (
                               <div
                                 key={trophy.id}
+                                onClick={() => setSelectedTrophy(trophy)}
                                 style={{
-                                  flex: 1, textAlign: 'center', padding: '6px 2px', borderRadius: 8,
+                                  flex: 1, textAlign: 'center', padding: '6px 2px', borderRadius: 8, cursor: 'pointer',
                                   background: trophy.earned ? 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.2))' : 'rgba(0,0,0,0.03)',
                                   border: trophy.earned ? '1px solid rgba(255,215,0,0.4)' : '1px solid rgba(0,0,0,0.05)',
                                 }}
@@ -132,8 +134,9 @@ export default function RecompensesPage() {
                     {section.trophies.map(trophy => (
                       <div
                         key={trophy.id}
+                        onClick={() => setSelectedTrophy(trophy)}
                         style={{
-                          textAlign: 'center', padding: '10px 4px', borderRadius: 12,
+                          textAlign: 'center', padding: '10px 4px', borderRadius: 12, cursor: 'pointer',
                           background: trophy.earned ? 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.2))' : 'rgba(0,0,0,0.03)',
                           border: trophy.earned ? '1px solid rgba(255,215,0,0.4)' : '1px solid rgba(0,0,0,0.05)',
                         }}
@@ -158,6 +161,62 @@ export default function RecompensesPage() {
           </div>
         ))}
       </div>
+
+      {selectedTrophy && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 20,
+          }}
+          onClick={() => setSelectedTrophy(null)}
+        >
+          <div
+            style={{
+              background: 'white', borderRadius: 20, padding: '24px 20px',
+              maxWidth: 300, width: '100%', textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+              fontFamily: 'Nunito, sans-serif',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 48, marginBottom: 12 }}>{selectedTrophy.emoji}</div>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>
+              {selectedTrophy.label}
+            </h3>
+            <div style={{
+              fontSize: 13, fontWeight: 700, margin: '0 0 12px',
+              color: selectedTrophy.earned ? '#22C55E' : '#9CA3AF',
+            }}>
+              {selectedTrophy.earned ? '✅ Débloqué !' : '🔒 Pas encore débloqué'}
+            </div>
+            {/* Barre de progression */}
+            <div style={{ background: '#F3F4F6', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
+              <div style={{
+                height: '100%', borderRadius: 8,
+                width: `${Math.min(100, Math.round((selectedTrophy.current / (selectedTrophy.target === 'all' ? selectedTrophy.current || 1 : selectedTrophy.target)) * 100))}%`,
+                background: selectedTrophy.earned ? '#22C55E' : '#FF6B1A',
+                transition: 'width 0.5s ease',
+              }} />
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#6B7280' }}>
+              {selectedTrophy.current} / {selectedTrophy.target === 'all' ? '∞' : selectedTrophy.target}
+            </div>
+            <button
+              onClick={() => setSelectedTrophy(null)}
+              style={{
+                marginTop: 16, padding: '10px 32px', borderRadius: 12,
+                background: '#FF6B1A', color: 'white', border: 'none',
+                fontWeight: 900, fontSize: 14, cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

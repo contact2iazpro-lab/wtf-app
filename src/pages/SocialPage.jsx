@@ -31,6 +31,13 @@ export default function SocialPage() {
       ])
       if (codeResult?.code) setMyCode(codeResult.code)
       setFriends(friendsList || [])
+      // Mettre à jour friendCount pour les trophées sociaux
+      try {
+        const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        wtfData.friendCount = (friendsList || []).length
+        wtfData.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+      } catch { /* ignore */ }
       setPendingRequests(pendingList || [])
       const received = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id !== user.id)
       setPendingChallenges(received)

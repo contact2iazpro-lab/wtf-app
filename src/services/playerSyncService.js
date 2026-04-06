@@ -1,13 +1,14 @@
-// ─── Player Sync Service — Simplifié ─────────────────────────────────────────
-// Rôle unique : synchroniser le profil joueur entre localStorage et Supabase.
-// Les devises (coins/tickets/hints) sont gérées par currencyService.js.
+// ─── Player Sync Service — Simplifié & Sécurisé ─────────────────────────────
+// Supabase = source de vérité pour les joueurs connectés.
+// Le local (localStorage) est un cache rapide.
 //
 // pushToServer(userId) — local → Supabase (après chaque action gameplay)
 // pullFromServer(userId) — Supabase → local (uniquement au login)
+// syncAfterAction(userId) — push throttlé 5s
 
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
-// ── pushToServer : lit localStorage, push vers Supabase ──────────────────────
+// ── pushToServer ─────────────────────────────────────────────────────────────
 export async function pushToServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
@@ -26,7 +27,6 @@ export async function pushToServer(userId) {
     }
     const { error } = await supabase.from('profiles').update(payload).eq('id', userId)
     if (error) throw error
-    // Mettre à jour lastModified local
     saved.lastModified = payload.last_modified
     localStorage.setItem('wtf_data', JSON.stringify(saved))
     return payload
@@ -36,7 +36,7 @@ export async function pushToServer(userId) {
   }
 }
 
-// ── pullFromServer : Supabase → local (UNIQUEMENT au login) ──────────────────
+// ── pullFromServer ───────────────────────────────────────────────────────────
 export async function pullFromServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
@@ -48,7 +48,7 @@ export async function pullFromServer(userId) {
     if (error) throw error
     if (!remote) return null
 
-    // Détecter un profil vierge (vient d'être créé par le trigger Supabase)
+    // Détecter un profil vierge (vient d'être créé)
     const isNewProfile = (remote.coins || 0) === 0
       && (remote.total_score || 0) === 0
       && (remote.tickets || 0) === 0
@@ -56,8 +56,7 @@ export async function pullFromServer(userId) {
       && (remote.streak_current || 0) === 0
 
     if (isNewProfile) {
-      // Nouveau profil → ne pas écraser le local (le joueur a peut-être déjà joué avant de se connecter)
-      // Au lieu de ça, pusher le local vers Supabase pour initialiser le profil
+      // Nouveau profil → push le local vers Supabase au lieu d'écraser
       console.log('[sync] Nouveau profil détecté — push local vers Supabase')
       return pushToServer(userId)
     }
@@ -88,7 +87,6 @@ export async function pullFromServer(userId) {
         }
         if (allUnlockedIds.length > 0) {
           const savedForFacts = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          // Merger : garder les locaux + ajouter ceux de Supabase
           const existingUnlocked = new Set(savedForFacts.unlockedFacts || [])
           for (const id of allUnlockedIds) existingUnlocked.add(id)
           savedForFacts.unlockedFacts = [...existingUnlocked]
@@ -97,10 +95,9 @@ export async function pullFromServer(userId) {
         }
       }
     } catch (err) {
-      console.warn('[sync] Sync unlockedFacts depuis collections échoué:', err.message)
+      console.warn('[sync] Sync unlockedFacts échoué:', err.message)
     }
 
-    // Notifier l'UI
     window.dispatchEvent(new Event('wtf_storage_sync'))
     return remote
   } catch (err) {
@@ -109,7 +106,7 @@ export async function pullFromServer(userId) {
   }
 }
 
-// ── syncAfterAction : push throttlé pour le gameplay courant ─────────────────
+// ── syncAfterAction ──────────────────────────────────────────────────────────
 let _lastSyncTime = 0
 const THROTTLE_MS = 5000
 
@@ -121,7 +118,6 @@ export function syncAfterAction(userId) {
   pushToServer(userId).catch(() => {})
 }
 
-// ── Stubs rétro-compat (importés par App.jsx et AuthContext) ─────────────────
-export async function replaySyncQueue() {}
+// ── Rétro-compat (pour les fichiers qui importent encore les anciens noms) ──
 export async function syncPlayerData(userId) { return pullFromServer(userId) }
 export function syncPlayerDataAsync(userId) { if (userId) pullFromServer(userId).catch(() => {}) }

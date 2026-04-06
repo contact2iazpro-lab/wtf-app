@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import { pullFromServer } from '../services/playerSyncService'
+import { pullFromServer, pushToServer } from '../services/playerSyncService'
 
 const AuthContext = createContext(null)
 
@@ -29,11 +29,31 @@ export function AuthProvider({ children }) {
     if (!isSupabaseConfigured) return
     const username = email.split('@')[0]
     try {
-      const { data } = await supabase
+      const { data: existing } = await supabase
         .from('profiles')
-        .upsert({ id: userId, username, coins: 50 })
-        .select()
-        .single()
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle()
+
+      let data
+      if (!existing) {
+        // Nouveau profil → créer avec les valeurs de départ
+        const result = await supabase
+          .from('profiles')
+          .insert({ id: userId, username, coins: 0, tickets: 3, hints: 3 })
+          .select()
+          .single()
+        data = result.data
+      } else {
+        // Profil existant → juste mettre à jour le username si vide
+        const result = await supabase
+          .from('profiles')
+          .update({ username })
+          .eq('id', userId)
+          .select()
+          .single()
+        data = result.data
+      }
       if (data) setProfile(data)
     } catch (err) {
       console.error('[Auth] createProfile error:', err)

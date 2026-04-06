@@ -56,7 +56,7 @@ export default function ChallengeScreen() {
     // Prepare facts for the Blitz
     const shuffled = [...playerFacts]
       .sort(() => Math.random() - 0.5)
-      .slice(0, challenge.question_count)
+      .slice(0, Math.min(challenge.question_count, playerFacts.length))
 
     // Store challenge info for after Blitz
     localStorage.setItem('wtf_active_challenge', JSON.stringify({
@@ -176,10 +176,37 @@ export default function ChallengeScreen() {
         <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
           C'est ton propre défi ! Partage le code à un ami.
         </div>
-      ) : !hasEnoughFacts ? (
-        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1.5, maxWidth: 300 }}>
-          Tu n'as pas assez de f*cts débloqués ({playerFacts.length}/{challenge.question_count}).
-          Joue en Flash ou Quest pour en débloquer !
+      ) : playerFacts.length < 4 ? (
+        <div style={{ width: '100%', maxWidth: 340, borderRadius: 16, padding: '20px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', textAlign: 'center' }}>
+          <span style={{ fontSize: 32, display: 'block', marginBottom: 8 }}>😕</span>
+          <p style={{ color: 'white', fontSize: 14, fontWeight: 800, margin: '0 0 8px', lineHeight: 1.4 }}>
+            Tu n'as pas encore assez de f*cts {challenge.category_label} pour relever ce défi
+          </p>
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: '0 0 16px', lineHeight: 1.4 }}>
+            Tu as {playerFacts.length} f*ct{playerFacts.length !== 1 ? 's' : ''} débloqué{playerFacts.length !== 1 ? 's' : ''} (minimum 4 requis).
+            Joue en Flash ou Explorer pour en débloquer !
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            style={{ padding: '12px 28px', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+          >
+            🎮 Aller jouer
+          </button>
+        </div>
+      ) : playerFacts.length < (challenge?.question_count || 0) ? (
+        <div style={{ width: '100%', maxWidth: 340 }}>
+          <div style={{ borderRadius: 16, padding: '16px 14px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center', marginBottom: 12 }}>
+            <p style={{ color: '#F59E0B', fontSize: 13, fontWeight: 700, margin: 0, lineHeight: 1.4 }}>
+              ⚠️ Tu as {playerFacts.length} f*cts {challenge.category_label} débloqués (le défi en demande {challenge.question_count}).
+              Le défi sera adapté à {playerFacts.length} questions.
+            </p>
+          </div>
+          <button
+            onClick={handleAcceptChallenge}
+            style={{ width: '100%', padding: '16px 0', borderRadius: 14, background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', border: 'none', fontWeight: 900, fontSize: 18, cursor: 'pointer', fontFamily: 'Nunito, sans-serif', boxShadow: '0 4px 20px rgba(255,107,26,0.4)' }}
+          >
+            Relever le défi ! 🚀
+          </button>
         </div>
       ) : (
         <button
@@ -189,10 +216,6 @@ export default function ChallengeScreen() {
           Relever le défi ! 🚀
         </button>
       )}
-
-      <button onClick={() => navigate('/')} style={{ padding: '10px 24px', borderRadius: 12, background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.15)', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>
-        Accueil
-      </button>
 
       {isExpired && (
         <div style={{ textAlign: 'center', color: '#EF4444', fontSize: 13, fontWeight: 700 }}>

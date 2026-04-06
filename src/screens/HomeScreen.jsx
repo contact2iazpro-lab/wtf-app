@@ -12,6 +12,7 @@ import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import { getTutorialState, TUTORIAL_STATES } from '../utils/tutorialManager'
 import { getNextBadge } from '../utils/badgeManager'
+import { updateCoins, updateTickets, updateHints } from '../services/currencyService'
 
 // ── Fond sombre fixe ─────────────────────────────────────────────────────────
 const HOME_BG_COLOR = 'linear-gradient(160deg, #1a3a5c 0%, #1e4d7a 40%, #2a5f8f 70%, #1a3a5c 100%)'
@@ -77,18 +78,9 @@ function useDailyCoffre() {
 
 function applyCofreReward(reward) {
   try {
-    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    if (reward.type === 'coins') {
-      data.wtfCoins = (data.wtfCoins || 0) + reward.amount
-    } else if (reward.type === 'hints') {
-      const current = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
-      localStorage.setItem('wtf_hints_available', String(current + reward.amount))
-    } else if (reward.type === 'tickets') {
-      data.tickets = (data.tickets || 0) + reward.amount
-    }
-    data.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(data))
-    window.dispatchEvent(new Event('wtf_storage_sync'))
+    if (reward.type === 'coins') updateCoins(reward.amount)
+    else if (reward.type === 'hints') updateHints(reward.amount)
+    else if (reward.type === 'tickets') updateTickets(reward.amount)
   } catch { /* ignore */ }
 }
 

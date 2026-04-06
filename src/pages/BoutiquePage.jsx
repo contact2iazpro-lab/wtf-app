@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CoinsIcon from '../components/CoinsIcon'
+import { updateCoins, updateHints, updateTickets, getBalances } from '../services/currencyService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -37,6 +38,22 @@ export default function BoutiquePage() {
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
 
+  // Se mettre à jour quand les devises changent (via currencyService)
+  useEffect(() => {
+    const refresh = () => {
+      const b = getBalances()
+      setPlayerCoins(b.coins)
+      setPlayerTickets(b.tickets)
+      setPlayerHints(b.hints)
+    }
+    window.addEventListener('wtf_currency_updated', refresh)
+    window.addEventListener('wtf_storage_sync', refresh)
+    return () => {
+      window.removeEventListener('wtf_currency_updated', refresh)
+      window.removeEventListener('wtf_storage_sync', refresh)
+    }
+  }, [])
+
   const showToast = (msg) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2000)
@@ -44,28 +61,21 @@ export default function BoutiquePage() {
 
   const buyHintPack = (quantity, price) => {
     if (playerCoins < price) return
-    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    data.wtfCoins = (data.wtfCoins || 0) - price
-    data.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(data))
-    const newHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10) + quantity
-    localStorage.setItem('wtf_hints_available', String(newHints))
-    setPlayerCoins(data.wtfCoins)
-    setPlayerHints(newHints)
-    window.dispatchEvent(new Event('wtf_storage_sync'))
+    updateCoins(-price)
+    updateHints(quantity)
+    const b = getBalances()
+    setPlayerCoins(b.coins)
+    setPlayerHints(b.hints)
     showToast(`✅ +${quantity} indice${quantity > 1 ? 's' : ''} !`)
   }
 
   const buyTicketPack = (quantity, price) => {
     if (playerCoins < price) return
-    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    data.wtfCoins = (data.wtfCoins || 0) - price
-    data.tickets = (data.tickets || 0) + quantity
-    data.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(data))
-    setPlayerCoins(data.wtfCoins)
-    setPlayerTickets(data.tickets)
-    window.dispatchEvent(new Event('wtf_storage_sync'))
+    updateCoins(-price)
+    updateTickets(quantity)
+    const b = getBalances()
+    setPlayerCoins(b.coins)
+    setPlayerTickets(b.tickets)
     showToast(`✅ +${quantity} ticket${quantity > 1 ? 's' : ''} !`)
   }
 

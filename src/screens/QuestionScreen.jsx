@@ -5,6 +5,7 @@ import CoinsIcon from '../components/CoinsIcon'
 import HintFlipButton from '../components/HintFlipButton'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
+import { updateCoins, updateTickets, updateHints, setAbsolute, getBalances } from '../services/currencyService'
 import renderFormattedText from '../utils/renderFormattedText'
 
 // ── Messages bienveillants (identiques à RevelationScreen) ──────────────────
@@ -304,14 +305,8 @@ export default function QuestionScreen({
             canBuyWithCoins={stockRemaining <= 0 && currentCoins >= 5}
             onReveal={() => { onUseHint(hintNum); audio.play('click') }}
             onBuyHint={() => {
-              // Acheter 1 indice avec 5 coins
-              const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-              data.wtfCoins = (data.wtfCoins || 0) - 5
-              data.lastModified = Date.now()
-              localStorage.setItem('wtf_data', JSON.stringify(data))
-              const newH = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10) + 1
-              localStorage.setItem('wtf_hints_available', String(newH))
-              window.dispatchEvent(new Event('wtf_storage_sync'))
+              updateCoins(-5)
+              updateHints(1)
             }}
           />
         )
@@ -657,16 +652,9 @@ export default function QuestionScreen({
                   onClick={() => {
                     audio.play('click')
                     // Créditer les devises de départ (comme si le joueur avait fait le tuto + 1ère partie Flash)
-                    try {
-                      const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                      if ((wtfData.tickets || 0) === 0) wtfData.tickets = 3
-                      if ((wtfData.wtfCoins || 0) === 0) wtfData.wtfCoins = 0
-                      wtfData.lastModified = Date.now()
-                      localStorage.setItem('wtf_data', JSON.stringify(wtfData))
-                      if (!localStorage.getItem('wtf_hints_available') || localStorage.getItem('wtf_hints_available') === '0') {
-                        localStorage.setItem('wtf_hints_available', '3')
-                      }
-                    } catch { /* ignore */ }
+                    const balances = getBalances()
+                    if (balances.tickets === 0) updateTickets(3)
+                    if (balances.hints === 0) updateHints(3)
                     // Skip le tuto → marquer comme COMPLETED
                     import('../utils/tutorialManager').then(({ advanceTutorial, getTutorialState, TUTORIAL_STATES }) => {
                       const advance = async () => {

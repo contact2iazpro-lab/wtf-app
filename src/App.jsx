@@ -8,6 +8,7 @@ import {
   initFacts, resetFacts,
 } from './data/factsService'
 import { syncAfterAction, pullFromServer, replaySyncQueue } from './services/playerSyncService'
+import { updateCoins, updateTickets, updateHints, updateMultiple, setAbsolute, getBalances } from './services/currencyService'
 import DevPanel from './components/DevPanel'
 import { DEV_PANEL_ENABLED } from './config/devConfig'
 import { logDevEvent } from './utils/devLogger'
@@ -667,11 +668,8 @@ export default function App() {
         return
       }
       // Décrémenter 1 ticket
-      setStorage(prev => {
-        const next = { ...prev, tickets: Math.max(0, (prev.tickets || 0) - 1) }
-        saveStorage(next)
-        return next
-      })
+      updateTickets(-1)
+      setStorage(loadStorage())
     }
 
     const skipUnlockD = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
@@ -909,11 +907,8 @@ export default function App() {
       if (isAnswerCorrect) setCorrectCount(c => c + 1)
       // Sauvegarde coins en temps réel
       if (points > 0) {
-        setStorage(prev => {
-          const updated = { ...prev, wtfCoins: prev.wtfCoins + points }
-          saveStorage(updated)
-          return updated
-        })
+        updateCoins(points)
+        setStorage(prev => ({ ...prev, wtfCoins: (prev.wtfCoins || 0) + points }))
       }
     }
 
@@ -938,11 +933,8 @@ export default function App() {
       if (isCorrect) setCorrectCount(c => c + 1)
       // Sauvegarde coins en temps réel
       if (points > 0) {
-        setStorage(prev => {
-          const updated = { ...prev, wtfCoins: prev.wtfCoins + points }
-          saveStorage(updated)
-          return updated
-        })
+        updateCoins(points)
+        setStorage(prev => ({ ...prev, wtfCoins: (prev.wtfCoins || 0) + points }))
       }
     }
 
@@ -959,9 +951,8 @@ export default function App() {
 
   const handleUseHint = useCallback((hintNum) => {
     // Indices = stock gratuit, décrémenté de 1 à chaque utilisation
-    const currentHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
-    if (currentHints < 1) return // stock vide, ne rien faire
-    localStorage.setItem('wtf_hints_available', String(currentHints - 1))
+    if (getBalances().hints < 1) return // stock vide, ne rien faire
+    updateHints(-1)
     setHintsUsed(hintNum)
     setSessionAnyHintUsed(true)
   }, [])
@@ -1050,8 +1041,7 @@ export default function App() {
         const streakReward = isFirstSessionToday ? getStreakReward(newStreak) : null
         if (streakReward) {
           if (streakReward.hints > 0) {
-            const currentHints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
-            localStorage.setItem('wtf_hints_available', String(currentHints + streakReward.hints))
+            updateHints(streakReward.hints)
           }
           if (streakReward.badge) {
             localStorage.setItem(`wtf_badge_streak_${newStreak}`, 'true')
@@ -1067,16 +1057,22 @@ export default function App() {
         const newWtfDuJourDate = sessionType === 'wtf_du_jour' ? TODAY() : wtfDuJourDate
         const marathonSessionsToday = sessionType === 'marathon' ? sessionsToday : newSessionsToday
 
+        // Créditer bonus via currencyService (push Supabase immédiat)
+        const totalBonusCoins = bonusCoins + streakRewardCoins
+        const totalBonusTickets = (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0)
+        if (totalBonusCoins > 0) updateCoins(totalBonusCoins)
+        if (totalBonusTickets > 0) updateTickets(totalBonusTickets)
+
         // Utiliser setStorage fonctionnel pour éviter la closure stale sur wtfCoins/tickets
         setStorage(prev => {
           const newStorage = {
             totalScore: totalScore + sessionScore,
             streak: newStreak,
             unlockedFacts: newUnlocked,
-            wtfCoins: prev.wtfCoins + bonusCoins + streakRewardCoins,
+            wtfCoins: getBalances().coins,
             wtfDuJourDate: newWtfDuJourDate,
             sessionsToday: marathonSessionsToday,
-            tickets: (prev.tickets || 0) + (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0),
+            tickets: getBalances().tickets,
             wtfDuJourFait: newWtfDuJourDate === TODAY(),
           }
           saveStorage(newStorage)
@@ -1140,11 +1136,8 @@ export default function App() {
           if (sessionType === 'flash_solo' && state === TUTORIAL_STATES.HOME_DISCOVERED) {
             advanceTutorial() // HOME_DISCOVERED → FLASH_DONE
             // Garantir 1 ticket pour lancer la Quest (spotlight suivant)
-            const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            if ((wtfData.tickets || 0) === 0) {
-              wtfData.tickets = 1
-              wtfData.lastModified = Date.now()
-              localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+            if (getBalances().tickets === 0) {
+              updateTickets(1)
             }
           } else if (sessionType === 'parcours' && state === TUTORIAL_STATES.FLASH_DONE) {
             advanceTutorial() // FLASH_DONE → QUEST_DONE
@@ -1263,11 +1256,8 @@ export default function App() {
     }
     // Décrémenter 1 ticket (sauf en mode dev)
     if (!isDevModeExplorer) {
-      setStorage(prev => {
-        const next = { ...prev, tickets: Math.max(0, (prev.tickets || 0) - 1) }
-        saveStorage(next)
-        return next
-      })
+      updateTickets(-1)
+      setStorage(loadStorage())
     }
     const difficulty = DIFFICULTY_LEVELS.HOT
     const next5 = explorerPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
@@ -1440,6 +1430,13 @@ export default function App() {
     }
     window.addEventListener('wtf_storage_sync', handleSync)
     return () => window.removeEventListener('wtf_storage_sync', handleSync)
+  }, [])
+
+  // Refresh storage when currencyService updates
+  useEffect(() => {
+    const handleCurrencyUpdate = () => setStorage(loadStorage())
+    window.addEventListener('wtf_currency_updated', handleCurrencyUpdate)
+    return () => window.removeEventListener('wtf_currency_updated', handleCurrencyUpdate)
   }, [])
 
   // Dev/Test mode: unlock all facts — restore real ones when back to player mode

@@ -183,9 +183,9 @@ function loadStorage() {
     const sessionsToday = saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0
     const tickets = saved.tickets ?? 3
 
-    return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets }
+    return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets, gamesPlayed: saved.gamesPlayed || 0, seenModes: saved.seenModes || [] }
   } catch {
-    return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 0, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 0 }
+    return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 0, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 0, gamesPlayed: 0, seenModes: [] }
   }
 }
 
@@ -1694,6 +1694,15 @@ export default function App() {
           onNavigate={handleHomeNavigate}
           onOpenSettings={() => setShowSettings(true)}
           playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}
+          gamesPlayed={storage.gamesPlayed || 0}
+          onModeSeen={(modeId) => {
+            setStorage(prev => {
+              const seenModes = [...new Set([...(prev.seenModes || []), modeId])]
+              const next = { ...prev, seenModes }
+              saveStorage(next)
+              return next
+            })
+          }}
         />
       )}
 

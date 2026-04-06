@@ -132,11 +132,37 @@ export default function HomeScreen({
   onNavigate,
   onOpenSettings,
   playerAvatar = null,
+  gamesPlayed = 0,
+  onModeSeen,
 }) {
   const { isConnected } = useAuth()
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
   const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
-  const canAccess = true
+
+  // Onboarding progressif — paliers de déverrouillage
+  const effectiveGames = (isDevMode || isTestMode) ? 999 : gamesPlayed
+  const unlockLevel = effectiveGames >= 50 ? 'veteran'
+    : effectiveGames >= 20 ? 'expert'
+    : effectiveGames >= 10 ? 'advanced'
+    : effectiveGames >= 5 ? 'intermediate'
+    : effectiveGames >= 2 ? 'beginner'
+    : 'newbie'
+
+  const seenModes = (() => {
+    try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').seenModes || [] } catch { return [] }
+  })()
+
+  const modeVisible = {
+    flash: true,
+    quest: unlockLevel !== 'newbie',
+    explorer: ['intermediate','advanced','expert','veteran'].includes(unlockLevel),
+    blitz: ['advanced','expert','veteran'].includes(unlockLevel),
+    hunt: ['expert','veteran'].includes(unlockLevel),
+    serie: ['intermediate','advanced','expert','veteran'].includes(unlockLevel),
+    multi: ['expert','veteran'].includes(unlockLevel),
+  }
+
+  const modeIsNew = (modeId) => modeVisible[modeId] && !seenModes.includes(modeId)
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
@@ -237,6 +263,11 @@ export default function HomeScreen({
     if (onNavigate) onNavigate(target)
   }
 
+  const handleModeTap = (modeId, navTarget) => {
+    if (modeIsNew(modeId) && onModeSeen) onModeSeen(modeId)
+    nav(navTarget)
+  }
+
   const handleSettings = () => {
     audio.play?.('click')
     if (onOpenSettings) onOpenSettings()
@@ -305,6 +336,20 @@ export default function HomeScreen({
       </button>
     )
   }
+
+  const NewBadge = () => (
+    <div style={{
+      position: 'absolute', top: -4, right: -4,
+      background: '#EF4444', color: 'white',
+      fontSize: 7, fontWeight: 900, lineHeight: 1,
+      padding: '2px 5px', borderRadius: 6,
+      border: '1.5px solid white',
+      animation: 'newBadgePulse 1.2s ease-in-out infinite',
+      zIndex: 5, letterSpacing: '0.5px',
+      fontFamily: 'Nunito, sans-serif',
+      whiteSpace: 'nowrap',
+    }}>NEW</div>
+  )
 
   return (
     <div
@@ -394,6 +439,10 @@ export default function HomeScreen({
         @keyframes homeFingerBounce {
           0%, 100% { transform: translateX(-50%) translateY(0); }
           50% { transform: translateX(-50%) translateY(-6px); }
+        }
+        @keyframes newBadgePulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.15); opacity: 0.85; }
         }
         @keyframes starburst-rotate {
           from { transform: translate(-50%, -50%) rotate(0deg); }
@@ -695,11 +744,18 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <div ref={questBtnRef} style={{ position: 'relative', zIndex: showQuestSpotlight ? 101 : 'auto' }}>
-            <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canAccess} onClick={() => { setShowQuestSpotlight(false); canAccess ? nav('difficulty') : setShowConnectBanner(true) }} />
+          <div ref={questBtnRef} style={{ position: 'relative', zIndex: showQuestSpotlight ? 101 : 'auto', ...(!modeVisible.quest ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
+            {modeIsNew('quest') && <NewBadge />}
+            <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => { setShowQuestSpotlight(false); handleModeTap('quest', 'difficulty') }} />
           </div>
-          <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!canAccess} onClick={() => canAccess ? nav('trophees') : setShowConnectBanner(true)} />
-          <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canAccess} onClick={() => canAccess ? nav('wtfDuJour') : setShowConnectBanner(true)} />
+          <div style={{ position: 'relative', ...(!modeVisible.serie ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
+            {modeIsNew('serie') && <NewBadge />}
+            <ModeIcon src="/assets/modes/serie.png" label="Série" onClick={() => handleModeTap('serie', 'trophees')} />
+          </div>
+          <div style={{ position: 'relative', ...(!modeVisible.hunt ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
+            {modeIsNew('hunt') && <NewBadge />}
+            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" onClick={() => handleModeTap('hunt', 'wtfDuJour')} />
+          </div>
         </div>
 
         {/* Colonne centre — flex: 1 */}
@@ -748,9 +804,18 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canAccess} onClick={() => canAccess ? nav('marathon') : setShowConnectBanner(true)} />
-          <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canAccess} onClick={() => canAccess ? nav('amis') : setShowConnectBanner(true)} />
-          <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canAccess} onClick={() => canAccess ? nav('blitz') : setShowConnectBanner(true)} />
+          <div style={{ position: 'relative', ...(!modeVisible.explorer ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
+            {modeIsNew('explorer') && <NewBadge />}
+            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" onClick={() => handleModeTap('explorer', 'marathon')} />
+          </div>
+          <div style={{ position: 'relative', ...(!modeVisible.multi ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
+            {modeIsNew('multi') && <NewBadge />}
+            <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => handleModeTap('multi', 'amis')} />
+          </div>
+          <div style={{ position: 'relative', ...(!modeVisible.blitz ? { opacity: 0, pointerEvents: 'none' } : {}) }}>
+            {modeIsNew('blitz') && <NewBadge />}
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => handleModeTap('blitz', 'blitz')} />
+          </div>
         </div>
       </div>
 

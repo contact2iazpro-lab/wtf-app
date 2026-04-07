@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useCollection'
@@ -490,6 +490,9 @@ export default function CollectionPage() {
   const [selectedFact, setSelectedFact] = useState(null)
   const [isOnboardingFactDetail, setIsOnboardingFactDetail] = useState(false)
   const [showCollectionModal, setShowCollectionModal] = useState(false)
+  const [collectionSpotlightStep, setCollectionSpotlightStep] = useState(0)
+  const progressBarRef = useRef(null)
+  const firstUnlockedCategoryRef = useRef(null)
 
   // Onboarding Collection
   const wtfDataInit = readWtfData()
@@ -582,6 +585,13 @@ export default function CollectionPage() {
     return firstUnlockedCatStats.facts.find(f => allUnlockedIds.has(f.id)) || null
   }, [firstUnlockedCatStats, allUnlockedIds])
 
+  // Auto-scroll vers première catégorie débloquée au moment du spotlight 2
+  useEffect(() => {
+    if (collectionSpotlightStep === 2 && firstUnlockedCategoryRef.current) {
+      firstUnlockedCategoryRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [collectionSpotlightStep])
+
   // Ouvrir directement un fact si pendingFactDetail existe (depuis onboarding)
   useEffect(() => {
     const wtfDataOnb = readWtfData()
@@ -665,7 +675,9 @@ export default function CollectionPage() {
             <button
               onClick={() => {
                 setShowCollectionModal(false)
-                window.history.back()
+                setCollectionSpotlightStep(1)
+                setTimeout(() => setCollectionSpotlightStep(2), 2500)
+                setTimeout(() => setCollectionSpotlightStep(3), 5000)
               }}
               style={{
                 padding: '14px 32px', borderRadius: 14,
@@ -675,7 +687,7 @@ export default function CollectionPage() {
                 boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
               }}
             >
-              Revenir à l'accueil 🏠
+              Consulter ma collection 📚
             </button>
           </div>
         </div>
@@ -716,7 +728,7 @@ export default function CollectionPage() {
         </div>
 
         {/* Global progress bar (overall) */}
-        <div className="rounded-2xl p-3 mb-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
+        <div ref={progressBarRef} className="rounded-2xl p-3 mb-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold" style={{ color: '#374151' }}>Progression globale</span>
             <span className="text-xs font-bold" style={{ color: '#FF6B1A' }}>{overallUnlocked} / {overallTotal} F*cts</span>
@@ -781,9 +793,12 @@ export default function CollectionPage() {
             const remaining = total - unlocked
             const isFirstCatOnboarding = onboardingMode && firstUnlockedCatStats && cat.id === firstUnlockedCatStats.cat.id
             const shouldFade = onboardingMode && firstUnlockedCatStats && cat.id !== firstUnlockedCatStats.cat.id && !isLocked
+            const isFirstUnlockedCat = collectionSpotlightStep === 2 && firstUnlockedCatStats && cat.id === firstUnlockedCatStats.cat.id
 
             return (
               <button
+                ref={isFirstUnlockedCat ? firstUnlockedCategoryRef : null}
+                data-first-unlocked-cat={isFirstUnlockedCat ? 'true' : undefined}
                 key={cat.id}
                 onClick={() => {
                   audio.play('click')
@@ -861,6 +876,96 @@ export default function CollectionPage() {
           })}
         </div>
       </div>
+
+      {/* Spotlight 1 : Barre de progression globale */}
+      {collectionSpotlightStep === 1 && progressBarRef.current && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 250,
+          background: 'transparent', pointerEvents: 'none',
+        }}>
+          {/* Guide text */}
+          <div style={{
+            position: 'fixed', top: 40, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(0,0,0,0.8)', color: 'white',
+            padding: '12px 20px', borderRadius: 12, fontSize: 14, fontWeight: 700,
+            fontFamily: 'Nunito, sans-serif', textAlign: 'center', zIndex: 251,
+          }}>
+            Ici tu trouveras tous tes f*cts débloqués ! 📚
+          </div>
+
+          {/* Spotlight border around progress bar */}
+          <div style={{
+            position: 'fixed',
+            top: progressBarRef.current.getBoundingClientRect().top - 8,
+            left: progressBarRef.current.getBoundingClientRect().left - 8,
+            width: progressBarRef.current.getBoundingClientRect().width + 16,
+            height: progressBarRef.current.getBoundingClientRect().height + 16,
+            border: '2px solid #FFD700',
+            borderRadius: 20,
+            animation: 'collectionPulse 1.5s ease-in-out infinite',
+            pointerEvents: 'none', zIndex: 251,
+          }} />
+        </div>
+      )}
+
+      {/* Spotlight 2 : Première catégorie débloquée */}
+      {collectionSpotlightStep === 2 && firstUnlockedCategoryRef.current && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 250,
+          background: 'transparent', pointerEvents: 'none',
+        }}>
+          {/* Guide text */}
+          <div style={{
+            position: 'fixed', top: 40, left: '50%', transform: 'translateX(-50%)',
+            background: 'rgba(0,0,0,0.8)', color: 'white',
+            padding: '12px 20px', borderRadius: 12, fontSize: 14, fontWeight: 700,
+            fontFamily: 'Nunito, sans-serif', textAlign: 'center', zIndex: 251,
+          }}>
+            Ils sont triés par catégorie ! 🗂️
+          </div>
+
+          {/* Spotlight border around category */}
+          <div style={{
+            position: 'fixed',
+            top: firstUnlockedCategoryRef.current.getBoundingClientRect().top - 8,
+            left: firstUnlockedCategoryRef.current.getBoundingClientRect().left - 8,
+            width: firstUnlockedCategoryRef.current.getBoundingClientRect().width + 16,
+            height: firstUnlockedCategoryRef.current.getBoundingClientRect().height + 16,
+            border: '2px solid #FFD700',
+            borderRadius: 20,
+            animation: 'collectionPulse 1.5s ease-in-out infinite',
+            pointerEvents: 'none', zIndex: 251,
+          }} />
+        </div>
+      )}
+
+      {/* Bouton "Continuer le tutoriel" */}
+      {collectionSpotlightStep === 3 && (
+        <button
+          onClick={() => window.history.back()}
+          style={{
+            position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+            zIndex: 300, padding: '14px 32px', borderRadius: 14,
+            background: '#FF6B1A', color: 'white', border: '3px solid white',
+            fontWeight: 900, fontSize: 16, cursor: 'pointer',
+            fontFamily: 'Nunito, sans-serif',
+            boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 4px 16px rgba(255,107,26,0.4)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        >
+          Continuer le tutoriel 🚀
+        </button>
+      )}
+
+      {/* Keyframe pulse animation */}
+      {(collectionSpotlightStep === 3) && (
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 15px rgba(255,255,255,0.5), 0 4px 16px rgba(255,107,26,0.4); }
+            50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 25px rgba(255,255,255,0.7), 0 8px 24px rgba(255,107,26,0.6); }
+          }
+        `}</style>
+      )}
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
     </div>

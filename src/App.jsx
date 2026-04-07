@@ -2120,19 +2120,6 @@ export default function App() {
               </div>
             )}
           </div>
-          <button
-            onClick={() => handleHome()}
-            style={{
-              marginTop: 12, padding: '12px 32px', borderRadius: 14,
-              background: '#FF6B1A', color: 'white', border: 'none',
-              fontWeight: 900, fontSize: 16, cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif',
-              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
-              animation: 'pulse 1.5s ease-in-out infinite',
-            }}
-          >
-            Continuer l'aventure ! 🚀
-          </button>
 
           <style>{`
             @keyframes onbFactBounce {

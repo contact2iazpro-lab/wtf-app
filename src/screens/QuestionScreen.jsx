@@ -666,11 +666,37 @@ export default function QuestionScreen({
                 <button
                   onClick={() => {
                     audio.play('click')
-                    // Créditer les devises de départ (comme si le joueur avait fait le tuto + 1ère partie Flash)
+                    // Créditer les devises de départ + débloquer tout l'onboarding
                     const balances = getBalances()
                     if (balances.tickets === 0) updateTickets(3)
                     if (balances.hints === 0) updateHints(3)
-                    // Skip le tuto → marquer comme COMPLETED
+
+                    // Initialiser wtf_data avec tous les flags d'onboarding complétés
+                    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                    wtfData.tutorialDone = true
+                    wtfData.gamesPlayed = 100  // Assez haut pour tout débloquer
+                    wtfData.hasSeenFlash = true
+                    wtfData.hasSeenQuest = true
+                    wtfData.hasSeenCollection = true
+                    wtfData.hasSeenCoffre = true
+                    wtfData.hasSeenBoutique = true
+                    wtfData.hasSeenBlitz = true
+                    wtfData.hasSeenFirstFactModal = true
+                    wtfData.hasVisitedCollection = true
+                    wtfData.firstFlashTicketGiven = true
+                    wtfData.lastModified = Date.now()
+                    localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+                    localStorage.setItem('wtf_hints_available', '3')
+                    localStorage.setItem('wtf_first_login_done', 'true')
+
+                    // Supprimer les skip_launch flags
+                    for (let i = 0; i < localStorage.length; i++) {
+                      const key = localStorage.key(i)
+                      if (key && key.startsWith('skip_launch_')) {
+                        localStorage.removeItem(key)
+                      }
+                    }
+
                     import('../utils/tutorialManager').then(({ advanceTutorial, getTutorialState, TUTORIAL_STATES }) => {
                       const advance = async () => {
                         let state = await getTutorialState()
@@ -680,7 +706,6 @@ export default function QuestionScreen({
                         }
                       }
                       advance().then(() => {
-                        localStorage.setItem('wtf_first_login_done', 'true')
                         window.dispatchEvent(new Event('wtf_storage_sync'))
                         if (onTutoComplete) onTutoComplete()
                         else if (onQuit) onQuit()

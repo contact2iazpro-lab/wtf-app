@@ -14,8 +14,29 @@ import { getTutorialState, TUTORIAL_STATES } from '../utils/tutorialManager'
 import { getNextBadge } from '../utils/badgeManager'
 import { updateCoins, updateTickets, updateHints } from '../services/currencyService'
 
-// ── Fond sombre fixe ─────────────────────────────────────────────────────────
-const HOME_BG_COLOR = 'linear-gradient(160deg, #1a3a5c 0%, #1e4d7a 40%, #2a5f8f 70%, #1a3a5c 100%)'
+// ── Fond pastel aléatoire par session ─────────────────────────────────────────
+const PASTEL_GRADIENTS = [
+  'linear-gradient(160deg, #4a6fa5 0%, #6b8fc7 40%, #89a8d9 70%, #4a6fa5 100%)',
+  'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)',
+  'linear-gradient(160deg, #4a8a7b 0%, #6bab9d 40%, #89c2b5 70%, #4a8a7b 100%)',
+  'linear-gradient(160deg, #8a6b6b 0%, #ab8d8d 40%, #c2a5a5 70%, #8a6b6b 100%)',
+  'linear-gradient(160deg, #6b7b8a 0%, #8d9dab 40%, #a5b5c2 70%, #6b7b8a 100%)',
+  'linear-gradient(160deg, #8a7b6b 0%, #ab9d8d 40%, #c2b5a5 70%, #8a7b6b 100%)',
+  'linear-gradient(160deg, #6b8a7b 0%, #8dab9d 40%, #a5c2b5 70%, #6b8a7b 100%)',
+  'linear-gradient(160deg, #7b6b7b 0%, #9d8d9d 40%, #b5a5b5 70%, #7b6b7b 100%)',
+]
+
+function getSessionBackground() {
+  const key = 'wtf_session_bg_index'
+  let idx = sessionStorage.getItem(key)
+  if (idx === null) {
+    idx = Math.floor(Math.random() * PASTEL_GRADIENTS.length)
+    sessionStorage.setItem(key, String(idx))
+  }
+  return PASTEL_GRADIENTS[Number(idx)]
+}
+
+const HOME_BG_COLOR = getSessionBackground()
 
 // ── Coffre quotidien ──────────────────────────────────────────────────────────
 const COFFRE_REWARDS = [
@@ -158,39 +179,51 @@ export default function HomeScreen({
     } catch {}
   }
 
-  // ⚠️ PHASE TEST — désactiver l'onboarding progressif (tous modes visibles)
-  // Remettre à false avant le lancement en production
-  const SKIP_PROGRESSIVE_UNLOCK = true
+  // ── Débloquage progressif des modes ──────────────────────────────────────
+  const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+  const isDevOrTest = isDevMode || isTestMode
+  const canQuest = isDevOrTest || gamesPlayed >= 1
+  const canBlitz = isDevOrTest || unlockedFactsCount >= 5
+  const canHunt = isDevOrTest || gamesPlayed >= 10
+  const canExplorer = isDevOrTest || gamesPlayed >= 5
+  const canMulti = isDevOrTest || blitzPlayed >= 1
+  const canSerie = isDevOrTest || gamesPlayed >= 3
 
-  // Onboarding progressif — paliers de déverrouillage
-  const effectiveGames = (isDevMode || isTestMode) ? 999 : gamesPlayed
-  const unlockLevel = SKIP_PROGRESSIVE_UNLOCK ? 'veteran' : (
-    effectiveGames >= 50 ? 'veteran'
-    : effectiveGames >= 20 ? 'expert'
-    : effectiveGames >= 10 ? 'advanced'
-    : effectiveGames >= 5 ? 'intermediate'
-    : effectiveGames >= 2 ? 'beginner'
-    : 'newbie'
-  )
+  const UNLOCK_MESSAGES = {
+    quest: 'Joue ta première partie pour débloquer ! 🎮',
+    blitz: 'Débloque 5 f*cts pour jouer en Blitz ! ⚡',
+    hunt: 'Joue 10 parties pour débloquer la Hunt ! 🔥',
+    explorer: 'Joue 5 parties pour explorer librement ! 🧭',
+    multi: 'Termine un Blitz pour défier tes amis ! 👥',
+    serie: 'Joue 3 parties pour débloquer la Série ! 🔥',
+  }
+
+  const canBoutique = isDevOrTest || gamesPlayed >= 2
+  const canTrophees = isDevOrTest || gamesPlayed >= 3
+  const canCollection = isDevOrTest || questsPlayed >= 1
+  const canAmis = isDevOrTest || blitzPlayed >= 1
+
+  const NAVBAR_UNLOCK_MESSAGES = {
+    boutique: 'Joue 2 parties pour débloquer la Boutique ! 🛍️',
+    trophees: 'Joue 3 parties pour voir tes Trophées ! 🏆',
+    collection: 'Termine une Quest pour voir ta Collection ! 📚',
+    amis: 'Termine un Blitz pour débloquer les Amis ! 👥',
+  }
 
   const seenModes = (() => {
     try { return readWtfData().seenModes || [] } catch { return [] }
   })()
 
-  const modeVisible = {
-    flash: true,
-    quest: unlockLevel !== 'newbie',
-    explorer: ['intermediate','advanced','expert','veteran'].includes(unlockLevel),
-    blitz: ['advanced','expert','veteran'].includes(unlockLevel),
-    hunt: ['expert','veteran'].includes(unlockLevel),
-    serie: ['intermediate','advanced','expert','veteran'].includes(unlockLevel),
-    multi: ['expert','veteran'].includes(unlockLevel),
-  }
-
-  const modeIsNew = (modeId) => modeVisible[modeId] && !seenModes.includes(modeId)
+  const modeIsNew = (modeId) => !seenModes.includes(modeId)
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
+  const [lockToast, setLockToast] = useState(null)
+
+  const showLockToast = (message) => {
+    setLockToast(message)
+    setTimeout(() => setLockToast(null), 2500)
+  }
   const { coffres, todayIndex, getStatus, openCoffre } = useDailyCoffre()
   const [nextBadgeInfo, setNextBadgeInfo] = useState(() => getNextBadge())
   const [showBadgeModal, setShowBadgeModal] = useState(false)
@@ -242,7 +275,12 @@ export default function HomeScreen({
       if (state === TUTORIAL_STATES.HOME_DISCOVERED) {
         setShowFlashSpotlight(true)
       } else if (state === TUTORIAL_STATES.FLASH_DONE) {
-        setShowQuestSpotlight(true)
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        const gp = wd.gamesPlayed || 0
+        const devOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+        if (devOrTest || gp >= 1) {
+          setShowQuestSpotlight(true)
+        }
       }
     })
   }, [])
@@ -456,6 +494,12 @@ export default function HomeScreen({
         @keyframes coffreSlideIn {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes lockToastFade {
+          0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+          10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+          80% { opacity: 1; }
+          100% { opacity: 0; }
         }
         @keyframes starburst-rotate {
           from { transform: translate(-50%, -50%) rotate(0deg); }
@@ -758,6 +802,27 @@ export default function HomeScreen({
           )
         })()}
 
+        {/* Colonne gauche — 70px */}
+        <div style={{
+          width: 70, flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-evenly', alignItems: 'center',
+          height: '100%', zIndex: 1,
+        }}>
+          <div ref={questBtnRef} style={{ position: 'relative', zIndex: showQuestSpotlight ? 101 : 'auto' }}>
+            {canQuest && modeIsNew('quest') && <NewBadge />}
+            <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); setShowQuestSpotlight(false); markSeen('hasSeenQuest'); nav('difficulty') }} />
+          </div>
+          <div style={{ position: 'relative' }}>
+            {canSerie && modeIsNew('serie') && <NewBadge />}
+            <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!canSerie} onClick={() => { if (!canSerie) return showLockToast(UNLOCK_MESSAGES.serie); nav('trophees') }} />
+          </div>
+          <div style={{ position: 'relative' }}>
+            {canHunt && modeIsNew('hunt') && <NewBadge />}
+            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canHunt} onClick={() => { if (!canHunt) return showLockToast(UNLOCK_MESSAGES.hunt); markSeen('hasSeenHunt'); nav('wtfDuJour') }} />
+          </div>
+        </div>
+
         {/* Colonne centre — flex: 1 */}
         <div style={{
           flex: 1, minWidth: 0,
@@ -799,24 +864,18 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          {gamesPlayed >= 1 && (
-            <div ref={questBtnRef} style={{ position: 'relative', zIndex: showQuestSpotlight ? 101 : 'auto' }}>
-              {!seenFlags.seenQuest && <NewBadge />}
-              <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => { setShowQuestSpotlight(false); markSeen('hasSeenQuest'); nav('difficulty') }} />
-            </div>
-          )}
-          {unlockedFactsCount >= 5 && (
-            <div style={{ position: 'relative' }}>
-              {!seenFlags.seenBlitz && <NewBadge />}
-              <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => { markSeen('hasSeenBlitz'); nav('blitz') }} />
-            </div>
-          )}
-          {gamesPlayed >= 10 && (
-            <div style={{ position: 'relative' }}>
-              {!seenFlags.seenHunt && <NewBadge />}
-              <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" onClick={() => { markSeen('hasSeenHunt'); nav('wtfDuJour') }} />
-            </div>
-          )}
+          <div style={{ position: 'relative' }}>
+            {canExplorer && modeIsNew('explorer') && <NewBadge />}
+            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer} onClick={() => { if (!canExplorer) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
+          </div>
+          <div style={{ position: 'relative' }}>
+            {canMulti && modeIsNew('multi') && <NewBadge />}
+            <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
+          </div>
+          <div style={{ position: 'relative' }}>
+            {canBlitz && modeIsNew('blitz') && <NewBadge />}
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); markSeen('hasSeenBlitz'); nav('blitz') }} />
+          </div>
         </div>
       </div>
 
@@ -869,27 +928,34 @@ export default function HomeScreen({
         position: 'relative', zIndex: 10,
       }}>
         {[
-          { slug: 'boutique',   label: 'Boutique',   target: 'boutique',   center: false, visible: gamesPlayed >= 2, seenKey: 'hasSeenBoutique', showNew: !seenFlags.seenBoutique && gamesPlayed >= 2 },
-          { slug: 'trophees',   label: 'Trophées',   target: 'trophees',   center: false, visible: gamesPlayed >= 3, seenKey: 'hasSeenTrophees', showNew: !seenFlags.seenTrophees && gamesPlayed >= 3 },
-          { slug: 'accueil',    label: 'Accueil',    target: null,         center: true,  visible: true },
-          { slug: 'amis',       label: 'Amis',       target: 'amis',       center: false, visible: blitzPlayed >= 1, seenKey: 'hasSeenAmis', showNew: !seenFlags.seenAmis && blitzPlayed >= 1 },
-          { slug: 'collection', label: 'Collection', target: 'collection', center: false, visible: questsPlayed >= 1, seenKey: 'hasSeenCollection', showNew: !seenFlags.seenCollection && questsPlayed >= 1 },
-        ].filter(item => item.visible).map((item) => {
+          { slug: 'boutique',   label: 'Boutique',   target: 'boutique',   center: false, unlocked: canBoutique,   unlockMsg: NAVBAR_UNLOCK_MESSAGES.boutique },
+          { slug: 'trophees',   label: 'Trophées',   target: 'trophees',   center: false, unlocked: canTrophees,   unlockMsg: NAVBAR_UNLOCK_MESSAGES.trophees },
+          { slug: 'accueil',    label: 'Accueil',    target: null,         center: true,  unlocked: true },
+          { slug: 'amis',       label: 'Amis',       target: 'amis',       center: false, unlocked: canAmis,       unlockMsg: NAVBAR_UNLOCK_MESSAGES.amis },
+          { slug: 'collection', label: 'Collection', target: 'collection', center: false, unlocked: canCollection, unlockMsg: NAVBAR_UNLOCK_MESSAGES.collection },
+        ].map((item) => {
           const isActive = item.center
+          const isLocked = !item.unlocked
           return (
             <button
               key={item.slug}
-              onClick={() => { if (item.seenKey) markSeen(item.seenKey); if (item.target) nav(item.target) }}
+              onClick={() => {
+                if (isLocked) return showLockToast(item.unlockMsg)
+                if (item.target) nav(item.target)
+              }}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(2),
                 background: 'none', border: 'none',
-                cursor: 'pointer', padding: `0 ${S(6)}`,
+                cursor: isLocked ? 'default' : 'pointer',
+                padding: `0 ${S(6)}`,
                 position: 'relative',
+                opacity: isLocked ? 0.35 : 1,
+                filter: isLocked ? 'grayscale(1)' : 'none',
+                transition: 'opacity 0.2s',
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
               {item.center ? (
-                /* Accueil — surélevé, cercle orange */
                 <div style={{
                   width: S(38), height: S(38), borderRadius: '50%',
                   background: '#FF6B1A',
@@ -898,29 +964,25 @@ export default function HomeScreen({
                   marginTop: S(-14),
                   boxShadow: '0 2px 10px rgba(255,107,26,0.4)',
                 }}>
-                  <img
-                    src={`/assets/nav/${item.slug}.png`}
-                    alt={item.label}
-                    style={{ width: S(18), height: S(18), filter: 'brightness(0) invert(1)' }}
-                  />
+                  <img src={`/assets/nav/${item.slug}.png`} alt={item.label} style={{ width: S(18), height: S(18), filter: 'brightness(0) invert(1)' }} />
                 </div>
               ) : (
                 <div style={{ position: 'relative' }}>
-                  {item.showNew && <NewBadge />}
-                  <img
-                    src={`/assets/nav/${item.slug}.png`}
-                    alt={item.label}
-                    style={{
-                      width: S(22), height: S(22),
-                      opacity: 0.6,
-                      transition: 'all 0.2s ease',
-                    }}
-                  />
+                  <img src={`/assets/nav/${item.slug}.png`} alt={item.label} style={{ width: S(22), height: S(22), opacity: isLocked ? 0.4 : 0.6, transition: 'all 0.2s ease' }} />
+                  {isLocked && (
+                    <div style={{
+                      position: 'absolute', bottom: -4, right: -4,
+                      width: 14, height: 14, borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 7,
+                    }}>🔒</div>
+                  )}
                 </div>
               )}
               <span style={{
                 fontSize: S(10), fontWeight: 700,
-                color: isActive ? '#FF6B1A' : '#666',
+                color: isActive ? '#FF6B1A' : isLocked ? '#aaa' : '#666',
               }}>
                 {item.label}
               </span>
@@ -928,6 +990,22 @@ export default function HomeScreen({
           )
         })}
       </div>
+
+      {/* Toast débloquage */}
+      {lockToast && (
+        <div style={{
+          position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 300, background: 'rgba(0,0,0,0.85)', color: 'white',
+          borderRadius: 14, padding: '12px 24px',
+          fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+          fontFamily: 'Nunito, sans-serif',
+          animation: 'lockToastFade 2.5s ease forwards',
+          maxWidth: '90vw', textAlign: 'center',
+        }}>
+          {lockToast}
+        </div>
+      )}
 
       {/* ═══ MODAL COFFRE ══════════════════════════════════════════════════ */}
       {showCoffreModal && coffreReward && (

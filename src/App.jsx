@@ -41,6 +41,16 @@ import { checkBadges } from './utils/badgeManager'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
 
+// F*cts figés pour la première partie Flash onboarding (IDs placeholder — Michael remplacera)
+const ONBOARDING_FLASH_FACT_IDS = [101, 102, 103, 104, 105]
+
+// Difficulté spéciale onboarding : 2 choix QCM (50/50), timer 20s, 2 indices
+const DIFFICULTY_ONBOARDING_FLASH = {
+  id: 'onboarding_flash', label: 'Flash Onboarding', emoji: '🎯',
+  choices: 2, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2,
+  hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 }
+}
+
 const SCREENS = {
   HOME: 'home',
   WTF_TEASER: 'wtf_teaser',
@@ -622,10 +632,40 @@ export default function App() {
       case 'wtfDuJour':
         showOrSkipLaunch('hunt')
         break
-      case 'categoryFlash':
+      case 'categoryFlash': {
+        // Première partie Flash onboarding : 5 f*cts figés, 2 QCM (50/50), pas de CategoryScreen
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+        if (!isDevOrTest && wd.tutorialDone && (wd.gamesPlayed || 0) === 0) {
+          audio.play('click')
+          const allFacts = [...getValidFacts(), ...getGeneratedFacts()]
+          let onboardingFacts = ONBOARDING_FLASH_FACT_IDS
+            .map(id => allFacts.find(f => f.id === id))
+            .filter(Boolean)
+
+          // Fallback si les IDs ne sont pas trouvés
+          if (onboardingFacts.length < 5) {
+            onboardingFacts = [...getGeneratedFacts()].sort(() => Math.random() - 0.5).slice(0, 5)
+          }
+
+          const facts = onboardingFacts.map(fact => ({
+            ...fact,
+            ...getAnswerOptions(fact, DIFFICULTY_ONBOARDING_FLASH)
+          }))
+
+          setSessionType('flash_solo')
+          setGameMode('solo')
+          setIsQuickPlay(false)
+          setSelectedDifficulty(DIFFICULTY_ONBOARDING_FLASH)
+          setSelectedCategory(null)
+          initSessionState(facts)
+          setScreen(SCREENS.QUESTION)
+          break
+        }
         setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
         showOrSkipLaunch('flash')
         break
+      }
       case 'collection':    navigate('/collection'); break
       case 'trophees':      navigate('/recompenses'); break
       case 'profil':        navigate('/profil'); break

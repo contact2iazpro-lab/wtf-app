@@ -150,19 +150,8 @@ function legacyGetAnswerOptions(fact, choices) {
   const correctAnswer = fact.options[fact.correctIndex]
   const wrongAnswers = fact.options.filter((_, i) => i !== fact.correctIndex)
 
-  if (choices === 4) {
-    const selected = fisherYatesShuffle(wrongAnswers).slice(0, 3)
-    const all = fisherYatesShuffle([...selected, correctAnswer])
-    return { options: all, correctIndex: all.indexOf(correctAnswer) }
-  }
-
-  if (choices === 6) {
-    const all = fisherYatesShuffle([...wrongAnswers, correctAnswer])
-    return { options: all, correctIndex: all.indexOf(correctAnswer) }
-  }
-
-  // Default: 4 choices
-  const selected = fisherYatesShuffle(wrongAnswers).slice(0, Math.min(3, wrongAnswers.length))
+  const numWrong = Math.min((choices || 4) - 1, wrongAnswers.length)
+  const selected = fisherYatesShuffle(wrongAnswers).slice(0, numWrong)
   const all = fisherYatesShuffle([...selected, correctAnswer])
   return { options: all, correctIndex: all.indexOf(correctAnswer) }
 }

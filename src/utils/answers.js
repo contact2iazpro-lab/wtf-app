@@ -135,7 +135,9 @@ export function getAnswerOptions(fact, difficulty) {
     }
 
     const level = levelId || 'hot'
-    const wrongAnswers = pickWrongAnswers(fact, level, fact.id)
+    const allWrongAnswers = pickWrongAnswers(fact, level, fact.id)
+    const numWrong = Math.min((choices || 4) - 1, allWrongAnswers.length)
+    const wrongAnswers = allWrongAnswers.slice(0, numWrong)
     const allOptions = fisherYatesShuffle([correctAnswer, ...wrongAnswers])
     const correctIndex = allOptions.indexOf(correctAnswer)
 

@@ -577,8 +577,8 @@ export default function QuestionScreen({
             100% { top: 75%; left: 50%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
           }
           @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3); }
           }
         `}</style>
 
@@ -641,17 +641,22 @@ export default function QuestionScreen({
                 <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: 14, color: '#555', lineHeight: 1.5, margin: '0 0 16px' }}>
                   Utilise des indices, trouve la bonne réponse et découvre un f*ct incroyable !
                 </p>
-                <button
-                  onClick={() => { audio.play('click'); setTutoStep('hint') }}
-                  style={{
-                    width: '80%', padding: '14px 0', borderRadius: 14,
-                    background: '#FF6B1A', color: 'white', border: 'none',
-                    fontFamily: 'Nunito, sans-serif', fontSize: 16, fontWeight: 900,
-                    cursor: 'pointer', boxShadow: '0 4px 12px rgba(255,107,26,0.3)',
-                  }}
-                >
-                  C'est parti ! 🚀
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <button
+                    onClick={() => { audio.play('click'); setTutoStep('hint') }}
+                    style={{
+                      width: '80%', padding: '16px 40px', borderRadius: 14,
+                      background: '#FF6B1A', color: 'white', border: 'none',
+                      fontFamily: 'Nunito, sans-serif', fontSize: 16, fontWeight: 900,
+                      cursor: 'pointer', animation: 'pulse 1.5s ease-in-out infinite',
+                    }}
+                  >
+                    C'est parti ! 🚀
+                  </button>
+                  <div style={{
+                    fontSize: 24, animation: 'tutFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
+                  }}>👍</div>
+                </div>
                 <button
                   onClick={() => {
                     audio.play('click')

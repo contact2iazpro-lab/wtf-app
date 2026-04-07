@@ -1,41 +1,31 @@
 const STORAGE_KEY = 'tutorial_state';
 
+/**
+ * tutorialManager v2 — Système simplifié
+ * Un seul rôle : savoir si le tuto premier f*ct est terminé.
+ * Tout le reste (spotlights, cadenas, débloquage) est géré par
+ * les seuils wtf_data dans HomeScreen.
+ */
+
 export const TUTORIAL_STATES = {
   FIRST_FACT: 'FIRST_FACT',
-  HOME_DISCOVERED: 'HOME_DISCOVERED',
-  FLASH_DONE: 'FLASH_DONE',
-  QUEST_DONE: 'QUEST_DONE',
   COMPLETED: 'COMPLETED',
 };
 
-const STATE_ORDER = [
-  TUTORIAL_STATES.FIRST_FACT,
-  TUTORIAL_STATES.HOME_DISCOVERED,
-  TUTORIAL_STATES.FLASH_DONE,
-  TUTORIAL_STATES.QUEST_DONE,
-  TUTORIAL_STATES.COMPLETED,
-];
-
 export async function getTutorialState() {
   try {
-    const stateFromDirect = localStorage.getItem(STORAGE_KEY);
     const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}');
-    const stateFromWtfData = wtfData.tutorialState || null;
+    if (wtfData.tutorialDone === true) return TUTORIAL_STATES.COMPLETED;
 
-    if (stateFromDirect) {
-      // Sync vers wtf_data si différent
-      if (stateFromWtfData !== stateFromDirect) {
-        wtfData.tutorialState = stateFromDirect;
-        wtfData.lastModified = Date.now();
-        localStorage.setItem('wtf_data', JSON.stringify(wtfData));
-      }
-      return stateFromDirect;
-    }
-
-    if (stateFromWtfData) {
-      // Restaurer depuis wtf_data (ex: sync Supabase)
-      localStorage.setItem(STORAGE_KEY, stateFromWtfData);
-      return stateFromWtfData;
+    // Migration : si l'ancien système avait avancé au-delà de FIRST_FACT, considérer comme terminé
+    const legacyState = localStorage.getItem(STORAGE_KEY);
+    if (legacyState && legacyState !== TUTORIAL_STATES.FIRST_FACT) {
+      // Migrer vers le nouveau système
+      wtfData.tutorialDone = true;
+      wtfData.lastModified = Date.now();
+      localStorage.setItem('wtf_data', JSON.stringify(wtfData));
+      localStorage.removeItem(STORAGE_KEY);
+      return TUTORIAL_STATES.COMPLETED;
     }
 
     return TUTORIAL_STATES.FIRST_FACT;
@@ -44,21 +34,21 @@ export async function getTutorialState() {
   }
 }
 
-export async function advanceTutorial() {
-  const current = await getTutorialState();
-  if (current === TUTORIAL_STATES.COMPLETED) return current;
-
-  const idx = STATE_ORDER.indexOf(current);
-  const next = STATE_ORDER[idx + 1] || TUTORIAL_STATES.COMPLETED;
+export async function completeTutorial() {
   try {
-    localStorage.setItem(STORAGE_KEY, next);
-    // Persister dans wtf_data pour sync Supabase
     const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}');
-    wtfData.tutorialState = next;
+    wtfData.tutorialDone = true;
     wtfData.lastModified = Date.now();
     localStorage.setItem('wtf_data', JSON.stringify(wtfData));
+    // Nettoyer l'ancien système
+    localStorage.removeItem(STORAGE_KEY);
   } catch { /* ignore */ }
-  return next;
+  return TUTORIAL_STATES.COMPLETED;
+}
+
+// Rétrocompatibilité — les anciens appels à advanceTutorial() doivent continuer à fonctionner
+export async function advanceTutorial() {
+  return completeTutorial();
 }
 
 export async function isTutorialComplete() {

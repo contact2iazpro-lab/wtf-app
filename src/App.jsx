@@ -1229,18 +1229,18 @@ export default function App() {
         setScreen(SCREENS.MARATHON_RESULTS)
       } else {
         setScreen(SCREENS.RESULTS)
-        // Avancer le tuto après la première partie Flash ou Quest
-        getTutorialState().then(state => {
-          if (sessionType === 'flash_solo' && state === TUTORIAL_STATES.HOME_DISCOVERED) {
-            advanceTutorial() // HOME_DISCOVERED → FLASH_DONE
-            // Garantir 1 ticket pour lancer la Quest (spotlight suivant)
-            if (getBalances().tickets === 0) {
-              updateTickets(1)
+        // Ticket gratuit après première partie Flash (onboarding)
+        if (sessionType === 'flash_solo') {
+          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          if (!wd.firstFlashTicketGiven) {
+            wd.firstFlashTicketGiven = true
+            if ((wd.tickets || 0) === 0) {
+              wd.tickets = 1
             }
-          } else if (sessionType === 'parcours' && state === TUTORIAL_STATES.FLASH_DONE) {
-            advanceTutorial() // FLASH_DONE → QUEST_DONE
+            wd.lastModified = Date.now()
+            localStorage.setItem('wtf_data', JSON.stringify(wd))
           }
-        })
+        }
       }
     } else {
       setCurrentIndex(nextIndex)
@@ -1761,7 +1761,13 @@ export default function App() {
           onClose={() => setShowHowToPlay(false)}
           onRestartTutorial={() => {
             // Reset tutorial state et relancer
-            localStorage.setItem('tutorial_state', 'FIRST_FACT')
+            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            wd.tutorialDone = false
+            delete wd.hasSeenFlash
+            delete wd.hasSeenQuest
+            wd.lastModified = Date.now()
+            localStorage.setItem('wtf_data', JSON.stringify(wd))
+            localStorage.removeItem('tutorial_state')
             setShowHowToPlay(false)
             const tutorialFactId = getTutorialFactId()
             const allFacts = getValidFacts()
@@ -2036,7 +2042,13 @@ export default function App() {
       )}
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onShowRules={handleShowRules} onRestartTutorial={() => {
-        localStorage.setItem('tutorial_state', 'FIRST_FACT')
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        wd.tutorialDone = false
+        delete wd.hasSeenFlash
+        delete wd.hasSeenQuest
+        wd.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(wd))
+        localStorage.removeItem('tutorial_state')
         setShowSettings(false)
         const tutorialFactId = getTutorialFactId()
         const allFacts = getValidFacts()

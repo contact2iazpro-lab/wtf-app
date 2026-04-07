@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
-import { getTutorialState, TUTORIAL_STATES } from '../utils/tutorialManager'
+import { isTutorialComplete } from '../utils/tutorialManager'
 import { getNextBadge } from '../utils/badgeManager'
 import { updateCoins, updateTickets, updateHints } from '../services/currencyService'
 
@@ -260,50 +260,56 @@ export default function HomeScreen({
     }
   }, [])
 
-  // ── Spotlight Flash — quand tutorial_state === HOME_DISCOVERED ─────────────
+  // ── Spotlight unique basé sur hasSeenX ────────────────────────────────────
   const flashBtnRef = useRef(null)
-  const [showFlashSpotlight, setShowFlashSpotlight] = useState(false)
-  const [spotRect, setSpotRect] = useState(null)
-
-  // ── Spotlight Quest — quand tutorial_state === FLASH_DONE ─────────────────
   const questBtnRef = useRef(null)
-  const [showQuestSpotlight, setShowQuestSpotlight] = useState(false)
-  const [questSpotRect, setQuestSpotRect] = useState(null)
+  const [activeSpotlight, setActiveSpotlight] = useState(null)
+  const [spotlightRect, setSpotlightRect] = useState(null)
 
   useEffect(() => {
-    getTutorialState().then(state => {
-      if (state === TUTORIAL_STATES.HOME_DISCOVERED) {
-        setShowFlashSpotlight(true)
-      } else if (state === TUTORIAL_STATES.FLASH_DONE) {
-        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        const gp = wd.gamesPlayed || 0
-        const devOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (devOrTest || gp >= 1) {
-          setShowQuestSpotlight(true)
-        }
-      }
-    })
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const devOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+
+    // Priorité des spotlights : Flash d'abord, puis Quest, puis Blitz
+    // Un seul spotlight à la fois
+    if (wd.tutorialDone && !wd.hasSeenFlash) {
+      setActiveSpotlight('flash')
+    } else if ((devOrTest || (wd.gamesPlayed || 0) >= 1) && !wd.hasSeenQuest) {
+      setActiveSpotlight('quest')
+    } else if ((devOrTest || (wd.unlockedFacts || []).length >= 5) && !wd.hasSeenBlitz) {
+      setActiveSpotlight('blitz')
+    } else {
+      setActiveSpotlight(null)
+    }
   }, [])
 
-  useEffect(() => {
-    if (!showFlashSpotlight || !flashBtnRef.current) return
-    const pad = 10
-    const timer = setTimeout(() => {
-      const r = flashBtnRef.current.getBoundingClientRect()
-      setSpotRect({ top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 })
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [showFlashSpotlight])
+  const dismissSpotlight = (name) => {
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    wd[`hasSeen${name.charAt(0).toUpperCase() + name.slice(1)}`] = true
+    wd.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(wd))
+    setActiveSpotlight(null)
+  }
+
+  const spotlightRefs = { flash: flashBtnRef, quest: questBtnRef }
 
   useEffect(() => {
-    if (!showQuestSpotlight || !questBtnRef.current) return
+    if (!activeSpotlight) { setSpotlightRect(null); return }
+    const ref = spotlightRefs[activeSpotlight]
+    if (!ref?.current) { setSpotlightRect(null); return }
     const pad = 10
     const timer = setTimeout(() => {
-      const r = questBtnRef.current.getBoundingClientRect()
-      setQuestSpotRect({ top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 })
+      const r = ref.current.getBoundingClientRect()
+      setSpotlightRect({ top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 })
     }, 300)
     return () => clearTimeout(timer)
-  }, [showQuestSpotlight])
+  }, [activeSpotlight])
+
+  const SPOTLIGHT_MESSAGES = {
+    flash: 'Lance ta première partie ! 🎮',
+    quest: 'Tu as un ticket ! Découvre les f*cts les plus dingues 🏆',
+    blitz: 'Teste ta mémoire en Blitz ! ⚡',
+  }
 
   const nav = (target) => {
     audio.play?.('click')
@@ -413,49 +419,13 @@ export default function HomeScreen({
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Spotlight Flash — quand tutorial_state === HOME_DISCOVERED */}
-      {showFlashSpotlight && spotRect && (
-        <>
-          {/* Trou découpé */}
-          <div style={{
-            position: 'fixed',
-            top: spotRect.top, left: spotRect.left,
-            width: spotRect.width, height: spotRect.height,
-            borderRadius: 16, background: 'transparent',
-            boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)',
-            zIndex: 100, pointerEvents: 'none',
-            transition: 'all 0.6s ease',
-          }} />
-          {/* Doigt animé */}
-          <div style={{
-            position: 'fixed',
-            top: spotRect.top + spotRect.height + 8,
-            left: spotRect.left + spotRect.width / 2,
-            transform: 'translateX(-50%)',
-            fontSize: 32, zIndex: 102, pointerEvents: 'none',
-            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
-          }}>👆</div>
-          {/* Texte guide */}
-          <div style={{
-            position: 'fixed',
-            bottom: 'clamp(24px, 5vh, 48px)',
-            left: '50%', transform: 'translateX(-50%)',
-            zIndex: 102, textAlign: 'center',
-          }}>
-            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
-              Lance ta première partie ! 🎮
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Spotlight Quest — quand tutorial_state === FLASH_DONE */}
-      {showQuestSpotlight && questSpotRect && (
+      {/* Spotlight unique — basé sur hasSeenX */}
+      {activeSpotlight && spotlightRect && (
         <>
           <div style={{
             position: 'fixed',
-            top: questSpotRect.top, left: questSpotRect.left,
-            width: questSpotRect.width, height: questSpotRect.height,
+            top: spotlightRect.top, left: spotlightRect.left,
+            width: spotlightRect.width, height: spotlightRect.height,
             borderRadius: 16, background: 'transparent',
             boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)',
             zIndex: 100, pointerEvents: 'none',
@@ -463,8 +433,8 @@ export default function HomeScreen({
           }} />
           <div style={{
             position: 'fixed',
-            top: questSpotRect.top + questSpotRect.height + 8,
-            left: questSpotRect.left + questSpotRect.width / 2,
+            top: spotlightRect.top + spotlightRect.height + 8,
+            left: spotlightRect.left + spotlightRect.width / 2,
             transform: 'translateX(-50%)',
             fontSize: 32, zIndex: 102, pointerEvents: 'none',
             animation: 'homeFingerBounce 0.8s ease-in-out infinite',
@@ -476,7 +446,7 @@ export default function HomeScreen({
             zIndex: 102, textAlign: 'center',
           }}>
             <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
-              Tu as un ticket ! Découvre les WTF! les plus dingues 🏆
+              {SPOTLIGHT_MESSAGES[activeSpotlight]}
             </div>
           </div>
         </>
@@ -809,9 +779,9 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <div ref={questBtnRef} style={{ position: 'relative', zIndex: showQuestSpotlight ? 101 : 'auto' }}>
+          <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto' }}>
             {canQuest && modeIsNew('quest') && <NewBadge />}
-            <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); setShowQuestSpotlight(false); markSeen('hasSeenQuest'); nav('difficulty') }} />
+            <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
           </div>
           <div style={{ position: 'relative' }}>
             {canSerie && modeIsNew('serie') && <NewBadge />}
@@ -874,7 +844,7 @@ export default function HomeScreen({
           </div>
           <div style={{ position: 'relative' }}>
             {canBlitz && modeIsNew('blitz') && <NewBadge />}
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); markSeen('hasSeenBlitz'); nav('blitz') }} />
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
           </div>
         </div>
       </div>
@@ -885,11 +855,11 @@ export default function HomeScreen({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 50px',
         marginBottom: 34,
-        position: 'relative', zIndex: showFlashSpotlight ? 101 : 10,
+        position: 'relative', zIndex: activeSpotlight === 'flash' ? 101 : 10,
       }}>
         <button
           ref={flashBtnRef}
-          onClick={() => { setShowFlashSpotlight(false); nav('categoryFlash') }}
+          onClick={() => { if (activeSpotlight === 'flash') dismissSpotlight('flash'); nav('categoryFlash') }}
           style={{
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
             borderRadius: 14, border: 'none',

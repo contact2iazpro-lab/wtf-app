@@ -263,20 +263,32 @@ export default function HomeScreen({
   // ── Spotlight unique basé sur hasSeenX ────────────────────────────────────
   const flashBtnRef = useRef(null)
   const questBtnRef = useRef(null)
+  const collectionNavRef = useRef(null)
+  const coffreZoneRef = useRef(null)
+  const boutiqueNavRef = useRef(null)
+  const blitzBtnRef = useRef(null)
   const [activeSpotlight, setActiveSpotlight] = useState(null)
   const [spotlightRect, setSpotlightRect] = useState(null)
 
   useEffect(() => {
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     const devOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+    const gp = wd.gamesPlayed || 0
+    const qp = wd.statsByMode?.parcours?.gamesPlayed || 0
+    const ufc = (wd.unlockedFacts || []).length
 
-    // Priorité des spotlights : Flash d'abord, puis Quest, puis Blitz
-    // Un seul spotlight à la fois
+    // Priorité des spotlights — un seul à la fois, dans l'ordre
     if (wd.tutorialDone && !wd.hasSeenFlash) {
       setActiveSpotlight('flash')
-    } else if ((devOrTest || (wd.gamesPlayed || 0) >= 1) && !wd.hasSeenQuest) {
+    } else if ((devOrTest || gp >= 1) && !wd.hasSeenQuest) {
       setActiveSpotlight('quest')
-    } else if ((devOrTest || (wd.unlockedFacts || []).length >= 5) && !wd.hasSeenBlitz) {
+    } else if ((devOrTest || qp >= 1) && !wd.hasSeenCollection) {
+      setActiveSpotlight('collection')
+    } else if ((devOrTest || qp >= 1) && !wd.hasSeenCoffre) {
+      setActiveSpotlight('coffre')
+    } else if ((devOrTest || gp >= 2) && !wd.hasSeenBoutique) {
+      setActiveSpotlight('boutique')
+    } else if ((devOrTest || ufc >= 5) && !wd.hasSeenBlitz) {
       setActiveSpotlight('blitz')
     } else {
       setActiveSpotlight(null)
@@ -291,7 +303,14 @@ export default function HomeScreen({
     setActiveSpotlight(null)
   }
 
-  const spotlightRefs = { flash: flashBtnRef, quest: questBtnRef }
+  const spotlightRefs = {
+    flash: flashBtnRef,
+    quest: questBtnRef,
+    collection: collectionNavRef,
+    coffre: coffreZoneRef,
+    boutique: boutiqueNavRef,
+    blitz: blitzBtnRef,
+  }
 
   useEffect(() => {
     if (!activeSpotlight) { setSpotlightRect(null); return }
@@ -308,6 +327,9 @@ export default function HomeScreen({
   const SPOTLIGHT_MESSAGES = {
     flash: 'Lance ta première partie ! 🎮',
     quest: 'Tu as un ticket ! Découvre les f*cts les plus dingues 🏆',
+    collection: 'Tes f*cts sont dans ta collection ! 📚',
+    coffre: 'Ouvre ton coffre du jour ! 🎁',
+    boutique: 'Achète des tickets et indices ici ! 🛍️',
     blitz: 'Teste ta mémoire en Blitz ! ⚡',
   }
 
@@ -628,7 +650,7 @@ export default function HomeScreen({
 
       {/* ═══ ZONE 3 — COFFRES QUOTIDIENS (60px fixe) ═══════════════════════ */}
       {questsPlayed >= 1 && (
-      <div style={{
+      <div ref={coffreZoneRef} style={{
         height: 60, flexShrink: 0,
         display: 'flex', alignItems: 'center',
         gap: 2, padding: '6px 10px 0',
@@ -654,6 +676,7 @@ export default function HomeScreen({
               key={i}
               onClick={() => {
                 if (!isAvail) return
+                if (activeSpotlight === 'coffre') dismissSpotlight('coffre')
                 audio.play?.('click')
                 const reward = openCoffre()
                 if (reward) {
@@ -842,7 +865,7 @@ export default function HomeScreen({
             {canMulti && modeIsNew('multi') && <NewBadge />}
             <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
           </div>
-          <div style={{ position: 'relative' }}>
+          <div ref={blitzBtnRef} style={{ position: 'relative' }}>
             {canBlitz && modeIsNew('blitz') && <NewBadge />}
             <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
           </div>
@@ -909,8 +932,11 @@ export default function HomeScreen({
           return (
             <button
               key={item.slug}
+              ref={item.slug === 'collection' ? collectionNavRef : item.slug === 'boutique' ? boutiqueNavRef : undefined}
               onClick={() => {
                 if (isLocked) return showLockToast(item.unlockMsg)
+                if (item.slug === 'collection' && activeSpotlight === 'collection') dismissSpotlight('collection')
+                if (item.slug === 'boutique' && activeSpotlight === 'boutique') dismissSpotlight('boutique')
                 if (item.target) nav(item.target)
               }}
               style={{

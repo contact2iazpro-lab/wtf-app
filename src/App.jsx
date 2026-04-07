@@ -41,8 +41,8 @@ import { checkBadges } from './utils/badgeManager'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
 
-// F*cts figés pour la première partie Flash onboarding (IDs placeholder — Michael remplacera)
-const ONBOARDING_FLASH_FACT_IDS = [101, 102, 103, 104, 105]
+// 10 f*cts sélectionnés par Michael — on en pioche 5 aléatoirement pour la première Flash
+const ONBOARDING_FLASH_FACT_IDS = [67, 301, 92, 174, 109, 95, 177, 22, 6, 61]
 
 // Difficulté spéciale onboarding : 2 choix QCM (50/50), timer 20s, 2 indices
 const DIFFICULTY_ONBOARDING_FLASH = {
@@ -639,11 +639,16 @@ export default function App() {
         if (!isDevOrTest && wd.tutorialDone && (wd.gamesPlayed || 0) === 0) {
           audio.play('click')
           const allFacts = [...getValidFacts(), ...getGeneratedFacts()]
-          let onboardingFacts = ONBOARDING_FLASH_FACT_IDS
+          let onboardingPool = ONBOARDING_FLASH_FACT_IDS
             .map(id => allFacts.find(f => f.id === id))
             .filter(Boolean)
 
-          // Fallback si les IDs ne sont pas trouvés
+          // Piocher 5 aléatoirement parmi les 10
+          let onboardingFacts = [...onboardingPool]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 5)
+
+          // Fallback si pas assez de facts trouvés
           if (onboardingFacts.length < 5) {
             onboardingFacts = [...getGeneratedFacts()].sort(() => Math.random() - 0.5).slice(0, 5)
           }

@@ -231,11 +231,12 @@ export default function HomeScreen({
 
   // Show badge modal when returning to HomeScreen with new badges
   useEffect(() => {
-    if (newlyEarnedBadges.length > 0) {
+    const isOnboarding = gamesPlayed <= 2
+    if (newlyEarnedBadges.length > 0 && !isOnboarding) {
       setBadgeToShow(newlyEarnedBadges[0])
       setShowBadgeModal(true)
     }
-  }, [newlyEarnedBadges])
+  }, [newlyEarnedBadges, gamesPlayed])
 
   // Refresh next badge info on mount
   useEffect(() => { setNextBadgeInfo(getNextBadge()) }, [])
@@ -758,7 +759,7 @@ export default function HomeScreen({
             <div style={{
               position: 'absolute',
               width: 400, height: 400,
-              top: '38%', left: '50%',
+              top: '50%', left: '50%',
               transform: 'translate(-50%, -50%)',
               pointerEvents: 'none',
               zIndex: 0,
@@ -772,7 +773,7 @@ export default function HomeScreen({
                   height: r.w * 4,
                   transformOrigin: '0 50%',
                   transform: `rotate(${r.angle}deg)`,
-                  background: `linear-gradient(90deg, rgba(255,255,255,${r.op}) 0%, rgba(79,195,247,${r.op * 0.6}) 40%, transparent 100%)`,
+                  background: `linear-gradient(90deg, rgba(255,255,255,${r.op}) 0%, rgba(255,255,255,${r.op * 0.6}) 40%, transparent 100%)`,
                   borderRadius: r.w * 4,
                   filter: `blur(${r.w * 1.5}px)`,
                 }} />

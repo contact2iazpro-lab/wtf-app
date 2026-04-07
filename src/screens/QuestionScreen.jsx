@@ -503,6 +503,9 @@ export default function QuestionScreen({
       ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
       : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
+    // VIP question: tutoriel est toujours VIP, ou fact a le flag isVip
+    const isVipQuestion = isTutorial || fact?.isVip || fact?.type === 'vip'
+
     const handleTutorialShare = () => {
       const shareMessages = [
         `🤯 Mate ce f*ct !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
@@ -552,12 +555,6 @@ export default function QuestionScreen({
             60%  { transform: translate(-50%, -50%) scale(1.05) rotate(-12deg); opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(1) rotate(-12deg); opacity: 1; }
           }
-          @keyframes tutStampCorner {
-            0%   { transform: scale(2.5) rotate(-12deg); opacity: 0; }
-            40%  { transform: scale(0.9) rotate(-12deg); opacity: 1; }
-            60%  { transform: scale(1.05) rotate(-12deg); opacity: 1; }
-            100% { transform: scale(1) rotate(-12deg); opacity: 1; }
-          }
           @keyframes tutFingerBounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-6px); }
@@ -580,7 +577,29 @@ export default function QuestionScreen({
             0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4); }
             50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3); }
           }
+          @keyframes vipParticlePulse {
+            0%, 100% { opacity: 0.1; transform: scale(0.8); }
+            50%      { opacity: 0.35; transform: scale(1.2); }
+          }
         `}</style>
+
+        {/* Particules VIP — overlay doré si isVipQuestion */}
+        {isVipQuestion && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+            {Array.from({ length: 12 }, (_, i) => (
+              <div key={i} style={{
+                position: 'absolute',
+                top: `${(i * 31 + 7) % 90}%`,
+                left: `${(i * 43 + 13) % 95}%`,
+                width: i % 3 === 0 ? 6 : 4,
+                height: i % 3 === 0 ? 6 : 4,
+                borderRadius: '50%',
+                background: `rgba(255,255,255,${0.1 + (i % 4) * 0.07})`,
+                animation: `vipParticlePulse ${2 + (i % 3) * 0.5}s ${(i * 0.3).toFixed(1)}s ease-in-out infinite`,
+              }} />
+            ))}
+          </div>
+        )}
 
         {/* Content */}
         <div style={{
@@ -594,19 +613,6 @@ export default function QuestionScreen({
           {/* Spotlight hole — box-shadow technique */}
           {(tutoStep === 'hint' || tutoStep === 'answer') && !tutAnswered && spotRect && (
             <>
-              {/* Hole with giant box-shadow = overlay */}
-              <div style={{
-                position: 'fixed',
-                top: spotRect.top, left: spotRect.left,
-                width: spotRect.width, height: spotRect.height,
-                borderRadius: 14,
-                background: 'transparent',
-                boxShadow: `0 0 0 9999px rgba(0,0,0,0.35), 0 0 24px 6px ${tutoStep === 'hint' ? 'rgba(255,165,0,0.5)' : 'rgba(76,175,80,0.5)'}`,
-                zIndex: 100,
-                pointerEvents: 'none',
-                transition: 'all 0.6s ease',
-              }} />
-
               {/* Doigt animé — positionné sous le trou */}
               <div style={{
                 position: 'fixed',
@@ -655,7 +661,7 @@ export default function QuestionScreen({
                   </button>
                   <div style={{
                     fontSize: 24, animation: 'tutFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
-                  }}>👍</div>
+                  }}>👆</div>
                 </div>
                 <button
                   onClick={() => {
@@ -722,8 +728,8 @@ export default function QuestionScreen({
           {/* Post-answer: layout identique à RevelationScreen VIP */}
           {tutAnswered && (
             <>
-              {/* Image + stamp FOU */}
-              <div style={{ flexShrink: 0, padding: 0, maxHeight: '42vh' }}>
+              {/* Image de la question */}
+              <div style={{ flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '42vh' }}>
                 <div
                   className="overflow-hidden relative"
                   style={{
@@ -760,12 +766,6 @@ export default function QuestionScreen({
                         </div>
                       </div>
                     </>
-                  )}
-                  {/* Correct: stamp FOU */}
-                  {tutCorrect && (
-                    <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
-                      <div style={{ fontSize: S(18), fontWeight: 900, color: '#4CAF50', textShadow: '0 2px 6px rgba(76,175,80,0.5)', transform: 'rotate(-12deg)', border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`, backgroundColor: 'rgba(76,175,80,0.15)', backdropFilter: 'blur(4px)', animation: 'tutStampCorner 0.5s ease-out forwards' }}>FOU</div>
-                    </div>
                   )}
                   {/* Bouton loupe */}
                   {tutCorrect && !tutImgFailed && (
@@ -914,21 +914,27 @@ export default function QuestionScreen({
             </div>
           )}
 
-          {/* Boutons — comme RevelationScreen (deux boutons côte à côte) */}
+          {/* Boutons — deux boutons côte à côte, partager désactivé pendant tuto */}
           {tutAnswered && tutCorrect && (
             <div style={{
               flexShrink: 0, padding: `${S(6)} ${S(16)} ${S(12)}`,
               animation: 'tutFadeSlideUp 0.4s 0.2s ease both',
+              display: 'flex', flexDirection: 'column', gap: S(8),
             }}>
               <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
                 <button
-                  onClick={handleTutorialShare}
+                  onClick={isTutorial ? undefined : handleTutorialShare}
                   className="btn-press active:scale-95 transition-all"
                   style={{
                     flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
                     background: 'transparent',
-                    color: 'rgba(255,255,255,0.8)', border: '1.5px solid rgba(255,255,255,0.4)',
+                    color: 'rgba(255,255,255,0.8)', border: '1.5px solid rgba(255,255,255,0.3)',
+                    ...(isTutorial ? {
+                      opacity: 0.3,
+                      pointerEvents: 'none',
+                      filter: 'grayscale(1)',
+                    } : {}),
                   }}
                 >
                   {tutCorrect ? '🎩 Partager ce WTF!' : '🤝 Demander de l\'aide'}
@@ -950,12 +956,20 @@ export default function QuestionScreen({
                   className="btn-press active:scale-95 transition-all"
                   style={{
                     flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                    color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
+                    color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', border: '3px solid white',
                     background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2)',
                   }}
                 >
                   CONTINUER →
                 </button>
+              </div>
+              {/* Doigt animé en dessous du bouton CONTINUER */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: S(4) }}>
+                <div style={{
+                  fontSize: 24, animation: 'tutFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
+                }}>👆</div>
               </div>
             </div>
           )}
@@ -988,7 +1002,7 @@ export default function QuestionScreen({
                   </button>
                   <div style={{
                     fontSize: 24, animation: 'tutFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
-                  }}>👍</div>
+                  }}>👆</div>
                 </div>
               </div>
             </div>

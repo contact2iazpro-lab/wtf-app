@@ -211,6 +211,8 @@ export default function RevelationScreen({
   const gamesPlayed = wtfData.gamesPlayed || 0
   const isTutorial = gamesPlayed <= 2
   const isFirstFlashOnboarding = sessionType === 'flash_solo' && factIndex === 0 && gamesPlayed === 0
+  const isFirstQuestOnboarding = sessionType === 'parcours' && gamesPlayed <= 2
+  const isOnboardingSession = isFirstFlashOnboarding || isFirstQuestOnboarding
   const isLastFlashQuestion = factIndex === totalFacts - 1 && sessionType === 'flash_solo' && gamesPlayed === 0
 
   const cat = getCategoryById(fact.category)
@@ -536,7 +538,7 @@ export default function RevelationScreen({
         {/* Social proof */}
         {flipped && (
           <div style={{ textAlign: 'center', padding: `${S(8)} ${S(16)} 0`, flexShrink: 0 }}>
-            <span style={{ fontSize: S(14), fontWeight: 800, color: catTextColor, opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
+            <span style={{ fontSize: S(14), fontWeight: 800, color: '#ffffff', opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
               👥 {100 - successRate}% des joueurs<br />ont trouvé ce f*ct
             </span>
           </div>
@@ -559,6 +561,18 @@ export default function RevelationScreen({
 
         {/* Boutons */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
+          {isOnboardingSession && (
+            <style>{`
+              @keyframes homeFingerBounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-6px); }
+              }
+              @keyframes pulseWhite {
+                0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2); }
+                50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,255,255,0.4), 0 0 25px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.3); }
+              }
+            `}</style>
+          )}
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             {gamesPlayed > 1 && (
               <button
@@ -580,13 +594,25 @@ export default function RevelationScreen({
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: '2px solid rgba(255,255,255,0.4)',
+                border: isOnboardingSession ? '3px solid white' : '2px solid rgba(255,255,255,0.4)',
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+                ...(isOnboardingSession ? {
+                  animation: 'pulseWhite 1.5s ease-in-out infinite',
+                  boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2)',
+                } : {}),
               }}
             >
               {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
             </button>
           </div>
+          {/* Doigt animé en dessous du bouton SUIVANT mauvaise réponse (onboarding) */}
+          {isOnboardingSession && !isCorrect && !isLastFlashQuestion && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: S(4), marginTop: S(4) }}>
+              <div style={{
+                fontSize: 28, animation: 'homeFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
+              }}>👆</div>
+            </div>
+          )}
         </div>
         </div>
       </div>
@@ -595,11 +621,12 @@ export default function RevelationScreen({
 
   // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
   const isVipReveal = !isDuel && isCorrect && fact.isVip
+  const showVipGlow = isVipReveal || (isTutorial && isCorrect) || (isOnboardingSession && isCorrect)
   return (
     <div className="relative screen-enter" style={{
       height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
       boxSizing: 'border-box', width: '100%',
-      ...(isVipReveal ? {
+      ...(showVipGlow ? {
         background: catGradient,
       } : {
         backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
@@ -608,7 +635,7 @@ export default function RevelationScreen({
       }),
     }}>
       {/* Overlay couleur catégorie (non-VIP) ou particules VIP */}
-      {isVipReveal ? (
+      {showVipGlow ? (
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
           {Array.from({ length: 12 }, (_, i) => (
             <div key={i} style={{
@@ -636,13 +663,28 @@ export default function RevelationScreen({
       {renderHeader()}
 
       {/* Image pleine largeur — cover, plein cadre */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0, maxHeight: '42vh' }}>
+      {showVipGlow && (
+        <style>{`
+          @keyframes vipCardGlow {
+            0%, 100% {
+              box-shadow: inset 0 0 15px ${cat?.color}4D, 0 0 15px ${cat?.color}80, 0 0 30px ${cat?.color}4D, 0 0 45px ${cat?.color}26;
+            }
+            50% {
+              box-shadow: inset 0 0 20px ${cat?.color}66, 0 0 20px ${cat?.color}B3, 0 0 40px ${cat?.color}66, 0 0 60px ${cat?.color}33;
+            }
+          }
+        `}</style>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '42vh' }}>
         <div
           className="overflow-hidden relative"
           style={{
             background: catGradient, width: '100%', maxHeight: '42vh',
             borderRadius: S(16), padding: 4,
-            border: `3px solid ${cat?.color || '#1a3a5c'}`,
+            border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${cat?.color || '#1a3a5c'}`,
+            ...(showVipGlow ? {
+              animation: 'vipCardGlow 2s ease-in-out infinite',
+            } : {}),
           }}
         >
           {fact.imageUrl && !imgFailed ? (
@@ -673,20 +715,6 @@ export default function RevelationScreen({
             </div>
           )}
 
-          {/* Stamp FOU — Funny facts uniquement (pas VIP) */}
-          {!isDuel && flipped && isCorrect && !fact.isVip && (
-            <div className="absolute pointer-events-none" style={{ right: S(8), bottom: S(8), zIndex: 10 }}>
-              <div style={{
-                fontSize: S(18), fontWeight: 900, color: '#4CAF50',
-                textShadow: '0 2px 6px rgba(76, 175, 80, 0.5)',
-                transform: 'rotate(-12deg)',
-                border: '2px solid #4CAF50', borderRadius: S(4), padding: `${S(2)} ${S(8)}`,
-                backgroundColor: 'rgba(76, 175, 80, 0.15)', backdropFilter: 'blur(4px)',
-              }}>
-                FOU
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -695,7 +723,7 @@ export default function RevelationScreen({
         {/* Social proof */}
         {flipped && !isDuel && isCorrect && (
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: S(14), fontWeight: 800, color: catTextColor, opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
+            <span style={{ fontSize: S(14), fontWeight: 800, color: '#ffffff', opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
               👥 Seulement {successRate}% des joueurs<br />ont trouvé ce f*ct
             </span>
           </div>
@@ -767,34 +795,61 @@ export default function RevelationScreen({
 
       {/* Boutons — compact */}
       <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
-        {!isDuel && isCorrect && (
-          <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
-            <button
-              onClick={handleNativeShare}
-              className="btn-press active:scale-95 transition-all"
-              style={{
-                flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                color: 'white', border: '2px solid rgba(255,255,255,0.4)',
-              }}
-            >
-              🎩 Partager ce WTF!
-            </button>
-            <button
-              ref={isLast ? flashEndButtonRef : nextButtonRef}
-              onClick={handleNext}
-              className="btn-press active:scale-95 transition-all"
-              style={{
-                flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: '2px solid rgba(255,255,255,0.4)',
-                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-              }}
-            >
-              {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
-            </button>
-          </div>
+        {!isDuel && (isCorrect || isOnboardingSession || isLastFlashQuestion) && (
+          <>
+            <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
+              <button
+                onClick={(isTutorial || isOnboardingSession) ? undefined : handleNativeShare}
+                className="btn-press active:scale-95 transition-all"
+                style={{
+                  flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+                  color: 'white', border: '2px solid rgba(255,255,255,0.4)',
+                  ...((isTutorial || isOnboardingSession) ? {
+                    opacity: 0.3,
+                    pointerEvents: 'none',
+                    filter: 'grayscale(1)',
+                  } : {}),
+                }}
+              >
+                🎩 Partager ce WTF!
+              </button>
+              <button
+                ref={isLast ? flashEndButtonRef : nextButtonRef}
+                onClick={handleNext}
+                className="btn-press active:scale-95 transition-all"
+                style={{
+                  flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                  color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
+                  border: ((isTutorial && isCorrect && spotRect && !isDuel && !isOnboardingSession) || isOnboardingSession || isLastFlashQuestion) ? '3px solid white' : '2px solid rgba(255,255,255,0.4)',
+                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+                  ...((isTutorial && isCorrect && spotRect && !isDuel && !isOnboardingSession) || isOnboardingSession || isLastFlashQuestion ? {
+                    animation: 'pulseWhite 1.5s ease-in-out infinite',
+                    boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2)',
+                  } : {}),
+                }}
+              >
+                {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
+              </button>
+            </div>
+            {/* Doigt animé en dessous du bouton SUIVANT (onboarding — questions 1-4) */}
+            {isOnboardingSession && !isLastFlashQuestion && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: S(4), marginTop: S(4) }}>
+                <div style={{
+                  fontSize: 28, animation: 'homeFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
+                }}>👆</div>
+              </div>
+            )}
+            {/* Doigt animé en dessous du bouton SUIVANT (dernière Flash) */}
+            {isLastFlashQuestion && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: S(4), marginTop: S(4) }}>
+                <div style={{
+                  fontSize: 28, animation: 'homeFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
+                }}>👆</div>
+              </div>
+            )}
+          </>
         )}
 
         {isDuel && (
@@ -814,7 +869,7 @@ export default function RevelationScreen({
       </div>
 
       {/* Spotlight tutoriel sur bouton Suivant */}
-      {isTutorial && isCorrect && spotRect && !isDuel && (
+      {isTutorial && isCorrect && spotRect && !isDuel && !isFirstFlashOnboarding && !isLastFlashQuestion && (
         <>
           {/* CSS animations tutoriel */}
           <style>{`
@@ -822,19 +877,15 @@ export default function RevelationScreen({
               0%, 100% { transform: translateY(0); }
               50% { transform: translateY(-6px); }
             }
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4); }
+              50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3); }
+            }
+            @keyframes pulseWhite {
+              0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2); }
+              50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,255,255,0.4), 0 0 25px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.3); }
+            }
           `}</style>
-
-          {/* Hole with giant box-shadow = overlay */}
-          <div style={{
-            position: 'fixed',
-            top: spotRect.top, left: spotRect.left,
-            width: spotRect.width, height: spotRect.height,
-            borderRadius: 14,
-            background: 'transparent',
-            boxShadow: `0 0 0 9999px rgba(0,0,0,0.35), 0 0 24px 6px rgba(76,175,80,0.5)`,
-            zIndex: 101, pointerEvents: 'none',
-            transition: 'all 0.6s ease',
-          }} />
 
           {/* Doigt animé — positionné sous le trou */}
           <div style={{
@@ -846,36 +897,12 @@ export default function RevelationScreen({
             animation: 'homeFingerBounce 0.8s ease-in-out infinite',
             transition: 'top 0.6s ease, left 0.6s ease',
           }}>👆</div>
-
-          {/* Texte guide */}
-          <div style={{
-            position: 'fixed',
-            top: '55%',
-            left: '50%', transform: 'translateX(-50%)',
-            zIndex: 102, textAlign: 'center',
-          }}>
-            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
-              Découvre la réponse ! 🎯
-            </div>
-          </div>
         </>
       )}
 
       {/* Spotlight première Flash onboarding */}
       {isFirstFlashOnboarding && flashSpotRect && (
         <>
-          {/* Hole with giant box-shadow = overlay */}
-          <div style={{
-            position: 'fixed',
-            top: flashSpotRect.top, left: flashSpotRect.left,
-            width: flashSpotRect.width, height: flashSpotRect.height,
-            borderRadius: 14,
-            background: 'transparent',
-            boxShadow: `0 0 0 9999px rgba(0,0,0,0.4)`,
-            zIndex: 101, pointerEvents: 'none',
-            transition: 'all 0.6s ease',
-          }} />
-
           {/* Doigt animé — positionné sous le trou */}
           <div style={{
             position: 'fixed',
@@ -886,36 +913,12 @@ export default function RevelationScreen({
             animation: 'homeFingerBounce 0.8s ease-in-out infinite',
             transition: 'top 0.6s ease, left 0.6s ease',
           }}>👆</div>
-
-          {/* Texte guide */}
-          <div style={{
-            position: 'fixed',
-            top: '55%',
-            left: '50%', transform: 'translateX(-50%)',
-            zIndex: 102, textAlign: 'center',
-          }}>
-            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
-              Passe au f*ct suivant ! 🎯
-            </div>
-          </div>
         </>
       )}
 
       {/* Spotlight dernière question Flash onboarding */}
       {isLastFlashQuestion && flashEndSpotRect && (
         <>
-          {/* Hole with giant box-shadow = overlay */}
-          <div style={{
-            position: 'fixed',
-            top: flashEndSpotRect.top, left: flashEndSpotRect.left,
-            width: flashEndSpotRect.width, height: flashEndSpotRect.height,
-            borderRadius: 14,
-            background: 'transparent',
-            boxShadow: `0 0 0 9999px rgba(0,0,0,0.4)`,
-            zIndex: 101, pointerEvents: 'none',
-            transition: 'all 0.6s ease',
-          }} />
-
           {/* Doigt animé — positionné sous le trou */}
           <div style={{
             position: 'fixed',
@@ -926,18 +929,6 @@ export default function RevelationScreen({
             animation: 'homeFingerBounce 0.8s ease-in-out infinite',
             transition: 'top 0.6s ease, left 0.6s ease',
           }}>👆</div>
-
-          {/* Texte guide */}
-          <div style={{
-            position: 'fixed',
-            top: '55%',
-            left: '50%', transform: 'translateX(-50%)',
-            zIndex: 102, textAlign: 'center',
-          }}>
-            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
-              Découvre tes résultats ! 🎯
-            </div>
-          </div>
         </>
       )}
 

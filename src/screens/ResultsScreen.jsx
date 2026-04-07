@@ -110,8 +110,6 @@ export default function ResultsScreen({
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const gamesPlayed = wtfData.gamesPlayed || 0
   const isOnboarding = gamesPlayed <= 2
-  const [showFirstFactModal, setShowFirstFactModal] = useState(false)
-  const [firstFactToShow, setFirstFactToShow] = useState(null)
   const [ticketPopVisible, setTicketPopVisible] = useState(false)
 
   // Spotlight onboarding sur bouton "Continuer"
@@ -259,28 +257,6 @@ export default function ResultsScreen({
       if (el) el.remove()
     }
   }, [coinsEarned])
-
-  // Modale "Premier f*ct débloqué" pendant l'onboarding
-  useEffect(() => {
-    if (!isOnboarding) return
-
-    // Ne pas afficher la modale si déjà visionnée
-    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    if (wd.hasSeenFirstFactModal) return
-
-    if (unlockedFactsThisSession.length > 0) {
-      setFirstFactToShow(unlockedFactsThisSession[0])
-      const t = setTimeout(() => setShowFirstFactModal(true), 1500)
-      return () => clearTimeout(t)
-    } else if (gamesPlayed >= 2) {
-      const fact999 = (allSessionFacts || []).find(f => f.id === 999)
-      if (fact999) {
-        setFirstFactToShow(fact999)
-        const t = setTimeout(() => setShowFirstFactModal(true), 1500)
-        return () => clearTimeout(t)
-      }
-    }
-  }, [isOnboarding, unlockedFactsThisSession])
 
   // Spotlight onboarding sur bouton "Continuer l'aventure"
   useEffect(() => {
@@ -701,82 +677,6 @@ export default function ResultsScreen({
         </>
       )}
 
-      {/* Modale premier f*ct onboarding */}
-      {showFirstFactModal && firstFactToShow && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 400,
-            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)',
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            padding: 24, gap: 20,
-          }}
-        >
-          <div style={{
-            fontSize: 48, lineHeight: 1,
-            animation: 'confettiFall 0.5s ease backwards',
-          }}>🎉</div>
-
-          <div style={{
-            fontSize: 22, fontWeight: 900, color: '#FFD700',
-            textAlign: 'center', fontFamily: 'Nunito, sans-serif',
-            textShadow: '0 2px 8px rgba(0,0,0,0.5)',
-          }}>
-            Tu as débloqué ton premier f*ct !
-          </div>
-
-          <div style={{
-            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
-            textAlign: 'center', fontFamily: 'Nunito, sans-serif',
-          }}>
-            Clique dessus pour le découvrir 👇
-          </div>
-
-          <div
-            onClick={() => {
-              // Marquer la modale comme visionnée
-              try {
-                const wd2 = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                wd2.hasSeenFirstFactModal = true
-                wd2.lastModified = Date.now()
-                localStorage.setItem('wtf_data', JSON.stringify(wd2))
-              } catch {}
-              setShowFirstFactModal(false)
-              if (onFactDetail) onFactDetail(firstFactToShow.id)
-              else if (onCollection) onCollection()
-            }}
-            style={{
-              width: 160, height: 160, borderRadius: 20,
-              overflow: 'hidden', cursor: 'pointer',
-              border: '3px solid #FFD700',
-              boxShadow: '0 0 30px rgba(255,215,0,0.4), 0 8px 32px rgba(0,0,0,0.5)',
-              background: `linear-gradient(135deg, ${catColor}44, ${catColor})`,
-              animation: 'firstFactBounce 1.2s ease-in-out infinite',
-              position: 'relative',
-            }}
-          >
-            {firstFactToShow.imageUrl ? (
-              <img src={firstFactToShow.imageUrl} alt=""
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={e => { e.target.style.display = 'none' }} />
-            ) : (
-              <div style={{
-                width: '100%', height: '100%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ fontSize: 48, opacity: 0.4 }}>?</span>
-              </div>
-            )}
-          </div>
-
-          <style>{`
-            @keyframes firstFactBounce {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-8px); }
-            }
-          `}</style>
-        </div>
-      )}
 
       {/* Fact detail modal */}
       {selectedFact && (

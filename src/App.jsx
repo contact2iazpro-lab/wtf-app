@@ -68,6 +68,7 @@ const SCREENS = {
   BLITZ_RESULTS: 'blitz_results',
   BLITZ_LOBBY: 'blitz_lobby',
   MODE_LAUNCH: 'mode_launch',
+  ONBOARDING_FACT: 'onboarding_fact',
 }
 
 const MODE_CONFIGS = {
@@ -392,6 +393,7 @@ export default function App() {
   const [dailyFact, setDailyFact] = useState(null)
   const [dailyFactOverride, setDailyFactOverride] = useState(null)
   const effectiveDailyFact = dailyFactOverride || dailyFact
+  const [onboardingFact, setOnboardingFact] = useState(null)
 
   // Facts loading state
   const [factsReady, setFactsReady] = useState(false)
@@ -470,6 +472,8 @@ export default function App() {
     localStorage.removeItem('skip_launch_blitz')
     localStorage.removeItem('skip_launch_explorer')
     localStorage.removeItem('skip_launch_hunt')
+    // Vider sessionStorage pour repasser par SplashScreen
+    sessionStorage.clear()
     // Recharger la page pour repartir du splash
     window.location.reload()
   }
@@ -1255,7 +1259,12 @@ export default function App() {
           if (streakReward.special === 'wtf_premium') {
             setShowStreakSpecialModal(true)
           } else {
-            setStreakRewardToast({ days: newStreak, reward: streakReward })
+            // Ne pas afficher le toast streak pendant l'onboarding (gamesPlayed <= 2)
+            const wtfDataStreak = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            const gamesPlayedStreak = wtfDataStreak.gamesPlayed || 0
+            if (gamesPlayedStreak > 2) {
+              setStreakRewardToast({ days: newStreak, reward: streakReward })
+            }
           }
         }
 
@@ -1341,11 +1350,18 @@ export default function App() {
       } else if (sessionType === 'marathon') {
         setScreen(SCREENS.MARATHON_RESULTS)
       } else {
-        // Première Flash onboarding : skip ResultsScreen, retour direct Home
-        if (sessionType === 'flash_solo') {
-          const wtfDataEnd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          if ((wtfDataEnd.gamesPlayed || 0) === 1) {
-            // C'était la première partie — retour direct Home
+        // Première Flash ou première Quest onboarding : modale fact débloqué au lieu de ResultsScreen
+        const wtfDataOnb = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        const isOnboardingSession = (wtfDataOnb.gamesPlayed || 0) <= 2
+
+        if (isOnboardingSession && sessionType !== 'wtf_du_jour') {
+          // Afficher la modale UNIQUEMENT si au moins 1 fact a été débloqué cette session
+          if (sessionCorrectFacts.length > 0) {
+            setOnboardingFact(sessionCorrectFacts[0])
+            setScreen(SCREENS.ONBOARDING_FACT)
+            return
+          } else {
+            // Aucun fact débloqué — aller directement à Home
             handleHome()
             return
           }
@@ -1831,7 +1847,10 @@ export default function App() {
                   localStorage.setItem('wtf_badge_streak_30', 'true')
                   localStorage.setItem('wtf_premium_earned', 'true')
                   setShowStreakSpecialModal(false)
-                  setStreakRewardToast({ days: 30, reward: { coins: 0, tickets: 0, hints: 0, badge: false, _label: 'WTF Premium 👑' } })
+                  const wtfDataPrem = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                  if ((wtfDataPrem.gamesPlayed || 0) > 2) {
+                    setStreakRewardToast({ days: 30, reward: { coins: 0, tickets: 0, hints: 0, badge: false, _label: 'WTF Premium 👑' } })
+                  }
                 }}
                 style={{
                   background: 'linear-gradient(135deg, #FF6B1A, #EA580C)',
@@ -2028,6 +2047,86 @@ export default function App() {
           onCollection={() => { handleHome(); navigate('/collection') }}
           isFirstGame={(() => { try { const d = JSON.parse(localStorage.getItem('wtf_data') || '{}'); return d.firstFlashTicketGiven && (d.gamesPlayed || 0) <= 1 } catch { return false } })()}
         />
+      )}
+
+      {screen === SCREENS.ONBOARDING_FACT && onboardingFact && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(6px)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: 24, gap: 20,
+          fontFamily: 'Nunito, sans-serif',
+        }}>
+          <div style={{ fontSize: 48, lineHeight: 1 }}>🎉</div>
+          <div style={{
+            fontSize: 22, fontWeight: 900, color: '#FFD700',
+            textAlign: 'center',
+            textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          }}>
+            Tu as débloqué un f*ct !
+          </div>
+          <div style={{
+            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
+            textAlign: 'center',
+          }}>
+            Clique dessus pour le découvrir 👇
+          </div>
+          <div
+            onClick={() => {
+              const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+              wd.hasSeenFirstFactModal = true
+              wd.pendingFactDetail = JSON.stringify(onboardingFact)
+              wd.lastModified = Date.now()
+              localStorage.setItem('wtf_data', JSON.stringify(wd))
+              setOnboardingFact(null)
+              setScreen(SCREENS.HOME)
+              navigate('/collection')
+            }}
+            style={{
+              width: 160, height: 160, borderRadius: 20,
+              overflow: 'hidden', cursor: 'pointer',
+              border: '3px solid #FFD700',
+              boxShadow: '0 0 30px rgba(255,215,0,0.4), 0 8px 32px rgba(0,0,0,0.5)',
+              animation: 'onbFactBounce 1.2s ease-in-out infinite',
+              position: 'relative',
+            }}
+          >
+            {onboardingFact.imageUrl ? (
+              <img src={onboardingFact.imageUrl} alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={e => { e.target.style.display = 'none' }} />
+            ) : (
+              <div style={{
+                width: '100%', height: '100%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'linear-gradient(135deg, #FF6B1A44, #FF6B1A)',
+              }}>
+                <span style={{ fontSize: 48, opacity: 0.4 }}>?</span>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => handleHome()}
+            style={{
+              marginTop: 12, padding: '12px 32px', borderRadius: 14,
+              background: '#FF6B1A', color: 'white', border: 'none',
+              fontWeight: 900, fontSize: 16, cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif',
+              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          >
+            Continuer l'aventure ! 🚀
+          </button>
+
+          <style>{`
+            @keyframes onbFactBounce {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-8px); }
+            }
+          `}</style>
+        </div>
       )}
 
       {screen === SCREENS.MARATHON_RESULTS && (

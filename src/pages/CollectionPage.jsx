@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useCollection'
@@ -50,7 +50,7 @@ const TAB_CONFIG = {
 
 // ─── Fact detail full-screen view ──────────────────────────────────────────
 
-function FactDetailView({ fact, onClose }) {
+function FactDetailView({ fact, onClose, isOnboardingFactDetail, onShowCollectionModal }) {
   const [showLightbox, setShowLightbox] = useState(false)
   const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
@@ -105,6 +105,10 @@ function FactDetailView({ fact, onClose }) {
         @keyframes vipDetailPulse {
           0%, 100% { opacity: 0.1; transform: scale(0.8); }
           50% { opacity: 0.35; transform: scale(1.2); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4), 0 0 15px rgba(255,255,255,0.5), 0 4px 16px rgba(255,107,26,0.4); }
+          50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3), 0 0 20px rgba(255,255,255,0.6), 0 4px 16px rgba(255,107,26,0.4); }
         }
       `}</style>
 
@@ -232,21 +236,46 @@ function FactDetailView({ fact, onClose }) {
           </div>
         </div>
 
-        {/* Bouton partager — fixe en bas */}
+        {/* Bouton partager ou "Voir ma collection" — fixe en bas */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
-          <button
-            onClick={share}
-            className="active:scale-95 transition-all"
-            style={{
-              width: '100%', height: S(44), borderRadius: S(14),
-              fontWeight: 900, fontSize: S(13), color: '#ffffff', border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
-              background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
-              boxShadow: `0 4px 16px ${catColor}50`,
-            }}
-          >
-            🎩 Partager ce F*ct
-          </button>
+          {isOnboardingFactDetail ? (
+            <button
+              onClick={() => {
+                const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                delete wd.pendingFactDetail
+                wd.hasVisitedCollection = true
+                wd.lastModified = Date.now()
+                localStorage.setItem('wtf_data', JSON.stringify(wd))
+                onClose()
+                onShowCollectionModal(true)
+              }}
+              className="active:scale-95 transition-all"
+              style={{
+                width: '100%', height: S(44), borderRadius: S(14),
+                fontWeight: 900, fontSize: S(13), color: '#ffffff', border: '3px solid white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                background: '#FF6B1A',
+                boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 4px 16px rgba(255,107,26,0.4)',
+                animation: 'pulse 1.5s ease-in-out infinite',
+              }}
+            >
+              Voir ma collection 📚
+            </button>
+          ) : (
+            <button
+              onClick={share}
+              className="active:scale-95 transition-all"
+              style={{
+                width: '100%', height: S(44), borderRadius: S(14),
+                fontWeight: 900, fontSize: S(13), color: '#ffffff', border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
+                boxShadow: `0 4px 16px ${catColor}50`,
+              }}
+            >
+              🎩 Partager ce F*ct
+            </button>
+          )}
         </div>
       </div>
 
@@ -459,6 +488,8 @@ export default function CollectionPage() {
   const [activeTab, setActiveTab] = useState('vip')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
+  const [isOnboardingFactDetail, setIsOnboardingFactDetail] = useState(false)
+  const [showCollectionModal, setShowCollectionModal] = useState(false)
 
   // Onboarding Collection
   const wtfDataInit = readWtfData()
@@ -551,6 +582,24 @@ export default function CollectionPage() {
     return firstUnlockedCatStats.facts.find(f => allUnlockedIds.has(f.id)) || null
   }, [firstUnlockedCatStats, allUnlockedIds])
 
+  // Ouvrir directement un fact si pendingFactDetail existe (depuis onboarding)
+  useEffect(() => {
+    const wtfDataOnb = readWtfData()
+    if (wtfDataOnb.pendingFactDetail) {
+      try {
+        const pendingFact = JSON.parse(wtfDataOnb.pendingFactDetail)
+        setSelectedFact(pendingFact)
+        setIsOnboardingFactDetail(true)
+        // Supprimer le flag
+        delete wtfDataOnb.pendingFactDetail
+        wtfDataOnb.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(wtfDataOnb))
+      } catch {
+        // ignore parse error
+      }
+    }
+  }, [])
+
   // Selected category for fact list
   const selectedCatStats = selectedCatId ? catStats.find(s => s.cat.id === selectedCatId) : null
 
@@ -564,11 +613,12 @@ export default function CollectionPage() {
       setOnboardingMode(false)
     }
     setSelectedFact(null)
+    setIsOnboardingFactDetail(false)
   }
 
   // ── Sub-views ──
   if (selectedFact) {
-    return <FactDetailView fact={selectedFact} onClose={handleFactDetailClose} />
+    return <FactDetailView fact={selectedFact} onClose={handleFactDetailClose} isOnboardingFactDetail={isOnboardingFactDetail} onShowCollectionModal={setShowCollectionModal} />
   }
 
   if (selectedCatStats) {
@@ -590,6 +640,46 @@ export default function CollectionPage() {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S_main(80) }}>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} message="Connecte-toi pour sauvegarder ta progression dans le cloud ☁️" />}
+
+      {showCollectionModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 500,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24,
+        }}>
+          <div style={{
+            background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)',
+            border: '2px solid #FF6B1A', borderRadius: 24,
+            padding: '32px 24px', maxWidth: 320, width: '100%',
+            textAlign: 'center', fontFamily: 'Nunito, sans-serif',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: '#FFD700', marginBottom: 10 }}>
+              Ta collection !
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.8)', marginBottom: 24, lineHeight: 1.5 }}>
+              Tu peux consulter tous les f*cts que tu débloques ici !
+            </div>
+            <button
+              onClick={() => {
+                setShowCollectionModal(false)
+                window.history.back()
+              }}
+              style={{
+                padding: '14px 32px', borderRadius: 14,
+                background: '#FF6B1A', color: 'white', border: 'none',
+                fontWeight: 900, fontSize: 16, cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+                boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+              }}
+            >
+              Revenir à l'accueil 🏠
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* CSS animations onboarding */}
       <style>{`

@@ -1213,6 +1213,8 @@ export default function App() {
         wtfData.totalAnswered = (wtfData.totalAnswered || 0) + sessionFacts.length
         wtfData.lastModified = Date.now()
         localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+        // Rafraîchir le state React pour que HomeScreen lise les seuils à jour
+        window.dispatchEvent(new Event('wtf_storage_sync'))
       } catch { /* ignore */ }
 
       // Recalculer les données trophées (facts par catégorie, VIP/Funny counts)

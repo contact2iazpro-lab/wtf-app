@@ -24,6 +24,27 @@ function pickRandom(arr, n) {
   return fisherYatesShuffle(arr).slice(0, n)
 }
 
+// ── pickMostDifferentWrong ──────────────────────────────────────────────────
+// For mode onboarding 50/50 (numWrong === 1): select the most absurd/different wrong answer
+function pickMostDifferentWrong(wrongAnswers, correctAnswer) {
+  if (wrongAnswers.length <= 1) return wrongAnswers
+  const correctWords = new Set(correctAnswer.toLowerCase().split(/\s+/))
+  const correctLen = correctAnswer.length
+  const hasNumber = (s) => /\d/.test(s)
+
+  let bestIdx = 0
+  let bestScore = -1
+  wrongAnswers.forEach((wrong, i) => {
+    const wrongWords = wrong.toLowerCase().split(/\s+/)
+    const differentWords = wrongWords.filter(w => !correctWords.has(w)).length
+    const lenDiff = Math.abs(wrong.length - correctLen)
+    const numberBonus = hasNumber(wrong) !== hasNumber(correctAnswer) ? 3 : 0
+    const score = differentWords * 2 + lenDiff * 0.1 + numberBonus
+    if (score > bestScore) { bestScore = score; bestIdx = i }
+  })
+  return [wrongAnswers[bestIdx]]
+}
+
 function hasNewFormat(fact) {
   return !!(
     fact.funnyWrong1 || fact.funnyWrong2 ||
@@ -137,7 +158,12 @@ export function getAnswerOptions(fact, difficulty) {
     const level = levelId || 'hot'
     const allWrongAnswers = pickWrongAnswers(fact, level, fact.id)
     const numWrong = Math.min((choices || 4) - 1, allWrongAnswers.length)
-    const wrongAnswers = allWrongAnswers.slice(0, numWrong)
+    let wrongAnswers
+    if (numWrong === 1) {
+      wrongAnswers = pickMostDifferentWrong(allWrongAnswers, correctAnswer)
+    } else {
+      wrongAnswers = allWrongAnswers.slice(0, numWrong)
+    }
     const allOptions = fisherYatesShuffle([correctAnswer, ...wrongAnswers])
     const correctIndex = allOptions.indexOf(correctAnswer)
 
@@ -153,7 +179,12 @@ function legacyGetAnswerOptions(fact, choices) {
   const wrongAnswers = fact.options.filter((_, i) => i !== fact.correctIndex)
 
   const numWrong = Math.min((choices || 4) - 1, wrongAnswers.length)
-  const selected = fisherYatesShuffle(wrongAnswers).slice(0, numWrong)
+  let selected
+  if (numWrong === 1) {
+    selected = pickMostDifferentWrong(wrongAnswers, correctAnswer)
+  } else {
+    selected = fisherYatesShuffle(wrongAnswers).slice(0, numWrong)
+  }
   const all = fisherYatesShuffle([...selected, correctAnswer])
   return { options: all, correctIndex: all.indexOf(correctAnswer) }
 }

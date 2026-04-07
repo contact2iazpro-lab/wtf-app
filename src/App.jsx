@@ -1341,19 +1341,16 @@ export default function App() {
       } else if (sessionType === 'marathon') {
         setScreen(SCREENS.MARATHON_RESULTS)
       } else {
-        setScreen(SCREENS.RESULTS)
-        // Ticket gratuit après première partie Flash (onboarding)
+        // Première Flash onboarding : skip ResultsScreen, retour direct Home
         if (sessionType === 'flash_solo') {
-          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          if (!wd.firstFlashTicketGiven) {
-            wd.firstFlashTicketGiven = true
-            if ((wd.tickets || 0) === 0) {
-              wd.tickets = 1
-            }
-            wd.lastModified = Date.now()
-            localStorage.setItem('wtf_data', JSON.stringify(wd))
+          const wtfDataEnd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          if ((wtfDataEnd.gamesPlayed || 0) === 1) {
+            // C'était la première partie — retour direct Home
+            handleHome()
+            return
           }
         }
+        setScreen(SCREENS.RESULTS)
       }
     } else {
       setCurrentIndex(nextIndex)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
@@ -113,6 +113,10 @@ export default function ResultsScreen({
   const [showFirstFactModal, setShowFirstFactModal] = useState(false)
   const [firstFactToShow, setFirstFactToShow] = useState(null)
   const [ticketPopVisible, setTicketPopVisible] = useState(false)
+
+  // Spotlight onboarding sur bouton "Continuer"
+  const continueButtonRef = useRef(null)
+  const [spotRectContinue, setSpotRectContinue] = useState(null)
 
   // Category color (MOD 1)
   const cat = categoryId ? getCategoryById(categoryId) : null
@@ -260,6 +264,10 @@ export default function ResultsScreen({
   useEffect(() => {
     if (!isOnboarding) return
 
+    // Ne pas afficher la modale si déjà visionnée
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    if (wd.hasSeenFirstFactModal) return
+
     if (unlockedFactsThisSession.length > 0) {
       setFirstFactToShow(unlockedFactsThisSession[0])
       const t = setTimeout(() => setShowFirstFactModal(true), 1500)
@@ -273,6 +281,24 @@ export default function ResultsScreen({
       }
     }
   }, [isOnboarding, unlockedFactsThisSession])
+
+  // Spotlight onboarding sur bouton "Continuer l'aventure"
+  useEffect(() => {
+    if (!isOnboarding || !continueButtonRef.current) return
+    const timer = setTimeout(() => {
+      const r = continueButtonRef.current?.getBoundingClientRect()
+      if (r) {
+        const pad = 8
+        setSpotRectContinue({
+          top: r.top - pad,
+          left: r.left - pad,
+          width: r.width + pad * 2,
+          height: r.height + pad * 2,
+        })
+      }
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [isOnboarding])
 
   // COR 5 — Share handler natif avec message défi
   const handleShare = () => {
@@ -498,7 +524,7 @@ export default function ResultsScreen({
                 return (
                   <div
                     key={fact.id}
-                    onClick={() => isUnlocked && setSelectedFact(fact)}
+                    onClick={() => isUnlocked && (onFactDetail ? onFactDetail(fact.id) : onCollection?.())}
                     style={{
                       width: 100, height: 100, flexShrink: 0,
                       borderRadius: 12, overflow: 'hidden', position: 'relative',
@@ -614,6 +640,7 @@ export default function ResultsScreen({
 
         {/* 4. Revenir / Continuer */}
         <button
+          ref={continueButtonRef}
           onClick={handleGoHome}
           className="btn-press w-full py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
           style={{
@@ -625,6 +652,54 @@ export default function ResultsScreen({
           {isOnboarding ? 'Continuer l\'aventure ! 🚀' : '← Revenir'}
         </button>
       </div>
+
+      {/* Spotlight onboarding sur bouton "Continuer l'aventure" */}
+      {isOnboarding && spotRectContinue && (
+        <>
+          {/* Overlay léger transparent */}
+          <div style={{
+            position: 'fixed',
+            top: spotRectContinue.top, left: spotRectContinue.left,
+            width: spotRectContinue.width, height: spotRectContinue.height,
+            borderRadius: 14,
+            background: 'transparent',
+            boxShadow: `0 0 0 9999px rgba(0,0,0,0.15), 0 0 24px 6px rgba(255,107,26,0.4)`,
+            zIndex: 101, pointerEvents: 'none',
+            transition: 'all 0.6s ease',
+          }} />
+
+          {/* Doigt animé — positionné au-dessus du bouton */}
+          <div style={{
+            position: 'fixed',
+            top: spotRectContinue.top - 40,
+            left: spotRectContinue.left + spotRectContinue.width / 2,
+            transform: 'translateX(-50%)',
+            fontSize: 32, zIndex: 102, pointerEvents: 'none',
+            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
+            transition: 'top 0.6s ease, left 0.6s ease',
+          }}>👆</div>
+
+          {/* Texte guide au-dessus du doigt */}
+          <div style={{
+            position: 'fixed',
+            top: spotRectContinue.top - 90,
+            left: '50%', transform: 'translateX(-50%)',
+            zIndex: 102, textAlign: 'center',
+          }}>
+            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
+              Continue ton aventure ! 🚀
+            </div>
+          </div>
+
+          {/* CSS animations */}
+          <style>{`
+            @keyframes homeFingerBounce {
+              0%, 100% { transform: translateY(0) translateX(-50%); }
+              50% { transform: translateY(-6px) translateX(-50%); }
+            }
+          `}</style>
+        </>
+      )}
 
       {/* Modale premier f*ct onboarding */}
       {showFirstFactModal && firstFactToShow && (
@@ -659,8 +734,16 @@ export default function ResultsScreen({
 
           <div
             onClick={() => {
+              // Marquer la modale comme visionnée
+              try {
+                const wd2 = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                wd2.hasSeenFirstFactModal = true
+                wd2.lastModified = Date.now()
+                localStorage.setItem('wtf_data', JSON.stringify(wd2))
+              } catch {}
               setShowFirstFactModal(false)
-              setSelectedFact(firstFactToShow)
+              if (onFactDetail) onFactDetail(firstFactToShow.id)
+              else if (onCollection) onCollection()
             }}
             style={{
               width: 160, height: 160, borderRadius: 20,

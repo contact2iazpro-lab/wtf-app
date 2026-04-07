@@ -200,6 +200,13 @@ export default function RevelationScreen({
   const [correctMsg] = useState(() => CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)])
 
   const scoreRefTarget = useRef(null)
+  const nextButtonRef = useRef(null)
+  const [spotRect, setSpotRect] = useState(null)
+
+  // Détection du tutoriel (basée sur gamesPlayed, comme dans ResultsScreen)
+  const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+  const gamesPlayed = wtfData.gamesPlayed || 0
+  const isTutorial = gamesPlayed <= 2
 
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext
@@ -211,6 +218,24 @@ export default function RevelationScreen({
   const catGradient = cat
     ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
     : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
+
+  // ── Spotlight tutoriel sur bouton Suivant ────────────────────────────────
+  useEffect(() => {
+    if (!isTutorial || !isCorrect || !nextButtonRef.current) return
+    const timer = setTimeout(() => {
+      const r = nextButtonRef.current?.getBoundingClientRect()
+      if (r) {
+        const pad = 8
+        setSpotRect({
+          top: r.top - pad,
+          left: r.left - pad,
+          width: r.width + pad * 2,
+          height: r.height + pad * 2,
+        })
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [isTutorial, isCorrect])
 
   // ── Coins animation (replaces floating +5 pts badge) ──────────────────────
   useEffect(() => {
@@ -712,6 +737,7 @@ export default function RevelationScreen({
               🎩 Partager ce WTF!
             </button>
             <button
+              ref={nextButtonRef}
               onClick={handleNext}
               className="btn-press active:scale-95 transition-all"
               style={{
@@ -741,6 +767,54 @@ export default function RevelationScreen({
           </button>
         )}
       </div>
+
+      {/* Spotlight tutoriel sur bouton Suivant */}
+      {isTutorial && isCorrect && spotRect && !isDuel && (
+        <>
+          {/* CSS animations tutoriel */}
+          <style>{`
+            @keyframes homeFingerBounce {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-6px); }
+            }
+          `}</style>
+
+          {/* Hole with giant box-shadow = overlay */}
+          <div style={{
+            position: 'fixed',
+            top: spotRect.top, left: spotRect.left,
+            width: spotRect.width, height: spotRect.height,
+            borderRadius: 14,
+            background: 'transparent',
+            boxShadow: `0 0 0 9999px rgba(0,0,0,0.35), 0 0 24px 6px rgba(76,175,80,0.5)`,
+            zIndex: 101, pointerEvents: 'none',
+            transition: 'all 0.6s ease',
+          }} />
+
+          {/* Doigt animé — positionné sous le trou */}
+          <div style={{
+            position: 'fixed',
+            top: spotRect.top + spotRect.height + 8,
+            left: spotRect.left + spotRect.width / 2,
+            transform: 'translateX(-50%)',
+            fontSize: 32, zIndex: 102, pointerEvents: 'none',
+            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
+            transition: 'top 0.6s ease, left 0.6s ease',
+          }}>👆</div>
+
+          {/* Texte guide */}
+          <div style={{
+            position: 'fixed',
+            top: '55%',
+            left: '50%', transform: 'translateX(-50%)',
+            zIndex: 102, textAlign: 'center',
+          }}>
+            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
+              Découvre la réponse ! 🎯
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Lightbox image — bonne réponse uniquement */}
       {showLightbox && fact.imageUrl && (

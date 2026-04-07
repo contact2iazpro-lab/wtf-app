@@ -621,7 +621,7 @@ export default function QuestionScreen({
               {/* Texte guide — en bas de l'écran */}
               <div style={{
                 position: 'fixed',
-                top: '55%',
+                bottom: 'clamp(80px, 12vh, 120px)',
                 left: '50%', transform: 'translateX(-50%)',
                 zIndex: 102, textAlign: 'center',
               }}>

@@ -494,6 +494,35 @@ export default function App() {
   const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
   const handleFlashSolo = useCallback(() => {
     audio.play('click')
+
+    // Première Flash onboarding : 5 f*cts figés + 2 QCM (50/50)
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const isDevOrTestFlash = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+    if (!isDevOrTestFlash && wd.tutorialDone && (wd.gamesPlayed || 0) === 0) {
+      const allFacts = [...getValidFacts(), ...getGeneratedFacts()]
+      let onboardingPool = ONBOARDING_FLASH_FACT_IDS
+        .map(id => allFacts.find(f => f.id === id))
+        .filter(Boolean)
+      let onboardingFacts = [...onboardingPool]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 5)
+      if (onboardingFacts.length < 5) {
+        onboardingFacts = [...getGeneratedFacts()].sort(() => Math.random() - 0.5).slice(0, 5)
+      }
+      const facts = onboardingFacts.map(fact => ({
+        ...fact,
+        ...getAnswerOptions(fact, DIFFICULTY_ONBOARDING_FLASH)
+      }))
+      setSessionType('flash_solo')
+      setGameMode('solo')
+      setIsQuickPlay(false)
+      setSelectedDifficulty(DIFFICULTY_ONBOARDING_FLASH)
+      setSelectedCategory(null)
+      initSessionState(facts)
+      setScreen(SCREENS.QUESTION)
+      return
+    }
+
     // Pool : facts non-VIP uniquement, exclure les déjà débloqués
     // Non connecté : catégories limitées
     const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
@@ -590,7 +619,17 @@ export default function App() {
     switch (mode) {
       case 'quest':    setScreen(SCREENS.DIFFICULTY); break
       case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
-      case 'flash':    setScreen(SCREENS.CATEGORY); break
+      case 'flash': {
+        // Première Flash onboarding : skip CategoryScreen
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+        if (!isDevOrTest && wd.tutorialDone && (wd.gamesPlayed || 0) === 0) {
+          handleFlashSolo() // handleFlashSolo a sa propre interception onboarding
+          break
+        }
+        setScreen(SCREENS.CATEGORY)
+        break
+      }
       case 'hunt':     handleStartWTFSession(); break
       default: break
     }

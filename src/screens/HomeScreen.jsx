@@ -463,8 +463,7 @@ export default function HomeScreen({
           }}>👆</div>
           <div style={{
             position: 'fixed',
-            bottom: 'clamp(24px, 5vh, 48px)',
-            left: '50%', transform: 'translateX(-50%)',
+            top: '55%', left: '50%', transform: 'translateX(-50%)',
             zIndex: 102, textAlign: 'center',
           }}>
             <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
@@ -716,20 +715,7 @@ export default function HomeScreen({
       </div>
       )}
 
-      {/* ═══ ZONE 3B — LOGO VOF (fixe, juste sous les coffres) ════════════ */}
-      <div style={{
-        flexShrink: 0, display: 'flex', justifyContent: 'center',
-        padding: '8px 0 0',
-      }}>
-        <img
-          src="/assets/ui/vof-logo.png?v=4"
-          alt="Vrai ou fou ?"
-          style={{
-            width: 170, maxHeight: 45, height: 'auto',
-            objectFit: 'contain', display: 'block',
-          }}
-        />
-      </div>
+
 
       {/* ═══ ZONE 4 — CORPS PRINCIPAL (flex: 1) ════════════════════════════ */}
       <div style={{
@@ -823,6 +809,16 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', position: 'relative', zIndex: 1,
         }}>
+          {/* 0. Logo Vrai ou Fou */}
+          <img
+            src="/assets/ui/vof-logo.png?v=4"
+            alt="Vrai ou fou ?"
+            style={{
+              width: 170, maxHeight: 45, height: 'auto',
+              objectFit: 'contain', display: 'block',
+            }}
+          />
+
           {/* 1. Logo WTF */}
           <img
             src="/assets/ui/wtf-logo.png?v=4"

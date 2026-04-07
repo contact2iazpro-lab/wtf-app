@@ -201,12 +201,17 @@ export default function RevelationScreen({
 
   const scoreRefTarget = useRef(null)
   const nextButtonRef = useRef(null)
+  const flashEndButtonRef = useRef(null)
   const [spotRect, setSpotRect] = useState(null)
+  const [flashSpotRect, setFlashSpotRect] = useState(null)
+  const [flashEndSpotRect, setFlashEndSpotRect] = useState(null)
 
   // Détection du tutoriel (basée sur gamesPlayed, comme dans ResultsScreen)
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const gamesPlayed = wtfData.gamesPlayed || 0
   const isTutorial = gamesPlayed <= 2
+  const isFirstFlashOnboarding = sessionType === 'flash_solo' && factIndex === 0 && gamesPlayed === 0
+  const isLastFlashQuestion = factIndex === totalFacts - 1 && sessionType === 'flash_solo' && gamesPlayed === 0
 
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext
@@ -236,6 +241,42 @@ export default function RevelationScreen({
     }, 500)
     return () => clearTimeout(timer)
   }, [isTutorial, isCorrect])
+
+  // ── Spotlight première Flash onboarding ────────────────────────────────────
+  useEffect(() => {
+    if (!isFirstFlashOnboarding || !nextButtonRef.current) return
+    const timer = setTimeout(() => {
+      const r = nextButtonRef.current?.getBoundingClientRect()
+      if (r) {
+        const pad = 8
+        setFlashSpotRect({
+          top: r.top - pad,
+          left: r.left - pad,
+          width: r.width + pad * 2,
+          height: r.height + pad * 2,
+        })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [isFirstFlashOnboarding])
+
+  // ── Spotlight dernière question Flash onboarding ────────────────────────────
+  useEffect(() => {
+    if (!isLastFlashQuestion || !flashEndButtonRef.current) return
+    const timer = setTimeout(() => {
+      const r = flashEndButtonRef.current?.getBoundingClientRect()
+      if (r) {
+        const pad = 8
+        setFlashEndSpotRect({
+          top: r.top - pad,
+          left: r.left - pad,
+          width: r.width + pad * 2,
+          height: r.height + pad * 2,
+        })
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [isLastFlashQuestion])
 
   // ── Coins animation (replaces floating +5 pts badge) ──────────────────────
   useEffect(() => {
@@ -277,6 +318,8 @@ export default function RevelationScreen({
   const handleNext = () => {
     audio.stopAll()
     audio.play('click')
+    setFlashSpotRect(null)
+    setFlashEndSpotRect(null)
     onNext()
   }
 
@@ -517,18 +560,20 @@ export default function RevelationScreen({
         {/* Boutons */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
-            <button
-              onClick={handleNativeShare}
-              className="btn-press active:scale-95 transition-all"
-              style={{
-                flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                color: 'white', border: '2px solid rgba(255,255,255,0.4)',
-              }}
-            >
-              🤝 Demander de l'aide
-            </button>
+            {gamesPlayed > 1 && (
+              <button
+                onClick={handleNativeShare}
+                className="btn-press active:scale-95 transition-all"
+                style={{
+                  flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+                  color: 'white', border: '2px solid rgba(255,255,255,0.4)',
+                }}
+              >
+                🤝 Demander de l'aide
+              </button>
+            )}
             <button
               onClick={handleNext}
               className="btn-press active:scale-95 transition-all"
@@ -737,7 +782,7 @@ export default function RevelationScreen({
               🎩 Partager ce WTF!
             </button>
             <button
-              ref={nextButtonRef}
+              ref={isLast ? flashEndButtonRef : nextButtonRef}
               onClick={handleNext}
               className="btn-press active:scale-95 transition-all"
               style={{
@@ -811,6 +856,86 @@ export default function RevelationScreen({
           }}>
             <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
               Découvre la réponse ! 🎯
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Spotlight première Flash onboarding */}
+      {isFirstFlashOnboarding && flashSpotRect && (
+        <>
+          {/* Hole with giant box-shadow = overlay */}
+          <div style={{
+            position: 'fixed',
+            top: flashSpotRect.top, left: flashSpotRect.left,
+            width: flashSpotRect.width, height: flashSpotRect.height,
+            borderRadius: 14,
+            background: 'transparent',
+            boxShadow: `0 0 0 9999px rgba(0,0,0,0.4)`,
+            zIndex: 101, pointerEvents: 'none',
+            transition: 'all 0.6s ease',
+          }} />
+
+          {/* Doigt animé — positionné sous le trou */}
+          <div style={{
+            position: 'fixed',
+            top: flashSpotRect.top + flashSpotRect.height + 8,
+            left: flashSpotRect.left + flashSpotRect.width / 2,
+            transform: 'translateX(-50%)',
+            fontSize: 32, zIndex: 102, pointerEvents: 'none',
+            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
+            transition: 'top 0.6s ease, left 0.6s ease',
+          }}>👆</div>
+
+          {/* Texte guide */}
+          <div style={{
+            position: 'fixed',
+            top: '55%',
+            left: '50%', transform: 'translateX(-50%)',
+            zIndex: 102, textAlign: 'center',
+          }}>
+            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
+              Passe au f*ct suivant ! 🎯
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Spotlight dernière question Flash onboarding */}
+      {isLastFlashQuestion && flashEndSpotRect && (
+        <>
+          {/* Hole with giant box-shadow = overlay */}
+          <div style={{
+            position: 'fixed',
+            top: flashEndSpotRect.top, left: flashEndSpotRect.left,
+            width: flashEndSpotRect.width, height: flashEndSpotRect.height,
+            borderRadius: 14,
+            background: 'transparent',
+            boxShadow: `0 0 0 9999px rgba(0,0,0,0.4)`,
+            zIndex: 101, pointerEvents: 'none',
+            transition: 'all 0.6s ease',
+          }} />
+
+          {/* Doigt animé — positionné sous le trou */}
+          <div style={{
+            position: 'fixed',
+            top: flashEndSpotRect.top + flashEndSpotRect.height + 8,
+            left: flashEndSpotRect.left + flashEndSpotRect.width / 2,
+            transform: 'translateX(-50%)',
+            fontSize: 32, zIndex: 102, pointerEvents: 'none',
+            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
+            transition: 'top 0.6s ease, left 0.6s ease',
+          }}>👆</div>
+
+          {/* Texte guide */}
+          <div style={{
+            position: 'fixed',
+            top: '55%',
+            left: '50%', transform: 'translateX(-50%)',
+            zIndex: 102, textAlign: 'center',
+          }}>
+            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
+              Découvre tes résultats ! 🎯
             </div>
           </div>
         </>

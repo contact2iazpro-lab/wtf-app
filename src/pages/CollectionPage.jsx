@@ -295,7 +295,7 @@ function FactDetailView({ fact, onClose }) {
 
 // ─── Fact list overlay for a category+difficulty ────────────────────────────
 
-function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, onClose }) {
+function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, onClose, onboardingMode, firstUnlockedFact }) {
   const S = (px) => `calc(${px}px * var(--scale))`
   const tab = TAB_CONFIG[activeTab]
   const unlockedFacts = facts.filter(f => unlockedIds.has(f.id))
@@ -362,22 +362,33 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
             </p>
           )}
 
+          {onboardingMode && firstUnlockedFact && (
+            <div style={{ fontSize: 11, fontWeight: 800, color: '#FFD700', marginBottom: 8, textAlign: 'center' }}>
+              Clique pour voir le détail ! 👇
+            </div>
+          )}
+
           {unlockedFacts.length > 0 && (
             <>
               <p style={{ fontSize: 16, fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: S(8), textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                 F*cts débloqués — {unlockedFacts.length}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), marginBottom: S(16) }}>
-                {unlockedFacts.map(fact => (
+                {unlockedFacts.map((fact, idx) => {
+                  const isFirstFact = onboardingMode && firstUnlockedFact && fact.id === firstUnlockedFact.id
+                  const shouldFade = onboardingMode && firstUnlockedFact && fact.id !== firstUnlockedFact.id
+                  return (
                   <button
                     key={fact.id}
                     onClick={() => { audio.play('click'); onSelectFact(fact) }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: S(10),
                       padding: S(10), borderRadius: 12, textAlign: 'left', width: '100%',
-                      border: `2px solid ${cat.color}`,
+                      border: isFirstFact ? `2px solid #FFD700` : `2px solid ${cat.color}`,
                       background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)',
                       cursor: 'pointer',
+                      opacity: shouldFade ? 0.4 : 1,
+                      animation: isFirstFact ? 'collectionPulse 2s ease-in-out infinite' : 'none',
                     }}
                   >
                     {fact.imageUrl ? (
@@ -390,7 +401,8 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
                     </div>
                     <span style={{ fontSize: 18, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }}>›</span>
                   </button>
-                ))}
+                  )
+                })}
               </div>
             </>
           )}
@@ -447,6 +459,11 @@ export default function CollectionPage() {
   const [activeTab, setActiveTab] = useState('vip')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
+
+  // Onboarding Collection
+  const wtfDataInit = readWtfData()
+  const isFirstVisitCollection = !wtfDataInit.hasVisitedCollection
+  const [onboardingMode, setOnboardingMode] = useState(isFirstVisitCollection)
 
   // Local unlocked facts
   const localUnlocked = useMemo(() => {
@@ -523,12 +540,35 @@ export default function CollectionPage() {
   const tabTotalFacts = catStats.filter(s => !s.isLocked).reduce((a, s) => a + s.total, 0)
   const tabTotalUnlocked = catStats.filter(s => !s.isLocked).reduce((a, s) => a + s.unlocked, 0)
 
+  // Onboarding: first unlocked category
+  const firstUnlockedCatStats = useMemo(() => {
+    return catStats.find(s => !s.isLocked && s.unlocked > 0)
+  }, [catStats])
+
+  // Onboarding: first unlocked fact in first category
+  const firstUnlockedFact = useMemo(() => {
+    if (!firstUnlockedCatStats) return null
+    return firstUnlockedCatStats.facts.find(f => allUnlockedIds.has(f.id)) || null
+  }, [firstUnlockedCatStats, allUnlockedIds])
+
   // Selected category for fact list
   const selectedCatStats = selectedCatId ? catStats.find(s => s.cat.id === selectedCatId) : null
 
+  // Mark Collection as visited when fact detail closes (entering then leaving)
+  const handleFactDetailClose = () => {
+    if (onboardingMode) {
+      const wd = readWtfData()
+      wd.hasVisitedCollection = true
+      wd.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(wd))
+      setOnboardingMode(false)
+    }
+    setSelectedFact(null)
+  }
+
   // ── Sub-views ──
   if (selectedFact) {
-    return <FactDetailView fact={selectedFact} onClose={() => setSelectedFact(null)} />
+    return <FactDetailView fact={selectedFact} onClose={handleFactDetailClose} />
   }
 
   if (selectedCatStats) {
@@ -540,6 +580,8 @@ export default function CollectionPage() {
         activeTab={activeTab}
         onSelectFact={setSelectedFact}
         onClose={() => setSelectedCatId(null)}
+        onboardingMode={onboardingMode}
+        firstUnlockedFact={firstUnlockedFact}
       />
     )
   }
@@ -548,6 +590,14 @@ export default function CollectionPage() {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S_main(80) }}>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} message="Connecte-toi pour sauvegarder ta progression dans le cloud ☁️" />}
+
+      {/* CSS animations onboarding */}
+      <style>{`
+        @keyframes collectionPulse {
+          0%, 100% { border-color: #FFD700; box-shadow: 0 0 0 0 rgba(255,215,0,0.4); }
+          50% { border-color: rgba(255,215,0,0.6); box-shadow: 0 0 0 8px rgba(255,215,0,0.1); }
+        }
+      `}</style>
 
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
@@ -565,6 +615,14 @@ export default function CollectionPage() {
               <strong style={{ color: '#1a1a2e' }}>{overallUnlocked} / {overallTotal}</strong> F*cts débloqués
             </p>
           </div>
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
+            title="Paramètres"
+          >
+            <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: 18, height: 18 }} />
+          </button>
         </div>
 
         {/* Global progress bar (overall) */}
@@ -622,10 +680,17 @@ export default function CollectionPage() {
 
       {/* Category list */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
+        {onboardingMode && firstUnlockedCatStats && (
+          <div style={{ fontSize: 12, fontWeight: 800, color: '#FFD700', marginBottom: 8, textAlign: 'center' }}>
+            Découvre tes f*cts ! 🌟
+          </div>
+        )}
         <div className="flex flex-col gap-2">
           {catStats.map(({ cat, unlocked, total, percentage, isCompleted, isLocked }) => {
             const rgb = hexToRgb(cat.color)
             const remaining = total - unlocked
+            const isFirstCatOnboarding = onboardingMode && firstUnlockedCatStats && cat.id === firstUnlockedCatStats.cat.id
+            const shouldFade = onboardingMode && firstUnlockedCatStats && cat.id !== firstUnlockedCatStats.cat.id && !isLocked
 
             return (
               <button
@@ -638,14 +703,17 @@ export default function CollectionPage() {
                 className="rounded-2xl p-3 flex items-center gap-3 text-left w-full active:scale-98 transition-all"
                 style={{
                   background: isLocked ? '#F3F4F6' : percentage > 0 ? `rgba(${rgb}, 0.08)` : '#F9FAFB',
-                  border: isLocked
-                    ? '1px solid #E5E7EB'
-                    : isCompleted
-                      ? '1px solid rgba(255,215,0,0.35)'
-                      : percentage > 0
-                        ? `1px solid rgba(${rgb}, 0.25)`
-                        : '1px solid rgba(229,231,235,0.5)',
-                  opacity: isLocked ? 0.5 : 1,
+                  border: isFirstCatOnboarding
+                    ? '2px solid #FFD700'
+                    : isLocked
+                      ? '1px solid #E5E7EB'
+                      : isCompleted
+                        ? '1px solid rgba(255,215,0,0.35)'
+                        : percentage > 0
+                          ? `1px solid rgba(${rgb}, 0.25)`
+                          : '1px solid rgba(229,231,235,0.5)',
+                  opacity: shouldFade ? 0.4 : (isLocked ? 0.5 : 1),
+                  animation: isFirstCatOnboarding ? 'collectionPulse 2s ease-in-out infinite' : 'none',
                 }}
               >
                 {/* Icône catégorie + cadenas */}

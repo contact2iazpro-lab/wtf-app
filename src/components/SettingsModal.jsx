@@ -299,25 +299,6 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
                 ))}
               </div>
 
-              {/* ── Règles des modes ── */}
-              <p className="text-xs font-black uppercase tracking-wider mt-3 mb-2" style={{ color: '#9CA3AF' }}>Règles des modes</p>
-              <button
-                onClick={() => {
-                  // Supprimer toutes les clés skip_launch_*
-                  const keysToRemove = []
-                  for (let i = 0; i < localStorage.length; i++) {
-                    const k = localStorage.key(i)
-                    if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
-                  }
-                  keysToRemove.forEach(k => localStorage.removeItem(k))
-                  alert('Règles réactivées ✅')
-                }}
-                className="w-full py-2.5 rounded-2xl font-bold text-sm active:scale-95 transition-all mb-2"
-                style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
-              >
-                🔄 Réafficher les règles des modes
-              </button>
-
               {/* ── Langue ── */}
               <p className="text-xs font-black uppercase tracking-wider mt-3" style={{ color: '#9CA3AF' }}>Langue</p>
 

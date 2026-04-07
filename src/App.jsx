@@ -150,6 +150,20 @@ function loadStorage() {
     const todayDateStr = TODAY_DATE_STR()
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
+    // Initialiser l'ID anonyme unique si absent
+    if (!saved.anonymousId) {
+      saved.anonymousId = 'wtf_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9)
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    }
+
+    // Initialiser le pseudo par défaut si absent
+    if (!saved.playerName) {
+      saved.playerName = 'Joueur WTF!'
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    }
+
     // Si on revient de dev/test en mode joueur, restaurer immédiatement les vrais unlockedFacts
     const isDev = localStorage.getItem('wtf_dev_mode') === 'true'
     const isTest = localStorage.getItem('wtf_test_mode') === 'true'

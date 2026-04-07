@@ -233,37 +233,37 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             })}
           </div>
 
-          {/* Content area */}
-          <div className="flex-1 overflow-y-auto p-4">
+          {/* Content area - fullscreen, no scroll */}
+          <div className="flex-1 overflow-hidden p-3" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             {/* Chapter title */}
-            <div className="flex items-center gap-2 mb-3">
-              <span style={{ fontSize: 26 }}>{chapter.emoji}</span>
-              <h2 className="font-black text-sm" style={{ color: '#1a1a2e', lineHeight: '1.3' }}>
+            <div className="flex items-center gap-2 mb-2" style={{ flexShrink: 0 }}>
+              <span style={{ fontSize: 24 }}>{chapter.emoji}</span>
+              <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.2', fontSize: '14px' }}>
                 {chapter.title}
               </h2>
             </div>
 
             {chapter.soon && (
               <div
-                className="mb-3 py-1.5 px-3 rounded-xl text-center"
-                style={{ background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)' }}
+                className="mb-2 py-1 px-2 rounded-xl text-center"
+                style={{ background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)', flexShrink: 0 }}
               >
-                <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#FF6B1A' }}>
+                <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#FF6B1A', fontSize: '10px' }}>
                   🚧 Bientôt disponible
                 </span>
               </div>
             )}
 
             {/* Rules items */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5" style={{ overflow: 'hidden', flexShrink: 1, minHeight: 0 }}>
               {chapter.content.map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-2.5 p-3 rounded-2xl"
-                  style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}
+                  className="flex items-start gap-2 p-2 rounded-2xl"
+                  style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', flexShrink: 0 }}
                 >
-                  <span className="text-base shrink-0">{item.icon}</span>
-                  <p className="text-xs font-semibold" style={{ color: '#374151', lineHeight: '1.6' }}>
+                  <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+                  <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.4', fontSize: '11px' }}>
                     {renderText(item.text)}
                   </p>
                 </div>
@@ -273,16 +273,38 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               {chapter.tutorialButton && onRestartTutorial && (
                 <button
                   onClick={() => { audio.play('click'); onRestartTutorial(); onClose() }}
-                  className="w-full py-3 rounded-2xl font-black text-sm active:scale-95 transition-all mt-2"
-                  style={{ background: '#FF6B1A', color: 'white', border: 'none' }}
+                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-2"
+                  style={{ background: '#FF6B1A', color: 'white', border: 'none', padding: '10px 12px', fontSize: '12px', flexShrink: 0 }}
                 >
                   🔄 Relancer le tutoriel
+                </button>
+              )}
+
+              {/* Bouton réafficher les règles des modes */}
+              {['quest', 'explorer', 'flash', 'blitz', 'hunt'].includes(chapter.id) && (
+                <button
+                  onClick={() => {
+                    audio.play('click')
+                    // Supprimer toutes les clés skip_launch_*
+                    const keysToRemove = []
+                    for (let i = 0; i < localStorage.length; i++) {
+                      const k = localStorage.key(i)
+                      if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
+                    }
+                    keysToRemove.forEach(k => localStorage.removeItem(k))
+                    alert('Règles réactivées ✅')
+                    onClose()
+                  }}
+                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-2"
+                  style={{ background: '#22C55E', color: 'white', border: 'none', padding: '10px 12px', fontSize: '12px', flexShrink: 0 }}
+                >
+                  🔄 Réafficher les règles des modes
                 </button>
               )}
             </div>
 
             {/* Chapter dots navigation */}
-            <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+            <div className="flex flex-wrap justify-center gap-1 mt-2" style={{ flexShrink: 0 }}>
               {CHAPTERS.map(ch => (
                 <button
                   key={ch.id}

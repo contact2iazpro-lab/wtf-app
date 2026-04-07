@@ -53,10 +53,11 @@ export default function ProfilPage() {
     setSavingName(true)
     try {
       // Toujours sauvegarder en local
-      localStorage.setItem('wtf_player_name', clean)
       const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      data.pseudo = clean
+      data.playerName = clean
+      data.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(data))
+      window.dispatchEvent(new Event('wtf_storage_sync'))
       // Si connecté, sync vers Supabase
       if (isConnected) {
         await supabase.auth.updateUser({ data: { name: clean } })
@@ -116,7 +117,8 @@ export default function ProfilPage() {
 
   const unlockedIds = useMemo(() => new Set(playerData.unlockedFacts || []), [playerData])
   const allFacts = getValidFacts()
-  const pseudo = user?.user_metadata?.name || localStorage.getItem('wtf_player_name') || playerData.pseudo || 'Joueur WTF!'
+  const pseudo = user?.user_metadata?.name || playerData.playerName || 'Joueur WTF!'
+  const anonymousId = playerData.anonymousId || 'wtf_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9)
   const gamesPlayed = playerData.gamesPlayed || 0
   const bestStreak = playerData.bestStreak || 0
   const totalCorrect = playerData.totalCorrect || 0
@@ -161,8 +163,8 @@ export default function ProfilPage() {
         <div style={{
           position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
           zIndex: 1000, background: '#22C55E', color: 'white',
-          borderRadius: 12, padding: '10px 20px',
-          fontWeight: 700, fontSize: 14, textAlign: 'center', whiteSpace: 'nowrap',
+          borderRadius: 12, padding: '8px 16px',
+          fontWeight: 700, fontSize: 12, textAlign: 'center', whiteSpace: 'nowrap',
           boxShadow: '0 4px 20px rgba(34,197,94,0.4)',
           animation: 'fadeInDown 0.35s ease',
         }}>
@@ -170,14 +172,14 @@ export default function ProfilPage() {
         </div>
       )}
       {/* Header */}
-      <div className="px-4 pt-4 pb-2 shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="px-4 pt-2 pb-1 shrink-0">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/')}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
             style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
           >←</button>
-          <h1 className="flex-1 text-lg font-black" style={{ color: '#1a1a2e' }}>Mon Profil</h1>
+          <h1 className="flex-1 text-base font-black" style={{ color: '#1a1a2e' }}>Mon Profil</h1>
           <button
             onClick={() => setShowSettings(true)}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
@@ -190,9 +192,9 @@ export default function ProfilPage() {
 
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-24">
         {/* Avatar + pseudo */}
-        <div className="flex flex-col items-center py-4">
+        <div className="flex flex-col items-center py-2">
           {/* Avatar cliquable */}
-          <div style={{ position: 'relative', marginBottom: 8 }}>
+          <div style={{ position: 'relative', marginBottom: 6 }}>
             <img
               src={avatarUrl || '/assets/ui/avatar-default.png'}
               alt="avatar"
@@ -224,9 +226,14 @@ export default function ProfilPage() {
             <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
           </div>
 
+          {/* Nom Google si connecté */}
+          {isConnected && user?.user_metadata?.name && (
+            <span className="text-xs font-semibold" style={{ color: '#9CA3AF', marginTop: '4px' }}>Google: {user?.user_metadata?.name}</span>
+          )}
+
           {/* Pseudo éditable */}
           {editingName ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" style={{ marginTop: '6px' }}>
               <input
                 value={nameInput}
                 onChange={e => setNameInput(e.target.value.slice(0, 20))}
@@ -240,22 +247,32 @@ export default function ProfilPage() {
               <button onClick={() => setEditingName(false)} className="text-red-400 font-bold text-lg active:scale-90">✗</button>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5" style={{ marginTop: '6px' }}>
               <span className="font-black text-base" style={{ color: '#1a1a2e' }}>{pseudo}</span>
-              <button onClick={() => { setNameInput(pseudo); setEditingName(true) }} className="text-slate-400 hover:text-slate-600 active:scale-90 transition-all" style={{ fontSize: 14 }}>✏️</button>
+              <button onClick={() => { setNameInput(pseudo); setEditingName(true) }} className="text-slate-400 hover:text-slate-600 active:scale-90 transition-all" style={{ fontSize: 12 }}>✏️</button>
             </div>
           )}
+
+          {/* Email Google si connecté */}
+          {isConnected && (
+            <span className="text-xs font-semibold" style={{ color: '#6B7280', marginTop: '4px', display: 'block' }}>{user?.email}</span>
+          )}
+
+          {/* ID anonyme en bas */}
+          <div className="text-xs" style={{ color: '#D1D5DB', fontFamily: 'monospace', wordBreak: 'break-all', marginTop: '8px' }}>
+            ID: {anonymousId}
+          </div>
+
           {isConnected ? (
             <>
-              <span className="text-xs font-semibold mt-1" style={{ color: '#6B7280' }}>{user?.email}</span>
-              <div className="flex items-center gap-1.5 mt-1 px-3 py-1 rounded-full" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', marginTop: '8px' }}>
                 <span style={{ fontSize: 10 }}>✅</span>
                 <span className="text-xs font-bold" style={{ color: '#22C55E' }}>Progression sauvegardée</span>
               </div>
               <button
                 onClick={() => { signOut(); window.location.href = '/' }}
-                className="mt-2 px-4 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all"
-                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444' }}
+                className="rounded-xl text-xs font-bold active:scale-95 transition-all"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', marginTop: '8px', padding: '8px 16px' }}
               >
                 Se déconnecter
               </button>
@@ -263,8 +280,8 @@ export default function ProfilPage() {
           ) : (
             <button
               onClick={() => signInWithGoogle()}
-              className="mt-3 px-5 py-2.5 rounded-2xl font-black text-sm active:scale-95 transition-all"
-              style={{ background: '#FF6B1A', color: 'white', border: 'none' }}
+              className="rounded-2xl font-black text-sm active:scale-95 transition-all"
+              style={{ background: '#FF6B1A', color: 'white', border: 'none', marginTop: '8px', padding: '10px 20px' }}
             >
               Se connecter avec Google
             </button>
@@ -272,7 +289,7 @@ export default function ProfilPage() {
         </div>
 
         {/* Ressources */}
-        <div className="rounded-2xl mb-4" style={{ background: 'rgba(0,0,0,0.04)', padding: '12px', display: 'flex', gap: 8 }}>
+        <div className="rounded-2xl mb-3" style={{ background: 'rgba(0,0,0,0.04)', padding: '10px', display: 'flex', gap: 6 }}>
           {[
             { emoji: '🪙', value: playerCoins, label: 'coins' },
             { emoji: '🎟️', value: playerTickets, label: 'tickets' },
@@ -287,25 +304,25 @@ export default function ProfilPage() {
         </div>
 
         {/* Collection WTF! vs Funny */}
-        <div className="flex gap-2 mb-4">
-          <div className="flex-1 rounded-2xl p-3 text-center" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.3)' }}>
-            <span className="text-lg block">⭐</span>
-            <span className="font-black text-base block" style={{ color: '#D97706' }}>{unlockedWtf}</span>
+        <div className="flex gap-2 mb-3">
+          <div className="flex-1 rounded-2xl p-2 text-center" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.3)' }}>
+            <span className="text-base block">⭐</span>
+            <span className="font-black text-sm block" style={{ color: '#D97706' }}>{unlockedWtf}</span>
             <span className="text-xs" style={{ color: '#9CA3AF' }}>WTF!</span>
           </div>
-          <div className="flex-1 rounded-2xl p-3 text-center" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.3)' }}>
-            <span className="text-lg block">🎭</span>
-            <span className="font-black text-base block" style={{ color: '#7C3AED' }}>{unlockedFunny}</span>
+          <div className="flex-1 rounded-2xl p-2 text-center" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.3)' }}>
+            <span className="text-base block">🎭</span>
+            <span className="font-black text-sm block" style={{ color: '#7C3AED' }}>{unlockedFunny}</span>
             <span className="text-xs" style={{ color: '#9CA3AF' }}>Funny</span>
           </div>
         </div>
 
         {/* Stats globales */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-2 mb-3">
           {STATS.map(s => (
-            <div key={s.label} className="rounded-2xl p-3 text-center" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
-              <span className="text-lg block">{s.emoji}</span>
-              <span className="font-black text-base block" style={{ color: '#1a1a2e' }}>{s.value}</span>
+            <div key={s.label} className="rounded-2xl p-2 text-center" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
+              <span className="text-base block">{s.emoji}</span>
+              <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>{s.value}</span>
               <span className="text-xs" style={{ color: '#9CA3AF' }}>{s.label}</span>
             </div>
           ))}
@@ -314,15 +331,15 @@ export default function ProfilPage() {
         {/* Stats par mode */}
         {Object.entries(statsByMode).filter(([, s]) => s.gamesPlayed > 0).length > 0 && (
           <>
-            <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Statistiques par mode</h2>
-            <div className="flex flex-col gap-2 mb-4">
+            <h2 className="font-black text-xs mb-2" style={{ color: '#1a1a2e' }}>Statistiques par mode</h2>
+            <div className="flex flex-col gap-2 mb-3">
               {Object.entries(statsByMode).filter(([, s]) => s.gamesPlayed > 0).map(([key, s]) => {
                 const mode = MODE_LABELS[key] || { icon: '🎮', name: key }
                 const rate = s.totalAnswered > 0 ? Math.round((s.totalCorrect / s.totalAnswered) * 100) : 0
                 return (
-                  <div key={key} style={{ background: 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '10px 12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                      <span style={{ fontSize: 16 }}>{mode.icon}</span>
+                  <div key={key} style={{ background: 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '8px 10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+                      <span style={{ fontSize: 14 }}>{mode.icon}</span>
                       <span className="font-black text-xs" style={{ color: '#1a1a2e' }}>{mode.name}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 4 }}>
@@ -332,8 +349,8 @@ export default function ProfilPage() {
                         { label: 'Série max', value: s.bestStreak || 0 },
                       ].map(st => (
                         <div key={st.label} style={{ flex: 1, textAlign: 'center' }}>
-                          <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>{st.value}</span>
-                          <span style={{ fontSize: 9, color: '#9CA3AF', fontWeight: 600 }}>{st.label}</span>
+                          <span className="font-black text-xs block" style={{ color: '#1a1a2e' }}>{st.value}</span>
+                          <span style={{ fontSize: 8, color: '#9CA3AF', fontWeight: 600 }}>{st.label}</span>
                         </div>
                       ))}
                     </div>
@@ -345,7 +362,7 @@ export default function ProfilPage() {
         )}
 
         {/* ── Réinitialiser progression ───────────────────────────── */}
-        <div style={{ marginTop: 32, paddingBottom: 24, textAlign: 'center' }}>
+        <div style={{ marginTop: 16, paddingBottom: 16, textAlign: 'center' }}>
           <button
             onClick={async () => {
               if (!window.confirm('⚠️ ATTENTION : Cette action est IRRÉVERSIBLE.\nTu vas perdre tous tes coins, tickets, indices, ta collection et ta progression.\nEs-tu sûr de vouloir continuer ?')) return
@@ -376,14 +393,14 @@ export default function ProfilPage() {
             }}
             style={{
               background: '#DC2626', color: 'white', border: 'none',
-              borderRadius: 12, padding: '12px 24px',
-              fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 13,
+              borderRadius: 12, padding: '10px 16px',
+              fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 11,
               cursor: 'pointer',
             }}
           >
             Réinitialiser ma progression
           </button>
-          <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 8 }}>
+          <p style={{ fontSize: 10, color: '#9CA3AF', marginTop: 6 }}>
             Action irréversible. Toute ta progression sera perdue.
           </p>
         </div>

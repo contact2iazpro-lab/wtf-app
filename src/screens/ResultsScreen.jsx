@@ -5,7 +5,6 @@ import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
 import { useAuth } from '../context/AuthContext'
 import ConnectBanner from '../components/ConnectBanner'
-import { getTutorialState, advanceTutorial, TUTORIAL_STATES } from '../utils/tutorialManager'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -108,15 +107,11 @@ export default function ResultsScreen({
   const [animatedScore, setAnimatedScore] = useState(0)      // MOD 6
   const [sharedCopied, setSharedCopied] = useState(false)    // MOD 10
   const [confettiActive, setConfettiActive] = useState(false) // COR 4
-  const [isTutoQuestDone, setIsTutoQuestDone] = useState(false)
-
-  useEffect(() => {
-    getTutorialState().then(state => {
-      if (state === TUTORIAL_STATES.QUEST_DONE) {
-        setIsTutoQuestDone(true)
-      }
-    })
-  }, [])
+  const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+  const gamesPlayed = wtfData.gamesPlayed || 0
+  const isOnboarding = gamesPlayed <= 2
+  const [showFirstFactModal, setShowFirstFactModal] = useState(false)
+  const [firstFactToShow, setFirstFactToShow] = useState(null)
   const [ticketPopVisible, setTicketPopVisible] = useState(false)
 
   // Category color (MOD 1)
@@ -260,6 +255,24 @@ export default function ResultsScreen({
       if (el) el.remove()
     }
   }, [coinsEarned])
+
+  // Modale "Premier f*ct débloqué" pendant l'onboarding
+  useEffect(() => {
+    if (!isOnboarding) return
+
+    if (unlockedFactsThisSession.length > 0) {
+      setFirstFactToShow(unlockedFactsThisSession[0])
+      const t = setTimeout(() => setShowFirstFactModal(true), 1500)
+      return () => clearTimeout(t)
+    } else if (gamesPlayed >= 2) {
+      const fact999 = (allSessionFacts || []).find(f => f.id === 999)
+      if (fact999) {
+        setFirstFactToShow(fact999)
+        const t = setTimeout(() => setShowFirstFactModal(true), 1500)
+        return () => clearTimeout(t)
+      }
+    }
+  }, [isOnboarding, unlockedFactsThisSession])
 
   // COR 5 — Share handler natif avec message défi
   const handleShare = () => {
@@ -557,8 +570,8 @@ export default function ResultsScreen({
         </div>
 
         {/* COR 3 — Principal : Rejouer même catégorie + difficulté */}
-        {/* 1. Bouton Google — si non connecté */}
-        {!isConnected && (
+        {/* 1. Bouton Google — si non connecté et pas en onboarding */}
+        {!isConnected && !isOnboarding && (
           <button
             onClick={() => {
               if (unlockedFactsThisSession.length > 0) {
@@ -591,10 +604,7 @@ export default function ResultsScreen({
         <button
           onClick={onReplay}
           className="btn-press w-full py-4 rounded-2xl font-black text-base uppercase tracking-wide active:scale-95 transition-all"
-          style={isTutoQuestDone ? {
-            background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.3)',
-            color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-          } : {
+          style={{
             background: '#FF6B1A',
             boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
             color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)',
@@ -602,37 +612,88 @@ export default function ResultsScreen({
           🔄 Rejouer
         </button>
 
-        {/* 4. Collection (tuto QUEST_DONE) ou Revenir */}
-        {isTutoQuestDone && onCollection ? (
-          <button
-            onClick={() => {
-              advanceTutorial() // QUEST_DONE → COMPLETED
-              audio.stopAll()
-              audio.play('click')
-              onCollection()
-            }}
-            className="btn-press w-full py-4 rounded-2xl font-black text-sm active:scale-95 transition-all"
-            style={{
-              background: '#FF6B1A',
-              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
-              color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-            }}>
-            Voir ma collection 📚
-          </button>
-        ) : (
-          <button
-            onClick={handleGoHome}
-            className="btn-press w-full py-3 rounded-2xl font-black text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
-            style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '1.5px solid rgba(255,255,255,0.3)',
-              color: '#ffffff',
-              textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-            }}>
-            🏠 Revenir à l'accueil
-          </button>
-        )}
+        {/* 4. Revenir / Continuer */}
+        <button
+          onClick={handleGoHome}
+          className="btn-press w-full py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
+          style={{
+            background: isOnboarding ? '#FF6B1A' : 'transparent',
+            boxShadow: isOnboarding ? '0 4px 16px rgba(255,107,26,0.4)' : 'none',
+            color: isOnboarding ? 'white' : 'rgba(255,255,255,0.5)',
+            textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+          }}>
+          {isOnboarding ? 'Continuer l\'aventure ! 🚀' : '← Revenir'}
+        </button>
       </div>
+
+      {/* Modale premier f*ct onboarding */}
+      {showFirstFactModal && firstFactToShow && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 400,
+            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            padding: 24, gap: 20,
+          }}
+        >
+          <div style={{
+            fontSize: 48, lineHeight: 1,
+            animation: 'confettiFall 0.5s ease backwards',
+          }}>🎉</div>
+
+          <div style={{
+            fontSize: 22, fontWeight: 900, color: '#FFD700',
+            textAlign: 'center', fontFamily: 'Nunito, sans-serif',
+            textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          }}>
+            Tu as débloqué ton premier f*ct !
+          </div>
+
+          <div style={{
+            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
+            textAlign: 'center', fontFamily: 'Nunito, sans-serif',
+          }}>
+            Clique dessus pour le découvrir 👇
+          </div>
+
+          <div
+            onClick={() => {
+              setShowFirstFactModal(false)
+              setSelectedFact(firstFactToShow)
+            }}
+            style={{
+              width: 160, height: 160, borderRadius: 20,
+              overflow: 'hidden', cursor: 'pointer',
+              border: '3px solid #FFD700',
+              boxShadow: '0 0 30px rgba(255,215,0,0.4), 0 8px 32px rgba(0,0,0,0.5)',
+              background: `linear-gradient(135deg, ${catColor}44, ${catColor})`,
+              animation: 'firstFactBounce 1.2s ease-in-out infinite',
+              position: 'relative',
+            }}
+          >
+            {firstFactToShow.imageUrl ? (
+              <img src={firstFactToShow.imageUrl} alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={e => { e.target.style.display = 'none' }} />
+            ) : (
+              <div style={{
+                width: '100%', height: '100%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: 48, opacity: 0.4 }}>?</span>
+              </div>
+            )}
+          </div>
+
+          <style>{`
+            @keyframes firstFactBounce {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-8px); }
+            }
+          `}</style>
+        </div>
+      )}
 
       {/* Fact detail modal */}
       {selectedFact && (

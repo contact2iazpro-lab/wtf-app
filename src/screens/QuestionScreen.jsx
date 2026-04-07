@@ -576,6 +576,10 @@ export default function QuestionScreen({
             40% { opacity: 1; }
             100% { top: 75%; left: 50%; opacity: 1; transform: translate(-50%, -50%) scale(1); }
           }
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
         `}</style>
 
         {/* Content */}
@@ -617,7 +621,7 @@ export default function QuestionScreen({
               {/* Texte guide — en bas de l'écran */}
               <div style={{
                 position: 'fixed',
-                bottom: 'clamp(24px, 5vh, 48px)',
+                top: '55%',
                 left: '50%', transform: 'translateX(-50%)',
                 zIndex: 102, textAlign: 'center',
               }}>
@@ -972,6 +976,7 @@ export default function QuestionScreen({
                     background: '#FF6B1A', color: 'white', border: 'none',
                     fontFamily: 'Nunito, sans-serif', fontSize: 16, fontWeight: 900,
                     cursor: 'pointer', boxShadow: '0 4px 12px rgba(255,107,26,0.3)',
+                    animation: 'pulse 1.5s ease-in-out infinite',
                   }}
                 >
                   Jouer ma première partie ⚡

@@ -25,7 +25,28 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
       '--scale': scale,
       background: `linear-gradient(160deg, ${color}22, ${color})`,
       color: '#ffffff',
+      position: 'relative',
     }}>
+      {/* ── Bouton fermer ✕ ────────────────────────────────────────── */}
+      <button
+        onClick={() => { audio.play('click'); onBack() }}
+        style={{
+          position: 'absolute', top: S(12), right: S(12),
+          width: S(36), height: S(36),
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.2)',
+          border: `1.5px solid rgba(255,255,255,0.4)`,
+          color: '#ffffff',
+          fontSize: S(18),
+          fontWeight: 900,
+          cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 10,
+          lineHeight: 1,
+        }}
+      >
+        ✕
+      </button>
       {/* ── Bouton retour ──────────────────────────────────────────── */}
       <div style={{ flexShrink: 0, padding: `${S(16)} ${S(16)} 0` }}>
         <button

@@ -447,6 +447,33 @@ export default function App() {
     setPointsEarned(0)
   }
 
+  // Reset complet onboarding
+  const resetOnboarding = () => {
+    const freshData = {
+      tutorialDone: false,
+      gamesPlayed: 0,
+      totalScore: 0,
+      streak: 0,
+      wtfCoins: 0,
+      tickets: 3,
+      unlockedFacts: [],
+      sessionsToday: 0,
+      statsByMode: {},
+      lastModified: Date.now(),
+    }
+    localStorage.setItem('wtf_data', JSON.stringify(freshData))
+    localStorage.removeItem('tutorial_state')
+    localStorage.setItem('wtf_hints_available', '3')
+    // Supprimer les skip_launch flags
+    localStorage.removeItem('skip_launch_quest')
+    localStorage.removeItem('skip_launch_flash')
+    localStorage.removeItem('skip_launch_blitz')
+    localStorage.removeItem('skip_launch_explorer')
+    localStorage.removeItem('skip_launch_hunt')
+    // Recharger la page pour repartir du splash
+    window.location.reload()
+  }
+
   // WTF du Jour → go to teaser screen
   const handleWTFDuJour = useCallback(() => {
     audio.play('click')
@@ -1845,31 +1872,7 @@ export default function App() {
       {showHowToPlay && screen === SCREENS.HOME && (
         <HowToPlayModal
           onClose={() => setShowHowToPlay(false)}
-          onRestartTutorial={() => {
-            // Reset tutorial state et relancer
-            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            wd.tutorialDone = false
-            delete wd.hasSeenFlash
-            delete wd.hasSeenQuest
-            wd.lastModified = Date.now()
-            localStorage.setItem('wtf_data', JSON.stringify(wd))
-            localStorage.removeItem('tutorial_state')
-            setShowHowToPlay(false)
-            const tutorialFactId = getTutorialFactId()
-            const allFacts = getValidFacts()
-            const tutorialFact = allFacts.find(f => f.id === tutorialFactId)
-            if (tutorialFact) {
-              const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, DIFFICULTY_LEVELS.HOT) }
-              setSessionType('parcours')
-              setGameMode('solo')
-              setIsQuickPlay(false)
-              setIsTutorialSession(true)
-              setSelectedDifficulty(DIFFICULTY_LEVELS.HOT)
-              setSelectedCategory(tutorialFact.category)
-              initSessionState([factWithOptions])
-              setScreen(SCREENS.QUESTION)
-            }
-          }}
+          onRestartTutorial={resetOnboarding}
         />
       )}
 
@@ -2127,30 +2130,7 @@ export default function App() {
         />
       )}
 
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onShowRules={handleShowRules} onRestartTutorial={() => {
-        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        wd.tutorialDone = false
-        delete wd.hasSeenFlash
-        delete wd.hasSeenQuest
-        wd.lastModified = Date.now()
-        localStorage.setItem('wtf_data', JSON.stringify(wd))
-        localStorage.removeItem('tutorial_state')
-        setShowSettings(false)
-        const tutorialFactId = getTutorialFactId()
-        const allFacts = getValidFacts()
-        const tutorialFact = allFacts.find(f => f.id === tutorialFactId)
-        if (tutorialFact) {
-          const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, DIFFICULTY_LEVELS.HOT) }
-          setSessionType('parcours')
-          setGameMode('solo')
-          setIsQuickPlay(false)
-          setIsTutorialSession(true)
-          setSelectedDifficulty(DIFFICULTY_LEVELS.HOT)
-          setSelectedCategory(tutorialFact.category)
-          initSessionState([factWithOptions])
-          setScreen(SCREENS.QUESTION)
-        }
-      }} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onShowRules={handleShowRules} onRestartTutorial={resetOnboarding} />}
 
       {/* Modale mini parcours */}
       {miniParcours && (

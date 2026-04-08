@@ -310,10 +310,13 @@ export default function ResultsScreen({
   }))
 
   return (
-    <div className="relative flex flex-col h-full w-full screen-enter overflow-hidden" style={{
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 0,
+      display: 'flex', flexDirection: 'column',
       backgroundImage: 'url(/assets/backgrounds/results-victory.webp)',
       backgroundSize: 'cover', backgroundPosition: 'center',
       backgroundColor: '#0a0f1e',
+      overflow: 'hidden',
     }}>
       {/* Overlay léger */}
       <div style={{
@@ -367,8 +370,12 @@ export default function ResultsScreen({
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Header — pas de catégorie, on n'est plus en jeu */}
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}`, position: 'relative', zIndex: 2 }}>
+      {/* ═══ HEADER FIXE (~50px) ═══ */}
+      <div style={{
+        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}`, position: 'relative', zIndex: 2,
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+      }}>
         <button
           onClick={handleGoHome}
           style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
@@ -382,16 +389,16 @@ export default function ResultsScreen({
         </div>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(12) }}>{playerCoins}</span>
+            <img src="/assets/ui/icon-coins.png" style={{ width: S(14), height: S(14) }} alt="" />
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{playerCoins}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(12) }}>{playerTickets}</span>
+            <img src="/assets/ui/icon-tickets.png" style={{ width: S(14), height: S(14) }} alt="" />
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{playerTickets}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-hint.png" style={{ width: S(16), height: S(16) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(12) }}>{playerHints}</span>
+            <img src="/assets/ui/icon-hint.png" style={{ width: S(14), height: S(14) }} alt="" />
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{playerHints}</span>
           </div>
         </div>
         <button
@@ -402,177 +409,186 @@ export default function ResultsScreen({
         </button>
       </div>
 
-      {/* Content zone — fullscreen, no scroll */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ position: 'relative', zIndex: 2 }}>
+      {/* ═══ CONTENT CENTRAL (flex-1, no scroll) ═══ */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        position: 'relative', zIndex: 2, padding: `${S(12)} ${S(16)}`, gap: S(8),
+      }}>
 
-      {/* MOD 6 — Rang compact */}
-      <div className="flex flex-col items-center pt-1 pb-0 px-6 shrink-0">
-        <div
-          className="text-4xl mb-0"
-          style={{
-            transform: rankVisible ? 'scale(1)' : 'scale(0)',
-            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          }}>
-          {currentRank.emoji}
-        </div>
-        <div
-          className="text-sm font-black text-center"
-          style={{
-            color: textOnBg,
-            transform: rankVisible ? 'scale(1)' : 'scale(0)',
-            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
-          }}>
-          {currentRank.label}
-        </div>
-      </div>
-
-      {/* Étoiles */}
-      <div className="flex justify-center gap-2 pb-1 shrink-0">
-        {[1, 2, 3].map((s) => (
-          <span
-            key={s}
-            className="text-2xl"
+        {/* Rang + Label compact */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, gap: S(2) }}>
+          <div
             style={{
-              transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
-              transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              filter: s <= stars ? `drop-shadow(0 0 12px ${catColor})` : 'none',
-              opacity: s <= stars ? 1 : 0.2,
+              fontSize: S(48), lineHeight: 1,
+              transform: rankVisible ? 'scale(1)' : 'scale(0)',
+              transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}>
-            ⭐
-          </span>
-        ))}
-      </div>
-
-      {/* Badge Perfect — compact */}
-      {isPerfect && (
-        <div className="mx-4 mb-1 rounded-2xl p-2 shrink-0 flex items-center justify-center gap-2"
-          style={{ background: 'linear-gradient(135deg, rgba(253,224,71,0.22), rgba(245,158,11,0.35))', border: '1.5px solid rgba(253,224,71,0.6)' }}>
-          <span style={{ fontSize: 18 }}>⭐</span>
-          <span className="font-black uppercase tracking-wider" style={{ fontSize: 14, color: '#FDE047' }}>PERFECT !</span>
-          {ticketEarned && <span style={{ fontSize: 14 }}>🎟️ +1</span>}
-          <span style={{ fontSize: 18 }}>⭐</span>
-        </div>
-      )}
-
-      {/* Score card — compact */}
-      <div className="mx-4 mb-1 rounded-2xl border p-2 shrink-0" style={{ background: 'rgba(0,0,0,0.3)', borderColor: 'rgba(255,255,255,0.15)', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
-        <div className="flex items-center justify-between">
-          <div className="text-center flex-1">
-            <div className="text-2xl font-black" style={{ color: textOnBg }}>+{animatedScore} 🪙</div>
+            {currentRank.emoji}
           </div>
-          <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.15)' }} />
-          <div className="grid grid-cols-3 gap-1 flex-1 text-center">
-            <div>
-              <div className="text-lg font-black" style={{ color: textOnBg }}>{correctCount}</div>
-              <div style={{ fontSize: 9, fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Trouvés</div>
-            </div>
-            <div>
-              <div className="text-lg font-black" style={{ color: textOnBg }}>{totalFacts - correctCount}</div>
-              <div style={{ fontSize: 9, fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Ratés</div>
-            </div>
-            <div>
-              <div className="text-lg font-black" style={{ color: catColor }}>{precision}%</div>
-              <div style={{ fontSize: 9, fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Précision</div>
-            </div>
+          <div
+            style={{
+              fontSize: S(14), fontWeight: 900, textAlign: 'center', color: textOnBg,
+              transform: rankVisible ? 'scale(1)' : 'scale(0)',
+              transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
+            }}>
+            {currentRank.label}
           </div>
         </div>
-      </div>
 
-      {/* Carrousel compact — 100x140px cards */}
-      {allSessionFacts.length > 0 && (() => {
-        const unlockedIds = new Set(unlockedFactsThisSession.map(f => f.id))
-        const unlocked = allSessionFacts.filter(f => unlockedIds.has(f.id))
-        const locked = allSessionFacts.filter(f => !unlockedIds.has(f.id))
-        const sorted = [...unlocked, ...locked]
-        return (
-          <div className="mb-1 shrink-0">
-            <div className="px-4 mb-1">
-              <span style={{ fontSize: 10, fontWeight: 800, color: textOnBg, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {/* Étoiles — 24px chacune */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: S(8), flexShrink: 0 }}>
+          {[1, 2, 3].map((s) => (
+            <span
+              key={s}
+              style={{
+                fontSize: S(24), lineHeight: 1,
+                transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
+                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                filter: s <= stars ? `drop-shadow(0 0 12px ${catColor})` : 'none',
+                opacity: s <= stars ? 1 : 0.2,
+              }}>
+              ⭐
+            </span>
+          ))}
+        </div>
+
+        {/* Badge Perfect — compact, fontSize 12 */}
+        {isPerfect && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+            background: 'linear-gradient(135deg, rgba(253,224,71,0.22), rgba(245,158,11,0.35))',
+            border: '1.5px solid rgba(253,224,71,0.6)',
+            borderRadius: S(14), padding: `${S(6)} ${S(16)}`, flexShrink: 0,
+          }}>
+            <span style={{ fontSize: S(16) }}>⭐</span>
+            <span style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: S(12), color: '#FDE047', letterSpacing: '0.05em' }}>PERFECT !</span>
+            {ticketEarned && <span style={{ fontSize: S(12) }}>🎟️ +1</span>}
+            <span style={{ fontSize: S(16) }}>⭐</span>
+          </div>
+        )}
+
+        {/* Score card — UNE ligne horizontale compact */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: S(8),
+          background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(255,255,255,0.15)',
+          borderRadius: S(12), padding: S(8), flexShrink: 0,
+          textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+        }}>
+          <div style={{ textAlign: 'center', flex: 0.4 }}>
+            <div style={{ fontSize: S(16), fontWeight: 900, color: textOnBg }}>+{animatedScore} 🪙</div>
+          </div>
+          <div style={{ width: 1, height: S(24), background: 'rgba(255,255,255,0.15)' }} />
+          <div style={{ display: 'flex', gap: S(8), flex: 0.6 }}>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ fontSize: S(14), fontWeight: 900, color: textOnBg }}>{correctCount}</div>
+              <div style={{ fontSize: S(9), fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Trouvés</div>
+            </div>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ fontSize: S(14), fontWeight: 900, color: textOnBg }}>{totalFacts - correctCount}</div>
+              <div style={{ fontSize: S(9), fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Ratés</div>
+            </div>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <div style={{ fontSize: S(14), fontWeight: 900, color: catColor }}>{precision}%</div>
+              <div style={{ fontSize: S(9), fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Précision</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Carrousel facts — max 80px height */}
+        {allSessionFacts.length > 0 && (() => {
+          const unlockedIds = new Set(unlockedFactsThisSession.map(f => f.id))
+          const unlocked = allSessionFacts.filter(f => unlockedIds.has(f.id))
+          const locked = allSessionFacts.filter(f => !unlockedIds.has(f.id))
+          const sorted = [...unlocked, ...locked]
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: S(4), flexShrink: 0 }}>
+              <span style={{ fontSize: S(10), fontWeight: 800, color: textOnBg, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {unlocked.length > 0 ? `🔓 ${unlocked.length} trouvé${unlocked.length > 1 ? 's' : ''}` : ''}
                 {locked.length > 0 ? ` · 🔒 ${locked.length} raté${locked.length > 1 ? 's' : ''}` : ''}
               </span>
+              <div style={{ display: 'flex', gap: S(6), overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingRight: S(4) }}>
+                {sorted.map((fact) => {
+                  const isUnlocked = unlockedIds.has(fact.id)
+                  const factCat = CATEGORIES.find(c => c.id === fact.category)
+                  const factCatColor = factCat?.color || catColor
+                  return (
+                    <div
+                      key={fact.id}
+                      onClick={() => isUnlocked && (onFactDetail ? onFactDetail(fact.id) : onCollection?.())}
+                      style={{
+                        width: S(70), height: S(70), flexShrink: 0,
+                        borderRadius: S(8), overflow: 'hidden', position: 'relative',
+                        border: isUnlocked ? `2px solid ${factCatColor}` : '2px solid #6B7280',
+                        cursor: isUnlocked ? 'pointer' : 'default',
+                        background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})`,
+                      }}>
+                      {fact.imageUrl ? (
+                        <img src={fact.imageUrl} alt=""
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', filter: !isUnlocked ? 'blur(4px) brightness(0.4)' : 'none' }}
+                          onError={e => { e.target.style.display = 'none' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: !isUnlocked ? 'brightness(0.4)' : 'none' }}>
+                          <span style={{ fontSize: S(20), opacity: 0.3 }}>?</span>
+                        </div>
+                      )}
+                      {!isUnlocked && (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: S(16), opacity: 0.8 }}>🔒</span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingLeft: 16, paddingRight: 16, paddingBottom: 4 }} className="scrollbar-hide">
-              {sorted.map((fact) => {
-                const isUnlocked = unlockedIds.has(fact.id)
-                const factCat = CATEGORIES.find(c => c.id === fact.category)
-                const factCatColor = factCat?.color || catColor
-                return (
-                  <div
-                    key={fact.id}
-                    onClick={() => isUnlocked && (onFactDetail ? onFactDetail(fact.id) : onCollection?.())}
-                    style={{
-                      width: 100, height: 100, flexShrink: 0,
-                      borderRadius: 12, overflow: 'hidden', position: 'relative',
-                      border: isUnlocked ? `3px solid ${factCatColor}` : '3px solid #6B7280',
-                      cursor: isUnlocked ? 'pointer' : 'default',
-                      background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})`,
-                    }}>
-                    {fact.imageUrl ? (
-                      <img src={fact.imageUrl} alt=""
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', filter: !isUnlocked ? 'blur(6px) brightness(0.4)' : 'none' }}
-                        onError={e => { e.target.style.display = 'none' }} />
-                    ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: !isUnlocked ? 'brightness(0.4)' : 'none' }}>
-                        <span style={{ fontSize: 28, opacity: 0.3 }}>?</span>
-                      </div>
-                    )}
-                    {!isUnlocked && (
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 24, opacity: 0.8 }}>🔒</span>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )
-      })()}
+          )
+        })()}
 
 
-      {/* Completion rewards */}
-      {completedCategoryLevels.length > 0 && (
-        <div className="mx-5 mb-3 rounded-2xl border p-4 shrink-0" style={{ background: 'rgba(255,215,0,0.12)', borderColor: 'rgba(255,215,0,0.4)', backdropFilter: 'blur(8px)' }}>
-          <div className="text-xs font-bold uppercase tracking-widest mb-3 text-center" style={{ color: textOnBg, opacity: 0.8 }}>🏆 Niveau complété !</div>
-          {completedCategoryLevels.map(({ catId, difficulty: lvlDiff }) => {
-            const lvlCat = CATEGORIES.find(c => c.id === catId)
-            return (
-              <div key={`${catId}_${lvlDiff}`} className="flex items-center gap-3 mb-2 last:mb-0 p-2 rounded-xl" style={{ background: 'rgba(255,215,0,0.1)' }}>
-                {lvlCat?.image ? (
-                  <img src={lvlCat.image} alt={lvlCat.label} className="w-10 h-10 rounded-lg object-contain" style={{ background: 'rgba(255,255,255,0.1)' }} />
-                ) : (
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-2xl" style={{ background: 'rgba(255,255,255,0.1)' }}>
+        {/* Rewards — compact, fontSize 12 */}
+        {completedCategoryLevels.length > 0 && (
+          <div style={{
+            background: 'rgba(255,215,0,0.12)', border: '1.5px solid rgba(255,215,0,0.4)',
+            borderRadius: S(12), padding: S(8), flexShrink: 0,
+            backdropFilter: 'blur(8px)',
+          }}>
+            <div style={{ fontSize: S(10), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', marginBottom: S(6), color: textOnBg, opacity: 0.8 }}>
+              🏆 Niveau complété !
+            </div>
+            {completedCategoryLevels.map(({ catId, difficulty: lvlDiff }) => {
+              const lvlCat = CATEGORIES.find(c => c.id === catId)
+              return (
+                <div key={`${catId}_${lvlDiff}`} style={{
+                  display: 'flex', alignItems: 'center', gap: S(6),
+                  background: 'rgba(255,215,0,0.1)', borderRadius: S(8), padding: S(6),
+                  marginBottom: S(4), fontSize: S(12),
+                }}>
+                  <div style={{ width: S(28), height: S(28), flexShrink: 0, borderRadius: S(6), display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.1)', fontSize: S(16) }}>
                     {lvlCat?.emoji || '🌟'}
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-black text-xs" style={{ color: textOnBg }}>
-                    {DIFFICULTY_EMOJIS[lvlDiff]} {lvlCat?.label || catId} — {DIFFICULTY_LABELS[lvlDiff]}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 900, color: textOnBg, fontSize: S(11) }}>
+                      {DIFFICULTY_EMOJIS[lvlDiff]} {lvlCat?.label || catId} — {DIFFICULTY_LABELS[lvlDiff]}
+                    </div>
                   </div>
-                  <div className="text-yellow-200 text-xs font-semibold mt-0.5">De nouveaux facts arrivent bientôt !</div>
+                  <span style={{ fontSize: S(14) }}>🥇</span>
                 </div>
-                <div className="text-2xl">🥇</div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
 
-      </div>{/* end scrollable zone */}
+      </div>{/* end content central */}
 
-      {/* COR 5 + COR 6 — CTA avec ticket count, pb-4 */}
-      <div className="px-5 pb-4 flex flex-col gap-2 shrink-0" style={{ position: 'relative', zIndex: 2 }}>
+      {/* ═══ FOOTER FIXE ═══ */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: S(8),
+        padding: `${S(12)} ${S(16)} ${S(16)}`, flexShrink: 0,
+        position: 'relative', zIndex: 2,
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+      }}>
 
-        {/* COR 5 — Message tickets restants */}
-        <div className="text-center text-xs font-bold mb-1" style={{ color: textOnBg, opacity: 0.75 }}>
-          {remainingQuests > 0
-            ? `🎯 Tu as encore ${remainingQuests} quête${remainingQuests > 1 ? 's' : ''} disponible${remainingQuests > 1 ? 's' : ''} aujourd'hui !`
-            : "✅ Tu as utilisé toutes tes quêtes du jour — reviens demain !"}
-        </div>
-
-        {/* COR 3 — Principal : Rejouer même catégorie + difficulté */}
-        {/* 1. Bouton Google — si non connecté et pas en onboarding */}
+        {/* Ligne 1 : Google (si applicable) */}
         {!isConnected && !isOnboarding && (
           <button
             onClick={() => {
@@ -581,51 +597,65 @@ export default function ResultsScreen({
               }
               setShowConnectBanner(true)
             }}
-            className="btn-press w-full py-3 rounded-2xl font-bold text-sm active:scale-95 transition-all"
+            className="active:scale-95 transition-all"
             style={{
               background: '#fff', border: 'none', color: '#374151',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+              padding: `${S(10)} ${S(12)}`, borderRadius: S(12), fontWeight: 700, fontSize: S(12),
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              cursor: 'pointer',
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-            Sauvegarder ma progression
+            <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Sauvegarder
           </button>
         )}
 
-        {/* 2. Partager */}
-        <button
-          onClick={handleShare}
-          className="btn-press w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all border"
-          style={{ background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
-          <span>{sharedCopied ? '✅' : '📤'}</span>
-          {sharedCopied ? 'Copié !' : 'Partager mon score'}
-        </button>
+        {/* Ligne 2 : Partager + Rejouer côte à côte */}
+        <div style={{ display: 'flex', gap: S(8) }}>
+          <button
+            onClick={handleShare}
+            className="active:scale-95 transition-all"
+            style={{
+              flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(12),
+              background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.3)',
+              color: '#fff', fontWeight: 700, fontSize: S(12), textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+            }}>
+            <span>{sharedCopied ? '✅' : '📤'}</span>
+            {sharedCopied ? 'Copié !' : 'Partager'}
+          </button>
+          <button
+            onClick={onReplay}
+            className="active:scale-95 transition-all"
+            style={{
+              flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(12),
+              background: '#FF6B1A', border: 'none',
+              color: 'white', fontWeight: 900, fontSize: S(12), textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+            }}>
+            🔄 Rejouer
+          </button>
+        </div>
 
-        {/* 3. Rejouer */}
-        <button
-          onClick={onReplay}
-          className="btn-press w-full py-4 rounded-2xl font-black text-base uppercase tracking-wide active:scale-95 transition-all"
-          style={{
-            background: '#FF6B1A',
-            boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
-            color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-          }}>
-          🔄 Rejouer
-        </button>
-
-        {/* 4. Revenir / Continuer */}
+        {/* Ligne 3 : Home/Continue fullwidth */}
         <button
           ref={continueButtonRef}
           onClick={handleGoHome}
-          className="btn-press w-full py-3 rounded-2xl font-black text-sm active:scale-95 transition-all"
+          className="active:scale-95 transition-all"
           style={{
+            width: '100%', padding: `${S(12)} ${S(12)}`, borderRadius: S(12),
             background: isOnboarding ? '#FF6B1A' : 'transparent',
+            border: isOnboarding ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
+            color: isOnboarding ? 'white' : 'rgba(255,255,255,0.6)',
+            fontWeight: 900, fontSize: S(12), textShadow: '0 1px 3px rgba(0,0,0,0.5)',
             boxShadow: isOnboarding ? '0 4px 16px rgba(255,107,26,0.4)' : 'none',
-            color: isOnboarding ? 'white' : 'rgba(255,255,255,0.5)',
-            textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+            cursor: 'pointer',
           }}>
-          {isOnboarding ? 'Continuer l\'aventure ! 🚀' : '← Revenir'}
+          {isOnboarding ? 'Continuer l\'aventure ! 🚀' : '← Retour'}
         </button>
       </div>
 

@@ -109,7 +109,7 @@ Exemple BON : "Pourquoi un criminel en fuite a-t-il maudit son cadeau de Noel ?"
    La bonne reponse doit etre celle qui semble la MOINS probable (effet WTF!)
 
 6. LES INDICES — REGLES CRITIQUES :
-   Chaque indice est une PHRASE COURTE (MAX 50 CARACTERES), PAS un mot isole.
+   Chaque indice est une PHRASE COURTE (MAX 20 CARACTERES), PAS un mot isole.
    Un indice est un PONT vers la reponse : il aide le joueur a eliminer des mauvaises reponses.
 
    INTERDIT — Indice qui repete la question :
@@ -122,15 +122,15 @@ Exemple BON : "Pourquoi un criminel en fuite a-t-il maudit son cadeau de Noel ?"
    Indice "Argentine" quand le match etait en Argentine = seul un expert connaitrait ce detail
 
    BON INDICE — Reduit le champ des possibles :
-   "C'etait un match de 5eme division" (oriente vers amateur/chaos)
-   "Plus que le nombre de joueurs sur le terrain" (aide a comprendre l'echelle)
+   "Match de 5eme div." (oriente vers amateur/chaos)
+   "Plus que 22 joueurs" (aide a comprendre l'echelle)
 
    BON INDICE — Cree une image mentale :
-   "Il portait un cadeau de Noel" (oriente vers objet connecte)
-   "Ses pas etaient suivis en temps reel" (le joueur comprend : tracking)
+   "Cadeau de Noel" (oriente vers objet connecte)
+   "Suivi en temps reel" (le joueur comprend : tracking)
 
-   hint1 : SUBTIL — oriente sans donner la direction exacte (MAX 50 CARACTERES)
-   hint2 : PLUS DIRECT — reduit a 2-3 choix possibles (MAX 50 CARACTERES)
+   hint1 : SUBTIL — oriente sans donner la direction exacte (MAX 20 CARACTERES)
+   hint2 : PLUS DIRECT — reduit a 2-3 choix possibles (MAX 20 CARACTERES)
    Un indice ne doit JAMAIS repeter un mot ou concept de la question.
    Un indice doit apporter une NOUVELLE information.
 
@@ -145,8 +145,8 @@ POUR CHAQUE FACT, retourne un objet JSON avec ces champs :
 1. "question" : question qui intrigue et cree du suspense (max 100 caracteres)
 2. "short_answer" : la bonne reponse, courte et percutante (max 50 caracteres)
 3. "explanation" : le "Saviez-vous" fun et decale (ENTRE 200 ET 300 CARACTERES, ton pote au bar)
-4. "hint1" : indice subtil, phrase courte (MAX 50 CARACTERES, PAS un seul mot)
-5. "hint2" : indice plus direct, phrase courte (MAX 50 CARACTERES, PAS un seul mot)
+4. "hint1" : indice subtil, phrase courte (MAX 20 CARACTERES, PAS un seul mot)
+5. "hint2" : indice plus direct, phrase courte (MAX 20 CARACTERES, PAS un seul mot)
 6. "hint3" : "" (vide, reserve pour usage futur)
 7. "hint4" : "" (vide, reserve pour usage futur)
 8. "funny_wrong_1", "funny_wrong_2" : 2 fausses reponses DROLES et absurdes (1 a 5 mots max)

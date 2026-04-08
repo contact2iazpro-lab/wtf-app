@@ -365,6 +365,15 @@ export default function App() {
   const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const [showSplash, setShowSplash] = useState(false)
   const handleSplashComplete = async () => {
+    // Initialiser l'audio dès la fin du splash — SFX sera actif immédiatement
+    audio.play('click')
+
+    // Démarrer la musique uniquement si l'onboarding est déjà terminé (joueurs existants)
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    if (wd.onboardingCompleted) {
+      audio.startMusic()
+    }
+
     sessionStorage.setItem('wtf_splash_done', 'true')
 
     // Vérifier l'état du tutoriel — si FIRST_FACT, envoyer directement sur QuestionScreen
@@ -2105,6 +2114,8 @@ export default function App() {
               wd.pendingFactDetail = JSON.stringify(onboardingFact)
               wd.lastModified = Date.now()
               localStorage.setItem('wtf_data', JSON.stringify(wd))
+              // Démarrer la musique une fois l'onboarding complété
+              audio.startMusic()
               setOnboardingFact(null)
               setScreen(SCREENS.HOME)
               navigate('/collection')

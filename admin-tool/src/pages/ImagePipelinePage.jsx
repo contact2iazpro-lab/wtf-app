@@ -793,22 +793,25 @@ export default function ImagePipelinePage() {
       {tab === 'directions' && (
         <div>
           {/* Guide des styles visuels */}
-          <div style={{
-            background: 'rgba(255,255,255,0.05)',
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 20,
-            border: '1px solid rgba(255,255,255,0.1)',
-          }}>
-            <div style={{ fontWeight: 700, marginBottom: 8, color: '#FF6B1A' }}>
-              Guide des styles visuels
-            </div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
-              🎨 <b>Art moderne</b> — Illustration stylisée, couleurs vives, composition graphique<br />
-              😂 <b>Meme fun</b> — Style meme internet, humour visuel, format partage réseaux sociaux<br />
-              📷 <b>Photo réelle</b> — Rendu photorréaliste, mise en scène naturelle<br />
-              ✏️ <b>Dessin manga</b> — Style manga/anime japonais, traits dynamiques<br />
-              😀 <b>Emoji</b> — Composition à base d'emojis, style flat design coloré
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 20, marginBottom: 24, border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ fontWeight: 900, marginBottom: 16, color: '#FF6B1A', fontSize: 16 }}>Guide des styles visuels</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {[
+                { id: 'realiste', label: 'Realiste', emoji: '📷', desc: 'Photo realiste, eclairage naturel, comme un reportage', img: '/assets/guide/style-realiste.png' },
+                { id: 'humoristique', label: 'Humoristique', emoji: '😂', desc: 'Cartoon colore, exagere, drole et leger', img: '/assets/guide/style-humoristique.png' },
+                { id: 'metaphorique', label: 'Metaphorique', emoji: '🎭', desc: 'Peinture onirique, pastels doux, poetique', img: '/assets/guide/style-metaphorique.png' },
+                { id: 'retro', label: 'Retro Pop Art', emoji: '🎨', desc: 'Style annees 60, halftone, Lichtenstein', img: '/assets/guide/style-retro.png' },
+                { id: 'ultra-realiste-absurde', label: 'Ultra Realiste Absurde', emoji: '📸', desc: 'Photo ultra realiste, situation absurde et decalee', img: '/assets/guide/style-ultra-realiste-absurde.png' },
+                { id: 'wtf-cinematique', label: 'WTF Cinematique', emoji: '🤯', desc: 'Photo cine dramatique, contraste total avec le contexte', img: '/assets/guide/style-wtf-cinematique.png' },
+              ].map(s => (
+                <div key={s.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <img src={s.img} style={{ width: '100%', height: 120, objectFit: 'cover' }} alt={s.label} />
+                  <div style={{ padding: '8px 10px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: 'white' }}>{s.emoji} {s.label}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', lineHeight: 1.3, marginTop: 4 }}>{s.desc}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -882,37 +885,57 @@ export default function ImagePipelinePage() {
                   </div>
 
                   {/* Directions */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                    gap: '8px',
-                    marginBottom: '16px',
-                  }}>
-                    {['Art moderne', 'Meme fun', 'Photo réelle', 'Dessin manga', 'Emoji'].map(
-                      dir => (
+                  {!item.directions || item.directions.length === 0 ? (
+                    <div style={{
+                      padding: '16px',
+                      background: 'rgba(255,255,255,0.03)',
+                      borderRadius: '12px',
+                      fontSize: '13px',
+                      color: 'rgba(255,255,255,0.5)',
+                      marginBottom: '16px',
+                      textAlign: 'center',
+                    }}>
+                      Directions non générées
+                    </div>
+                  ) : (
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                      gap: '12px',
+                      marginBottom: '16px',
+                    }}>
+                      {item.directions.map(dir => (
                         <button
-                          key={dir}
-                          onClick={() => handleSelectDirection(item.id, dir)}
+                          key={dir.id}
+                          onClick={() => handleSelectDirection(item.id, dir.style)}
                           style={{
-                            padding: '10px 12px',
+                            padding: '12px',
                             borderRadius: '12px',
                             fontSize: '12px',
                             fontWeight: 700,
                             background:
-                              selectedDirections[item.id] === dir
+                              selectedDirections[item.id] === dir.style
                                 ? '#a855f7'
                                 : 'rgba(255,255,255,0.08)',
                             color: 'white',
                             border: '1px solid rgba(255,255,255,0.2)',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
+                            textAlign: 'left',
+                            whiteSpace: 'normal',
+                            minHeight: '50px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
                           }}
+                          title={dir.description}
                         >
-                          {dir}
+                          <div style={{ fontWeight: 900, marginBottom: '4px' }}>{dir.style.toUpperCase()}</div>
+                          <div style={{ fontSize: '11px', opacity: 0.7, lineHeight: 1.2 }}>{dir.description.substring(0, 60)}...</div>
                         </button>
-                      )
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Custom input */}
                   <input

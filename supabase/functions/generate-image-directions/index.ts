@@ -85,31 +85,36 @@ serve(async (req) => {
 
         // Build prompt
         const prompt = fact_type === 'vip'
-          ? `Tu es un directeur artistique pour un jeu mobile de trivia appelé What The F*ct!. On te donne un fact surprenant et tu dois proposer 5 directions visuelles pour l'illustrer. Chaque direction doit être une description précise d'image (style, composition, couleurs, ambiance) en 2-3 phrases.
+          ? `Tu es un directeur artistique pour un jeu mobile de trivia appelé What The F*ct!. On te donne un fact surprenant et tu dois proposer 6 directions visuelles pour l'illustrer. Chaque direction doit être une description précise d'image (composition, éléments visuels, ambiance) en 2-3 phrases. L'image sera carrée (1:1). AUCUN TEXTE, mot, lettre, chiffre, label ou watermark dans l'image. Pas de téléphone, écran ou référence à un jeu.
 
 Fact : ${fact.question} — Réponse : ${fact.short_answer}
 Contexte : ${fact.explanation || '(non fourni)'}
 Catégorie : ${fact.category || '(non fournie)'}
 
-Propose 5 directions visuelles, du plus réaliste au plus décalé :
-1. RÉALISTE — Photo/illustration réaliste qui illustre le fact directement
-2. HUMORISTIQUE — Interprétation drôle/absurde du fact
-3. MÉTAPHORIQUE — Représentation symbolique/métaphorique
-4. RÉTRO/POP ART — Style vintage, pop art ou affiche rétro
-5. WTF ABSURDE — Image complètement déjantée qui fait dire WTF!
+Propose 6 directions visuelles. Pour chaque direction, décris précisément la scène, la composition, l'éclairage et l'ambiance. Base-toi UNIQUEMENT sur la question, la réponse et l'explication du fact :
 
-Pour chaque direction, donne une description précise utilisable comme prompt pour un générateur d'images. Inclus le style artistique, les éléments visuels, les couleurs dominantes, l'ambiance.
+1. RÉALISTE — Photo ou illustration photorréaliste. Éclairage naturel, décor crédible. L'image montre le sujet du fact de manière directe, comme une photo de reportage ou de documentaire.
 
-Retourne UNIQUEMENT un JSON array avec exactement 5 objets : [{"id": 1, "style": "réaliste", "description": "..."}, ...] SANS texte avant ni après.`
-          : `Tu es un directeur artistique pour un jeu mobile de trivia appelé What The F*ct!. On te donne un fact surprenant et tu dois proposer 1 direction visuelle HUMORISTIQUE qui l'illustre de manière fun et mémorable.
+2. HUMORISTIQUE — Illustration cartoon colorée et exagérée. Style dessin animé avec des expressions comiques, des proportions déformées, des couleurs vives et un ton léger et drôle. Le fact est illustré de manière amusante.
+
+3. MÉTAPHORIQUE — Peinture artistique et symbolique. Atmosphère onirique avec des pastels doux, des formes fluides et un style éthéral et poétique. Le fact est représenté de manière conceptuelle et abstraite, pas littérale.
+
+4. RÉTRO POP ART — Style pop art vintage années 60. Couleurs primaires saturées, trames de points halftone, contours épais et composition graphique audacieuse. Inspiré de Roy Lichtenstein et Andy Warhol.
+
+5. ULTRA RÉALISTE ABSURDE — Photo ultra réaliste qui ressemble à une vraie photo prise avec un appareil professionnel (éclairage naturel, profondeur de champ, textures détaillées). MAIS la situation représentée est complètement absurde : le sujet du fact est placé dans un contexte totalement décalé — comportement humain par des animaux, objets hors contexte, situation de bureau ou de la vie quotidienne complètement détournée. Tout semble réel mais la scène est impossible.
+
+6. WTF CINÉMATIQUE — Photo cinématique avec éclairage dramatique de film hollywoodien, lens flare, color grading. Le sujet du fact est en TOTAL CONTRASTE avec son environnement : décalage d'époque, de lieu, de taille, d'échelle ou de comportement. Des éléments surréels sont intégrés dans un décor ultra réaliste. L'image ressemble à une scène de film mais la situation provoque un effet WTF immédiat.
+
+Retourne UNIQUEMENT un JSON array avec exactement 6 objets : [{"id": 1, "style": "réaliste", "description": "..."}, ...] SANS texte avant ni après.`
+          : `Tu es un directeur artistique pour un jeu mobile de trivia appelé What The F*ct!. On te donne un fact surprenant et tu dois proposer 1 direction visuelle ULTRA RÉALISTE ABSURDE qui l'illustre de manière mémorable.
 
 Fact : ${fact.question} — Réponse : ${fact.short_answer}
 Contexte : ${fact.explanation || '(non fourni)'}
 Catégorie : ${fact.category || '(non fournie)'}
 
-Propose 1 seule direction visuelle HUMORISTIQUE. Description précise de 2-3 phrases utilisable comme prompt pour un générateur d'images. Inclus le style artistique, les éléments visuels, les couleurs dominantes, l'ambiance.
+Propose 1 seule direction visuelle ULTRA RÉALISTE ABSURDE : photo ultra réaliste prise avec un appareil professionnel, tout semble réel (éclairage, textures, profondeur de champ) mais la situation est complètement absurde et décalée. Le sujet du fact est placé dans un contexte totalement inattendu. Description précise de 2-3 phrases basée sur la question, la réponse et l'explication.
 
-Retourne UNIQUEMENT un JSON array avec 1 objet : [{"id": 1, "style": "humoristique", "description": "..."}] SANS texte avant ni après.`
+Retourne UNIQUEMENT un JSON array avec 1 objet : [{"id": 1, "style": "ultra_realiste_absurde", "description": "..."}] SANS texte avant ni après.`
 
         // Call Anthropic
         const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -121,7 +126,7 @@ Retourne UNIQUEMENT un JSON array avec 1 objet : [{"id": 1, "style": "humoristiq
           },
           body: JSON.stringify({
             model: 'claude-sonnet-4-20250514',
-            max_tokens: fact_type === 'vip' ? 2000 : 500,
+            max_tokens: fact_type === 'vip' ? 3000 : 500,
             messages: [{ role: 'user', content: prompt }],
           }),
         })

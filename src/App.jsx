@@ -363,33 +363,6 @@ export default function App() {
     }
   }, [])
 
-  // ── Supabase Realtime badge notifications ────────────────────────────────────
-  useEffect(() => {
-    if (!user) return
-
-    const channel = supabase
-      .channel('notif-badge-' + user.id)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'friendships',
-        filter: 'user2_id=eq.' + user.id,
-      }, () => {
-        setSocialNotifCount(prev => prev + 1)
-      })
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'challenges',
-        filter: 'player2_id=eq.' + user.id,
-      }, () => {
-        setSocialNotifCount(prev => prev + 1)
-      })
-      .subscribe()
-
-    return () => supabase.removeChannel(channel)
-  }, [user])
-
   const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const [showSplash, setShowSplash] = useState(false)
   const handleSplashComplete = async () => {
@@ -484,6 +457,33 @@ export default function App() {
   const [socialNotifCount, setSocialNotifCount] = useState(0)
 
   const { user } = useAuth()
+
+  // ── Supabase Realtime badge notifications ────────────────────────────────────
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel('notif-badge-' + user.id)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'friendships',
+        filter: 'user2_id=eq.' + user.id,
+      }, () => {
+        setSocialNotifCount(prev => prev + 1)
+      })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'challenges',
+        filter: 'player2_id=eq.' + user.id,
+      }, () => {
+        setSocialNotifCount(prev => prev + 1)
+      })
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [user])
 
   const numPlayers = duelPlayers.length || 1
 

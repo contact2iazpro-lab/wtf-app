@@ -35,11 +35,11 @@ const CHAPTERS = [
     content: [
       { icon: '🎫', text: '**Coûte 1 ticket** par session.' },
       { icon: '🎯', text: 'Choisis un **niveau de difficulté**.' },
-      { icon: '❄️', text: '**Cool** — 4 QCM · 30s · 2 indices · 5 coins/bonne réponse' },
-      { icon: '🔥', text: '**Hot** — 4 QCM · 20s · 2 indices · 3 coins/bonne réponse' },
-      { icon: '⚡', text: '**WTF!** — 6 QCM · 20s · 1 indice · 2 coins/bonne réponse' },
-      { icon: '📚', text: '**10 questions** par session. Les f*cts trouvés rejoignent ta **Collection**.' },
-      { icon: '🏆', text: 'Score parfait (10/10) = **bonus de 25 coins** !' },
+      { icon: '❄️', text: '**Cool** — 4 QCM · 30s · 1 indice gratuit · **3 coins**/bonne réponse' },
+      { icon: '🔥', text: '**À fond** — 4 QCM · 20s · Indices payants (5 coins) · **3 coins**/bonne réponse' },
+      { icon: '⚡', text: '**WTF! Addict** — 6 QCM · 20s · 1 indice payant (8 coins) · **5 coins**/bonne réponse' },
+      { icon: '📚', text: '**5 questions** par session. Les f*cts trouvés rejoignent ta **Collection**.' },
+      { icon: '🏆', text: 'Score parfait (5/5) = **bonus de 25 coins** !' },
     ],
   },
   {
@@ -50,9 +50,9 @@ const CHAPTERS = [
     content: [
       { icon: '🆓', text: '**Gratuit illimité** — pas de ticket requis.' },
       { icon: '⚡', text: 'Session rapide de **5 questions**.' },
-      { icon: '🎯', text: '**Mode Aléatoire** : catégories mélangées · **5 coins**/bonne réponse.' },
-      { icon: '🗂️', text: '**Mode Catégorie** : catégorie au choix · **3 coins**/bonne réponse.' },
-      { icon: '💡', text: '**2 indices** disponibles par question, 4 QCM, 20s timer.' },
+      { icon: '🎯', text: '**Mode Aléatoire** : catégories mélangées · **2 coins**/bonne réponse.' },
+      { icon: '🗂️', text: '**Mode Catégorie** : catégorie au choix · **1 coin**/bonne réponse.' },
+      { icon: '💡', text: '**2 indices** gratuits par question, 4 QCM, 20s timer.' },
       { icon: '🚪', text: 'Tes coins et f*cts sont sauvegardés même si tu quittes.' },
     ],
   },
@@ -122,13 +122,13 @@ const CHAPTERS = [
   {
     id: 'multi',
     emoji: '🎮',
-    shortTitle: 'Bientôt',
-    title: 'Bientôt',
-    soon: true,
+    shortTitle: 'Multi',
+    title: 'Multijoueur',
     content: [
-      { icon: '👥', text: '**Multijoueur** — Affrontez vos amis en temps réel !' },
-      { icon: '🏆', text: '**Classements & Trophées** — Grimpe dans le classement mondial !' },
-      { icon: '🚧', text: 'Ces modes arrivent bientôt. **Reste connecté** !' },
+      { icon: '👥', text: '**Défie tes amis** en Blitz et compare vos scores !' },
+      { icon: '🏆', text: 'Ajoute des amis via leur **pseudo** et envoie des **défis**.' },
+      { icon: '⚡', text: 'Mode **Blitz** — résous les questions le plus **vite possible**.' },
+      { icon: '📊', text: 'Grimpe dans le **classement** avec tes amis !' },
     ],
   },
 ]
@@ -162,6 +162,9 @@ function getChapterIcon(chapterId) {
 export default function HowToPlayModal({ onClose, onRestartTutorial }) {
   // Read player progress from localStorage
   const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+
+  // State for checkbox "show rules on launch"
+  const [showRulesOnLaunch, setShowRulesOnLaunch] = useState(false)
 
   // Filter chapters based on player progress
   const visibleChapters = CHAPTERS.filter(ch => {
@@ -236,7 +239,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           {/* Sidebar — chapter list */}
           <div
             className="shrink-0 overflow-y-auto scrollbar-hide"
-            style={{ width: 100, background: '#F3F4F6', borderRight: '1px solid #E5E7EB' }}
+            style={{ width: 120, background: '#F3F4F6', borderRight: '1px solid rgba(0,0,0,0.1)' }}
           >
             {visibleChapters.map(ch => {
               const isActive = ch.id === activeId
@@ -244,10 +247,11 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 <button
                   key={ch.id}
                   onClick={() => { audio.play('click'); setActiveId(ch.id) }}
-                  className="w-full flex flex-col items-center py-3 px-2 transition-all active:scale-95"
+                  className="w-full flex flex-col items-center transition-all active:scale-95"
                   style={{
-                    background: isActive ? '#FFF7ED' : 'transparent',
-                    borderRight: isActive ? '2.5px solid #FF6B1A' : '2.5px solid transparent',
+                    padding: '10px 8px',
+                    background: isActive ? 'rgba(255,107,26,0.2)' : 'transparent',
+                    borderLeft: isActive ? '3px solid #FF6B1A' : '3px solid transparent',
                     borderBottom: '1px solid #E5E7EB',
                   }}
                 >
@@ -255,23 +259,15 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   <span
                     className="text-center leading-tight mt-1.5"
                     style={{
-                      fontSize: 10,
+                      fontSize: 13,
                       fontWeight: 700,
-                      color: isActive ? '#C2410C' : '#6B7280',
+                      color: isActive ? '#FF6B1A' : 'rgba(255,255,255,0.5)',
                       wordBreak: 'break-word',
                       lineHeight: '1.3',
                     }}
                   >
                     {ch.shortTitle}
                   </span>
-                  {ch.soon && (
-                    <span
-                      className="mt-1 px-1 py-0.5 rounded-md"
-                      style={{ fontSize: 8, fontWeight: 800, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}
-                    >
-                      BIENTÔT
-                    </span>
-                  )}
                 </button>
               )
             })}
@@ -282,21 +278,10 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             {/* Chapter title */}
             <div className="flex items-center gap-2 mb-1" style={{ flexShrink: 0 }}>
               {getChapterIcon(chapter.id)}
-              <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.2', fontSize: '15px' }}>
+              <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.6', fontSize: '17px' }}>
                 {chapter.title}
               </h2>
             </div>
-
-            {chapter.soon && (
-              <div
-                className="mb-1 py-0.5 px-2 rounded-xl text-center"
-                style={{ background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)', flexShrink: 0 }}
-              >
-                <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#FF6B1A', fontSize: '9px' }}>
-                  🚧 Bientôt disponible
-                </span>
-              </div>
-            )}
 
             {/* Rules items */}
             <div className="flex flex-col gap-1" style={{ overflow: 'hidden', flexShrink: 1, minHeight: 0 }}>
@@ -306,8 +291,8 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   className="flex items-start gap-1 p-1 rounded-2xl"
                   style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', flexShrink: 0 }}
                 >
-                  <span style={{ fontSize: 14, flexShrink: 0, lineHeight: '1.3' }}>{item.icon}</span>
-                  <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.3', fontSize: '11px' }}>
+                  <span style={{ fontSize: 16, flexShrink: 0, lineHeight: '1.6' }}>{item.icon}</span>
+                  <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.6', fontSize: '13px' }}>
                     {renderText(item.text)}
                   </p>
                 </div>
@@ -324,26 +309,29 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 </button>
               )}
 
-              {/* Bouton réafficher les règles des modes */}
+              {/* Checkbox réafficher les règles des modes */}
               {['quest', 'explorer', 'blitz', 'hunt'].includes(chapter.id) && (
-                <button
-                  onClick={() => {
-                    audio.play('click')
-                    // Supprimer toutes les clés skip_launch_*
-                    const keysToRemove = []
-                    for (let i = 0; i < localStorage.length; i++) {
-                      const k = localStorage.key(i)
-                      if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
-                    }
-                    keysToRemove.forEach(k => localStorage.removeItem(k))
-                    alert('Règles réactivées ✅')
-                    onClose()
-                  }}
-                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-1"
-                  style={{ background: '#22C55E', color: 'white', border: 'none', padding: '6px 8px', fontSize: '11px', flexShrink: 0 }}
-                >
-                  🔄 Réafficher les règles des modes
-                </button>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(0,0,0,0.6)', cursor: 'pointer', marginTop: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={showRulesOnLaunch}
+                    onChange={(e) => {
+                      audio.play('click')
+                      setShowRulesOnLaunch(e.target.checked)
+                      if (e.target.checked) {
+                        // Supprimer toutes les clés skip_launch_*
+                        const keysToRemove = []
+                        for (let i = 0; i < localStorage.length; i++) {
+                          const k = localStorage.key(i)
+                          if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
+                        }
+                        keysToRemove.forEach(k => localStorage.removeItem(k))
+                      }
+                    }}
+                    style={{ width: 14, height: 14, cursor: 'pointer' }}
+                  />
+                  Réafficher les règles au lancement
+                </label>
               )}
             </div>
 

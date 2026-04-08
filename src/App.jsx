@@ -40,6 +40,7 @@ import { audio } from './utils/audio'
 import { checkBadges } from './utils/badgeManager'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
+import { supabase } from './lib/supabase'
 
 // 10 f*cts sélectionnés par Michael — on en pioche 5 aléatoirement pour la première Flash
 const ONBOARDING_FLASH_FACT_IDS = [67, 301, 92, 174, 109, 95, 177, 22, 6, 61]
@@ -362,6 +363,33 @@ export default function App() {
     }
   }, [])
 
+  // ── Supabase Realtime badge notifications ────────────────────────────────────
+  useEffect(() => {
+    if (!user) return
+
+    const channel = supabase
+      .channel('notif-badge-' + user.id)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'friendships',
+        filter: 'user2_id=eq.' + user.id,
+      }, () => {
+        setSocialNotifCount(prev => prev + 1)
+      })
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'challenges',
+        filter: 'player2_id=eq.' + user.id,
+      }, () => {
+        setSocialNotifCount(prev => prev + 1)
+      })
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [user])
+
   const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const [showSplash, setShowSplash] = useState(false)
   const handleSplashComplete = async () => {
@@ -453,6 +481,7 @@ export default function App() {
   const [showStreakSpecialModal, setShowStreakSpecialModal] = useState(false)
   const [newlyEarnedBadges, setNewlyEarnedBadges] = useState([])
   const [miniParcours, setMiniParcours] = useState(null)
+  const [socialNotifCount, setSocialNotifCount] = useState(0)
 
   const { user } = useAuth()
 
@@ -1950,6 +1979,8 @@ export default function App() {
               return next
             })
           }}
+          socialNotifCount={socialNotifCount}
+          onResetSocialNotif={() => setSocialNotifCount(0)}
         />
       )}
 

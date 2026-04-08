@@ -151,6 +151,8 @@ export default function HomeScreen({
   blitzPlayed = 0,
   questsPlayed = 0,
   onModeSeen,
+  socialNotifCount = 0,
+  onResetSocialNotif,
 }) {
   const { isConnected } = useAuth()
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
@@ -960,6 +962,7 @@ export default function HomeScreen({
                 if (isLocked) return showLockToast(item.unlockMsg)
                 if (item.slug === 'collection' && activeSpotlight === 'collection') dismissSpotlight('collection')
                 if (item.slug === 'boutique' && activeSpotlight === 'boutique') dismissSpotlight('boutique')
+                if (item.slug === 'amis' && onResetSocialNotif) onResetSocialNotif()
                 if (item.target) nav(item.target)
               }}
               style={{
@@ -996,6 +999,17 @@ export default function HomeScreen({
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 7,
                     }}>🔒</div>
+                  )}
+                  {item.slug === 'amis' && socialNotifCount > 0 && (
+                    <div style={{
+                      position: 'absolute', top: -2, right: -2,
+                      width: 10, height: 10, borderRadius: '50%',
+                      background: '#EF4444', border: '1px solid white',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 6, fontWeight: 900, color: 'white', lineHeight: 1,
+                    }}>
+                      {socialNotifCount > 9 ? '9+' : socialNotifCount}
+                    </div>
                   )}
                 </div>
               )}

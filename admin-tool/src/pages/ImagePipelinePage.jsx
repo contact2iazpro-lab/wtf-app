@@ -19,12 +19,14 @@ export default function ImagePipelinePage() {
   const [selectedFacts, setSelectedFacts] = useState(new Set())
   const [selectAllMode, setSelectAllMode] = useState(false)
   const [noImagePage, setNoImagePage] = useState(1)
+  const [expandedFacts, setExpandedFacts] = useState({})
   const PAGE_SIZE = 50
 
   // Tab 2 — Directions
   const [directionsQueue, setDirectionsQueue] = useState([])
   const [selectedDirections, setSelectedDirections] = useState({})
   const [customDirections, setCustomDirections] = useState({})
+  const [selectedStyles, setSelectedStyles] = useState({})
   const [generatingDirections, setGeneratingDirections] = useState(false)
   const [validatingDirectionId, setValidatingDirectionId] = useState(null)
 
@@ -51,7 +53,7 @@ export default function ImagePipelinePage() {
     try {
       const { data: allFacts, error } = await supabase
         .from('facts')
-        .select('id, question, category, is_vip, image_url')
+        .select('id, question, category, is_vip, image_url, status, short_answer, explanation, hint1, hint2, hint3, hint4')
         .or('image_url.is.null,image_url.eq.""')
         .order('id', { ascending: false })
 
@@ -68,18 +70,17 @@ export default function ImagePipelinePage() {
     }
   }
 
-  // Tab 1: Fetch distinct categories
+  // Tab 1: Fetch distinct categories (all from facts table, no filters)
   const fetchCategories = async () => {
     try {
-      const { data: allFacts, error } = await supabase
+      const { data, error } = await supabase
         .from('facts')
         .select('category')
-        .neq('category', null)
 
       if (error) throw error
 
-      const unique = [...new Set(allFacts.map(f => f.category).filter(Boolean))].sort()
-      setCategories(unique)
+      const uniqueCategories = [...new Set(data.map(f => f.category).filter(Boolean))].sort()
+      setCategories(uniqueCategories)
     } catch (err) {
       console.error('Error fetching categories:', err)
       showToast('❌ Erreur catégories')
@@ -147,8 +148,8 @@ export default function ImagePipelinePage() {
 
   const filteredFacts = factsNoImage.filter(f => {
     const catMatch = filterCategory === 'all' || f.category === filterCategory
-    const typeMatch = filterType === 'all' || (filterType === 'vip' ? f.is_vip : !f.is_vip)
-    return catMatch && typeMatch
+    const statusMatch = filterType === 'all' || (filterType === 'draft' ? f.status !== 'published' : f.status === 'published')
+    return catMatch && statusMatch
   })
 
   const paginatedFacts = filteredFacts.slice(0, noImagePage * PAGE_SIZE)
@@ -171,6 +172,13 @@ export default function ImagePipelinePage() {
     } else {
       setSelectedFacts(new Set())
     }
+  }
+
+  const toggleExpand = (id) => {
+    setExpandedFacts(prev => ({
+      ...prev,
+      [id]: !prev[id],
+    }))
   }
 
   const handleGenerateDirections = async () => {
@@ -256,22 +264,33 @@ export default function ImagePipelinePage() {
     }))
   }
 
+  const handleSelectStyle = (itemId, styleId) => {
+    setSelectedStyles(prev => ({
+      ...prev,
+      [itemId]: selectedStyles[itemId] === styleId ? null : styleId,
+    }))
+  }
+
   const handleValidateDirection = async (pipelineId) => {
     const selected = selectedDirections[pipelineId]
     const custom = customDirections[pipelineId]
+    const selectedStyle = selectedStyles[pipelineId]
 
-    if (!selected && !custom) {
-      showToast('⚠️ Choisir ou écrire une direction')
+    if (!selected && !custom && !selectedStyle) {
+      showToast('⚠️ Choisir une direction ou un style')
       return
     }
 
     setValidatingDirectionId(pipelineId)
     try {
+      // Determine direction to use: custom > selected style > default selected direction
+      let directionToUse = custom || selectedStyle || selected || null
+
       // Step 1: Update image_pipeline with direction
       const { error } = await supabase
         .from('image_pipeline')
         .update({
-          selected_direction: selected || null,
+          selected_direction: directionToUse,
           custom_direction: custom || null,
           status: 'direction_selected',
           updated_at: new Date().toISOString(),
@@ -607,7 +626,7 @@ export default function ImagePipelinePage() {
                 display: 'block',
                 marginBottom: '6px',
               }}>
-                Type
+                Statut
               </label>
               <select
                 value={filterType}
@@ -625,8 +644,8 @@ export default function ImagePipelinePage() {
                 }}
               >
                 <option value="all">Tous</option>
-                <option value="vip">VIP</option>
-                <option value="generated">Générés</option>
+                <option value="draft">Brouillons</option>
+                <option value="published">Publiés</option>
               </select>
             </div>
           </div>
@@ -706,62 +725,95 @@ export default function ImagePipelinePage() {
               </div>
             )}
 
-            {paginatedFacts.map(fact => (
-              <div
-                key={fact.id}
-                style={{
-                  display: 'flex',
-                  gap: '12px',
-                  alignItems: 'flex-start',
-                  background: 'rgba(255,255,255,0.05)',
-                  padding: '16px',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedFacts.has(fact.id)}
-                  onChange={() => handleSelectFact(fact.id)}
+            {paginatedFacts.map((fact, idx) => (
+              <div key={fact.id}>
+                {/* Closed row */}
+                <div
                   style={{
-                    width: '20px',
-                    height: '20px',
-                    cursor: 'pointer',
-                    marginTop: '2px',
-                    flexShrink: 0,
-                  }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    marginBottom: '4px',
-                  }}>
-                    #{fact.id} — {fact.question.slice(0, 60)}
-                    {fact.question.length > 60 ? '…' : ''}
-                  </div>
-                  <div style={{
-                    fontSize: '12px',
-                    color: 'rgba(255,255,255,0.6)',
                     display: 'flex',
-                    gap: '8px',
                     alignItems: 'center',
-                  }}>
-                    <span>{fact.category}</span>
-                    {fact.is_vip && (
-                      <span style={{
-                        background: 'rgba(168, 85, 247, 0.2)',
-                        color: '#a855f7',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontWeight: 700,
-                        fontSize: '11px',
-                      }}>
-                        VIP
-                      </span>
-                    )}
-                  </div>
+                    gap: 10,
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    background: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                  }}
+                  onClick={() => toggleExpand(fact.id)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedFacts.has(fact.id)}
+                    onChange={() => handleSelectFact(fact.id)}
+                    onClick={e => e.stopPropagation()}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <img
+                    src={'/assets/categories/' + fact.category + '.png'}
+                    style={{ width: 24, height: 24, objectFit: 'contain' }}
+                    alt=""
+                    onError={e => e.target.style.display = 'none'}
+                  />
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 700, minWidth: 40 }}>
+                    #{fact.id}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: 'white',
+                      fontWeight: 600,
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {fact.question}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 16,
+                      color: 'rgba(255,255,255,0.3)',
+                      transform: expandedFacts[fact.id] ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s',
+                    }}
+                  >
+                    ▼
+                  </span>
                 </div>
+
+                {/* Expanded row */}
+                {expandedFacts[fact.id] && (
+                  <div style={{ padding: '8px 12px 16px 46px', borderTop: '1px solid rgba(255,255,255,0.05)', background: idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
+                    <div style={{ marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, color: '#FF6B1A', fontWeight: 700 }}>Réponse : </span>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>{fact.short_answer}</span>
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, color: '#FF6B1A', fontWeight: 700 }}>Explication : </span>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', lineHeight: 1.4 }}>
+                        {fact.explanation || 'Non renseignée'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                      <div>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Indice 1 : </span>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{fact.hint1 || '—'}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Indice 2 : </span>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{fact.hint2 || '—'}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Indice 3 : </span>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{fact.hint3 || '—'}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Indice 4 : </span>
+                        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{fact.hint4 || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -900,42 +952,85 @@ export default function ImagePipelinePage() {
                       Directions non générées
                     </div>
                   ) : (
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                      gap: '12px',
-                      marginBottom: '16px',
-                    }}>
+                    <div style={{ marginBottom: '16px' }}>
                       {item.directions.map(dir => (
-                        <button
-                          key={dir.id}
-                          onClick={() => handleSelectDirection(item.id, dir.style)}
-                          style={{
+                        <div key={dir.id} style={{ marginBottom: '12px' }}>
+                          <div style={{ marginBottom: '8px' }}>
+                            <div style={{ fontWeight: 900, fontSize: '13px', marginBottom: '6px', color: '#FF6B1A' }}>
+                              {dir.style.toUpperCase()}
+                            </div>
+                            <button
+                              onClick={() => handleSelectDirection(item.id, dir.style)}
+                              style={{
+                                width: '100%',
+                                padding: '12px',
+                                borderRadius: '12px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                background:
+                                  selectedDirections[item.id] === dir.style
+                                    ? '#a855f7'
+                                    : 'rgba(255,255,255,0.08)',
+                                color: 'white',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                textAlign: 'left',
+                              }}
+                            >
+                              {selectedDirections[item.id] === dir.style ? '✓ Sélectionnée' : 'Sélectionner cette direction'}
+                            </button>
+                          </div>
+                          <div style={{
+                            fontSize: 12,
+                            color: 'rgba(255,255,255,0.6)',
+                            lineHeight: 1.5,
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
                             padding: '12px',
-                            borderRadius: '12px',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            background:
-                              selectedDirections[item.id] === dir.style
-                                ? '#a855f7'
-                                : 'rgba(255,255,255,0.08)',
-                            color: 'white',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            textAlign: 'left',
-                            whiteSpace: 'normal',
-                            minHeight: '50px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                          }}
-                          title={dir.description}
-                        >
-                          <div style={{ fontWeight: 900, marginBottom: '4px' }}>{dir.style.toUpperCase()}</div>
-                          <div style={{ fontSize: '11px', opacity: 0.7, lineHeight: 1.2 }}>{dir.description.substring(0, 60)}...</div>
-                        </button>
+                            background: 'rgba(255,255,255,0.02)',
+                            borderRadius: '8px',
+                            marginBottom: '12px',
+                          }}>
+                            {dir.description}
+                          </div>
+                        </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Style selector buttons */}
+                  {item.directions && item.directions.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12, marginBottom: 12 }}>
+                      {[
+                        { id: 'realiste', label: 'Realiste', emoji: '📷' },
+                        { id: 'humoristique', label: 'Humoristique', emoji: '😂' },
+                        { id: 'metaphorique', label: 'Metaphorique', emoji: '🎭' },
+                        { id: 'retro', label: 'Retro Pop Art', emoji: '🎨' },
+                        { id: 'ultra_realiste_absurde', label: 'Ultra Realiste Absurde', emoji: '📸' },
+                        { id: 'wtf_cinematique', label: 'WTF Cinematique', emoji: '🤯' },
+                      ].map(style => {
+                        const isSelected = selectedStyles[item.id] === style.id
+                        return (
+                          <button
+                            key={style.id}
+                            onClick={() => handleSelectStyle(item.id, style.id)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: 8,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              border: isSelected ? '2px solid #FF6B1A' : '1px solid rgba(255,255,255,0.15)',
+                              background: isSelected ? 'rgba(255,107,26,0.2)' : 'rgba(255,255,255,0.05)',
+                              color: isSelected ? '#FF6B1A' : 'rgba(255,255,255,0.7)',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {style.emoji} {style.label}
+                          </button>
+                        )
+                      })}
                     </div>
                   )}
 
@@ -961,19 +1056,19 @@ export default function ImagePipelinePage() {
                   {/* Submit button */}
                   <button
                     onClick={() => handleValidateDirection(item.id)}
-                    disabled={!selectedDirections[item.id] && !customDirections[item.id] || validatingDirectionId === item.id}
+                    disabled={!selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id] || validatingDirectionId === item.id}
                     style={{
                       padding: '10px 20px',
                       borderRadius: '12px',
                       fontSize: '13px',
                       fontWeight: 900,
                       background:
-                        !selectedDirections[item.id] && !customDirections[item.id]
+                        !selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id]
                           ? 'rgba(255,255,255,0.1)'
                           : '#0ea5e9',
                       color: 'white',
                       border: 'none',
-                      cursor: !selectedDirections[item.id] && !customDirections[item.id] || validatingDirectionId === item.id ? 'not-allowed' : 'pointer',
+                      cursor: !selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id] || validatingDirectionId === item.id ? 'not-allowed' : 'pointer',
                       opacity: validatingDirectionId === item.id ? 0.6 : 1,
                       transition: 'all 0.2s',
                     }}

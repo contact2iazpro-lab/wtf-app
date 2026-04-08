@@ -60,6 +60,7 @@ export default function QuestionScreen({
   onTutoComplete = null,
 }) {
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
+  const onboardingCompleted = JSON.parse(localStorage.getItem('wtf_data') || '{}').onboardingCompleted || false
 
   // Solo et marathon → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
@@ -308,6 +309,7 @@ export default function QuestionScreen({
               updateCoins(-5)
               updateHints(1)
             }}
+            onboardingCompleted={onboardingCompleted}
           />
         )
       })}
@@ -871,7 +873,7 @@ export default function QuestionScreen({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {[{ hint: fact.hint1 }, { hint: fact.hint2 }].map((h, i) => (
                   <div key={i} ref={i === 0 ? hintRef : undefined} style={{ position: 'relative' }}>
-                    <HintFlipButton num={i + 1} hint={h.hint} catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={'Utilise un indice'} onReveal={() => { audio.play('click'); setTutoStep('answer') }} />
+                    <HintFlipButton num={i + 1} hint={h.hint} catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={'Indice'} onReveal={() => { audio.play('click'); setTutoStep('answer') }} onboardingCompleted={onboardingCompleted} />
                   </div>
                 ))}
               </div>

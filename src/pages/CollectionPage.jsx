@@ -673,9 +673,9 @@ export default function CollectionPage() {
       })
       return () => cancelAnimationFrame(timer)
     } else if (collectionSpotlightStep === 3) {
-      // Étape 3 : Déplacer le doigt vers le bouton "Continuer le tutoriel" au centre
+      // Étape 3 : Déplacer le doigt SOUS le bouton "Continuer le tutoriel"
       setFingerPos({
-        top: 'calc(50% + 40px)',
+        top: 'calc(50% + 50px)',
         left: '50%',
       })
     }
@@ -729,7 +729,7 @@ export default function CollectionPage() {
           left: fingerPos.left,
           transform: 'translate(-50%, -50%)',
           fontSize: 32,
-          zIndex: 501,
+          zIndex: 500,
           pointerEvents: 'none',
           transition: 'top 0.6s ease-out, left 0.6s ease-out',
           animation: 'fingerBounce 0.8s ease-in-out infinite',

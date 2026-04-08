@@ -476,7 +476,11 @@ export default function FactEditorPage({ toast }) {
   }
 
   async function save() {
-    if (!validate()) return
+    if (!validate()) {
+      console.warn('Validation échouée', errors)
+      toast?.('Corrigez les erreurs avant sauvegarde', 'warn')
+      return
+    }
     setSaving(true)
     try {
       const changes = []
@@ -588,7 +592,16 @@ export default function FactEditorPage({ toast }) {
     }
   }
 
-  const isDirty = fact && originalFact && JSON.stringify(fact) !== JSON.stringify(originalFact)
+  // Normalize fact before comparison: filter empty options
+  const normalizeFact = (f) => {
+    if (!f) return null
+    const copy = { ...f }
+    if (Array.isArray(copy.options)) {
+      copy.options = copy.options.filter(o => o && o.trim())
+    }
+    return JSON.stringify(copy)
+  }
+  const isDirty = fact && originalFact && normalizeFact(fact) !== normalizeFact(originalFact)
 
   if (loading) {
     return <div className="flex items-center justify-center h-full"><div className="text-slate-400 text-sm">Chargement…</div></div>

@@ -5,7 +5,8 @@ import { useState } from 'react'
 // stockCount: number of hints (or string like 'gratuit')
 // canBuyWithCoins: player has >= 5 coins to buy a hint
 // onBuyHint: callback when buying with coins (null if not applicable)
-export default function HintFlipButton({ num, hint, catColor, hasStock, stockCount, canBuyWithCoins, onReveal, onBuyHint }) {
+// onboardingCompleted: if false, display "Gratuit" instead of coin cost
+export default function HintFlipButton({ num, hint, catColor, hasStock, stockCount, canBuyWithCoins, onReveal, onBuyHint, onboardingCompleted = true }) {
   const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
 
   const canUse = hasStock || canBuyWithCoins
@@ -29,20 +30,23 @@ export default function HintFlipButton({ num, hint, catColor, hasStock, stockCou
   if (hasStock) {
     frontLabel = (
       <span style={{ fontWeight: 900, fontSize: 13, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
-        💡 {stockCount}
+        <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle' }} />
+        Indice
       </span>
     )
   } else if (canBuyWithCoins) {
     frontLabel = (
       <span style={{ fontWeight: 900, fontSize: 12, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
-        Indice 5 🪙
+        <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle' }} />
+        {onboardingCompleted ? 'Indice 5' : 'Gratuit'}
       </span>
     )
   } else {
     frontLabel = (
       <>
         <span style={{ fontWeight: 900, fontSize: 11, color: '#9CA3AF', whiteSpace: 'nowrap', textDecoration: 'line-through', display: 'flex', alignItems: 'center', gap: 3 }}>
-          Indice 5 🪙
+          <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', opacity: 0.5 }} />
+          Indice 5
         </span>
         <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
           Pas assez

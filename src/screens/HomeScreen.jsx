@@ -217,6 +217,11 @@ export default function HomeScreen({
   })()
 
   const modeIsNew = (modeId) => !seenModes.includes(modeId)
+
+  // Logique de pulse basée sur statsByMode (nb de fois joué en mode spécifique = 0)
+  const questsPlayedInMode = wtfData.statsByMode?.parcours?.gamesPlayed || 0
+  const blitzPlayedInMode = wtfData.statsByMode?.blitz?.gamesPlayed || 0
+  const explorerPlayedInMode = wtfData.statsByMode?.flash_solo?.gamesPlayed || 0
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
@@ -288,8 +293,6 @@ export default function HomeScreen({
         setActiveSpotlight('quest')
       } else if ((devOrTest || qp >= 1) && !wd.hasSeenCollection) {
         setActiveSpotlight('collection')
-      } else if ((devOrTest || qp >= 1) && !wd.hasSeenCoffre) {
-        setActiveSpotlight('coffre')
       } else if ((devOrTest || gp >= 2) && !wd.hasSeenBoutique) {
         setActiveSpotlight('boutique')
       } else if ((devOrTest || ufc >= 5) && !wd.hasSeenBlitz) {
@@ -314,7 +317,6 @@ export default function HomeScreen({
     flash: flashBtnRef,
     quest: questBtnRef,
     collection: collectionNavRef,
-    coffre: coffreZoneRef,
     boutique: boutiqueNavRef,
     blitz: blitzBtnRef,
   }
@@ -687,7 +689,6 @@ export default function HomeScreen({
               key={i}
               onClick={() => {
                 if (!isAvail) return
-                if (activeSpotlight === 'coffre') dismissSpotlight('coffre')
                 audio.play?.('click')
                 const reward = openCoffre()
                 if (reward) {
@@ -707,7 +708,6 @@ export default function HomeScreen({
                 opacity: isColl ? 0.35 : isMissed ? 0.25 : status === 'locked' ? 0.5 : 1,
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'opacity 0.2s, background 0.2s',
-                ...(isAvail ? { animation: 'newBadgePulse 2s ease-in-out infinite' } : {}),
               }}
             >
               <img
@@ -800,8 +800,8 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && modeIsNew('quest') ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
-            {canQuest && modeIsNew('quest') && <NewBadge />}
+          <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
+            {canQuest && questsPlayedInMode === 0 && <NewBadge />}
             <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
           </div>
           <div style={{ position: 'relative' }}>
@@ -865,16 +865,16 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <div style={{ position: 'relative' }}>
-            {canExplorer && modeIsNew('explorer') && <NewBadge />}
+          <div style={{ position: 'relative', ...(canExplorer && explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
+            {canExplorer && explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
             <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer} onClick={() => { if (!canExplorer) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
           </div>
           <div style={{ position: 'relative' }}>
             {canMulti && modeIsNew('multi') && <NewBadge />}
             <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
           </div>
-          <div ref={blitzBtnRef} style={{ position: 'relative', ...(canBlitz && modeIsNew('blitz') ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
-            {canBlitz && modeIsNew('blitz') && <NewBadge />}
+          <div ref={blitzBtnRef} style={{ position: 'relative', ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
+            {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
             <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
           </div>
         </div>

@@ -70,6 +70,7 @@ const SCREENS = {
   BLITZ_LOBBY: 'blitz_lobby',
   MODE_LAUNCH: 'mode_launch',
   ONBOARDING_FACT: 'onboarding_fact',
+  TUTORIAL_COMPLETE: 'tutorial_complete',
 }
 
 const MODE_CONFIGS = {
@@ -1434,6 +1435,15 @@ export default function App() {
             return
           }
         }
+
+        // Après la première Quest complétée : afficher écran "Tutoriel terminé" au lieu de ResultsScreen
+        const wtfDataEnd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        const isFirstQuestComplete = sessionType === 'parcours' && (wtfDataEnd.statsByMode?.parcours?.gamesPlayed || 0) === 1
+        if (isFirstQuestComplete) {
+          setScreen(SCREENS.TUTORIAL_COMPLETE)
+          return
+        }
+
         setScreen(SCREENS.RESULTS)
       }
     } else {
@@ -2117,6 +2127,52 @@ export default function App() {
           onCollection={() => { handleHome(); navigate('/collection') }}
           isFirstGame={(() => { try { const d = JSON.parse(localStorage.getItem('wtf_data') || '{}'); return d.firstFlashTicketGiven && (d.gamesPlayed || 0) <= 1 } catch { return false } })()}
         />
+      )}
+
+      {screen === SCREENS.TUTORIAL_COMPLETE && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(6px)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: 24, gap: 20, fontFamily: 'Nunito, sans-serif',
+        }}>
+          <div style={{ fontSize: 64, lineHeight: 1 }}>🏆</div>
+          <div style={{
+            fontSize: 22, fontWeight: 900, color: '#FFD700',
+            textAlign: 'center', textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          }}>
+            Tutoriel termine !
+          </div>
+          <div style={{
+            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.8)',
+            textAlign: 'center', lineHeight: 1.5, maxWidth: 280,
+          }}>
+            Tu maitrises les bases de WTF! Explore les autres modes, gagne des coins et complete ta collection !
+          </div>
+          <button
+            onClick={() => {
+              audio.play?.('click')
+              handleHome()
+            }}
+            style={{
+              marginTop: 12, padding: '14px 32px', borderRadius: 14,
+              background: '#FF6B1A', color: 'white', border: 'none',
+              fontWeight: 900, fontSize: 16, cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif',
+              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          >
+            Decouvrir le jeu ! 🚀
+          </button>
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(255,107,26,0.4); }
+              50% { transform: scale(1.05); box-shadow: 0 8px 24px rgba(255,107,26,0.6); }
+            }
+          `}</style>
+        </div>
       )}
 
       {screen === SCREENS.ONBOARDING_FACT && onboardingFact && (

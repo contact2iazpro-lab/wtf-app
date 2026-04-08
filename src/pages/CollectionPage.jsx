@@ -506,6 +506,7 @@ export default function CollectionPage() {
   const [fingerPos, setFingerPos] = useState({ top: '50%', left: '50%' })
   const progressBarRef = useRef(null)
   const firstUnlockedCategoryRef = useRef(null)
+  const spotlightTimersRef = useRef([]) // Stocker les IDs des timeouts pour le cleanup
 
   // Onboarding Collection
   const wtfDataInit = readWtfData()
@@ -638,9 +639,14 @@ export default function CollectionPage() {
       wd.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(wd))
       // Démarrer le spotlight séquentiel maintenant
+      // Nettoyer les timers existants
+      spotlightTimersRef.current.forEach(t => clearTimeout(t))
+      spotlightTimersRef.current = []
+
       setCollectionSpotlightStep(1)
-      setTimeout(() => setCollectionSpotlightStep(2), 2600)
-      setTimeout(() => setCollectionSpotlightStep(3), 5200)
+      const timer1 = setTimeout(() => setCollectionSpotlightStep(2), 1300)
+      const timer2 = setTimeout(() => setCollectionSpotlightStep(3), 2600)
+      spotlightTimersRef.current = [timer1, timer2]
     }
     setSelectedFact(null)
     setIsOnboardingFactDetail(false)
@@ -680,6 +686,14 @@ export default function CollectionPage() {
       })
     }
   }, [collectionSpotlightStep])
+
+  // Cleanup des timeouts du spotlight au démontage du composant
+  useEffect(() => {
+    return () => {
+      spotlightTimersRef.current.forEach(t => clearTimeout(t))
+      spotlightTimersRef.current = []
+    }
+  }, [])
 
   // ── Spotlight JSX (rendu en overlay indépendamment de la vue) ──
   const spotlightJSX = (

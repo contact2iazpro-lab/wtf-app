@@ -415,6 +415,7 @@ export default function HomeScreen({
           marginTop: 3,
           opacity: dimmed ? 0.5 : 1,
           textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+          display: 'none',
         }}>{label}</span>
         {disabled && (
           <span style={{

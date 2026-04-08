@@ -795,7 +795,7 @@ export default function ImagePipelinePage() {
           {/* Guide des styles visuels */}
           <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 20, marginBottom: 24, border: '1px solid rgba(255,255,255,0.1)' }}>
             <div style={{ fontWeight: 900, marginBottom: 16, color: '#FF6B1A', fontSize: 16 }}>Guide des styles visuels</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
               {[
                 { id: 'realiste', label: 'Realiste', emoji: '📷', desc: 'Photo realiste, eclairage naturel, comme un reportage', img: '/assets/guide/style-realiste.png' },
                 { id: 'humoristique', label: 'Humoristique', emoji: '😂', desc: 'Cartoon colore, exagere, drole et leger', img: '/assets/guide/style-humoristique.png' },
@@ -805,10 +805,12 @@ export default function ImagePipelinePage() {
                 { id: 'wtf-cinematique', label: 'WTF Cinematique', emoji: '🤯', desc: 'Photo cine dramatique, contraste total avec le contexte', img: '/assets/guide/style-wtf-cinematique.png' },
               ].map(s => (
                 <div key={s.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <img src={s.img} style={{ width: '100%', height: 120, objectFit: 'cover' }} alt={s.label} />
-                  <div style={{ padding: '8px 10px' }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: 'white' }}>{s.emoji} {s.label}</div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', lineHeight: 1.3, marginTop: 4 }}>{s.desc}</div>
+                  <div style={{ width: '100%', aspectRatio: '1/1', overflow: 'hidden', borderRadius: '8px 8px 0 0' }}>
+                    <img src={s.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={s.label} />
+                  </div>
+                  <div style={{ padding: '6px 8px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 11, color: 'white' }}>{s.emoji} {s.label}</div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', lineHeight: 1.3, marginTop: 4 }}>{s.desc}</div>
                   </div>
                 </div>
               ))}

@@ -394,15 +394,7 @@ export default function ImagePipelinePage() {
       const pipeline = validationQueue.find(p => p.id === pipelineId)
       if (!pipeline) throw new Error('Pipeline not found')
 
-      // Update fact with image
-      const { error: updateFact } = await supabase
-        .from('facts')
-        .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
-        .eq('id', pipeline.fact_id)
-
-      if (updateFact) throw updateFact
-
-      // Update pipeline status
+      // 1. Update image_pipeline status first
       const { error: updatePipeline } = await supabase
         .from('image_pipeline')
         .update({ status: 'validated', final_image_url: imageUrl, updated_at: new Date().toISOString() })
@@ -410,7 +402,15 @@ export default function ImagePipelinePage() {
 
       if (updatePipeline) throw updatePipeline
 
-      showToast('✅ Image validée')
+      // 2. ICI et UNIQUEMENT ICI : update facts.image_url
+      const { error: updateFact } = await supabase
+        .from('facts')
+        .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
+        .eq('id', pipeline.fact_id)
+
+      if (updateFact) throw updateFact
+
+      showToast('✅ Image validée et ajoutée au fact')
       fetchValidationQueue()
     } catch (err) {
       console.error(err)
@@ -428,16 +428,16 @@ export default function ImagePipelinePage() {
 
       // Delete image from Storage
       if (pipeline.image_url) {
-        const fileName = pipeline.image_url.split('/').pop()
-        if (fileName) {
+        const path = pipeline.image_url.split('/fact-images/')[1]
+        if (path) {
           const { error: deleteError } = await supabase.storage
             .from('fact-images')
-            .remove([`facts/${fileName}`])
+            .remove([path])
           if (deleteError) console.error('Error deleting image from storage:', deleteError)
         }
       }
 
-      // Update pipeline: status = rejected + clear image_url
+      // Update pipeline: status = rejected + clear image_url (facts.image_url stays null)
       const { error } = await supabase
         .from('image_pipeline')
         .update({ status: 'rejected', image_url: null, updated_at: new Date().toISOString() })
@@ -445,7 +445,7 @@ export default function ImagePipelinePage() {
 
       if (error) throw error
 
-      showToast('✅ Image rejetée')
+      showToast('✅ Image rejetée — le fact revient dans Sans image')
       fetchValidationQueue()
     } catch (err) {
       console.error(err)
@@ -463,24 +463,29 @@ export default function ImagePipelinePage() {
 
       // Delete old image from Storage
       if (pipeline.image_url) {
-        const fileName = pipeline.image_url.split('/').pop()
-        if (fileName) {
+        const path = pipeline.image_url.split('/fact-images/')[1]
+        if (path) {
           const { error: deleteError } = await supabase.storage
             .from('fact-images')
-            .remove([`facts/${fileName}`])
+            .remove([path])
           if (deleteError) console.error('Error deleting old image from storage:', deleteError)
         }
       }
 
-      // Update pipeline: status = directions_generated + clear image_url
+      // Update pipeline: status = directions_generated + clear image_url + reset selected_direction
       const { error } = await supabase
         .from('image_pipeline')
-        .update({ status: 'directions_generated', image_url: null, updated_at: new Date().toISOString() })
+        .update({
+          status: 'directions_generated',
+          image_url: null,
+          selected_direction: null,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', pipelineId)
 
       if (error) throw error
 
-      showToast('✅ Retour aux directions')
+      showToast('✅ Image supprimée — rechoisissez une direction')
       fetchValidationQueue()
       fetchDirectionsQueue()
     } catch (err) {

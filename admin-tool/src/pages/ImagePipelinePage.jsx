@@ -476,98 +476,176 @@ export default function ImagePipelinePage() {
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <h1 style={{
-          fontSize: '32px',
-          fontWeight: 900,
-          margin: 0,
-          marginBottom: '16px',
-        }}>
-          📸 Pipeline d'Images
-        </h1>
-
-        {/* Counters */}
-        <div style={{
-          display: 'flex',
-          gap: '20px',
-          flexWrap: 'wrap',
-          fontSize: '14px',
-          fontWeight: 700,
-        }}>
-          <div>
-            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Sans image</span>
-            {' '}
-            <span style={{
-              background: 'rgba(255,107,26,0.2)',
-              color: '#FF6B1A',
-              padding: '4px 12px',
-              borderRadius: '8px',
-              fontWeight: 900,
-            }}>
-              {countNoImage}
-            </span>
-          </div>
-          <div>
-            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Directions prêtes</span>
-            {' '}
-            <span style={{
-              background: 'rgba(168, 85, 247, 0.2)',
-              color: '#a855f7',
-              padding: '4px 12px',
-              borderRadius: '8px',
-              fontWeight: 900,
-            }}>
-              {directionsQueue.length}
-            </span>
-          </div>
-          <div>
-            <span style={{ color: 'rgba(255,255,255,0.6)' }}>À valider</span>
-            {' '}
-            <span style={{
-              background: 'rgba(14, 165, 233, 0.2)',
-              color: '#0ea5e9',
-              padding: '4px 12px',
-              borderRadius: '8px',
-              fontWeight: 900,
-            }}>
-              {countValidation}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
+      {/* Header with left section (title + counters + tabs) and right section (visual guide) */}
       <div style={{
         display: 'flex',
-        gap: '8px',
-        marginBottom: '24px',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-        paddingBottom: '0px',
+        gap: '24px',
+        marginBottom: '32px',
+        alignItems: 'flex-start',
       }}>
-        {[
-          { id: 'noimage', label: '📭 Sans image' },
-          { id: 'directions', label: '🎨 Directions' },
-          { id: 'validation', label: '✅ Validation' },
-        ].map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            style={{
-              padding: '12px 20px',
-              fontSize: '14px',
-              fontWeight: 700,
-              background: tab === t.id ? 'rgba(255,255,255,0.08)' : 'transparent',
-              border: 'none',
-              color: tab === t.id ? 'white' : 'rgba(255,255,255,0.5)',
-              borderBottom: tab === t.id ? '2px solid #FF6B1A' : 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
+        {/* LEFT: Title, Counters, Tabs */}
+        <div style={{ flex: 1 }}>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: 900,
+            margin: 0,
+            marginBottom: '16px',
+          }}>
+            📸 Pipeline d'Images
+          </h1>
+
+          {/* Counters */}
+          <div style={{
+            display: 'flex',
+            gap: '20px',
+            flexWrap: 'wrap',
+            fontSize: '14px',
+            fontWeight: 700,
+            marginBottom: '16px',
+          }}>
+            <div>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>Sans image</span>
+              {' '}
+              <span style={{
+                background: 'rgba(255,107,26,0.2)',
+                color: '#FF6B1A',
+                padding: '4px 12px',
+                borderRadius: '8px',
+                fontWeight: 900,
+              }}>
+                {countNoImage}
+              </span>
+            </div>
+            <div>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>Directions prêtes</span>
+              {' '}
+              <span style={{
+                background: 'rgba(168, 85, 247, 0.2)',
+                color: '#a855f7',
+                padding: '4px 12px',
+                borderRadius: '8px',
+                fontWeight: 900,
+              }}>
+                {directionsQueue.length}
+              </span>
+            </div>
+            <div>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>À valider</span>
+              {' '}
+              <span style={{
+                background: 'rgba(14, 165, 233, 0.2)',
+                color: '#0ea5e9',
+                padding: '4px 12px',
+                borderRadius: '8px',
+                fontWeight: 900,
+              }}>
+                {countValidation}
+              </span>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            paddingBottom: '0px',
+          }}>
+            {[
+              { id: 'noimage', label: '📭 Sans image' },
+              { id: 'directions', label: '🎨 Directions' },
+              { id: 'validation', label: '✅ Validation' },
+            ].map(t => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                style={{
+                  padding: '12px 20px',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  background: tab === t.id ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  border: 'none',
+                  color: tab === t.id ? 'white' : 'rgba(255,255,255,0.5)',
+                  borderBottom: tab === t.id ? '2px solid #FF6B1A' : 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: Visual Styles Guide */}
+        <div style={{
+          width: '300px',
+          flexShrink: 0,
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '10px',
+          padding: '8px',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }}>
+          <div style={{
+            fontWeight: 800,
+            fontSize: '10px',
+            color: 'rgba(255,255,255,0.6)',
+            marginBottom: '8px',
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+          }}>
+            STYLES VISUELS
+          </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '4px',
+          }}>
+            {[
+              { id: 'realiste', label: 'Realiste', emoji: '📷', img: '/assets/guide/style-realiste.png' },
+              { id: 'humoristique', label: 'Humoristique', emoji: '😂', img: '/assets/guide/style-humoristique.png' },
+              { id: 'metaphorique', label: 'Metaphorique', emoji: '🎭', img: '/assets/guide/style-metaphorique.png' },
+              { id: 'retro', label: 'Retro Pop Art', emoji: '🎨', img: '/assets/guide/style-retro.png' },
+              { id: 'ultra-realiste-absurde', label: 'Ultra Realiste Absurde', emoji: '📸', img: '/assets/guide/style-ultra-realiste-absurde.png' },
+              { id: 'wtf-cinematique', label: 'WTF Cinematique', emoji: '🤯', img: '/assets/guide/style-wtf-cinematique.png' },
+            ].map(s => (
+              <div key={s.id} style={{
+                background: 'rgba(255,255,255,0.03)',
+                borderRadius: '6px',
+                overflow: 'hidden',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}>
+                <div style={{
+                  width: '100%',
+                  aspectRatio: '1/1',
+                  overflow: 'hidden',
+                  borderRadius: '4px 4px 0 0',
+                }}>
+                  <img src={s.img} style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }} alt={s.label} />
+                </div>
+                <div style={{
+                  padding: '4px',
+                  textAlign: 'center',
+                }}>
+                  <div style={{
+                    fontWeight: 700,
+                    fontSize: '8px',
+                    color: 'white',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {s.emoji} {s.label}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Content */}
@@ -844,31 +922,6 @@ export default function ImagePipelinePage() {
       {/* TAB 2 — Directions */}
       {tab === 'directions' && (
         <div>
-          {/* Guide des styles visuels */}
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 20, marginBottom: 24, border: '1px solid rgba(255,255,255,0.1)' }}>
-            <div style={{ fontWeight: 900, marginBottom: 16, color: '#FF6B1A', fontSize: 16 }}>Guide des styles visuels</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12 }}>
-              {[
-                { id: 'realiste', label: 'Realiste', emoji: '📷', desc: 'Photo realiste, eclairage naturel, comme un reportage', img: '/assets/guide/style-realiste.png' },
-                { id: 'humoristique', label: 'Humoristique', emoji: '😂', desc: 'Cartoon colore, exagere, drole et leger', img: '/assets/guide/style-humoristique.png' },
-                { id: 'metaphorique', label: 'Metaphorique', emoji: '🎭', desc: 'Peinture onirique, pastels doux, poetique', img: '/assets/guide/style-metaphorique.png' },
-                { id: 'retro', label: 'Retro Pop Art', emoji: '🎨', desc: 'Style annees 60, halftone, Lichtenstein', img: '/assets/guide/style-retro.png' },
-                { id: 'ultra-realiste-absurde', label: 'Ultra Realiste Absurde', emoji: '📸', desc: 'Photo ultra realiste, situation absurde et decalee', img: '/assets/guide/style-ultra-realiste-absurde.png' },
-                { id: 'wtf-cinematique', label: 'WTF Cinematique', emoji: '🤯', desc: 'Photo cine dramatique, contraste total avec le contexte', img: '/assets/guide/style-wtf-cinematique.png' },
-              ].map(s => (
-                <div key={s.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ width: '100%', aspectRatio: '1/1', overflow: 'hidden', borderRadius: '8px 8px 0 0' }}>
-                    <img src={s.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={s.label} />
-                  </div>
-                  <div style={{ padding: '6px 8px' }}>
-                    <div style={{ fontWeight: 700, fontSize: 11, color: 'white' }}>{s.emoji} {s.label}</div>
-                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', lineHeight: 1.3, marginTop: 4 }}>{s.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {directionsQueue.length === 0 ? (
             <div style={{
               padding: '40px 24px',

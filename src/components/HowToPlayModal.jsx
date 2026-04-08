@@ -12,7 +12,7 @@ const CHAPTERS = [
       { icon: '🎯', text: 'Des faits incroyables te sont présentés — à toi de trouver la **bonne réponse** !' },
       { icon: '⏱️', text: 'Timer : **Cool = 30s**, **Hot / WTF! / Jouer / Hunt = 20s** par question.' },
       { icon: '🪙', text: 'Gagne des **WTF! Coins** à chaque bonne réponse.' },
-      { icon: '📚', text: 'Débloque des **f*cts VIP** en Quest. Joue **gratuitement** en Jouer (Flash).' },
+      { icon: '📚', text: 'Débloque des **f*cts VIP** en Quest. Joue **gratuitement** en Jouer.' },
     ],
   },
   {
@@ -33,13 +33,13 @@ const CHAPTERS = [
     shortTitle: 'Quest',
     title: 'Quest',
     content: [
-      { icon: '🎫', text: '**Coûte 1 ticket** par session.' },
-      { icon: '🎯', text: 'Choisis un **niveau de difficulté**.' },
-      { icon: '❄️', text: '**Cool** — 4 QCM · 30s · 1 indice gratuit · **3 coins**/bonne réponse' },
-      { icon: '🔥', text: '**À fond** — 4 QCM · 20s · Indices payants (5 coins) · **3 coins**/bonne réponse' },
-      { icon: '⚡', text: '**WTF! Addict** — 6 QCM · 20s · 1 indice payant (8 coins) · **5 coins**/bonne réponse' },
+      { icon: '🎫', text: '**Coûte 1 ticket** (25 coins) par session.' },
+      { icon: '🎯', text: 'Choisis un **niveau de difficulté** : Cool, Hot, ou WTF!.' },
+      { icon: '❄️', text: '**Cool** — 2 QCM · 30s · 2 indices gratuits · **2 coins**/bonne réponse' },
+      { icon: '🔥', text: '**Hot** — 4 QCM · 20s · 2 indices gratuits · **2 coins**/bonne réponse' },
+      { icon: '⚡', text: '**WTF!** — 6 QCM · 20s · 1 indice gratuit · **1 coin**/bonne réponse' },
       { icon: '📚', text: '**5 questions** par session. Les f*cts trouvés rejoignent ta **Collection**.' },
-      { icon: '🏆', text: 'Score parfait (5/5) = **bonus de 25 coins** !' },
+      { icon: '🏆', text: 'Score parfait (5/5) = **bonus de 10 coins** !' },
     ],
   },
   {
@@ -57,13 +57,26 @@ const CHAPTERS = [
     ],
   },
   {
+    id: 'marathon',
+    emoji: '🏃',
+    shortTitle: 'Marathon',
+    title: 'Marathon',
+    content: [
+      { icon: '📊', text: '**20 questions** — test ta connaissance sur un plus long parcours.' },
+      { icon: '🎯', text: 'Format : 4 QCM, **20s** par question, **2 indices** disponibles.' },
+      { icon: '🪙', text: 'Gains : **3 coins** par bonne réponse · **20 coins bonus** si score parfait (20/20).' },
+      { icon: '🆓', text: '**Gratuit** — pas de ticket requis, pas de collecte de f*cts.' },
+      { icon: '🏆', text: 'Entraîne-toi pour améliorer ton score personnel.' },
+    ],
+  },
+  {
     id: 'blitz',
     emoji: '⚡',
     shortTitle: 'Blitz',
     title: 'Blitz',
     content: [
       { icon: '⏱️', text: '**Chrono montant** — réponds le plus vite possible, accumule les points.' },
-      { icon: '📊', text: 'Paliers : **5 / 10 / 20 / 30 / 40 / 50 questions**.' },
+      { icon: '📊', text: 'Paliers : **5 / 10 / 20 / 30 / 40 / 50+ questions**.' },
       { icon: '✅', text: 'Bonne réponse = **+2s** · Mauvaise = **-3s** (pénalité).' },
       { icon: '🚫', text: '**Pas d\'indices** — c\'est la mémoire pure, 4 QCM par question.' },
       { icon: '💰', text: '**Pas de coins** — seul le **prestige** compte !' },
@@ -79,7 +92,7 @@ const CHAPTERS = [
       { icon: '🆓', text: '**Gratuit** — pas de ticket requis, **1 fois par jour**.' },
       { icon: '🎯', text: 'Un **f*ct WTF spécial** à découvrir chaque jour. Débloque le WTF du Jour !' },
       { icon: '📚', text: '**5 questions** pour le débloquer · 4 QCM · **20s** · **2 indices**.' },
-      { icon: '🪙', text: 'Coins variables selon le défi.' },
+      { icon: '🪙', text: 'Gagne le **WTF du Jour** et des **coins bonus**.' },
       { icon: '📅', text: 'Reviens **chaque jour** pour un nouveau WTF du Jour !' },
     ],
   },
@@ -90,8 +103,8 @@ const CHAPTERS = [
     title: 'Indices & Coins',
     content: [
       { icon: '💡', text: 'Les indices **éliminent une mauvaise réponse** et consomment 1 indice du stock.' },
-      { icon: '❄️', text: '**Cool / Hot** : jusqu\'à **2 indices** par question.' },
-      { icon: '⚡', text: '**WTF!** : **1 seul indice** par question.' },
+      { icon: '❄️', text: '**Cool / Hot** : jusqu\'à **2 indices gratuits** par question.' },
+      { icon: '⚡', text: '**WTF!** : **1 indice gratuit** par question.' },
       { icon: '🎁', text: 'Gagne des indices via les **coffres quotidiens**, les **bonus Blitz** et ta **série**.' },
     ],
   },
@@ -121,14 +134,14 @@ const CHAPTERS = [
   },
   {
     id: 'multi',
-    emoji: '🎮',
+    emoji: '👥',
     shortTitle: 'Multi',
     title: 'Multijoueur',
     content: [
       { icon: '👥', text: '**Défie tes amis** en Blitz et compare vos scores !' },
       { icon: '🏆', text: 'Ajoute des amis via leur **pseudo** et envoie des **défis**.' },
-      { icon: '⚡', text: 'Mode **Blitz** — résous les questions le plus **vite possible**.' },
-      { icon: '📊', text: 'Grimpe dans le **classement** avec tes amis !' },
+      { icon: '⚡', text: 'Mode **Blitz** — réponds le plus vite possible pour vaincre tes adversaires.' },
+      { icon: '📊', text: 'Grimpe dans le **classement** avec tes amis et deviens champion !' },
     ],
   },
 ]
@@ -144,6 +157,7 @@ function getChapterIcon(chapterId) {
   const modeIcons = {
     quest: '/assets/modes/quete.png',
     explorer: '/assets/modes/marathon.png',
+    marathon: '/assets/modes/marathon.png',
     blitz: '/assets/modes/blitz.png',
     streak: '/assets/modes/serie.png',
     multi: '/assets/modes/multi.png',
@@ -181,8 +195,8 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
       case 'explorer':
         return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
 
-      case 'flash':
-        return false // Removed: merged with explorer
+      case 'marathon':
+        return (wd.statsByMode?.marathon?.gamesPlayed || 0) >= 1
 
       case 'blitz':
         return (wd.statsByMode?.blitz?.gamesPlayed || 0) >= 1
@@ -273,26 +287,26 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             })}
           </div>
 
-          {/* Content area - fullscreen, no scroll */}
-          <div className="flex-1 overflow-hidden p-3" style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Content area - scrollable */}
+          <div className="flex-1 overflow-y-auto p-4" style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Chapter title */}
-            <div className="flex items-center gap-2 mb-1" style={{ flexShrink: 0 }}>
+            <div className="flex items-center gap-2 mb-4" style={{ flexShrink: 0 }}>
               {getChapterIcon(chapter.id)}
-              <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.6', fontSize: '17px' }}>
+              <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.6', fontSize: '18px' }}>
                 {chapter.title}
               </h2>
             </div>
 
             {/* Rules items */}
-            <div className="flex flex-col gap-1" style={{ overflow: 'hidden', flexShrink: 1, minHeight: 0 }}>
+            <div className="flex flex-col gap-2" style={{ flexShrink: 0 }}>
               {chapter.content.map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-1 p-1 rounded-2xl"
-                  style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', flexShrink: 0 }}
+                  className="flex items-start gap-2 p-2 rounded-2xl"
+                  style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}
                 >
-                  <span style={{ fontSize: 16, flexShrink: 0, lineHeight: '1.6' }}>{item.icon}</span>
-                  <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.6', fontSize: '13px' }}>
+                  <span style={{ fontSize: 18, flexShrink: 0, lineHeight: '1.6' }}>{item.icon}</span>
+                  <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.6', fontSize: '14px' }}>
                     {renderText(item.text)}
                   </p>
                 </div>
@@ -302,16 +316,20 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               {chapter.tutorialButton && onRestartTutorial && (
                 <button
                   onClick={() => { audio.play('click'); onRestartTutorial(); onClose() }}
-                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-1"
-                  style={{ background: '#FF6B1A', color: 'white', border: 'none', padding: '6px 8px', fontSize: '11px', flexShrink: 0 }}
+                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-2"
+                  style={{ background: '#FF6B1A', color: 'white', border: 'none', padding: '8px 12px', fontSize: '12px', flexShrink: 0 }}
                 >
                   🔄 Relancer le tutoriel
                 </button>
               )}
 
-              {/* Checkbox réafficher les règles des modes */}
-              {['quest', 'explorer', 'blitz', 'hunt'].includes(chapter.id) && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(0,0,0,0.6)', cursor: 'pointer', marginTop: 8 }}>
+              {/* Checkbox réafficher les règles des modes — bien visible */}
+              {['quest', 'explorer', 'blitz', 'hunt', 'marathon'].includes(chapter.id) && (
+                <label style={{
+                  display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
+                  cursor: 'pointer', marginTop: 12, padding: '8px', background: 'rgba(255,107,26,0.08)',
+                  borderRadius: '8px', border: '1px solid rgba(255,107,26,0.2)', flexShrink: 0
+                }}>
                   <input
                     type="checkbox"
                     checked={showRulesOnLaunch}
@@ -328,23 +346,24 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                         keysToRemove.forEach(k => localStorage.removeItem(k))
                       }
                     }}
-                    style={{ width: 14, height: 14, cursor: 'pointer' }}
+                    style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
                   />
-                  Réafficher les règles au lancement
+                  <span>Réafficher les règles au lancement</span>
                 </label>
               )}
             </div>
 
-            {/* Chapter dots navigation */}
-            <div className="flex flex-wrap justify-center gap-0.5 mt-1" style={{ flexShrink: 0 }}>
+            {/* Chapter dots navigation — visible au bas */}
+            <div className="flex flex-wrap justify-center gap-1 mt-4" style={{ flexShrink: 0 }}>
               {visibleChapters.map(ch => (
                 <button
                   key={ch.id}
                   onClick={() => { audio.play('click'); setActiveId(ch.id) }}
+                  title={ch.shortTitle}
                   style={{
-                    width: ch.id === activeId ? 16 : 4,
-                    height: 4,
-                    borderRadius: 2,
+                    width: ch.id === activeId ? 20 : 6,
+                    height: 6,
+                    borderRadius: 3,
                     background: ch.id === activeId ? '#FF6B1A' : 'rgba(0,0,0,0.15)',
                     transition: 'all 0.25s ease',
                     border: 'none',

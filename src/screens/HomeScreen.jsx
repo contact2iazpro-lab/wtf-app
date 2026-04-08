@@ -201,7 +201,7 @@ export default function HomeScreen({
   }
 
   const canBoutique = isDevOrTest || gamesPlayed >= 2
-  const canTrophees = isDevOrTest || gamesPlayed >= 3
+  const canTrophees = isDevOrTest || wtfData.onboardingCompleted || unlockedFactsCount >= 1 || gamesPlayed >= 2
   const canCollection = isDevOrTest || questsPlayed >= 1
   const canAmis = isDevOrTest || blitzPlayed >= 1
 
@@ -865,8 +865,8 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <div style={{ position: 'relative', ...(canExplorer && explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
-            {canExplorer && explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
+          <div style={{ position: 'relative', ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
+            {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
             <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer} onClick={() => { if (!canExplorer) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
           </div>
           <div style={{ position: 'relative' }}>

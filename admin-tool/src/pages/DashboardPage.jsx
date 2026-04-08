@@ -75,13 +75,14 @@ export default function DashboardPage({ toast }) {
   const [enrichStatus, setEnrichStatus] = useState(null)
   const [enrichMessage, setEnrichMessage] = useState('')
   const [enrichErrorCount, setEnrichErrorCount] = useState(0)
+  const [shortHintsCount, setShortHintsCount] = useState(0)
   const [fillUrlsStatus, setFillUrlsStatus] = useState(null) // null | 'running' | 'done' | 'error'
   const [fillUrlsResult, setFillUrlsResult] = useState(null)
   const [fillUrlsError, setFillUrlsError] = useState('')
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
   const enrichCancelRef = useRef(false)
 
-  useEffect(() => { load(); fetchQualityIssues() }, [])
+  useEffect(() => { load(); fetchQualityIssues(); fetchShortHintsCount() }, [])
 
   async function load() {
     setLoading(true)
@@ -267,6 +268,41 @@ export default function DashboardPage({ toast }) {
     }
   }
 
+  // Fetch and count facts with short hints (single word)
+  async function fetchShortHintsCount() {
+    try {
+      const all = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, hint1, hint2')
+          .not('hint1', 'is', null)
+          .neq('hint1', '')
+          .range(from, from + PAGE - 1)
+
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+
+      // Filter client-side for single-word hints (no spaces)
+      const shortHints = all.filter(f => {
+        const h1Short = f.hint1 && !f.hint1.includes(' ')
+        const h2Short = f.hint2 && f.hint2 && !f.hint2.includes(' ')
+        return h1Short || h2Short
+      })
+
+      setShortHintsCount(shortHints.length)
+    } catch (err) {
+      console.error('Erreur comptage indices courts:', err)
+      setShortHintsCount(0)
+    }
+  }
+
   async function runEnrichAll() {
     if (enrichStatus === 'running') return
     enrichCancelRef.current = false
@@ -369,6 +405,124 @@ export default function DashboardPage({ toast }) {
       setEnrichStatus('done')
       setEnrichMessage(`✅ Enrichissement terminé — ${enriched}/${all.length} facts traités (${enrichErrorCount} erreurs)`)
       fetchQualityIssues()
+    } catch (err) {
+      setEnrichStatus('error')
+      setEnrichMessage(`❌ Erreur : ${err.message}`)
+    }
+  }
+
+  async function runEnrichShortHints() {
+    if (enrichStatus === 'running') return
+    enrichCancelRef.current = false
+    setEnrichStatus('running')
+    setEnrichMessage('⏳ Récupération des indices courts...')
+    setEnrichErrorCount(0)
+
+    try {
+      const all = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, question, short_answer, explanation, category, hint1, hint2')
+          .not('hint1', 'is', null)
+          .neq('hint1', '')
+          .range(from, from + PAGE - 1)
+
+        if (error) throw error
+        if (!data || data.length === 0) break
+        console.log('Page ' + Math.ceil(from/PAGE) + ': ' + data.length + ' facts trouvés')
+        all.push(...data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+
+      // Filter client-side for single-word hints (no spaces)
+      const shortHints = all.filter(f => {
+        const h1Short = f.hint1 && !f.hint1.includes(' ')
+        const h2Short = f.hint2 && f.hint2 && !f.hint2.includes(' ')
+        return h1Short || h2Short
+      })
+
+      if (shortHints.length === 0) {
+        setEnrichStatus('done')
+        setEnrichMessage('✅ Aucun indice court à reformuler — tous sont déjà en phrases !')
+        return
+      }
+
+      setEnrichProgress({ current: 0, total: shortHints.length })
+      let enriched = 0
+
+      for (let i = 0; i < shortHints.length; i++) {
+        if (enrichCancelRef.current) {
+          setEnrichStatus('done')
+          setEnrichMessage(`⏹ Arrêté — ${enriched}/${shortHints.length} reformulés`)
+          return
+        }
+
+        const fact = shortHints[i]
+        setEnrichMessage(`🧠 Reformulation ${i + 1}/${shortHints.length} — fact #${fact.id}...`)
+        setEnrichProgress({ current: i + 1, total: shortHints.length })
+
+        try {
+          const resp = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-fact`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                question: fact.question,
+                short_answer: fact.short_answer,
+                explanation: fact.explanation,
+                category: fact.category,
+                hint1: fact.hint1,
+                hint2: fact.hint2,
+              }),
+            }
+          )
+          console.log('Fact #' + fact.id + ' response status:', resp.status)
+          if (!resp.ok) {
+            const errText = await resp.text()
+            console.error('Fact #' + fact.id + ' erreur:', errText)
+            throw new Error(errText || 'Erreur API')
+          }
+          const enrichResult = await resp.json()
+          console.log('Fact #' + fact.id + ' enrichi:', Object.keys(enrichResult))
+
+          const { error: updateError } = await supabase
+            .from('facts')
+            .update({
+              hint1: enrichResult.hint1,
+              hint2: enrichResult.hint2,
+              hint3: enrichResult.hint3 || '',
+              hint4: enrichResult.hint4 || '',
+              funny_wrong_1: enrichResult.funny_wrong_1,
+              funny_wrong_2: enrichResult.funny_wrong_2,
+              close_wrong_1: enrichResult.close_wrong_1,
+              close_wrong_2: enrichResult.close_wrong_2,
+              plausible_wrong_1: enrichResult.plausible_wrong_1,
+              plausible_wrong_2: enrichResult.plausible_wrong_2,
+              plausible_wrong_3: enrichResult.plausible_wrong_3,
+              ...(enrichResult.explanation ? { explanation: enrichResult.explanation } : {}),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', fact.id)
+          if (updateError) throw updateError
+          enriched++
+        } catch (err) {
+          console.error(`Erreur reformulation fact #${fact.id}:`, err)
+          setEnrichErrorCount(prev => prev + 1)
+        }
+      }
+
+      setEnrichStatus('done')
+      setEnrichMessage(`✅ Reformulation terminée — ${enriched}/${shortHints.length} facts traités (${enrichErrorCount} erreurs)`)
+      fetchQualityIssues()
+      fetchShortHintsCount()
     } catch (err) {
       setEnrichStatus('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
@@ -953,6 +1107,50 @@ export default function DashboardPage({ toast }) {
           {enrichStatus === 'error' && (
             <button
               onClick={runEnrichAll}
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all"
+            >
+              ↺ Réessayer
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Enrichir les indices courts */}
+      <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
+        <h2 className="text-base font-black text-white mb-2">📝 Reformuler les indices courts</h2>
+        <p className="text-slate-400 text-sm mb-4">
+          Reformule les indices d'un seul mot (ancien format) en phrases courtes (MAX 20 caractères).
+          Utilise Claude pour créer des indices plus intelligents et plus efficaces.
+        </p>
+
+        {shortHintsCount > 0 && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-orange-900/20 border border-orange-700/30">
+            <span className="text-sm font-semibold" style={{ color: '#FF6B1A' }}>
+              {shortHintsCount} facts avec indices à reformuler
+            </span>
+          </div>
+        )}
+
+        <div className="flex gap-3 flex-wrap">
+          <button
+            disabled={enrichStatus === 'running' || shortHintsCount === 0}
+            onClick={runEnrichShortHints}
+            className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
+          >
+            {enrichStatus === 'running' ? 'Reformulation…' : '📝 Reformuler les indices'}
+          </button>
+          {enrichStatus === 'running' && (
+            <button
+              onClick={stopEnrich}
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all"
+            >
+              ⏹ Arrêter
+            </button>
+          )}
+          {enrichStatus === 'error' && (
+            <button
+              onClick={runEnrichShortHints}
               className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all"
             >
               ↺ Réessayer

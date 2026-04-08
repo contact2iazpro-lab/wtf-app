@@ -131,8 +131,8 @@ const TODAY = () => new Date().toISOString().slice(0, 10) // YYYY-MM-DD
 const TODAY_DATE_STR = () => new Date().toDateString()
 const YESTERDAY_DATE_STR = () => new Date(Date.now() - 86400000).toDateString()
 
-// TEMP TEST — remettre à 10 avant le lancement en production
-const QUESTIONS_PER_GAME = 5
+// Nombre de questions par Quête/Parcours
+const QUESTIONS_PER_GAME = 10
 
 // Paliers de récompenses fidélité Streak
 const getStreakReward = (streakDays) => {

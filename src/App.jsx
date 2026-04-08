@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
+import { DIFFICULTY_LEVELS } from './constants/gameConfig'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
   getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories, getCategoryById,
@@ -120,15 +121,6 @@ const MODE_CONFIGS = {
       { icon: '📅', text: 'Reviens chaque jour pour un nouveau WTF!' },
     ],
   },
-}
-
-const DIFFICULTY_LEVELS = {
-  WTF:   { id: 'wtf',   label: 'Quest WTF!', emoji: '⚡', choices: 6, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 2, wrong: 0 } },
-  HOT:   { id: 'hot',   label: 'Quest Hot',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 3, wrong: 0 } },
-  COOL:  { id: 'cool',  label: 'Quest Cool', emoji: '❄️', choices: 2, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 5, wrong: 0 } },
-  FLASH: { id: 'flash', label: 'Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 5, wrong: 0 } },
-  HUNT:  { id: 'hunt',  label: 'Hunt',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, scoring: { correct: [5, 3, 2], wrong: 0 } },
-  BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 0, scoring: { correct: 1, wrong: 0 } },
 }
 
 const TODAY = () => new Date().toISOString().slice(0, 10) // YYYY-MM-DD

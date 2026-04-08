@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
+import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 
 // ── Backgrounds aléatoires (vrais assets) ────────────────────────────────────
 const BACKGROUNDS = [
@@ -12,63 +13,57 @@ const BACKGROUNDS = [
   '/assets/backgrounds/home-violet.webp',
 ]
 
-// ── Niveaux — synced with App.jsx DIFFICULTY_LEVELS ─────────────────────────
-const DIFFICULTY_LEVELS = [
-  {
-    id: 'cool',
-    label: 'Cool',
+// ── UI Configuration pour les 3 niveaux Quest (Cool, Hot, WTF) ─────────────────
+// Données visuelles + règles dynamiques basées sur DIFFICULTY_LEVELS
+const DIFFICULTY_UI_CONFIG = {
+  cool: {
     subtitle: 'Pour les Noobs',
     icon: '/assets/ui/level-cool.png',
     tag: 'ACCESSIBLE',
     cardGradient: 'linear-gradient(135deg, #60A5FA, #1D4ED8)',
     selectedGradient: 'linear-gradient(135deg, #93C5FD, #3B82F6)',
     ctaColor: '#1D4ED8',
-    rules: [
-      { icon: '/assets/ui/icon-qcm.png',  text: '4 choix de réponse' },
-      { icon: '/assets/ui/icon-hint.png', text: '2 indices possibles' },
-      { icon: '/assets/ui/icon-coins.png', text: '5 coins / bonne réponse' },
-      { icon: '⏱️', text: '30 secondes' },
-    ],
-    choices: 4, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 5,
-    scoring: { correct: 5, wrong: 0 },
   },
-  {
-    id: 'hot',
-    label: 'Hot',
+  hot: {
     subtitle: 'Pour les Pros',
     icon: '/assets/ui/level-hot.png',
     tag: 'INTENSE',
     cardGradient: 'linear-gradient(135deg, #FF6B1A, #DC2626)',
     selectedGradient: 'linear-gradient(135deg, #FF8C4A, #EF4444)',
     ctaColor: '#DC2626',
-    rules: [
-      { icon: '/assets/ui/icon-qcm.png',  text: '4 choix de réponse' },
-      { icon: '/assets/ui/icon-hint.png', text: '2 indices possibles' },
-      { icon: '/assets/ui/icon-coins.png', text: '3 coins / bonne réponse' },
-      { icon: '⏱️', text: '20 secondes' },
-    ],
-    choices: 4, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3,
-    scoring: { correct: 3, wrong: 0 },
   },
-  {
-    id: 'wtf',
-    label: 'WTF!',
+  wtf: {
     subtitle: 'Pour les Cracks',
     icon: '/assets/ui/level-wtf.png',
     tag: 'ULTIME',
     cardGradient: 'linear-gradient(135deg, #22C55E, #15803D)',
     selectedGradient: 'linear-gradient(135deg, #4ADE80, #22C55E)',
     ctaColor: '#15803D',
-    rules: [
-      { icon: '/assets/ui/icon-qcm.png',  text: '6 choix de réponse' },
-      { icon: '/assets/ui/icon-hint.png', text: '1 indice possible' },
-      { icon: '/assets/ui/icon-coins.png', text: '2 coins / bonne réponse' },
-      { icon: '⏱️', text: '20 secondes' },
-    ],
-    choices: 6, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 2,
-    scoring: { correct: 2, wrong: 0 },
   },
-]
+}
+
+// Helper pour générer les règles dynamiquement depuis DIFFICULTY_LEVELS
+function buildRules(difficultyConfig) {
+  const totalHints = (difficultyConfig.freeHints || 0) + (difficultyConfig.paidHints || 0)
+  return [
+    {
+      icon: '/assets/ui/icon-qcm.png',
+      text: `${difficultyConfig.choices} choix de réponse`,
+    },
+    {
+      icon: '/assets/ui/icon-hint.png',
+      text: `${totalHints} indice${totalHints > 1 ? 's' : ''} possible${totalHints > 1 ? 's' : ''}`,
+    },
+    {
+      icon: '/assets/ui/icon-coins.png',
+      text: `${difficultyConfig.coinsPerCorrect} coin${difficultyConfig.coinsPerCorrect > 1 ? 's' : ''} / bonne réponse`,
+    },
+    {
+      icon: '⏱️',
+      text: `${difficultyConfig.duration} secondes`,
+    },
+  ]
+}
 
 // ── Scaled helper ────────────────────────────────────────────────────────────
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -79,16 +74,20 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
   const scale = useScale()
   const bgIndex = useRef(Math.floor(Math.random() * BACKGROUNDS.length))
 
+  // Liste des niveaux Quest (Cool, Hot, WTF)
+  const QUEST_LEVELS = [DIFFICULTY_LEVELS.COOL, DIFFICULTY_LEVELS.HOT, DIFFICULTY_LEVELS.WTF]
+
   const handleSelect = (difficultyId) => {
-    const d = DIFFICULTY_LEVELS.find(l => l.id === difficultyId)
+    const d = DIFFICULTY_LEVELS[difficultyId.toUpperCase()]
+    if (!d) return
     audio.play('click')
     onSelectDifficulty({
       id: d.id,
       label: d.label,
-      emoji: d.id === 'cool' ? '❄️' : d.id === 'hot' ? '🔥' : '⚡',
+      emoji: d.emoji,
       choices: d.choices,
-      duration: 30,
-      hintsAllowed: true,
+      duration: d.duration,
+      hintsAllowed: d.hintsAllowed,
       freeHints: d.freeHints,
       paidHints: d.paidHints,
       hintCost: d.hintCost,
@@ -98,7 +97,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
   }
 
   const hasSelection = selectedId !== null
-  const selectedLevel = DIFFICULTY_LEVELS.find(l => l.id === selectedId)
+  const selectedLevelConfig = selectedId ? DIFFICULTY_LEVELS[selectedId.toUpperCase()] : null
 
   return (
     <div style={{
@@ -173,15 +172,17 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         display: 'flex', flexDirection: 'column',
         padding: `0 ${S(12)}`,
       }}>
-        {DIFFICULTY_LEVELS.map((d) => {
+        {QUEST_LEVELS.map((d) => {
           const isSelected = selectedId === d.id
+          const uiConfig = DIFFICULTY_UI_CONFIG[d.id]
+          const rules = buildRules(d)
           return (
             <button
               key={d.id}
               onClick={() => { audio.play('click'); setSelectedId(d.id) }}
               style={{
                 position: 'relative',
-                background: isSelected ? d.selectedGradient : d.cardGradient,
+                background: isSelected ? uiConfig.selectedGradient : uiConfig.cardGradient,
                 borderRadius: S(16),
                 padding: S(10),
                 marginBottom: S(6),
@@ -205,7 +206,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: S(8) }}>
                   <img
-                    src={d.icon}
+                    src={uiConfig.icon}
                     alt={d.label}
                     style={{
                       width: S(32), height: S(32),
@@ -226,7 +227,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                       color: 'rgba(255,255,255,0.7)',
                       display: 'block', marginTop: S(1),
                     }}>
-                      {d.subtitle}
+                      {uiConfig.subtitle}
                     </span>
                   </div>
                 </div>
@@ -239,7 +240,7 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                   letterSpacing: '0.5px',
                   flexShrink: 0,
                 }}>
-                  {d.tag}
+                  {uiConfig.tag}
                 </span>
               </div>
 
@@ -249,11 +250,11 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                 margin: `${S(8)} 0`,
               }} />
 
-              {/* 3 lignes de règles */}
-              {d.rules.map((rule, i) => (
+              {/* 4 lignes de règles (dynamiques) */}
+              {rules.map((rule, i) => (
                 <div key={i} style={{
                   display: 'flex', alignItems: 'center',
-                  gap: S(6), marginBottom: i < d.rules.length - 1 ? S(3) : 0,
+                  gap: S(6), marginBottom: i < rules.length - 1 ? S(3) : 0,
                 }}>
                   <img
                     src={rule.icon}
@@ -291,9 +292,9 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
               letterSpacing: '0.04em',
               border: 'none',
               cursor: hasSelection ? 'pointer' : 'default',
-              background: hasSelection ? selectedLevel.cardGradient : 'rgba(255,255,255,0.25)',
+              background: hasSelection ? DIFFICULTY_UI_CONFIG[selectedId].cardGradient : 'rgba(255,255,255,0.25)',
               color: hasSelection ? 'white' : 'rgba(255,255,255,0.5)',
-              boxShadow: hasSelection ? `0 6px 24px ${selectedLevel.ctaColor || '#FF6B1A'}50, 0 0 12px ${selectedLevel.ctaColor || '#FF6B1A'}30` : 'none',
+              boxShadow: hasSelection ? `0 6px 24px ${DIFFICULTY_UI_CONFIG[selectedId].ctaColor}50, 0 0 12px ${DIFFICULTY_UI_CONFIG[selectedId].ctaColor}30` : 'none',
               transition: 'all 0.2s ease',
               fontFamily: 'Nunito, sans-serif',
               WebkitTapHighlightColor: 'transparent',

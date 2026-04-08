@@ -231,7 +231,7 @@ export default function HomeScreen({
 
   // Show badge modal when returning to HomeScreen with new badges
   useEffect(() => {
-    const isOnboarding = gamesPlayed <= 2
+    const isOnboarding = !wtfData.onboardingCompleted
     if (newlyEarnedBadges.length > 0 && !isOnboarding) {
       setBadgeToShow(newlyEarnedBadges[0])
       setShowBadgeModal(true)
@@ -278,19 +278,23 @@ export default function HomeScreen({
     const qp = wd.statsByMode?.parcours?.gamesPlayed || 0
     const ufc = (wd.unlockedFacts || []).length
 
-    // Priorité des spotlights — un seul à la fois, dans l'ordre
-    if (wd.tutorialDone && !wd.hasSeenFlash) {
-      setActiveSpotlight('flash')
-    } else if ((devOrTest || gp >= 1) && !wd.hasSeenQuest) {
-      setActiveSpotlight('quest')
-    } else if ((devOrTest || qp >= 1) && !wd.hasSeenCollection) {
-      setActiveSpotlight('collection')
-    } else if ((devOrTest || qp >= 1) && !wd.hasSeenCoffre) {
-      setActiveSpotlight('coffre')
-    } else if ((devOrTest || gp >= 2) && !wd.hasSeenBoutique) {
-      setActiveSpotlight('boutique')
-    } else if ((devOrTest || ufc >= 5) && !wd.hasSeenBlitz) {
-      setActiveSpotlight('blitz')
+    // Priorité des spotlights — un seul à la fois, dans l'ordre (UNIQUEMENT en onboarding)
+    if (!wd.onboardingCompleted) {
+      if (wd.tutorialDone && !wd.hasSeenFlash) {
+        setActiveSpotlight('flash')
+      } else if ((devOrTest || gp >= 1) && !wd.hasSeenQuest) {
+        setActiveSpotlight('quest')
+      } else if ((devOrTest || qp >= 1) && !wd.hasSeenCollection) {
+        setActiveSpotlight('collection')
+      } else if ((devOrTest || qp >= 1) && !wd.hasSeenCoffre) {
+        setActiveSpotlight('coffre')
+      } else if ((devOrTest || gp >= 2) && !wd.hasSeenBoutique) {
+        setActiveSpotlight('boutique')
+      } else if ((devOrTest || ufc >= 5) && !wd.hasSeenBlitz) {
+        setActiveSpotlight('blitz')
+      } else {
+        setActiveSpotlight(null)
+      }
     } else {
       setActiveSpotlight(null)
     }

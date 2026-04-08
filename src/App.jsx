@@ -174,6 +174,17 @@ function loadStorage() {
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
 
+    // Migration auto : forcer onboardingCompleted=true pour joueurs existants (une fois)
+    if (!saved.hasOwnProperty('onboardingCompleted')) {
+      if ((saved.gamesPlayed || 0) > 2 || (saved.unlockedFacts || []).length > 5 || saved.tutorialDone === true) {
+        saved.onboardingCompleted = true
+      } else {
+        saved.onboardingCompleted = false
+      }
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    }
+
     const streak = saved.lastDay === todayDateStr
       ? saved.streak
       : saved.lastDay === YESTERDAY_DATE_STR()
@@ -543,7 +554,7 @@ export default function App() {
     // Première Flash onboarding : 5 f*cts figés + 2 QCM (50/50)
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     const isDevOrTestFlash = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    if (!isDevOrTestFlash && wd.tutorialDone && (wd.gamesPlayed || 0) === 0) {
+    if (!isDevOrTestFlash && wd.tutorialDone && !wd.onboardingCompleted) {
       const allFacts = [...getValidFacts(), ...getGeneratedFacts()]
       let onboardingPool = ONBOARDING_FLASH_FACT_IDS
         .map(id => allFacts.find(f => f.id === id))
@@ -668,7 +679,7 @@ export default function App() {
         // Première Flash onboarding : skip CategoryScreen
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && wd.tutorialDone && (wd.gamesPlayed || 0) === 0) {
+        if (!isDevOrTest && wd.tutorialDone && !wd.onboardingCompleted) {
           handleFlashSolo() // handleFlashSolo a sa propre interception onboarding
           break
         }
@@ -720,7 +731,7 @@ export default function App() {
         // Première partie Flash onboarding : 5 f*cts figés, 2 QCM (50/50), pas de CategoryScreen
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && wd.tutorialDone && (wd.gamesPlayed || 0) === 0) {
+        if (!isDevOrTest && wd.tutorialDone && !wd.onboardingCompleted) {
           audio.play('click')
           const allFacts = [...getValidFacts(), ...getGeneratedFacts()]
           let onboardingPool = ONBOARDING_FLASH_FACT_IDS
@@ -806,7 +817,8 @@ export default function App() {
 
     // Parcours/Quest : VIP uniquement, filtrés par difficulté — coûte 1 ticket
     const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    const isFirstQuestEver = (JSON.parse(localStorage.getItem('wtf_data') || '{}').questsPlayed || 0) === 0
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const isFirstQuestEver = !wd.onboardingCompleted && (wd.questsPlayed || 0) === 0
     if (!isDevModeQuest && !isFirstQuestEver) {
       if ((tickets || 0) < 1) {
         alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
@@ -1235,7 +1247,7 @@ export default function App() {
         if (sessionType === 'flash_solo') {
           try {
             const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            const isFirstFlash = (wd.gamesPlayed || 0) <= 1 && !wd.firstFlashTicketGiven
+            const isFirstFlash = !wd.onboardingCompleted && !wd.firstFlashTicketGiven
             if (isFirstFlash) {
               wd.firstFlashTicketGiven = true
               wd.lastModified = Date.now()
@@ -1273,10 +1285,9 @@ export default function App() {
           if (streakReward.special === 'wtf_premium') {
             setShowStreakSpecialModal(true)
           } else {
-            // Ne pas afficher le toast streak pendant l'onboarding (gamesPlayed <= 2)
+            // Ne pas afficher le toast streak pendant l'onboarding
             const wtfDataStreak = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            const gamesPlayedStreak = wtfDataStreak.gamesPlayed || 0
-            if (gamesPlayedStreak > 2) {
+            if (wtfDataStreak.onboardingCompleted) {
               setStreakRewardToast({ days: newStreak, reward: streakReward })
             }
           }
@@ -1366,7 +1377,7 @@ export default function App() {
       } else {
         // Première Flash ou première Quest onboarding : modale fact débloqué au lieu de ResultsScreen
         const wtfDataOnb = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        const isOnboardingSession = (wtfDataOnb.gamesPlayed || 0) <= 2
+        const isOnboardingSession = !wtfDataOnb.onboardingCompleted
 
         if (isOnboardingSession && sessionType !== 'wtf_du_jour') {
           // Afficher la modale UNIQUEMENT si au moins 1 fact a été débloqué cette session
@@ -2090,6 +2101,7 @@ export default function App() {
             onClick={() => {
               const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
               wd.hasSeenFirstFactModal = true
+              wd.onboardingCompleted = true  // Marquer l'onboarding comme terminé
               wd.pendingFactDetail = JSON.stringify(onboardingFact)
               wd.lastModified = Date.now()
               localStorage.setItem('wtf_data', JSON.stringify(wd))

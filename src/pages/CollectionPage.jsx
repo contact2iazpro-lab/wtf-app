@@ -244,6 +244,7 @@ function FactDetailView({ fact, onClose, isOnboardingFactDetail, onShowCollectio
                 const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
                 delete wd.pendingFactDetail
                 wd.hasVisitedCollection = true
+                wd.onboardingCompleted = true  // Marquer l'onboarding comme terminé
                 wd.lastModified = Date.now()
                 localStorage.setItem('wtf_data', JSON.stringify(wd))
                 onClose()
@@ -496,7 +497,7 @@ export default function CollectionPage() {
 
   // Onboarding Collection
   const wtfDataInit = readWtfData()
-  const isFirstVisitCollection = !wtfDataInit.hasVisitedCollection
+  const isFirstVisitCollection = !wtfDataInit.onboardingCompleted && !wtfDataInit.hasVisitedCollection
   const [onboardingMode, setOnboardingMode] = useState(isFirstVisitCollection)
 
   // Local unlocked facts

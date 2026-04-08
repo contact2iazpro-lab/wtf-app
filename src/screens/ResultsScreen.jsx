@@ -109,7 +109,7 @@ export default function ResultsScreen({
   const [confettiActive, setConfettiActive] = useState(false) // COR 4
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const gamesPlayed = wtfData.gamesPlayed || 0
-  const isOnboarding = gamesPlayed <= 2
+  const isOnboarding = !wtfData.onboardingCompleted
   const [ticketPopVisible, setTicketPopVisible] = useState(false)
 
   // Spotlight onboarding sur bouton "Continuer"

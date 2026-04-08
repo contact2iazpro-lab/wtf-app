@@ -206,14 +206,15 @@ export default function RevelationScreen({
   const [flashSpotRect, setFlashSpotRect] = useState(null)
   const [flashEndSpotRect, setFlashEndSpotRect] = useState(null)
 
-  // Détection du tutoriel (basée sur gamesPlayed, comme dans ResultsScreen)
+  // Détection du tutoriel et onboarding (basée sur onboardingCompleted)
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+  const onboardingCompleted = wtfData.onboardingCompleted === true
   const gamesPlayed = wtfData.gamesPlayed || 0
-  const isTutorial = gamesPlayed <= 2
-  const isFirstFlashOnboarding = sessionType === 'flash_solo' && factIndex === 0 && gamesPlayed === 0
-  const isFirstQuestOnboarding = sessionType === 'parcours' && gamesPlayed <= 2
-  const isOnboardingSession = isFirstFlashOnboarding || isFirstQuestOnboarding
-  const isLastFlashQuestion = factIndex === totalFacts - 1 && sessionType === 'flash_solo' && gamesPlayed === 0
+  const isTutorial = !onboardingCompleted && gamesPlayed <= 2
+  const isFirstFlashOnboarding = !onboardingCompleted && sessionType === 'flash_solo' && factIndex === 0 && gamesPlayed === 0
+  const isFirstQuestOnboarding = !onboardingCompleted && sessionType === 'parcours' && gamesPlayed <= 2
+  const isOnboardingSession = !onboardingCompleted && (isFirstFlashOnboarding || isFirstQuestOnboarding)
+  const isLastFlashQuestion = !onboardingCompleted && factIndex === totalFacts - 1 && sessionType === 'flash_solo' && gamesPlayed === 0
 
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext

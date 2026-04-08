@@ -675,6 +675,7 @@ export default function QuestionScreen({
                     const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
                     wtfData.tutorialDone = true
                     wtfData.gamesPlayed = 100  // Assez haut pour tout débloquer
+                    wtfData.onboardingCompleted = true  // Marquer onboarding comme complété
                     wtfData.hasSeenFlash = true
                     wtfData.hasSeenQuest = true
                     wtfData.hasSeenCollection = true

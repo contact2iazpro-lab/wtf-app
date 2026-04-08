@@ -14,6 +14,7 @@ export default function ImagePipelinePage() {
   const [filterType, setFilterType] = useState('all')
   const [countNoImage, setCountNoImage] = useState(0)
   const [categories, setCategories] = useState([])
+  const [selectAllMode, setSelectAllMode] = useState(false)
 
   // Tab 2 — Directions
   const [directionsQueue, setDirectionsQueue] = useState([])
@@ -361,6 +362,7 @@ export default function ImagePipelinePage() {
         {/* TAB 1 — Sans image */}
         {tab === 'noimage' && (
           <div>
+            {/* Filtres */}
             <div style={{
               display: 'flex', gap: 12, marginBottom: 20,
               background: 'rgba(255,255,255,0.05)', padding: 16, borderRadius: 12,
@@ -403,6 +405,47 @@ export default function ImagePipelinePage() {
               </div>
             </div>
 
+            {/* Barre sticky — selection + bouton */}
+            <div style={{
+              background: 'rgba(255,255,255,0.05)',
+              padding: 12, borderRadius: 12, marginBottom: 12,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              border: '1px solid rgba(255,255,255,0.1)',
+              position: 'sticky', top: 0, zIndex: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <input
+                  type="checkbox"
+                  checked={selectAllMode}
+                  onChange={e => {
+                    setSelectAllMode(e.target.checked)
+                    if (e.target.checked) {
+                      setSelectedFacts(new Set(filteredFacts.map(f => f.id)))
+                    } else {
+                      setSelectedFacts(new Set())
+                    }
+                  }}
+                  style={{ width: 20, height: 20, cursor: 'pointer' }}
+                />
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.9)' }}>
+                  {selectedFacts.size > 0 ? `${selectedFacts.size} facts sélectionnés` : 'Tout sélectionner'}
+                </span>
+              </div>
+              <button
+                onClick={handleGenerateDirections}
+                disabled={selectedFacts.size === 0 || loading}
+                style={{
+                  padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                  background: selectedFacts.size === 0 ? 'rgba(255,255,255,0.1)' : '#FF6B1A',
+                  color: 'white', border: 'none', cursor: selectedFacts.size === 0 ? 'not-allowed' : 'pointer',
+                  opacity: selectedFacts.size === 0 ? 0.5 : 1,
+                  transition: 'all 0.2s',
+                }}
+              >
+                🎨 Générer ({selectedFacts.size})
+              </button>
+            </div>
+
             {/* Facts list */}
             <div style={{ display: 'grid', gap: 12, marginBottom: 20 }}>
               {filteredFacts.length === 0 ? (
@@ -422,7 +465,14 @@ export default function ImagePipelinePage() {
                     <input
                       type="checkbox"
                       checked={selectedFacts.has(fact.id)}
-                      onChange={() => handleSelectFact(fact.id)}
+                      onChange={() => {
+                        handleSelectFact(fact.id)
+                        // Si tous les facts filtrés sont sélectionnés, cocher "Tout sélectionner"
+                        const newSet = new Set(selectedFacts)
+                        if (newSet.has(fact.id)) newSet.delete(fact.id)
+                        else newSet.add(fact.id)
+                        setSelectAllMode(newSet.size === filteredFacts.length)
+                      }}
                       style={{ width: 20, height: 20, cursor: 'pointer' }}
                     />
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -436,20 +486,6 @@ export default function ImagePipelinePage() {
                 ))
               )}
             </div>
-
-            {/* Generate button */}
-            <button
-              onClick={handleGenerateDirections}
-              disabled={selectedFacts.size === 0 || loading}
-              style={{
-                padding: '12px 24px', borderRadius: 12, fontSize: 14, fontWeight: 900,
-                background: selectedFacts.size === 0 ? 'rgba(255,255,255,0.1)' : '#FF6B1A',
-                color: 'white', border: 'none', cursor: selectedFacts.size === 0 ? 'not-allowed' : 'pointer',
-                opacity: selectedFacts.size === 0 ? 0.5 : 1,
-              }}
-            >
-              🎨 Générer directions ({selectedFacts.size})
-            </button>
           </div>
         )}
 

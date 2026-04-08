@@ -170,24 +170,24 @@ Retourne UNIQUEMENT un objet JSON valide avec ces 12 clés, SANS texte avant ni 
       }
     }
 
-    // Validate lengths
-    if ((result.hint1 || '').length > 20) {
-      return new Response(JSON.stringify({ error: 'hint1 dépasse 20 caractères' }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    // Tronquer les indices si trop longs (max 20 caractères)
+    if (result.hint1 && result.hint1.length > 20) {
+      result.hint1 = result.hint1.substring(0, 20).trim()
     }
-    if ((result.hint2 || '').length > 20) {
-      return new Response(JSON.stringify({ error: 'hint2 dépasse 20 caractères' }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    if (result.hint2 && result.hint2.length > 20) {
+      result.hint2 = result.hint2.substring(0, 20).trim()
     }
-    if ((result.explanation || '').length < 200 || (result.explanation || '').length > 300) {
-      return new Response(JSON.stringify({ error: `explanation doit faire entre 200 et 300 caractères (actuellement ${(result.explanation || '').length})` }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+
+    // Explication : si < 200 chars, garder l'ancienne
+    const newExplanationLength = (result.explanation || '').length
+    if (newExplanationLength < 200) {
+      // Fallback to original explanation if new one is too short
+      result.explanation = explanation || ''
+      console.log(`Fact: explication générée trop courte (${newExplanationLength} chars), utilisation de l'ancienne`)
+    } else if (newExplanationLength > 300) {
+      // Tronquer si trop longue
+      result.explanation = result.explanation.substring(0, 300).trim()
+      console.log(`Fact: explication tronquée de ${newExplanationLength} à 300 chars`)
     }
     if (result.hint3 !== '' || result.hint4 !== '') {
       return new Response(JSON.stringify({ error: 'hint3 et hint4 doivent être vides ("")' }), {

@@ -81,7 +81,7 @@ const MODE_CONFIGS = {
       { icon: '🔥', text: 'Hot : 4 choix · 2 indices · 20s · 3 coins' },
       { icon: '⚡', text: 'WTF! : 6 choix · 1 indice · 20s · 2 coins' },
       { icon: '📚', text: '5 questions — les f*cts trouvés vont dans ta Collection' },
-      { icon: '🏆', text: 'Score parfait = 25 coins bonus + 1 ticket !' },
+      { icon: '🏆', text: 'Score parfait = 10 coins bonus + 1 ticket !' },
     ],
   },
   blitz: {
@@ -133,7 +133,7 @@ const TODAY_DATE_STR = () => new Date().toDateString()
 const YESTERDAY_DATE_STR = () => new Date(Date.now() - 86400000).toDateString()
 
 // Nombre de questions par Quête/Parcours
-const QUESTIONS_PER_GAME = 10
+const QUESTIONS_PER_GAME = 5
 
 // Paliers de récompenses fidélité Streak
 const getStreakReward = (streakDays) => {
@@ -1304,7 +1304,7 @@ export default function App() {
           const isPerfectFlash = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
           bonusCoins = isPerfectFlash ? 10 : 0 // Flash: perfect bonus only
         } else if (sessionType === 'parcours') {
-          bonusCoins = isPerfectSession ? 25 : 0 // Quest: perfect bonus (25 coins + 1 ticket)
+          bonusCoins = isPerfectSession ? 10 : 0 // Quest: perfect bonus (10 coins + 1 ticket)
         } else if (sessionType === 'marathon') {
           const isPerfectExplorer = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length
           bonusCoins = isPerfectExplorer ? 10 : 0 // Explorer: perfect 5/5 bonus

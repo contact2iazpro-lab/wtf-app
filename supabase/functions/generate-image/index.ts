@@ -96,18 +96,25 @@ serve(async (req) => {
     }
 
     const fact = factData[0]
-    const { question, short_answer, category } = fact
+    const { question, short_answer, explanation, category } = fact
 
     // ── Build image prompt ────────────────────────────────────────────────────
     const direction = custom_direction || selected_direction || 'Photo réelle'
-    const imagePrompt = `Create a high-quality image for a trivia fact.
-Fact: "${question}"
-Answer: "${short_answer}"
-Category: ${category}
-Style: ${direction}
+    const imagePrompt = `Create a high-quality square illustration for this surprising fact.
 
-The image should be visually engaging, clear, and suitable for a mobile trivia game.
-Make it vibrant and fun, with good composition.`
+Fact question: ${question}
+Answer: ${short_answer}
+Context: ${explanation || 'No additional context'}
+
+Visual direction: ${direction}
+
+CRITICAL RULES:
+- Square format (1:1 aspect ratio)
+- Do NOT include ANY text, words, letters, numbers, labels, captions, or watermarks
+- Do NOT include phones, screens, devices, or game/quiz references
+- Pure visual illustration only, no text whatsoever
+- The image should visually represent the fact in a memorable and surprising way
+- Style: vivid colors, engaging composition, suitable for a mobile trivia game card`
 
     console.log(`Generating image for fact #${fact_id} with direction: ${direction}`)
 
@@ -239,6 +246,27 @@ Make it vibrant and fun, with good composition.`
     }
 
     console.log(`✓ Image pipeline updated for fact #${fact_id}`)
+
+    // ── Update facts.image_url ────────────────────────────────────────────────
+    const factUpdateRes = await fetch(`${supabaseUrl}/rest/v1/facts?id=eq.${fact_id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'apikey': supabaseServiceKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        image_url: imageUrl,
+        updated_at: new Date().toISOString(),
+      }),
+    })
+
+    if (!factUpdateRes.ok) {
+      const errText = await factUpdateRes.text()
+      console.error(`Error updating facts.image_url (${factUpdateRes.status}): ${errText}`)
+    } else {
+      console.log(`✓ facts.image_url updated for fact #${fact_id}`)
+    }
 
     return new Response(JSON.stringify({ success: true, image_url: imageUrl }), {
       status: 200,

@@ -309,6 +309,7 @@ export default function FactEditorPage({ toast }) {
   const [showHistory, setShowHistory] = useState(false)
   const [imageStatus, setImageStatus] = useState(null) // null | 'loading' | 'ok' | 'error'
   const [imageUploading, setImageUploading] = useState(false)
+  const [generatingImage, setGeneratingImage] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [enriching, setEnriching] = useState(false)
   const imageTimerRef = useRef(null)
@@ -447,6 +448,119 @@ export default function FactEditorPage({ toast }) {
     } finally {
       setImageUploading(false)
       if (imageInputRef.current) imageInputRef.current.value = ''
+    }
+  }
+
+  async function handleGenerateImage() {
+    if (!fact?.id) {
+      toast?.('Sauvegardez le fact d\'abord', 'warn')
+      return
+    }
+
+    setGeneratingImage(true)
+    try {
+      const factId = fact.id
+
+      // 1. Check or create image_pipeline record
+      const { data: existingPipeline } = await supabase
+        .from('image_pipeline')
+        .select('*')
+        .eq('fact_id', factId)
+        .maybeSingle()
+
+      let pipelineId = existingPipeline?.id
+      if (!pipelineId) {
+        const { data: newPipeline, error: createError } = await supabase
+          .from('image_pipeline')
+          .insert([{ fact_id: factId, status: 'pending' }])
+          .select('id')
+          .single()
+        if (createError) throw createError
+        pipelineId = newPipeline.id
+      }
+
+      // 2. Generate directions
+      console.log('Generating directions...')
+      const generationConfig = {
+        temperature: 0.7,
+        top_k: 40,
+        top_p: 0.95,
+        max_output_tokens: 1024,
+      }
+
+      const directionsRes = await fetch('https://znoceotakhynqcqhpwgz.supabase.co/functions/v1/generate-image-directions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fact_ids: [factId],
+          fact_type: fact.is_vip ? 'vip' : 'funny',
+          generationConfig,
+        }),
+      })
+
+      if (!directionsRes.ok) {
+        throw new Error(`Erreur génération directions: ${directionsRes.status}`)
+      }
+
+      // 3. Get updated pipeline with directions
+      const { data: updatedPipeline, error: fetchError } = await supabase
+        .from('image_pipeline')
+        .select('*')
+        .eq('id', pipelineId)
+        .single()
+      if (fetchError) throw fetchError
+
+      // 4. Auto-select first direction and update pipeline
+      const directions = updatedPipeline.directions || []
+      if (directions.length === 0) {
+        throw new Error('Aucune direction générée')
+      }
+
+      const selectedDir = directions[0]
+      const { error: updateDirError } = await supabase
+        .from('image_pipeline')
+        .update({ selected_direction: selectedDir })
+        .eq('id', pipelineId)
+      if (updateDirError) throw updateDirError
+
+      // 5. Generate image
+      console.log('Generating image...')
+      const imageRes = await fetch('https://znoceotakhynqcqhpwgz.supabase.co/functions/v1/generate-image', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pipeline_id: pipelineId }),
+      })
+
+      if (!imageRes.ok) {
+        const errBody = await imageRes.json()
+        throw new Error(errBody.error || `Erreur génération image: ${imageRes.status}`)
+      }
+
+      const { image_url } = await imageRes.json()
+
+      // 6. Reload fact to get updated image_url
+      const { data: updatedFact, error: reloadError } = await supabase
+        .from('facts')
+        .select('*')
+        .eq('id', factId)
+        .single()
+      if (reloadError) throw reloadError
+
+      setFact(updatedFact)
+      setOriginalFact(updatedFact)
+      setImageStatus('ok')
+      toast?.(`✓ Image générée: ${selectedDir}`)
+    } catch (err) {
+      console.error(err)
+      toast?.(err.message || 'Erreur génération image', 'error')
+    } finally {
+      setGeneratingImage(false)
     }
   }
 
@@ -1082,6 +1196,22 @@ export default function FactEditorPage({ toast }) {
                     onChange={handleImageUpload}
                   />
                 </label>
+                {fact?.id && (
+                  <button
+                    onClick={handleGenerateImage}
+                    disabled={generatingImage}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-white text-xs font-bold transition-all select-none"
+                    title="Générer une image avec l'IA"
+                    style={{
+                      background: '#FF6B1A',
+                      opacity: generatingImage ? 0.6 : 1,
+                      pointerEvents: generatingImage ? 'none' : 'auto',
+                    }}
+                  >
+                    {generatingImage ? <span className="animate-spin">⟳</span> : fact.image_url ? '🔄' : '🖼️'}
+                    <span className="hidden sm:inline">{generatingImage ? 'Génération…' : fact.image_url ? 'Régénérer' : 'Générer'}</span>
+                  </button>
+                )}
               </div>
             </div>
             {/* Affiche l'URL résolue quand non accessible — aide au diagnostic */}

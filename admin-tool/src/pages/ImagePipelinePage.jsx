@@ -318,6 +318,33 @@ export default function ImagePipelinePage() {
     }
   }
 
+  const handleDeleteFromPipeline = async (pipelineId) => {
+    if (!window.confirm('Supprimer ce fact du pipeline images ?')) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('image_pipeline')
+        .delete()
+        .eq('id', pipelineId)
+
+      if (error) throw error
+
+      showToast('✓ Fact retiré du pipeline')
+
+      // Refresh the appropriate queue
+      if (tab === 'directions') {
+        fetchDirectionsQueue()
+      } else if (tab === 'validation') {
+        fetchValidationQueue()
+      }
+    } catch (err) {
+      console.error(err)
+      showToast('❌ Erreur suppression')
+    }
+  }
+
   // ──────────────────────────────────────────────────────────────────────────────
   // TAB 3 — VALIDATION
   // ──────────────────────────────────────────────────────────────────────────────
@@ -806,8 +833,38 @@ export default function ImagePipelinePage() {
                     padding: '20px',
                     borderRadius: '16px',
                     border: '1px solid rgba(255,255,255,0.1)',
+                    position: 'relative',
                   }}
                 >
+                  {/* Delete button */}
+                  <button
+                    onClick={() => handleDeleteFromPipeline(item.id)}
+                    style={{
+                      position: 'absolute',
+                      top: '16px',
+                      right: '16px',
+                      background: 'rgba(239,68,68,0.15)',
+                      color: '#ef4444',
+                      border: '1px solid rgba(239,68,68,0.3)',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => {
+                      e.target.style.background = 'rgba(239,68,68,0.25)'
+                      e.target.style.borderColor = 'rgba(239,68,68,0.5)'
+                    }}
+                    onMouseLeave={e => {
+                      e.target.style.background = 'rgba(239,68,68,0.15)'
+                      e.target.style.borderColor = 'rgba(239,68,68,0.3)'
+                    }}
+                  >
+                    🗑️ Supprimer
+                  </button>
+
                   <div style={{ marginBottom: '16px' }}>
                     <div style={{
                       fontSize: '14px',
@@ -932,8 +989,38 @@ export default function ImagePipelinePage() {
                     display: 'grid',
                     gridTemplateColumns: '1fr 300px',
                     gap: '20px',
+                    position: 'relative',
                   }}
                 >
+                  {/* Delete button */}
+                  <button
+                    onClick={() => handleDeleteFromPipeline(item.id)}
+                    style={{
+                      position: 'absolute',
+                      top: '16px',
+                      right: '16px',
+                      background: 'rgba(239,68,68,0.15)',
+                      color: '#ef4444',
+                      border: '1px solid rgba(239,68,68,0.3)',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => {
+                      e.target.style.background = 'rgba(239,68,68,0.25)'
+                      e.target.style.borderColor = 'rgba(239,68,68,0.5)'
+                    }}
+                    onMouseLeave={e => {
+                      e.target.style.background = 'rgba(239,68,68,0.15)'
+                      e.target.style.borderColor = 'rgba(239,68,68,0.3)'
+                    }}
+                  >
+                    🗑️ Supprimer
+                  </button>
+
                   {/* Content based on status */}
                   {item.status === 'direction_selected' ? (
                     // Generating state

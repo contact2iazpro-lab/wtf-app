@@ -13,6 +13,7 @@ export default function ImagePipelinePage() {
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterType, setFilterType] = useState('all')
   const [countNoImage, setCountNoImage] = useState(0)
+  const [categories, setCategories] = useState([])
 
   // Tab 2 — Directions
   const [directionsQueue, setDirectionsQueue] = useState([])
@@ -26,6 +27,26 @@ export default function ImagePipelinePage() {
   const showToast = (msg) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2500)
+  }
+
+  // Fetch categories from Supabase
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('facts')
+        .select('category', { count: 'exact' })
+        .neq('category', null)
+
+      if (error) throw error
+
+      // Extract distinct categories
+      const uniqueCategories = [...new Set(data.map(f => f.category))].sort()
+      setCategories(uniqueCategories)
+    } catch (err) {
+      console.error('Erreur chargement catégories:', err)
+      // Fallback to CATEGORIES from constants
+      setCategories(CATEGORIES.map(c => c.id))
+    }
   }
 
   // Fetch Tab 1 data
@@ -95,6 +116,7 @@ export default function ImagePipelinePage() {
 
   // Load data when tab changes
   useEffect(() => {
+    fetchCategories() // Load categories once on mount
     if (tab === 'noimage') fetchNoImageFacts()
     else if (tab === 'directions') fetchDirectionsQueue()
     else if (tab === 'validation') fetchValidationQueue()
@@ -103,7 +125,7 @@ export default function ImagePipelinePage() {
   // Filter facts
   const filteredFacts = factsNoImage.filter(f => {
     const catMatch = filterCategory === 'all' || f.category === filterCategory
-    const typeMatch = filterType === 'all' || (filterType === 'vip' ? f.is_vip : !f.is_vip)
+    const typeMatch = filterType === 'all' || (filterType === 'vip' ? f.is_vip : !f.is_vip) // 'generated' = !is_vip
     return catMatch && typeMatch
   })
 
@@ -356,7 +378,11 @@ export default function ImagePipelinePage() {
                   }}
                 >
                   <option value="all">Tous</option>
-                  {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
+                  {categories.map(catId => (
+                    <option key={catId} value={catId}>
+                      {CATEGORIES.find(c => c.id === catId)?.label || catId}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div style={{ flex: 1 }}>
@@ -372,7 +398,7 @@ export default function ImagePipelinePage() {
                 >
                   <option value="all">Tous</option>
                   <option value="vip">VIP</option>
-                  <option value="funny">Funny</option>
+                  <option value="generated">Générés</option>
                 </select>
               </div>
             </div>

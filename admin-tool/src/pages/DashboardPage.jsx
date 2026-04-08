@@ -74,6 +74,7 @@ export default function DashboardPage({ toast }) {
   const [expandedIssue, setExpandedIssue] = useState(null)
   const [enrichStatus, setEnrichStatus] = useState(null)
   const [enrichMessage, setEnrichMessage] = useState('')
+  const [enrichErrorCount, setEnrichErrorCount] = useState(0)
   const [fillUrlsStatus, setFillUrlsStatus] = useState(null) // null | 'running' | 'done' | 'error'
   const [fillUrlsResult, setFillUrlsResult] = useState(null)
   const [fillUrlsError, setFillUrlsError] = useState('')
@@ -271,6 +272,7 @@ export default function DashboardPage({ toast }) {
     enrichCancelRef.current = false
     setEnrichStatus('running')
     setEnrichMessage('⏳ Récupération des facts incomplets...')
+    setEnrichErrorCount(0)
 
     try {
       const all = []
@@ -284,6 +286,7 @@ export default function DashboardPage({ toast }) {
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break
+        console.log('Page ' + Math.ceil(from/PAGE) + ': ' + data.length + ' facts trouvés')
         all.push(...data)
         if (data.length < PAGE) break
         from += PAGE
@@ -328,24 +331,30 @@ export default function DashboardPage({ toast }) {
               }),
             }
           )
-          const data = await resp.json()
-          if (!resp.ok) throw new Error(data.error || 'Erreur API')
+          console.log('Fact #' + fact.id + ' response status:', resp.status)
+          if (!resp.ok) {
+            const errText = await resp.text()
+            console.error('Fact #' + fact.id + ' erreur:', errText)
+            throw new Error(errText || 'Erreur API')
+          }
+          const enrichResult = await resp.json()
+          console.log('Fact #' + fact.id + ' enrichi:', Object.keys(enrichResult))
 
           const { error: updateError } = await supabase
             .from('facts')
             .update({
-              hint1: data.hint1,
-              hint2: data.hint2,
-              hint3: data.hint3 || '',
-              hint4: data.hint4 || '',
-              funny_wrong_1: data.funny_wrong_1,
-              funny_wrong_2: data.funny_wrong_2,
-              close_wrong_1: data.close_wrong_1,
-              close_wrong_2: data.close_wrong_2,
-              plausible_wrong_1: data.plausible_wrong_1,
-              plausible_wrong_2: data.plausible_wrong_2,
-              plausible_wrong_3: data.plausible_wrong_3,
-              ...(data.explanation ? { explanation: data.explanation } : {}),
+              hint1: enrichResult.hint1,
+              hint2: enrichResult.hint2,
+              hint3: enrichResult.hint3 || '',
+              hint4: enrichResult.hint4 || '',
+              funny_wrong_1: enrichResult.funny_wrong_1,
+              funny_wrong_2: enrichResult.funny_wrong_2,
+              close_wrong_1: enrichResult.close_wrong_1,
+              close_wrong_2: enrichResult.close_wrong_2,
+              plausible_wrong_1: enrichResult.plausible_wrong_1,
+              plausible_wrong_2: enrichResult.plausible_wrong_2,
+              plausible_wrong_3: enrichResult.plausible_wrong_3,
+              ...(enrichResult.explanation ? { explanation: enrichResult.explanation } : {}),
               updated_at: new Date().toISOString(),
             })
             .eq('id', fact.id)
@@ -353,11 +362,12 @@ export default function DashboardPage({ toast }) {
           enriched++
         } catch (err) {
           console.error(`Erreur enrichissement fact #${fact.id}:`, err)
+          setEnrichErrorCount(prev => prev + 1)
         }
       }
 
       setEnrichStatus('done')
-      setEnrichMessage(`✅ Enrichissement terminé — ${enriched}/${all.length} facts WTF! traités`)
+      setEnrichMessage(`✅ Enrichissement terminé — ${enriched}/${all.length} facts traités (${enrichErrorCount} erreurs)`)
       fetchQualityIssues()
     } catch (err) {
       setEnrichStatus('error')

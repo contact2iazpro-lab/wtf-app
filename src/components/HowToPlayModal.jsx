@@ -234,36 +234,36 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           </div>
 
           {/* Content area - fullscreen, no scroll */}
-          <div className="flex-1 overflow-hidden p-3" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="flex-1 overflow-hidden p-3" style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Chapter title */}
-            <div className="flex items-center gap-2 mb-2" style={{ flexShrink: 0 }}>
-              <span style={{ fontSize: 24 }}>{chapter.emoji}</span>
-              <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.2', fontSize: '14px' }}>
+            <div className="flex items-center gap-2 mb-1" style={{ flexShrink: 0 }}>
+              <span style={{ fontSize: 20 }}>{chapter.emoji}</span>
+              <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.2', fontSize: '15px' }}>
                 {chapter.title}
               </h2>
             </div>
 
             {chapter.soon && (
               <div
-                className="mb-2 py-1 px-2 rounded-xl text-center"
+                className="mb-1 py-0.5 px-2 rounded-xl text-center"
                 style={{ background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)', flexShrink: 0 }}
               >
-                <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#FF6B1A', fontSize: '10px' }}>
+                <span className="text-xs font-black uppercase tracking-widest" style={{ color: '#FF6B1A', fontSize: '9px' }}>
                   🚧 Bientôt disponible
                 </span>
               </div>
             )}
 
             {/* Rules items */}
-            <div className="flex flex-col gap-1.5" style={{ overflow: 'hidden', flexShrink: 1, minHeight: 0 }}>
+            <div className="flex flex-col gap-1" style={{ overflow: 'hidden', flexShrink: 1, minHeight: 0 }}>
               {chapter.content.map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-2 p-2 rounded-2xl"
+                  className="flex items-start gap-1 p-1 rounded-2xl"
                   style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', flexShrink: 0 }}
                 >
-                  <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
-                  <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.4', fontSize: '11px' }}>
+                  <span style={{ fontSize: 14, flexShrink: 0, lineHeight: '1.3' }}>{item.icon}</span>
+                  <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.3', fontSize: '11px' }}>
                     {renderText(item.text)}
                   </p>
                 </div>
@@ -273,8 +273,8 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               {chapter.tutorialButton && onRestartTutorial && (
                 <button
                   onClick={() => { audio.play('click'); onRestartTutorial(); onClose() }}
-                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-2"
-                  style={{ background: '#FF6B1A', color: 'white', border: 'none', padding: '10px 12px', fontSize: '12px', flexShrink: 0 }}
+                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-1"
+                  style={{ background: '#FF6B1A', color: 'white', border: 'none', padding: '6px 8px', fontSize: '11px', flexShrink: 0 }}
                 >
                   🔄 Relancer le tutoriel
                 </button>
@@ -295,8 +295,8 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                     alert('Règles réactivées ✅')
                     onClose()
                   }}
-                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-2"
-                  style={{ background: '#22C55E', color: 'white', border: 'none', padding: '10px 12px', fontSize: '12px', flexShrink: 0 }}
+                  className="w-full rounded-2xl font-black active:scale-95 transition-all mt-1"
+                  style={{ background: '#22C55E', color: 'white', border: 'none', padding: '6px 8px', fontSize: '11px', flexShrink: 0 }}
                 >
                   🔄 Réafficher les règles des modes
                 </button>
@@ -304,15 +304,15 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             </div>
 
             {/* Chapter dots navigation */}
-            <div className="flex flex-wrap justify-center gap-1 mt-2" style={{ flexShrink: 0 }}>
+            <div className="flex flex-wrap justify-center gap-0.5 mt-1" style={{ flexShrink: 0 }}>
               {CHAPTERS.map(ch => (
                 <button
                   key={ch.id}
                   onClick={() => { audio.play('click'); setActiveId(ch.id) }}
                   style={{
-                    width: ch.id === activeId ? 20 : 6,
-                    height: 6,
-                    borderRadius: 3,
+                    width: ch.id === activeId ? 16 : 4,
+                    height: 4,
+                    borderRadius: 2,
                     background: ch.id === activeId ? '#FF6B1A' : 'rgba(0,0,0,0.15)',
                     transition: 'all 0.25s ease',
                     border: 'none',

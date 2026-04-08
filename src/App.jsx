@@ -1455,6 +1455,18 @@ export default function App() {
         const wtfDataEnd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         const isFirstQuestComplete = sessionType === 'parcours' && (wtfDataEnd.statsByMode?.parcours?.gamesPlayed || 0) === 1
         if (isFirstQuestComplete) {
+          // Trace de la condition avant TUTORIAL_COMPLETE
+          console.log('TUTORIAL_COMPLETE check:', { sessionType, questsPlayed: wtfDataEnd.statsByMode?.parcours?.gamesPlayed, onboardingCompleted: wtfDataEnd.onboardingCompleted })
+
+          // S'assurer que onboardingCompleted = true avant d'afficher TUTORIAL_COMPLETE
+          if (!wtfDataEnd.onboardingCompleted) {
+            const wtfFix = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            wtfFix.onboardingCompleted = true
+            wtfFix.lastModified = Date.now()
+            localStorage.setItem('wtf_data', JSON.stringify(wtfFix))
+            console.log('Fixed: set onboardingCompleted = true before TUTORIAL_COMPLETE')
+          }
+
           setScreen(SCREENS.TUTORIAL_COMPLETE)
           return
         }

@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
+const STYLE_LABELS = {
+  'realiste': '📷 Réaliste',
+  'humoristique': '😂 Humoristique',
+  'metaphorique': '🎭 Métaphorique',
+  'retro': '🎨 Rétro Pop Art',
+  'ultra_realiste_absurde': '📸 Ultra Réaliste Absurde',
+  'wtf_cinematique': '🤯 WTF Cinématique',
+  'REALISTE': '📷 Réaliste',
+  'HUMORISTIQUE': '😂 Humoristique',
+  'METAPHORIQUE': '🎭 Métaphorique',
+  'RETRO': '🎨 Rétro Pop Art',
+  'ULTRA_REALISTE_ABSURDE': '📸 Ultra Réaliste Absurde',
+  'WTF_CINEMATIQUE': '🤯 WTF Cinématique',
+}
+
 export default function ImagePipelinePage() {
   // ──────────────────────────────────────────────────────────────────────────────
   // STATE
@@ -943,38 +958,8 @@ export default function ImagePipelinePage() {
                     padding: '20px',
                     borderRadius: '16px',
                     border: '1px solid rgba(255,255,255,0.1)',
-                    position: 'relative',
                   }}
                 >
-                  {/* Delete button */}
-                  <button
-                    onClick={() => handleDeleteFromPipeline(item.id)}
-                    style={{
-                      position: 'absolute',
-                      top: '16px',
-                      right: '16px',
-                      background: 'rgba(239,68,68,0.15)',
-                      color: '#ef4444',
-                      border: '1px solid rgba(239,68,68,0.3)',
-                      borderRadius: '8px',
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={e => {
-                      e.target.style.background = 'rgba(239,68,68,0.25)'
-                      e.target.style.borderColor = 'rgba(239,68,68,0.5)'
-                    }}
-                    onMouseLeave={e => {
-                      e.target.style.background = 'rgba(239,68,68,0.15)'
-                      e.target.style.borderColor = 'rgba(239,68,68,0.3)'
-                    }}
-                  >
-                    🗑️ Supprimer
-                  </button>
-
                   <div style={{ marginBottom: '16px' }}>
                     <div style={{
                       fontSize: '14px',
@@ -1007,83 +992,85 @@ export default function ImagePipelinePage() {
                   ) : (
                     <div style={{ marginBottom: '16px' }}>
                       {item.directions.map(dir => (
-                        <div key={dir.id} style={{ marginBottom: '12px' }}>
-                          <div style={{ marginBottom: '8px' }}>
-                            <div style={{ fontWeight: 900, fontSize: '13px', marginBottom: '6px', color: '#FF6B1A' }}>
-                              {dir.style.toUpperCase()}
-                            </div>
-                            <button
-                              onClick={() => handleSelectDirection(item.id, dir.style)}
-                              style={{
-                                width: '100%',
-                                padding: '12px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                background:
-                                  selectedDirections[item.id] === dir.style
-                                    ? '#a855f7'
-                                    : 'rgba(255,255,255,0.08)',
-                                color: 'white',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                textAlign: 'left',
-                              }}
-                            >
-                              {selectedDirections[item.id] === dir.style ? '✓ Sélectionnée' : 'Sélectionner cette direction'}
-                            </button>
+                        <div key={dir.id} style={{ marginBottom: '16px' }}>
+                          {/* Titre de la direction */}
+                          <div style={{ fontWeight: 900, fontSize: '13px', marginBottom: '12px', color: '#FF6B1A' }}>
+                            {STYLE_LABELS[dir.style] || dir.style}
                           </div>
+
+                          {/* Description de la direction */}
                           <div style={{
-                            fontSize: 12,
-                            color: 'rgba(255,255,255,0.6)',
-                            lineHeight: 1.5,
+                            fontSize: 15,
+                            color: 'rgba(255,255,255,0.8)',
+                            lineHeight: 1.6,
                             whiteSpace: 'pre-wrap',
                             wordBreak: 'break-word',
-                            padding: '12px',
+                            padding: '16px',
                             background: 'rgba(255,255,255,0.02)',
                             borderRadius: '8px',
                             marginBottom: '12px',
                           }}>
                             {dir.description}
                           </div>
+
+                          {/* Style selector buttons + Select button */}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12, alignItems: 'center' }}>
+                            {[
+                              { id: 'realiste', label: 'Realiste', emoji: '📷' },
+                              { id: 'humoristique', label: 'Humoristique', emoji: '😂' },
+                              { id: 'metaphorique', label: 'Metaphorique', emoji: '🎭' },
+                              { id: 'retro', label: 'Retro Pop Art', emoji: '🎨' },
+                              { id: 'ultra_realiste_absurde', label: 'Ultra Realiste Absurde', emoji: '📸' },
+                              { id: 'wtf_cinematique', label: 'WTF Cinematique', emoji: '🤯' },
+                            ].map(style => {
+                              const isSelected = selectedStyles[item.id] === style.id
+                              return (
+                                <button
+                                  key={style.id}
+                                  onClick={() => handleSelectStyle(item.id, style.id)}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: 8,
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    border: isSelected ? '2px solid #FF6B1A' : '1px solid rgba(255,255,255,0.15)',
+                                    background: isSelected ? 'rgba(255,107,26,0.2)' : 'rgba(255,255,255,0.05)',
+                                    color: isSelected ? '#FF6B1A' : 'rgba(255,255,255,0.7)',
+                                    transition: 'all 0.2s',
+                                  }}
+                                >
+                                  {style.emoji} {style.label}
+                                </button>
+                              )
+                            })}
+                            {/* Sélectionner cette direction button — vert, à droite */}
+                            <button
+                              onClick={() => handleSelectDirection(item.id, dir.style)}
+                              style={{
+                                padding: '6px 14px',
+                                borderRadius: 8,
+                                fontSize: 11,
+                                fontWeight: 700,
+                                background: 'rgba(34,197,94,0.2)',
+                                color: '#22c55e',
+                                border: '2px solid #22c55e',
+                                cursor: 'pointer',
+                                marginLeft: 'auto',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={e => {
+                                e.target.style.background = 'rgba(34,197,94,0.3)'
+                              }}
+                              onMouseLeave={e => {
+                                e.target.style.background = 'rgba(34,197,94,0.2)'
+                              }}
+                            >
+                              ✅ {selectedDirections[item.id] === dir.style ? 'Sélectionnée' : 'Sélectionner'}
+                            </button>
+                          </div>
                         </div>
                       ))}
-                    </div>
-                  )}
-
-                  {/* Style selector buttons */}
-                  {item.directions && item.directions.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12, marginBottom: 12 }}>
-                      {[
-                        { id: 'realiste', label: 'Realiste', emoji: '📷' },
-                        { id: 'humoristique', label: 'Humoristique', emoji: '😂' },
-                        { id: 'metaphorique', label: 'Metaphorique', emoji: '🎭' },
-                        { id: 'retro', label: 'Retro Pop Art', emoji: '🎨' },
-                        { id: 'ultra_realiste_absurde', label: 'Ultra Realiste Absurde', emoji: '📸' },
-                        { id: 'wtf_cinematique', label: 'WTF Cinematique', emoji: '🤯' },
-                      ].map(style => {
-                        const isSelected = selectedStyles[item.id] === style.id
-                        return (
-                          <button
-                            key={style.id}
-                            onClick={() => handleSelectStyle(item.id, style.id)}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: 8,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              border: isSelected ? '2px solid #FF6B1A' : '1px solid rgba(255,255,255,0.15)',
-                              background: isSelected ? 'rgba(255,107,26,0.2)' : 'rgba(255,255,255,0.05)',
-                              color: isSelected ? '#FF6B1A' : 'rgba(255,255,255,0.7)',
-                              transition: 'all 0.2s',
-                            }}
-                          >
-                            {style.emoji} {style.label}
-                          </button>
-                        )
-                      })}
                     </div>
                   )}
 
@@ -1106,28 +1093,56 @@ export default function ImagePipelinePage() {
                     }}
                   />
 
-                  {/* Submit button */}
-                  <button
-                    onClick={() => handleValidateDirection(item.id)}
-                    disabled={!selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id] || validatingDirectionId === item.id}
-                    style={{
-                      padding: '10px 20px',
-                      borderRadius: '12px',
-                      fontSize: '13px',
-                      fontWeight: 900,
-                      background:
-                        !selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id]
-                          ? 'rgba(255,255,255,0.1)'
-                          : '#0ea5e9',
-                      color: 'white',
-                      border: 'none',
-                      cursor: !selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id] || validatingDirectionId === item.id ? 'not-allowed' : 'pointer',
-                      opacity: validatingDirectionId === item.id ? 0.6 : 1,
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {validatingDirectionId === item.id ? '⏳ Validation en cours...' : '✅ Valider direction'}
-                  </button>
+                  {/* Bottom buttons — Valider direction + Supprimer */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                    <button
+                      onClick={() => handleValidateDirection(item.id)}
+                      disabled={!selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id] || validatingDirectionId === item.id}
+                      style={{
+                        flex: 1,
+                        padding: '10px 20px',
+                        borderRadius: '12px',
+                        fontSize: '13px',
+                        fontWeight: 900,
+                        background:
+                          !selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id]
+                            ? 'rgba(255,255,255,0.1)'
+                            : '#0ea5e9',
+                        color: 'white',
+                        border: 'none',
+                        cursor: !selectedDirections[item.id] && !customDirections[item.id] && !selectedStyles[item.id] || validatingDirectionId === item.id ? 'not-allowed' : 'pointer',
+                        opacity: validatingDirectionId === item.id ? 0.6 : 1,
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {validatingDirectionId === item.id ? '⏳ Validation en cours...' : '✅ Valider direction'}
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteFromPipeline(item.id)}
+                      style={{
+                        padding: '10px 16px',
+                        background: 'rgba(239,68,68,0.15)',
+                        color: '#ef4444',
+                        border: '1px solid rgba(239,68,68,0.3)',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                      onMouseEnter={e => {
+                        e.target.style.background = 'rgba(239,68,68,0.25)'
+                        e.target.style.borderColor = 'rgba(239,68,68,0.5)'
+                      }}
+                      onMouseLeave={e => {
+                        e.target.style.background = 'rgba(239,68,68,0.15)'
+                        e.target.style.borderColor = 'rgba(239,68,68,0.3)'
+                      }}
+                    >
+                      🗑️ Supprimer
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

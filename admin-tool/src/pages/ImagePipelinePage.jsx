@@ -423,9 +423,24 @@ export default function ImagePipelinePage() {
   const handleRejectImage = async (pipelineId) => {
     setLoading(true)
     try {
+      const pipeline = validationQueue.find(p => p.id === pipelineId)
+      if (!pipeline) throw new Error('Pipeline not found')
+
+      // Delete image from Storage
+      if (pipeline.image_url) {
+        const fileName = pipeline.image_url.split('/').pop()
+        if (fileName) {
+          const { error: deleteError } = await supabase.storage
+            .from('fact-images')
+            .remove([`facts/${fileName}`])
+          if (deleteError) console.error('Error deleting image from storage:', deleteError)
+        }
+      }
+
+      // Update pipeline: status = rejected + clear image_url
       const { error } = await supabase
         .from('image_pipeline')
-        .update({ status: 'rejected', updated_at: new Date().toISOString() })
+        .update({ status: 'rejected', image_url: null, updated_at: new Date().toISOString() })
         .eq('id', pipelineId)
 
       if (error) throw error
@@ -443,9 +458,24 @@ export default function ImagePipelinePage() {
   const handleRegenerateImage = async (pipelineId) => {
     setLoading(true)
     try {
+      const pipeline = validationQueue.find(p => p.id === pipelineId)
+      if (!pipeline) throw new Error('Pipeline not found')
+
+      // Delete old image from Storage
+      if (pipeline.image_url) {
+        const fileName = pipeline.image_url.split('/').pop()
+        if (fileName) {
+          const { error: deleteError } = await supabase.storage
+            .from('fact-images')
+            .remove([`facts/${fileName}`])
+          if (deleteError) console.error('Error deleting old image from storage:', deleteError)
+        }
+      }
+
+      // Update pipeline: status = directions_generated + clear image_url
       const { error } = await supabase
         .from('image_pipeline')
-        .update({ status: 'directions_generated', updated_at: new Date().toISOString() })
+        .update({ status: 'directions_generated', image_url: null, updated_at: new Date().toISOString() })
         .eq('id', pipelineId)
 
       if (error) throw error

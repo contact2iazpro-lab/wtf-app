@@ -247,26 +247,9 @@ CRITICAL RULES:
 
     console.log(`✓ Image pipeline updated for fact #${fact_id}`)
 
-    // ── Update facts.image_url ────────────────────────────────────────────────
-    const factUpdateRes = await fetch(`${supabaseUrl}/rest/v1/facts?id=eq.${fact_id}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'apikey': supabaseServiceKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        image_url: imageUrl,
-        updated_at: new Date().toISOString(),
-      }),
-    })
-
-    if (!factUpdateRes.ok) {
-      const errText = await factUpdateRes.text()
-      console.error(`Error updating facts.image_url (${factUpdateRes.status}): ${errText}`)
-    } else {
-      console.log(`✓ facts.image_url updated for fact #${fact_id}`)
-    }
+    // NOTE: facts.image_url ne doit être mis à jour QUE lors de la validation dans l'Admin Tool
+    // L'image est stockée dans image_pipeline.image_url avec status='image_generated'
+    // Elle sera transférée à facts.image_url seulement après validation par Michael
 
     return new Response(JSON.stringify({ success: true, image_url: imageUrl }), {
       status: 200,

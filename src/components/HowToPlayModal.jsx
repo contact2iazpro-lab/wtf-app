@@ -247,48 +247,60 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           >✕</button>
         </div>
 
-        {/* ── Body: sidebar + content ─────────────────────────────────────── */}
-        <div className="flex flex-1 overflow-hidden">
+        {/* ── Carousel horizontal des chapitres ─────────────────────────────── */}
+        <div style={{
+          display: 'flex', gap: 8, overflowX: 'auto', padding: '12px 16px',
+          borderBottom: '1px solid rgba(0,0,0,0.08)',
+          WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none',
+        }}>
+          {visibleChapters.map(ch => {
+            const isActive = ch.id === activeId
+            const colors = {
+              goal: '#3B82F6', tutorial: '#8B5CF6', quest: '#EF4444',
+              explorer: '#22C55E', marathon: '#F59E0B', blitz: '#FF6B1A',
+              hunt: '#EC4899', hints: '#6366F1', collection: '#14B8A6',
+              streak: '#F97316', multi: '#8B5CF6',
+            }
+            const color = colors[ch.id] || '#FF6B1A'
+            const modeIcons = {
+              quest: '/assets/modes/quete.png',
+              explorer: '/assets/modes/marathon.png',
+              marathon: '/assets/modes/marathon.png',
+              blitz: '/assets/modes/blitz.png',
+              streak: '/assets/modes/serie.png',
+              multi: '/assets/modes/multi.png',
+            }
+            return (
+              <button
+                key={ch.id}
+                onClick={() => { audio.play('click'); setActiveId(ch.id) }}
+                style={{
+                  flexShrink: 0, display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', gap: 4, padding: '8px 12px',
+                  borderRadius: 12, border: 'none', cursor: 'pointer',
+                  background: isActive ? color : 'rgba(0,0,0,0.04)',
+                  transition: 'all 0.2s',
+                  minWidth: 70,
+                }}
+              >
+                {modeIcons[ch.id]
+                  ? <img src={modeIcons[ch.id]} style={{ width: 28, height: 28, objectFit: 'contain', filter: isActive ? 'brightness(10)' : 'none' }} />
+                  : <span style={{ fontSize: 24 }}>{ch.emoji}</span>
+                }
+                <span style={{
+                  fontSize: 10, fontWeight: 800, lineHeight: 1.2, textAlign: 'center',
+                  color: isActive ? 'white' : 'rgba(0,0,0,0.5)',
+                  maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>
+                  {ch.shortTitle}
+                </span>
+              </button>
+            )
+          })}
+        </div>
 
-          {/* Sidebar — chapter list */}
-          <div
-            className="shrink-0 overflow-y-auto scrollbar-hide"
-            style={{ width: 120, background: '#F3F4F6', borderRight: '1px solid rgba(0,0,0,0.1)' }}
-          >
-            {visibleChapters.map(ch => {
-              const isActive = ch.id === activeId
-              return (
-                <button
-                  key={ch.id}
-                  onClick={() => { audio.play('click'); setActiveId(ch.id) }}
-                  className="w-full flex flex-col items-center transition-all active:scale-95"
-                  style={{
-                    padding: '10px 8px',
-                    background: isActive ? 'rgba(255,107,26,0.2)' : 'transparent',
-                    borderLeft: isActive ? '3px solid #FF6B1A' : '3px solid transparent',
-                    borderBottom: '1px solid #E5E7EB',
-                  }}
-                >
-                  <span style={{ fontSize: 20, lineHeight: 1 }}>{ch.emoji}</span>
-                  <span
-                    className="text-center leading-tight mt-1.5"
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: isActive ? '#FF6B1A' : 'rgba(255,255,255,0.5)',
-                      wordBreak: 'break-word',
-                      lineHeight: '1.3',
-                    }}
-                  >
-                    {ch.shortTitle}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Content area - scrollable */}
-          <div className="flex-1 overflow-y-auto p-4" style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* ── Content area - scrollable full width ───────────────────────────── */}
+        <div className="flex-1 overflow-y-auto p-4" style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Chapter title */}
             <div className="flex items-center gap-2 mb-4" style={{ flexShrink: 0 }}>
               {getChapterIcon(chapter.id)}
@@ -352,29 +364,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 </label>
               )}
             </div>
-
-            {/* Chapter dots navigation — visible au bas */}
-            <div className="flex flex-wrap justify-center gap-1 mt-4" style={{ flexShrink: 0 }}>
-              {visibleChapters.map(ch => (
-                <button
-                  key={ch.id}
-                  onClick={() => { audio.play('click'); setActiveId(ch.id) }}
-                  title={ch.shortTitle}
-                  style={{
-                    width: ch.id === activeId ? 20 : 6,
-                    height: 6,
-                    borderRadius: 3,
-                    background: ch.id === activeId ? '#FF6B1A' : 'rgba(0,0,0,0.15)',
-                    transition: 'all 0.25s ease',
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
-                  }}
-                />
-              ))}
-            </div>
           </div>
-        </div>
 
         {/* ── Footer ─────────────────────────────────────────────────────── */}
         <div

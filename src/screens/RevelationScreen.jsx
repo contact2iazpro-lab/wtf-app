@@ -201,20 +201,12 @@ export default function RevelationScreen({
 
   const scoreRefTarget = useRef(null)
   const nextButtonRef = useRef(null)
-  const flashEndButtonRef = useRef(null)
-  const [spotRect, setSpotRect] = useState(null)
-  const [flashSpotRect, setFlashSpotRect] = useState(null)
-  const [flashEndSpotRect, setFlashEndSpotRect] = useState(null)
 
-  // Détection du tutoriel et onboarding (basée sur onboardingCompleted)
+  // Détection du onboarding (basée sur onboardingCompleted)
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const onboardingCompleted = wtfData.onboardingCompleted === true
   const gamesPlayed = wtfData.gamesPlayed || 0
-  const isTutorial = !onboardingCompleted && gamesPlayed <= 2
-  const isFirstFlashOnboarding = !onboardingCompleted && sessionType === 'flash_solo' && factIndex === 0 && gamesPlayed === 0
-  const isFirstQuestOnboarding = !onboardingCompleted && sessionType === 'parcours' && gamesPlayed <= 2
-  const isOnboardingSession = !onboardingCompleted && (isFirstFlashOnboarding || isFirstQuestOnboarding)
-  const isLastFlashQuestion = !onboardingCompleted && factIndex === totalFacts - 1 && sessionType === 'flash_solo' && gamesPlayed === 0
+  const showOnboardingIndicator = !onboardingCompleted
 
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext
@@ -226,60 +218,6 @@ export default function RevelationScreen({
   const catGradient = cat
     ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
     : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
-
-  // ── Spotlight tutoriel sur bouton Suivant ────────────────────────────────
-  useEffect(() => {
-    if (!isTutorial || !isCorrect || !nextButtonRef.current) return
-    const timer = setTimeout(() => {
-      const r = nextButtonRef.current?.getBoundingClientRect()
-      if (r) {
-        const pad = 8
-        setSpotRect({
-          top: r.top - pad,
-          left: r.left - pad,
-          width: r.width + pad * 2,
-          height: r.height + pad * 2,
-        })
-      }
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [isTutorial, isCorrect])
-
-  // ── Spotlight première Flash onboarding ────────────────────────────────────
-  useEffect(() => {
-    if (!isFirstFlashOnboarding || !nextButtonRef.current) return
-    const timer = setTimeout(() => {
-      const r = nextButtonRef.current?.getBoundingClientRect()
-      if (r) {
-        const pad = 8
-        setFlashSpotRect({
-          top: r.top - pad,
-          left: r.left - pad,
-          width: r.width + pad * 2,
-          height: r.height + pad * 2,
-        })
-      }
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [isFirstFlashOnboarding])
-
-  // ── Spotlight dernière question Flash onboarding ────────────────────────────
-  useEffect(() => {
-    if (!isLastFlashQuestion || !flashEndButtonRef.current) return
-    const timer = setTimeout(() => {
-      const r = flashEndButtonRef.current?.getBoundingClientRect()
-      if (r) {
-        const pad = 8
-        setFlashEndSpotRect({
-          top: r.top - pad,
-          left: r.left - pad,
-          width: r.width + pad * 2,
-          height: r.height + pad * 2,
-        })
-      }
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [isLastFlashQuestion])
 
   // ── Coins animation (replaces floating +5 pts badge) ──────────────────────
   useEffect(() => {
@@ -321,8 +259,6 @@ export default function RevelationScreen({
   const handleNext = () => {
     audio.stopAll()
     audio.play('click')
-    setFlashSpotRect(null)
-    setFlashEndSpotRect(null)
     onNext()
   }
 
@@ -561,21 +497,9 @@ export default function RevelationScreen({
         </div>
 
         {/* Boutons */}
-        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
-          {isOnboardingSession && (
-            <style>{`
-              @keyframes homeFingerBounce {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-6px); }
-              }
-              @keyframes pulseWhite {
-                0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2); }
-                50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,255,255,0.4), 0 0 25px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.3); }
-              }
-            `}</style>
-          )}
+        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}`, position: 'relative' }}>
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
-            {gamesPlayed > 1 && (
+            {gamesPlayed > 1 && !showOnboardingIndicator && (
               <button
                 onClick={handleNativeShare}
                 className="btn-press active:scale-95 transition-all"
@@ -595,22 +519,33 @@ export default function RevelationScreen({
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: isOnboardingSession ? '3px solid white' : '2px solid rgba(255,255,255,0.4)',
+                border: showOnboardingIndicator ? '2px solid white' : '2px solid rgba(255,255,255,0.4)',
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                ...(isOnboardingSession ? {
-                  animation: 'pulseWhite 1.5s ease-in-out infinite',
-                  boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2)',
+                ...(showOnboardingIndicator ? {
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                  boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 0 30px rgba(255,107,26,0.2)',
                 } : {}),
               }}
             >
               {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
             </button>
           </div>
-          {/* Doigt animé en dessous du bouton SUIVANT mauvaise réponse (onboarding) */}
-          {isOnboardingSession && !isCorrect && !isLastFlashQuestion && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: S(4), marginTop: S(4) }}>
+          {/* Doigt animé en dessous du bouton SUIVANT/RÉSULTATS (pendant le tutoriel onboarding) */}
+          {showOnboardingIndicator && (
+            <div style={{
+              position: 'relative',
+              height: S(40),
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-start',
+              pointerEvents: 'none',
+            }}>
               <div style={{
-                fontSize: 28, animation: 'homeFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
+                position: 'absolute',
+                bottom: -S(26),
+                right: S(4),
+                fontSize: S(28),
+                animation: 'bounce 0.8s ease-in-out infinite',
               }}>👆</div>
             </div>
           )}
@@ -622,7 +557,7 @@ export default function RevelationScreen({
 
   // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
   const isVipReveal = !isDuel && isCorrect && fact.isVip
-  const showVipGlow = isVipReveal || (isTutorial && isCorrect) || (isOnboardingSession && isCorrect)
+  const showVipGlow = isVipReveal || (showOnboardingIndicator && isCorrect)
   return (
     <div className="relative screen-enter" style={{
       height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
@@ -796,18 +731,18 @@ export default function RevelationScreen({
 
       {/* Boutons — compact */}
       <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
-        {!isDuel && (isCorrect || isOnboardingSession || isLastFlashQuestion) && (
+        {!isDuel && (isCorrect || showOnboardingIndicator) && (
           <>
-            <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
+            <div style={{ display: 'flex', gap: S(8), height: S(44), position: 'relative' }}>
               <button
-                onClick={(isTutorial || isOnboardingSession) ? undefined : handleNativeShare}
+                onClick={showOnboardingIndicator ? undefined : handleNativeShare}
                 className="btn-press active:scale-95 transition-all"
                 style={{
                   flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
                   background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
                   color: 'white', border: '2px solid rgba(255,255,255,0.4)',
-                  ...((isTutorial || isOnboardingSession) ? {
+                  ...(showOnboardingIndicator ? {
                     opacity: 0.3,
                     pointerEvents: 'none',
                     filter: 'grayscale(1)',
@@ -817,36 +752,39 @@ export default function RevelationScreen({
                 🎩 Partager ce WTF!
               </button>
               <button
-                ref={isLast ? flashEndButtonRef : nextButtonRef}
+                ref={nextButtonRef}
                 onClick={handleNext}
                 className="btn-press active:scale-95 transition-all"
                 style={{
                   flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                   color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                  border: ((isTutorial && isCorrect && spotRect && !isDuel && !isOnboardingSession) || isOnboardingSession || isLastFlashQuestion) ? '3px solid white' : '2px solid rgba(255,255,255,0.4)',
+                  border: showOnboardingIndicator ? '2px solid white' : '2px solid rgba(255,255,255,0.4)',
                   background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                  ...((isTutorial && isCorrect && spotRect && !isDuel && !isOnboardingSession) || isOnboardingSession || isLastFlashQuestion ? {
-                    animation: 'pulseWhite 1.5s ease-in-out infinite',
-                    boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2)',
+                  ...(showOnboardingIndicator ? {
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 0 30px rgba(255,107,26,0.2)',
                   } : {}),
                 }}
               >
                 {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
               </button>
             </div>
-            {/* Doigt animé en dessous du bouton SUIVANT (onboarding — questions 1-4) */}
-            {isOnboardingSession && !isLastFlashQuestion && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: S(4), marginTop: S(4) }}>
+            {/* Doigt animé en dessous du bouton SUIVANT/RÉSULTATS (pendant le tutoriel onboarding) */}
+            {showOnboardingIndicator && (
+              <div style={{
+                position: 'relative',
+                height: S(40),
+                display: 'flex',
+                justifyContent: 'flex-end',
+                alignItems: 'flex-start',
+                pointerEvents: 'none',
+              }}>
                 <div style={{
-                  fontSize: 28, animation: 'homeFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
-                }}>👆</div>
-              </div>
-            )}
-            {/* Doigt animé en dessous du bouton SUIVANT (dernière Flash) */}
-            {isLastFlashQuestion && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: S(4), marginTop: S(4) }}>
-                <div style={{
-                  fontSize: 28, animation: 'homeFingerBounce 0.8s ease-in-out infinite', pointerEvents: 'none',
+                  position: 'absolute',
+                  bottom: -S(26),
+                  right: S(4),
+                  fontSize: S(28),
+                  animation: 'bounce 0.8s ease-in-out infinite',
                 }}>👆</div>
               </div>
             )}
@@ -869,69 +807,17 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* Spotlight tutoriel sur bouton Suivant */}
-      {isTutorial && isCorrect && spotRect && !isDuel && !isFirstFlashOnboarding && !isLastFlashQuestion && (
-        <>
-          {/* CSS animations tutoriel */}
-          <style>{`
-            @keyframes homeFingerBounce {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-6px); }
-            }
-            @keyframes pulse {
-              0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4); }
-              50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3); }
-            }
-            @keyframes pulseWhite {
-              0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.4), 0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.2); }
-              50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,255,255,0.4), 0 0 25px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.3); }
-            }
-          `}</style>
-
-          {/* Doigt animé — positionné sous le trou */}
-          <div style={{
-            position: 'fixed',
-            top: spotRect.top + spotRect.height + 8,
-            left: spotRect.left + spotRect.width / 2,
-            transform: 'translateX(-50%)',
-            fontSize: 32, zIndex: 102, pointerEvents: 'none',
-            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
-            transition: 'top 0.6s ease, left 0.6s ease',
-          }}>👆</div>
-        </>
-      )}
-
-      {/* Spotlight première Flash onboarding */}
-      {isFirstFlashOnboarding && flashSpotRect && (
-        <>
-          {/* Doigt animé — positionné sous le trou */}
-          <div style={{
-            position: 'fixed',
-            top: flashSpotRect.top + flashSpotRect.height + 8,
-            left: flashSpotRect.left + flashSpotRect.width / 2,
-            transform: 'translateX(-50%)',
-            fontSize: 32, zIndex: 102, pointerEvents: 'none',
-            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
-            transition: 'top 0.6s ease, left 0.6s ease',
-          }}>👆</div>
-        </>
-      )}
-
-      {/* Spotlight dernière question Flash onboarding */}
-      {isLastFlashQuestion && flashEndSpotRect && (
-        <>
-          {/* Doigt animé — positionné sous le trou */}
-          <div style={{
-            position: 'fixed',
-            top: flashEndSpotRect.top + flashEndSpotRect.height + 8,
-            left: flashEndSpotRect.left + flashEndSpotRect.width / 2,
-            transform: 'translateX(-50%)',
-            fontSize: 32, zIndex: 102, pointerEvents: 'none',
-            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
-            transition: 'top 0.6s ease, left 0.6s ease',
-          }}>👆</div>
-        </>
-      )}
+      {/* CSS animations pour onboarding */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4); }
+          50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3); }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
 
       {/* Lightbox image — bonne réponse uniquement */}
       {showLightbox && fact.imageUrl && (

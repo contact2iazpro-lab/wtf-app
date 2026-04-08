@@ -50,7 +50,7 @@ const TAB_CONFIG = {
 
 // ─── Fact detail full-screen view ──────────────────────────────────────────
 
-function FactDetailView({ fact, onClose, isOnboardingFactDetail, onShowCollectionModal }) {
+function FactDetailView({ fact, onClose, isOnboardingFactDetail }) {
   const [showLightbox, setShowLightbox] = useState(false)
   const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
@@ -244,11 +244,9 @@ function FactDetailView({ fact, onClose, isOnboardingFactDetail, onShowCollectio
                 const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
                 delete wd.pendingFactDetail
                 wd.hasVisitedCollection = true
-                wd.onboardingCompleted = true  // Marquer l'onboarding comme terminé
                 wd.lastModified = Date.now()
                 localStorage.setItem('wtf_data', JSON.stringify(wd))
                 onClose()
-                onShowCollectionModal(true)
               }}
               className="active:scale-95 transition-all"
               style={{
@@ -490,7 +488,6 @@ export default function CollectionPage() {
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
   const [isOnboardingFactDetail, setIsOnboardingFactDetail] = useState(false)
-  const [showCollectionModal, setShowCollectionModal] = useState(false)
   const [collectionSpotlightStep, setCollectionSpotlightStep] = useState(0)
   const progressBarRef = useRef(null)
   const firstUnlockedCategoryRef = useRef(null)
@@ -611,6 +608,19 @@ export default function CollectionPage() {
     }
   }, [])
 
+  // Spotlight séquentiel lors de l'arrivée sur Collection en mode onboarding
+  useEffect(() => {
+    if (!onboardingMode) return
+    const t1 = setTimeout(() => setCollectionSpotlightStep(1), 300)
+    const t2 = setTimeout(() => setCollectionSpotlightStep(2), 2900)
+    const t3 = setTimeout(() => setCollectionSpotlightStep(3), 5500)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+    }
+  }, [onboardingMode])
+
   // Selected category for fact list
   const selectedCatStats = selectedCatId ? catStats.find(s => s.cat.id === selectedCatId) : null
 
@@ -629,7 +639,7 @@ export default function CollectionPage() {
 
   // ── Sub-views ──
   if (selectedFact) {
-    return <FactDetailView fact={selectedFact} onClose={handleFactDetailClose} isOnboardingFactDetail={isOnboardingFactDetail} onShowCollectionModal={setShowCollectionModal} />
+    return <FactDetailView fact={selectedFact} onClose={handleFactDetailClose} isOnboardingFactDetail={isOnboardingFactDetail} />
   }
 
   if (selectedCatStats) {
@@ -651,48 +661,6 @@ export default function CollectionPage() {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S_main(80) }}>
       {showLogin && <LoginModal onClose={() => setShowLogin(false)} message="Connecte-toi pour sauvegarder ta progression dans le cloud ☁️" />}
-
-      {showCollectionModal && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 500,
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 24,
-        }}>
-          <div style={{
-            background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)',
-            border: '2px solid #FF6B1A', borderRadius: 24,
-            padding: '32px 24px', maxWidth: 320, width: '100%',
-            textAlign: 'center', fontFamily: 'Nunito, sans-serif',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-          }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: '#FFD700', marginBottom: 10 }}>
-              Ta collection !
-            </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.8)', marginBottom: 24, lineHeight: 1.5 }}>
-              Tu peux consulter tous les f*cts que tu débloques ici !
-            </div>
-            <button
-              onClick={() => {
-                setShowCollectionModal(false)
-                setCollectionSpotlightStep(1)
-                setTimeout(() => setCollectionSpotlightStep(2), 2500)
-                setTimeout(() => setCollectionSpotlightStep(3), 5000)
-              }}
-              style={{
-                padding: '14px 32px', borderRadius: 14,
-                background: '#FF6B1A', color: 'white', border: 'none',
-                fontWeight: 900, fontSize: 16, cursor: 'pointer',
-                fontFamily: 'Nunito, sans-serif',
-                boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
-              }}
-            >
-              Consulter ma collection 📚
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* CSS animations onboarding */}
       <style>{`
@@ -880,21 +848,14 @@ export default function CollectionPage() {
 
       {/* Spotlight 1 : Barre de progression globale */}
       {collectionSpotlightStep === 1 && progressBarRef.current && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 250,
-          background: 'transparent', pointerEvents: 'none',
-        }}>
-          {/* Guide text */}
+        <>
+          {/* Overlay sombre */}
           <div style={{
-            position: 'fixed', top: 40, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.8)', color: 'white',
-            padding: '12px 20px', borderRadius: 12, fontSize: 14, fontWeight: 700,
-            fontFamily: 'Nunito, sans-serif', textAlign: 'center', zIndex: 251,
-          }}>
-            Ici tu trouveras tous tes f*cts débloqués ! 📚
-          </div>
+            position: 'fixed', inset: 0, zIndex: 250,
+            background: 'rgba(0,0,0,0.7)', pointerEvents: 'none',
+          }} />
 
-          {/* Spotlight border around progress bar */}
+          {/* Spotlight avec trou */}
           <div style={{
             position: 'fixed',
             top: progressBarRef.current.getBoundingClientRect().top - 8,
@@ -903,29 +864,33 @@ export default function CollectionPage() {
             height: progressBarRef.current.getBoundingClientRect().height + 16,
             border: '2px solid #FFD700',
             borderRadius: 20,
-            animation: 'collectionPulse 1.5s ease-in-out infinite',
+            boxShadow: '0 0 0 9999px rgba(0,0,0,0.7)',
             pointerEvents: 'none', zIndex: 251,
           }} />
-        </div>
+
+          {/* Doigt animé */}
+          <div style={{
+            position: 'fixed',
+            top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: 32,
+            zIndex: 252,
+            pointerEvents: 'none',
+            animation: 'collectionFingerMove 0.6s ease-out forwards, collectionFingerPulse 0.8s ease-in-out 0.6s infinite',
+          }}>👆</div>
+        </>
       )}
 
       {/* Spotlight 2 : Première catégorie débloquée */}
       {collectionSpotlightStep === 2 && firstUnlockedCategoryRef.current && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 250,
-          background: 'transparent', pointerEvents: 'none',
-        }}>
-          {/* Guide text */}
+        <>
+          {/* Overlay sombre */}
           <div style={{
-            position: 'fixed', top: 40, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.8)', color: 'white',
-            padding: '12px 20px', borderRadius: 12, fontSize: 14, fontWeight: 700,
-            fontFamily: 'Nunito, sans-serif', textAlign: 'center', zIndex: 251,
-          }}>
-            Ils sont triés par catégorie ! 🗂️
-          </div>
+            position: 'fixed', inset: 0, zIndex: 250,
+            background: 'rgba(0,0,0,0.7)', pointerEvents: 'none',
+          }} />
 
-          {/* Spotlight border around category */}
+          {/* Spotlight avec trou */}
           <div style={{
             position: 'fixed',
             top: firstUnlockedCategoryRef.current.getBoundingClientRect().top - 8,
@@ -934,23 +899,48 @@ export default function CollectionPage() {
             height: firstUnlockedCategoryRef.current.getBoundingClientRect().height + 16,
             border: '2px solid #FFD700',
             borderRadius: 20,
-            animation: 'collectionPulse 1.5s ease-in-out infinite',
+            boxShadow: '0 0 0 9999px rgba(0,0,0,0.7)',
             pointerEvents: 'none', zIndex: 251,
           }} />
-        </div>
+
+          {/* Doigt animé */}
+          <div style={{
+            position: 'fixed',
+            top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: 32,
+            zIndex: 252,
+            pointerEvents: 'none',
+            animation: 'collectionFingerMove 0.6s ease-out forwards, collectionFingerPulse 0.8s ease-in-out 0.6s infinite',
+          }}>👆</div>
+        </>
+      )}
+
+      {/* Overlay sombre pour étape 3 */}
+      {collectionSpotlightStep === 3 && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 250,
+          background: 'rgba(0,0,0,0.7)', pointerEvents: 'none',
+        }} />
       )}
 
       {/* Bouton "Continuer le tutoriel" */}
       {collectionSpotlightStep === 3 && (
         <button
-          onClick={() => window.history.back()}
+          onClick={() => {
+            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            wd.onboardingCompleted = true
+            wd.lastModified = Date.now()
+            localStorage.setItem('wtf_data', JSON.stringify(wd))
+            navigate('/')
+          }}
           style={{
-            position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+            position: 'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)',
             zIndex: 300, padding: '14px 32px', borderRadius: 14,
-            background: '#FF6B1A', color: 'white', border: '3px solid white',
+            background: '#FF6B1A', color: 'white', border: 'none',
             fontWeight: 900, fontSize: 16, cursor: 'pointer',
             fontFamily: 'Nunito, sans-serif',
-            boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 4px 16px rgba(255,107,26,0.4)',
+            boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 4px 16px rgba(255,107,26,0.4)',
             animation: 'pulse 1.5s ease-in-out infinite',
           }}
         >
@@ -958,12 +948,20 @@ export default function CollectionPage() {
         </button>
       )}
 
-      {/* Keyframe pulse animation */}
-      {(collectionSpotlightStep === 3) && (
+      {/* Keyframe animations */}
+      {(collectionSpotlightStep > 0) && (
         <style>{`
           @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 15px rgba(255,255,255,0.5), 0 4px 16px rgba(255,107,26,0.4); }
-            50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 25px rgba(255,255,255,0.7), 0 8px 24px rgba(255,107,26,0.6); }
+            0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 15px rgba(255,107,26,0.5), 0 4px 16px rgba(255,107,26,0.4); }
+            50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 25px rgba(255,107,26,0.7), 0 8px 24px rgba(255,107,26,0.6); }
+          }
+          @keyframes collectionFingerMove {
+            from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          }
+          @keyframes collectionFingerPulse {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-6px); }
           }
         `}</style>
       )}

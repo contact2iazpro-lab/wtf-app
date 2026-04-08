@@ -6,7 +6,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import HowToPlayModal from '../components/HowToPlayModal'
 import { useAuth } from '../context/AuthContext'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
@@ -219,7 +218,6 @@ export default function HomeScreen({
 
   const modeIsNew = (modeId) => !seenModes.includes(modeId)
   const [showSettings, setShowSettings] = useState(false)
-  const [showRules, setShowRules] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
   const [lockToast, setLockToast] = useState(null)
@@ -358,11 +356,6 @@ export default function HomeScreen({
     else setShowSettings(true)
   }
 
-  const handleShowRules = () => {
-    audio.play('click')
-    setShowRules(true)
-  }
-
   // ── Mode icon component ────────────────────────────────────────────────────
   const ModeIcon = ({ src, label, onClick, disabled, locked }) => {
     const dimmed = disabled || locked
@@ -455,7 +448,6 @@ export default function HomeScreen({
       }}
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      {showRules && <HowToPlayModal onClose={() => setShowRules(false)} onRestartTutorial={() => {}} />}
 
       {/* Spotlight unique — basé sur hasSeenX */}
       {activeSpotlight && spotlightRect && (
@@ -497,6 +489,10 @@ export default function HomeScreen({
         @keyframes newBadgePulse {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.15); opacity: 0.85; }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4); }
+          50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3); }
         }
         @keyframes coffreSlideIn {
           from { opacity: 0; transform: translateY(-10px); }
@@ -582,20 +578,6 @@ export default function HomeScreen({
           >
             <img src="/assets/ui/icon-hint.png" alt="hints" style={{ width: S(14), height: S(14), objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{playerHints}</span>
-          </button>
-          <button
-            onClick={handleShowRules}
-            style={{
-              width: S(36), height: S(36), borderRadius: '50%',
-              background: 'rgba(255,255,255,0.2)',
-              border: '1.5px solid rgba(255,255,255,0.4)',
-              padding: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0,
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            <span style={{ fontSize: S(18), fontWeight: 900, color: 'white' }}>?</span>
           </button>
           <button
             onClick={handleSettings}
@@ -818,7 +800,7 @@ export default function HomeScreen({
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
-          <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto' }}>
+          <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && modeIsNew('quest') ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {canQuest && modeIsNew('quest') && <NewBadge />}
             <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
           </div>
@@ -891,7 +873,7 @@ export default function HomeScreen({
             {canMulti && modeIsNew('multi') && <NewBadge />}
             <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
           </div>
-          <div ref={blitzBtnRef} style={{ position: 'relative' }}>
+          <div ref={blitzBtnRef} style={{ position: 'relative', ...(canBlitz && modeIsNew('blitz') ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {canBlitz && modeIsNew('blitz') && <NewBadge />}
             <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
           </div>

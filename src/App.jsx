@@ -210,7 +210,7 @@ function loadStorage() {
     const wtfDuJourDate = saved.wtfDuJourDate || null
     const wtfDuJourFait = wtfDuJourDate === today
     const sessionsToday = saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0
-    const tickets = saved.tickets ?? 3
+    const tickets = saved.tickets ?? 0
 
     return { totalScore: saved.totalScore || 0, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets, gamesPlayed: saved.gamesPlayed || 0, seenModes: saved.seenModes || [] }
   } catch {
@@ -297,9 +297,9 @@ export default function App() {
     }
   })
 
-  // Initialiser les indices à 3 pour les nouveaux joueurs
+  // Initialiser les indices à 0 pour les nouveaux joueurs
   if (localStorage.getItem('wtf_hints_available') === null) {
-    localStorage.setItem('wtf_hints_available', '3')
+    localStorage.setItem('wtf_hints_available', '0')
   }
 
   // ── Challenge Blitz : démarrer un défi depuis ChallengeScreen ──
@@ -520,7 +520,7 @@ export default function App() {
       totalScore: 0,
       streak: 0,
       wtfCoins: 0,
-      tickets: 3,
+      tickets: 0,
       unlockedFacts: [],
       sessionsToday: 0,
       statsByMode: {},
@@ -528,7 +528,7 @@ export default function App() {
     }
     localStorage.setItem('wtf_data', JSON.stringify(freshData))
     localStorage.removeItem('tutorial_state')
-    localStorage.setItem('wtf_hints_available', '3')
+    localStorage.setItem('wtf_hints_available', '0')
     // Supprimer les skip_launch flags
     localStorage.removeItem('skip_launch_quest')
     localStorage.removeItem('skip_launch_flash')
@@ -1210,7 +1210,11 @@ export default function App() {
   const handleUseHint = useCallback((hintNum) => {
     // Indices = stock gratuit, décrémenté de 1 à chaque utilisation
     if (getBalances().hints < 1) return // stock vide, ne rien faire
-    updateHints(-1)
+    // Pendant le tuto onboarding (!onboardingCompleted), les indices sont gratuits
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    if (wtfData.onboardingCompleted === true) {
+      updateHints(-1)
+    }
     setHintsUsed(hintNum)
     setSessionAnyHintUsed(true)
   }, [])
@@ -2148,7 +2152,6 @@ export default function App() {
               // Démarrer la musique une fois l'onboarding complété
               audio.startMusic()
               setOnboardingFact(null)
-              setScreen(SCREENS.HOME)
               navigate('/collection')
             }}
             style={{

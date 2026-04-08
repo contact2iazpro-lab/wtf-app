@@ -111,72 +111,67 @@ Make it vibrant and fun, with good composition.`
 
     console.log(`Generating image for fact #${fact_id} with direction: ${direction}`)
 
-    // ── Call Google Gemini Imagen API ─────────────────────────────────────────
+    // ── Call Google Gemini 3 Pro Image Preview API ─────────────────────────────
     let imageBase64: string | null = null
+    let mimeType: string = 'image/png'
 
     try {
-      const imagenRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=' + googleApiKey, {
+      console.log('Calling Gemini 3 Pro Image Preview for fact #' + fact_id)
+
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=' + googleApiKey, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          instances: [{ prompt: imagePrompt }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: '1:1',
-            safetyFilterLevel: 'block_few',
-          },
+          contents: [{ parts: [{ text: imagePrompt }] }],
+          generationConfig: { responseModalities: ['IMAGE'] },
         }),
       })
 
-      if (imagenRes.ok) {
-        const imagenData = await imagenRes.json()
-        if (imagenData?.predictions?.[0]?.bytesBase64Encoded) {
-          imageBase64 = imagenData.predictions[0].bytesBase64Encoded
-          console.log(`✓ Image generated via Imagen for fact #${fact_id}`)
-        } else {
-          console.warn(`Imagen response missing bytesBase64Encoded for fact #${fact_id}`)
+      console.log('API response status:', response.status)
+
+      if (response.ok) {
+        const data = await response.json()
+        const parts = data.candidates?.[0]?.content?.parts || []
+        const imagePart = parts.find((p: any) => p.inlineData)
+        if (imagePart) {
+          imageBase64 = imagePart.inlineData.data
+          mimeType = imagePart.inlineData.mimeType || 'image/png'
         }
       } else {
-        const errText = await imagenRes.text()
-        console.warn(`Imagen API error (${imagenRes.status}): ${errText}`)
+        console.log('API error body:', await response.text())
       }
     } catch (err) {
-      console.warn(`Imagen API exception: ${err.message}`)
+      console.warn(`Exception: ${err.message}`)
     }
 
-    // ── Fallback: use Gemini 2.0 Flash if Imagen failed ────────────────────────
+    // ── Fallback: use Gemini 2.5 Flash Image ──
     if (!imageBase64) {
-      console.log(`Falling back to Gemini 2.0 Flash for fact #${fact_id}`)
+      console.log('Falling back to Gemini 2.5 Flash Image...')
       try {
-        const geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + googleApiKey, {
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' + googleApiKey, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: imagePrompt }] }],
-            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+            generationConfig: { responseModalities: ['IMAGE'] },
           }),
         })
 
-        if (geminiRes.ok) {
-          const geminiData = await geminiRes.json()
-          // Extract image from response (structure varies)
-          if (geminiData?.candidates?.[0]?.content?.parts) {
-            for (const part of geminiData.candidates[0].content.parts) {
-              if (part.inlineData?.data) {
-                imageBase64 = part.inlineData.data
-                console.log(`✓ Image generated via Gemini for fact #${fact_id}`)
-                break
-              }
-            }
+        console.log('API response status:', response.status)
+
+        if (response.ok) {
+          const data = await response.json()
+          const parts = data.candidates?.[0]?.content?.parts || []
+          const imagePart = parts.find((p: any) => p.inlineData)
+          if (imagePart) {
+            imageBase64 = imagePart.inlineData.data
+            mimeType = imagePart.inlineData.mimeType || 'image/png'
           }
         } else {
-          const errText = await geminiRes.text()
-          console.error(`Gemini API error (${geminiRes.status}): ${errText}`)
+          console.log('API error body:', await response.text())
         }
       } catch (err) {
-        console.error(`Gemini API exception: ${err.message}`)
+        console.warn(`Exception: ${err.message}`)
       }
     }
 
@@ -189,16 +184,21 @@ Make it vibrant and fun, with good composition.`
 
     // ── Convert base64 to binary and upload to Supabase Storage ────────────────
     const binaryData = Uint8Array.from(atob(imageBase64), c => c.charCodeAt(0))
-    const fileName = `facts/${fact_id}.webp`
+    const ext = mimeType.includes('webp') ? 'webp' : mimeType.includes('jpeg') ? 'jpg' : 'png'
+    const fileName = `facts/${fact_id}.${ext}`
 
     const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/fact-images/${fileName}`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${supabaseServiceKey}`,
-        'Content-Type': 'image/webp',
+        'apikey': supabaseServiceKey,
+        'Content-Type': mimeType,
+        'x-upsert': 'true',
       },
       body: binaryData,
     })
+
+    console.log('Upload to Storage status:', uploadRes.status)
 
     if (!uploadRes.ok) {
       const errText = await uploadRes.text()
@@ -212,7 +212,7 @@ Make it vibrant and fun, with good composition.`
     // ── Get public URL ────────────────────────────────────────────────────────
     const imageUrl = `${supabaseUrl}/storage/v1/object/public/fact-images/${fileName}`
 
-    console.log(`✓ Image uploaded to Storage: ${imageUrl}`)
+    console.log('Image URL:', imageUrl)
 
     // ── Update image_pipeline record ───────────────────────────────────────────
     const updateRes = await fetch(`${supabaseUrl}/rest/v1/image_pipeline?id=eq.${pipeline_id}`, {

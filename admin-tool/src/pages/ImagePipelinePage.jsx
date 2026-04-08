@@ -25,6 +25,8 @@ export default function ImagePipelinePage() {
   const [directionsQueue, setDirectionsQueue] = useState([])
   const [selectedDirections, setSelectedDirections] = useState({})
   const [customDirections, setCustomDirections] = useState({})
+  const [generatingDirections, setGeneratingDirections] = useState(false)
+  const [validatingDirectionId, setValidatingDirectionId] = useState(null)
 
   // Tab 3 — Validation
   const [validationQueue, setValidationQueue] = useState([])
@@ -105,14 +107,14 @@ export default function ImagePipelinePage() {
     }
   }
 
-  // Tab 3: Fetch validation queue
+  // Tab 3: Fetch validation queue (including items being generated)
   const fetchValidationQueue = async () => {
     setLoading(true)
     try {
       const { data: pipeline, error } = await supabase
         .from('image_pipeline')
         .select('*, facts(id, question, short_answer, category)')
-        .eq('status', 'image_generated')
+        .or('status.eq.image_generated,status.eq.direction_selected')
         .order('created_at', { ascending: true })
 
       if (error) throw error
@@ -177,7 +179,7 @@ export default function ImagePipelinePage() {
       return
     }
 
-    setLoading(true)
+    setGeneratingDirections(true)
     try {
       const selectedIds = Array.from(selectedFacts)
       const selectedObjs = factsNoImage.filter(f => selectedIds.includes(f.id))
@@ -232,7 +234,7 @@ export default function ImagePipelinePage() {
       console.error(err)
       showToast('❌ Erreur: ' + err.message)
     } finally {
-      setLoading(false)
+      setGeneratingDirections(false)
     }
   }
 
@@ -263,7 +265,7 @@ export default function ImagePipelinePage() {
       return
     }
 
-    setLoading(true)
+    setValidatingDirectionId(pipelineId)
     try {
       // Step 1: Update image_pipeline with direction
       const { error } = await supabase
@@ -281,8 +283,6 @@ export default function ImagePipelinePage() {
       console.log(`✓ Direction validée pour pipeline #${pipelineId}`)
 
       // Step 2: Call generate-image Edge Function
-      showToast('⏳ Génération d\'image en cours...')
-
       const resp = await fetch(
         import.meta.env.VITE_SUPABASE_URL + '/functions/v1/generate-image',
         {
@@ -301,18 +301,20 @@ export default function ImagePipelinePage() {
       if (!resp.ok) {
         console.error('Image generation error:', result)
         showToast('❌ Erreur génération image: ' + (result.error || 'inconnu'))
+        setValidatingDirectionId(null)
       } else {
-        showToast('✅ Image générée ! Vérifiez l\'onglet Validation')
-        // Step 3: Switch to Validation tab and refresh
-        setTab('validation')
-        await new Promise(r => setTimeout(r, 500)) // Wait for tab switch
-        fetchValidationQueue()
+        showToast('✅ Direction validée ! Génération de l\'image en cours...')
+        // Step 3: Switch to Validation tab after 1.5s delay
+        setTimeout(() => {
+          setTab('validation')
+          fetchValidationQueue()
+          setValidatingDirectionId(null)
+        }, 1500)
       }
     } catch (err) {
       console.error('Error in handleValidateDirection:', err)
       showToast('❌ Erreur: ' + err.message)
-    } finally {
-      setLoading(false)
+      setValidatingDirectionId(null)
     }
   }
 
@@ -644,7 +646,7 @@ export default function ImagePipelinePage() {
 
             <button
               onClick={handleGenerateDirections}
-              disabled={selectedFacts.size === 0 || loading}
+              disabled={selectedFacts.size === 0 || generatingDirections}
               style={{
                 padding: '8px 16px',
                 borderRadius: '12px',
@@ -653,12 +655,12 @@ export default function ImagePipelinePage() {
                 background: selectedFacts.size === 0 ? 'rgba(255,255,255,0.1)' : '#FF6B1A',
                 color: 'white',
                 border: 'none',
-                cursor: selectedFacts.size === 0 ? 'not-allowed' : 'pointer',
-                opacity: selectedFacts.size === 0 ? 0.5 : 1,
+                cursor: selectedFacts.size === 0 || generatingDirections ? 'not-allowed' : 'pointer',
+                opacity: selectedFacts.size === 0 || generatingDirections ? 0.5 : 1,
                 transition: 'all 0.2s',
               }}
             >
-              🎨 Générer ({selectedFacts.size})
+              {generatingDirections ? '⏳ Génération en cours...' : `🎨 Générer (${selectedFacts.size})`}
             </button>
           </div>
 
@@ -763,6 +765,26 @@ export default function ImagePipelinePage() {
       {/* TAB 2 — Directions */}
       {tab === 'directions' && (
         <div>
+          {/* Guide des styles visuels */}
+          <div style={{
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 20,
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            <div style={{ fontWeight: 700, marginBottom: 8, color: '#FF6B1A' }}>
+              Guide des styles visuels
+            </div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
+              🎨 <b>Art moderne</b> — Illustration stylisée, couleurs vives, composition graphique<br />
+              😂 <b>Meme fun</b> — Style meme internet, humour visuel, format partage réseaux sociaux<br />
+              📷 <b>Photo réelle</b> — Rendu photorréaliste, mise en scène naturelle<br />
+              ✏️ <b>Dessin manga</b> — Style manga/anime japonais, traits dynamiques<br />
+              😀 <b>Emoji</b> — Composition à base d'emojis, style flat design coloré
+            </div>
+          </div>
+
           {directionsQueue.length === 0 ? (
             <div style={{
               padding: '40px 24px',
@@ -857,7 +879,7 @@ export default function ImagePipelinePage() {
                   {/* Submit button */}
                   <button
                     onClick={() => handleValidateDirection(item.id)}
-                    disabled={!selectedDirections[item.id] && !customDirections[item.id] || loading}
+                    disabled={!selectedDirections[item.id] && !customDirections[item.id] || validatingDirectionId === item.id}
                     style={{
                       padding: '10px 20px',
                       borderRadius: '12px',
@@ -869,11 +891,12 @@ export default function ImagePipelinePage() {
                           : '#0ea5e9',
                       color: 'white',
                       border: 'none',
-                      cursor: 'pointer',
+                      cursor: !selectedDirections[item.id] && !customDirections[item.id] || validatingDirectionId === item.id ? 'not-allowed' : 'pointer',
+                      opacity: validatingDirectionId === item.id ? 0.6 : 1,
                       transition: 'all 0.2s',
                     }}
                   >
-                    ✅ Valider direction
+                    {validatingDirectionId === item.id ? '⏳ Validation en cours...' : '✅ Valider direction'}
                   </button>
                 </div>
               ))}
@@ -911,117 +934,168 @@ export default function ImagePipelinePage() {
                     gap: '20px',
                   }}
                 >
-                  <div>
-                    <div style={{
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      marginBottom: '8px',
-                    }}>
-                      {item.facts?.question}
-                    </div>
-                    <div style={{
-                      fontSize: '13px',
-                      color: 'rgba(255,255,255,0.7)',
-                      marginBottom: '16px',
-                    }}>
-                      ✓ {item.facts?.short_answer}
-                    </div>
-
-                    {/* Buttons */}
+                  {/* Content based on status */}
+                  {item.status === 'direction_selected' ? (
+                    // Generating state
                     <div style={{
                       display: 'flex',
-                      gap: '10px',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '16px',
+                      minHeight: '200px',
                     }}>
-                      <button
-                        onClick={() => handleValidateImage(item.id, item.image_url)}
-                        style={{
-                          flex: 1,
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          fontSize: '13px',
-                          fontWeight: 900,
-                          background: '#10b981',
-                          color: 'white',
-                          border: 'none',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        ✅ Valider
-                      </button>
-                      <button
-                        onClick={() => handleRejectImage(item.id)}
-                        style={{
-                          flex: 1,
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          fontSize: '13px',
-                          fontWeight: 900,
-                          background: '#ef4444',
-                          color: 'white',
-                          border: 'none',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        ❌ Rejeter
-                      </button>
-                      <button
-                        onClick={() => handleRegenerateImage(item.id)}
-                        style={{
-                          flex: 1,
-                          padding: '12px 16px',
-                          borderRadius: '12px',
-                          fontSize: '13px',
-                          fontWeight: 900,
-                          background: '#f59e0b',
-                          color: 'white',
-                          border: 'none',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        🔄 Régénérer
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Image */}
-                  <div>
-                    {item.image_url ? (
-                      <img
-                        src={item.image_url}
-                        alt="Generated"
-                        style={{
-                          width: '100%',
-                          maxWidth: '300px',
-                          borderRadius: '12px',
-                          background: 'rgba(0,0,0,0.3)',
-                        }}
-                      />
-                    ) : (
                       <div style={{
-                        width: '100%',
-                        maxWidth: '300px',
-                        height: '200px',
-                        borderRadius: '12px',
-                        background: 'rgba(255,255,255,0.05)',
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'rgba(255,255,255,0.5)',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        gap: '12px',
+                        textAlign: 'center',
                       }}>
-                        Pas d'image
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          border: '3px solid rgba(255,255,255,0.2)',
+                          borderTopColor: '#FF6B1A',
+                          animation: 'spin 1s linear infinite',
+                        }} />
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          color: '#FF6B1A',
+                        }}>
+                          Génération en cours...
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: 'rgba(255,255,255,0.5)',
+                        }}>
+                          Merci de patienter
+                        </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    // Generated state with image and buttons
+                    <>
+                      <div>
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: 700,
+                          marginBottom: '8px',
+                        }}>
+                          {item.facts?.question}
+                        </div>
+                        <div style={{
+                          fontSize: '13px',
+                          color: 'rgba(255,255,255,0.7)',
+                          marginBottom: '16px',
+                        }}>
+                          ✓ {item.facts?.short_answer}
+                        </div>
+
+                        {/* Buttons */}
+                        <div style={{
+                          display: 'flex',
+                          gap: '10px',
+                        }}>
+                          <button
+                            onClick={() => handleValidateImage(item.id, item.image_url)}
+                            style={{
+                              flex: 1,
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              fontSize: '13px',
+                              fontWeight: 900,
+                              background: '#10b981',
+                              color: 'white',
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            ✅ Valider
+                          </button>
+                          <button
+                            onClick={() => handleRejectImage(item.id)}
+                            style={{
+                              flex: 1,
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              fontSize: '13px',
+                              fontWeight: 900,
+                              background: '#ef4444',
+                              color: 'white',
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            ❌ Rejeter
+                          </button>
+                          <button
+                            onClick={() => handleRegenerateImage(item.id)}
+                            style={{
+                              flex: 1,
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              fontSize: '13px',
+                              fontWeight: 900,
+                              background: '#f59e0b',
+                              color: 'white',
+                              border: 'none',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            🔄 Régénérer
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Image */}
+                      <div>
+                        {item.image_url ? (
+                          <img
+                            src={item.image_url}
+                            alt="Generated"
+                            style={{
+                              width: '100%',
+                              maxWidth: '300px',
+                              borderRadius: '12px',
+                              background: 'rgba(0,0,0,0.3)',
+                            }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: '100%',
+                            maxWidth: '300px',
+                            height: '200px',
+                            borderRadius: '12px',
+                            background: 'rgba(255,255,255,0.05)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'rgba(255,255,255,0.5)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                          }}>
+                            Pas d'image
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
       )}
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }

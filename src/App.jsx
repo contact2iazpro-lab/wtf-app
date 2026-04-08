@@ -120,12 +120,12 @@ const MODE_CONFIGS = {
 }
 
 const DIFFICULTY_LEVELS = {
-  WTF:   { id: 'wtf',   label: 'Quest WTF!', emoji: '⚡', choices: 6, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 } },
-  HOT:   { id: 'hot',   label: 'Quest Hot',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 } },
-  COOL:  { id: 'cool',  label: 'Quest Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
-  FLASH: { id: 'flash', label: 'Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 } },
+  WTF:   { id: 'wtf',   label: 'Quest WTF!', emoji: '⚡', choices: 6, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 2, wrong: 0 } },
+  HOT:   { id: 'hot',   label: 'Quest Hot',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 3, wrong: 0 } },
+  COOL:  { id: 'cool',  label: 'Quest Cool', emoji: '❄️', choices: 4, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 3, scoring: { correct: 5, wrong: 0 } },
+  FLASH: { id: 'flash', label: 'Flash', emoji: '⚡', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 5, wrong: 0 } },
   HUNT:  { id: 'hunt',  label: 'Hunt',  emoji: '🔥', choices: 4, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, scoring: { correct: [5, 3, 2], wrong: 0 } },
-  BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 } },
+  BLITZ: { id: 'blitz', label: 'Blitz', emoji: '⚡', choices: 4, duration: 60, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0, coinsPerCorrect: 0, scoring: { correct: 1, wrong: 0 } },
 }
 
 const TODAY = () => new Date().toISOString().slice(0, 10) // YYYY-MM-DD
@@ -442,6 +442,7 @@ export default function App() {
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showNoTicketModal, setShowNoTicketModal] = useState(false)
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
@@ -859,7 +860,7 @@ export default function App() {
     const isFirstQuestEver = !wd.onboardingCompleted && (wd.questsPlayed || 0) === 0
     if (!isDevModeQuest && !isFirstQuestEver) {
       if ((tickets || 0) < 1) {
-        alert('Tu n\'as pas de ticket ! Gagne des tickets en faisant des scores parfaits ou en maintenant ta série. 🎫')
+        setShowNoTicketModal(true)
         return
       }
       // Décrémenter 1 ticket
@@ -1117,9 +1118,9 @@ export default function App() {
       if (selectedDifficulty.coinsPerCorrect !== undefined) {
         // Nouveau système : récompense fixe, pas de dégradation par indice
         points = selectedDifficulty.coinsPerCorrect
-        // Mode Jouer avec catégorie choisie → 3 coins au lieu de 5
+        // Mode Jouer avec catégorie choisie → 1 coin au lieu de 2
         if (sessionType === 'flash_solo' && selectedCategory !== null) {
-          points = 3
+          points = 1
         }
       } else {
         // Legacy (Flash) : dégradation selon les indices utilisés
@@ -2145,11 +2146,9 @@ export default function App() {
             onClick={() => {
               const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
               wd.hasSeenFirstFactModal = true
-              wd.onboardingCompleted = true  // Marquer l'onboarding comme terminé
               wd.pendingFactDetail = JSON.stringify(onboardingFact)
               wd.lastModified = Date.now()
               localStorage.setItem('wtf_data', JSON.stringify(wd))
-              // Démarrer la musique une fois l'onboarding complété
               audio.startMusic()
               setOnboardingFact(null)
               navigate('/collection')
@@ -2354,6 +2353,73 @@ export default function App() {
                 }}
               >
                 Lancer ! 🚀
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showNoTicketModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 24, fontFamily: 'Nunito, sans-serif',
+        }}>
+          <div style={{
+            background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)',
+            border: '2px solid #FF6B1A', borderRadius: 24,
+            padding: '32px 24px', maxWidth: 320, width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🎫</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: '#FFD700', marginBottom: 10 }}>
+              Il te faut un ticket !
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.8)', marginBottom: 24, lineHeight: 1.5 }}>
+              Gagne des coins en jouant et achete un ticket en Boutique. Ou tente ta chance au Blitz !
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                onClick={() => { setShowNoTicketModal(false); audio.play?.('click'); handleFlashSolo() }}
+                style={{
+                  width: '100%', padding: '14px 24px', borderRadius: 14,
+                  background: '#FF6B1A', color: 'white', border: 'none',
+                  fontWeight: 900, fontSize: 15, cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+                  transition: 'transform 0.1s',
+                }}
+                onTouchStart={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                onTouchEnd={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                🎯 Jouer pour gagner des coins
+              </button>
+              <button
+                onClick={() => { setShowNoTicketModal(false); audio.play?.('click'); handleHomeNavigate('blitz') }}
+                style={{
+                  width: '100%', padding: '14px 24px', borderRadius: 14,
+                  background: 'transparent', color: 'white', border: '1.5px solid rgba(255,255,255,0.3)',
+                  fontWeight: 900, fontSize: 15, cursor: 'pointer',
+                  transition: 'transform 0.1s',
+                }}
+                onTouchStart={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                onTouchEnd={e => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                ⚡ Tenter le Blitz
+              </button>
+              <button
+                onClick={() => setShowNoTicketModal(false)}
+                style={{
+                  background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)',
+                  fontSize: 12, cursor: 'pointer', marginTop: 4, padding: 8,
+                }}
+              >
+                Fermer
               </button>
             </div>
           </div>

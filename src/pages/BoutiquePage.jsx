@@ -13,9 +13,9 @@ const HINT_PACKS = [
 ]
 
 const TICKET_PACKS = [
-  { quantity: 1, price: 10, label: '1 ticket',    discount: null },
-  { quantity: 3, price: 25, label: '3 tickets',   discount: '-17%' },
-  { quantity: 5, price: 35, label: '5 tickets',   discount: '-30%' },
+  { quantity: 1, price: 25, label: '1 ticket',    discount: null },
+  { quantity: 3, price: 65, label: '3 tickets',   discount: '-13%' },
+  { quantity: 5, price: 100, label: '5 tickets',   discount: '-20%' },
 ]
 
 const COIN_PACKS = [

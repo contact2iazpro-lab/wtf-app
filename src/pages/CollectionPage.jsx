@@ -7,6 +7,7 @@ import LoginModal from '../components/Auth/LoginModal'
 import ConnectBanner from '../components/ConnectBanner'
 import { audio } from '../utils/audio'
 import { readWtfData } from '../utils/storageHelper'
+import renderFormattedText from '../utils/renderFormattedText'
 
 const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
 
@@ -147,7 +148,7 @@ function FactDetailView({ fact, onClose, isOnboardingFactDetail }) {
             border: '1px solid rgba(255,255,255,0.12)',
           }}>
             <span style={{ fontWeight: 900, fontSize: S(14), color: '#ffffff', lineHeight: 1.3, display: 'block', textAlign: 'center' }}>
-              {fact.question}
+              {renderFormattedText(fact.question)}
             </span>
           </div>
         </div>
@@ -237,29 +238,35 @@ function FactDetailView({ fact, onClose, isOnboardingFactDetail }) {
         </div>
 
         {/* Bouton partager ou "Voir ma collection" — fixe en bas */}
-        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
+        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}`, position: 'relative' }}>
           {isOnboardingFactDetail ? (
-            <button
-              onClick={() => {
-                const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                delete wd.pendingFactDetail
-                wd.hasVisitedCollection = true
-                wd.lastModified = Date.now()
-                localStorage.setItem('wtf_data', JSON.stringify(wd))
-                onClose()
-              }}
-              className="active:scale-95 transition-all"
-              style={{
-                width: '100%', height: S(44), borderRadius: S(14),
-                fontWeight: 900, fontSize: S(13), color: '#ffffff', border: '3px solid white',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
-                background: '#FF6B1A',
-                boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 4px 16px rgba(255,107,26,0.4)',
-                animation: 'pulse 1.5s ease-in-out infinite',
-              }}
-            >
-              Voir ma collection 📚
-            </button>
+            <div>
+              <button
+                onClick={() => {
+                  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                  delete wd.pendingFactDetail
+                  wd.lastModified = Date.now()
+                  localStorage.setItem('wtf_data', JSON.stringify(wd))
+                  onClose()
+                }}
+                className="active:scale-95 transition-all"
+                style={{
+                  width: '100%', height: S(44), borderRadius: S(14),
+                  fontWeight: 900, fontSize: S(13), color: '#ffffff', border: '3px solid white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                  background: '#FF6B1A',
+                  boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 4px 16px rgba(255,107,26,0.4)',
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                }}
+              >
+                Voir ma collection 📚
+              </button>
+              <div style={{
+                textAlign: 'center', marginTop: S(4),
+                fontSize: 24, animation: 'collectionFingerPulse 0.8s ease-in-out infinite',
+                pointerEvents: 'none',
+              }}>👆</div>
+            </div>
           ) : (
             <button
               onClick={share}
@@ -338,6 +345,13 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
       className="fixed inset-0 flex justify-center"
       style={{ zIndex: 300, background: '#000' }}
     >
+      <style>{`
+        @keyframes collectionFingerPulse {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
+
       <div style={{
         width: '100%', maxWidth: 430, height: '100%',
         display: 'flex', flexDirection: 'column',
@@ -489,6 +503,7 @@ export default function CollectionPage() {
   const [selectedFact, setSelectedFact] = useState(null)
   const [isOnboardingFactDetail, setIsOnboardingFactDetail] = useState(false)
   const [collectionSpotlightStep, setCollectionSpotlightStep] = useState(0)
+  const [fingerPos, setFingerPos] = useState({ top: '50%', left: '50%' })
   const progressBarRef = useRef(null)
   const firstUnlockedCategoryRef = useRef(null)
 
@@ -608,18 +623,8 @@ export default function CollectionPage() {
     }
   }, [])
 
-  // Spotlight séquentiel lors de l'arrivée sur Collection en mode onboarding
-  useEffect(() => {
-    if (!onboardingMode) return
-    const t1 = setTimeout(() => setCollectionSpotlightStep(1), 300)
-    const t2 = setTimeout(() => setCollectionSpotlightStep(2), 2900)
-    const t3 = setTimeout(() => setCollectionSpotlightStep(3), 5500)
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-      clearTimeout(t3)
-    }
-  }, [onboardingMode])
+  // Spotlight séquentiel désormais démarré manuellement dans handleFactDetailClose()
+  // Cet useEffect est supprimé car le fact detail bloquait le rendu du spotlight au mount
 
   // Selected category for fact list
   const selectedCatStats = selectedCatId ? catStats.find(s => s.cat.id === selectedCatId) : null
@@ -628,32 +633,177 @@ export default function CollectionPage() {
   const handleFactDetailClose = () => {
     if (onboardingMode) {
       const wd = readWtfData()
-      wd.hasVisitedCollection = true
+      // NE PAS mettre hasVisitedCollection = true ici
+      // NE PAS mettre setOnboardingMode(false) ici
       wd.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(wd))
-      setOnboardingMode(false)
+      // Démarrer le spotlight séquentiel maintenant
+      setCollectionSpotlightStep(1)
+      setTimeout(() => setCollectionSpotlightStep(2), 2600)
+      setTimeout(() => setCollectionSpotlightStep(3), 5200)
     }
     setSelectedFact(null)
     setIsOnboardingFactDetail(false)
   }
 
+  // Mettre à jour la position du doigt quand le spotlight change
+  useEffect(() => {
+    if (collectionSpotlightStep === 1 && progressBarRef.current) {
+      // Étape 1 : Déplacer le doigt vers la barre de progression
+      const timer = requestAnimationFrame(() => {
+        const rect = progressBarRef.current.getBoundingClientRect()
+        const centerX = rect.left + rect.width / 2
+        const centerY = rect.bottom + 20 // juste en dessous de la barre
+        setFingerPos({
+          top: `${centerY}px`,
+          left: `${centerX}px`,
+        })
+      })
+      return () => cancelAnimationFrame(timer)
+    } else if (collectionSpotlightStep === 2 && firstUnlockedCategoryRef.current) {
+      // Étape 2 : Déplacer le doigt vers la première catégorie
+      const timer = requestAnimationFrame(() => {
+        const rect = firstUnlockedCategoryRef.current.getBoundingClientRect()
+        const centerX = rect.left + rect.width / 2
+        const centerY = rect.bottom + 20 // juste en dessous de la catégorie
+        setFingerPos({
+          top: `${centerY}px`,
+          left: `${centerX}px`,
+        })
+      })
+      return () => cancelAnimationFrame(timer)
+    } else if (collectionSpotlightStep === 3) {
+      // Étape 3 : Déplacer le doigt vers le bouton "Continuer le tutoriel" au centre
+      setFingerPos({
+        top: 'calc(50% + 40px)',
+        left: '50%',
+      })
+    }
+  }, [collectionSpotlightStep])
+
+  // ── Spotlight JSX (rendu en overlay indépendamment de la vue) ──
+  const spotlightJSX = (
+    <>
+      {/* Overlay transparent qui bloque les clics pendant étapes 1 et 2 */}
+      {collectionSpotlightStep >= 1 && collectionSpotlightStep < 3 && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 499, background: 'transparent' }} />
+      )}
+
+      {/* Étape 1 : Encadré doré autour du bloc "Ma Collection" */}
+      {collectionSpotlightStep === 1 && progressBarRef.current && (
+        <div style={{
+          position: 'fixed',
+          top: progressBarRef.current.getBoundingClientRect().top - 90,
+          left: progressBarRef.current.getBoundingClientRect().left - 8,
+          width: progressBarRef.current.getBoundingClientRect().width + 16,
+          height: progressBarRef.current.getBoundingClientRect().height + 98,
+          border: '3px solid #FFD700',
+          borderRadius: 16,
+          boxShadow: '0 0 20px rgba(255,215,0,0.5), 0 0 40px rgba(255,215,0,0.2)',
+          pointerEvents: 'none', zIndex: 500,
+          background: 'transparent',
+        }} />
+      )}
+
+      {/* Étape 2 : Encadré doré autour de la première catégorie */}
+      {collectionSpotlightStep === 2 && firstUnlockedCategoryRef.current && (
+        <div style={{
+          position: 'fixed',
+          top: firstUnlockedCategoryRef.current.getBoundingClientRect().top - 8,
+          left: firstUnlockedCategoryRef.current.getBoundingClientRect().left - 8,
+          width: firstUnlockedCategoryRef.current.getBoundingClientRect().width + 16,
+          height: firstUnlockedCategoryRef.current.getBoundingClientRect().height + 16,
+          border: '3px solid #FFD700',
+          borderRadius: 16,
+          boxShadow: '0 0 20px rgba(255,215,0,0.5), 0 0 40px rgba(255,215,0,0.2)',
+          pointerEvents: 'none', zIndex: 500,
+          background: 'transparent',
+        }} />
+      )}
+
+      {/* Doigt animé — étapes 1, 2 et 3 */}
+      {collectionSpotlightStep >= 1 && (
+        <div style={{
+          position: 'fixed',
+          top: fingerPos.top,
+          left: fingerPos.left,
+          transform: 'translate(-50%, -50%)',
+          fontSize: 32,
+          zIndex: 501,
+          pointerEvents: 'none',
+          transition: 'top 0.6s ease-out, left 0.6s ease-out',
+          animation: 'fingerBounce 0.8s ease-in-out infinite',
+        }}>👆</div>
+      )}
+
+      {/* Étape 3 : Bouton "Continuer le tutoriel" */}
+      {collectionSpotlightStep === 3 && (
+        <button
+          onClick={() => {
+            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            wd.hasVisitedCollection = true
+            wd.onboardingCompleted = true
+            wd.lastModified = Date.now()
+            localStorage.setItem('wtf_data', JSON.stringify(wd))
+            setOnboardingMode(false)
+            setCollectionSpotlightStep(0)
+            navigate('/')
+          }}
+          style={{
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            zIndex: 501, padding: '14px 32px', borderRadius: 14,
+            background: '#FF6B1A', color: 'white', border: 'none',
+            fontWeight: 900, fontSize: 16, cursor: 'pointer',
+            fontFamily: 'Nunito, sans-serif',
+            boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 4px 16px rgba(255,107,26,0.4)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        >
+          Continuer le tutoriel 🚀
+        </button>
+      )}
+
+      {/* Keyframe animations */}
+      {collectionSpotlightStep > 0 && (
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 15px rgba(255,107,26,0.5), 0 4px 16px rgba(255,107,26,0.4); }
+            50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 25px rgba(255,107,26,0.7), 0 8px 24px rgba(255,107,26,0.6); }
+          }
+          @keyframes fingerBounce {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-6px); }
+          }
+        `}</style>
+      )}
+    </>
+  )
+
   // ── Sub-views ──
   if (selectedFact) {
-    return <FactDetailView fact={selectedFact} onClose={handleFactDetailClose} isOnboardingFactDetail={isOnboardingFactDetail} />
+    return (
+      <>
+        <FactDetailView fact={selectedFact} onClose={handleFactDetailClose} isOnboardingFactDetail={isOnboardingFactDetail} />
+        {spotlightJSX}
+      </>
+    )
   }
 
   if (selectedCatStats) {
     return (
-      <CategoryFactsView
-        cat={selectedCatStats.cat}
-        facts={selectedCatStats.facts}
-        unlockedIds={allUnlockedIds}
-        activeTab={activeTab}
-        onSelectFact={setSelectedFact}
-        onClose={() => setSelectedCatId(null)}
-        onboardingMode={onboardingMode}
-        firstUnlockedFact={firstUnlockedFact}
-      />
+      <>
+        <CategoryFactsView
+          cat={selectedCatStats.cat}
+          facts={selectedCatStats.facts}
+          unlockedIds={allUnlockedIds}
+          activeTab={activeTab}
+          onSelectFact={setSelectedFact}
+          onClose={() => setSelectedCatId(null)}
+          onboardingMode={onboardingMode}
+          firstUnlockedFact={firstUnlockedFact}
+        />
+        {spotlightJSX}
+      </>
     )
   }
 
@@ -846,125 +996,8 @@ export default function CollectionPage() {
         </div>
       </div>
 
-      {/* Spotlight 1 : Barre de progression globale */}
-      {collectionSpotlightStep === 1 && progressBarRef.current && (
-        <>
-          {/* Overlay sombre */}
-          <div style={{
-            position: 'fixed', inset: 0, zIndex: 250,
-            background: 'rgba(0,0,0,0.7)', pointerEvents: 'none',
-          }} />
-
-          {/* Spotlight avec trou */}
-          <div style={{
-            position: 'fixed',
-            top: progressBarRef.current.getBoundingClientRect().top - 8,
-            left: progressBarRef.current.getBoundingClientRect().left - 8,
-            width: progressBarRef.current.getBoundingClientRect().width + 16,
-            height: progressBarRef.current.getBoundingClientRect().height + 16,
-            border: '2px solid #FFD700',
-            borderRadius: 20,
-            boxShadow: '0 0 0 9999px rgba(0,0,0,0.7)',
-            pointerEvents: 'none', zIndex: 251,
-          }} />
-
-          {/* Doigt animé */}
-          <div style={{
-            position: 'fixed',
-            top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            fontSize: 32,
-            zIndex: 252,
-            pointerEvents: 'none',
-            animation: 'collectionFingerMove 0.6s ease-out forwards, collectionFingerPulse 0.8s ease-in-out 0.6s infinite',
-          }}>👆</div>
-        </>
-      )}
-
-      {/* Spotlight 2 : Première catégorie débloquée */}
-      {collectionSpotlightStep === 2 && firstUnlockedCategoryRef.current && (
-        <>
-          {/* Overlay sombre */}
-          <div style={{
-            position: 'fixed', inset: 0, zIndex: 250,
-            background: 'rgba(0,0,0,0.7)', pointerEvents: 'none',
-          }} />
-
-          {/* Spotlight avec trou */}
-          <div style={{
-            position: 'fixed',
-            top: firstUnlockedCategoryRef.current.getBoundingClientRect().top - 8,
-            left: firstUnlockedCategoryRef.current.getBoundingClientRect().left - 8,
-            width: firstUnlockedCategoryRef.current.getBoundingClientRect().width + 16,
-            height: firstUnlockedCategoryRef.current.getBoundingClientRect().height + 16,
-            border: '2px solid #FFD700',
-            borderRadius: 20,
-            boxShadow: '0 0 0 9999px rgba(0,0,0,0.7)',
-            pointerEvents: 'none', zIndex: 251,
-          }} />
-
-          {/* Doigt animé */}
-          <div style={{
-            position: 'fixed',
-            top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            fontSize: 32,
-            zIndex: 252,
-            pointerEvents: 'none',
-            animation: 'collectionFingerMove 0.6s ease-out forwards, collectionFingerPulse 0.8s ease-in-out 0.6s infinite',
-          }}>👆</div>
-        </>
-      )}
-
-      {/* Overlay sombre pour étape 3 */}
-      {collectionSpotlightStep === 3 && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 250,
-          background: 'rgba(0,0,0,0.7)', pointerEvents: 'none',
-        }} />
-      )}
-
-      {/* Bouton "Continuer le tutoriel" */}
-      {collectionSpotlightStep === 3 && (
-        <button
-          onClick={() => {
-            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            wd.onboardingCompleted = true
-            wd.lastModified = Date.now()
-            localStorage.setItem('wtf_data', JSON.stringify(wd))
-            navigate('/')
-          }}
-          style={{
-            position: 'fixed', bottom: 40, left: '50%', transform: 'translateX(-50%)',
-            zIndex: 300, padding: '14px 32px', borderRadius: 14,
-            background: '#FF6B1A', color: 'white', border: 'none',
-            fontWeight: 900, fontSize: 16, cursor: 'pointer',
-            fontFamily: 'Nunito, sans-serif',
-            boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 4px 16px rgba(255,107,26,0.4)',
-            animation: 'pulse 1.5s ease-in-out infinite',
-          }}
-        >
-          Continuer le tutoriel 🚀
-        </button>
-      )}
-
-      {/* Keyframe animations */}
-      {(collectionSpotlightStep > 0) && (
-        <style>{`
-          @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 15px rgba(255,107,26,0.5), 0 4px 16px rgba(255,107,26,0.4); }
-            50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 25px rgba(255,107,26,0.7), 0 8px 24px rgba(255,107,26,0.6); }
-          }
-          @keyframes collectionFingerMove {
-            from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-          }
-          @keyframes collectionFingerPulse {
-            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-            50% { transform: translate(-50%, -50%) translateY(-6px); }
-          }
-        `}</style>
-      )}
+      {/* Spotlight overlay (rendu indépendamment de la vue) */}
+      {spotlightJSX}
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
     </div>

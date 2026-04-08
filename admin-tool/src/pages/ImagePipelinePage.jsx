@@ -265,6 +265,7 @@ export default function ImagePipelinePage() {
 
     setLoading(true)
     try {
+      // Step 1: Update image_pipeline with direction
       const { error } = await supabase
         .from('image_pipeline')
         .update({
@@ -277,11 +278,39 @@ export default function ImagePipelinePage() {
 
       if (error) throw error
 
-      showToast('✅ Direction validée')
-      fetchDirectionsQueue()
+      console.log(`✓ Direction validée pour pipeline #${pipelineId}`)
+
+      // Step 2: Call generate-image Edge Function
+      showToast('⏳ Génération d\'image en cours...')
+
+      const resp = await fetch(
+        import.meta.env.VITE_SUPABASE_URL + '/functions/v1/generate-image',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + import.meta.env.VITE_ADMIN_PASSWORD,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ pipeline_id: pipelineId }),
+        }
+      )
+
+      const result = await resp.json()
+      console.log('Image generation result:', result)
+
+      if (!resp.ok) {
+        console.error('Image generation error:', result)
+        showToast('❌ Erreur génération image: ' + (result.error || 'inconnu'))
+      } else {
+        showToast('✅ Image générée ! Vérifiez l\'onglet Validation')
+        // Step 3: Switch to Validation tab and refresh
+        setTab('validation')
+        await new Promise(r => setTimeout(r, 500)) // Wait for tab switch
+        fetchValidationQueue()
+      }
     } catch (err) {
-      console.error(err)
-      showToast('❌ Erreur validation direction')
+      console.error('Error in handleValidateDirection:', err)
+      showToast('❌ Erreur: ' + err.message)
     } finally {
       setLoading(false)
     }

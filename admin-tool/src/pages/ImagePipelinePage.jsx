@@ -1,84 +1,96 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { CATEGORIES } from '../constants/categories'
 
 export default function ImagePipelinePage() {
+  // ──────────────────────────────────────────────────────────────────────────────
+  // STATE
+  // ──────────────────────────────────────────────────────────────────────────────
+
   const [tab, setTab] = useState('noimage') // 'noimage', 'directions', 'validation'
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
 
   // Tab 1 — Sans image
   const [factsNoImage, setFactsNoImage] = useState([])
-  const [selectedFacts, setSelectedFacts] = useState(new Set())
+  const [categories, setCategories] = useState([])
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterType, setFilterType] = useState('all')
   const [countNoImage, setCountNoImage] = useState(0)
-  const [categories, setCategories] = useState([])
+  const [selectedFacts, setSelectedFacts] = useState(new Set())
   const [selectAllMode, setSelectAllMode] = useState(false)
+  const [noImagePage, setNoImagePage] = useState(1)
+  const PAGE_SIZE = 50
 
   // Tab 2 — Directions
   const [directionsQueue, setDirectionsQueue] = useState([])
-  const [selectedDirections, setSelectedDirections] = useState({}) // { pipeline_id: direction_name }
-  const [customDirections, setCustomDirections] = useState({}) // { pipeline_id: custom_text }
+  const [selectedDirections, setSelectedDirections] = useState({})
+  const [customDirections, setCustomDirections] = useState({})
 
   // Tab 3 — Validation
   const [validationQueue, setValidationQueue] = useState([])
   const [countValidation, setCountValidation] = useState(0)
 
+  // ──────────────────────────────────────────────────────────────────────────────
+  // HELPERS
+  // ──────────────────────────────────────────────────────────────────────────────
+
   const showToast = (msg) => {
     setToast(msg)
-    setTimeout(() => setToast(null), 2500)
+    setTimeout(() => setToast(null), 3000)
   }
 
-  // Fetch categories from Supabase
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('facts')
-        .select('category', { count: 'exact' })
-        .neq('category', null)
+  // ──────────────────────────────────────────────────────────────────────────────
+  // FETCH FUNCTIONS
+  // ──────────────────────────────────────────────────────────────────────────────
 
-      if (error) throw error
-
-      // Extract distinct categories
-      const uniqueCategories = [...new Set(data.map(f => f.category))].sort()
-      setCategories(uniqueCategories)
-    } catch (err) {
-      console.error('Erreur chargement catégories:', err)
-      // Fallback to CATEGORIES from constants
-      setCategories(CATEGORIES.map(c => c.id))
-    }
-  }
-
-  // Fetch Tab 1 data
+  // Tab 1: Fetch facts without images
   const fetchNoImageFacts = async () => {
     setLoading(true)
     try {
-      const { data: facts, error } = await supabase
+      const { data: allFacts, error } = await supabase
         .from('facts')
-        .select('id, question, category, is_vip, type')
+        .select('id, question, category, is_vip, image_url')
         .or('image_url.is.null,image_url.eq.""')
         .order('id', { ascending: false })
 
       if (error) throw error
 
-      setFactsNoImage(facts || [])
-      setCountNoImage(facts?.length || 0)
+      setFactsNoImage(allFacts || [])
+      setCountNoImage(allFacts?.length || 0)
+      setNoImagePage(1)
     } catch (err) {
-      console.error(err)
-      showToast('Erreur chargement facts sans image')
+      console.error('Error fetching facts without images:', err)
+      showToast('❌ Erreur chargement facts')
     } finally {
       setLoading(false)
     }
   }
 
-  // Fetch Tab 2 data
+  // Tab 1: Fetch distinct categories
+  const fetchCategories = async () => {
+    try {
+      const { data: allFacts, error } = await supabase
+        .from('facts')
+        .select('category')
+        .neq('category', null)
+
+      if (error) throw error
+
+      const unique = [...new Set(allFacts.map(f => f.category).filter(Boolean))].sort()
+      setCategories(unique)
+    } catch (err) {
+      console.error('Error fetching categories:', err)
+      showToast('❌ Erreur catégories')
+    }
+  }
+
+  // Tab 2: Fetch directions queue
   const fetchDirectionsQueue = async () => {
     setLoading(true)
     try {
       const { data: pipeline, error } = await supabase
         .from('image_pipeline')
-        .select('*, facts(id, question, short_answer, category, is_vip, type)')
+        .select('*, facts(id, question, short_answer, category, is_vip)')
         .eq('status', 'directions_generated')
         .order('created_at', { ascending: true })
 
@@ -86,14 +98,14 @@ export default function ImagePipelinePage() {
 
       setDirectionsQueue(pipeline || [])
     } catch (err) {
-      console.error(err)
-      showToast('Erreur chargement directions')
+      console.error('Error fetching directions queue:', err)
+      showToast('❌ Erreur chargement directions')
     } finally {
       setLoading(false)
     }
   }
 
-  // Fetch Tab 3 data
+  // Tab 3: Fetch validation queue
   const fetchValidationQueue = async () => {
     setLoading(true)
     try {
@@ -108,64 +120,126 @@ export default function ImagePipelinePage() {
       setValidationQueue(pipeline || [])
       setCountValidation(pipeline?.length || 0)
     } catch (err) {
-      console.error(err)
-      showToast('Erreur chargement validation')
+      console.error('Error fetching validation queue:', err)
+      showToast('❌ Erreur chargement validation')
     } finally {
       setLoading(false)
     }
   }
 
-  // Load data when tab changes
+  // Load data on tab change
   useEffect(() => {
-    fetchCategories() // Load categories once on mount
-    if (tab === 'noimage') fetchNoImageFacts()
-    else if (tab === 'directions') fetchDirectionsQueue()
-    else if (tab === 'validation') fetchValidationQueue()
+    if (tab === 'noimage') {
+      fetchNoImageFacts()
+      fetchCategories()
+    } else if (tab === 'directions') {
+      fetchDirectionsQueue()
+    } else if (tab === 'validation') {
+      fetchValidationQueue()
+    }
   }, [tab])
 
-  // Filter facts
+  // ──────────────────────────────────────────────────────────────────────────────
+  // TAB 1 — SANS IMAGE
+  // ──────────────────────────────────────────────────────────────────────────────
+
   const filteredFacts = factsNoImage.filter(f => {
     const catMatch = filterCategory === 'all' || f.category === filterCategory
-    const typeMatch = filterType === 'all' || (filterType === 'vip' ? f.is_vip : !f.is_vip) // 'generated' = !is_vip
+    const typeMatch = filterType === 'all' || (filterType === 'vip' ? f.is_vip : !f.is_vip)
     return catMatch && typeMatch
   })
 
-  // Tab 1 handlers
+  const paginatedFacts = filteredFacts.slice(0, noImagePage * PAGE_SIZE)
+
   const handleSelectFact = (id) => {
     const newSet = new Set(selectedFacts)
-    if (newSet.has(id)) newSet.delete(id)
-    else newSet.add(id)
+    if (newSet.has(id)) {
+      newSet.delete(id)
+    } else {
+      newSet.add(id)
+    }
     setSelectedFacts(newSet)
+    setSelectAllMode(newSet.size === filteredFacts.length)
+  }
+
+  const handleSelectAll = (checked) => {
+    setSelectAllMode(checked)
+    if (checked) {
+      setSelectedFacts(new Set(filteredFacts.map(f => f.id)))
+    } else {
+      setSelectedFacts(new Set())
+    }
   }
 
   const handleGenerateDirections = async () => {
-    if (selectedFacts.size === 0) return
+    if (selectedFacts.size === 0) {
+      showToast('⚠️ Sélectionner au moins un fact')
+      return
+    }
+
     setLoading(true)
     try {
-      const factsToInsert = Array.from(selectedFacts).map(id => ({
-        fact_id: id,
-        status: 'pending',
-        fact_type: 'funny', // Default — could be 'vip' if needed
-      }))
+      const selectedIds = Array.from(selectedFacts)
+      const selectedObjs = factsNoImage.filter(f => selectedIds.includes(f.id))
 
-      const { error } = await supabase
+      // Insert into image_pipeline
+      const toInsert = selectedIds.map(id => {
+        const fact = selectedObjs.find(f => f.id === id)
+        return {
+          fact_id: id,
+          status: 'pending',
+          fact_type: fact?.is_vip ? 'vip' : 'funny',
+        }
+      })
+
+      const { error: insertError } = await supabase
         .from('image_pipeline')
-        .insert(factsToInsert)
+        .insert(toInsert)
 
-      if (error) throw error
+      if (insertError) throw insertError
 
-      showToast(`✓ ${selectedFacts.size} facts en attente de directions`)
+      console.log(`✓ Inserted ${selectedFacts.size} facts into image_pipeline`)
+
+      // Call Edge Function
+      const resp = await fetch(
+        import.meta.env.VITE_SUPABASE_URL + '/functions/v1/generate-image-directions',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + import.meta.env.VITE_ADMIN_PASSWORD,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fact_ids: selectedIds,
+            fact_type: selectedObjs[0]?.is_vip ? 'vip' : 'funny',
+          }),
+        }
+      )
+
+      const result = await resp.json()
+      console.log('Edge Function response:', result)
+
+      if (!resp.ok) {
+        throw new Error(result.error || 'Edge Function error')
+      }
+
+      showToast(`✅ ${selectedFacts.size} facts en attente de directions`)
       setSelectedFacts(new Set())
+      setSelectAllMode(false)
       fetchNoImageFacts()
+      setTab('directions')
     } catch (err) {
       console.error(err)
-      showToast('Erreur création pipeline')
+      showToast('❌ Erreur: ' + err.message)
     } finally {
       setLoading(false)
     }
   }
 
-  // Tab 2 handlers
+  // ──────────────────────────────────────────────────────────────────────────────
+  // TAB 2 — DIRECTIONS
+  // ──────────────────────────────────────────────────────────────────────────────
+
   const handleSelectDirection = (pipelineId, direction) => {
     setSelectedDirections(prev => ({
       ...prev,
@@ -180,12 +254,12 @@ export default function ImagePipelinePage() {
     }))
   }
 
-  const handleGenerateImage = async (pipelineId) => {
+  const handleValidateDirection = async (pipelineId) => {
     const selected = selectedDirections[pipelineId]
     const custom = customDirections[pipelineId]
 
     if (!selected && !custom) {
-      showToast('Choisir ou écrire une direction')
+      showToast('⚠️ Choisir ou écrire une direction')
       return
     }
 
@@ -196,38 +270,39 @@ export default function ImagePipelinePage() {
         .update({
           selected_direction: selected || null,
           custom_direction: custom || null,
-          status: 'generating',
+          status: 'direction_selected',
           updated_at: new Date().toISOString(),
         })
         .eq('id', pipelineId)
 
       if (error) throw error
 
-      showToast('✓ Image en génération')
+      showToast('✅ Direction validée')
       fetchDirectionsQueue()
     } catch (err) {
       console.error(err)
-      showToast('Erreur génération image')
+      showToast('❌ Erreur validation direction')
     } finally {
       setLoading(false)
     }
   }
 
-  // Tab 3 handlers
-  const handleValidate = async (pipelineId, imageUrl) => {
+  // ──────────────────────────────────────────────────────────────────────────────
+  // TAB 3 — VALIDATION
+  // ──────────────────────────────────────────────────────────────────────────────
+
+  const handleValidateImage = async (pipelineId, imageUrl) => {
     if (!imageUrl) {
-      showToast('Pas d\'image à valider')
+      showToast('⚠️ Pas d\'image à valider')
       return
     }
 
     setLoading(true)
     try {
-      // TODO: Copy image to Supabase Storage, get public URL
-      // For now, assume imageUrl is already a public URL
-
       const pipeline = validationQueue.find(p => p.id === pipelineId)
       if (!pipeline) throw new Error('Pipeline not found')
 
+      // Update fact with image
       const { error: updateFact } = await supabase
         .from('facts')
         .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
@@ -235,6 +310,7 @@ export default function ImagePipelinePage() {
 
       if (updateFact) throw updateFact
 
+      // Update pipeline status
       const { error: updatePipeline } = await supabase
         .from('image_pipeline')
         .update({ status: 'validated', final_image_url: imageUrl, updated_at: new Date().toISOString() })
@@ -242,17 +318,17 @@ export default function ImagePipelinePage() {
 
       if (updatePipeline) throw updatePipeline
 
-      showToast('✓ Image validée')
+      showToast('✅ Image validée')
       fetchValidationQueue()
     } catch (err) {
       console.error(err)
-      showToast('Erreur validation')
+      showToast('❌ Erreur validation')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleReject = async (pipelineId) => {
+  const handleRejectImage = async (pipelineId) => {
     setLoading(true)
     try {
       const { error } = await supabase
@@ -262,17 +338,17 @@ export default function ImagePipelinePage() {
 
       if (error) throw error
 
-      showToast('✓ Image rejetée')
+      showToast('✅ Image rejetée')
       fetchValidationQueue()
     } catch (err) {
       console.error(err)
-      showToast('Erreur rejet')
+      showToast('❌ Erreur rejet')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleRegenerate = async (pipelineId) => {
+  const handleRegenerateImage = async (pipelineId) => {
     setLoading(true)
     try {
       const { error } = await supabase
@@ -282,53 +358,102 @@ export default function ImagePipelinePage() {
 
       if (error) throw error
 
-      showToast('✓ Retour à la sélection de direction')
+      showToast('✅ Retour aux directions')
       fetchValidationQueue()
       fetchDirectionsQueue()
     } catch (err) {
       console.error(err)
-      showToast('Erreur régénération')
+      showToast('❌ Erreur régénération')
     } finally {
       setLoading(false)
     }
   }
 
+  // ──────────────────────────────────────────────────────────────────────────────
+  // RENDER
+  // ──────────────────────────────────────────────────────────────────────────────
+
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0f1e', color: 'white', fontFamily: 'Nunito, sans-serif' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0f1e',
+      color: 'white',
+      padding: '24px',
+      fontFamily: 'Nunito, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    }}>
       {/* Toast */}
       {toast && (
         <div style={{
-          position: 'fixed', top: 16, right: 16, zIndex: 1000,
-          background: '#10b981', color: 'white',
-          padding: '12px 20px', borderRadius: 12,
-          fontWeight: 700, fontSize: 14,
+          position: 'fixed',
+          top: '16px',
+          right: '16px',
+          zIndex: 1000,
+          background: 'rgba(16, 185, 129, 0.9)',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '12px',
+          fontWeight: 700,
+          fontSize: '14px',
         }}>
           {toast}
         </div>
       )}
 
-      {/* Header avec compteurs */}
-      <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <h1 style={{ margin: 0, marginBottom: 16, fontSize: 28, fontWeight: 900 }}>📸 Pipeline d'Images</h1>
+      {/* Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{
+          fontSize: '32px',
+          fontWeight: 900,
+          margin: 0,
+          marginBottom: '16px',
+        }}>
+          📸 Pipeline d'Images
+        </h1>
+
+        {/* Counters */}
         <div style={{
-          display: 'flex', gap: 20, flexWrap: 'wrap',
-          fontSize: 14, fontWeight: 700,
+          display: 'flex',
+          gap: '20px',
+          flexWrap: 'wrap',
+          fontSize: '14px',
+          fontWeight: 700,
         }}>
           <div>
-            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Sans image</span> {' '}
-            <span style={{ background: 'rgba(255,107,26,0.2)', color: '#FF6B1A', padding: '4px 10px', borderRadius: 6, fontWeight: 900 }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Sans image</span>
+            {' '}
+            <span style={{
+              background: 'rgba(255,107,26,0.2)',
+              color: '#FF6B1A',
+              padding: '4px 12px',
+              borderRadius: '8px',
+              fontWeight: 900,
+            }}>
               {countNoImage}
             </span>
           </div>
           <div>
-            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Directions</span> {' '}
-            <span style={{ background: 'rgba(147,51,234,0.2)', color: '#a855f7', padding: '4px 10px', borderRadius: 6, fontWeight: 900 }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Directions prêtes</span>
+            {' '}
+            <span style={{
+              background: 'rgba(168, 85, 247, 0.2)',
+              color: '#a855f7',
+              padding: '4px 12px',
+              borderRadius: '8px',
+              fontWeight: 900,
+            }}>
               {directionsQueue.length}
             </span>
           </div>
           <div>
-            <span style={{ color: 'rgba(255,255,255,0.6)' }}>À valider</span> {' '}
-            <span style={{ background: 'rgba(14,165,233,0.2)', color: '#0ea5e9', padding: '4px 10px', borderRadius: 6, fontWeight: 900 }}>
+            <span style={{ color: 'rgba(255,255,255,0.6)' }}>À valider</span>
+            {' '}
+            <span style={{
+              background: 'rgba(14, 165, 233, 0.2)',
+              color: '#0ea5e9',
+              padding: '4px 12px',
+              borderRadius: '8px',
+              fontWeight: 900,
+            }}>
               {countValidation}
             </span>
           </div>
@@ -336,323 +461,538 @@ export default function ImagePipelinePage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '0 24px' }}>
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        marginBottom: '24px',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        paddingBottom: '0px',
+      }}>
         {[
-          { id: 'noimage', label: 'Sans image', icon: '📭' },
-          { id: 'directions', label: 'Directions', icon: '🎨' },
-          { id: 'validation', label: 'Validation', icon: '✅' },
+          { id: 'noimage', label: '📭 Sans image' },
+          { id: 'directions', label: '🎨 Directions' },
+          { id: 'validation', label: '✅ Validation' },
         ].map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             style={{
-              padding: '16px 24px', fontSize: 14, fontWeight: 700,
-              background: 'transparent', border: 'none', color: tab === t.id ? 'white' : 'rgba(255,255,255,0.5)',
+              padding: '12px 20px',
+              fontSize: '14px',
+              fontWeight: 700,
+              background: tab === t.id ? 'rgba(255,255,255,0.08)' : 'transparent',
+              border: 'none',
+              color: tab === t.id ? 'white' : 'rgba(255,255,255,0.5)',
               borderBottom: tab === t.id ? '2px solid #FF6B1A' : 'none',
-              cursor: 'pointer', transition: 'all 0.2s',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
             }}
           >
-            {t.icon} {t.label}
+            {t.label}
           </button>
         ))}
       </div>
 
       {/* Content */}
-      <div style={{ padding: '24px' }}>
-        {/* TAB 1 — Sans image */}
-        {tab === 'noimage' && (
-          <div>
-            {/* Filtres */}
-            <div style={{
-              display: 'flex', gap: 12, marginBottom: 20,
-              background: 'rgba(255,255,255,0.05)', padding: 16, borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.1)',
-            }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Catégorie</label>
-                <select
-                  value={filterCategory}
-                  onChange={e => setFilterCategory(e.target.value)}
-                  style={{
-                    width: '100%', padding: '8px 12px', marginTop: 6,
-                    background: 'rgba(255,255,255,0.08)', color: 'white',
-                    border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, fontSize: 13,
-                  }}
-                >
-                  <option value="all">Tous</option>
-                  {categories.map(catId => (
-                    <option key={catId} value={catId}>
-                      {CATEGORIES.find(c => c.id === catId)?.label || catId}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Type</label>
-                <select
-                  value={filterType}
-                  onChange={e => setFilterType(e.target.value)}
-                  style={{
-                    width: '100%', padding: '8px 12px', marginTop: 6,
-                    background: 'rgba(255,255,255,0.08)', color: 'white',
-                    border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, fontSize: 13,
-                  }}
-                >
-                  <option value="all">Tous</option>
-                  <option value="vip">VIP</option>
-                  <option value="generated">Générés</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Barre sticky — selection + bouton */}
-            <div style={{
-              background: 'rgba(255,255,255,0.05)',
-              padding: 12, borderRadius: 12, marginBottom: 12,
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              border: '1px solid rgba(255,255,255,0.1)',
-              position: 'sticky', top: 0, zIndex: 10,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <input
-                  type="checkbox"
-                  checked={selectAllMode}
-                  onChange={e => {
-                    setSelectAllMode(e.target.checked)
-                    if (e.target.checked) {
-                      setSelectedFacts(new Set(filteredFacts.map(f => f.id)))
-                    } else {
-                      setSelectedFacts(new Set())
-                    }
-                  }}
-                  style={{ width: 20, height: 20, cursor: 'pointer' }}
-                />
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.9)' }}>
-                  {selectedFacts.size > 0 ? `${selectedFacts.size} facts sélectionnés` : 'Tout sélectionner'}
-                </span>
-              </div>
-              <button
-                onClick={handleGenerateDirections}
-                disabled={selectedFacts.size === 0 || loading}
+      {/* TAB 1 — Sans image */}
+      {tab === 'noimage' && (
+        <div>
+          {/* Filters */}
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            marginBottom: '20px',
+            background: 'rgba(255,255,255,0.05)',
+            padding: '16px',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}>
+            <div style={{ flex: 1 }}>
+              <label style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                color: 'rgba(255,255,255,0.7)',
+                display: 'block',
+                marginBottom: '6px',
+              }}>
+                Catégorie
+              </label>
+              <select
+                value={filterCategory}
+                onChange={e => setFilterCategory(e.target.value)}
                 style={{
-                  padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700,
-                  background: selectedFacts.size === 0 ? 'rgba(255,255,255,0.1)' : '#FF6B1A',
-                  color: 'white', border: 'none', cursor: selectedFacts.size === 0 ? 'not-allowed' : 'pointer',
-                  opacity: selectedFacts.size === 0 ? 0.5 : 1,
-                  transition: 'all 0.2s',
+                  width: '100%',
+                  padding: '8px 12px',
+                  background: '#1a1a2e',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontFamily: 'Nunito, sans-serif',
+                  cursor: 'pointer',
                 }}
               >
-                🎨 Générer ({selectedFacts.size})
-              </button>
+                <option value="all">Toutes</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Facts list */}
-            <div style={{ display: 'grid', gap: 12, marginBottom: 20 }}>
-              {filteredFacts.length === 0 ? (
-                <div style={{ padding: 24, textAlign: 'center', color: 'rgba(255,255,255,0.5)' }}>
-                  Aucun fact sans image
-                </div>
-              ) : (
-                filteredFacts.map(fact => (
-                  <div
-                    key={fact.id}
-                    style={{
-                      display: 'flex', gap: 12, alignItems: 'center',
-                      background: 'rgba(255,255,255,0.05)', padding: 16, borderRadius: 12,
-                      border: '1px solid rgba(255,255,255,0.1)',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedFacts.has(fact.id)}
-                      onChange={() => {
-                        handleSelectFact(fact.id)
-                        // Si tous les facts filtrés sont sélectionnés, cocher "Tout sélectionner"
-                        const newSet = new Set(selectedFacts)
-                        if (newSet.has(fact.id)) newSet.delete(fact.id)
-                        else newSet.add(fact.id)
-                        setSelectAllMode(newSet.size === filteredFacts.length)
-                      }}
-                      style={{ width: 20, height: 20, cursor: 'pointer' }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>#{fact.id} — {fact.question.slice(0, 60)}...</div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
-                        {CATEGORIES.find(c => c.id === fact.category)?.label || fact.category}
-                        {fact.is_vip && ' • VIP'}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+            <div style={{ flex: 1 }}>
+              <label style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                color: 'rgba(255,255,255,0.7)',
+                display: 'block',
+                marginBottom: '6px',
+              }}>
+                Type
+              </label>
+              <select
+                value={filterType}
+                onChange={e => setFilterType(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  background: '#1a1a2e',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontFamily: 'Nunito, sans-serif',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">Tous</option>
+                <option value="vip">VIP</option>
+                <option value="generated">Générés</option>
+              </select>
             </div>
           </div>
-        )}
 
-        {/* TAB 2 — Directions */}
-        {tab === 'directions' && (
-          <div>
-            {directionsQueue.length === 0 ? (
-              <div style={{
-                padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.5)',
-                background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)',
+          {/* Sticky bar — Selection + Button */}
+          <div style={{
+            position: 'sticky',
+            top: '0',
+            zIndex: 10,
+            background: 'rgba(255,255,255,0.05)',
+            padding: '12px 16px',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            marginBottom: '20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+            }}>
+              <input
+                type="checkbox"
+                checked={selectAllMode}
+                onChange={e => handleSelectAll(e.target.checked)}
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  cursor: 'pointer',
+                }}
+              />
+              <span style={{
+                fontSize: '13px',
+                fontWeight: 700,
+                color: 'rgba(255,255,255,0.9)',
               }}>
-                Aucun fact en attente. Générez des directions d'abord. 👈
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: 20 }}>
-                {directionsQueue.map(item => (
-                  <div
-                    key={item.id}
-                    style={{
-                      background: 'rgba(255,255,255,0.05)', padding: 20, borderRadius: 12,
-                      border: '1px solid rgba(255,255,255,0.1)',
-                    }}
-                  >
-                    <div style={{ marginBottom: 16 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>
-                        {item.facts?.question}
-                      </div>
-                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>
-                        ✓ {item.facts?.short_answer}
-                      </div>
-                    </div>
+                {selectedFacts.size > 0
+                  ? `${selectedFacts.size} sélectionnés`
+                  : 'Tout sélectionner'}
+              </span>
+            </div>
 
-                    {/* Directions - placeholder (would come from API) */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, marginBottom: 16 }}>
-                      {['Art moderne', 'Meme fun', 'Photo réelle', 'Dessin manga', 'Emoji'].map(dir => (
+            <button
+              onClick={handleGenerateDirections}
+              disabled={selectedFacts.size === 0 || loading}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '12px',
+                fontSize: '13px',
+                fontWeight: 700,
+                background: selectedFacts.size === 0 ? 'rgba(255,255,255,0.1)' : '#FF6B1A',
+                color: 'white',
+                border: 'none',
+                cursor: selectedFacts.size === 0 ? 'not-allowed' : 'pointer',
+                opacity: selectedFacts.size === 0 ? 0.5 : 1,
+                transition: 'all 0.2s',
+              }}
+            >
+              🎨 Générer ({selectedFacts.size})
+            </button>
+          </div>
+
+          {/* Facts list */}
+          <div style={{ display: 'grid', gap: '12px', marginBottom: '20px' }}>
+            {paginatedFacts.length === 0 && (
+              <div style={{
+                padding: '40px 24px',
+                textAlign: 'center',
+                color: 'rgba(255,255,255,0.5)',
+                background: 'rgba(255,255,255,0.02)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255,255,255,0.1)',
+              }}>
+                Aucun fact sans image
+              </div>
+            )}
+
+            {paginatedFacts.map(fact => (
+              <div
+                key={fact.id}
+                style={{
+                  display: 'flex',
+                  gap: '12px',
+                  alignItems: 'flex-start',
+                  background: 'rgba(255,255,255,0.05)',
+                  padding: '16px',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedFacts.has(fact.id)}
+                  onChange={() => handleSelectFact(fact.id)}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    cursor: 'pointer',
+                    marginTop: '2px',
+                    flexShrink: 0,
+                  }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    marginBottom: '4px',
+                  }}>
+                    #{fact.id} — {fact.question.slice(0, 60)}
+                    {fact.question.length > 60 ? '…' : ''}
+                  </div>
+                  <div style={{
+                    fontSize: '12px',
+                    color: 'rgba(255,255,255,0.6)',
+                    display: 'flex',
+                    gap: '8px',
+                    alignItems: 'center',
+                  }}>
+                    <span>{fact.category}</span>
+                    {fact.is_vip && (
+                      <span style={{
+                        background: 'rgba(168, 85, 247, 0.2)',
+                        color: '#a855f7',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontWeight: 700,
+                        fontSize: '11px',
+                      }}>
+                        VIP
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Load more */}
+          {paginatedFacts.length < filteredFacts.length && (
+            <button
+              onClick={() => setNoImagePage(p => p + 1)}
+              style={{
+                width: '100%',
+                padding: '12px 20px',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: 'white',
+                borderRadius: '12px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              📥 Charger 50 de plus ({paginatedFacts.length}/{filteredFacts.length})
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* TAB 2 — Directions */}
+      {tab === 'directions' && (
+        <div>
+          {directionsQueue.length === 0 ? (
+            <div style={{
+              padding: '40px 24px',
+              textAlign: 'center',
+              color: 'rgba(255,255,255,0.5)',
+              background: 'rgba(255,255,255,0.02)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}>
+              Aucun fact en attente. Générez des directions d'abord. 👈
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '20px' }}>
+              {directionsQueue.map(item => (
+                <div
+                  key={item.id}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    padding: '20px',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <div style={{ marginBottom: '16px' }}>
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      marginBottom: '4px',
+                    }}>
+                      {item.facts?.question}
+                    </div>
+                    <div style={{
+                      fontSize: '13px',
+                      color: 'rgba(255,255,255,0.7)',
+                    }}>
+                      ✓ {item.facts?.short_answer}
+                    </div>
+                  </div>
+
+                  {/* Directions */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                    gap: '8px',
+                    marginBottom: '16px',
+                  }}>
+                    {['Art moderne', 'Meme fun', 'Photo réelle', 'Dessin manga', 'Emoji'].map(
+                      dir => (
                         <button
                           key={dir}
                           onClick={() => handleSelectDirection(item.id, dir)}
                           style={{
-                            padding: '10px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-                            background: selectedDirections[item.id] === dir ? '#a855f7' : 'rgba(255,255,255,0.08)',
-                            color: 'white', border: '1px solid rgba(255,255,255,0.2)',
+                            padding: '10px 12px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            background:
+                              selectedDirections[item.id] === dir
+                                ? '#a855f7'
+                                : 'rgba(255,255,255,0.08)',
+                            color: 'white',
+                            border: '1px solid rgba(255,255,255,0.2)',
                             cursor: 'pointer',
+                            transition: 'all 0.2s',
                           }}
                         >
                           {dir}
                         </button>
-                      ))}
-                    </div>
-
-                    <input
-                      type="text"
-                      placeholder="Ou écris ta propre direction..."
-                      value={customDirections[item.id] || ''}
-                      onChange={e => handleCustomDirection(item.id, e.target.value)}
-                      style={{
-                        width: '100%', padding: '10px 12px', borderRadius: 8, fontSize: 13,
-                        background: 'rgba(255,255,255,0.08)', color: 'white',
-                        border: '1px solid rgba(255,255,255,0.2)', marginBottom: 12,
-                      }}
-                    />
-
-                    <button
-                      onClick={() => handleGenerateImage(item.id)}
-                      disabled={!selectedDirections[item.id] && !customDirections[item.id] || loading}
-                      style={{
-                        padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 900,
-                        background: (!selectedDirections[item.id] && !customDirections[item.id]) ? 'rgba(255,255,255,0.1)' : '#0ea5e9',
-                        color: 'white', border: 'none', cursor: 'pointer',
-                      }}
-                    >
-                      🚀 Générer image
-                    </button>
+                      )
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* TAB 3 — Validation */}
-        {tab === 'validation' && (
-          <div>
-            {validationQueue.length === 0 ? (
-              <div style={{
-                padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.5)',
-                background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)',
-              }}>
-                Aucune image à valider. 🎉
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: 20 }}>
-                {validationQueue.map(item => (
-                  <div
-                    key={item.id}
+                  {/* Custom input */}
+                  <input
+                    type="text"
+                    placeholder="Ou écris ta propre direction..."
+                    value={customDirections[item.id] || ''}
+                    onChange={e => handleCustomDirection(item.id, e.target.value)}
                     style={{
-                      background: 'rgba(255,255,255,0.05)', padding: 20, borderRadius: 12,
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20,
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      fontSize: '13px',
+                      background: 'rgba(255,255,255,0.08)',
+                      color: 'white',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      marginBottom: '12px',
+                      fontFamily: 'Nunito, sans-serif',
+                    }}
+                  />
+
+                  {/* Submit button */}
+                  <button
+                    onClick={() => handleValidateDirection(item.id)}
+                    disabled={!selectedDirections[item.id] && !customDirections[item.id] || loading}
+                    style={{
+                      padding: '10px 20px',
+                      borderRadius: '12px',
+                      fontSize: '13px',
+                      fontWeight: 900,
+                      background:
+                        !selectedDirections[item.id] && !customDirections[item.id]
+                          ? 'rgba(255,255,255,0.1)'
+                          : '#0ea5e9',
+                      color: 'white',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
                     }}
                   >
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
-                        {item.facts?.question}
-                      </div>
-                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 16 }}>
-                        ✓ {item.facts?.short_answer}
-                      </div>
+                    ✅ Valider direction
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        <button
-                          onClick={() => handleValidate(item.id, item.image_url)}
-                          style={{
-                            flex: 1, padding: '12px 16px', borderRadius: 8, fontSize: 13, fontWeight: 900,
-                            background: '#10b981', color: 'white', border: 'none', cursor: 'pointer',
-                          }}
-                        >
-                          ✅ Valider
-                        </button>
-                        <button
-                          onClick={() => handleReject(item.id)}
-                          style={{
-                            flex: 1, padding: '12px 16px', borderRadius: 8, fontSize: 13, fontWeight: 900,
-                            background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer',
-                          }}
-                        >
-                          ❌ Rejeter
-                        </button>
-                        <button
-                          onClick={() => handleRegenerate(item.id)}
-                          style={{
-                            flex: 1, padding: '12px 16px', borderRadius: 8, fontSize: 13, fontWeight: 900,
-                            background: '#f59e0b', color: 'white', border: 'none', cursor: 'pointer',
-                          }}
-                        >
-                          🔄 Régénérer
-                        </button>
-                      </div>
+      {/* TAB 3 — Validation */}
+      {tab === 'validation' && (
+        <div>
+          {validationQueue.length === 0 ? (
+            <div style={{
+              padding: '40px 24px',
+              textAlign: 'center',
+              color: 'rgba(255,255,255,0.5)',
+              background: 'rgba(255,255,255,0.02)',
+              borderRadius: '16px',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}>
+              Aucune image à valider. 🎉
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '20px' }}>
+              {validationQueue.map(item => (
+                <div
+                  key={item.id}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    padding: '20px',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 300px',
+                    gap: '20px',
+                  }}
+                >
+                  <div>
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      marginBottom: '8px',
+                    }}>
+                      {item.facts?.question}
+                    </div>
+                    <div style={{
+                      fontSize: '13px',
+                      color: 'rgba(255,255,255,0.7)',
+                      marginBottom: '16px',
+                    }}>
+                      ✓ {item.facts?.short_answer}
                     </div>
 
-                    <div>
-                      {item.image_url ? (
-                        <img
-                          src={item.image_url}
-                          alt="Generated"
-                          style={{
-                            width: '100%', maxWidth: 300, borderRadius: 8,
-                            background: 'rgba(0,0,0,0.3)',
-                          }}
-                        />
-                      ) : (
-                        <div style={{
-                          width: '100%', maxWidth: 300, height: 200, borderRadius: 8,
-                          background: 'rgba(255,255,255,0.05)', display: 'flex',
-                          alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)',
-                        }}>
-                          Pas d'image
-                        </div>
-                      )}
+                    {/* Buttons */}
+                    <div style={{
+                      display: 'flex',
+                      gap: '10px',
+                    }}>
+                      <button
+                        onClick={() => handleValidateImage(item.id, item.image_url)}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          fontWeight: 900,
+                          background: '#10b981',
+                          color: 'white',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        ✅ Valider
+                      </button>
+                      <button
+                        onClick={() => handleRejectImage(item.id)}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          fontWeight: 900,
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        ❌ Rejeter
+                      </button>
+                      <button
+                        onClick={() => handleRegenerateImage(item.id)}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          fontWeight: 900,
+                          background: '#f59e0b',
+                          color: 'white',
+                          border: 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        🔄 Régénérer
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+
+                  {/* Image */}
+                  <div>
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt="Generated"
+                        style={{
+                          width: '100%',
+                          maxWidth: '300px',
+                          borderRadius: '12px',
+                          background: 'rgba(0,0,0,0.3)',
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '100%',
+                        maxWidth: '300px',
+                        height: '200px',
+                        borderRadius: '12px',
+                        background: 'rgba(255,255,255,0.05)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'rgba(255,255,255,0.5)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                      }}>
+                        Pas d'image
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 {
   "name": "wtf-app",
   "private": true,
-  "version": "2.4.8",
+  "version": "2.5.15",
   "type": "module",
   "scripts": {
     "dev": "vite",

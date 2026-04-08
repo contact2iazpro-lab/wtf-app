@@ -280,7 +280,7 @@ export default function DashboardPage({ toast }) {
         const { data, error } = await supabase
           .from('facts')
           .select('id, question, short_answer, explanation, category, hint1, hint2')
-          .or('funny_wrong_1.is.null,funny_wrong_1.eq.')
+          .or('funny_wrong_1.is.null,funny_wrong_1.eq.,hint1.is.null,hint1.eq.,hint2.is.null,hint2.eq.')
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break
@@ -336,8 +336,8 @@ export default function DashboardPage({ toast }) {
             .update({
               hint1: data.hint1,
               hint2: data.hint2,
-              hint3: data.hint3,
-              hint4: data.hint4,
+              hint3: data.hint3 || '',
+              hint4: data.hint4 || '',
               funny_wrong_1: data.funny_wrong_1,
               funny_wrong_2: data.funny_wrong_2,
               close_wrong_1: data.close_wrong_1,
@@ -345,6 +345,7 @@ export default function DashboardPage({ toast }) {
               plausible_wrong_1: data.plausible_wrong_1,
               plausible_wrong_2: data.plausible_wrong_2,
               plausible_wrong_3: data.plausible_wrong_3,
+              ...(data.explanation ? { explanation: data.explanation } : {}),
               updated_at: new Date().toISOString(),
             })
             .eq('id', fact.id)

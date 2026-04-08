@@ -179,7 +179,7 @@ export default function ProfilPage() {
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
             style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
           >←</button>
-          <h1 className="flex-1 text-base font-black" style={{ color: '#1a1a2e' }}>Mon Profil</h1>
+          <h1 className="flex-1 text-sm font-black" style={{ color: '#1a1a2e' }}>Mon Profil</h1>
           <button
             onClick={() => setShowSettings(true)}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
@@ -239,7 +239,7 @@ export default function ProfilPage() {
                 onChange={e => setNameInput(e.target.value.slice(0, 20))}
                 maxLength={20}
                 autoFocus
-                className="text-center font-black text-base px-2 py-1 rounded-lg"
+                className="text-center font-black text-sm px-2 py-1 rounded-lg"
                 style={{ color: '#1a1a2e', border: '2px solid #FF6B1A', outline: 'none', width: 160 }}
                 onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false) }}
               />
@@ -248,7 +248,7 @@ export default function ProfilPage() {
             </div>
           ) : (
             <div className="flex items-center gap-1.5" style={{ marginTop: '6px' }}>
-              <span className="font-black text-base" style={{ color: '#1a1a2e' }}>{pseudo}</span>
+              <span className="font-black text-sm" style={{ color: '#1a1a2e' }}>{pseudo}</span>
               <button onClick={() => { setNameInput(pseudo); setEditingName(true) }} className="text-slate-400 hover:text-slate-600 active:scale-90 transition-all" style={{ fontSize: 12 }}>✏️</button>
             </div>
           )}
@@ -289,7 +289,7 @@ export default function ProfilPage() {
         </div>
 
         {/* Ressources */}
-        <div className="rounded-2xl mb-3" style={{ background: 'rgba(0,0,0,0.04)', padding: '10px', display: 'flex', gap: 6 }}>
+        <div className="rounded-2xl mb-3" style={{ background: 'rgba(0,0,0,0.04)', padding: '8px', display: 'flex', gap: 6 }}>
           {[
             { emoji: '🪙', value: playerCoins, label: 'coins' },
             { emoji: '🎟️', value: playerTickets, label: 'tickets' },
@@ -304,7 +304,7 @@ export default function ProfilPage() {
         </div>
 
         {/* Collection WTF! vs Funny */}
-        <div className="flex gap-2 mb-3">
+        <div className="flex gap-1.5 mb-3">
           <div className="flex-1 rounded-2xl p-2 text-center" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.3)' }}>
             <span className="text-base block">⭐</span>
             <span className="font-black text-sm block" style={{ color: '#D97706' }}>{unlockedWtf}</span>
@@ -318,7 +318,7 @@ export default function ProfilPage() {
         </div>
 
         {/* Stats globales */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="grid grid-cols-2 gap-1.5 mb-3">
           {STATS.map(s => (
             <div key={s.label} className="rounded-2xl p-2 text-center" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
               <span className="text-base block">{s.emoji}</span>

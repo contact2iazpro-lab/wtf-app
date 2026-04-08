@@ -139,10 +139,67 @@ function renderText(text) {
   return parts.map((p, i) => i % 2 === 1 ? <strong key={i}>{p}</strong> : p)
 }
 
+// Get chapter icon: image for modes, emoji for others
+function getChapterIcon(chapterId) {
+  const modeIcons = {
+    quest: '/assets/modes/quete.png',
+    explorer: '/assets/modes/marathon.png',
+    blitz: '/assets/modes/blitz.png',
+    streak: '/assets/modes/serie.png',
+    multi: '/assets/modes/multi.png',
+  }
+
+  if (modeIcons[chapterId]) {
+    return <img src={modeIcons[chapterId]} style={{ width: 40, height: 40, objectFit: 'contain' }} alt="" />
+  }
+
+  // For hunt and non-mode chapters, use emoji
+  const chapter = CHAPTERS.find(c => c.id === chapterId)
+  return <span style={{ fontSize: 20 }}>{chapter?.emoji || ''}</span>
+}
+
 // ── Main component ──────────────────────────────────────────────────────────
 export default function HowToPlayModal({ onClose, onRestartTutorial }) {
-  const [activeId, setActiveId] = useState(CHAPTERS[0].id)
-  const chapter = CHAPTERS.find(c => c.id === activeId) || CHAPTERS[0]
+  // Read player progress from localStorage
+  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+
+  // Filter chapters based on player progress
+  const visibleChapters = CHAPTERS.filter(ch => {
+    switch (ch.id) {
+      case 'goal':
+      case 'tutorial':
+      case 'hints':
+      case 'collection':
+        return true // Always visible
+
+      case 'quest':
+        return (wd.statsByMode?.parcours?.gamesPlayed || 0) >= 1
+
+      case 'explorer':
+        return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
+
+      case 'flash':
+        return false // Removed: merged with explorer
+
+      case 'blitz':
+        return (wd.statsByMode?.blitz?.gamesPlayed || 0) >= 1
+
+      case 'hunt':
+        return (wd.gamesPlayed || 0) >= 1
+
+      case 'streak':
+        return (wd.gamesPlayed || 0) >= 3
+
+      case 'multi':
+        return (wd.statsByMode?.blitz?.gamesPlayed || 0) >= 1
+
+      default:
+        return true
+    }
+  })
+
+  const [activeId, setActiveId] = useState(visibleChapters[0]?.id || 'goal')
+  const chapter = visibleChapters.find(c => c.id === activeId) || visibleChapters[0]
 
   return (
     <div
@@ -181,7 +238,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             className="shrink-0 overflow-y-auto scrollbar-hide"
             style={{ width: 100, background: '#F3F4F6', borderRight: '1px solid #E5E7EB' }}
           >
-            {CHAPTERS.map(ch => {
+            {visibleChapters.map(ch => {
               const isActive = ch.id === activeId
               return (
                 <button
@@ -224,7 +281,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           <div className="flex-1 overflow-hidden p-3" style={{ display: 'flex', flexDirection: 'column' }}>
             {/* Chapter title */}
             <div className="flex items-center gap-2 mb-1" style={{ flexShrink: 0 }}>
-              <span style={{ fontSize: 20 }}>{chapter.emoji}</span>
+              {getChapterIcon(chapter.id)}
               <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.2', fontSize: '15px' }}>
                 {chapter.title}
               </h2>
@@ -268,7 +325,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               )}
 
               {/* Bouton réafficher les règles des modes */}
-              {['quest', 'explorer', 'flash', 'blitz', 'hunt'].includes(chapter.id) && (
+              {['quest', 'explorer', 'blitz', 'hunt'].includes(chapter.id) && (
                 <button
                   onClick={() => {
                     audio.play('click')
@@ -292,7 +349,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
 
             {/* Chapter dots navigation */}
             <div className="flex flex-wrap justify-center gap-0.5 mt-1" style={{ flexShrink: 0 }}>
-              {CHAPTERS.map(ch => (
+              {visibleChapters.map(ch => (
                 <button
                   key={ch.id}
                   onClick={() => { audio.play('click'); setActiveId(ch.id) }}
@@ -321,10 +378,10 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           <button
             onClick={() => {
               audio.play('click')
-              const idx = CHAPTERS.findIndex(c => c.id === activeId)
-              if (idx > 0) setActiveId(CHAPTERS[idx - 1].id)
+              const idx = visibleChapters.findIndex(c => c.id === activeId)
+              if (idx > 0) setActiveId(visibleChapters[idx - 1].id)
             }}
-            disabled={CHAPTERS.findIndex(c => c.id === activeId) === 0}
+            disabled={visibleChapters.findIndex(c => c.id === activeId) === 0}
             className="px-4 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all disabled:opacity-30"
             style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280' }}
           >
@@ -333,18 +390,18 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           <button
             onClick={() => {
               audio.play('click')
-              const idx = CHAPTERS.findIndex(c => c.id === activeId)
-              if (idx < CHAPTERS.length - 1) setActiveId(CHAPTERS[idx + 1].id)
+              const idx = visibleChapters.findIndex(c => c.id === activeId)
+              if (idx < visibleChapters.length - 1) setActiveId(visibleChapters[idx + 1].id)
               else onClose()
             }}
             className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all text-white"
             style={{
-              background: CHAPTERS.findIndex(c => c.id === activeId) === CHAPTERS.length - 1
+              background: visibleChapters.findIndex(c => c.id === activeId) === visibleChapters.length - 1
                 ? 'linear-gradient(135deg, #22C55E, #16A34A)'
                 : 'linear-gradient(135deg, #FF6B1A, #D94A10)',
             }}
           >
-            {CHAPTERS.findIndex(c => c.id === activeId) === CHAPTERS.length - 1 ? '✓ Compris !' : 'Suivant →'}
+            {visibleChapters.findIndex(c => c.id === activeId) === visibleChapters.length - 1 ? '✓ Compris !' : 'Suivant →'}
           </button>
         </div>
       </div>

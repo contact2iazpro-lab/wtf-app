@@ -5,6 +5,7 @@ import { logout } from '../lib/auth'
 const NAV = [
   { to: '/',         label: 'Dashboard', icon: '📊' },
   { to: '/facts',    label: 'Facts',     icon: '📋' },
+  { to: '/images',   label: 'Images',    icon: '📸' },
   { to: '/archived', label: 'Supprimés', icon: '🗑' },
 ]
 

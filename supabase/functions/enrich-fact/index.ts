@@ -42,8 +42,9 @@ serve(async (req) => {
     }
 
     // Build prompt
-    const prompt = `Tu es un assistant pour le jeu WTF! Facts (quiz en français avec des anecdotes surprenantes).
-On te donne un fact existant et tu dois l'enrichir avec des indices et des fausses réponses.
+    const prompt = `Tu es le redacteur en chef de "What The F*ct!", un jeu de trivia mobile francais ou chaque question doit provoquer une reaction forte chez le joueur. Ce n'est PAS un quiz scolaire. C'est un jeu de faits incroyables, absurdes, droles et surprenants.
+
+On te donne un fact existant et tu dois l'enrichir avec des indices, une explication fun, et des fausses réponses WTF!.
 
 FACT :
 - Question : ${question}
@@ -53,29 +54,67 @@ FACT :
 - Indice 1 actuel : ${hint1 || '(vide)'}
 - Indice 2 actuel : ${hint2 || '(vide)'}
 
-TÂCHE :
-Génère les données suivantes en JSON :
+=== RÈGLES INDICES ===
 
-1. "hint1" : Si l'indice 1 actuel fait plus d'un mot, reformule-le en UN SEUL MOT pertinent. Sinon garde-le tel quel. Si vide, invente-en un.
-2. "hint2" : Même règle pour l'indice 2.
-3. "hint3" : Un 3ème indice en UN SEUL MOT, différent des deux premiers, en lien avec le fact mais sans donner la réponse.
-4. "hint4" : Un 4ème indice en UN SEUL MOT, différent des trois autres.
-5. "funny_wrong_1" : Une fausse réponse clairement fausse mais drôle, qui fait sourire (1 à 5 mots max).
-6. "funny_wrong_2" : Une autre fausse réponse drôle et absurde (1 à 5 mots max).
-7. "close_wrong_1" : Une fausse réponse très proche de la vraie réponse, qui pourrait tromper (1 à 5 mots max).
-8. "close_wrong_2" : Une autre fausse réponse proche (1 à 5 mots max).
-9. "plausible_wrong_1" : Une fausse réponse plausible dans l'univers du fact, fausse mais crédible (1 à 5 mots max).
-10. "plausible_wrong_2" : Une autre fausse réponse plausible (1 à 5 mots max).
-11. "plausible_wrong_3" : Une 3ème fausse réponse plausible (1 à 5 mots max).
+Les indices hint1 et hint2 doivent etre des PHRASES COURTES (MAX 20 CARACTERES), PAS un seul mot.
+Un indice est un PONT vers la reponse : il aide le joueur a eliminer des mauvaises reponses.
 
-RÈGLES STRICTES :
-- Les 4 indices (hint1 à hint4) doivent être UN SEUL MOT chacun, sans espace, sans ponctuation
-- Les fausses réponses drôles doivent faire sourire ou être absurdes
-- Les fausses réponses proches doivent ressembler à la vraie réponse
-- Les fausses réponses plausibles doivent sembler vraies sans l'être
-- Toutes les réponses en français
+INTERDIT :
+- Repeter un mot ou concept de la question
+- Etre trop evident (ex: la definition meme du terme cherche)
+- N'aider que celui qui connait deja (ex: detail d'expert)
 
-Retourne UNIQUEMENT un objet JSON valide avec ces 11 clés, SANS texte avant ni après.`
+BON INDICE :
+- Reduit le champ des possibles
+- Cree une image mentale
+
+Exemples :
+❌ Question "cartons rouges" → Indice "Expulsion" = definition du carton rouge
+✅ Question "cartons rouges" → Indice "Match 5eme div." = oriente vers amateur/chaos
+❌ Question "cadeau Noel" → Indice "Argentine" = seul un expert saurait
+✅ Question "cadeau Noel" → Indice "Suivi temps reel" = oriente vers tracking/connecte
+
+=== EXPLICATION ===
+
+Si l'explication existe et fait >= 200 caracteres, garde-la.
+Sinon, genere une explication ENTRE 200 ET 300 CARACTERES.
+
+Ton "pote au bar" PAS encyclopedique :
+BON : "A ce rythme-la, si tu battais des bras aussi vite, tu t'envolerais... ou tu te deboiterais les epaules"
+MAUVAIS : "Selon une etude publiee dans le Journal of..."
+
+=== FAUSSES REPONSES ===
+
+"funny_wrong_1", "funny_wrong_2" : DROLES et absurdes, font sourire ou rire
+"close_wrong_1", "close_wrong_2" : PROCHES de la vraie, credibles et piegeuses
+"plausible_wrong_1", "plausible_wrong_2", "plausible_wrong_3" : PLAUSIBLES, fausses mais sonnent vraies
+
+La bonne reponse doit etre celle qui semble la MOINS probable (effet WTF!).
+
+=== TÂCHE ===
+
+Genere un objet JSON avec :
+1. "hint1" : Phrase courte MAX 20 caracteres. Si vide, invente-en une. Sinon reformule en respectant les regles.
+2. "hint2" : Idem.
+3. "hint3" : "" (vide, pour compatibilite)
+4. "hint4" : "" (vide, pour compatibilite)
+5. "funny_wrong_1" : Fausse reponse drole (1-5 mots max)
+6. "funny_wrong_2" : Fausse reponse drole absurde (1-5 mots max)
+7. "close_wrong_1" : Fausse reponse proche (1-5 mots max)
+8. "close_wrong_2" : Fausse reponse proche (1-5 mots max)
+9. "plausible_wrong_1" : Fausse reponse plausible (1-5 mots max)
+10. "plausible_wrong_2" : Fausse reponse plausible (1-5 mots max)
+11. "plausible_wrong_3" : Fausse reponse plausible (1-5 mots max)
+12. "explanation" : Explication 200-300 caracteres, ton fun decale. Si l'explication fournie >= 200 caracteres, tu peux la garder. Sinon genere-la.
+
+REGLES STRICTES :
+- Tous les indices en francais
+- Tous les indices MAX 20 caracteres
+- Toutes les fausses reponses en francais
+- Explication ENTRE 200 ET 300 CARACTERES (ne pas depasser)
+- hint3 et hint4 TOUJOURS "" (vide)
+
+Retourne UNIQUEMENT un objet JSON valide avec ces 12 clés, SANS texte avant ni après.`
 
     // Call Anthropic (Opus)
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -87,7 +126,7 @@ Retourne UNIQUEMENT un objet JSON valide avec ces 11 clés, SANS texte avant ni 
       },
       body: JSON.stringify({
         model: 'claude-opus-4-6',
-        max_tokens: 1024,
+        max_tokens: 2048,
         messages: [{ role: 'user', content: prompt }],
       }),
     })
@@ -120,14 +159,41 @@ Retourne UNIQUEMENT un objet JSON valide avec ces 11 clés, SANS texte avant ni 
       'funny_wrong_1', 'funny_wrong_2',
       'close_wrong_1', 'close_wrong_2',
       'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
+      'explanation',
     ]
     for (const key of expectedKeys) {
-      if (!result[key] || typeof result[key] !== 'string') {
+      if (typeof result[key] !== 'string') {
         return new Response(JSON.stringify({ error: `Clé manquante ou invalide dans la réponse : ${key}` }), {
           status: 502,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+    }
+
+    // Validate lengths
+    if ((result.hint1 || '').length > 20) {
+      return new Response(JSON.stringify({ error: 'hint1 dépasse 20 caractères' }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if ((result.hint2 || '').length > 20) {
+      return new Response(JSON.stringify({ error: 'hint2 dépasse 20 caractères' }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if ((result.explanation || '').length < 200 || (result.explanation || '').length > 300) {
+      return new Response(JSON.stringify({ error: `explanation doit faire entre 200 et 300 caractères (actuellement ${(result.explanation || '').length})` }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    if (result.hint3 !== '' || result.hint4 !== '') {
+      return new Response(JSON.stringify({ error: 'hint3 et hint4 doivent être vides ("")' }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     return new Response(JSON.stringify(result), {

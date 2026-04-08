@@ -227,8 +227,8 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
       <div
         className="w-full flex flex-col rounded-3xl overflow-hidden"
         style={{
-          maxWidth: 420,
-          height: 'min(88vh, 580px)',
+          maxWidth: 520,
+          height: 'min(92vh, 700px)',
           background: '#FAFAF8',
           boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
         }}

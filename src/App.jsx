@@ -80,10 +80,10 @@ const MODE_CONFIGS = {
   quest: {
     modeId: 'quest', modeName: 'Quest', subtitle: 'Débloque les f*cts les plus rares', emoji: '⭐', color: '#FF6B1A',
     rules: [
-      { icon: '🎫', text: '1 ticket par session' },
-      { icon: '❄️', text: 'Cool : 4 choix · 2 indices · 30s · 5 coins' },
-      { icon: '🔥', text: 'Hot : 4 choix · 2 indices · 20s · 3 coins' },
-      { icon: '⚡', text: 'WTF! : 6 choix · 1 indice · 20s · 2 coins' },
+      { icon: '🎫', text: '1 ticket (25 coins) par session' },
+      { icon: '❄️', text: `Cool : ${DIFFICULTY_LEVELS.COOL.choices} choix · ${DIFFICULTY_LEVELS.COOL.paidHints} indices · ${DIFFICULTY_LEVELS.COOL.duration}s · ${DIFFICULTY_LEVELS.COOL.coinsPerCorrect} coins` },
+      { icon: '🔥', text: `Hot : ${DIFFICULTY_LEVELS.HOT.choices} choix · ${DIFFICULTY_LEVELS.HOT.paidHints} indices · ${DIFFICULTY_LEVELS.HOT.duration}s · ${DIFFICULTY_LEVELS.HOT.coinsPerCorrect} coin${DIFFICULTY_LEVELS.HOT.coinsPerCorrect > 1 ? 's' : ''}` },
+      { icon: '⚡', text: `WTF! : ${DIFFICULTY_LEVELS.WTF.choices} choix · ${DIFFICULTY_LEVELS.WTF.paidHints} indice · ${DIFFICULTY_LEVELS.WTF.duration}s · ${DIFFICULTY_LEVELS.WTF.coinsPerCorrect} coin` },
       { icon: '📚', text: '5 questions — les f*cts trouvés vont dans ta Collection' },
       { icon: '🏆', text: 'Score parfait = 10 coins bonus + 1 ticket !' },
     ],
@@ -104,8 +104,8 @@ const MODE_CONFIGS = {
     rules: [
       { icon: '🆓', text: 'Gratuit — joue autant que tu veux' },
       { icon: '⚡', text: '5 questions' },
-      { icon: '⏱️', text: '20 secondes par question' },
-      { icon: '💡', text: '2 indices disponibles' },
+      { icon: '⏱️', text: `${DIFFICULTY_LEVELS.FLASH.duration} secondes par question` },
+      { icon: '💡', text: `${DIFFICULTY_LEVELS.FLASH.paidHints} indices disponibles` },
       { icon: '🎲', text: 'Aléatoire : 5 coins par bonne réponse' },
       { icon: '📂', text: 'Catégorie choisie : 3 coins par bonne réponse' },
     ],
@@ -115,9 +115,9 @@ const MODE_CONFIGS = {
     rules: [
       { icon: '🆓', text: 'Gratuit — pas de ticket requis' },
       { icon: '🎯', text: 'Un f*ct WTF! spécial à découvrir chaque jour' },
-      { icon: '⏱️', text: '20 secondes par question' },
+      { icon: '⏱️', text: `${DIFFICULTY_LEVELS.HUNT.duration} secondes par question` },
       { icon: '📚', text: '5 questions pour le débloquer' },
-      { icon: '💡', text: '2 indices disponibles par question' },
+      { icon: '💡', text: `${DIFFICULTY_LEVELS.HUNT.paidHints} indices disponibles par question` },
       { icon: '📅', text: 'Reviens chaque jour pour un nouveau WTF!' },
     ],
   },

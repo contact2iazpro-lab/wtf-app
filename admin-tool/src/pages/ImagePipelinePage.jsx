@@ -35,6 +35,8 @@ export default function ImagePipelinePage() {
   const [selectAllMode, setSelectAllMode] = useState(false)
   const [noImagePage, setNoImagePage] = useState(1)
   const [expandedFacts, setExpandedFacts] = useState({})
+  const [categorySearch, setCategorySearch] = useState('')
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const PAGE_SIZE = 50
 
   // Tab 2 — Directions
@@ -88,13 +90,22 @@ export default function ImagePipelinePage() {
   // Tab 1: Fetch distinct categories (all from facts table, no filters)
   const fetchCategories = async () => {
     try {
-      const { data, error } = await supabase
-        .from('facts')
-        .select('category')
+      const all = []
+      let from = 0
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('category')
+          .range(from, from + 999)
 
-      if (error) throw error
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...data)
+        if (data.length < 1000) break
+        from += 1000
+      }
 
-      const uniqueCategories = [...new Set(data.map(f => f.category).filter(Boolean))].sort()
+      const uniqueCategories = [...new Set(all.map(f => f.category).filter(Boolean))].sort()
       setCategories(uniqueCategories)
     } catch (err) {
       console.error('Error fetching categories:', err)
@@ -156,6 +167,20 @@ export default function ImagePipelinePage() {
       fetchValidationQueue()
     }
   }, [tab])
+
+  // Close category dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      const categoryDiv = document.querySelector('[data-category-dropdown]')
+      if (categoryDiv && !categoryDiv.contains(e.target)) {
+        setShowCategoryDropdown(false)
+      }
+    }
+    if (showCategoryDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showCategoryDropdown])
 
   // ──────────────────────────────────────────────────────────────────────────────
   // TAB 1 — SANS IMAGE
@@ -722,28 +747,37 @@ export default function ImagePipelinePage() {
               }}>
                 Catégorie
               </label>
-              <select
-                value={filterCategory}
-                onChange={e => setFilterCategory(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  background: '#1a1a2e',
-                  color: 'white',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontFamily: 'Nunito, sans-serif',
-                  cursor: 'pointer',
-                }}
-              >
-                <option value="all">Toutes</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div style={{ position: 'relative' }} data-category-dropdown>
+                <input
+                  value={categorySearch}
+                  onChange={e => { setCategorySearch(e.target.value); setShowCategoryDropdown(true) }}
+                  onFocus={() => setShowCategoryDropdown(true)}
+                  placeholder="Filtrer par categorie..."
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: '#1a1a2e', color: 'white', border: '1px solid rgba(255,255,255,0.15)', fontSize: 13, fontFamily: 'Nunito, sans-serif' }}
+                />
+                {showCategoryDropdown && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, maxHeight: 250, overflowY: 'auto', background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '0 0 8px 8px', zIndex: 20, marginTop: 2 }}>
+                    <div
+                      onClick={() => { setFilterCategory('all'); setCategorySearch(''); setShowCategoryDropdown(false) }}
+                      style={{ padding: '8px 12px', cursor: 'pointer', color: filterCategory === 'all' ? '#FF6B1A' : 'rgba(255,255,255,0.7)', fontSize: 12, borderBottom: '1px solid rgba(255,255,255,0.05)', fontFamily: 'Nunito, sans-serif' }}
+                    >
+                      Toutes les categories
+                    </div>
+                    {categories
+                      .filter(c => !categorySearch || c.toLowerCase().includes(categorySearch.toLowerCase()))
+                      .map(cat => (
+                        <div
+                          key={cat}
+                          onClick={() => { setFilterCategory(cat); setCategorySearch(cat); setShowCategoryDropdown(false) }}
+                          style={{ padding: '8px 12px', cursor: 'pointer', color: filterCategory === cat ? '#FF6B1A' : 'rgba(255,255,255,0.7)', fontSize: 12, borderBottom: '1px solid rgba(255,255,255,0.05)', fontFamily: 'Nunito, sans-serif' }}
+                        >
+                          {cat}
+                        </div>
+                      ))
+                    }
+                  </div>
+                )}
+              </div>
             </div>
 
             <div style={{ flex: 1 }}>

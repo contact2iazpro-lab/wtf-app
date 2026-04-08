@@ -8,7 +8,7 @@ const PAGE_SIZE_OPTIONS = [50, 100, 200, 500]
 const STATUSES = [
   { value: 'published', label: 'Publié',    color: '#10B981', bg: 'rgba(16,185,129,0.15)', icon: '✅' },
   { value: 'reserve',   label: 'Réserve',   color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: '🔒' },
-  { value: 'draft',     label: 'Brouillon', color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', icon: '✏️' },
+  { value: 'draft',     label: 'Brouillon', color: '#FF6B1A', bg: 'rgba(255,107,26,0.15)', icon: '✏️' },
   { value: 'doublon',   label: 'Doublon',   color: '#6B7280', bg: 'rgba(107,114,128,0.15)', icon: '🔄' },
 ]
 
@@ -217,6 +217,32 @@ export default function FactsListPage({ toast }) {
   // Reset page on filter change
   useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, pageSize])
 
+  // Debug: Check for draft facts on mount
+  useEffect(() => {
+    const checkDraftFacts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, question, status, created_at')
+          .eq('status', 'draft')
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        if (!error) {
+          console.log('[FactsListPage] Draft facts in database:', {
+            count: data?.length || 0,
+            recent: data?.slice(0, 3).map(f => ({ id: f.id, question: f.question?.slice(0, 40), status: f.status })),
+          })
+        } else {
+          console.error('[FactsListPage] Erreur chargement draft facts:', error)
+        }
+      } catch (err) {
+        console.error('[FactsListPage] Exception:', err)
+      }
+    }
+    checkDraftFacts()
+  }, [])
+
   // Load facts
   useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, sortField, sortDir])
 
@@ -250,6 +276,17 @@ export default function FactsListPage({ toast }) {
 
       const { data, count, error } = await q
       if (error) throw error
+
+      // Debug: Log facts loaded and draft status
+      console.log(`[FactsListPage] Chargé ${data?.length || 0} facts sur ${count} total`, {
+        filterStatus,
+        filterPublished,
+        debouncedSearch,
+        filterCategories,
+        hasDrafts: data?.some(f => f.status === 'draft'),
+        draftCount: data?.filter(f => f.status === 'draft').length || 0,
+      })
+
       setFacts(data || [])
       setTotal(count || 0)
     } catch (err) {

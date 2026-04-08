@@ -71,6 +71,7 @@ const SCREENS = {
   BLITZ_LOBBY: 'blitz_lobby',
   MODE_LAUNCH: 'mode_launch',
   ONBOARDING_FACT: 'onboarding_fact',
+  FLASH_TUTO_COMPLETE: 'flash_tuto_complete',
   TUTORIAL_COMPLETE: 'tutorial_complete',
 }
 
@@ -460,7 +461,7 @@ export default function App() {
   const [socialNotifCount, setSocialNotifCount] = useState(0)
   const [showConnectBanner, setShowConnectBanner] = useState(false)
 
-  const { user } = useAuth()
+  const { user, signInWithGoogle } = useAuth()
 
   // Close ConnectBanner when user successfully connects
   useEffect(() => {
@@ -1433,7 +1434,12 @@ export default function App() {
         const isOnboardingSession = !wtfDataOnb.onboardingCompleted
 
         if (isOnboardingSession && sessionType !== 'wtf_du_jour') {
-          // Afficher la modale UNIQUEMENT si au moins 1 fact a été débloqué cette session
+          // Flash tuto : afficher FLASH_TUTO_COMPLETE (ticket reçu + orientation Quest)
+          if (sessionType === 'flash_solo') {
+            setScreen(SCREENS.FLASH_TUTO_COMPLETE)
+            return
+          }
+          // Première Quest onboarding : modale fact débloqué au lieu de ResultsScreen
           if (sessionCorrectFacts.length > 0) {
             setOnboardingFact(sessionCorrectFacts[0])
             setScreen(SCREENS.ONBOARDING_FACT)
@@ -2174,9 +2180,13 @@ export default function App() {
                 Tu as debloque des facts et gagne des coins. Connecte-toi pour ne rien perdre !
               </div>
               <button
-                onClick={() => {
+                onClick={async () => {
                   audio.play?.('click')
-                  setShowConnectBanner(true)
+                  try {
+                    await signInWithGoogle()
+                  } catch (err) {
+                    console.error('Erreur connexion Google:', err)
+                  }
                 }}
                 className="active:scale-95 transition-all"
                 style={{
@@ -2218,6 +2228,59 @@ export default function App() {
         </div>
       )}
 
+      {screen === SCREENS.FLASH_TUTO_COMPLETE && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 400,
+          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(6px)',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: 24, gap: 20, fontFamily: 'Nunito, sans-serif',
+        }}>
+          <div style={{ fontSize: 64, lineHeight: 1 }}>🎫</div>
+          <div style={{
+            fontSize: 22, fontWeight: 900, color: '#FFD700',
+            textAlign: 'center', textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          }}>
+            Bravo, tu as terminé ta première session !
+          </div>
+          <div style={{
+            fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
+            textAlign: 'center', lineHeight: 1.5, maxWidth: 280,
+          }}>
+            Tu as obtenu <span style={{ color: '#FFD700' }}>1 ticket 🎫</span>
+          </div>
+          <div style={{
+            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
+            textAlign: 'center', lineHeight: 1.5, maxWidth: 280,
+          }}>
+            Lance ta première Quest pour débloquer des f*cts VIP et monter en niveau !
+          </div>
+
+          <button
+            onClick={() => {
+              audio.play?.('click')
+              handleHomeNavigate('difficulty')
+            }}
+            style={{
+              marginTop: 12, padding: '14px 32px', borderRadius: 14,
+              background: '#FF6B1A', color: 'white', border: 'none',
+              fontWeight: 900, fontSize: 16, cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif',
+              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          >
+            Jouer ma première Quest 🎯
+          </button>
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(255,107,26,0.4); }
+              50% { transform: scale(1.05); box-shadow: 0 8px 24px rgba(255,107,26,0.6); }
+            }
+          `}</style>
+        </div>
+      )}
+
       {screen === SCREENS.ONBOARDING_FACT && onboardingFact && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 400,
@@ -2233,7 +2296,7 @@ export default function App() {
             textAlign: 'center',
             textShadow: '0 2px 8px rgba(0,0,0,0.5)',
           }}>
-            Tu as débloqué un f*ct !
+            Tu as débloqué ton premier f*ct !
           </div>
           <div style={{
             fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',

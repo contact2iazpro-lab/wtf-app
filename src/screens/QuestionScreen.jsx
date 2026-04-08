@@ -678,6 +678,14 @@ export default function QuestionScreen({
                     wtfData.tutorialDone = true
                     wtfData.gamesPlayed = 100  // Assez haut pour tout débloquer
                     wtfData.onboardingCompleted = true  // Marquer onboarding comme complété
+                    // Initialiser statsByMode pour débloquer Amis (blitz) et autres modes
+                    wtfData.statsByMode = wtfData.statsByMode || {}
+                    wtfData.statsByMode.flash_solo = wtfData.statsByMode.flash_solo || { gamesPlayed: 0 }
+                    wtfData.statsByMode.flash_solo.gamesPlayed = 1
+                    wtfData.statsByMode.parcours = wtfData.statsByMode.parcours || { gamesPlayed: 0 }
+                    wtfData.statsByMode.parcours.gamesPlayed = 1
+                    wtfData.statsByMode.blitz = wtfData.statsByMode.blitz || { gamesPlayed: 0 }
+                    wtfData.statsByMode.blitz.gamesPlayed = 1
                     wtfData.hasSeenFlash = true
                     wtfData.hasSeenQuest = true
                     wtfData.hasSeenCollection = true

@@ -202,11 +202,12 @@ export default function RevelationScreen({
   const scoreRefTarget = useRef(null)
   const nextButtonRef = useRef(null)
 
-  // Détection du onboarding (basée sur onboardingCompleted)
+  // Détection du onboarding (basée sur onboardingCompleted ET première Quest)
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const onboardingCompleted = wtfData.onboardingCompleted === true
   const gamesPlayed = wtfData.gamesPlayed || 0
-  const showOnboardingIndicator = !onboardingCompleted
+  const isFirstQuest = (wtfData.statsByMode?.parcours?.gamesPlayed || 0) <= 1
+  const showOnboardingIndicator = !onboardingCompleted || (isFirstQuest && sessionType === 'parcours')
 
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext

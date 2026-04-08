@@ -24,7 +24,7 @@ serve(async (req) => {
     }
 
     // Parse body
-    const { category, categoryLabel, count, difficulty_distribution } = await req.json()
+    const { category, categoryLabel, count, difficulty_distribution, theme } = await req.json()
     // Limiter à 10 facts max par appel pour éviter les JSON tronqués
     const safeCount = Math.min(count || 5, 10)
     if (!category || !count) {
@@ -76,9 +76,13 @@ serve(async (req) => {
       : ''
 
     // ── Build prompt ────────────────────────────────────────────────────
+    const themeContext = theme
+      ? `\n\nTHEME PERSONNALISE : "${theme}" — utilise ce theme comme contexte additionnel et inspiration pour generer les facts. Les facts doivent rester dans la categorie "${categoryLabel || category}", mais s'inspirer fortement du theme propose.`
+      : ''
+
     const prompt = `Tu es le redacteur en chef de "What The F*ct!", un jeu de trivia mobile francais ou chaque question doit provoquer une reaction forte chez le joueur. Ce n'est PAS un quiz scolaire. C'est un jeu de faits incroyables, absurdes, droles et surprenants.
 
-Genere exactement ${safeCount} facts sur la categorie "${categoryLabel || category}".
+Genere exactement ${safeCount} facts sur la categorie "${categoryLabel || category}".${themeContext}
 
 === REGLES DE FORMULATION ===
 

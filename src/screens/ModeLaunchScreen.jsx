@@ -91,7 +91,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
         display: 'flex', flexDirection: 'column', gap: S(6),
         justifyContent: 'center',
       }}>
-        {rules.map((rule, i) => (
+        {(rules || []).map((rule, i) => (
           <div key={i} style={{
             display: 'flex', alignItems: 'center', gap: S(12),
             background: 'rgba(255,255,255,0.12)',

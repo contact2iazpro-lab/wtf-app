@@ -121,6 +121,16 @@ const MODE_CONFIGS = {
       { icon: '📅', text: 'Reviens chaque jour pour un nouveau WTF!' },
     ],
   },
+  explorer: {
+    modeId: 'explorer', modeName: 'Explorer', subtitle: 'Découvre de nouveaux f*cts', emoji: '🟢', color: '#22C55E',
+    rules: [
+      { icon: '🆓', text: 'Gratuit et illimité — pas de ticket requis' },
+      { icon: '⚡', text: 'Session de 5 questions' },
+      { icon: '🎯', text: `Mode Aléatoire : ${DIFFICULTY_LEVELS.FLASH?.coinsPerCorrect || 2} coins/bonne réponse` },
+      { icon: '🗂️', text: 'Mode Catégorie : 1 coin/bonne réponse' },
+      { icon: '💡', text: '2 indices gratuits par question · 4 QCM · 30s' },
+    ],
+  },
 }
 
 const TODAY = () => new Date().toISOString().slice(0, 10) // YYYY-MM-DD

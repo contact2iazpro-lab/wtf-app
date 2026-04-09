@@ -71,9 +71,15 @@ export default function QuestionScreen({
   const [stableTutorialOptions] = useState(() => {
     if (!isTutorial) return null
     const correctText = fact.options[fact.correctIndex]
+    // Prendre une fausse réponse aléatoire parmi les options
+    const wrongOptions = fact.options.filter((_, i) => i !== fact.correctIndex)
+    const randomWrongOption = wrongOptions.length > 0
+      ? wrongOptions[Math.floor(Math.random() * wrongOptions.length)]
+      : 'Option alternative'
+    const wrongIndex = fact.options.indexOf(randomWrongOption)
     return [
       { originalIndex: fact.correctIndex, text: correctText },
-      { originalIndex: -1, text: 'Aaron' },
+      { originalIndex: wrongIndex >= 0 ? wrongIndex : -1, text: randomWrongOption },
     ]
   })
 

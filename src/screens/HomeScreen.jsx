@@ -290,7 +290,7 @@ export default function HomeScreen({
     if (!wd.onboardingCompleted) {
       if (wd.tutorialDone && !wd.hasSeenFlash) {
         setActiveSpotlight('flash')
-      } else if ((devOrTest || gp >= 1) && !wd.hasSeenQuest) {
+      } else if ((devOrTest || wd.hasSeenFlash) && !wd.hasSeenQuest) {
         setActiveSpotlight('quest')
       } else if ((devOrTest || qp >= 1) && !wd.hasSeenCollection) {
         setActiveSpotlight('collection')
@@ -810,6 +810,9 @@ export default function HomeScreen({
           justifyContent: 'space-around', alignItems: 'center',
           height: '100%', zIndex: 1,
           gap: 24,
+          opacity: activeSpotlight && activeSpotlight !== 'quest' && activeSpotlight !== 'blitz' ? 0.3 : 1,
+          pointerEvents: activeSpotlight && activeSpotlight !== 'quest' && activeSpotlight !== 'blitz' ? 'none' : 'auto',
+          transition: 'opacity 0.3s ease',
         }}>
           <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {canQuest && questsPlayedInMode === 0 && <NewBadge />}
@@ -875,6 +878,9 @@ export default function HomeScreen({
           justifyContent: 'center', alignItems: 'center',
           height: '100%', zIndex: 1,
           gap: 12,
+          opacity: activeSpotlight && activeSpotlight !== 'marathon' && activeSpotlight !== 'multi' && activeSpotlight !== 'hunt' ? 0.3 : 1,
+          pointerEvents: activeSpotlight && activeSpotlight !== 'marathon' && activeSpotlight !== 'multi' && activeSpotlight !== 'hunt' ? 'none' : 'auto',
+          transition: 'opacity 0.3s ease',
         }}>
           <div style={{ position: 'relative', ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
@@ -898,6 +904,9 @@ export default function HomeScreen({
         padding: '0 50px',
         marginBottom: 34,
         position: 'relative', zIndex: activeSpotlight === 'flash' ? 101 : 10,
+        opacity: activeSpotlight && activeSpotlight !== 'flash' ? 0.3 : 1,
+        pointerEvents: activeSpotlight && activeSpotlight !== 'flash' ? 'none' : 'auto',
+        transition: 'opacity 0.3s ease',
       }}>
         <button
           ref={flashBtnRef}
@@ -965,10 +974,11 @@ export default function HomeScreen({
                 cursor: isLocked ? 'default' : 'pointer',
                 padding: `0 ${S(6)}`,
                 position: 'relative',
-                opacity: isLocked ? 0.35 : 1,
+                opacity: isLocked ? 0.35 : activeSpotlight && activeSpotlight !== item.slug ? 0.3 : 1,
                 filter: isLocked ? 'grayscale(1)' : 'none',
                 transition: 'opacity 0.2s',
                 WebkitTapHighlightColor: 'transparent',
+                pointerEvents: activeSpotlight && activeSpotlight !== item.slug ? 'none' : 'auto',
               }}
             >
               {item.center ? (

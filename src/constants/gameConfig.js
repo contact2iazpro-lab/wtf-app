@@ -110,3 +110,7 @@ export const TUTO_QUEST_CONFIG = {
   coinsPerCorrect: 2,
   scoring: { correct: 5, wrong: 0 },
 }
+
+// ── Tutorial Facts — Premier fact (FIRST_FACT) et pool pour Flash/Quest
+export const TUTO_FIRST_FACT_ID = 189
+export const TUTO_FACT_IDS = [127, 61, 92, 350, 6, 10, 109, 301, 45, 174]

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
-import { DIFFICULTY_LEVELS, TUTO_FLASH_CONFIG, TUTO_QUEST_CONFIG } from './constants/gameConfig'
+import { DIFFICULTY_LEVELS, TUTO_FLASH_CONFIG, TUTO_QUEST_CONFIG, TUTO_FACT_IDS, TUTO_FIRST_FACT_ID } from './constants/gameConfig'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
   getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories, getCategoryById,
@@ -44,10 +44,6 @@ import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
 import { supabase } from './lib/supabase'
 
-// 10 f*cts sélectionnés par Michael — on en pioche 5 aléatoirement pour la première Flash
-const ONBOARDING_FLASH_FACT_IDS = [67, 301, 92, 174, 109, 95, 177, 22, 6, 61]
-
-// Difficulté spéciale onboarding : 2 choix QCM (50/50), timer 20s, 2 indices
 const SCREENS = {
   HOME: 'home',
   WTF_TEASER: 'wtf_teaser',
@@ -397,21 +393,49 @@ export default function App() {
       // Onboarding en cours — vérifier le tutorialState
       const tutorialState = await getTutorialState()
       if (tutorialState === TUTORIAL_STATES.FIRST_FACT) {
-        const tutorialFactId = getTutorialFactId()
+        // Vérifier si on a les IDs du tuto Quest stockés (après tuto Flash)
+        const questIdsStored = JSON.parse(localStorage.getItem('wtf_tuto_quest_ids') || '[]')
         const allFacts = getValidFacts()
-        const tutorialFact = allFacts.find(f => f.id === tutorialFactId)
-        if (tutorialFact) {
-          const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, TUTO_QUEST_CONFIG) }
-          setSessionType('parcours')
-          setGameMode('solo')
-          setIsQuickPlay(false)
-          setIsTutorialSession(true)
-          setSelectedDifficulty(TUTO_QUEST_CONFIG)
-          setSelectedCategory(tutorialFact.category)
-          initSessionState([factWithOptions])
-          setScreen(SCREENS.QUESTION)
-          setShowSplash(false)
-          return
+
+        if (questIdsStored.length > 0) {
+          // Tuto Quest : charger les 5 facts stockés
+          const questFacts = questIdsStored
+            .map(id => allFacts.find(f => f.id === id))
+            .filter(Boolean)
+
+          if (questFacts.length > 0) {
+            const factsWithOptions = questFacts.map(fact => ({
+              ...fact,
+              ...getAnswerOptions(fact, TUTO_QUEST_CONFIG)
+            }))
+            setSessionType('parcours')
+            setGameMode('solo')
+            setIsQuickPlay(false)
+            setIsTutorialSession(true)
+            setSelectedDifficulty(TUTO_QUEST_CONFIG)
+            setSelectedCategory(questFacts[0].category)
+            initSessionState(factsWithOptions)
+            setScreen(SCREENS.QUESTION)
+            setShowSplash(false)
+            return
+          }
+        } else {
+          // Tuto Quest initial (avant Flash) : charger une fact depuis tutorialManager
+          const tutorialFactId = getTutorialFactId()
+          const tutorialFact = allFacts.find(f => f.id === tutorialFactId)
+          if (tutorialFact) {
+            const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, TUTO_QUEST_CONFIG) }
+            setSessionType('parcours')
+            setGameMode('solo')
+            setIsQuickPlay(false)
+            setIsTutorialSession(true)
+            setSelectedDifficulty(TUTO_QUEST_CONFIG)
+            setSelectedCategory(tutorialFact.category)
+            initSessionState([factWithOptions])
+            setScreen(SCREENS.QUESTION)
+            setShowSplash(false)
+            return
+          }
         }
       }
     } catch { /* fallback to normal flow */ }
@@ -638,24 +662,29 @@ export default function App() {
   const handleFlashSolo = useCallback(() => {
     audio.play('click')
 
-    // Première Flash onboarding : 5 f*cts figés + 2 QCM (50/50)
+    // Première Flash onboarding : mélanger les 10 f*cts centralisés, prendre 5
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     const isDevOrTestFlash = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     if (!isDevOrTestFlash && wd.tutorialDone && !wd.onboardingCompleted) {
-      const allFacts = [...getValidFacts(), ...getGeneratedFacts()]
-      let onboardingPool = ONBOARDING_FLASH_FACT_IDS
+      // Mélanger les 10 IDs tuto centralisés
+      const shuffled = [...TUTO_FACT_IDS].sort(() => Math.random() - 0.5)
+      const flashIds = shuffled.slice(0, 5)
+      const questIds = shuffled.slice(5, 10)
+
+      // Stocker les IDs pour le tuto Quest
+      localStorage.setItem('wtf_tuto_quest_ids', JSON.stringify(questIds))
+
+      // Charger les facts pour Flash depuis getValidFacts uniquement
+      const allFacts = getValidFacts()
+      const flashFacts = flashIds
         .map(id => allFacts.find(f => f.id === id))
         .filter(Boolean)
-      let onboardingFacts = [...onboardingPool]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 5)
-      if (onboardingFacts.length < 5) {
-        onboardingFacts = [...getGeneratedFacts()].sort(() => Math.random() - 0.5).slice(0, 5)
-      }
-      const facts = onboardingFacts.map(fact => ({
+
+      const facts = flashFacts.map(fact => ({
         ...fact,
         ...getAnswerOptions(fact, TUTO_FLASH_CONFIG)
       }))
+
       setSessionType('flash_solo')
       setGameMode('solo')
       setIsQuickPlay(false)
@@ -819,27 +848,26 @@ export default function App() {
         showOrSkipLaunch('hunt')
         break
       case 'categoryFlash': {
-        // Première partie Flash onboarding : 5 f*cts figés, 2 QCM (50/50), pas de CategoryScreen
+        // Première partie Flash onboarding : mélanger les 10 f*cts centralisés, prendre 5
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
         if (!isDevOrTest && wd.tutorialDone && !wd.onboardingCompleted) {
           audio.play('click')
-          const allFacts = [...getValidFacts(), ...getGeneratedFacts()]
-          let onboardingPool = ONBOARDING_FLASH_FACT_IDS
+          // Mélanger les 10 IDs tuto centralisés
+          const shuffled = [...TUTO_FACT_IDS].sort(() => Math.random() - 0.5)
+          const flashIds = shuffled.slice(0, 5)
+          const questIds = shuffled.slice(5, 10)
+
+          // Stocker les IDs pour le tuto Quest
+          localStorage.setItem('wtf_tuto_quest_ids', JSON.stringify(questIds))
+
+          // Charger les facts pour Flash depuis getValidFacts uniquement
+          const allFacts = getValidFacts()
+          const flashFacts = flashIds
             .map(id => allFacts.find(f => f.id === id))
             .filter(Boolean)
 
-          // Piocher 5 aléatoirement parmi les 10
-          let onboardingFacts = [...onboardingPool]
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 5)
-
-          // Fallback si pas assez de facts trouvés
-          if (onboardingFacts.length < 5) {
-            onboardingFacts = [...getGeneratedFacts()].sort(() => Math.random() - 0.5).slice(0, 5)
-          }
-
-          const facts = onboardingFacts.map(fact => ({
+          const facts = flashFacts.map(fact => ({
             ...fact,
             ...getAnswerOptions(fact, TUTO_FLASH_CONFIG)
           }))
@@ -1237,15 +1265,20 @@ export default function App() {
         setStorage(prev => {
           const newUnlocked = new Set(prev.unlockedFacts)
           if (!newUnlocked.has(currentFact.id)) {
-            newUnlocked.add(currentFact.id)
-            const next = { ...prev, unlockedFacts: newUnlocked }
-            saveStorage(next)
-            if (user) {
-              import('./services/collectionService').then(({ updateCollection }) => {
-                updateCollection(user.id, currentFact.category, currentFact.id)
-              })
+            // Pendant le tuto : ne pas ajouter ce fact à la collection (sauf TUTO_FIRST_FACT_ID)
+            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            const shouldUnlock = wd.onboardingCompleted || currentFact.id === TUTO_FIRST_FACT_ID
+            if (shouldUnlock) {
+              newUnlocked.add(currentFact.id)
+              const next = { ...prev, unlockedFacts: newUnlocked }
+              saveStorage(next)
+              if (user) {
+                import('./services/collectionService').then(({ updateCollection }) => {
+                  updateCollection(user.id, currentFact.category, currentFact.id)
+                })
+              }
+              return next
             }
-            return next
           }
           return prev
         })
@@ -1348,10 +1381,17 @@ export default function App() {
         const newUnlocked = new Set(unlockedFacts)
         const toSync = []
         {
+          // Pendant le tuto : ne pas ajouter les facts à la collection (sauf TUTO_FIRST_FACT_ID)
+          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          const isOnboarding = !wd.onboardingCompleted
+
           for (const fact of sessionCorrectFacts) {
             if (!newUnlocked.has(fact.id)) {
-              newUnlocked.add(fact.id)
-              toSync.push(fact)
+              const shouldUnlock = !isOnboarding || fact.id === TUTO_FIRST_FACT_ID
+              if (shouldUnlock) {
+                newUnlocked.add(fact.id)
+                toSync.push(fact)
+              }
             }
           }
         }
@@ -1523,11 +1563,20 @@ export default function App() {
           wtfDataOnb.onboardingCompleted = true
           wtfDataOnb.lastModified = Date.now()
           localStorage.setItem('wtf_data', JSON.stringify(wtfDataOnb))
+          // Nettoyer les IDs du tuto Quest
+          localStorage.removeItem('wtf_tuto_quest_ids')
         }
 
         const isOnboardingSession = !wtfDataOnb.onboardingCompleted
 
         if (isOnboardingSession && sessionType !== 'wtf_du_jour') {
+          // Mark FIRST_FACT as completed — allow getTutorialState() to return COMPLETED on next reload
+          try {
+            wtfDataOnb.tutorialDone = true
+            wtfDataOnb.lastModified = Date.now()
+            localStorage.setItem('wtf_data', JSON.stringify(wtfDataOnb))
+          } catch { /* ignore */ }
+
           // Flash tuto : afficher FLASH_TUTO_COMPLETE (ticket reçu + orientation Quest)
           if (sessionType === 'flash_solo') {
             setScreen(SCREENS.FLASH_TUTO_COMPLETE)
@@ -1636,6 +1685,33 @@ export default function App() {
     })
   }, [user, sessionCorrectFacts])
 
+  // ── Helper: si joueur quitte le tuto en cours, marquer comme complété
+  const completeOnboardingIfNeeded = useCallback(() => {
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    if (!wd.onboardingCompleted) {
+      wd.onboardingCompleted = true
+      wd.tutorialDone = true
+      wd.gamesPlayed = Math.max(wd.gamesPlayed || 0, 10)
+      wd.hasSeenFlash = true
+      wd.hasSeenQuest = true
+      wd.hasSeenCollection = true
+      wd.hasSeenBoutique = true
+      wd.hasSeenBlitz = true
+      wd.hasVisitedCollection = true
+      wd.firstFlashTicketGiven = true
+      if (!wd.statsByMode) wd.statsByMode = {}
+      if (!wd.statsByMode.flash_solo) wd.statsByMode.flash_solo = { gamesPlayed: 3 }
+      if (!wd.statsByMode.parcours) wd.statsByMode.parcours = { gamesPlayed: 2 }
+      if (!wd.statsByMode.blitz) wd.statsByMode.blitz = { gamesPlayed: 1 }
+      wd.wtfCoins = Math.max(wd.wtfCoins || 0, 25)
+      wd.tickets = Math.max(wd.tickets || 0, 1)
+      wd.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(wd))
+      localStorage.removeItem('wtf_tuto_quest_ids')
+      window.dispatchEvent(new Event('wtf_storage_sync'))
+    }
+  }, [])
+
   const handleHome = useCallback(() => {
     setScreen(SCREENS.HOME)
     setGameMode('solo')
@@ -1658,12 +1734,14 @@ export default function App() {
   }, [])
 
   const handleTutoComplete = useCallback(() => {
+    completeOnboardingIfNeeded()
     advanceTutorial() // FIRST_FACT → HOME_DISCOVERED
+    localStorage.removeItem('wtf_tuto_quest_ids')
     setIsTutorialSession(false)
     setSessionFacts([])
     setCurrentIndex(0)
     setScreen(SCREENS.HOME)
-  }, [])
+  }, [completeOnboardingIfNeeded])
 
   const handleBlitzReplay = useCallback(() => {
     handleBlitzStart(selectedCategory)
@@ -1902,14 +1980,24 @@ export default function App() {
       window.history.pushState(null, '')
       switch (screen) {
         case SCREENS.HOME: break
-        case SCREENS.MODE_LAUNCH: setScreen(SCREENS.HOME); break
-        case SCREENS.WTF_TEASER: setScreen(SCREENS.HOME); break
+        case SCREENS.MODE_LAUNCH:
+          completeOnboardingIfNeeded()
+          setScreen(SCREENS.HOME)
+          break
+        case SCREENS.WTF_TEASER:
+          completeOnboardingIfNeeded()
+          setScreen(SCREENS.HOME)
+          break
         case SCREENS.CATEGORY:
         case SCREENS.BLITZ_LOBBY:
+          completeOnboardingIfNeeded()
           setScreen(SCREENS.HOME)
           setGameMode('solo')
           break
-        case SCREENS.DUEL_SETUP: setScreen(SCREENS.HOME); break
+        case SCREENS.DUEL_SETUP:
+          completeOnboardingIfNeeded()
+          setScreen(SCREENS.HOME)
+          break
         case SCREENS.RESULTS:
         case SCREENS.WTF_REVEAL:
         case SCREENS.DUEL_RESULTS:
@@ -2128,7 +2216,10 @@ export default function App() {
           titrePartiel={getTitrePartiel(effectiveDailyFact)}
           streak={streak}
           onStart={handleStartWTFSession}
-          onBack={() => setScreen(SCREENS.HOME)}
+          onBack={() => {
+            completeOnboardingIfNeeded()
+            setScreen(SCREENS.HOME)
+          }}
         />
       )}
 
@@ -2149,21 +2240,34 @@ export default function App() {
         <ModeLaunchScreen
           {...MODE_CONFIGS[launchMode]}
           onStart={handleLaunchStart}
-          onBack={() => setScreen(SCREENS.HOME)}
+          onBack={() => {
+            // ABANDON — appliquer le guard skip si onboarding pas fini ET pas en launchMode
+            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+            if (!wd.onboardingCompleted && !launchMode) {
+              completeOnboardingIfNeeded()
+            }
+            setScreen(SCREENS.HOME)
+          }}
         />
       )}
 
       {screen === SCREENS.DIFFICULTY && (
         <DifficultyScreen
           onSelectDifficulty={handleSelectDifficulty}
-          onBack={() => launchMode ? setScreen(SCREENS.MODE_LAUNCH) : setScreen(SCREENS.HOME)}
+          onBack={() => {
+            if (!launchMode) completeOnboardingIfNeeded()
+            setScreen(launchMode ? SCREENS.MODE_LAUNCH : SCREENS.HOME)
+          }}
         />
       )}
 
       {screen === SCREENS.CATEGORY && (
         <CategoryScreen
           onSelectCategory={handleSelectCategory}
-          onBack={() => launchMode ? setScreen(SCREENS.MODE_LAUNCH) : setScreen(SCREENS.HOME)}
+          onBack={() => {
+            if (!launchMode) completeOnboardingIfNeeded()
+            setScreen(launchMode ? SCREENS.MODE_LAUNCH : SCREENS.HOME)
+          }}
           selectedDifficulty={selectedDifficulty}
           unlockedFacts={unlockedFacts}
           gameMode={gameMode}
@@ -2183,10 +2287,23 @@ export default function App() {
           onTimeout={handleTimeout}
           onQuit={gameMode === 'marathon'
             ? () => {
-                if (window.confirm(`Tu as répondu à ${currentIndex} question${currentIndex > 1 ? 's' : ''}. Si tu quittes, ton score ne sera pas sauvegardé.`))
+                if (window.confirm(`Tu as répondu à ${currentIndex} question${currentIndex > 1 ? 's' : ''}. Si tu quittes, ton score ne sera pas sauvegardé.`)) {
+                  // ABANDON — appliquer le guard skip si onboarding pas fini
+                  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                  if (!wd.onboardingCompleted && isTutorialSession) {
+                    completeOnboardingIfNeeded()
+                  }
                   handleHome()
+                }
               }
-            : handleHome
+            : () => {
+                // ABANDON — appliquer le guard skip si onboarding pas fini (bouton X, quit button)
+                const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                if (!wd.onboardingCompleted && isTutorialSession) {
+                  completeOnboardingIfNeeded()
+                }
+                handleHome()
+              }
           }
           category={selectedCategory}
           gameMode={gameMode}
@@ -2372,7 +2489,13 @@ export default function App() {
             <button
               onClick={() => {
                 audio.play?.('click')
-                handleHomeNavigate('difficulty')
+                // TUTO TRANSITION — marquer que le joueur a vu le tutoriel Flash, retour à HOME
+                const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                wd.hasSeenFlash = true
+                wd.lastModified = Date.now()
+                localStorage.setItem('wtf_data', JSON.stringify(wd))
+                window.dispatchEvent(new Event('wtf_storage_sync'))
+                setScreen(SCREENS.HOME)
               }}
               style={{
                 marginTop: 12, padding: '14px 32px', borderRadius: 14,
@@ -2383,7 +2506,7 @@ export default function App() {
                 animation: 'pulse 1.5s ease-in-out infinite',
               }}
             >
-              Jouer ma première Quest 🎯
+              Continuer
             </button>
 
             <div style={{

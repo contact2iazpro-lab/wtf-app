@@ -1,3 +1,5 @@
+import { TUTO_FIRST_FACT_ID } from '../constants/gameConfig';
+
 const STORAGE_KEY = 'tutorial_state';
 
 /**
@@ -57,5 +59,5 @@ export async function isTutorialComplete() {
 }
 
 export function getTutorialFactId() {
-  return 999;
+  return TUTO_FIRST_FACT_ID;
 }

@@ -508,19 +508,15 @@ export default function CollectionPage() {
   const firstUnlockedCategoryRef = useRef(null)
   const spotlightTimersRef = useRef([]) // Stocker les IDs des timeouts pour le cleanup
 
-  // Onboarding Collection
+  // PHASE 3 — Collection Onboarding
   const wtfDataInit = readWtfData()
-  const isFirstVisitCollection = !wtfDataInit.onboardingCompleted && !wtfDataInit.hasVisitedCollection
+  const tutoPhase = wtfDataInit.tutoPhase || 0
+  const isPhase3 = !wtfDataInit.onboardingCompleted && tutoPhase === 3
 
-  // Sécurité : si onboardingCompleted=true mais hasVisitedCollection=false, forcer hasVisitedCollection=true et ne pas afficher le spotlight
-  if (wtfDataInit.onboardingCompleted && !wtfDataInit.hasVisitedCollection) {
-    const fix = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    fix.hasVisitedCollection = true
-    fix.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(fix))
-  }
+  // Get first fact ID from Phase 0
+  const firstFactId = parseInt(localStorage.getItem('wtf_tuto_first_fact_id') || '0')
 
-  const [onboardingMode, setOnboardingMode] = useState(isFirstVisitCollection)
+  const [onboardingMode, setOnboardingMode] = useState(isPhase3)
 
   // Local unlocked facts
   const localUnlocked = useMemo(() => {
@@ -809,10 +805,14 @@ export default function CollectionPage() {
           <button
             onClick={() => {
               const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-              wd.hasVisitedCollection = true
+              // Phase 3 completion: mark tutorial as done and clean up tutorial state
               wd.onboardingCompleted = true
+              wd.tutoPhase = undefined
               wd.lastModified = Date.now()
               localStorage.setItem('wtf_data', JSON.stringify(wd))
+              // Clean up tutorial localStorage keys
+              localStorage.removeItem('wtf_tuto_used_ids')
+              localStorage.removeItem('wtf_tuto_first_fact_id')
               setOnboardingMode(false)
               setCollectionSpotlightStep(0)
               navigate('/')
@@ -893,11 +893,6 @@ export default function CollectionPage() {
         <div className="flex items-center gap-3 mb-3">
           <button
             onClick={() => {
-              // Sécurité : marquer hasVisitedCollection=true même si on quitte sans finir le spotlight
-              const fix = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-              fix.hasVisitedCollection = true
-              fix.lastModified = Date.now()
-              localStorage.setItem('wtf_data', JSON.stringify(fix))
               navigate('/')
             }}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"

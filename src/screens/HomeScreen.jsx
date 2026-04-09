@@ -10,7 +10,6 @@ import { useAuth } from '../context/AuthContext'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
-import { isTutorialComplete } from '../utils/tutorialManager'
 import { getNextBadge } from '../utils/badgeManager'
 import { updateCoins, updateTickets, updateHints } from '../services/currencyService'
 
@@ -158,21 +157,6 @@ export default function HomeScreen({
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
   const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
 
-  const seenFlags = (() => {
-    try {
-      const d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      return {
-        seenQuest: d.hasSeenQuest || false,
-        seenBlitz: d.hasSeenBlitz || false,
-        seenHunt: d.hasSeenHunt || false,
-        seenCollection: d.hasSeenCollection || false,
-        seenTrophees: d.hasSeenTrophees || false,
-        seenBoutique: d.hasSeenBoutique || false,
-        seenAmis: d.hasSeenAmis || false,
-      }
-    } catch { return {} }
-  })()
-
   const markSeen = (key) => {
     try {
       const d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
@@ -285,20 +269,22 @@ export default function HomeScreen({
     const gp = wd.gamesPlayed || 0
     const qp = wd.statsByMode?.parcours?.gamesPlayed || 0
     const ufc = (wd.unlockedFacts || []).length
+    const tutoPhase = wd.tutoPhase || 0
 
-    // Priorité des spotlights — un seul à la fois, dans l'ordre (UNIQUEMENT en onboarding)
+    // Tutorial spotlight — controlled by tutoPhase
     if (!wd.onboardingCompleted) {
-      if (wd.tutorialDone && !wd.hasSeenFlash) {
+      if (tutoPhase === 1) {
         setActiveSpotlight('flash')
-      } else if ((devOrTest || wd.hasSeenFlash) && !wd.hasSeenQuest) {
+      } else if (tutoPhase === 2) {
         setActiveSpotlight('quest')
-      } else if ((devOrTest || qp >= 1) && !wd.hasSeenCollection) {
-        setActiveSpotlight('collection')
-      } else if ((devOrTest || gp >= 2) && !wd.hasSeenBoutique) {
-        setActiveSpotlight('boutique')
-      } else if ((devOrTest || ufc >= 5) && !wd.hasSeenBlitz) {
-        setActiveSpotlight('blitz')
+      } else if (tutoPhase === 3) {
+        // Phase 3: Player is on collection, no spotlight on home
+        setActiveSpotlight(null)
+      } else if (tutoPhase === 0) {
+        // Phase 0: First fact loading, no spotlight needed
+        setActiveSpotlight(null)
       } else {
+        // Fallback: shouldn't reach here
         setActiveSpotlight(null)
       }
     } else {

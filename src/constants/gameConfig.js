@@ -82,7 +82,7 @@ export const DIFFICULTY_LEVELS = {
   },
 }
 
-// ── Tutoriel Configs (isolated from main gameplay)
+// ── Tutorial Configs (isolated from main gameplay)
 export const TUTO_FLASH_CONFIG = {
   id: 'tuto_flash',
   label: 'Tutoriel',
@@ -94,6 +94,7 @@ export const TUTO_FLASH_CONFIG = {
   paidHints: 0,
   hintCost: 0,
   coinsPerCorrect: 2,
+  questionsCount: 5,
   scoring: { correct: 5, wrong: 0 },
 }
 
@@ -108,9 +109,9 @@ export const TUTO_QUEST_CONFIG = {
   paidHints: 0,
   hintCost: 0,
   coinsPerCorrect: 2,
+  questionsCount: 5,
   scoring: { correct: 5, wrong: 0 },
 }
 
-// ── Tutorial Facts — Premier fact (FIRST_FACT) et pool pour Flash/Quest
-export const TUTO_FIRST_FACT_ID = 189
-export const TUTO_FACT_IDS = [127, 61, 92, 350, 6, 10, 109, 301, 45, 174]
+// ── Tutorial Facts Pool (11 facts — 1 Phase0 + 5 Phase1(Flash) + 5 Phase2(Quest))
+export const TUTO_FACT_IDS = [189, 127, 61, 92, 350, 6, 10, 109, 301, 45, 174]

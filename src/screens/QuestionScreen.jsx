@@ -692,16 +692,8 @@ export default function QuestionScreen({
                     // Initialiser wtf_data avec progression complète simulée
                     const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
                     wtfData.onboardingCompleted = true
-                    wtfData.tutorialDone = true
                     wtfData.gamesPlayed = 10
                     wtfData.questsPlayed = 2
-                    wtfData.hasSeenFlash = true
-                    wtfData.hasSeenQuest = true
-                    wtfData.hasSeenCollection = true
-                    wtfData.hasSeenBoutique = true
-                    wtfData.hasSeenBlitz = true
-                    wtfData.hasVisitedCollection = true
-                    wtfData.firstFlashTicketGiven = true
                     wtfData.unlockedFacts = wtfData.unlockedFacts || []
                     if (!wtfData.statsByMode) wtfData.statsByMode = {}
                     wtfData.statsByMode.flash_solo = { gamesPlayed: 3, ...(wtfData.statsByMode.flash_solo || {}) }
@@ -720,20 +712,11 @@ export default function QuestionScreen({
                       }
                     }
 
-                    import('../utils/tutorialManager').then(({ advanceTutorial, getTutorialState, TUTORIAL_STATES }) => {
-                      const advance = async () => {
-                        let state = await getTutorialState()
-                        while (state !== TUTORIAL_STATES.COMPLETED) {
-                          advanceTutorial()
-                          state = await getTutorialState()
-                        }
-                      }
-                      advance().then(() => {
-                        window.dispatchEvent(new Event('wtf_storage_sync'))
-                        if (onTutoComplete) onTutoComplete()
-                        else if (onQuit) onQuit()
-                      })
-                    })
+                    // Cleanup tutorial IDs and dispatch sync
+                    localStorage.removeItem('wtf_tuto_used_ids')
+                    window.dispatchEvent(new Event('wtf_storage_sync'))
+                    if (onTutoComplete) onTutoComplete()
+                    else if (onQuit) onQuit()
                   }}
                   style={{
                     marginTop: 12, padding: '8px 0',

@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { TUTO_FACT_IDS, TUTO_FLASH_CONFIG, TUTO_QUEST_CONFIG } from '../constants/gameConfig'
-import { getValidFacts } from '../data/factsService'
+import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
 import { getAnswerOptions } from '../utils/answers'
+import QuestionScreen from '../screens/QuestionScreen'
+import RevelationScreen from '../screens/RevelationScreen'
 
 export default function TutoTunnel({ onComplete, onSkip }) {
   const S = useScale()
@@ -16,15 +18,13 @@ export default function TutoTunnel({ onComplete, onSkip }) {
   const [allTutoFacts, setAllTutoFacts] = useState([])
   const [usedIds, setUsedIds] = useState([])
   const [firstFactId, setFirstFactId] = useState(null)
-  const [firstFactCorrect, setFirstFactCorrect] = useState(false)
   const [sessionFacts, setSessionFacts] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [isCorrect, setIsCorrect] = useState(false)
   const [showRevelation, setShowRevelation] = useState(false)
   const [sessionScore, setSessionScore] = useState(0)
-  const [hintsRevealed, setHintsRevealed] = useState([])
-  const [timeLeft, setTimeLeft] = useState(0)
+  const [hintsUsed, setHintsUsed] = useState(0)
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
   const [phase3FactDetail, setPhase3FactDetail] = useState(null)
 
@@ -38,257 +38,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
       .filter(Boolean)
     setAllTutoFacts(tutoFacts)
   }, [])
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // INTERNAL COMPONENTS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  // ─── QuestionScreenTuto ───────────────────────────────────────────────────
-  const QuestionScreenTuto = ({ fact, config, onAnswer, onTimeout }) => {
-    const [timeRemaining, setTimeRemaining] = useState(config.duration)
-    const timerRef = useRef(null)
-
-    useEffect(() => {
-      timerRef.current = setInterval(() => {
-        setTimeRemaining(t => {
-          if (t <= 1) {
-            clearInterval(timerRef.current)
-            onTimeout?.()
-            return 0
-          }
-          return t - 1
-        })
-      }, 1000)
-      return () => clearInterval(timerRef.current)
-    }, [onTimeout])
-
-    const options = fact.options || []
-    const shuffledOptions = [...options].sort(() => Math.random() - 0.5).slice(0, config.choices)
-
-    return (
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'linear-gradient(160deg, rgba(255,107,26,0.1), rgba(255,107,26,0.05))',
-        display: 'flex', flexDirection: 'column',
-        padding: S_val(16),
-        overflow: 'auto',
-      }}>
-        {/* Header */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginBottom: S_val(20), paddingTop: S_val(8),
-        }}>
-          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: S_val(14), fontWeight: 700, color: '#1a1a2e' }}>
-            🪙 {sessionScore} coins
-          </div>
-          <div style={{ fontSize: S_val(14), fontWeight: 700, color: '#1a1a2e' }}>
-            {currentIndex + 1} / {sessionFacts.length}
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div style={{
-          width: '100%', height: S_val(4), background: '#e5e7eb', borderRadius: 999,
-          marginBottom: S_val(20), overflow: 'hidden',
-        }}>
-          <div style={{
-            height: '100%', background: '#FF6B1A',
-            width: `${((currentIndex + 1) / sessionFacts.length) * 100}%`,
-            transition: 'width 0.3s',
-          }} />
-        </div>
-
-        {/* Timer */}
-        <div style={{
-          fontSize: S_val(13), fontWeight: 700, color: timeRemaining <= 5 ? '#FF6B1A' : '#666',
-          marginBottom: S_val(16),
-        }}>
-          ⏱️ {timeRemaining}s
-        </div>
-
-        {/* Question */}
-        <div style={{
-          fontSize: S_val(20), fontWeight: 900, color: '#1a1a2e',
-          marginBottom: S_val(24), lineHeight: 1.4, textAlign: 'center',
-        }}>
-          {fact.question}
-        </div>
-
-        {/* Answer buttons */}
-        <div style={{
-          display: 'flex', flexDirection: 'column', gap: S_val(12),
-          marginBottom: S_val(20),
-        }}>
-          {shuffledOptions.map((opt, idx) => {
-            const isSelected = selectedAnswer === opt
-            const isCorrectAnswer = opt === fact.answer
-            let bgColor = '#f3f4f6'
-            let borderColor = '#e5e7eb'
-            let textColor = '#1a1a2e'
-
-            if (showRevelation) {
-              if (isCorrectAnswer) {
-                bgColor = '#dcfce7'
-                borderColor = '#86efac'
-              } else if (isSelected && !isCorrectAnswer) {
-                bgColor = '#fee2e2'
-                borderColor = '#fca5a5'
-              }
-            } else if (isSelected) {
-              bgColor = '#FFE8D6'
-              borderColor = '#FF6B1A'
-            }
-
-            return (
-              <button
-                key={idx}
-                onClick={() => {
-                  if (!showRevelation) {
-                    audio.play('click')
-                    const correct = opt === fact.answer
-                    setSelectedAnswer(opt)
-                    setIsCorrect(correct)
-                    setTimeout(() => setShowRevelation(true), 600)
-                    onAnswer?.(correct)
-                  }
-                }}
-                disabled={showRevelation}
-                style={{
-                  padding: S_val(16),
-                  borderRadius: S_val(14),
-                  border: `2px solid ${borderColor}`,
-                  background: bgColor,
-                  fontSize: S_val(15),
-                  fontWeight: 700,
-                  color: textColor,
-                  cursor: showRevelation ? 'default' : 'pointer',
-                  fontFamily: 'Nunito, sans-serif',
-                  transition: 'all 0.2s',
-                  opacity: showRevelation && isSelected === false && selectedAnswer !== null && opt !== fact.answer ? 0.5 : 1,
-                }}
-              >
-                {opt}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
-
-  // ─── RevelationScreenTuto ──────────────────────────────────────────────────
-  const RevelationScreenTuto = ({ fact, isCorrect, onNext }) => {
-    const coinsEarned = isCorrect ? TUTO_FLASH_CONFIG.coinsPerCorrect : 0
-
-    return (
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'linear-gradient(160deg, rgba(255,107,26,0.1), rgba(255,107,26,0.05))',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: S_val(24),
-        overflow: 'auto',
-      }}>
-        {/* Card */}
-        <div style={{
-          background: 'white', borderRadius: S_val(24), padding: S_val(32),
-          maxWidth: S_val(360), width: '90%',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-          gap: S_val(16),
-        }}>
-          {/* Emoji */}
-          <div style={{ fontSize: S_val(56), lineHeight: 1 }}>
-            {isCorrect ? '✅' : '❌'}
-          </div>
-
-          {/* Title */}
-          <div style={{
-            fontSize: S_val(24), fontWeight: 900, color: '#1a1a2e',
-            textAlign: 'center', fontFamily: 'Nunito, sans-serif',
-          }}>
-            {isCorrect ? 'Bravo !' : 'Pas grave !'}
-          </div>
-
-          {/* Question + Answer */}
-          <div style={{
-            background: '#f9f9f9', borderRadius: S_val(12), padding: S_val(16),
-            width: '100%', textAlign: 'center',
-          }}>
-            <div style={{
-              fontSize: S_val(13), color: '#999', marginBottom: S_val(8),
-              fontFamily: 'Nunito, sans-serif',
-            }}>
-              {fact.question}
-            </div>
-            <div style={{
-              fontSize: S_val(16), fontWeight: 900, color: '#FF6B1A',
-              fontFamily: 'Nunito, sans-serif',
-            }}>
-              ✓ {fact.answer}
-            </div>
-          </div>
-
-          {/* Coins earned */}
-          {isCorrect && (
-            <div style={{
-              fontSize: S_val(18), fontWeight: 900, color: '#FF6B1A',
-              fontFamily: 'Nunito, sans-serif',
-            }}>
-              +{coinsEarned} 🪙
-            </div>
-          )}
-
-          {/* Next button */}
-          <button
-            onClick={() => {
-              audio.play('click')
-              if (isCorrect) {
-                setSessionScore(prev => prev + coinsEarned)
-              }
-              setCurrentIndex(prev => prev + 1)
-              setSelectedAnswer(null)
-              setShowRevelation(false)
-              setIsCorrect(false)
-              onNext?.()
-            }}
-            style={{
-              width: '100%',
-              padding: S_val(16),
-              borderRadius: S_val(14),
-              background: '#FF6B1A',
-              color: 'white',
-              border: 'none',
-              fontWeight: 900,
-              fontSize: S_val(16),
-              cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif',
-              marginTop: S_val(8),
-            }}
-          >
-            Suivant →
-          </button>
-
-          {/* Animated finger */}
-          <div style={{
-            fontSize: S_val(32),
-            marginTop: S_val(8),
-            animation: 'tutoFinger 0.8s ease-in-out infinite',
-            pointerEvents: 'none',
-          }}>
-            👆
-          </div>
-        </div>
-
-        <style>{`
-          @keyframes tutoFinger {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-          }
-        `}</style>
-      </div>
-    )
-  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PHASE: INTRO
@@ -350,7 +99,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
               setSessionScore(0)
               setShowRevelation(false)
               setSelectedAnswer(null)
-              setHintsRevealed([])
+              setHintsUsed(0)
               setPhase('phase0')
             }}
             style={{
@@ -395,7 +144,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PHASE: PHASE0 (1 question)
+  // PHASE: PHASE0 (1 question with real QuestionScreen)
   // ═══════════════════════════════════════════════════════════════════════════
   if (phase === 'phase0') {
     const currentFact = sessionFacts[currentIndex]
@@ -403,13 +152,28 @@ export default function TutoTunnel({ onComplete, onSkip }) {
     if (showRevelation && currentFact) {
       return (
         <>
-          <RevelationScreenTuto
+          <RevelationScreen
             fact={currentFact}
             isCorrect={isCorrect}
+            selectedAnswer={selectedAnswer}
+            pointsEarned={isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0}
+            hintsUsed={hintsUsed}
             onNext={() => {
+              if (isCorrect) {
+                setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
+              }
               setPhase('phase1_home')
-              setFirstFactCorrect(isCorrect)
             }}
+            onShare={() => {}}
+            onQuit={() => onSkip?.()}
+            factIndex={currentIndex}
+            totalFacts={sessionFacts.length}
+            gameMode="solo"
+            sessionScore={sessionScore}
+            playerCoins={sessionScore}
+            playerTickets={0}
+            playerHints={0}
+            sessionType="parcours"
           />
           {/* Skip button */}
           <button
@@ -437,11 +201,33 @@ export default function TutoTunnel({ onComplete, onSkip }) {
     if (currentFact) {
       return (
         <>
-          <QuestionScreenTuto
+          <QuestionScreen
             fact={currentFact}
-            config={TUTO_QUEST_CONFIG}
-            onAnswer={(correct) => setIsCorrect(correct)}
-            onTimeout={() => setShowRevelation(true)}
+            factIndex={currentIndex}
+            totalFacts={sessionFacts.length}
+            hintsUsed={hintsUsed}
+            onSelectAnswer={(answer) => {
+              audio.play('click')
+              const correct = answer === currentFact.answer
+              setSelectedAnswer(answer)
+              setIsCorrect(correct)
+              setTimeout(() => setShowRevelation(true), 600)
+            }}
+            onOpenValidate={() => {}}
+            onUseHint={() => setHintsUsed(prev => prev + 1)}
+            onTimeout={() => {
+              setShowRevelation(true)
+              setIsCorrect(false)
+            }}
+            onQuit={() => onSkip?.()}
+            category={currentFact.category}
+            gameMode="solo"
+            difficulty={TUTO_QUEST_CONFIG}
+            playerCoins={sessionScore}
+            playerHints={0}
+            playerTickets={0}
+            sessionType="parcours"
+            isTutorial={true}
           />
           {/* Skip button */}
           <button
@@ -539,7 +325,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
               setCurrentIndex(0)
               setShowRevelation(false)
               setSelectedAnswer(null)
-              setHintsRevealed([])
+              setHintsUsed(0)
               setPhase('phase1')
             }}
             style={{
@@ -618,7 +404,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PHASE: PHASE1 (5 Flash questions)
+  // PHASE: PHASE1 (5 Flash questions with real QuestionScreen)
   // ═══════════════════════════════════════════════════════════════════════════
   if (phase === 'phase1') {
     const currentFact = sessionFacts[currentIndex]
@@ -630,15 +416,37 @@ export default function TutoTunnel({ onComplete, onSkip }) {
     if (showRevelation) {
       return (
         <>
-          <RevelationScreenTuto
+          <RevelationScreen
             fact={currentFact}
             isCorrect={isCorrect}
+            selectedAnswer={selectedAnswer}
+            pointsEarned={isCorrect ? TUTO_FLASH_CONFIG.coinsPerCorrect : 0}
+            hintsUsed={hintsUsed}
             onNext={() => {
+              if (isCorrect) {
+                setSessionScore(prev => prev + TUTO_FLASH_CONFIG.coinsPerCorrect)
+              }
               const nextIndex = currentIndex + 1
               if (nextIndex >= sessionFacts.length) {
                 setPhase('flash_complete')
+              } else {
+                setCurrentIndex(nextIndex)
+                setSelectedAnswer(null)
+                setShowRevelation(false)
+                setIsCorrect(false)
+                setHintsUsed(0)
               }
             }}
+            onShare={() => {}}
+            onQuit={() => onSkip?.()}
+            factIndex={currentIndex}
+            totalFacts={sessionFacts.length}
+            gameMode="solo"
+            sessionScore={sessionScore}
+            playerCoins={sessionScore}
+            playerTickets={0}
+            playerHints={0}
+            sessionType="flash_solo"
           />
           {/* Skip button */}
           <button
@@ -665,11 +473,33 @@ export default function TutoTunnel({ onComplete, onSkip }) {
 
     return (
       <>
-        <QuestionScreenTuto
+        <QuestionScreen
           fact={currentFact}
-          config={TUTO_FLASH_CONFIG}
-          onAnswer={(correct) => setIsCorrect(correct)}
-          onTimeout={() => setShowRevelation(true)}
+          factIndex={currentIndex}
+          totalFacts={sessionFacts.length}
+          hintsUsed={hintsUsed}
+          onSelectAnswer={(answer) => {
+            audio.play('click')
+            const correct = answer === currentFact.answer
+            setSelectedAnswer(answer)
+            setIsCorrect(correct)
+            setTimeout(() => setShowRevelation(true), 600)
+          }}
+          onOpenValidate={() => {}}
+          onUseHint={() => setHintsUsed(prev => prev + 1)}
+          onTimeout={() => {
+            setShowRevelation(true)
+            setIsCorrect(false)
+          }}
+          onQuit={() => onSkip?.()}
+          category={currentFact.category}
+          gameMode="solo"
+          difficulty={TUTO_FLASH_CONFIG}
+          playerCoins={sessionScore}
+          playerHints={0}
+          playerTickets={0}
+          sessionType="flash_solo"
+          isTutorial={true}
         />
         {/* Skip button */}
         <button
@@ -875,7 +705,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
               setCurrentIndex(0)
               setShowRevelation(false)
               setSelectedAnswer(null)
-              setHintsRevealed([])
+              setHintsUsed(0)
               setPhase('phase2')
             }}
             style={{
@@ -954,7 +784,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PHASE: PHASE2 (5 Quest questions)
+  // PHASE: PHASE2 (5 Quest questions with real QuestionScreen)
   // ═══════════════════════════════════════════════════════════════════════════
   if (phase === 'phase2') {
     const currentFact = sessionFacts[currentIndex]
@@ -966,15 +796,37 @@ export default function TutoTunnel({ onComplete, onSkip }) {
     if (showRevelation) {
       return (
         <>
-          <RevelationScreenTuto
+          <RevelationScreen
             fact={currentFact}
             isCorrect={isCorrect}
+            selectedAnswer={selectedAnswer}
+            pointsEarned={isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0}
+            hintsUsed={hintsUsed}
             onNext={() => {
+              if (isCorrect) {
+                setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
+              }
               const nextIndex = currentIndex + 1
               if (nextIndex >= sessionFacts.length) {
                 setPhase('quest_complete')
+              } else {
+                setCurrentIndex(nextIndex)
+                setSelectedAnswer(null)
+                setShowRevelation(false)
+                setIsCorrect(false)
+                setHintsUsed(0)
               }
             }}
+            onShare={() => {}}
+            onQuit={() => onSkip?.()}
+            factIndex={currentIndex}
+            totalFacts={sessionFacts.length}
+            gameMode="solo"
+            sessionScore={sessionScore}
+            playerCoins={sessionScore}
+            playerTickets={1}
+            playerHints={0}
+            sessionType="parcours"
           />
           {/* Skip button */}
           <button
@@ -1001,11 +853,33 @@ export default function TutoTunnel({ onComplete, onSkip }) {
 
     return (
       <>
-        <QuestionScreenTuto
+        <QuestionScreen
           fact={currentFact}
-          config={TUTO_QUEST_CONFIG}
-          onAnswer={(correct) => setIsCorrect(correct)}
-          onTimeout={() => setShowRevelation(true)}
+          factIndex={currentIndex}
+          totalFacts={sessionFacts.length}
+          hintsUsed={hintsUsed}
+          onSelectAnswer={(answer) => {
+            audio.play('click')
+            const correct = answer === currentFact.answer
+            setSelectedAnswer(answer)
+            setIsCorrect(correct)
+            setTimeout(() => setShowRevelation(true), 600)
+          }}
+          onOpenValidate={() => {}}
+          onUseHint={() => setHintsUsed(prev => prev + 1)}
+          onTimeout={() => {
+            setShowRevelation(true)
+            setIsCorrect(false)
+          }}
+          onQuit={() => onSkip?.()}
+          category={currentFact.category}
+          gameMode="solo"
+          difficulty={TUTO_QUEST_CONFIG}
+          playerCoins={sessionScore}
+          playerHints={0}
+          playerTickets={1}
+          sessionType="parcours"
+          isTutorial={true}
         />
         {/* Skip button */}
         <button

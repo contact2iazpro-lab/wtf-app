@@ -28,6 +28,9 @@ export default function BlitzResultsScreen({
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // T+29 : Masquer "Défier un ami" si on vient d'un défi reçu
+  const isFromChallenge = !!localStorage.getItem('wtf_active_challenge') || !!localStorage.getItem('wtf_auto_challenge')
+
   useEffect(() => {
     if (finalTime <= 0) return
     const duration = 1200, interval = 16, steps = duration / interval, increment = finalTime / steps
@@ -284,7 +287,7 @@ export default function BlitzResultsScreen({
           >
             ⚡ Rejouer en Blitz
           </button>
-          {user && !challengeCreated && (
+          {user && !challengeCreated && !isFromChallenge && (
             <button
               onClick={handleCreateChallenge}
               disabled={isCreating}

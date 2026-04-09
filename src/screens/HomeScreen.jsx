@@ -152,6 +152,7 @@ export default function HomeScreen({
   onModeSeen,
   socialNotifCount = 0,
   onResetSocialNotif,
+  pendingChallengesCount = 0,
 }) {
   const { isConnected } = useAuth()
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
@@ -802,15 +803,15 @@ export default function HomeScreen({
         }}>
           <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {canQuest && questsPlayedInMode === 0 && <NewBadge />}
-            <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
+            <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'quest') return; if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
           </div>
           <div style={{ position: 'relative' }}>
             {canSerie && modeIsNew('serie') && <NewBadge />}
-            <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!canSerie} onClick={() => { if (!canSerie) return showLockToast(UNLOCK_MESSAGES.serie); nav('trophees') }} />
+            <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!canSerie} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'serie') return; if (!canSerie) return showLockToast(UNLOCK_MESSAGES.serie); nav('trophees') }} />
           </div>
           <div style={{ position: 'relative' }}>
             {canHunt && modeIsNew('hunt') && <NewBadge />}
-            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canHunt} onClick={() => { if (!canHunt) return showLockToast(UNLOCK_MESSAGES.hunt); markSeen('hasSeenHunt'); nav('wtfDuJour') }} />
+            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canHunt} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'hunt') return; if (!canHunt) return showLockToast(UNLOCK_MESSAGES.hunt); markSeen('hasSeenHunt'); nav('wtfDuJour') }} />
           </div>
         </div>
 
@@ -867,15 +868,15 @@ export default function HomeScreen({
         }}>
           <div style={{ position: 'relative', ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
-            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer} onClick={() => { if (!canExplorer) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
+            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer && !(explorerPlayedInMode === 0 && gamesPlayed >= 2)} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'marathon') return; const isExplorerNew = explorerPlayedInMode === 0 && gamesPlayed >= 2; if (!canExplorer && !isExplorerNew) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
           </div>
           <div style={{ position: 'relative' }}>
             {canMulti && modeIsNew('multi') && <NewBadge />}
-            <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
+            <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'multi') return; if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
           </div>
           <div ref={blitzBtnRef} style={{ position: 'relative', ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'blitz') return; if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
           </div>
         </div>
       </div>
@@ -890,7 +891,7 @@ export default function HomeScreen({
       }}>
         <button
           ref={flashBtnRef}
-          onClick={() => { if (activeSpotlight === 'flash') dismissSpotlight('flash'); nav('categoryFlash') }}
+          onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'flash') return; if (activeSpotlight === 'flash') dismissSpotlight('flash'); nav('categoryFlash') }}
           style={{
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
             borderRadius: 14, border: 'none',
@@ -983,15 +984,31 @@ export default function HomeScreen({
                       fontSize: 7,
                     }}>🔒</div>
                   )}
-                  {item.slug === 'amis' && socialNotifCount > 0 && (
+                  {item.slug === 'amis' && (socialNotifCount > 0 || pendingChallengesCount > 0) && (
                     <div style={{
                       position: 'absolute', top: -2, right: -2,
-                      width: 10, height: 10, borderRadius: '50%',
-                      background: '#EF4444', border: '1px solid white',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 6, fontWeight: 900, color: 'white', lineHeight: 1,
+                      display: 'flex', gap: 2,
                     }}>
-                      {socialNotifCount > 9 ? '9+' : socialNotifCount}
+                      {socialNotifCount > 0 && (
+                        <div style={{
+                          width: 10, height: 10, borderRadius: '50%',
+                          background: '#EF4444', border: '1px solid white',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 6, fontWeight: 900, color: 'white', lineHeight: 1,
+                        }}>
+                          {socialNotifCount > 9 ? '9+' : socialNotifCount}
+                        </div>
+                      )}
+                      {pendingChallengesCount > 0 && (
+                        <div style={{
+                          minWidth: 16, height: 16, borderRadius: 8,
+                          background: '#EF4444', border: '1px solid white',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          padding: '0 4px', fontSize: 9, fontWeight: 900, color: 'white', lineHeight: 1,
+                        }}>
+                          {pendingChallengesCount}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

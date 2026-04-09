@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(node full_fix.cjs)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(grep -n \"getValidFacts\\\\|getGeneratedFacts\\\\|export.*facts\" src/data/*.js)",
+      "Bash(grep -n \"67\\\\|301\\\\|92\\\\|174\\\\|109\" src/data/facts*.js)",
+      "Bash(git add:*)"
     ]
   }
 }

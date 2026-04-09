@@ -511,6 +511,15 @@ export default function CollectionPage() {
   // Onboarding Collection
   const wtfDataInit = readWtfData()
   const isFirstVisitCollection = !wtfDataInit.onboardingCompleted && !wtfDataInit.hasVisitedCollection
+
+  // Sécurité : si onboardingCompleted=true mais hasVisitedCollection=false, forcer hasVisitedCollection=true et ne pas afficher le spotlight
+  if (wtfDataInit.onboardingCompleted && !wtfDataInit.hasVisitedCollection) {
+    const fix = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    fix.hasVisitedCollection = true
+    fix.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(fix))
+  }
+
   const [onboardingMode, setOnboardingMode] = useState(isFirstVisitCollection)
 
   // Local unlocked facts
@@ -750,31 +759,76 @@ export default function CollectionPage() {
         }}>👆</div>
       )}
 
-      {/* Étape 3 : Bouton "Continuer le tutoriel" */}
+      {/* Étape 1 : Message instructif */}
+      {collectionSpotlightStep === 1 && (
+        <div style={{
+          position: 'fixed',
+          top: '40%', left: '50%', transform: 'translateX(-50%)',
+          zIndex: 501, background: 'rgba(255, 107, 26, 0.15)', backdropFilter: 'blur(8px)',
+          border: '1.5px solid rgba(255, 107, 26, 0.4)', borderRadius: 12,
+          padding: '12px 20px', maxWidth: 280, textAlign: 'center',
+          fontSize: 13, fontWeight: 700, color: '#1a1a2e',
+          fontFamily: 'Nunito, sans-serif',
+          pointerEvents: 'none',
+        }}>
+          📊 Vois les catégories avec tes f*cts débloqués !
+        </div>
+      )}
+
+      {/* Étape 2 : Message instructif */}
+      {collectionSpotlightStep === 2 && (
+        <div style={{
+          position: 'fixed',
+          top: '40%', left: '50%', transform: 'translateX(-50%)',
+          zIndex: 501, background: 'rgba(255, 107, 26, 0.15)', backdropFilter: 'blur(8px)',
+          border: '1.5px solid rgba(255, 107, 26, 0.4)', borderRadius: 12,
+          padding: '12px 20px', maxWidth: 280, textAlign: 'center',
+          fontSize: 13, fontWeight: 700, color: '#1a1a2e',
+          fontFamily: 'Nunito, sans-serif',
+          pointerEvents: 'none',
+        }}>
+          📂 Clique pour voir tes f*cts débloqués !
+        </div>
+      )}
+
+      {/* Étape 3 : Message + Bouton "Continuer le tutoriel" */}
       {collectionSpotlightStep === 3 && (
-        <button
-          onClick={() => {
-            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            wd.hasVisitedCollection = true
-            wd.onboardingCompleted = true
-            wd.lastModified = Date.now()
-            localStorage.setItem('wtf_data', JSON.stringify(wd))
-            setOnboardingMode(false)
-            setCollectionSpotlightStep(0)
-            navigate('/')
-          }}
-          style={{
-            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            zIndex: 501, padding: '14px 32px', borderRadius: 14,
-            background: '#FF6B1A', color: 'white', border: 'none',
-            fontWeight: 900, fontSize: 16, cursor: 'pointer',
+        <div style={{
+          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          zIndex: 501, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+        }}>
+          <div style={{
+            background: 'rgba(255, 107, 26, 0.15)', backdropFilter: 'blur(8px)',
+            border: '1.5px solid rgba(255, 107, 26, 0.4)', borderRadius: 12,
+            padding: '12px 20px', maxWidth: 280, textAlign: 'center',
+            fontSize: 13, fontWeight: 700, color: '#1a1a2e',
             fontFamily: 'Nunito, sans-serif',
-            boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 4px 16px rgba(255,107,26,0.4)',
-            animation: 'pulse 1.5s ease-in-out infinite',
-          }}
-        >
-          Continuer le tutoriel 🚀
-        </button>
+          }}>
+            💡 Explore tes catégories pour voir tes f*cts débloqués !
+          </div>
+          <button
+            onClick={() => {
+              const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+              wd.hasVisitedCollection = true
+              wd.onboardingCompleted = true
+              wd.lastModified = Date.now()
+              localStorage.setItem('wtf_data', JSON.stringify(wd))
+              setOnboardingMode(false)
+              setCollectionSpotlightStep(0)
+              navigate('/')
+            }}
+            style={{
+              padding: '14px 32px', borderRadius: 14,
+              background: '#FF6B1A', color: 'white', border: 'none',
+              fontWeight: 900, fontSize: 16, cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif',
+              boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 4px 16px rgba(255,107,26,0.4)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
+          >
+            Continuer le tutoriel 🚀
+          </button>
+        </div>
       )}
 
       {/* Keyframe animations */}
@@ -838,7 +892,14 @@ export default function CollectionPage() {
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3 mb-3">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              // Sécurité : marquer hasVisitedCollection=true même si on quitte sans finir le spotlight
+              const fix = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+              fix.hasVisitedCollection = true
+              fix.lastModified = Date.now()
+              localStorage.setItem('wtf_data', JSON.stringify(fix))
+              navigate('/')
+            }}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
             style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
           >

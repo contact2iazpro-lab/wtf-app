@@ -51,7 +51,7 @@ const ONBOARDING_FLASH_FACT_IDS = [67, 301, 92, 174, 109, 95, 177, 22, 6, 61]
 const DIFFICULTY_ONBOARDING_FLASH = {
   id: 'onboarding_flash', label: 'Flash Onboarding', emoji: '🎯',
   choices: 2, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2,
-  hintCost: 0, coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 }
+  hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 5, wrong: 0 }
 }
 
 const SCREENS = {
@@ -106,8 +106,8 @@ const MODE_CONFIGS = {
       { icon: '⚡', text: '5 questions' },
       { icon: '⏱️', text: `${DIFFICULTY_LEVELS.FLASH.duration} secondes par question` },
       { icon: '💡', text: `${DIFFICULTY_LEVELS.FLASH.paidHints} indices disponibles` },
-      { icon: '🎲', text: 'Aléatoire : 5 coins par bonne réponse' },
-      { icon: '📂', text: 'Catégorie choisie : 3 coins par bonne réponse' },
+      { icon: '🎲', text: 'Aléatoire : 2 coins par bonne réponse' },
+      { icon: '📂', text: 'Catégorie choisie : 1 coin par bonne réponse' },
     ],
   },
   hunt: {
@@ -177,6 +177,13 @@ function loadStorage() {
       } else {
         saved.onboardingCompleted = false
       }
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    }
+
+    // Garde-fou additionnel : si plus de 3 parties jouées, onboarding est FORCEMENT terminé
+    if ((saved.gamesPlayed || 0) > 3 && !saved.onboardingCompleted) {
+      saved.onboardingCompleted = true
       saved.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
@@ -372,8 +379,18 @@ export default function App() {
 
     sessionStorage.setItem('wtf_splash_done', 'true')
 
-    // Vérifier l'état du tutoriel — si FIRST_FACT, envoyer directement sur QuestionScreen
+    // Vérifier l'état du tutoriel — si FIRST_FACT et onboarding pas terminé, envoyer directement sur QuestionScreen
     try {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+
+      // Si onboarding déjà terminé, ignorer complètement le tutorialState et aller au jeu normal
+      if (wd.onboardingCompleted) {
+        setShowSplash(false)
+        setScreen(SCREENS.HOME)
+        return
+      }
+
+      // Onboarding en cours — vérifier le tutorialState
       const tutorialState = await getTutorialState()
       if (tutorialState === TUTORIAL_STATES.FIRST_FACT) {
         const tutorialFactId = getTutorialFactId()
@@ -452,6 +469,7 @@ export default function App() {
   const [miniParcours, setMiniParcours] = useState(null)
   const [socialNotifCount, setSocialNotifCount] = useState(0)
   const [showConnectBanner, setShowConnectBanner] = useState(false)
+  const [pendingChallengesCount, setPendingChallengesCount] = useState(0)
 
   const { user, signInWithGoogle } = useAuth()
 
@@ -484,6 +502,29 @@ export default function App() {
       }, () => {
         setSocialNotifCount(prev => prev + 1)
       })
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [user])
+
+  // ── Badge Défi en attente dans la navbar ─────────────────────────────────────
+  useEffect(() => {
+    if (!user) { setPendingChallengesCount(0); return }
+
+    const fetchPending = async () => {
+      const { data } = await supabase
+        .from('challenges')
+        .select('id')
+        .eq('status', 'pending')
+        .neq('player1_id', user.id)
+      setPendingChallengesCount((data || []).length)
+    }
+
+    fetchPending()
+
+    const channel = supabase
+      .channel('nav-challenges-' + user.id)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, () => fetchPending())
       .subscribe()
 
     return () => supabase.removeChannel(channel)
@@ -751,16 +792,11 @@ export default function App() {
     switch (target) {
       case 'difficulty': {
         setGameMode('solo'); setSessionType('parcours')
-        // Première Quest : skip launch + difficulty, forcer Cool 2 QCM
+        // Première Quest : skip launch + difficulty, forcer Cool avec les paramètres DIFFICULTY_LEVELS
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         if ((wd.questsPlayed || 0) === 0) {
-          const firstQuestDifficulty = {
-            id: 'cool', label: 'Cool', emoji: '❄️',
-            choices: 2, duration: 30, hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
-            coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 },
-          }
-          setSelectedDifficulty(firstQuestDifficulty)
-          handleSelectDifficulty(firstQuestDifficulty)
+          setSelectedDifficulty(DIFFICULTY_LEVELS.COOL)
+          handleSelectDifficulty(DIFFICULTY_LEVELS.COOL)
           return
         }
         showOrSkipLaunch('quest')
@@ -806,6 +842,31 @@ export default function App() {
         }
         setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
         showOrSkipLaunch('flash')
+        break
+      }
+      case 'marathon': {
+        // Explorer mode — lancer après onboarding ou appeler Flash si pas encore prêt
+        setGameMode('solo')
+        setSessionType('flash_solo')
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+
+        // Si onboarding pas terminé, rediriger vers Flash onboarding
+        if (!isDevOrTest && wd.tutorialDone && !wd.onboardingCompleted) {
+          handleFlashSolo()
+          break
+        }
+
+        // Mode Explorer normal
+        setGameMode('marathon')
+        setSessionType('marathon')
+        // Si c'est la première visite à Explorer (explorerPlayedInMode === 0), lancer directement sans règles
+        const explorerPlayedInMode = wd.statsByMode?.flash_solo?.gamesPlayed || 0
+        if (explorerPlayedInMode === 0) {
+          launchModeDestination('explorer')
+        } else {
+          showOrSkipLaunch('explorer')
+        }
         break
       }
       case 'collection':    navigate('/collection'); break
@@ -1178,7 +1239,20 @@ export default function App() {
   }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty, sessionType, user])
 
   const handleOpenValidate = useCallback((isCorrect) => {
-    const points = isCorrect ? (hintsUsed === 0 ? 5 : hintsUsed === 1 ? 3 : 2) : 0
+    let points = 0
+    if (isCorrect) {
+      if (selectedDifficulty.coinsPerCorrect !== undefined) {
+        points = selectedDifficulty.coinsPerCorrect
+        // Mode Jouer avec catégorie choisie → 1 coin au lieu de 2
+        if (sessionType === 'flash_solo' && selectedCategory !== null) {
+          points = 1
+        }
+      } else {
+        // Legacy (Hunt) : dégradation selon les indices utilisés
+        const sc = selectedDifficulty.scoring.correct
+        points = Array.isArray(sc) ? (sc[hintsUsed] ?? sc[sc.length - 1]) : sc
+      }
+    }
 
     setSelectedAnswer(isCorrect ? 100 : -2)
     setIsCorrect(isCorrect)
@@ -1201,7 +1275,7 @@ export default function App() {
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [hintsUsed, gameMode, duelCurrentPlayerIndex, currentFact])
+  }, [hintsUsed, gameMode, duelCurrentPlayerIndex, currentFact, selectedDifficulty, sessionType, selectedCategory])
 
   const handleTimeout = useCallback(() => {
     if (selectedAnswer !== null) return
@@ -1423,6 +1497,15 @@ export default function App() {
       } else {
         // Première Flash ou première Quest onboarding : modale fact débloqué au lieu de ResultsScreen
         const wtfDataOnb = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        const totalGames = wtfDataOnb.gamesPlayed || 0
+
+        // Garde-fou : si plus de 3 parties jouées, l'onboarding est FORCEMENT terminé
+        if (totalGames > 3 && !wtfDataOnb.onboardingCompleted) {
+          wtfDataOnb.onboardingCompleted = true
+          wtfDataOnb.lastModified = Date.now()
+          localStorage.setItem('wtf_data', JSON.stringify(wtfDataOnb))
+        }
+
         const isOnboardingSession = !wtfDataOnb.onboardingCompleted
 
         if (isOnboardingSession && sessionType !== 'wtf_du_jour') {
@@ -1445,7 +1528,8 @@ export default function App() {
 
         // Après la première Quest complétée : afficher écran "Tutoriel terminé" au lieu de ResultsScreen
         const wtfDataEnd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        const isFirstQuestComplete = sessionType === 'parcours' && (wtfDataEnd.statsByMode?.parcours?.gamesPlayed || 0) === 1
+        const parcGames = wtfDataEnd.statsByMode?.parcours?.gamesPlayed ?? wtfDataEnd.questsPlayed ?? 0
+        const isFirstQuestComplete = sessionType === 'parcours' && parcGames === 1
         if (isFirstQuestComplete) {
           // Trace de la condition avant TUTORIAL_COMPLETE
           console.log('TUTORIAL_COMPLETE check:', { sessionType, questsPlayed: wtfDataEnd.statsByMode?.parcours?.gamesPlayed, onboardingCompleted: wtfDataEnd.onboardingCompleted })
@@ -2015,6 +2099,7 @@ export default function App() {
           }}
           socialNotifCount={socialNotifCount}
           onResetSocialNotif={() => setSocialNotifCount(0)}
+          pendingChallengesCount={pendingChallengesCount}
         />
       )}
 
@@ -2235,51 +2320,69 @@ export default function App() {
       {screen === SCREENS.FLASH_TUTO_COMPLETE && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 400,
-          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(6px)',
+          background: 'rgba(0,0,0,0.7)',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          padding: 24, gap: 20, fontFamily: 'Nunito, sans-serif',
+          padding: 24, fontFamily: 'Nunito, sans-serif',
         }}>
-          <div style={{ fontSize: 64, lineHeight: 1 }}>🎫</div>
           <div style={{
-            fontSize: 22, fontWeight: 900, color: '#FFD700',
-            textAlign: 'center', textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            background: 'white', borderRadius: 24, padding: 32,
+            maxWidth: 340, width: '90%', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: 20, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
           }}>
-            Bravo, tu as terminé ta première session !
-          </div>
-          <div style={{
-            fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
-            textAlign: 'center', lineHeight: 1.5, maxWidth: 280,
-          }}>
-            Tu as obtenu <span style={{ color: '#FFD700' }}>1 ticket 🎫</span>
-          </div>
-          <div style={{
-            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
-            textAlign: 'center', lineHeight: 1.5, maxWidth: 280,
-          }}>
-            Lance ta première Quest pour débloquer des f*cts VIP et monter en niveau !
+            <div style={{ fontSize: 48, lineHeight: 1 }}>🎫</div>
+            <div style={{
+              fontSize: 22, fontWeight: 900, color: '#FF6B1A',
+              textAlign: 'center',
+            }}>
+              Bravo !
+            </div>
+            <div style={{
+              fontSize: 16, fontWeight: 700, color: '#1a1a2e',
+              textAlign: 'center', lineHeight: 1.5,
+            }}>
+              Tu as obtenu <span style={{ color: '#FF6B1A' }}>1 ticket 🎫</span>
+            </div>
+            <div style={{
+              fontSize: 14, fontWeight: 600, color: 'rgba(26,26,46,0.7)',
+              textAlign: 'center', lineHeight: 1.5,
+            }}>
+              Lance ta première Quest pour débloquer des f*cts VIP et monter en niveau !
+            </div>
+
+            <button
+              onClick={() => {
+                audio.play?.('click')
+                handleHomeNavigate('difficulty')
+              }}
+              style={{
+                marginTop: 12, padding: '14px 32px', borderRadius: 14,
+                background: '#FF6B1A', color: 'white', border: 'none',
+                fontWeight: 900, fontSize: 16, cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+                boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+                animation: 'pulse 1.5s ease-in-out infinite',
+              }}
+            >
+              Jouer ma première Quest 🎯
+            </button>
+
+            <div style={{
+              fontSize: 28, animation: 'fingerBounce 0.8s ease-in-out infinite',
+              textAlign: 'center', marginTop: 8,
+            }}>
+              👆
+            </div>
           </div>
 
-          <button
-            onClick={() => {
-              audio.play?.('click')
-              handleHomeNavigate('difficulty')
-            }}
-            style={{
-              marginTop: 12, padding: '14px 32px', borderRadius: 14,
-              background: '#FF6B1A', color: 'white', border: 'none',
-              fontWeight: 900, fontSize: 16, cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif',
-              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
-              animation: 'pulse 1.5s ease-in-out infinite',
-            }}
-          >
-            Jouer ma première Quest 🎯
-          </button>
           <style>{`
             @keyframes pulse {
               0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(255,107,26,0.4); }
               50% { transform: scale(1.05); box-shadow: 0 8px 24px rgba(255,107,26,0.6); }
+            }
+            @keyframes fingerBounce {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-8px); }
             }
           `}</style>
         </div>
@@ -2288,59 +2391,63 @@ export default function App() {
       {screen === SCREENS.ONBOARDING_FACT && onboardingFact && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 400,
-          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(6px)',
+          background: 'rgba(0,0,0,0.7)',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          padding: 24, gap: 20,
-          fontFamily: 'Nunito, sans-serif',
+          padding: 24, fontFamily: 'Nunito, sans-serif',
         }}>
-          <div style={{ fontSize: 48, lineHeight: 1 }}>🎉</div>
           <div style={{
-            fontSize: 22, fontWeight: 900, color: '#FFD700',
-            textAlign: 'center',
-            textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+            background: 'white', borderRadius: 24, padding: 32,
+            maxWidth: 340, width: '90%', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: 20, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
           }}>
-            Tu as débloqué ton premier f*ct !
-          </div>
-          <div style={{
-            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
-            textAlign: 'center',
-          }}>
-            Clique dessus pour le découvrir 👇
-          </div>
-          <div
-            onClick={() => {
-              const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-              wd.hasSeenFirstFactModal = true
-              wd.pendingFactDetail = JSON.stringify(onboardingFact)
-              wd.lastModified = Date.now()
-              localStorage.setItem('wtf_data', JSON.stringify(wd))
-              audio.startMusic()
-              setOnboardingFact(null)
-              navigate('/collection')
-            }}
-            style={{
-              width: 160, height: 160, borderRadius: 20,
-              overflow: 'hidden', cursor: 'pointer',
-              border: '3px solid #FFD700',
-              boxShadow: '0 0 30px rgba(255,215,0,0.4), 0 8px 32px rgba(0,0,0,0.5)',
-              animation: 'onbFactBounce 1.2s ease-in-out infinite',
-              position: 'relative',
-            }}
-          >
-            {onboardingFact.imageUrl ? (
-              <img src={onboardingFact.imageUrl} alt=""
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={e => { e.target.style.display = 'none' }} />
-            ) : (
-              <div style={{
-                width: '100%', height: '100%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'linear-gradient(135deg, #FF6B1A44, #FF6B1A)',
-              }}>
-                <span style={{ fontSize: 48, opacity: 0.4 }}>?</span>
-              </div>
-            )}
+            <div style={{ fontSize: 48, lineHeight: 1 }}>🎉</div>
+            <div style={{
+              fontSize: 22, fontWeight: 900, color: '#FF6B1A',
+              textAlign: 'center',
+            }}>
+              Tu as débloqué un f*ct !
+            </div>
+            <div style={{
+              fontSize: 14, fontWeight: 600, color: 'rgba(26,26,46,0.7)',
+              textAlign: 'center',
+            }}>
+              Clique dessus pour le découvrir 👇
+            </div>
+            <div
+              onClick={() => {
+                const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                wd.hasSeenFirstFactModal = true
+                wd.pendingFactDetail = JSON.stringify(onboardingFact)
+                wd.lastModified = Date.now()
+                localStorage.setItem('wtf_data', JSON.stringify(wd))
+                audio.startMusic()
+                setOnboardingFact(null)
+                navigate('/collection')
+              }}
+              style={{
+                width: 160, height: 160, borderRadius: 20,
+                overflow: 'hidden', cursor: 'pointer',
+                border: '3px solid #FF6B1A',
+                boxShadow: '0 0 30px rgba(255,107,26,0.3), 0 8px 32px rgba(0,0,0,0.15)',
+                animation: 'onbFactBounce 1.2s ease-in-out infinite',
+                position: 'relative',
+              }}
+            >
+              {onboardingFact.imageUrl ? (
+                <img src={onboardingFact.imageUrl} alt=""
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={e => { e.target.style.display = 'none' }} />
+              ) : (
+                <div style={{
+                  width: '100%', height: '100%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'linear-gradient(135deg, #FF6B1A44, #FF6B1A)',
+                }}>
+                  <span style={{ fontSize: 48, opacity: 0.4 }}>?</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <style>{`

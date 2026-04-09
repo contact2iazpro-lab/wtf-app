@@ -189,7 +189,7 @@ export default function RevelationScreen({
   const [copied, setCopied] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showLightbox, setShowLightbox] = useState(false)
-  const [displayedScore, setDisplayedScore] = useState(playerCoins - pointsEarned)
+  const [displayedScore, setDisplayedScore] = useState(0)
   const [showScorePulse, setShowScorePulse] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)

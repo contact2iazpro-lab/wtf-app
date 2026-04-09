@@ -295,15 +295,19 @@ export default function QuestionScreen({
         const hintNum = i + 1
         const hintText = selectedHints[hintNum - 1] ?? null
         const currentCoins = parseInt(JSON.parse(localStorage.getItem('wtf_data') || '{}').wtfCoins || '0', 10)
+        // Distinguish free hints from paid hints
+        const isFreeHint = i < freeHints
+        const canUseHint = isFreeHint ? (hintsUsed < freeHints) : (stockRemaining > 0)
+        const canBuyHint = !canUseHint && currentCoins >= 5
         return (
           <HintFlipButton
             key={hintNum}
             num={hintNum}
             hint={hintText}
             catColor={cat?.color || '#FF6B1A'}
-            hasStock={stockRemaining > 0}
-            stockCount={stockRemaining > 0 ? 'Indice' : stockRemaining}
-            canBuyWithCoins={stockRemaining <= 0 && currentCoins >= 5}
+            hasStock={canUseHint}
+            stockCount={canUseHint ? 'Indice' : stockRemaining}
+            canBuyWithCoins={canBuyHint}
             onReveal={() => { onUseHint(hintNum); audio.play('click') }}
             onBuyHint={() => {
               updateCoins(-5)
@@ -668,36 +672,36 @@ export default function QuestionScreen({
                 <button
                   onClick={() => {
                     audio.play('click')
-                    // Créditer les devises de départ + débloquer tout l'onboarding
+                    // Créditer les devises de départ : 50 coins, 2 tickets, 3 indices
                     const balances = getBalances()
-                    if (balances.tickets === 0) updateTickets(3)
-                    if (balances.hints === 0) updateHints(3)
+                    const coinsToAdd = Math.max(0, 50 - (balances.coins || 0))
+                    const ticketsToAdd = Math.max(0, 2 - (balances.tickets || 0))
+                    const hintsToAdd = Math.max(0, 3 - (balances.hints || 0))
+                    if (coinsToAdd > 0) updateCoins(coinsToAdd)
+                    if (ticketsToAdd > 0) updateTickets(ticketsToAdd)
+                    if (hintsToAdd > 0) updateHints(hintsToAdd)
 
-                    // Initialiser wtf_data avec tous les flags d'onboarding complétés
+                    // Initialiser wtf_data avec progression complète simulée
                     const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                    wtfData.onboardingCompleted = true
                     wtfData.tutorialDone = true
-                    wtfData.gamesPlayed = 100  // Assez haut pour tout débloquer
-                    wtfData.onboardingCompleted = true  // Marquer onboarding comme complété
-                    // Initialiser statsByMode pour débloquer Amis (blitz) et autres modes
-                    wtfData.statsByMode = wtfData.statsByMode || {}
-                    wtfData.statsByMode.flash_solo = wtfData.statsByMode.flash_solo || { gamesPlayed: 0 }
-                    wtfData.statsByMode.flash_solo.gamesPlayed = 1
-                    wtfData.statsByMode.parcours = wtfData.statsByMode.parcours || { gamesPlayed: 0 }
-                    wtfData.statsByMode.parcours.gamesPlayed = 1
-                    wtfData.statsByMode.blitz = wtfData.statsByMode.blitz || { gamesPlayed: 0 }
-                    wtfData.statsByMode.blitz.gamesPlayed = 1
+                    wtfData.gamesPlayed = 10
+                    wtfData.questsPlayed = 2
                     wtfData.hasSeenFlash = true
                     wtfData.hasSeenQuest = true
                     wtfData.hasSeenCollection = true
-                    wtfData.hasSeenCoffre = true
                     wtfData.hasSeenBoutique = true
                     wtfData.hasSeenBlitz = true
-                    wtfData.hasSeenFirstFactModal = true
                     wtfData.hasVisitedCollection = true
                     wtfData.firstFlashTicketGiven = true
+                    wtfData.unlockedFacts = wtfData.unlockedFacts || []
+                    if (!wtfData.statsByMode) wtfData.statsByMode = {}
+                    wtfData.statsByMode.flash_solo = { gamesPlayed: 3, ...(wtfData.statsByMode.flash_solo || {}) }
+                    wtfData.statsByMode.parcours = { gamesPlayed: 2, ...(wtfData.statsByMode.parcours || {}) }
+                    wtfData.statsByMode.blitz = { gamesPlayed: 1, ...(wtfData.statsByMode.blitz || {}) }
                     wtfData.lastModified = Date.now()
                     localStorage.setItem('wtf_data', JSON.stringify(wtfData))
-                    localStorage.setItem('wtf_hints_available', '3')
+                    localStorage.setItem('wtf_hints_available', String(Math.max(3, hintsToAdd)))
                     localStorage.setItem('wtf_first_login_done', 'true')
 
                     // Supprimer les skip_launch flags

@@ -4,8 +4,277 @@ import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
 import { getAnswerOptions } from '../utils/answers'
-import QuestionScreen from '../screens/QuestionScreen'
-import RevelationScreen from '../screens/RevelationScreen'
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONSTANTES
+// ═══════════════════════════════════════════════════════════════════════════
+const CAT_COLORS = {
+  sport: '#EF4444', records: '#F59E0B', animaux: '#22C55E',
+  kids: '#EC4899', definition: '#8B5CF6', sciences: '#3B82F6',
+  histoire: '#F97316', geographie: '#14B8A6', gastronomie: '#D97706',
+  technologie: '#6366F1', sante: '#10B981', art: '#A855F7',
+  'corps-humain': '#EF4444', phobies: '#7C3AED', lois: '#64748B',
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INTERNAL COMPONENT: TutoQuestion
+// ═══════════════════════════════════════════════════════════════════════════
+function TutoQuestion({
+  fact,
+  config,
+  sessionScore,
+  currentIndex,
+  totalFacts,
+  onAnswer,
+  onQuit,
+  catColor = '#FF6B1A',
+}) {
+  const S = useScale()
+  const S_val = (px) => `calc(${px}px * var(--scale))`
+  const [timeLeft, setTimeLeft] = useState(config.duration || 30)
+  const [showHint1, setShowHint1] = useState(false)
+  const [showHint2, setShowHint2] = useState(false)
+  const [selectedIdx, setSelectedIdx] = useState(null)
+  const timerRef = useRef(null)
+
+  // Timer
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) {
+          clearInterval(timerRef.current)
+          onAnswer(false, null)
+          return 0
+        }
+        return t - 1
+      })
+    }, 1000)
+    return () => clearInterval(timerRef.current)
+  }, [onAnswer])
+
+  const options = fact.options || []
+  const shuffledOptions = [...options].sort(() => Math.random() - 0.5).slice(0, config.choices)
+  const correctIdx = shuffledOptions.indexOf(fact.short_answer)
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`,
+      display: 'flex', flexDirection: 'column',
+      padding: S_val(16), overflow: 'auto',
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        marginBottom: S_val(16), paddingTop: S_val(8),
+      }}>
+        <button onClick={onQuit} style={{
+          background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: S_val(8),
+          color: 'white', padding: S_val(8), cursor: 'pointer', fontSize: S_val(18),
+        }}>
+          ✕
+        </button>
+        <div style={{ color: 'white', fontWeight: 700, fontSize: S_val(14) }}>
+          🪙 {sessionScore}
+        </div>
+        <div style={{ color: 'white', fontWeight: 700, fontSize: S_val(14) }}>
+          {currentIndex + 1} / {totalFacts}
+        </div>
+      </div>
+
+      {/* Mode badge */}
+      <div style={{
+        color: 'white', fontSize: S_val(12), fontWeight: 900, textAlign: 'center',
+        marginBottom: S_val(20), textTransform: 'uppercase', letterSpacing: '0.1em',
+      }}>
+        {config === TUTO_FLASH_CONFIG ? '⚡ MODE FLASH' : '⭐ MODE QUEST'}
+      </div>
+
+      {/* Progress bar */}
+      <div style={{
+        display: 'flex', gap: S_val(6), marginBottom: S_val(24),
+      }}>
+        {Array.from({ length: totalFacts }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              flex: 1, height: S_val(4), borderRadius: S_val(2),
+              background: i <= currentIndex ? catColor : 'rgba(255,255,255,0.3)',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Question */}
+      <div style={{
+        background: 'rgba(0,0,0,0.15)', borderRadius: S_val(16), padding: S_val(20),
+        marginBottom: S_val(24), color: 'white', fontSize: S_val(18), fontWeight: 700,
+        fontFamily: 'Nunito, sans-serif', lineHeight: 1.5,
+      }}>
+        {fact.question}
+      </div>
+
+      {/* Hints */}
+      <div style={{ display: 'flex', gap: S_val(12), marginBottom: S_val(20) }}>
+        <button onClick={() => setShowHint1(true)} style={{
+          flex: 1, padding: S_val(12), borderRadius: S_val(12), background: catColor,
+          color: 'white', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: S_val(13),
+        }}>
+          💡 {config === TUTO_FLASH_CONFIG ? 'Indice payant' : 'Indice gratuit'}
+        </button>
+      </div>
+      {showHint1 && (
+        <div style={{
+          background: 'rgba(0,0,0,0.15)', borderRadius: S_val(12), padding: S_val(16),
+          marginBottom: S_val(16), color: 'white', fontSize: S_val(14),
+        }}>
+          {fact.hint1 || 'Pas d\'indice disponible'}
+        </div>
+      )}
+
+      {/* QCM */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: S_val(12), flex: 1 }}>
+        {shuffledOptions.map((opt, idx) => (
+          <button
+            key={idx}
+            onClick={() => {
+              audio.play('click')
+              setSelectedIdx(idx)
+              onAnswer(idx === correctIdx, opt)
+            }}
+            style={{
+              padding: S_val(16), borderRadius: S_val(12), background: 'white',
+              color: '#1a1a2e', border: 'none', cursor: 'pointer',
+              fontWeight: 700, fontSize: S_val(14), textAlign: 'left',
+            }}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+
+      {/* Timer */}
+      <div style={{
+        marginTop: S_val(20), textAlign: 'center', color: 'white',
+        fontSize: S_val(32), fontWeight: 900, fontFamily: 'Nunito, sans-serif',
+      }}>
+        {timeLeft}s
+      </div>
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INTERNAL COMPONENT: TutoRevelation
+// ═══════════════════════════════════════════════════════════════════════════
+function TutoRevelation({
+  fact,
+  isCorrect,
+  coinsEarned,
+  sessionScore,
+  onNext,
+  catColor = '#FF6B1A',
+}) {
+  const S = useScale()
+  const S_val = (px) => `calc(${px}px * var(--scale))`
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`,
+      display: 'flex', flexDirection: 'column',
+      padding: S_val(16), overflow: 'auto',
+    }}>
+      {/* Image */}
+      {fact?.imageUrl && (
+        <img
+          src={fact.imageUrl}
+          alt="fact"
+          style={{
+            width: '100%', height: S_val(200), borderRadius: S_val(16),
+            objectFit: 'cover', marginBottom: S_val(20),
+            filter: isCorrect ? 'none' : 'blur(8px)',
+          }}
+        />
+      )}
+
+      {/* Result */}
+      <div style={{
+        color: 'white', fontSize: S_val(28), fontWeight: 900, textAlign: 'center',
+        marginBottom: S_val(16),
+      }}>
+        {isCorrect ? '🎉 Bravo !' : '😅 Pas grave !'}
+      </div>
+
+      {/* Coins earned */}
+      {isCorrect && coinsEarned > 0 && (
+        <div style={{
+          color: '#FFD700', fontSize: S_val(24), fontWeight: 900, textAlign: 'center',
+          marginBottom: S_val(20), animation: 'bounce 0.6s ease-in-out',
+        }}>
+          +{coinsEarned} 🪙
+        </div>
+      )}
+
+      {/* Fact explanation */}
+      <div style={{
+        background: 'rgba(0,0,0,0.15)', borderRadius: S_val(16), padding: S_val(20),
+        marginBottom: S_val(20), color: 'white', fontSize: S_val(16),
+        fontFamily: 'Nunito, sans-serif', lineHeight: 1.6,
+      }}>
+        <div style={{ fontWeight: 700, marginBottom: S_val(8) }}>
+          {fact.question}
+        </div>
+        <div style={{ opacity: 0.9 }}>
+          {fact.explanation}
+        </div>
+      </div>
+
+      {/* Social proof */}
+      <div style={{
+        color: 'rgba(255,255,255,0.8)', fontSize: S_val(13), textAlign: 'center',
+        marginBottom: S_val(24),
+      }}>
+        🧑‍🤝‍🧑 {Math.floor(60 + Math.random() * 30)}% des joueurs ont trouvé
+      </div>
+
+      {/* Next button */}
+      <button
+        onClick={() => {
+          audio.play('click')
+          onNext()
+        }}
+        style={{
+          padding: S_val(16), borderRadius: S_val(12), background: catColor,
+          color: 'white', border: 'none', cursor: 'pointer',
+          fontWeight: 900, fontSize: S_val(16), textAlign: 'center',
+          marginBottom: S_val(16),
+        }}
+      >
+        SUIVANT →
+      </button>
+
+      {/* Animated finger */}
+      <div style={{
+        textAlign: 'center', fontSize: S_val(28),
+        animation: 'tutoFinger 0.8s ease-in-out infinite',
+      }}>
+        👆
+      </div>
+
+      <style>{`
+        @keyframes tutoFinger {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+        }
+      `}</style>
+    </div>
+  )
+}
 
 export default function TutoTunnel({ onComplete, onSkip }) {
   const S = useScale()
@@ -151,33 +420,22 @@ export default function TutoTunnel({ onComplete, onSkip }) {
     const currentFact = sessionFacts[currentIndex]
 
     if (showRevelation && currentFact) {
+      const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
       return (
-        <>
-          <RevelationScreen
-            fact={currentFact}
-            isCorrect={isCorrect}
-            selectedAnswer={selectedAnswer}
-            pointsEarned={isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0}
-            hintsUsed={hintsUsed}
-            onNext={() => {
-              if (isCorrect) {
-                setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
-              }
-              setShowRevelation(false)
-              setShowFirstFactModal(true)
-            }}
-            onShare={() => {}}
-            onQuit={() => onSkip?.()}
-            factIndex={currentIndex}
-            totalFacts={sessionFacts.length}
-            gameMode="solo"
-            sessionScore={sessionScore}
-            playerCoins={sessionScore}
-            playerTickets={0}
-            playerHints={0}
-            sessionType="parcours"
-          />
-        </>
+        <TutoRevelation
+          fact={currentFact}
+          isCorrect={isCorrect}
+          coinsEarned={isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0}
+          sessionScore={sessionScore}
+          onNext={() => {
+            if (isCorrect) {
+              setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
+            }
+            setShowRevelation(false)
+            setShowFirstFactModal(true)
+          }}
+          catColor={catColor}
+        />
       )
     }
 
@@ -282,34 +540,21 @@ export default function TutoTunnel({ onComplete, onSkip }) {
     }
 
     if (currentFact) {
+      const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
       return (
-        <QuestionScreen
+        <TutoQuestion
           fact={currentFact}
-          factIndex={currentIndex}
+          config={TUTO_QUEST_CONFIG}
+          sessionScore={sessionScore}
+          currentIndex={currentIndex}
           totalFacts={sessionFacts.length}
-          hintsUsed={hintsUsed}
-          onSelectAnswer={(answer) => {
-            audio.play('click')
-            const correct = answer === currentFact.answer
+          onAnswer={(isCorrect, answer) => {
             setSelectedAnswer(answer)
-            setIsCorrect(correct)
+            setIsCorrect(isCorrect)
             setTimeout(() => setShowRevelation(true), 600)
           }}
-          onOpenValidate={() => {}}
-          onUseHint={() => setHintsUsed(prev => prev + 1)}
-          onTimeout={() => {
-            setShowRevelation(true)
-            setIsCorrect(false)
-          }}
           onQuit={() => onSkip?.()}
-          category={currentFact.category}
-          gameMode="solo"
-          difficulty={TUTO_QUEST_CONFIG}
-          playerCoins={sessionScore}
-          playerHints={0}
-          playerTickets={0}
-          sessionType="parcours"
-          isTutorial={true}
+          catColor={catColor}
         />
       )
     }
@@ -459,72 +704,48 @@ export default function TutoTunnel({ onComplete, onSkip }) {
     }
 
     if (showRevelation) {
+      const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
       return (
-        <>
-          <RevelationScreen
-            fact={currentFact}
-            isCorrect={isCorrect}
-            selectedAnswer={selectedAnswer}
-            pointsEarned={isCorrect ? TUTO_FLASH_CONFIG.coinsPerCorrect : 0}
-            hintsUsed={hintsUsed}
-            onNext={() => {
-              if (isCorrect) {
-                setSessionScore(prev => prev + TUTO_FLASH_CONFIG.coinsPerCorrect)
-              }
-              const nextIndex = currentIndex + 1
-              if (nextIndex >= sessionFacts.length) {
-                setPhase('flash_complete')
-              } else {
-                setCurrentIndex(nextIndex)
-                setSelectedAnswer(null)
-                setShowRevelation(false)
-                setIsCorrect(false)
-                setHintsUsed(0)
-              }
-            }}
-            onShare={() => {}}
-            onQuit={() => onSkip?.()}
-            factIndex={currentIndex}
-            totalFacts={sessionFacts.length}
-            gameMode="solo"
-            sessionScore={sessionScore}
-            playerCoins={sessionScore}
-            playerTickets={0}
-            playerHints={0}
-            sessionType="flash_solo"
-          />
-        </>
+        <TutoRevelation
+          fact={currentFact}
+          isCorrect={isCorrect}
+          coinsEarned={isCorrect ? TUTO_FLASH_CONFIG.coinsPerCorrect : 0}
+          sessionScore={sessionScore}
+          onNext={() => {
+            if (isCorrect) {
+              setSessionScore(prev => prev + TUTO_FLASH_CONFIG.coinsPerCorrect)
+            }
+            const nextIndex = currentIndex + 1
+            if (nextIndex >= sessionFacts.length) {
+              setPhase('flash_complete')
+            } else {
+              setCurrentIndex(nextIndex)
+              setSelectedAnswer(null)
+              setShowRevelation(false)
+              setIsCorrect(false)
+              setHintsUsed(0)
+            }
+          }}
+          catColor={catColor}
+        />
       )
     }
 
+    const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
     return (
-      <QuestionScreen
+      <TutoQuestion
         fact={currentFact}
-        factIndex={currentIndex}
+        config={TUTO_FLASH_CONFIG}
+        sessionScore={sessionScore}
+        currentIndex={currentIndex}
         totalFacts={sessionFacts.length}
-        hintsUsed={hintsUsed}
-        onSelectAnswer={(answer) => {
-          audio.play('click')
-          const correct = answer === currentFact.answer
+        onAnswer={(isCorrect, answer) => {
           setSelectedAnswer(answer)
-          setIsCorrect(correct)
+          setIsCorrect(isCorrect)
           setTimeout(() => setShowRevelation(true), 600)
         }}
-        onOpenValidate={() => {}}
-        onUseHint={() => setHintsUsed(prev => prev + 1)}
-        onTimeout={() => {
-          setShowRevelation(true)
-          setIsCorrect(false)
-        }}
         onQuit={() => onSkip?.()}
-        category={currentFact.category}
-        gameMode="solo"
-        difficulty={TUTO_FLASH_CONFIG}
-        playerCoins={sessionScore}
-        playerHints={0}
-        playerTickets={0}
-        sessionType="flash_solo"
-        isTutorial={true}
+        catColor={catColor}
       />
     )
   }
@@ -779,72 +1000,47 @@ export default function TutoTunnel({ onComplete, onSkip }) {
     }
 
     if (showRevelation) {
+      const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
       return (
-        <>
-          <RevelationScreen
-            fact={currentFact}
-            isCorrect={isCorrect}
-            selectedAnswer={selectedAnswer}
-            pointsEarned={isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0}
-            hintsUsed={hintsUsed}
-            onNext={() => {
-              if (isCorrect) {
-                setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
-              }
-              const nextIndex = currentIndex + 1
-              if (nextIndex >= sessionFacts.length) {
-                setPhase('quest_complete')
-              } else {
-                setCurrentIndex(nextIndex)
-                setSelectedAnswer(null)
-                setShowRevelation(false)
-                setIsCorrect(false)
-                setHintsUsed(0)
-              }
-            }}
-            onShare={() => {}}
-            onQuit={() => onSkip?.()}
-            factIndex={currentIndex}
-            totalFacts={sessionFacts.length}
-            gameMode="solo"
-            sessionScore={sessionScore}
-            playerCoins={sessionScore}
-            playerTickets={1}
-            playerHints={0}
-            sessionType="parcours"
-          />
-        </>
+        <TutoRevelation
+          fact={currentFact}
+          isCorrect={isCorrect}
+          coinsEarned={isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0}
+          sessionScore={sessionScore}
+          catColor={catColor}
+          onNext={() => {
+            if (isCorrect) {
+              setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
+            }
+            const nextIndex = currentIndex + 1
+            if (nextIndex >= sessionFacts.length) {
+              setPhase('quest_complete')
+            } else {
+              setCurrentIndex(nextIndex)
+              setSelectedAnswer(null)
+              setShowRevelation(false)
+              setIsCorrect(false)
+              setHintsUsed(0)
+            }
+          }}
+        />
       )
     }
 
+    const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
     return (
-      <QuestionScreen
+      <TutoQuestion
         fact={currentFact}
-        factIndex={currentIndex}
+        config={TUTO_QUEST_CONFIG}
+        sessionScore={sessionScore}
+        currentIndex={currentIndex}
         totalFacts={sessionFacts.length}
-        hintsUsed={hintsUsed}
-        onSelectAnswer={(answer) => {
-          audio.play('click')
-          const correct = answer === currentFact.answer
-          setSelectedAnswer(answer)
-          setIsCorrect(correct)
+        catColor={catColor}
+        onAnswer={(isCorrect) => {
+          setIsCorrect(isCorrect)
           setTimeout(() => setShowRevelation(true), 600)
         }}
-        onOpenValidate={() => {}}
-        onUseHint={() => setHintsUsed(prev => prev + 1)}
-        onTimeout={() => {
-          setShowRevelation(true)
-          setIsCorrect(false)
-        }}
         onQuit={() => onSkip?.()}
-        category={currentFact.category}
-        gameMode="solo"
-        difficulty={TUTO_QUEST_CONFIG}
-        playerCoins={sessionScore}
-        playerHints={0}
-        playerTickets={1}
-        sessionType="parcours"
-        isTutorial={true}
       />
     )
   }

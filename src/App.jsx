@@ -755,9 +755,12 @@ export default function App() {
   // ─── HomeScreen navigation handler ──────────────────────────────────────────
   // ─── Launch mode start callback ─────────────────────────────────────────────
   const launchModeDestination = useCallback((mode) => {
+    console.log('[DEBUG] launchModeDestination called with mode =', mode)
     switch (mode) {
-      case 'quest':    setScreen(SCREENS.DIFFICULTY); break
-      case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
+      case 'quest':    console.log('[DEBUG] setting SCREENS.DIFFICULTY'); setScreen(SCREENS.DIFFICULTY); break
+      case 'blitz':    console.log('[DEBUG] setting SCREENS.BLITZ_LOBBY'); setScreen(SCREENS.BLITZ_LOBBY); break
+      case 'explorer':
+      case 'marathon': console.log('[DEBUG] setting SCREENS.CATEGORY for', mode); setScreen(SCREENS.CATEGORY); break
       case 'flash': {
         // Première Flash onboarding : skip CategoryScreen
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
@@ -766,11 +769,12 @@ export default function App() {
           handleFlashSolo() // handleFlashSolo a sa propre interception onboarding
           break
         }
+        console.log('[DEBUG] setting SCREENS.CATEGORY for flash')
         setScreen(SCREENS.CATEGORY)
         break
       }
-      case 'hunt':     handleStartWTFSession(); break
-      default: break
+      case 'hunt':     console.log('[DEBUG] calling handleStartWTFSession'); handleStartWTFSession(); break
+      default: console.log('[DEBUG] launchModeDestination default case, mode not handled:', mode); break
     }
   }, [handleFlashSolo, handleStartWTFSession])
 
@@ -780,10 +784,15 @@ export default function App() {
 
   // Show MODE_LAUNCH or skip if user opted out
   const showOrSkipLaunch = useCallback((mode) => {
+    console.log('[DEBUG] showOrSkipLaunch called with mode =', mode)
     setLaunchMode(mode)
-    if (localStorage.getItem(`skip_launch_${mode}`) === 'true') {
+    const skip = localStorage.getItem(`skip_launch_${mode}`) === 'true'
+    console.log('[DEBUG] skip_launch_' + mode + ' =', skip)
+    if (skip) {
+      console.log('[DEBUG] skipping launch, calling launchModeDestination')
       launchModeDestination(mode)
     } else {
+      console.log('[DEBUG] showing MODE_LAUNCH screen')
       setScreen(SCREENS.MODE_LAUNCH)
     }
   }, [launchModeDestination])
@@ -845,6 +854,7 @@ export default function App() {
         break
       }
       case 'marathon': {
+        console.log('[DEBUG] case marathon reached')
         // Explorer mode — lancer après onboarding ou appeler Flash si pas encore prêt
         setGameMode('solo')
         setSessionType('flash_solo')
@@ -860,11 +870,15 @@ export default function App() {
         // Mode Explorer normal
         setGameMode('marathon')
         setSessionType('marathon')
+        console.log('[DEBUG] sessionType set to marathon')
         // Si c'est la première visite à Explorer (explorerPlayedInMode === 0), lancer directement sans règles
         const explorerPlayedInMode = wd.statsByMode?.flash_solo?.gamesPlayed || 0
+        console.log('[DEBUG] explorerPlayedInMode =', explorerPlayedInMode)
         if (explorerPlayedInMode === 0) {
+          console.log('[DEBUG] first Explorer visit, calling launchModeDestination')
           launchModeDestination('explorer')
         } else {
+          console.log('[DEBUG] repeat Explorer, calling showOrSkipLaunch')
           showOrSkipLaunch('explorer')
         }
         break

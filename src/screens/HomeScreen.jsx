@@ -189,7 +189,7 @@ export default function HomeScreen({
   const canBlitz = isDevOrTest || unlockedFactsCount >= 5
   const canHunt = isDevOrTest || gamesPlayed >= 10
   const canExplorer = isDevOrTest || gamesPlayed >= 5
-  const canMulti = isDevOrTest || blitzPlayed >= 1
+  const canMulti = isDevOrTest || unlockedFactsCount >= 5
   const canSerie = isDevOrTest || gamesPlayed >= 3
 
   const UNLOCK_MESSAGES = {
@@ -804,10 +804,6 @@ export default function HomeScreen({
           <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {canQuest && questsPlayedInMode === 0 && <NewBadge />}
             <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'quest') return; if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
-          </div>
-          <div style={{ position: 'relative' }}>
-            {canSerie && modeIsNew('serie') && <NewBadge />}
-            <ModeIcon src="/assets/modes/serie.png" label="Série" locked={!canSerie} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'serie') return; if (!canSerie) return showLockToast(UNLOCK_MESSAGES.serie); nav('trophees') }} />
           </div>
           <div style={{ position: 'relative' }}>
             {canHunt && modeIsNew('hunt') && <NewBadge />}

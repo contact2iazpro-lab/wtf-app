@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
-import { DIFFICULTY_LEVELS, TUTO_FLASH_CONFIG, TUTO_QUEST_CONFIG, TUTO_FACT_IDS } from './constants/gameConfig'
+import { DIFFICULTY_LEVELS, TUTO_FACT_IDS } from './constants/gameConfig'
+import TutoTunnel from './components/TutoTunnel'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
   getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories, getCategoryById,
@@ -368,62 +369,19 @@ export default function App() {
   const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const [showSplash, setShowSplash] = useState(false)
   const handleSplashComplete = async () => {
-    // Initialiser l'audio dès la fin du splash — SFX sera actif immédiatement
+    // Initialize audio immediately after splash
     audio.play('click')
 
-    // Démarrer la musique uniquement si l'onboarding est déjà terminé (joueurs existants)
+    // Start music only if onboarding is complete (existing players)
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     if (wd.onboardingCompleted) {
       audio.startMusic()
     }
 
     sessionStorage.setItem('wtf_splash_done', 'true')
-
-    // TUTORIAL SYSTEM — 4 phases controlled by tutoPhase
-    try {
-      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-
-      // Onboarding complete → normal game
-      if (wd.onboardingCompleted) {
-        setShowSplash(false)
-        setScreen(SCREENS.HOME)
-        return
-      }
-
-      const phase = wd.tutoPhase || 0
-
-      // PHASE 0 — First fact (1 question, random from 11)
-      if (phase === 0) {
-        const usedIds = JSON.parse(localStorage.getItem('wtf_tuto_used_ids') || '[]')
-        const available = TUTO_FACT_IDS.filter(id => !usedIds.includes(id))
-
-        if (available.length > 0) {
-          const firstFactId = available[Math.floor(Math.random() * available.length)]
-          localStorage.setItem('wtf_tuto_used_ids', JSON.stringify([firstFactId]))
-          localStorage.setItem('wtf_tuto_first_fact_id', String(firstFactId))
-
-          const allFacts = getValidFacts()
-          const fact = allFacts.find(f => f.id === firstFactId)
-
-          if (fact) {
-            const factWithOptions = { ...fact, ...getAnswerOptions(fact, TUTO_QUEST_CONFIG) }
-            setSelectedDifficulty(TUTO_QUEST_CONFIG)
-            setSessionFacts([factWithOptions])
-            setSessionType('parcours')
-            setGameMode('solo')
-            setScreen(SCREENS.QUESTION)
-            setShowSplash(false)
-            return
-          }
-        }
-      }
-
-      // PHASES 1, 2, 3 — Launch from home (spotlights handle progression)
-      setShowSplash(false)
-      setScreen(SCREENS.HOME)
-    } catch { /* fallback to normal flow */ }
-
     setShowSplash(false)
+    setScreen(SCREENS.HOME)
+    // DEPRECATED: Tutorial logic moved to TutoTunnel component
   }
 
   const [screen, setScreen] = useState(SCREENS.HOME)
@@ -644,40 +602,7 @@ export default function App() {
   const handleFlashSolo = useCallback(() => {
     audio.play('click')
 
-    // PHASE 1 — Flash tuto (5 random facts from pool, excluding used)
-    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    const isDevOrTestFlash = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    if (!isDevOrTestFlash && !wd.onboardingCompleted && (wd.tutoPhase || 0) === 1) {
-      const usedIds = JSON.parse(localStorage.getItem('wtf_tuto_used_ids') || '[]')
-      const available = TUTO_FACT_IDS.filter(id => !usedIds.includes(id))
-
-      if (available.length >= 5) {
-        const shuffled = available.sort(() => Math.random() - 0.5)
-        const flashIds = shuffled.slice(0, 5)
-
-        // Update used IDs for PHASE 2
-        localStorage.setItem('wtf_tuto_used_ids', JSON.stringify([...usedIds, ...flashIds]))
-
-        const allFacts = getValidFacts()
-        const flashFacts = flashIds
-          .map(id => allFacts.find(f => f.id === id))
-          .filter(Boolean)
-
-        const facts = flashFacts.map(fact => ({
-          ...fact,
-          ...getAnswerOptions(fact, TUTO_FLASH_CONFIG)
-        }))
-
-        setSessionType('flash_solo')
-        setGameMode('solo')
-        setIsQuickPlay(false)
-        setSelectedDifficulty(TUTO_FLASH_CONFIG)
-        setSelectedCategory(null)
-        initSessionState(facts)
-        setScreen(SCREENS.QUESTION)
-        return
-      }
-    }
+    // DEPRECATED: Tutorial logic moved to TutoTunnel component
 
     // Pool : facts non-VIP uniquement, exclure les déjà débloqués
     // Non connecté : catégories limitées
@@ -813,36 +738,7 @@ export default function App() {
         setGameMode('solo'); setSessionType('parcours')
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
-        // PHASE 2 — Quest tuto (5 remaining facts from pool)
-        const isDevOrTestQuest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTestQuest && !wd.onboardingCompleted && (wd.tutoPhase || 0) === 2) {
-          audio.play('click')
-          const usedIds = JSON.parse(localStorage.getItem('wtf_tuto_used_ids') || '[]')
-          const questIds = TUTO_FACT_IDS.filter(id => !usedIds.includes(id))
-
-          if (questIds.length > 0) {
-            localStorage.setItem('wtf_tuto_used_ids', JSON.stringify([...usedIds, ...questIds]))
-
-            const allFacts = getValidFacts()
-            const questFacts = questIds
-              .map(id => allFacts.find(f => f.id === id))
-              .filter(Boolean)
-
-            const facts = questFacts.map(fact => ({
-              ...fact,
-              ...getAnswerOptions(fact, TUTO_QUEST_CONFIG)
-            }))
-
-            setSessionType('parcours')
-            setGameMode('solo')
-            setIsQuickPlay(false)
-            setSelectedDifficulty(TUTO_QUEST_CONFIG)
-            setSelectedCategory(questFacts[0]?.category || null)
-            initSessionState(facts)
-            setScreen(SCREENS.QUESTION)
-            return
-          }
-        }
+        // DEPRECATED: Tutorial logic moved to TutoTunnel component
 
         // Normal quest — first time: skip launch + difficulty, force Cool
         if ((wd.questsPlayed || 0) === 0) {
@@ -1562,40 +1458,7 @@ export default function App() {
             return
           }
 
-          // PHASE 1 — Flash tuto (5 questions)
-          if (tutoPhase === 1 && sessionType === 'flash_solo') {
-            try {
-              wtfDataOnb.tutoPhase = 2
-              wtfDataOnb.gamesPlayed = (wtfDataOnb.gamesPlayed || 0) + 1
-              wtfDataOnb.lastModified = Date.now()
-              localStorage.setItem('wtf_data', JSON.stringify(wtfDataOnb))
-            } catch { /* ignore */ }
-            setScreen(SCREENS.FLASH_TUTO_COMPLETE)
-            return
-          }
-
-          // PHASE 2 — Quest tuto (5 questions)
-          if (tutoPhase === 2 && sessionType === 'parcours' && sessionFacts.length === 5) {
-            try {
-              wtfDataOnb.tutoPhase = 3
-              wtfDataOnb.gamesPlayed = (wtfDataOnb.gamesPlayed || 0) + 1
-              wtfDataOnb.lastModified = Date.now()
-              localStorage.setItem('wtf_data', JSON.stringify(wtfDataOnb))
-            } catch { /* ignore */ }
-            // Show unlocked fact modal
-            const firstFactId = parseInt(localStorage.getItem('wtf_tuto_first_fact_id') || '0')
-            if (firstFactId) {
-              const allFacts = getValidFacts()
-              const unlockedFact = allFacts.find(f => f.id === firstFactId)
-              if (unlockedFact) {
-                setOnboardingFact(unlockedFact)
-                setScreen(SCREENS.QUEST_TUTO_COMPLETE)
-                return
-              }
-            }
-            setScreen(SCREENS.HOME)
-            return
-          }
+          // DEPRECATED: Tutorial logic moved to TutoTunnel component
         }
 
         setScreen(SCREENS.RESULTS)
@@ -2045,6 +1908,60 @@ export default function App() {
     )
   }
 
+  // ─── Tutorial check: if onboarding not complete, show TutoTunnel ───
+  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+  const showTuto = !wd.onboardingCompleted && (wd.tutoPhase === undefined || wd.tutoPhase === null || wd.tutoPhase < 4)
+
+  if (showTuto && !showSplash) {
+    return (
+      <TutoTunnel
+        onComplete={(firstFactId) => {
+          // Tutorial completed
+          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          wd.onboardingCompleted = true
+          wd.gamesPlayed = (wd.gamesPlayed || 0) + 3
+          // Add first fact to collection
+          if (firstFactId) {
+            if (!wd.unlockedFacts) wd.unlockedFacts = []
+            if (!wd.unlockedFacts.includes(firstFactId)) wd.unlockedFacts.push(firstFactId)
+          }
+          // Give ticket earned during Flash tutorial
+          wd.wtfCoins = Math.max(wd.wtfCoins || 0, 2)
+          wd.tickets = (wd.tickets || 0) + 1
+          // Stats
+          if (!wd.statsByMode) wd.statsByMode = {}
+          if (!wd.statsByMode.flash_solo) wd.statsByMode.flash_solo = { gamesPlayed: 1 }
+          if (!wd.statsByMode.parcours) wd.statsByMode.parcours = { gamesPlayed: 1 }
+          wd.lastModified = Date.now()
+          localStorage.setItem('wtf_data', JSON.stringify(wd))
+          localStorage.removeItem('wtf_tuto_used_ids')
+          localStorage.removeItem('wtf_tuto_first_fact_id')
+          // Refresh app state
+          loadStorage()
+          setScreen(SCREENS.HOME)
+        }}
+        onSkip={() => {
+          // Skip tutorial
+          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          wd.onboardingCompleted = true
+          wd.gamesPlayed = Math.max(wd.gamesPlayed || 0, 10)
+          wd.wtfCoins = Math.max(wd.wtfCoins || 0, 25)
+          wd.tickets = Math.max(wd.tickets || 0, 1)
+          if (!wd.statsByMode) wd.statsByMode = {}
+          if (!wd.statsByMode.flash_solo) wd.statsByMode.flash_solo = { gamesPlayed: 3 }
+          if (!wd.statsByMode.parcours) wd.statsByMode.parcours = { gamesPlayed: 2 }
+          if (!wd.statsByMode.blitz) wd.statsByMode.blitz = { gamesPlayed: 1 }
+          wd.lastModified = Date.now()
+          localStorage.setItem('wtf_data', JSON.stringify(wd))
+          localStorage.removeItem('wtf_tuto_used_ids')
+          localStorage.removeItem('wtf_tuto_first_fact_id')
+          loadStorage()
+          setScreen(SCREENS.HOME)
+        }}
+      />
+    )
+  }
+
   return (
     <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg" style={{ '--scale': scale, height: '100dvh' }}>
 
@@ -2426,205 +2343,7 @@ export default function App() {
         </div>
       )}
 
-      {screen === SCREENS.FLASH_TUTO_COMPLETE && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 400,
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: 24, fontFamily: 'Nunito, sans-serif',
-        }}>
-          <div style={{
-            background: 'white', borderRadius: 24, padding: 32,
-            maxWidth: 340, width: '90%', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', gap: 20, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-          }}>
-            <div style={{ fontSize: 48, lineHeight: 1 }}>🎫</div>
-            <div style={{
-              fontSize: 22, fontWeight: 900, color: '#FF6B1A',
-              textAlign: 'center',
-            }}>
-              Bravo !
-            </div>
-            <div style={{
-              fontSize: 16, fontWeight: 700, color: '#1a1a2e',
-              textAlign: 'center', lineHeight: 1.5,
-            }}>
-              Tu as obtenu <span style={{ color: '#FF6B1A' }}>1 ticket 🎫</span>
-            </div>
-            <div style={{
-              fontSize: 14, fontWeight: 600, color: 'rgba(26,26,46,0.7)',
-              textAlign: 'center', lineHeight: 1.5,
-            }}>
-              Lance ta première Quest pour débloquer des f*cts VIP et monter en niveau !
-            </div>
-
-            <button
-              onClick={() => {
-                audio.play?.('click')
-                // PHASE 1 complete — return to HOME (Phase 2 spotlight will activate)
-                setScreen(SCREENS.HOME)
-              }}
-              style={{
-                marginTop: 12, padding: '14px 32px', borderRadius: 14,
-                background: '#FF6B1A', color: 'white', border: 'none',
-                fontWeight: 900, fontSize: 16, cursor: 'pointer',
-                fontFamily: 'Nunito, sans-serif',
-                boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
-                animation: 'pulse 1.5s ease-in-out infinite',
-              }}
-            >
-              Continuer
-            </button>
-
-            <div style={{
-              fontSize: 28, animation: 'fingerBounce 0.8s ease-in-out infinite',
-              textAlign: 'center', marginTop: 8,
-            }}>
-              👆
-            </div>
-          </div>
-
-          <style>{`
-            @keyframes pulse {
-              0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(255,107,26,0.4); }
-              50% { transform: scale(1.05); box-shadow: 0 8px 24px rgba(255,107,26,0.6); }
-            }
-            @keyframes fingerBounce {
-              0%, 100% { transform: translateY(0px); }
-              50% { transform: translateY(-8px); }
-            }
-          `}</style>
-        </div>
-      )}
-
-      {screen === SCREENS.QUEST_TUTO_COMPLETE && onboardingFact && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 400,
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: 24, fontFamily: 'Nunito, sans-serif',
-        }}>
-          <div style={{
-            background: 'white', borderRadius: 24, padding: 32,
-            maxWidth: 340, width: '90%', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', gap: 20, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-          }}>
-            <div style={{ fontSize: 48, lineHeight: 1 }}>🎉</div>
-            <div style={{
-              fontSize: 22, fontWeight: 900, color: '#FF6B1A',
-              textAlign: 'center',
-            }}>
-              Tu as débloqué un f*ct !
-            </div>
-            <div style={{
-              fontSize: 14, fontWeight: 600, color: 'rgba(26,26,46,0.7)',
-              textAlign: 'center',
-            }}>
-              Clique dessus pour le découvrir dans ta Collection 👇
-            </div>
-            <div
-              onClick={() => {
-                // Set pendingFactDetail so Collection auto-opens the fact detail modal
-                try {
-                  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                  wd.pendingFactDetail = JSON.stringify(onboardingFact)
-                  wd.lastModified = Date.now()
-                  localStorage.setItem('wtf_data', JSON.stringify(wd))
-                } catch { /* ignore */ }
-                audio.startMusic()
-                navigate('/collection')
-              }}
-              style={{
-                width: 160, height: 160, borderRadius: 20,
-                overflow: 'hidden', cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                transition: 'transform 0.2s',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              {onboardingFact.imageUrl && (
-                <img src={onboardingFact.imageUrl} alt="Fact" style={{
-                  width: '100%', height: '100%', objectFit: 'cover',
-                }} />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {screen === SCREENS.ONBOARDING_FACT && onboardingFact && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 400,
-          background: 'rgba(0,0,0,0.7)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: 24, fontFamily: 'Nunito, sans-serif',
-        }}>
-          <div style={{
-            background: 'white', borderRadius: 24, padding: 32,
-            maxWidth: 340, width: '90%', display: 'flex', flexDirection: 'column',
-            alignItems: 'center', gap: 20, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-          }}>
-            <div style={{ fontSize: 48, lineHeight: 1 }}>🎉</div>
-            <div style={{
-              fontSize: 22, fontWeight: 900, color: '#FF6B1A',
-              textAlign: 'center',
-            }}>
-              Tu as débloqué un f*ct !
-            </div>
-            <div style={{
-              fontSize: 14, fontWeight: 600, color: 'rgba(26,26,46,0.7)',
-              textAlign: 'center',
-            }}>
-              Clique dessus pour le découvrir 👇
-            </div>
-            <div
-              onClick={() => {
-                const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                wd.hasSeenFirstFactModal = true
-                wd.pendingFactDetail = JSON.stringify(onboardingFact)
-                wd.lastModified = Date.now()
-                localStorage.setItem('wtf_data', JSON.stringify(wd))
-                audio.startMusic()
-                setOnboardingFact(null)
-                navigate('/collection')
-              }}
-              style={{
-                width: 160, height: 160, borderRadius: 20,
-                overflow: 'hidden', cursor: 'pointer',
-                border: '3px solid #FF6B1A',
-                boxShadow: '0 0 30px rgba(255,107,26,0.3), 0 8px 32px rgba(0,0,0,0.15)',
-                animation: 'onbFactBounce 1.2s ease-in-out infinite',
-                position: 'relative',
-              }}
-            >
-              {onboardingFact.imageUrl ? (
-                <img src={onboardingFact.imageUrl} alt=""
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={e => { e.target.style.display = 'none' }} />
-              ) : (
-                <div style={{
-                  width: '100%', height: '100%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: 'linear-gradient(135deg, #FF6B1A44, #FF6B1A)',
-                }}>
-                  <span style={{ fontSize: 48, opacity: 0.4 }}>?</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <style>{`
-            @keyframes onbFactBounce {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-8px); }
-            }
-          `}</style>
-        </div>
-      )}
+      {/* DEPRECATED: Tutorial modals moved to TutoTunnel component */}
 
       {screen === SCREENS.MARATHON_RESULTS && (
         <MarathonScreen

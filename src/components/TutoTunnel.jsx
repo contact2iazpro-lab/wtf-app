@@ -162,7 +162,8 @@ export default function TutoTunnel({ onComplete, onSkip }) {
               if (isCorrect) {
                 setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
               }
-              setPhase('phase1_home')
+              setShowRevelation(false)
+              setPhase('phase0_complete')
             }}
             onShare={() => {}}
             onQuit={() => onSkip?.()}
@@ -211,6 +212,110 @@ export default function TutoTunnel({ onComplete, onSkip }) {
         />
       )
     }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PHASE: PHASE0_COMPLETE (Ton premier f*ct modal)
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (phase === 'phase0_complete') {
+    const firstFact = allTutoFacts.find(f => f.id === firstFactId)
+
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(0,0,0,0.85)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: S_val(20),
+      }}>
+        <div style={{
+          background: 'white', borderRadius: S_val(24), padding: S_val(32),
+          maxWidth: S_val(360), width: '90%',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          gap: S_val(16),
+        }}>
+          {/* Emoji */}
+          <div style={{ fontSize: S_val(56), lineHeight: 1 }}>🏆</div>
+
+          {/* Title */}
+          <div style={{
+            fontSize: S_val(22), fontWeight: 900, color: '#FF6B1A',
+            textAlign: 'center', fontFamily: 'Nunito, sans-serif',
+          }}>
+            Ton premier f*ct WTF!
+          </div>
+
+          {/* Fact image */}
+          {firstFact?.imageUrl && (
+            <img
+              src={firstFact.imageUrl}
+              alt="First fact"
+              style={{
+                width: S_val(120),
+                height: S_val(120),
+                borderRadius: S_val(16),
+                objectFit: 'cover',
+              }}
+            />
+          )}
+
+          {/* Description 1 */}
+          <div style={{
+            fontSize: S_val(14), color: '#666', textAlign: 'center',
+            fontFamily: 'Nunito, sans-serif',
+          }}>
+            Ce f*ct est maintenant dans ta collection.
+          </div>
+
+          {/* Description 2 */}
+          <div style={{
+            fontSize: S_val(14), color: '#666', textAlign: 'center',
+            fontFamily: 'Nunito, sans-serif',
+          }}>
+            Plus tu joues, plus ta collection grandit !
+          </div>
+
+          {/* Play button */}
+          <button
+            onClick={() => {
+              audio.play('click')
+              setPhase('phase1_home')
+            }}
+            style={{
+              width: '100%',
+              padding: S_val(16),
+              borderRadius: S_val(16),
+              background: '#FF6B1A',
+              color: 'white',
+              border: 'none',
+              fontWeight: 900,
+              fontSize: S_val(16),
+              cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif',
+              marginTop: S_val(16),
+            }}
+          >
+            Jouer ma première partie ⚡
+          </button>
+
+          {/* Animated finger */}
+          <div style={{
+            fontSize: S_val(32),
+            animation: 'tutoFinger 0.8s ease-in-out infinite',
+            marginTop: S_val(8),
+          }}>
+            👆
+          </div>
+        </div>
+
+        <style>{`
+          @keyframes tutoFinger {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+          }
+        `}</style>
+      </div>
+    )
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

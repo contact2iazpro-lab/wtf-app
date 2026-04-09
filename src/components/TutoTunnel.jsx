@@ -3,7 +3,8 @@ import { TUTO_FACT_IDS, TUTO_FLASH_CONFIG, TUTO_QUEST_CONFIG } from '../constant
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
-import { getAnswerOptions } from '../utils/answers'
+import QuestionTemplate from './templates/QuestionTemplate'
+import RevelationTemplate from './templates/RevelationTemplate'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTES
@@ -14,266 +15,6 @@ const CAT_COLORS = {
   histoire: '#F97316', geographie: '#14B8A6', gastronomie: '#D97706',
   technologie: '#6366F1', sante: '#10B981', art: '#A855F7',
   'corps-humain': '#EF4444', phobies: '#7C3AED', lois: '#64748B',
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// INTERNAL COMPONENT: TutoQuestion
-// ═══════════════════════════════════════════════════════════════════════════
-function TutoQuestion({
-  fact,
-  config,
-  sessionScore,
-  currentIndex,
-  totalFacts,
-  onAnswer,
-  onQuit,
-  catColor = '#FF6B1A',
-}) {
-  const S = useScale()
-  const S_val = (px) => `calc(${px}px * var(--scale))`
-  const [timeLeft, setTimeLeft] = useState(config.duration || 30)
-  const [showHint1, setShowHint1] = useState(false)
-  const [showHint2, setShowHint2] = useState(false)
-  const [selectedIdx, setSelectedIdx] = useState(null)
-  const timerRef = useRef(null)
-
-  // Timer
-  useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(timerRef.current)
-          onAnswer(false, null)
-          return 0
-        }
-        return t - 1
-      })
-    }, 1000)
-    return () => clearInterval(timerRef.current)
-  }, [onAnswer])
-
-  const options = fact.options || []
-  const shuffledOptions = [...options].sort(() => Math.random() - 0.5).slice(0, config.choices)
-  const correctIdx = shuffledOptions.indexOf(fact.short_answer)
-
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`,
-      display: 'flex', flexDirection: 'column',
-      padding: S_val(16), overflow: 'auto',
-    }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginBottom: S_val(16), paddingTop: S_val(8),
-      }}>
-        <button onClick={onQuit} style={{
-          background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: S_val(8),
-          color: 'white', padding: S_val(8), cursor: 'pointer', fontSize: S_val(18),
-        }}>
-          ✕
-        </button>
-        <div style={{ color: 'white', fontWeight: 700, fontSize: S_val(14) }}>
-          🪙 {sessionScore}
-        </div>
-        <div style={{ color: 'white', fontWeight: 700, fontSize: S_val(14) }}>
-          {currentIndex + 1} / {totalFacts}
-        </div>
-      </div>
-
-      {/* Mode badge */}
-      <div style={{
-        color: 'white', fontSize: S_val(12), fontWeight: 900, textAlign: 'center',
-        marginBottom: S_val(20), textTransform: 'uppercase', letterSpacing: '0.1em',
-      }}>
-        {config === TUTO_FLASH_CONFIG ? '⚡ MODE FLASH' : '⭐ MODE QUEST'}
-      </div>
-
-      {/* Progress bar */}
-      <div style={{
-        display: 'flex', gap: S_val(6), marginBottom: S_val(24),
-      }}>
-        {Array.from({ length: totalFacts }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              flex: 1, height: S_val(4), borderRadius: S_val(2),
-              background: i <= currentIndex ? catColor : 'rgba(255,255,255,0.3)',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Question */}
-      <div style={{
-        background: 'rgba(0,0,0,0.15)', borderRadius: S_val(16), padding: S_val(20),
-        marginBottom: S_val(24), color: 'white', fontSize: S_val(18), fontWeight: 700,
-        fontFamily: 'Nunito, sans-serif', lineHeight: 1.5,
-      }}>
-        {fact.question}
-      </div>
-
-      {/* Hints */}
-      <div style={{ display: 'flex', gap: S_val(12), marginBottom: S_val(20) }}>
-        <button onClick={() => setShowHint1(true)} style={{
-          flex: 1, padding: S_val(12), borderRadius: S_val(12), background: catColor,
-          color: 'white', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: S_val(13),
-        }}>
-          💡 {config === TUTO_FLASH_CONFIG ? 'Indice payant' : 'Indice gratuit'}
-        </button>
-      </div>
-      {showHint1 && (
-        <div style={{
-          background: 'rgba(0,0,0,0.15)', borderRadius: S_val(12), padding: S_val(16),
-          marginBottom: S_val(16), color: 'white', fontSize: S_val(14),
-        }}>
-          {fact.hint1 || 'Pas d\'indice disponible'}
-        </div>
-      )}
-
-      {/* QCM */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: S_val(12), flex: 1 }}>
-        {shuffledOptions.map((opt, idx) => (
-          <button
-            key={idx}
-            onClick={() => {
-              audio.play('click')
-              setSelectedIdx(idx)
-              onAnswer(idx === correctIdx, opt)
-            }}
-            style={{
-              padding: S_val(16), borderRadius: S_val(12), background: 'white',
-              color: '#1a1a2e', border: 'none', cursor: 'pointer',
-              fontWeight: 700, fontSize: S_val(14), textAlign: 'left',
-            }}
-          >
-            {opt}
-          </button>
-        ))}
-      </div>
-
-      {/* Timer */}
-      <div style={{
-        marginTop: S_val(20), textAlign: 'center', color: 'white',
-        fontSize: S_val(32), fontWeight: 900, fontFamily: 'Nunito, sans-serif',
-      }}>
-        {timeLeft}s
-      </div>
-    </div>
-  )
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// INTERNAL COMPONENT: TutoRevelation
-// ═══════════════════════════════════════════════════════════════════════════
-function TutoRevelation({
-  fact,
-  isCorrect,
-  coinsEarned,
-  sessionScore,
-  onNext,
-  catColor = '#FF6B1A',
-}) {
-  const S = useScale()
-  const S_val = (px) => `calc(${px}px * var(--scale))`
-
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`,
-      display: 'flex', flexDirection: 'column',
-      padding: S_val(16), overflow: 'auto',
-    }}>
-      {/* Image */}
-      {fact?.imageUrl && (
-        <img
-          src={fact.imageUrl}
-          alt="fact"
-          style={{
-            width: '100%', height: S_val(200), borderRadius: S_val(16),
-            objectFit: 'cover', marginBottom: S_val(20),
-            filter: isCorrect ? 'none' : 'blur(8px)',
-          }}
-        />
-      )}
-
-      {/* Result */}
-      <div style={{
-        color: 'white', fontSize: S_val(28), fontWeight: 900, textAlign: 'center',
-        marginBottom: S_val(16),
-      }}>
-        {isCorrect ? '🎉 Bravo !' : '😅 Pas grave !'}
-      </div>
-
-      {/* Coins earned */}
-      {isCorrect && coinsEarned > 0 && (
-        <div style={{
-          color: '#FFD700', fontSize: S_val(24), fontWeight: 900, textAlign: 'center',
-          marginBottom: S_val(20), animation: 'bounce 0.6s ease-in-out',
-        }}>
-          +{coinsEarned} 🪙
-        </div>
-      )}
-
-      {/* Fact explanation */}
-      <div style={{
-        background: 'rgba(0,0,0,0.15)', borderRadius: S_val(16), padding: S_val(20),
-        marginBottom: S_val(20), color: 'white', fontSize: S_val(16),
-        fontFamily: 'Nunito, sans-serif', lineHeight: 1.6,
-      }}>
-        <div style={{ fontWeight: 700, marginBottom: S_val(8) }}>
-          {fact.question}
-        </div>
-        <div style={{ opacity: 0.9 }}>
-          {fact.explanation}
-        </div>
-      </div>
-
-      {/* Social proof */}
-      <div style={{
-        color: 'rgba(255,255,255,0.8)', fontSize: S_val(13), textAlign: 'center',
-        marginBottom: S_val(24),
-      }}>
-        🧑‍🤝‍🧑 {Math.floor(60 + Math.random() * 30)}% des joueurs ont trouvé
-      </div>
-
-      {/* Next button */}
-      <button
-        onClick={() => {
-          audio.play('click')
-          onNext()
-        }}
-        style={{
-          padding: S_val(16), borderRadius: S_val(12), background: catColor,
-          color: 'white', border: 'none', cursor: 'pointer',
-          fontWeight: 900, fontSize: S_val(16), textAlign: 'center',
-          marginBottom: S_val(16),
-        }}
-      >
-        SUIVANT →
-      </button>
-
-      {/* Animated finger */}
-      <div style={{
-        textAlign: 'center', fontSize: S_val(28),
-        animation: 'tutoFinger 0.8s ease-in-out infinite',
-      }}>
-        👆
-      </div>
-
-      <style>{`
-        @keyframes tutoFinger {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-        @keyframes bounce {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.2); }
-        }
-      `}</style>
-    </div>
-  )
 }
 
 export default function TutoTunnel({ onComplete, onSkip }) {
@@ -297,6 +38,10 @@ export default function TutoTunnel({ onComplete, onSkip }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null)
   const [phase3FactDetail, setPhase3FactDetail] = useState(null)
   const [showFirstFactModal, setShowFirstFactModal] = useState(false)
+  const [currentOptions, setCurrentOptions] = useState([])
+  const [hintsRevealed, setHintsRevealed] = useState([])
+  const [timeLeft, setTimeLeft] = useState(30)
+  const [socialPercent, setSocialPercent] = useState(50)
 
   // ═══════════════════════════════════════════════════════════════════════════
   // INIT
@@ -308,6 +53,42 @@ export default function TutoTunnel({ onComplete, onSkip }) {
       .filter(Boolean)
     setAllTutoFacts(tutoFacts)
   }, [])
+
+  // Generate options when question changes
+  useEffect(() => {
+    if (!sessionFacts[currentIndex]) return
+    const fact = sessionFacts[currentIndex]
+    const config = phase === 'phase1' ? TUTO_FLASH_CONFIG : TUTO_QUEST_CONFIG
+    const correctAnswer = fact.short_answer
+    const wrongAnswers = (fact.options || []).filter(o => o !== correctAnswer)
+    const shuffledWrong = wrongAnswers.sort(() => Math.random() - 0.5).slice(0, config.choices - 1)
+    const allOptions = [correctAnswer, ...shuffledWrong].sort(() => Math.random() - 0.5)
+    const optionsForTemplate = allOptions.map(text => ({ text, isCorrect: text === correctAnswer }))
+    setCurrentOptions(optionsForTemplate)
+    setHintsRevealed([])
+  }, [currentIndex, sessionFacts, phase])
+
+  // Reset timer when question changes
+  useEffect(() => {
+    setTimeLeft(30)
+    const timerRef = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) {
+          clearInterval(timerRef)
+          return 0
+        }
+        return t - 1
+      })
+    }, 1000)
+    return () => clearInterval(timerRef)
+  }, [currentIndex, sessionFacts])
+
+  // Generate socialPercent when revelation happens
+  useEffect(() => {
+    if (showRevelation) {
+      setSocialPercent(Math.floor(Math.random() * 40) + 45)
+    }
+  }, [showRevelation])
 
   // ═══════════════════════════════════════════════════════════════════════════
   // PHASE: INTRO
@@ -421,20 +202,37 @@ export default function TutoTunnel({ onComplete, onSkip }) {
 
     if (showRevelation && currentFact) {
       const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
+      const coinsEarned = isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0
       return (
-        <TutoRevelation
-          fact={currentFact}
+        <RevelationTemplate
+          catColor={catColor}
+          catName={currentFact.category}
+          catIcon={'/assets/categories/' + currentFact.category + '.png'}
           isCorrect={isCorrect}
-          coinsEarned={isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0}
-          sessionScore={sessionScore}
+          imageUrl={currentFact.image_url || currentFact.imageUrl || ''}
+          question={currentFact.question}
+          correctAnswer={currentFact.short_answer}
+          explanation={currentFact.explanation || ''}
+          message={isCorrect ? 'Bravo ! 🎉' : 'Pas grave ! 😅'}
+          coinsEarned={coinsEarned}
+          totalCoins={sessionScore + coinsEarned}
+          tickets={0}
+          hintsCount={0}
+          socialProofPercent={isCorrect ? socialPercent : 0}
           onNext={() => {
             if (isCorrect) {
-              setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
+              setSessionScore(prev => prev + coinsEarned)
             }
             setShowRevelation(false)
             setShowFirstFactModal(true)
           }}
-          catColor={catColor}
+          onShare={() => {}}
+          onQuit={() => onSkip?.()}
+          showFinger={true}
+          showShareButton={false}
+          showExplanation={isCorrect}
+          isLast={false}
+          isVip={currentFact.isVip || false}
         />
       )
     }
@@ -539,22 +337,36 @@ export default function TutoTunnel({ onComplete, onSkip }) {
       )
     }
 
-    if (currentFact) {
+    if (currentFact && currentOptions.length > 0) {
       const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
       return (
-        <TutoQuestion
-          fact={currentFact}
-          config={TUTO_QUEST_CONFIG}
-          sessionScore={sessionScore}
-          currentIndex={currentIndex}
-          totalFacts={sessionFacts.length}
-          onAnswer={(isCorrect, answer) => {
-            setSelectedAnswer(answer)
-            setIsCorrect(isCorrect)
-            setTimeout(() => setShowRevelation(true), 600)
-          }}
-          onQuit={() => onSkip?.()}
+        <QuestionTemplate
           catColor={catColor}
+          catName={currentFact.category}
+          catIcon={'/assets/categories/' + currentFact.category + '.png'}
+          modeLabel='⭐ MODE QUEST'
+          question={currentFact.question}
+          options={currentOptions}
+          selectedAnswerIndex={selectedAnswer !== null ? currentOptions.findIndex(opt => opt.text === selectedAnswer) : null}
+          onSelectAnswer={(index) => {
+            const selectedIdx = currentOptions[index]?.text
+            setSelectedAnswer(selectedIdx)
+            setIsCorrect(currentOptions[index]?.isCorrect || false)
+            setTimeout(() => setShowRevelation(true), 800)
+          }}
+          hints={[
+            { text: currentFact.hint1 || '', revealed: hintsRevealed.includes(0), label: '💡 Indice — Gratuit' },
+            { text: currentFact.hint2 || '', revealed: hintsRevealed.includes(1), label: '💡 Indice — Gratuit' },
+          ].filter(h => h.text)}
+          onRevealHint={(i) => { if (!hintsRevealed.includes(i)) setHintsRevealed(prev => [...prev, i]) }}
+          timer={timeLeft}
+          progressIndex={currentIndex}
+          totalQuestions={sessionFacts.length}
+          coins={sessionScore}
+          tickets={0}
+          hintsCount={0}
+          onQuit={() => onSkip?.()}
+          showFinger={false}
         />
       )
     }
@@ -705,15 +517,27 @@ export default function TutoTunnel({ onComplete, onSkip }) {
 
     if (showRevelation) {
       const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
+      const coinsEarned = isCorrect ? TUTO_FLASH_CONFIG.coinsPerCorrect : 0
+      const isLast = currentIndex >= sessionFacts.length - 1
       return (
-        <TutoRevelation
-          fact={currentFact}
+        <RevelationTemplate
+          catColor={catColor}
+          catName={currentFact.category}
+          catIcon={'/assets/categories/' + currentFact.category + '.png'}
           isCorrect={isCorrect}
-          coinsEarned={isCorrect ? TUTO_FLASH_CONFIG.coinsPerCorrect : 0}
-          sessionScore={sessionScore}
+          imageUrl={currentFact.image_url || currentFact.imageUrl || ''}
+          question={currentFact.question}
+          correctAnswer={currentFact.short_answer}
+          explanation={currentFact.explanation || ''}
+          message={isCorrect ? 'Bravo ! 🎉' : 'Pas grave ! 😅'}
+          coinsEarned={coinsEarned}
+          totalCoins={sessionScore + coinsEarned}
+          tickets={0}
+          hintsCount={0}
+          socialProofPercent={isCorrect ? socialPercent : 0}
           onNext={() => {
             if (isCorrect) {
-              setSessionScore(prev => prev + TUTO_FLASH_CONFIG.coinsPerCorrect)
+              setSessionScore(prev => prev + coinsEarned)
             }
             const nextIndex = currentIndex + 1
             if (nextIndex >= sessionFacts.length) {
@@ -726,26 +550,46 @@ export default function TutoTunnel({ onComplete, onSkip }) {
               setHintsUsed(0)
             }
           }}
-          catColor={catColor}
+          onShare={() => {}}
+          onQuit={() => onSkip?.()}
+          showFinger={true}
+          showShareButton={false}
+          showExplanation={isCorrect}
+          isLast={isLast}
+          isVip={currentFact.isVip || false}
         />
       )
     }
 
     const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
     return (
-      <TutoQuestion
-        fact={currentFact}
-        config={TUTO_FLASH_CONFIG}
-        sessionScore={sessionScore}
-        currentIndex={currentIndex}
-        totalFacts={sessionFacts.length}
-        onAnswer={(isCorrect, answer) => {
-          setSelectedAnswer(answer)
-          setIsCorrect(isCorrect)
-          setTimeout(() => setShowRevelation(true), 600)
-        }}
-        onQuit={() => onSkip?.()}
+      <QuestionTemplate
         catColor={catColor}
+        catName={currentFact.category}
+        catIcon={'/assets/categories/' + currentFact.category + '.png'}
+        modeLabel='⚡ MODE FLASH'
+        question={currentFact.question}
+        options={currentOptions}
+        selectedAnswerIndex={selectedAnswer !== null ? currentOptions.findIndex(opt => opt.text === selectedAnswer) : null}
+        onSelectAnswer={(index) => {
+          const selectedIdx = currentOptions[index]?.text
+          setSelectedAnswer(selectedIdx)
+          setIsCorrect(currentOptions[index]?.isCorrect || false)
+          setTimeout(() => setShowRevelation(true), 800)
+        }}
+        hints={[
+          { text: currentFact.hint1 || '', revealed: hintsRevealed.includes(0), label: '💡 Indice — Gratuit' },
+          { text: currentFact.hint2 || '', revealed: hintsRevealed.includes(1), label: '💡 Indice — Gratuit' },
+        ].filter(h => h.text)}
+        onRevealHint={(i) => { if (!hintsRevealed.includes(i)) setHintsRevealed(prev => [...prev, i]) }}
+        timer={timeLeft}
+        progressIndex={currentIndex}
+        totalQuestions={sessionFacts.length}
+        coins={sessionScore}
+        tickets={0}
+        hintsCount={0}
+        onQuit={() => onSkip?.()}
+        showFinger={false}
       />
     )
   }
@@ -1001,16 +845,27 @@ export default function TutoTunnel({ onComplete, onSkip }) {
 
     if (showRevelation) {
       const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
+      const coinsEarned = isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0
+      const isLast = currentIndex >= sessionFacts.length - 1
       return (
-        <TutoRevelation
-          fact={currentFact}
-          isCorrect={isCorrect}
-          coinsEarned={isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0}
-          sessionScore={sessionScore}
+        <RevelationTemplate
           catColor={catColor}
+          catName={currentFact.category}
+          catIcon={'/assets/categories/' + currentFact.category + '.png'}
+          isCorrect={isCorrect}
+          imageUrl={currentFact.image_url || currentFact.imageUrl || ''}
+          question={currentFact.question}
+          correctAnswer={currentFact.short_answer}
+          explanation={currentFact.explanation || ''}
+          message={isCorrect ? 'Bravo ! 🎉' : 'Pas grave ! 😅'}
+          coinsEarned={coinsEarned}
+          totalCoins={sessionScore + coinsEarned}
+          tickets={0}
+          hintsCount={0}
+          socialProofPercent={isCorrect ? socialPercent : 0}
           onNext={() => {
             if (isCorrect) {
-              setSessionScore(prev => prev + TUTO_QUEST_CONFIG.coinsPerCorrect)
+              setSessionScore(prev => prev + coinsEarned)
             }
             const nextIndex = currentIndex + 1
             if (nextIndex >= sessionFacts.length) {
@@ -1023,24 +878,46 @@ export default function TutoTunnel({ onComplete, onSkip }) {
               setHintsUsed(0)
             }
           }}
+          onShare={() => {}}
+          onQuit={() => onSkip?.()}
+          showFinger={true}
+          showShareButton={false}
+          showExplanation={isCorrect}
+          isLast={isLast}
+          isVip={currentFact.isVip || false}
         />
       )
     }
 
     const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
     return (
-      <TutoQuestion
-        fact={currentFact}
-        config={TUTO_QUEST_CONFIG}
-        sessionScore={sessionScore}
-        currentIndex={currentIndex}
-        totalFacts={sessionFacts.length}
+      <QuestionTemplate
         catColor={catColor}
-        onAnswer={(isCorrect) => {
-          setIsCorrect(isCorrect)
-          setTimeout(() => setShowRevelation(true), 600)
+        catName={currentFact.category}
+        catIcon={'/assets/categories/' + currentFact.category + '.png'}
+        modeLabel='⭐ MODE QUEST'
+        question={currentFact.question}
+        options={currentOptions}
+        selectedAnswerIndex={selectedAnswer !== null ? currentOptions.findIndex(opt => opt.text === selectedAnswer) : null}
+        onSelectAnswer={(index) => {
+          const selectedIdx = currentOptions[index]?.text
+          setSelectedAnswer(selectedIdx)
+          setIsCorrect(currentOptions[index]?.isCorrect || false)
+          setTimeout(() => setShowRevelation(true), 800)
         }}
+        hints={[
+          { text: currentFact.hint1 || '', revealed: hintsRevealed.includes(0), label: '💡 Indice — Gratuit' },
+          { text: currentFact.hint2 || '', revealed: hintsRevealed.includes(1), label: '💡 Indice — Gratuit' },
+        ].filter(h => h.text)}
+        onRevealHint={(i) => { if (!hintsRevealed.includes(i)) setHintsRevealed(prev => [...prev, i]) }}
+        timer={timeLeft}
+        progressIndex={currentIndex}
+        totalQuestions={sessionFacts.length}
+        coins={sessionScore}
+        tickets={0}
+        hintsCount={0}
         onQuit={() => onSkip?.()}
+        showFinger={false}
       />
     )
   }

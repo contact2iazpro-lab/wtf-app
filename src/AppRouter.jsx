@@ -15,17 +15,18 @@ const PAGES_WITH_NAV = ['/collection', '/profil', '/boutique', '/recompenses', '
 
 function PageWrapper({ children }) {
   const scale = useScale()
+  const showNav = PAGES_WITH_NAV.includes(useLocation().pathname)
   return (
-    <div className="w-full h-full max-w-md mx-auto relative overflow-hidden" style={{ '--scale': scale, height: '100dvh' }}>
-      {children}
+    <div className="w-full h-full max-w-md mx-auto relative overflow-hidden" style={{ '--scale': scale, height: '100dvh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        {children}
+      </div>
+      {showNav && <BottomNav />}
     </div>
   )
 }
 
 export default function AppRouter() {
-  const location = useLocation()
-  const showNav = PAGES_WITH_NAV.includes(location.pathname)
-
   return (
     <>
       <Routes>
@@ -38,7 +39,6 @@ export default function AppRouter() {
         <Route path="/challenge/:code" element={<PageWrapper><ChallengeScreen /></PageWrapper>} />
         <Route path="/invite/:code" element={<PageWrapper><InvitePage /></PageWrapper>} />
       </Routes>
-      {showNav && <BottomNav />}
     </>
   )
 }

@@ -3,6 +3,7 @@ import { TUTO_FACT_IDS, TUTO_FLASH_CONFIG, TUTO_QUEST_CONFIG } from '../constant
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
+import { getAnswerOptions } from '../utils/answers'
 import QuestionTemplate from './templates/QuestionTemplate'
 import RevelationTemplate from './templates/RevelationTemplate'
 

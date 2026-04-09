@@ -1040,8 +1040,8 @@ export default function HomeScreen({
       {showCoffreModal && coffreReward && (
         <div
           style={{
-            position: 'fixed', inset: 0, zIndex: 200,
-            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(0,0,0,0.7)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: 20,
           }}
@@ -1049,23 +1049,22 @@ export default function HomeScreen({
         >
           <div
             style={{
-              background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)',
-              border: '2px solid #FF6B1A',
-              borderRadius: 24, padding: '32px 28px',
-              textAlign: 'center', maxWidth: 300, width: '100%',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,107,26,0.25)',
+              background: 'white',
+              borderRadius: 24, padding: 32,
+              textAlign: 'center', maxWidth: 340, width: '90%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
               fontFamily: 'Nunito, sans-serif',
             }}
             onClick={e => e.stopPropagation()}
           >
-            <img src="/assets/ui/chest-open.png" alt="coffre" style={{ width: 64, height: 64, marginBottom: 12 }} />
+            <img src="/assets/ui/chest-open.png" alt="coffre" style={{ width: 48, height: 48, marginBottom: 16 }} />
             <div style={{
-              fontSize: 20, fontWeight: 900, color: '#FFD700',
-              marginBottom: 10, letterSpacing: '0.05em', textTransform: 'uppercase',
+              fontSize: 18, fontWeight: 700, color: '#1a1a2e',
+              marginBottom: 12, lineHeight: 1.4,
             }}>
               Coffre du jour !
             </div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: 'white', marginBottom: 24, lineHeight: 1.4 }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 24, lineHeight: 1.4 }}>
               {coffreReward.type === 'coins' && coffreReward.bonus
                 ? `Tu as gagné ${coffreReward.amount} coins et ${coffreReward.bonus.amount} ticket ! 🎉`
                 : coffreReward.type === 'coins'
@@ -1075,12 +1074,11 @@ export default function HomeScreen({
             <button
               onClick={() => setShowCoffreModal(false)}
               style={{
-                background: 'linear-gradient(135deg, #FF6B1A 0%, #FF8C42 100%)',
+                background: '#FF6B1A',
                 color: 'white', border: 'none',
-                borderRadius: 16, padding: '13px 36px',
-                fontWeight: 900, fontSize: 15, cursor: 'pointer',
+                borderRadius: 16, padding: '14px 0',
+                width: '100%', fontWeight: 900, fontSize: 16, cursor: 'pointer',
                 fontFamily: 'Nunito, sans-serif',
-                boxShadow: '0 4px 16px rgba(255,107,26,0.45)',
                 WebkitTapHighlightColor: 'transparent',
               }}
             >

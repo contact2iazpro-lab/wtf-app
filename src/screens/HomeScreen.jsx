@@ -798,16 +798,16 @@ export default function HomeScreen({
         <div style={{
           width: 70, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-evenly', alignItems: 'center',
+          justifyContent: 'space-around', alignItems: 'center',
           height: '100%', zIndex: 1,
         }}>
           <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {canQuest && questsPlayedInMode === 0 && <NewBadge />}
             <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'quest') return; if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
           </div>
-          <div style={{ position: 'relative' }}>
-            {canHunt && modeIsNew('hunt') && <NewBadge />}
-            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canHunt} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'hunt') return; if (!canHunt) return showLockToast(UNLOCK_MESSAGES.hunt); markSeen('hasSeenHunt'); nav('wtfDuJour') }} />
+          <div ref={blitzBtnRef} style={{ position: 'relative', ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
+            {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'blitz') return; if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
           </div>
         </div>
 
@@ -855,12 +855,13 @@ export default function HomeScreen({
           />
         </div>
 
-        {/* Colonne droite — 70px */}
+        {/* Colonne droite — 70px (3 icones resserrees) */}
         <div style={{
           width: 70, flexShrink: 0,
           display: 'flex', flexDirection: 'column',
           justifyContent: 'space-evenly', alignItems: 'center',
           height: '100%', zIndex: 1,
+          gap: 20,
         }}>
           <div style={{ position: 'relative', ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
@@ -870,9 +871,9 @@ export default function HomeScreen({
             {canMulti && modeIsNew('multi') && <NewBadge />}
             <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'multi') return; if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
           </div>
-          <div ref={blitzBtnRef} style={{ position: 'relative', ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
-            {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'blitz') return; if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
+          <div style={{ position: 'relative' }}>
+            {canHunt && modeIsNew('hunt') && <NewBadge />}
+            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canHunt} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'hunt') return; if (!canHunt) return showLockToast(UNLOCK_MESSAGES.hunt); markSeen('hasSeenHunt'); nav('wtfDuJour') }} />
           </div>
         </div>
       </div>

@@ -733,9 +733,15 @@ export default function HomeScreen({
       {/* ═══ ZONE 4 — CORPS PRINCIPAL (flex: 1) ════════════════════════════ */}
       <div style={{
         flex: 1, minHeight: 0,
-        display: 'flex', flexDirection: 'row',
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr auto',
+        gridTemplateRows: 'auto auto auto',
+        alignItems: 'center',
+        justifyItems: 'center',
         padding: '0 10px',
         position: 'relative',
+        rowGap: 0,
+        columnGap: 0,
       }}>
         {/* Starburst light rays — tailles aléatoires avec halo */}
         {(() => {
@@ -776,6 +782,8 @@ export default function HomeScreen({
               pointerEvents: 'none',
               zIndex: 0,
               animation: 'starburst-rotate 40s linear infinite',
+              gridColumn: '1 / 4',
+              gridRow: '1 / 4',
             }}>
               {rays.map((r, i) => (
                 <div key={i} style={{
@@ -794,12 +802,14 @@ export default function HomeScreen({
           )
         })()}
 
-        {/* Colonne gauche — 70px */}
+        {/* Colonne gauche — Quest + Blitz (2 icones, espacement large) */}
         <div style={{
-          width: 70, flexShrink: 0,
+          gridColumn: 1,
+          gridRow: '1 / 4',
           display: 'flex', flexDirection: 'column',
           justifyContent: 'space-around', alignItems: 'center',
           height: '100%', zIndex: 1,
+          gap: 24,
         }}>
           <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {canQuest && questsPlayedInMode === 0 && <NewBadge />}
@@ -811,12 +821,14 @@ export default function HomeScreen({
           </div>
         </div>
 
-        {/* Colonne centre — flex: 1 */}
+        {/* Colonne centre — Logo VoF + Étoile WTF! + Tagline */}
         <div style={{
-          flex: 1, minWidth: 0,
+          gridColumn: 2,
+          gridRow: '1 / 4',
           display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-evenly', alignItems: 'center',
+          justifyContent: 'center', alignItems: 'center',
           height: '100%', position: 'relative', zIndex: 1,
+          gap: 24,
         }}>
           {/* 0. Logo Vrai ou Fou */}
           <img
@@ -855,13 +867,14 @@ export default function HomeScreen({
           />
         </div>
 
-        {/* Colonne droite — 70px (3 icones resserrees) */}
+        {/* Colonne droite — Explorer + Multi + Hunt (3 icones, espacement resserre) */}
         <div style={{
-          width: 70, flexShrink: 0,
+          gridColumn: 3,
+          gridRow: '1 / 4',
           display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-evenly', alignItems: 'center',
+          justifyContent: 'center', alignItems: 'center',
           height: '100%', zIndex: 1,
-          gap: 20,
+          gap: 12,
         }}>
           <div style={{ position: 'relative', ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
             {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}

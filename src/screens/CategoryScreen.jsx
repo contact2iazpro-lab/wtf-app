@@ -43,9 +43,9 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
   // ── Pool de facts selon le mode de jeu ──────────────────────────────────
   const factsPool = useMemo(() => {
     switch (gameMode) {
-      case 'marathon': return getGeneratedFacts()
-      case 'blitz':    return getGeneratedFacts()
-      case 'flash':    return getGeneratedFacts()
+      case 'marathon': return getValidFacts()
+      case 'blitz':    return getValidFacts()
+      case 'flash':    return getValidFacts()
       default:         return getValidFacts()  // quête, etc. → tous les facts valides
     }
   }, [gameMode])

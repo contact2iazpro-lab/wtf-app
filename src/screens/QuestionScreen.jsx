@@ -672,10 +672,10 @@ export default function QuestionScreen({
                 <button
                   onClick={() => {
                     audio.play('click')
-                    // Créditer les devises de départ : 50 coins, 2 tickets, 3 indices
+                    // Créditer les devises de départ : 25 coins, 1 ticket, 3 indices
                     const balances = getBalances()
-                    const coinsToAdd = Math.max(0, 50 - (balances.coins || 0))
-                    const ticketsToAdd = Math.max(0, 2 - (balances.tickets || 0))
+                    const coinsToAdd = Math.max(0, 25 - (balances.coins || 0))
+                    const ticketsToAdd = Math.max(0, 1 - (balances.tickets || 0))
                     const hintsToAdd = Math.max(0, 3 - (balances.hints || 0))
                     if (coinsToAdd > 0) updateCoins(coinsToAdd)
                     if (ticketsToAdd > 0) updateTickets(ticketsToAdd)

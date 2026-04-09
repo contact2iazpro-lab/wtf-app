@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
-import { DIFFICULTY_LEVELS } from './constants/gameConfig'
+import { DIFFICULTY_LEVELS, TUTO_FLASH_CONFIG, TUTO_QUEST_CONFIG } from './constants/gameConfig'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
   getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories, getCategoryById,
@@ -48,12 +48,6 @@ import { supabase } from './lib/supabase'
 const ONBOARDING_FLASH_FACT_IDS = [67, 301, 92, 174, 109, 95, 177, 22, 6, 61]
 
 // Difficulté spéciale onboarding : 2 choix QCM (50/50), timer 20s, 2 indices
-const DIFFICULTY_ONBOARDING_FLASH = {
-  id: 'onboarding_flash', label: 'Flash Onboarding', emoji: '🎯',
-  choices: 2, duration: 20, hintsAllowed: true, freeHints: 0, paidHints: 2,
-  hintCost: 0, coinsPerCorrect: 2, scoring: { correct: 5, wrong: 0 }
-}
-
 const SCREENS = {
   HOME: 'home',
   WTF_TEASER: 'wtf_teaser',
@@ -407,12 +401,12 @@ export default function App() {
         const allFacts = getValidFacts()
         const tutorialFact = allFacts.find(f => f.id === tutorialFactId)
         if (tutorialFact) {
-          const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, DIFFICULTY_LEVELS.HOT) }
+          const factWithOptions = { ...tutorialFact, ...getAnswerOptions(tutorialFact, TUTO_QUEST_CONFIG) }
           setSessionType('parcours')
           setGameMode('solo')
           setIsQuickPlay(false)
           setIsTutorialSession(true)
-          setSelectedDifficulty(DIFFICULTY_LEVELS.HOT)
+          setSelectedDifficulty(TUTO_QUEST_CONFIG)
           setSelectedCategory(tutorialFact.category)
           initSessionState([factWithOptions])
           setScreen(SCREENS.QUESTION)
@@ -660,12 +654,12 @@ export default function App() {
       }
       const facts = onboardingFacts.map(fact => ({
         ...fact,
-        ...getAnswerOptions(fact, DIFFICULTY_ONBOARDING_FLASH)
+        ...getAnswerOptions(fact, TUTO_FLASH_CONFIG)
       }))
       setSessionType('flash_solo')
       setGameMode('solo')
       setIsQuickPlay(false)
-      setSelectedDifficulty(DIFFICULTY_ONBOARDING_FLASH)
+      setSelectedDifficulty(TUTO_FLASH_CONFIG)
       setSelectedCategory(null)
       initSessionState(facts)
       setScreen(SCREENS.QUESTION)
@@ -847,13 +841,13 @@ export default function App() {
 
           const facts = onboardingFacts.map(fact => ({
             ...fact,
-            ...getAnswerOptions(fact, DIFFICULTY_ONBOARDING_FLASH)
+            ...getAnswerOptions(fact, TUTO_FLASH_CONFIG)
           }))
 
           setSessionType('flash_solo')
           setGameMode('solo')
           setIsQuickPlay(false)
-          setSelectedDifficulty(DIFFICULTY_ONBOARDING_FLASH)
+          setSelectedDifficulty(TUTO_FLASH_CONFIG)
           setSelectedCategory(null)
           initSessionState(facts)
           setScreen(SCREENS.QUESTION)
@@ -1233,10 +1227,9 @@ export default function App() {
     } else {
       setSessionScore(s => s + points)
       if (isAnswerCorrect) setCorrectCount(c => c + 1)
-      // Sauvegarde coins en temps réel
+      // Sauvegarde coins en temps réel (listener synchronise le state automatiquement)
       if (points > 0) {
         updateCoins(points)
-        setStorage(prev => ({ ...prev, wtfCoins: (prev.wtfCoins || 0) + points }))
       }
 
       // Explorer/Marathon : sauvegarder le f*ct débloqué immédiatement (pas attendre la fin de session)
@@ -1291,10 +1284,9 @@ export default function App() {
     } else {
       setSessionScore(s => s + points)
       if (isCorrect) setCorrectCount(c => c + 1)
-      // Sauvegarde coins en temps réel
+      // Sauvegarde coins en temps réel (listener synchronise le state automatiquement)
       if (points > 0) {
         updateCoins(points)
-        setStorage(prev => ({ ...prev, wtfCoins: (prev.wtfCoins || 0) + points }))
       }
     }
 
@@ -1310,16 +1302,19 @@ export default function App() {
   }, [selectedAnswer])
 
   const handleUseHint = useCallback((hintNum) => {
-    // Indices = stock gratuit, décrémenté de 1 à chaque utilisation
-    if (getBalances().hints < 1) return // stock vide, ne rien faire
-    // Pendant le tuto onboarding (!onboardingCompleted), les indices sont gratuits
-    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    if (wtfData.onboardingCompleted === true) {
+    // Vérifier si l'indice est payant (au-delà des indices gratuits)
+    const freeHints = selectedDifficulty?.freeHints || 0
+    const isPaidHint = hintNum > freeHints
+
+    // Si indice payant, consommer du stock
+    if (isPaidHint) {
+      if (getBalances().hints < 1) return
       updateHints(-1)
     }
+
     setHintsUsed(hintNum)
     setSessionAnyHintUsed(true)
-  }, [])
+  }, [selectedDifficulty])
 
   // ─── Navigation (next question / session end) ─────────────────────────────
 

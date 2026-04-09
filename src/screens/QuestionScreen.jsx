@@ -286,6 +286,7 @@ export default function QuestionScreen({
     </div>
   )
 
+  const hintCost = difficulty?.hintCost || 0
   const hintButtons = totalHints > 0 && !isDevMode && (
     <div
       className="shrink-0"
@@ -296,24 +297,25 @@ export default function QuestionScreen({
         const hintText = selectedHints[hintNum - 1] ?? null
         const currentCoins = parseInt(JSON.parse(localStorage.getItem('wtf_data') || '{}').wtfCoins || '0', 10)
         // Distinguish free hints from paid hints
-        const isFreeHint = i < freeHints
-        const canUseHint = isFreeHint ? (hintsUsed < freeHints) : (stockRemaining > 0)
-        const canBuyHint = !canUseHint && currentCoins >= 5
+        const isFree = hintNum <= freeHints
+        const cost = isFree ? 0 : hintCost
+        const canAfford = isFree || currentCoins >= cost
+        const canUseHint = isFree ? (hintsUsed < freeHints) : (stockRemaining > 0)
         return (
           <HintFlipButton
             key={hintNum}
             num={hintNum}
             hint={hintText}
             catColor={cat?.color || '#FF6B1A'}
-            hasStock={canUseHint}
-            stockCount={canUseHint ? 'Indice' : stockRemaining}
-            canBuyWithCoins={canBuyHint}
+            isFree={isFree}
+            cost={cost}
+            canAfford={canAfford}
+            canUse={canUseHint}
             onReveal={() => { onUseHint(hintNum); audio.play('click') }}
-            onBuyHint={() => {
-              updateCoins(-5)
+            onBuyHint={!isFree && cost > 0 ? () => {
+              updateCoins(-cost)
               updateHints(1)
-            }}
-            onboardingCompleted={onboardingCompleted}
+            } : null}
           />
         )
       })}
@@ -885,7 +887,7 @@ export default function QuestionScreen({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {[{ hint: fact.hint1 }, { hint: fact.hint2 }].map((h, i) => (
                   <div key={i} ref={i === 0 ? hintRef : undefined} style={{ position: 'relative' }}>
-                    <HintFlipButton num={i + 1} hint={h.hint} catColor={cat?.color || '#FF6B1A'} hasStock={true} stockCount={'Indice'} onReveal={() => { audio.play('click'); setTutoStep('answer') }} onboardingCompleted={onboardingCompleted} />
+                    <HintFlipButton num={i + 1} hint={h.hint} catColor={cat?.color || '#FF6B1A'} isFree={true} cost={0} canAfford={true} canUse={true} onReveal={() => { audio.play('click'); setTutoStep('answer') }} onBuyHint={null} />
                   </div>
                 ))}
               </div>

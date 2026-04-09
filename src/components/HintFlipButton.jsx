@@ -1,21 +1,22 @@
 import { useState } from 'react'
 
 // Shared hint flip card button — used by QuestionScreen and BlitzScreen
-// hasStock: player has hints in stock
-// stockCount: number of hints (or string like 'gratuit')
-// canBuyWithCoins: player has >= 5 coins to buy a hint
-// onBuyHint: callback when buying with coins (null if not applicable)
-// onboardingCompleted: if false, display "Gratuit" instead of coin cost
-export default function HintFlipButton({ num, hint, catColor, hasStock, stockCount, canBuyWithCoins, onReveal, onBuyHint, onboardingCompleted = true }) {
+// isFree: true if this is a free hint, false if paid
+// cost: 0 for free hints, number of coins for paid hints
+// canAfford: player can use (has stock or can buy with coins)
+// canUse: player can use this hint right now
+// onBuyHint: callback when buying with coins (null if free)
+// onReveal: callback when revealing the hint
+export default function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, canUse, onReveal, onBuyHint }) {
   const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
 
-  const canUse = hasStock || canBuyWithCoins
-  const disabled = !canUse
+  const disabled = !canAfford || !canUse
+  const canBuyNow = !canUse && canAfford && !isFree && onBuyHint
 
   const handleClick = () => {
     if (phase !== 'front' || disabled) return
-    // If no stock but can buy with coins, buy first
-    if (!hasStock && canBuyWithCoins && onBuyHint) {
+    // If buying, buy first
+    if (canBuyNow && onBuyHint) {
       onBuyHint()
     }
     setPhase('flip')
@@ -25,28 +26,31 @@ export default function HintFlipButton({ num, hint, catColor, hasStock, stockCou
 
   const color = catColor || '#FF6B1A'
 
-  // Front label depends on stock state
+  // Front label depends on hint state
   let frontLabel
-  if (hasStock) {
+  if (isFree) {
+    // Free hint
     frontLabel = (
       <span style={{ fontWeight: 900, fontSize: 13, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
         <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle' }} />
         Indice
       </span>
     )
-  } else if (canBuyWithCoins) {
+  } else if (canAfford) {
+    // Paid hint, can afford
     frontLabel = (
       <span style={{ fontWeight: 900, fontSize: 12, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
         <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle' }} />
-        {onboardingCompleted ? 'Indice 5' : 'Gratuit'}
+        Indice {cost}
       </span>
     )
   } else {
+    // Paid hint, cannot afford
     frontLabel = (
       <>
         <span style={{ fontWeight: 900, fontSize: 11, color: '#9CA3AF', whiteSpace: 'nowrap', textDecoration: 'line-through', display: 'flex', alignItems: 'center', gap: 3 }}>
           <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', opacity: 0.5 }} />
-          Indice 5
+          Indice {cost}
         </span>
         <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
           Pas assez

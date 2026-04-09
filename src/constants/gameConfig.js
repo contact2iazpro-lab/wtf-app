@@ -81,3 +81,32 @@ export const DIFFICULTY_LEVELS = {
     scoring: { correct: 1, wrong: 0 },
   },
 }
+
+// ── Tutoriel Configs (isolated from main gameplay)
+export const TUTO_FLASH_CONFIG = {
+  id: 'tuto_flash',
+  label: 'Tutoriel',
+  emoji: '🎯',
+  choices: 2,
+  duration: 20,
+  hintsAllowed: true,
+  freeHints: 2,
+  paidHints: 0,
+  hintCost: 0,
+  coinsPerCorrect: 2,
+  scoring: { correct: 5, wrong: 0 },
+}
+
+export const TUTO_QUEST_CONFIG = {
+  id: 'tuto_quest',
+  label: 'Tutoriel Quest',
+  emoji: '🎯',
+  choices: 2,
+  duration: 30,
+  hintsAllowed: true,
+  freeHints: 2,
+  paidHints: 0,
+  hintCost: 0,
+  coinsPerCorrect: 2,
+  scoring: { correct: 5, wrong: 0 },
+}

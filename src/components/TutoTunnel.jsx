@@ -175,80 +175,40 @@ export default function TutoTunnel({ onComplete, onSkip }) {
             playerHints={0}
             sessionType="parcours"
           />
-          {/* Skip button */}
-          <button
-            onClick={() => {
-              audio.play('click')
-              onSkip?.()
-            }}
-            style={{
-              position: 'fixed', top: S_val(20), right: S_val(20), zIndex: 10000,
-              background: 'rgba(255,255,255,0.2)', border: 'none',
-              color: 'rgba(255,255,255,0.8)',
-              padding: S_val(8),
-              borderRadius: S_val(8),
-              fontSize: S_val(12),
-              cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif',
-            }}
-          >
-            Passer &gt;
-          </button>
         </>
       )
     }
 
     if (currentFact) {
       return (
-        <>
-          <QuestionScreen
-            fact={currentFact}
-            factIndex={currentIndex}
-            totalFacts={sessionFacts.length}
-            hintsUsed={hintsUsed}
-            onSelectAnswer={(answer) => {
-              audio.play('click')
-              const correct = answer === currentFact.answer
-              setSelectedAnswer(answer)
-              setIsCorrect(correct)
-              setTimeout(() => setShowRevelation(true), 600)
-            }}
-            onOpenValidate={() => {}}
-            onUseHint={() => setHintsUsed(prev => prev + 1)}
-            onTimeout={() => {
-              setShowRevelation(true)
-              setIsCorrect(false)
-            }}
-            onQuit={() => onSkip?.()}
-            category={currentFact.category}
-            gameMode="solo"
-            difficulty={TUTO_QUEST_CONFIG}
-            playerCoins={sessionScore}
-            playerHints={0}
-            playerTickets={0}
-            sessionType="parcours"
-            isTutorial={true}
-          />
-          {/* Skip button */}
-          <button
-            onClick={() => {
-              audio.play('click')
-              onSkip?.()
-            }}
-            style={{
-              position: 'fixed', top: S_val(20), right: S_val(20), zIndex: 10000,
-              background: 'rgba(255,255,255,0.2)', border: 'none',
-              color: 'rgba(255,255,255,0.8)',
-              padding: S_val(8),
-              borderRadius: S_val(8),
-              fontSize: S_val(12),
-              cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif',
-            }}
-          >
-            Passer &gt;
-          </button>
-        </>
+        <QuestionScreen
+          fact={currentFact}
+          factIndex={currentIndex}
+          totalFacts={sessionFacts.length}
+          hintsUsed={hintsUsed}
+          onSelectAnswer={(answer) => {
+            audio.play('click')
+            const correct = answer === currentFact.answer
+            setSelectedAnswer(answer)
+            setIsCorrect(correct)
+            setTimeout(() => setShowRevelation(true), 600)
+          }}
+          onOpenValidate={() => {}}
+          onUseHint={() => setHintsUsed(prev => prev + 1)}
+          onTimeout={() => {
+            setShowRevelation(true)
+            setIsCorrect(false)
+          }}
+          onQuit={() => onSkip?.()}
+          category={currentFact.category}
+          gameMode="solo"
+          difficulty={TUTO_QUEST_CONFIG}
+          playerCoins={sessionScore}
+          playerHints={0}
+          playerTickets={0}
+          sessionType="parcours"
+          isTutorial={true}
+        />
       )
     }
   }
@@ -264,26 +224,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
         display: 'flex', flexDirection: 'column',
         padding: S_val(16), overflow: 'auto',
       }}>
-        {/* Skip button */}
-        <button
-          onClick={() => {
-            audio.play('click')
-            onSkip?.()
-          }}
-          style={{
-            position: 'fixed', top: S_val(20), right: S_val(20), zIndex: 10000,
-            background: 'rgba(0,0,0,0.1)', border: 'none',
-            color: 'rgba(0,0,0,0.6)',
-            padding: S_val(8),
-            borderRadius: S_val(8),
-            fontSize: S_val(12),
-            cursor: 'pointer',
-            fontFamily: 'Nunito, sans-serif',
-          }}
-        >
-          Passer &gt;
-        </button>
-
         {/* Header */}
         <div style={{
           display: 'flex', gap: S_val(24), justifyContent: 'center',
@@ -448,79 +388,39 @@ export default function TutoTunnel({ onComplete, onSkip }) {
             playerHints={0}
             sessionType="flash_solo"
           />
-          {/* Skip button */}
-          <button
-            onClick={() => {
-              audio.play('click')
-              onSkip?.()
-            }}
-            style={{
-              position: 'fixed', top: S_val(20), right: S_val(20), zIndex: 10000,
-              background: 'rgba(255,255,255,0.2)', border: 'none',
-              color: 'rgba(255,255,255,0.8)',
-              padding: S_val(8),
-              borderRadius: S_val(8),
-              fontSize: S_val(12),
-              cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif',
-            }}
-          >
-            Passer &gt;
-          </button>
         </>
       )
     }
 
     return (
-      <>
-        <QuestionScreen
-          fact={currentFact}
-          factIndex={currentIndex}
-          totalFacts={sessionFacts.length}
-          hintsUsed={hintsUsed}
-          onSelectAnswer={(answer) => {
-            audio.play('click')
-            const correct = answer === currentFact.answer
-            setSelectedAnswer(answer)
-            setIsCorrect(correct)
-            setTimeout(() => setShowRevelation(true), 600)
-          }}
-          onOpenValidate={() => {}}
-          onUseHint={() => setHintsUsed(prev => prev + 1)}
-          onTimeout={() => {
-            setShowRevelation(true)
-            setIsCorrect(false)
-          }}
-          onQuit={() => onSkip?.()}
-          category={currentFact.category}
-          gameMode="solo"
-          difficulty={TUTO_FLASH_CONFIG}
-          playerCoins={sessionScore}
-          playerHints={0}
-          playerTickets={0}
-          sessionType="flash_solo"
-          isTutorial={true}
-        />
-        {/* Skip button */}
-        <button
-          onClick={() => {
-            audio.play('click')
-            onSkip?.()
-          }}
-          style={{
-            position: 'fixed', top: S_val(20), right: S_val(20), zIndex: 10000,
-            background: 'rgba(255,255,255,0.2)', border: 'none',
-            color: 'rgba(255,255,255,0.8)',
-            padding: S_val(8),
-            borderRadius: S_val(8),
-            fontSize: S_val(12),
-            cursor: 'pointer',
-            fontFamily: 'Nunito, sans-serif',
-          }}
-        >
-          Passer &gt;
-        </button>
-      </>
+      <QuestionScreen
+        fact={currentFact}
+        factIndex={currentIndex}
+        totalFacts={sessionFacts.length}
+        hintsUsed={hintsUsed}
+        onSelectAnswer={(answer) => {
+          audio.play('click')
+          const correct = answer === currentFact.answer
+          setSelectedAnswer(answer)
+          setIsCorrect(correct)
+          setTimeout(() => setShowRevelation(true), 600)
+        }}
+        onOpenValidate={() => {}}
+        onUseHint={() => setHintsUsed(prev => prev + 1)}
+        onTimeout={() => {
+          setShowRevelation(true)
+          setIsCorrect(false)
+        }}
+        onQuit={() => onSkip?.()}
+        category={currentFact.category}
+        gameMode="solo"
+        difficulty={TUTO_FLASH_CONFIG}
+        playerCoins={sessionScore}
+        playerHints={0}
+        playerTickets={0}
+        sessionType="flash_solo"
+        isTutorial={true}
+      />
     )
   }
 
@@ -627,26 +527,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
         display: 'flex', flexDirection: 'column',
         padding: S_val(16), overflow: 'auto',
       }}>
-        {/* Skip button */}
-        <button
-          onClick={() => {
-            audio.play('click')
-            onSkip?.()
-          }}
-          style={{
-            position: 'fixed', top: S_val(20), right: S_val(20), zIndex: 10000,
-            background: 'rgba(0,0,0,0.1)', border: 'none',
-            color: 'rgba(0,0,0,0.6)',
-            padding: S_val(8),
-            borderRadius: S_val(8),
-            fontSize: S_val(12),
-            cursor: 'pointer',
-            fontFamily: 'Nunito, sans-serif',
-          }}
-        >
-          Passer &gt;
-        </button>
-
         {/* Header */}
         <div style={{
           display: 'flex', gap: S_val(24), justifyContent: 'center',
@@ -828,79 +708,39 @@ export default function TutoTunnel({ onComplete, onSkip }) {
             playerHints={0}
             sessionType="parcours"
           />
-          {/* Skip button */}
-          <button
-            onClick={() => {
-              audio.play('click')
-              onSkip?.()
-            }}
-            style={{
-              position: 'fixed', top: S_val(20), right: S_val(20), zIndex: 10000,
-              background: 'rgba(255,255,255,0.2)', border: 'none',
-              color: 'rgba(255,255,255,0.8)',
-              padding: S_val(8),
-              borderRadius: S_val(8),
-              fontSize: S_val(12),
-              cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif',
-            }}
-          >
-            Passer &gt;
-          </button>
         </>
       )
     }
 
     return (
-      <>
-        <QuestionScreen
-          fact={currentFact}
-          factIndex={currentIndex}
-          totalFacts={sessionFacts.length}
-          hintsUsed={hintsUsed}
-          onSelectAnswer={(answer) => {
-            audio.play('click')
-            const correct = answer === currentFact.answer
-            setSelectedAnswer(answer)
-            setIsCorrect(correct)
-            setTimeout(() => setShowRevelation(true), 600)
-          }}
-          onOpenValidate={() => {}}
-          onUseHint={() => setHintsUsed(prev => prev + 1)}
-          onTimeout={() => {
-            setShowRevelation(true)
-            setIsCorrect(false)
-          }}
-          onQuit={() => onSkip?.()}
-          category={currentFact.category}
-          gameMode="solo"
-          difficulty={TUTO_QUEST_CONFIG}
-          playerCoins={sessionScore}
-          playerHints={0}
-          playerTickets={1}
-          sessionType="parcours"
-          isTutorial={true}
-        />
-        {/* Skip button */}
-        <button
-          onClick={() => {
-            audio.play('click')
-            onSkip?.()
-          }}
-          style={{
-            position: 'fixed', top: S_val(20), right: S_val(20), zIndex: 10000,
-            background: 'rgba(255,255,255,0.2)', border: 'none',
-            color: 'rgba(255,255,255,0.8)',
-            padding: S_val(8),
-            borderRadius: S_val(8),
-            fontSize: S_val(12),
-            cursor: 'pointer',
-            fontFamily: 'Nunito, sans-serif',
-          }}
-        >
-          Passer &gt;
-        </button>
-      </>
+      <QuestionScreen
+        fact={currentFact}
+        factIndex={currentIndex}
+        totalFacts={sessionFacts.length}
+        hintsUsed={hintsUsed}
+        onSelectAnswer={(answer) => {
+          audio.play('click')
+          const correct = answer === currentFact.answer
+          setSelectedAnswer(answer)
+          setIsCorrect(correct)
+          setTimeout(() => setShowRevelation(true), 600)
+        }}
+        onOpenValidate={() => {}}
+        onUseHint={() => setHintsUsed(prev => prev + 1)}
+        onTimeout={() => {
+          setShowRevelation(true)
+          setIsCorrect(false)
+        }}
+        onQuit={() => onSkip?.()}
+        category={currentFact.category}
+        gameMode="solo"
+        difficulty={TUTO_QUEST_CONFIG}
+        playerCoins={sessionScore}
+        playerHints={0}
+        playerTickets={1}
+        sessionType="parcours"
+        isTutorial={true}
+      />
     )
   }
 

@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
-import { getValidFacts, getPlayableCategories, getVipFacts, getGeneratedFacts } from '../data/factsService'
+import { getValidFacts, getPlayableCategories, getVipFacts, getFunnyFacts, getExplorerFacts } from '../data/factsService'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 
@@ -40,12 +40,18 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
   const scale = useScale()
   const bgIndex = useRef(Math.floor(Math.random() * BACKGROUNDS.length))
 
+  // ─── AUDIT TEMPORAIRE ───────────────────────────────────────────────────────
+  console.log('[CAT] gameMode:', gameMode)
+  console.log('[CAT] getValidFacts():', getValidFacts().length)
+  console.log('[CAT] getVipFacts():', getVipFacts().length)
+  console.log('[CAT] getFunnyFacts():', getFunnyFacts().length)
+
   // ── Pool de facts selon le mode de jeu ──────────────────────────────────
   const factsPool = useMemo(() => {
     switch (gameMode) {
-      case 'marathon': return getValidFacts()
-      case 'blitz':    return getValidFacts()
-      case 'flash':    return getValidFacts()
+      case 'marathon': return getFunnyFacts()  // Explorer = Funny facts
+      case 'blitz':    return getValidFacts()  // Blitz = débloqués (filtrés en aval)
+      case 'flash':    return getFunnyFacts()  // Flash = Funny facts
       default:         return getValidFacts()  // quête, etc. → tous les facts valides
     }
   }, [gameMode])
@@ -78,6 +84,11 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
     return [...normal, ...pinned]
   }, [totalPerCategory])
 
+  // ─── AUDIT (suite) ──────────────────────────────────────────────────────────
+  console.log('[CAT] factsPool.length:', factsPool.length)
+  console.log('[CAT] totalPerCategory:', Object.keys(totalPerCategory).length, 'cats')
+  console.log('[CAT] visibleCategories:', visibleCategories.length)
+
   const selectedCat = selectedCatId === 'random'
     ? { label: 'Aléatoire', emoji: '🎲', id: 'random' }
     : getPlayableCategories().find(c => c.id === selectedCatId)
@@ -92,6 +103,21 @@ export default function CategoryScreen({ onSelectCategory, onBack, selectedDiffi
   const handleValider = () => {
     audio.play('click')
     onSelectCategory(selectedCatId === 'random' ? null : selectedCatId)
+  }
+
+  // ─── GUARD: Facts pas encore charges ────────────────────────────────────────
+  if (factsPool.length === 0) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        height: '100%', width: '100%',
+        backgroundColor: '#1a1a2e', color: 'white',
+        fontFamily: 'Nunito, sans-serif',
+        fontSize: 18,
+      }}>
+        <p>⏳ Chargement des catégories...</p>
+      </div>
+    )
   }
 
   return (

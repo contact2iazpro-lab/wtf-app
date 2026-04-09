@@ -155,6 +155,21 @@ function buildAll(rawFacts) {
     if (!_categoryLevelIds[key]) _categoryLevelIds[key] = new Set()
     _categoryLevelIds[key].add(f.id)
   })
+
+  // ─── AUDIT: Tracer la distribution des facts ────────────────────────────────
+  console.log('[FACTS AUDIT]', {
+    totalRaw: _rawFacts?.length || 0,
+    totalValid: _validFacts?.length || 0,
+    totalParcours: _parcoursFacts?.length || 0,
+    vip: _validFacts?.filter(f => f.isVip).length || 0,
+    generated: _validFacts?.filter(f => !f.isVip).length || 0,
+    byType: {
+      vip_type: _rawFacts?.filter(f => f.type === 'vip').length || 0,
+      generated_type: _rawFacts?.filter(f => f.type === 'generated').length || 0,
+      other_type: _rawFacts?.filter(f => f.type && f.type !== 'vip' && f.type !== 'generated').length || 0,
+      null_type: _rawFacts?.filter(f => !f.type).length || 0,
+    },
+  })
 }
 
 // ─── Cache localStorage ─────────────────────────────────────────────────────
@@ -273,10 +288,10 @@ export function getFactsByCategory(categoryId) {
   return categoryId ? v.filter(f => f.category === categoryId) : v
 }
 
-// ─── Getters par type (VIP / Generated) ─────────────────────────────────────
+// ─── Getters par type (VIP / Funny) ────────────────────────────────────────
 // Règles officielles :
 //   VIP     = facts du jeu physique (type = 'vip' ou sans type pour les anciens)
-//   Generated = facts créés par IA (type = 'generated')
+//   Funny   = facts créés par IA / générés (type = 'generated', !isVip)
 
 export function getVipFacts() {
   return getValidFacts().filter(f => f.isVip)
@@ -287,13 +302,22 @@ export function getVipFactsByCategory(categoryId) {
   return categoryId ? vip.filter(f => f.category === categoryId) : vip
 }
 
-export function getGeneratedFacts() {
+export function getFunnyFacts() {
   return getValidFacts().filter(f => !f.isVip)
 }
 
+export function getFunnyFactsByCategory(categoryId) {
+  const funny = getFunnyFacts()
+  return categoryId ? funny.filter(f => f.category === categoryId) : funny
+}
+
+// Alias pour rétrocompatibilité
+export function getGeneratedFacts() {
+  return getFunnyFacts()
+}
+
 export function getGeneratedFactsByCategory(categoryId) {
-  const generated = getGeneratedFacts()
-  return categoryId ? generated.filter(f => f.category === categoryId) : generated
+  return getFunnyFactsByCategory(categoryId)
 }
 
 // ─── Getters par mode de jeu ────────────────────────────────────────────────
@@ -304,14 +328,19 @@ export function getQuestFacts() {
   return getVipFacts()
 }
 
-/** Mode Flash : Generated uniquement, toutes catégories */
+/** Mode Flash : Funny facts, toutes catégories */
 export function getFlashFacts() {
-  return getGeneratedFacts()
+  return getFunnyFacts()
 }
 
-/** Mode Marathon : Generated uniquement, dans la catégorie choisie */
+/** Mode Marathon/Explorer : Funny facts, toutes catégories pour CategoryScreen */
+export function getExplorerFacts() {
+  return getFunnyFacts()
+}
+
+/** Mode Marathon : Funny facts, dans la catégorie choisie */
 export function getMarathonFacts(categoryId) {
-  return getGeneratedFactsByCategory(categoryId)
+  return getFunnyFactsByCategory(categoryId)
 }
 
 /** Mode Blitz : uniquement les facts déjà débloqués par le joueur */
@@ -326,14 +355,14 @@ export function getBlitzFacts() {
   }
 }
 
-/** Mode Série : Generated uniquement, toutes catégories */
+/** Mode Série : Funny facts, toutes catégories */
 export function getSeriesFacts() {
-  return getGeneratedFacts()
+  return getFunnyFacts()
 }
 
-/** Mode WTF Semaine : Generated uniquement, dans la catégorie de la semaine */
+/** Mode WTF Semaine : Funny facts, dans la catégorie de la semaine */
 export function getWeeklyFacts(categoryId) {
-  return getGeneratedFactsByCategory(categoryId)
+  return getFunnyFactsByCategory(categoryId)
 }
 
 /** Mode WTF du Jour : pioche dans les VIP uniquement */

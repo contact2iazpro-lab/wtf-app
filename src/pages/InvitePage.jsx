@@ -45,32 +45,46 @@ export default function InvitePage() {
 
   // Step 2: auto-accept when user is connected and inviter is found
   useEffect(() => {
-    if (!user || !inviter || processedRef.current) return
-    if (status === 'not_found' || status === 'done' || status === 'already_friends') return
+    console.log('[InvitePage] Step 2 check: user=', !!user, 'inviter=', !!inviter, 'processed=', processedRef.current, 'status=', status)
+    if (!user || !inviter || processedRef.current) {
+      console.log('[InvitePage] Step 2 skipped: user=', !!user, 'inviter=', !!inviter, 'processed=', processedRef.current)
+      return
+    }
+    if (status === 'not_found' || status === 'done' || status === 'already_friends') {
+      console.log('[InvitePage] Step 2 skipped: status=', status)
+      return
+    }
     processedRef.current = true
 
     if (user.id === inviter.user_id) {
+      console.log('[InvitePage] User trying to add themselves')
       setError('Tu ne peux pas t\'ajouter toi-même !')
       setStatus('error')
       return
     }
 
+    console.log('[InvitePage] Step 2 executing: sending friend request from', user.id, 'to', inviter.user_id)
     setStatus('processing')
     ;(async () => {
       try {
         const result = await sendFriendRequest(user.id, inviter.user_id)
+        console.log('[InvitePage] sendFriendRequest result:', result)
         if (result.alreadyExists) {
           if (result.friendship.status === 'accepted') {
+            console.log('[InvitePage] Already friends')
             setStatus('already_friends')
           } else {
+            console.log('[InvitePage] Accepting existing pending friendship:', result.friendship.id)
             await acceptFriendRequest(result.friendship.id)
             setStatus('done')
           }
         } else {
+          console.log('[InvitePage] Accepting new friendship:', result.friendship.id)
           await acceptFriendRequest(result.friendship.id)
           setStatus('done')
         }
       } catch (err) {
+        console.error('[InvitePage] Error in Step 2:', err)
         setError(err.message || 'Erreur lors de l\'ajout')
         setStatus('error')
       }

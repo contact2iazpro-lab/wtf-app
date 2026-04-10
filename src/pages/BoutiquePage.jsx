@@ -6,9 +6,9 @@ import { updateCoins, updateHints, updateTickets, getBalances } from '../service
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const HINT_PACKS = [
-  { quantity: 1, price: 5,  label: '1 indice',   discount: null },
-  { quantity: 3, price: 12, label: '3 indices',   discount: '-20%' },
-  { quantity: 5, price: 18, label: '5 indices',   discount: '-28%' },
+  { quantity: 1, price: 10, label: '1 indice',   discount: null },
+  { quantity: 3, price: 30, label: '3 indices',   discount: null },
+  { quantity: 5, price: 45, label: '5 indices',   discount: '-10%' },
 ]
 
 const TICKET_PACKS = [

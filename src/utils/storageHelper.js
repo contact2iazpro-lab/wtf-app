@@ -62,7 +62,7 @@ export function loadStorage() {
     // Migration : forcer onboardingCompleted=true pour joueurs existants
     if (!saved.hasOwnProperty('onboardingCompleted')) {
       saved.onboardingCompleted = true
-      saved.wtfCoins = Math.max(saved.wtfCoins || 0, 25)
+      saved.wtfCoins = saved.wtfCoins || 0
       saved.tickets = Math.max(saved.tickets || 0, 1)
       if (!saved.unlockedCategories) {
         saved.unlockedCategories = ['sport', 'records', 'animaux', 'kids', 'definition']

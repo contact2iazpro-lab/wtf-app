@@ -29,11 +29,11 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 
 ### Niveaux Quest
 
-| Niveau | QCM | Timer | Indice gratuit | Indice payant | Prix indice | Coins/bonne réponse |
-|--------|-----|-------|----------------|---------------|-------------|---------------------|
-| Cool   | 2   | 30s   | 1              | 1 (2e)        | 3 coins     | 3                   |
-| Hot    | 4   | 30s   | 0              | 2 (1er + 2e)  | 5 coins     | 3                   |
-| WTF!   | 6   | 30s   | 0              | 1             | 8 coins     | 5                   |
+| Niveau | QCM | Timer | Indices (stock gratuit) | Coins/bonne réponse |
+|--------|-----|-------|------------------------|---------------------|
+| Cool   | 2   | 30s   | 2                      | 2                   |
+| Hot    | 4   | 20s   | 2                      | 2                   |
+| WTF!   | 6   | 20s   | 1                      | 1                   |
 
 ### Mode Jouer (ex-Flash + Explorer)
 
@@ -42,8 +42,8 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 | Coût | Gratuit illimité |
 | Questions | 5 |
 | QCM | 4 choix |
-| Timer | 30s |
-| Indices | 2 (payants, même prix que Hot) |
+| Timer | 20s |
+| Indices | 2 (stock gratuit) |
 | Coins (aléatoire) | 2 coins/bonne réponse |
 | Coins (catégorie choisie) | 1 coin/bonne réponse |
 | Contenu | F*cts générés uniquement |
@@ -68,15 +68,31 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 | Coût | Gratuit, 1×/jour |
 | Questions | 5 |
 | QCM | 4 choix |
-| Timer | 30s |
-| Indices | 2 |
+| Timer | 20s |
+| Indices | 2 (stock gratuit) |
 | Objectif | Débloquer le WTF! VIP du jour |
 
+### Économie F2P
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Nouveau joueur | 0 coins / 1 ticket / 3 indices |
+| 1 ticket (boutique) | 25 coins |
+| 1 indice (boutique) | 10 coins |
+| 3 indices (boutique) | 30 coins |
+| 5 indices (boutique) | 45 coins |
+| Streak J1 | 2 coins |
+| Streak J3 | 2 indices |
+| Streak J7 | 10 coins + 1 ticket |
+| Streak J14 | 1 ticket + 3 indices |
+| Gains journaliers cible | 30-50 coins/jour |
+| TTF (sessions avant achat) | ~3 sessions Flash |
+
 ### Règles communes
-- Indice non disponible si pas assez de coins : bouton grisé, JAMAIS de pause du timer
+- Indices = stock gratuit (rechargeable en boutique avec coins)
+- Indice non disponible si stock vide : bouton grisé, JAMAIS de pause du timer
 - Questions par Quête : 5 (TEMP TEST — remettre à 10 au lancement)
 - Pas de bonus perfect (ni Quest ni Jouer)
-- Nouveau joueur : 25 coins / 1 ticket / 3 indices
 
 ## Modes de jeu — Résumé
 

@@ -5,31 +5,31 @@ export const DIFFICULTY_LEVELS = {
   COOL: {
     id: 'cool', label: 'Cool', emoji: '❄️',
     choices: 2, duration: 30,
-    hintsAllowed: true, freeHints: 1, paidHints: 1, hintCost: 3,
-    coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 },
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   HOT: {
     id: 'hot', label: 'Hot', emoji: '🔥',
-    choices: 4, duration: 30,
-    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 5,
-    coinsPerCorrect: 3, scoring: { correct: 3, wrong: 0 },
+    choices: 4, duration: 20,
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   WTF: {
     id: 'wtf', label: 'WTF!', emoji: '⚡',
-    choices: 6, duration: 30,
-    hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 8,
-    coinsPerCorrect: 5, scoring: { correct: 5, wrong: 0 },
+    choices: 6, duration: 20,
+    hintsAllowed: true, freeHints: 1, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 },
   },
   FLASH: {
     id: 'flash', label: 'Jouer', emoji: '🎯',
-    choices: 4, duration: 30,
-    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 5,
+    choices: 4, duration: 20,
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   HUNT: {
     id: 'hunt', label: 'Hunt', emoji: '🔥',
-    choices: 4, duration: 30,
-    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 5,
+    choices: 4, duration: 20,
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   BLITZ: {
@@ -66,11 +66,10 @@ export const MODE_CONFIGS = {
     modeId: 'quest', modeName: 'Quest', subtitle: 'Débloque les f*cts les plus rares', emoji: '⭐', color: '#FF6B1A',
     rules: [
       { icon: '🎫', text: '1 ticket (25 coins) par session' },
-      { icon: '❄️', text: `Cool : ${DIFFICULTY_LEVELS.COOL.choices} choix · ${DIFFICULTY_LEVELS.COOL.paidHints} indices · ${DIFFICULTY_LEVELS.COOL.duration}s · ${DIFFICULTY_LEVELS.COOL.coinsPerCorrect} coins` },
-      { icon: '🔥', text: `Hot : ${DIFFICULTY_LEVELS.HOT.choices} choix · ${DIFFICULTY_LEVELS.HOT.paidHints} indices · ${DIFFICULTY_LEVELS.HOT.duration}s · ${DIFFICULTY_LEVELS.HOT.coinsPerCorrect} coin${DIFFICULTY_LEVELS.HOT.coinsPerCorrect > 1 ? 's' : ''}` },
-      { icon: '⚡', text: `WTF! : ${DIFFICULTY_LEVELS.WTF.choices} choix · ${DIFFICULTY_LEVELS.WTF.paidHints} indice · ${DIFFICULTY_LEVELS.WTF.duration}s · ${DIFFICULTY_LEVELS.WTF.coinsPerCorrect} coin` },
+      { icon: '❄️', text: `Cool : ${DIFFICULTY_LEVELS.COOL.choices} choix · ${DIFFICULTY_LEVELS.COOL.freeHints} indices · ${DIFFICULTY_LEVELS.COOL.duration}s · ${DIFFICULTY_LEVELS.COOL.coinsPerCorrect} coins` },
+      { icon: '🔥', text: `Hot : ${DIFFICULTY_LEVELS.HOT.choices} choix · ${DIFFICULTY_LEVELS.HOT.freeHints} indices · ${DIFFICULTY_LEVELS.HOT.duration}s · ${DIFFICULTY_LEVELS.HOT.coinsPerCorrect} coins` },
+      { icon: '⚡', text: `WTF! : ${DIFFICULTY_LEVELS.WTF.choices} choix · ${DIFFICULTY_LEVELS.WTF.freeHints} indice · ${DIFFICULTY_LEVELS.WTF.duration}s · ${DIFFICULTY_LEVELS.WTF.coinsPerCorrect} coin` },
       { icon: '📚', text: '5 questions — les f*cts trouvés vont dans ta Collection' },
-      { icon: '🏆', text: 'Score parfait = 10 coins bonus + 1 ticket !' },
     ],
   },
   blitz: {
@@ -88,32 +87,19 @@ export const MODE_CONFIGS = {
     modeId: 'flash', modeName: 'Jouer', subtitle: 'Partie rapide, gratuite', emoji: '🎯', color: '#FFD700',
     rules: [
       { icon: '🆓', text: 'Gratuit — joue autant que tu veux' },
-      { icon: '⚡', text: '5 questions' },
-      { icon: '⏱️', text: `${DIFFICULTY_LEVELS.FLASH.duration} secondes par question` },
-      { icon: '💡', text: `${DIFFICULTY_LEVELS.FLASH.paidHints} indices disponibles` },
-      { icon: '🎲', text: 'Aléatoire : 2 coins par bonne réponse' },
+      { icon: '⚡', text: '5 questions · 4 QCM · 20s' },
+      { icon: '💡', text: `${DIFFICULTY_LEVELS.FLASH.freeHints} indices (stock gratuit)` },
+      { icon: '🎲', text: `Aléatoire : ${DIFFICULTY_LEVELS.FLASH.coinsPerCorrect} coins par bonne réponse` },
       { icon: '📂', text: 'Catégorie choisie : 1 coin par bonne réponse' },
     ],
   },
   hunt: {
     modeId: 'hunt', modeName: 'Hunt', subtitle: 'Le WTF! du jour !', emoji: '🔥', color: '#E91E63',
     rules: [
-      { icon: '🆓', text: 'Gratuit — pas de ticket requis' },
+      { icon: '🆓', text: 'Gratuit — 1 fois par jour' },
       { icon: '🎯', text: 'Un f*ct WTF! spécial à découvrir chaque jour' },
-      { icon: '⏱️', text: `${DIFFICULTY_LEVELS.HUNT.duration} secondes par question` },
-      { icon: '📚', text: '5 questions pour le débloquer' },
-      { icon: '💡', text: `${DIFFICULTY_LEVELS.HUNT.paidHints} indices disponibles par question` },
-      { icon: '📅', text: 'Reviens chaque jour pour un nouveau WTF!' },
-    ],
-  },
-  explorer: {
-    modeId: 'explorer', modeName: 'Explorer', subtitle: 'Découvre de nouveaux f*cts', emoji: '🟢', color: '#22C55E',
-    rules: [
-      { icon: '🆓', text: 'Gratuit et illimité — pas de ticket requis' },
-      { icon: '⚡', text: 'Session de 5 questions' },
-      { icon: '🎯', text: `Mode Aléatoire : ${DIFFICULTY_LEVELS.FLASH.coinsPerCorrect} coins/bonne réponse` },
-      { icon: '🗂️', text: 'Mode Catégorie : 1 coin/bonne réponse' },
-      { icon: '💡', text: '2 indices gratuits par question · 4 QCM · 30s' },
+      { icon: '⚡', text: '5 questions · 4 QCM · 20s' },
+      { icon: '💡', text: `${DIFFICULTY_LEVELS.HUNT.freeHints} indices (stock gratuit)` },
     ],
   },
 }
@@ -123,9 +109,9 @@ export const QUESTIONS_PER_GAME = 5
 
 // ── Paliers de récompenses fidélité Streak
 export function getStreakReward(streakDays) {
-  if (streakDays === 1)  return { coins: 5,  tickets: 0, hints: 0, badge: false }
+  if (streakDays === 1)  return { coins: 2,  tickets: 0, hints: 0, badge: false }
   if (streakDays === 3)  return { coins: 0,  tickets: 0, hints: 2, badge: false }
-  if (streakDays === 7)  return { coins: 25, tickets: 1, hints: 3, badge: true  }
+  if (streakDays === 7)  return { coins: 10, tickets: 1, hints: 0, badge: true  }
   if (streakDays === 14) return { coins: 0,  tickets: 1, hints: 3, badge: false }
   if (streakDays === 30) return { coins: 0,  tickets: 0, hints: 0, badge: false, special: 'wtf_premium' }
   return null

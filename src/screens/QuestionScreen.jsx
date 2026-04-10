@@ -255,12 +255,12 @@ export default function QuestionScreen({
       {Array.from({ length: totalHints }, (_, i) => {
         const hintNum = i + 1
         const hintText = selectedHints[hintNum - 1] ?? null
-        const currentCoins = playerCoins
         // Distinguish free hints from paid hints
         const isFree = hintNum <= freeHints
         const cost = isFree ? 0 : hintCost
-        const canAfford = isFree || currentCoins >= cost
-        const canUseHint = isFree ? (hintsUsed < freeHints) : (stockRemaining > 0)
+        // Paid hint: can use if has stock OR can buy with coins
+        const canAfford = isFree || playerCoins >= cost || stockRemaining > 0
+        const canUseHint = isFree ? (hintsUsed < freeHints) : (stockRemaining > 0 || playerCoins >= cost)
         return (
           <HintFlipButton
             key={hintNum}

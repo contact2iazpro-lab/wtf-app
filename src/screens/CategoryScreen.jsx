@@ -62,6 +62,19 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
     return counts
   }, [unlockedFacts])
 
+  // Catégories débloquées (5 de base + celles avec au moins 1 fact débloqué en Quest)
+  const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
+  const unlockedCatIds = useMemo(() => {
+    const cats = new Set(GUEST_CATEGORIES)
+    for (const f of getValidFacts()) {
+      if (unlockedFacts.has(f.id) && f.category) cats.add(f.category)
+    }
+    return cats
+  }, [unlockedFacts])
+
+  // En mode Explorer/Flash : seules les catégories débloquées sont jouables
+  const isLockedMode = gameMode === 'marathon' || gameMode === 'flash'
+
   // Catégories avec au moins 1 fact, triées alphabétiquement
   const visibleCategories = useMemo(() => {
     const cats = getPlayableCategories().filter(cat => (totalPerCategory[cat.id] || 0) > 0)
@@ -205,13 +218,17 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             const unlocked = unlockedPerCategory[cat.id] || 0
             const pct = total > 0 ? Math.round((unlocked / total) * 100) : 0
             const bgColor = getCategoryColor(cat)
+            const isLocked = isLockedMode && !unlockedCatIds.has(cat.id)
 
             return (
               <button
                 key={cat.id}
-                onClick={() => handleCategoryClick(cat.id)}
+                onClick={() => {
+                  if (isLocked) return
+                  handleCategoryClick(cat.id)
+                }}
                 style={{
-                  background: isSelected ? bgColor : `${bgColor}99`,
+                  background: isLocked ? 'rgba(255,255,255,0.08)' : isSelected ? bgColor : `${bgColor}99`,
                   borderRadius: S(14),
                   padding: `${S(10)} ${S(12)}`,
                   width: '100%', boxSizing: 'border-box',
@@ -220,9 +237,10 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                   boxShadow: isSelected
                     ? '0 0 20px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
                     : '0 2px 8px rgba(0,0,0,0.15)',
-                  opacity: selectedCatId === null || isSelected ? 1 : 0.6,
+                  opacity: isLocked ? 0.35 : (selectedCatId === null || isSelected ? 1 : 0.6),
                   transform: isSelected ? 'scale(1.02)' : 'scale(1)',
-                  cursor: 'pointer',
+                  cursor: isLocked ? 'not-allowed' : 'pointer',
+                  filter: isLocked ? 'grayscale(0.6)' : 'none',
                   transition: 'all 0.2s ease',
                   WebkitTapHighlightColor: 'transparent',
                   fontFamily: 'Nunito, sans-serif',
@@ -273,7 +291,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                   fontWeight: 900, fontSize: S(12),
                   color: 'rgba(255,255,255,0.8)', flexShrink: 0,
                 }}>
-                  {pct}%
+                  {isLocked ? '🔒' : `${pct}%`}
                 </span>
               </button>
             )

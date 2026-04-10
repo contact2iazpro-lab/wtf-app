@@ -864,7 +864,7 @@ export default function App() {
 
   // ─── Answer handlers ─────────────────────────────────────────────────────
 
-  const handleSelectAnswer = useCallback((answerIndex, tutorialFlipInfo) => {
+  const handleSelectAnswer = useCallback((answerIndex) => {
     if (!currentFact) return
     const isAnswerCorrect = answerIndex === currentFact.correctIndex
 
@@ -883,9 +883,6 @@ export default function App() {
         points = Array.isArray(sc) ? (sc[hintsUsed] ?? sc[sc.length - 1]) : sc
       }
     }
-
-    // Tutorial flip info (wrongAnswer → correctAnswer)
-    setFlipInfo(tutorialFlipInfo || null)
 
     setSelectedAnswer(answerIndex)
     setIsCorrect(isAnswerCorrect)

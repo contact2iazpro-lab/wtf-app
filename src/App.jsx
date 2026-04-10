@@ -45,6 +45,8 @@ import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
 import { supabase } from './lib/supabase'
 import GameModal from './components/GameModal'
+import { getFlashEnergy, consumeFlashEnergy, buyExtraSession } from './services/energyService'
+import { FLASH_ENERGY } from './constants/gameConfig'
 
 
 
@@ -201,6 +203,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showNoTicketModal, setShowNoTicketModal] = useState(false)
   const [gameAlert, setGameAlert] = useState(null) // { emoji, title, message }
+  const [showNoEnergyModal, setShowNoEnergyModal] = useState(false)
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
@@ -289,6 +292,8 @@ export default function App() {
     : sessionFacts.length
 
   // ─── Session starters ────────────────────────────────────────────────────
+
+  const canPlayFlashCheck = () => getFlashEnergy().remaining > 0
 
   function initSessionState(facts) {
     setSessionFacts(facts)
@@ -421,6 +426,7 @@ export default function App() {
     setIsQuickPlay(false)
     setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH)
     setSelectedCategory(null)
+    consumeFlashEnergy()
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
   }, [unlockedFacts, user])
@@ -529,13 +535,15 @@ export default function App() {
         showOrSkipLaunch('hunt')
         break
       case 'categoryFlash': {
-        // Flash — handled by handleFlashSolo or normal flow
+        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+        if (!isDevOrTest && !canPlayFlashCheck()) { setShowNoEnergyModal(true); break }
         setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
         showOrSkipLaunch('flash')
         break
       }
       case 'marathon': {
-        // Explorer mode
+        const isDevOrTest2 = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+        if (!isDevOrTest2 && !canPlayFlashCheck()) { setShowNoEnergyModal(true); break }
         setGameMode('marathon')
         setSessionType('marathon')
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
@@ -826,6 +834,7 @@ export default function App() {
       setSelectedDifficulty(difficulty)
       setIsQuickPlay(false)
       setSessionType('marathon')
+      consumeFlashEnergy()
       initSessionState(sessionFacts)
       setScreen(SCREENS.QUESTION)
       return
@@ -860,9 +869,10 @@ export default function App() {
     }))
 
     setSelectedCategory(categoryId)
+    if (sessionType === 'flash_solo' || sessionType === 'marathon') consumeFlashEnergy()
     initSessionState(factsWithOptions)
     setScreen(SCREENS.QUESTION)
-  }, [selectedDifficulty, gameMode, handleBlitzStart])
+  }, [selectedDifficulty, gameMode, sessionType, handleBlitzStart])
 
   // ─── Answer handlers ─────────────────────────────────────────────────────
 
@@ -1858,6 +1868,7 @@ export default function App() {
           dailyQuestsRemaining={dailyQuestsRemaining}
           newlyEarnedBadges={newlyEarnedBadges}
           onBadgeSeen={() => setNewlyEarnedBadges([])}
+          flashEnergyRemaining={getFlashEnergy().remaining}
           onNavigate={handleHomeNavigate}
           onOpenSettings={() => setShowSettings(true)}
           playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}
@@ -2257,6 +2268,27 @@ export default function App() {
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
       {gameAlert && <GameModal emoji={gameAlert.emoji} title={gameAlert.title} message={gameAlert.message} onConfirm={() => setGameAlert(null)} />}
+      {showNoEnergyModal && (
+        <GameModal
+          emoji="🔋"
+          title="Plus de sessions !"
+          message={`Tes ${FLASH_ENERGY.FREE_SESSIONS_PER_DAY} sessions gratuites du jour sont utilisées. Achète une session pour ${FLASH_ENERGY.EXTRA_SESSION_COST} coins ou reviens demain !`}
+          confirmLabel={`Acheter (${FLASH_ENERGY.EXTRA_SESSION_COST} coins)`}
+          cancelLabel="Attendre"
+          onConfirm={() => {
+            if (buyExtraSession()) {
+              setShowNoEnergyModal(false)
+              // Relancer le flow flash directement
+              setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
+              showOrSkipLaunch('flash')
+            } else {
+              setShowNoEnergyModal(false)
+              setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: `Il te faut ${FLASH_ENERGY.EXTRA_SESSION_COST} coins pour acheter une session.` })
+            }
+          }}
+          onCancel={() => setShowNoEnergyModal(false)}
+        />
+      )}
 
       {/* THÈME B Point 2: Modal des catégories débloquées */}
       {showNewCategoriesModal && newlyUnlockedCategories.length > 0 && (

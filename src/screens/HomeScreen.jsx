@@ -155,6 +155,7 @@ export default function HomeScreen({
   socialNotifCount = 0,
   onResetSocialNotif,
   pendingChallengesCount = 0,
+  flashEnergyRemaining = 3,
 }) {
   const { isConnected } = useAuth()
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
@@ -964,6 +965,22 @@ export default function HomeScreen({
           </span>
           <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
         </button>
+        {/* Barre d'énergie */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6 }}>
+          <span style={{ fontSize: 12 }}>🔋</span>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                width: 24, height: 6, borderRadius: 3,
+                background: i < flashEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.2)',
+                transition: 'background 0.3s',
+              }} />
+            ))}
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, color: flashEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
+            {flashEnergyRemaining}/3
+          </span>
+        </div>
       </div>
 
       {/* ═══ ZONE 5 — NAVBAR (via BottomNav unifiée) ════════════════════════════ */}

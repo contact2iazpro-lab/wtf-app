@@ -86,7 +86,7 @@ export const MODE_CONFIGS = {
   flash: {
     modeId: 'flash', modeName: 'Jouer', subtitle: 'Partie rapide, gratuite', emoji: '🎯', color: '#FFD700',
     rules: [
-      { icon: '🆓', text: 'Gratuit — joue autant que tu veux' },
+      { icon: '🔋', text: '3 sessions gratuites par jour' },
       { icon: '⚡', text: '5 questions · 4 QCM · 20s' },
       { icon: '💡', text: `${DIFFICULTY_LEVELS.FLASH.freeHints} indices (stock gratuit)` },
       { icon: '🎲', text: `Aléatoire : ${DIFFICULTY_LEVELS.FLASH.coinsPerCorrect} coins par bonne réponse` },
@@ -106,6 +106,12 @@ export const MODE_CONFIGS = {
 
 // ── Nombre de questions par session
 export const QUESTIONS_PER_GAME = 5
+
+// ── Énergie Explorer (sessions gratuites par jour)
+export const FLASH_ENERGY = {
+  FREE_SESSIONS_PER_DAY: 3,
+  EXTRA_SESSION_COST: 10, // coins
+}
 
 // ── Paliers de récompenses fidélité Streak
 export function getStreakReward(streakDays) {

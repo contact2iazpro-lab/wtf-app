@@ -39,7 +39,7 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 
 | Paramètre | Valeur |
 |-----------|--------|
-| Coût | Gratuit illimité |
+| Coût | 3 sessions gratuites/jour (reset minuit), +10 coins/session extra |
 | Questions | 5 |
 | QCM | 4 choix |
 | Timer | 20s |

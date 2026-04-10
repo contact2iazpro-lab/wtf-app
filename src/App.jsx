@@ -44,6 +44,7 @@ import { checkBadges } from './utils/badgeManager'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
 import { supabase } from './lib/supabase'
+import GameModal from './components/GameModal'
 
 
 
@@ -111,7 +112,7 @@ export default function App() {
       // Mode défi : vérifier le ticket
       const balances = getBalances()
       if (balances.tickets < 1) {
-        alert('Tu n\'as pas de ticket pour lancer un défi ! 🎫')
+        setGameAlert({ emoji: '🎫', title: 'Pas de ticket', message: 'Tu n\'as pas de ticket pour lancer un défi !' })
         return
       }
       updateTickets(-1)
@@ -199,6 +200,7 @@ export default function App() {
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showNoTicketModal, setShowNoTicketModal] = useState(false)
+  const [gameAlert, setGameAlert] = useState(null) // { emoji, title, message }
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
@@ -351,7 +353,7 @@ export default function App() {
         huntFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
       }
       if (!huntFact) {
-        alert('Le f*ct du jour n\'est pas encore chargé. Réessaie dans quelques secondes !')
+        setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct du jour n\'est pas encore chargé. Réessaie dans quelques secondes !' })
         return
       }
     }
@@ -397,7 +399,7 @@ export default function App() {
         pool.push(...getGeneratedFacts().filter(f => !pool.some(p => p.id === f.id)))
       }
       if (pool.length === 0) {
-        alert('Bientôt de nouveaux f*cts ! Reviens vite 🎉')
+        setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt. Reviens vite !' })
         return
       }
       if (pool.length < 5) {
@@ -587,7 +589,7 @@ export default function App() {
       }
 
       if (pool.length === 0) {
-        alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
+        setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' })
         return
       }
       if (pool.length < 4) {
@@ -668,7 +670,7 @@ export default function App() {
     if (categoryId) pool = pool.filter(f => f.category === categoryId)
 
     if (pool.length < 4) {
-      alert('Débloque plus de f*cts pour jouer en Blitz ! 🔓')
+      setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Jouer ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
       return
     }
 
@@ -805,7 +807,7 @@ export default function App() {
         pool = getGeneratedFactsByCategory(categoryId)
       }
       if (pool.length === 0) {
-        alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
+        setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' })
         return
       }
       if (pool.length < 4) {
@@ -1401,7 +1403,7 @@ export default function App() {
     // THÈME C Point 4: Exclure facts débloqués du tirage Explorer
     const filteredPool = explorerPool.filter(f => !unlockedFacts.has(f.id))
     if (filteredPool.length === 0) {
-      alert('Plus de questions dans cette catégorie ! 🎉')
+      setGameAlert({ emoji: '🎉', title: 'Catégorie terminée !', message: 'Tu as répondu à toutes les questions de cette catégorie !' })
       return
     }
     const difficulty = DIFFICULTY_LEVELS.HOT
@@ -2254,6 +2256,7 @@ export default function App() {
       )}
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
+      {gameAlert && <GameModal emoji={gameAlert.emoji} title={gameAlert.title} message={gameAlert.message} onConfirm={() => setGameAlert(null)} />}
 
       {/* THÈME B Point 2: Modal des catégories débloquées */}
       {showNewCategoriesModal && newlyUnlockedCategories.length > 0 && (

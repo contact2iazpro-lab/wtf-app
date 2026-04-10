@@ -108,7 +108,7 @@ export default function BlitzResultsScreen({
       } catch { /* ignore */ }
     } catch (e) {
       console.error('Challenge creation error:', e)
-      alert('Erreur lors de la création du défi. Réessaie !')
+      setChallengeCreated({ error: true })
     } finally {
       setIsCreating(false)
     }

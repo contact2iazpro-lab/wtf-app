@@ -213,7 +213,7 @@ export default function CollectionPage() {
                 key={cat.id}
                 onClick={() => {
                   audio.play('click')
-                  if (isLocked) { alert('Continue à jouer pour débloquer cette catégorie !'); return }
+                  if (isLocked) return
                   setSelectedCatId(cat.id)
                 }}
                 className="rounded-2xl p-3 flex items-center gap-3 text-left w-full active:scale-98 transition-all"

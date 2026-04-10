@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
+import GameModal from '../components/GameModal'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -99,10 +100,10 @@ export default function ProfilPage() {
     }
   }
 
-  async function handleResetProgression() {
-    if (!window.confirm('ATTENTION : Cette action est IRRÉVERSIBLE.\nTu vas perdre tous tes coins, tickets, indices, ta collection et ta progression.\nEs-tu sûr de vouloir continuer ?')) return
-    if (!window.confirm('Dernière chance !\nToute ta progression sera définitivement perdue.\nConfirmer la réinitialisation ?')) return
+  const [resetStep, setResetStep] = useState(0) // 0=hidden, 1=first confirm, 2=second confirm
 
+  async function executeReset() {
+    setResetStep(0)
     if (isConnected && user) {
       try {
         await supabase.from('profiles').update({
@@ -154,6 +155,30 @@ export default function ProfilPage() {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80) }}>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {resetStep === 1 && (
+        <GameModal
+          emoji="⚠️"
+          title="Réinitialiser ta progression ?"
+          message="Tu vas perdre tous tes coins, tickets, indices, ta collection et ta progression. Cette action est irréversible."
+          confirmLabel="Continuer"
+          cancelLabel="Annuler"
+          danger
+          onConfirm={() => setResetStep(2)}
+          onCancel={() => setResetStep(0)}
+        />
+      )}
+      {resetStep === 2 && (
+        <GameModal
+          emoji="🚨"
+          title="Dernière chance !"
+          message="Toute ta progression sera définitivement perdue. Confirmer la réinitialisation ?"
+          confirmLabel="Réinitialiser"
+          cancelLabel="Annuler"
+          danger
+          onConfirm={executeReset}
+          onCancel={() => setResetStep(0)}
+        />
+      )}
 
       {/* Header */}
       <div className="px-4 pt-2 pb-1 shrink-0">
@@ -335,7 +360,7 @@ export default function ProfilPage() {
         {/* Réinitialiser progression */}
         <div style={{ marginTop: 16, paddingBottom: 16, textAlign: 'center' }}>
           <button
-            onClick={handleResetProgression}
+            onClick={() => setResetStep(1)}
             style={{
               background: '#DC2626', color: 'white', border: 'none',
               borderRadius: 12, padding: '10px 16px',

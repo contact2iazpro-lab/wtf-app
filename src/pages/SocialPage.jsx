@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import GameModal from '../components/GameModal'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getOrCreateFriendCode, acceptFriendRequest, rejectFriendRequest, getFriends, getPendingRequests, removeFriend } from '../data/friendService'
@@ -71,6 +72,7 @@ export default function SocialPage() {
   const [showChallengeSection, setShowChallengeSection] = useState(false)
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
   const [toast, setToast] = useState(null)
+  const [confirmRemove, setConfirmRemove] = useState(null)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 
@@ -141,12 +143,17 @@ export default function SocialPage() {
   }
 
   const handleRemove = async (id) => {
-    if (!window.confirm('Supprimer cet ami ?')) return
+    setConfirmRemove(id)
+  }
+
+  const confirmRemoveFriend = async () => {
+    if (!confirmRemove) return
     try {
-      await removeFriend(id)
+      await removeFriend(confirmRemove)
       showToast('Ami supprimé')
       loadData()
     } catch (e) { console.warn('Remove error:', e) }
+    setConfirmRemove(null)
   }
 
   const handleChallenge = () => {
@@ -160,6 +167,18 @@ export default function SocialPage() {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
       {/* Toast */}
+      {confirmRemove && (
+        <GameModal
+          emoji="👋"
+          title="Supprimer cet ami ?"
+          message="Tu pourras toujours le re-ajouter plus tard."
+          confirmLabel="Supprimer"
+          cancelLabel="Annuler"
+          danger
+          onConfirm={confirmRemoveFriend}
+          onCancel={() => setConfirmRemove(null)}
+        />
+      )}
       {toast && (
         <div style={{ position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: '#22C55E', color: 'white', borderRadius: 12, padding: '10px 20px', fontWeight: 800, fontSize: 14, boxShadow: '0 4px 20px rgba(34,197,94,0.4)' }}>
           {toast}

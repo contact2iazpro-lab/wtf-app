@@ -2,16 +2,20 @@
  * HomeScreen v7 — Refonte complète
  * 5 zones : Header · Badge · Coffres · Corps (3 cols) · Nav
  * Full screen, no scroll, useScale responsive
+ * 🔧 BUILD TEST: 10/04/2026 16:30
  */
 
 import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
+import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
+import { useUnlock } from '../context/UnlockContext'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import { getNextBadge } from '../utils/badgeManager'
 import { updateCoins, updateTickets, updateHints } from '../services/currencyService'
+import { ZONE_HEIGHTS, GRID_CONFIG, ICON_SIZES, ASSETS, UNLOCK_MESSAGES, SPOTLIGHT_MESSAGES, THEME } from '../constants/layoutConfig'
 
 // ── Fond pastel aléatoire par session ─────────────────────────────────────────
 const PASTEL_GRADIENTS = [
@@ -166,36 +170,32 @@ export default function HomeScreen({
     } catch {}
   }
 
-  // ── Débloquage progressif des modes ──────────────────────────────────────
+  // ── Utiliser UnlockContext pour toutes les conditions ───────────────────
+  const unlock = useUnlock()
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const isDevOrTest = isDevMode || isTestMode
-  const canQuest = isDevOrTest || gamesPlayed >= 1
-  const canBlitz = isDevOrTest || unlockedFactsCount >= 5
-  const canHunt = isDevOrTest || gamesPlayed >= 10
-  const canExplorer = isDevOrTest || gamesPlayed >= 5
-  const canMulti = isDevOrTest || unlockedFactsCount >= 5
-  const canSerie = isDevOrTest || gamesPlayed >= 3
 
-  const UNLOCK_MESSAGES = {
-    quest: 'Joue ta première partie pour débloquer ! 🎮',
-    blitz: 'Débloque 5 f*cts pour jouer en Blitz ! ⚡',
-    hunt: 'Joue 10 parties pour débloquer la Hunt ! 🔥',
-    explorer: 'Joue 5 parties pour explorer librement ! 🧭',
-    multi: 'Termine un Blitz pour défier tes amis ! 👥',
-    serie: 'Joue 3 parties pour débloquer la Série ! 🔥',
-  }
+  // Mode unlock conditions (from context)
+  const canQuest = isDevOrTest || unlock.canQuest
+  const canBlitz = isDevOrTest || unlock.canBlitz
+  const canHunt = isDevOrTest || unlock.canHunt
+  const canExplorer = isDevOrTest || unlock.canExplorer
+  const canMulti = isDevOrTest || unlock.canMulti
+  const canSerie = isDevOrTest || unlock.canSerie
 
-  const canBoutique = isDevOrTest || gamesPlayed >= 2
-  const canTrophees = isDevOrTest || wtfData.onboardingCompleted || unlockedFactsCount >= 1 || gamesPlayed >= 2
-  const canCollection = isDevOrTest || questsPlayed >= 1
-  const canAmis = isDevOrTest || blitzPlayed >= 1
+  // Navbar unlock conditions (from context)
+  const canBoutique = isDevOrTest || unlock.canBoutique
+  const canTrophees = isDevOrTest || unlock.canTrophees
+  const canCollection = isDevOrTest || unlock.canCollection
+  const canAmis = isDevOrTest || unlock.canAmis
 
-  const NAVBAR_UNLOCK_MESSAGES = {
-    boutique: 'Joue 2 parties pour débloquer la Boutique ! 🛍️',
-    trophees: 'Joue 3 parties pour voir tes Trophées ! 🏆',
-    collection: 'Termine une Quest pour voir ta Collection ! 📚',
-    amis: 'Termine un Blitz pour débloquer les Amis ! 👥',
-  }
+  // UI feature display (from context)
+  const showStreakDisplay = unlock.showStreakDisplay
+  const showBadgeDisplay = unlock.showBadgeDisplay
+  const showCoffresDisplay = unlock.showCoffresDisplay
+
+  // Use messages from layoutConfig (imported at top)
+  const spotlightMessages = unlock.spotlightMessages || SPOTLIGHT_MESSAGES
 
   const seenModes = (() => {
     try { return readWtfData().seenModes || [] } catch { return [] }
@@ -237,6 +237,7 @@ export default function HomeScreen({
   const scale = useScale()
   const textColor = '#ffffff'
   const textShadow = '0 1px 4px rgba(0,0,0,0.3)'
+
 
   // ── Musique de fond — démarre au premier clic (contourne l'autoplay block) ─
   useEffect(() => {
@@ -320,15 +321,6 @@ export default function HomeScreen({
     return () => clearTimeout(timer)
   }, [activeSpotlight])
 
-  const SPOTLIGHT_MESSAGES = {
-    flash: 'Lance ta première partie ! 🎮',
-    quest: 'Tu as un ticket ! Découvre les f*cts les plus dingues 🏆',
-    collection: 'Tes f*cts sont dans ta collection ! 📚',
-    coffre: 'Ouvre ton coffre du jour ! 🎁',
-    boutique: 'Achète des tickets et indices ici ! 🛍️',
-    blitz: 'Teste ta mémoire en Blitz ! ⚡',
-  }
-
   const nav = (target) => {
     audio.play?.('click')
     if (onNavigate) onNavigate(target)
@@ -369,7 +361,7 @@ export default function HomeScreen({
             src={src}
             alt={label}
             style={{
-              width: S(48), height: S(48),
+              width: S(ICON_SIZES.modeIcon), height: S(ICON_SIZES.modeIcon),
               borderRadius: '50%',
               overflow: 'hidden',
               objectFit: 'cover',
@@ -436,6 +428,11 @@ export default function HomeScreen({
         background: HOME_BG_COLOR,
       }}
     >
+      {/* BUILD TEST — REMOVE AFTER TESTING */}
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: '#FF0000', color: '#fff', textAlign: 'center', padding: '8px', fontWeight: 'bold', fontSize: '16px' }}>
+        ✅ BUILD: 10-04 16:30 OK
+      </div>
+
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* Spotlight unique — basé sur hasSeenX */}
@@ -464,7 +461,7 @@ export default function HomeScreen({
             zIndex: 102, textAlign: 'center',
           }}>
             <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
-              {SPOTLIGHT_MESSAGES[activeSpotlight]}
+              {spotlightMessages[activeSpotlight]}
             </div>
           </div>
         </>
@@ -507,9 +504,9 @@ export default function HomeScreen({
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* ═══ ZONE 1 — HEADER (44px fixe) ════════════════════════════════════ */}
+      {/* ═══ ZONE 1 — HEADER ════════════════════════════════════ */}
       <div style={{
-        height: 44, flexShrink: 0,
+        height: ZONE_HEIGHTS.header, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 14px',
         position: 'relative', zIndex: 2,
@@ -584,10 +581,10 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ═══ ZONE 2 — STREAK + COUNTDOWN (32px fixe) ═════════════════════ */}
-      {gamesPlayed >= 3 && (
+      {/* ═══ ZONE 2 — STREAK + COUNTDOWN ═════════════════════ */}
+      {showStreakDisplay && (
       <div style={{
-        height: 32, flexShrink: 0,
+        height: ZONE_HEIGHTS.streak, flexShrink: 0,
         margin: '8px 14px 0',
         display: 'flex', alignItems: 'center', gap: 6,
         position: 'relative', zIndex: 2,
@@ -618,40 +615,11 @@ export default function HomeScreen({
       </div>
       )}
 
-      {/* ═══ ZONE 2B — PROCHAIN BADGE (28px fixe) ═════════════════════════ */}
-      {gamesPlayed >= 3 && (
-      <div style={{
-        height: 28, flexShrink: 0,
-        margin: '4px 14px 0',
-        background: 'rgba(255,255,255,0.15)',
-        borderRadius: 8, padding: '0 10px',
-        display: 'flex', alignItems: 'center',
-        position: 'relative', zIndex: 2,
-      }}>
-        {nextBadgeInfo ? (
-          <>
-            <span style={{ fontSize: S(10), fontWeight: 700, color: textColor, textShadow, flexShrink: 0, whiteSpace: 'nowrap' }}>
-              {nextBadgeInfo.badge.emoji} {nextBadgeInfo.badge.label}
-            </span>
-            <div style={{ flex: 1, background: 'rgba(255,255,255,0.2)', borderRadius: 2, height: 4, margin: '0 8px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${nextBadgeInfo.progress}%`, background: 'white', borderRadius: 2, transition: 'width 0.5s ease' }} />
-            </div>
-            <span style={{ fontSize: S(10), fontWeight: 700, color: textColor, opacity: 0.7, textShadow, flexShrink: 0 }}>
-              {nextBadgeInfo.current}/{nextBadgeInfo.target}
-            </span>
-          </>
-        ) : (
-          <span style={{ fontSize: S(10), fontWeight: 800, color: '#FFD700', textShadow, flex: 1, textAlign: 'center' }}>
-            🏆 Tous les badges débloqués !
-          </span>
-        )}
-      </div>
-      )}
 
-      {/* ═══ ZONE 3 — COFFRES QUOTIDIENS (60px fixe) ═══════════════════════ */}
-      {questsPlayed >= 1 && (
+      {/* ═══ ZONE 3 — COFFRES QUOTIDIENS ═══════════════════════ */}
+      {showCoffresDisplay && (
       <div ref={coffreZoneRef} style={{
-        height: 60, flexShrink: 0,
+        height: ZONE_HEIGHTS.coffres, flexShrink: 0,
         display: 'flex', alignItems: 'center',
         gap: 2, padding: '6px 10px 0',
         justifyContent: 'center',
@@ -664,6 +632,10 @@ export default function HomeScreen({
           const isColl = status === 'collected'
           const isMissed = status === 'missed'
           const isSunday = i === 6
+          const isToday = new Date().getDay() === 0 // 0 = dimanche
+
+          // Special case: dimanche et disponible → affiche WTF du Dimanche
+          const isWtfDimanche = isSunday && isAvail && isToday
 
           const chestSrc = isAvail
             ? '/assets/ui/chest-open.png'
@@ -671,6 +643,45 @@ export default function HomeScreen({
               ? '/assets/ui/chest-trophy.png?v=2'
               : '/assets/ui/chest-locked.png'
 
+          // Si c'est WTF du Dimanche: bouton spécial
+          if (isWtfDimanche) {
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  audio.play?.('click')
+                  markSeen('hasSeenHunt')
+                  nav('wtfDuJour')
+                }}
+                style={{
+                  flex: 1,
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  gap: S(2), padding: `${S(3)} ${S(1)}`,
+                  borderRadius: S(6),
+                  background: 'linear-gradient(135deg, rgba(255,107,26,0.4) 0%, rgba(255,107,26,0.2) 100%)',
+                  border: '1px solid rgba(255,107,26,0.6)',
+                  cursor: 'pointer',
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                  WebkitTapHighlightColor: 'transparent',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <span style={{
+                  fontSize: S(24), lineHeight: 1,
+                }}>🎁</span>
+                <span style={{
+                  fontSize: S(7), fontWeight: 800, lineHeight: 1,
+                  color: '#FF6B1A', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                  textAlign: 'center', maxWidth: S(35),
+                }}>
+                  VIP
+                </span>
+              </button>
+            )
+          }
+
+          // Sinon: coffre normal
           return (
             <button
               key={i}
@@ -700,7 +711,7 @@ export default function HomeScreen({
               <img
                 src={chestSrc}
                 alt={c.day}
-                style={{ width: S(28), height: S(28), objectFit: 'contain', flexShrink: 0, background: 'transparent', display: 'block' }}
+                style={{ width: S(ICON_SIZES.coffreIcon), height: S(ICON_SIZES.coffreIcon), objectFit: 'contain', flexShrink: 0, background: 'transparent', display: 'block' }}
               />
               <span style={{
                 fontSize: S(7), fontWeight: 800, lineHeight: 1,
@@ -719,17 +730,14 @@ export default function HomeScreen({
       {/* ═══ ZONE 4 — CORPS PRINCIPAL (flex: 1) ════════════════════════════ */}
       <div style={{
         flex: 1, minHeight: 0,
-        display: 'grid',
-        gridTemplateColumns: 'auto 1fr auto',
-        gridTemplateRows: 'auto auto auto',
+        display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyItems: 'center',
-        padding: '0 10px',
+        justifyContent: 'center',
+        padding: GRID_CONFIG.padding,
         position: 'relative',
-        rowGap: 0,
-        columnGap: 0,
       }}>
-        {/* Starburst light rays — tailles aléatoires avec halo */}
+        {/* Starburst light rays — CENTRÉ ABSOLUMENT */}
         {(() => {
           const rays = [
             { angle: 0, len: 140, w: 3, op: 0.5 },
@@ -768,8 +776,6 @@ export default function HomeScreen({
               pointerEvents: 'none',
               zIndex: 0,
               animation: 'starburst-rotate 40s linear infinite',
-              gridColumn: '1 / 4',
-              gridRow: '1 / 4',
             }}>
               {rays.map((r, i) => (
                 <div key={i} style={{
@@ -788,107 +794,163 @@ export default function HomeScreen({
           )
         })()}
 
-        {/* Colonne gauche — Quest + Blitz (2 icones, espacement large) */}
+        {/* LAYOUT PRINCIPAL — 5 zones équidistantes */}
         <div style={{
-          gridColumn: 1,
-          gridRow: '1 / 4',
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-around', alignItems: 'center',
-          height: '100%', zIndex: 1,
-          gap: 24,
-          opacity: activeSpotlight && activeSpotlight !== 'quest' && activeSpotlight !== 'blitz' ? 0.3 : 1,
-          pointerEvents: activeSpotlight && activeSpotlight !== 'quest' && activeSpotlight !== 'blitz' ? 'none' : 'auto',
-          transition: 'opacity 0.3s ease',
+          flex: 1,
+          minHeight: 0,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 1,
         }}>
-          <div ref={questBtnRef} style={{ position: 'relative', zIndex: activeSpotlight === 'quest' ? 101 : 'auto', ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
-            {canQuest && questsPlayedInMode === 0 && <NewBadge />}
-            <ModeIcon src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'quest') return; if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
-          </div>
-          <div ref={blitzBtnRef} style={{ position: 'relative', ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
-            {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'blitz') return; if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
-          </div>
-        </div>
 
-        {/* Colonne centre — Logo VoF + Étoile WTF! + Tagline */}
-        <div style={{
-          gridColumn: 2,
-          gridRow: '1 / 4',
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'center', alignItems: 'center',
-          height: '100%', position: 'relative', zIndex: 1,
-          gap: 24,
-        }}>
-          {/* 0. Logo Vrai ou Fou */}
-          <img
-            src="/assets/ui/vof-logo.png?v=4"
-            alt="Vrai ou fou ?"
-            style={{
-              width: 170, maxHeight: 45, height: 'auto',
-              objectFit: 'contain', display: 'block',
-            }}
-          />
-
-          {/* 1. Logo WTF */}
-          <img
-            src="/assets/ui/wtf-logo.png?v=4"
-            alt="WTF!"
-            style={{
-              width: '55%', maxWidth: 130, height: 'auto',
-              objectFit: 'contain', display: 'block',
-              filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
-              position: 'relative', zIndex: 1,
-              WebkitUserSelect: 'none', userSelect: 'none',
-              transform: 'scale(1)',
-              transition: 'transform 0.3s ease',
-            }}
-          />
-
-          {/* 2. Tagline */}
-          <img
-            src="/assets/ui/100logo.png?v=5"
-            alt="Des f*cts 100% vrais, des réactions 100% fun !"
-            style={{
-              width: '70%', maxWidth: 180, height: 'auto',
-              objectFit: 'contain', display: 'block',
-              position: 'relative', zIndex: 1,
-            }}
-          />
-        </div>
-
-        {/* Colonne droite — Explorer + Multi + Hunt (3 icones, espacement resserre) */}
-        <div style={{
-          gridColumn: 3,
-          gridRow: '1 / 4',
-          display: 'flex', flexDirection: 'column',
-          justifyContent: 'center', alignItems: 'center',
-          height: '100%', zIndex: 1,
-          gap: 12,
-          opacity: activeSpotlight && activeSpotlight !== 'marathon' && activeSpotlight !== 'multi' && activeSpotlight !== 'hunt' ? 0.3 : 1,
-          pointerEvents: activeSpotlight && activeSpotlight !== 'marathon' && activeSpotlight !== 'multi' && activeSpotlight !== 'hunt' ? 'none' : 'auto',
-          transition: 'opacity 0.3s ease',
-        }}>
-          <div style={{ position: 'relative', ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}) }}>
-            {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
-            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer && !(explorerPlayedInMode === 0 && gamesPlayed >= 2)} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'marathon') return; const isExplorerNew = explorerPlayedInMode === 0 && gamesPlayed >= 2; if (!canExplorer && !isExplorerNew) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
+          {/* ZONE 1 — VoF */}
+          <div style={{
+            flex: 1,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <img
+              src={ASSETS.ui.vofLogo}
+              alt="Vrai ou fou ?"
+              style={{
+                width: 'clamp(100px, 50%, 170px)', maxHeight: 45, height: 'auto',
+                objectFit: 'contain', display: 'block',
+                flexShrink: 0,
+              }}
+            />
           </div>
-          <div style={{ position: 'relative' }}>
-            {canMulti && modeIsNew('multi') && <NewBadge />}
-            <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'multi') return; if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
+
+          {/* ZONE 2 — Explorer | Blitz */}
+          <div style={{
+            flex: 1,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+          }}>
+            {/* Explorer — left */}
+            <div style={{
+              position: 'absolute',
+              left: '5%',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 1,
+              ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+            }}>
+              {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
+              <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer && !(explorerPlayedInMode === 0 && gamesPlayed >= 2)} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'marathon') return; const isExplorerNew = explorerPlayedInMode === 0 && gamesPlayed >= 2; if (!canExplorer && !isExplorerNew) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
+            </div>
+
+            {/* Blitz — right */}
+            <div style={{
+              position: 'absolute',
+              right: '5%',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: activeSpotlight === 'blitz' ? 101 : 1,
+              ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+            }}>
+              {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
+              <ModeIcon ref={blitzBtnRef} src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'blitz') return; if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
+            </div>
           </div>
-          <div style={{ position: 'relative' }}>
-            {canHunt && modeIsNew('hunt') && <NewBadge />}
-            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" locked={!canHunt} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'hunt') return; if (!canHunt) return showLockToast(UNLOCK_MESSAGES.hunt); markSeen('hasSeenHunt'); nav('wtfDuJour') }} />
+
+          {/* ZONE 3 — Étoile WTF */}
+          <div style={{
+            flex: 1,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <img
+              src={ASSETS.ui.wtfLogo}
+              alt="WTF!"
+              style={{
+                width: 'clamp(80px, 55%, 130px)', height: 'auto',
+                objectFit: 'contain', display: 'block',
+                filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
+                position: 'relative', zIndex: 1,
+                WebkitUserSelect: 'none', userSelect: 'none',
+                transform: 'scale(1)',
+                transition: 'transform 0.3s ease',
+                flexShrink: 0,
+              }}
+            />
+          </div>
+
+          {/* ZONE 4 — Quest | Multi */}
+          <div style={{
+            flex: 1,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+          }}>
+            {/* Quest — left */}
+            <div style={{
+              position: 'absolute',
+              left: '5%',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: activeSpotlight === 'quest' ? 101 : 1,
+              ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+            }}>
+              {canQuest && questsPlayedInMode === 0 && <NewBadge />}
+              <ModeIcon ref={questBtnRef} src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'quest') return; if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
+            </div>
+
+            {/* Multi — right */}
+            <div style={{
+              position: 'absolute',
+              right: '5%',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 1,
+            }}>
+              {canMulti && modeIsNew('multi') && <NewBadge />}
+              <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'multi') return; if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
+            </div>
+          </div>
+
+          {/* ZONE 5 — Tagline 100% */}
+          <div style={{
+            flex: 1,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <img
+              src={ASSETS.ui.tagline}
+              alt="Des f*cts 100% vrais, des réactions 100% fun !"
+              style={{
+                width: 'clamp(100px, 70%, 180px)', height: 'auto',
+                objectFit: 'contain', display: 'block',
+                position: 'relative', zIndex: 1,
+                flexShrink: 0,
+              }}
+            />
           </div>
         </div>
       </div>
 
-      {/* ═══ ZONE 4B — BOUTON FLASH (48px fixe) ═══════════════════════════ */}
+      {/* ═══ ZONE 4B — BOUTON FLASH ═══════════════════════════ */}
       <div style={{
-        height: 44, flexShrink: 0,
+        height: ZONE_HEIGHTS.flashButton, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '0 50px',
-        marginBottom: 34,
+        marginBottom: ZONE_HEIGHTS.flashButtonGap,
         position: 'relative', zIndex: activeSpotlight === 'flash' ? 101 : 10,
         opacity: activeSpotlight && activeSpotlight !== 'flash' ? 0.3 : 1,
         pointerEvents: activeSpotlight && activeSpotlight !== 'flash' ? 'none' : 'auto',
@@ -925,126 +987,18 @@ export default function HomeScreen({
         </button>
       </div>
 
-      {/* ═══ ZONE 5 — NAV BAR ══════════════════════════════════════════════ */}
-      <div style={{
-        display: 'flex', alignItems: 'flex-end',
-        justifyContent: 'space-around',
-        padding: `${S(4)} ${S(4)} ${S(6)}`,
-        background: 'rgba(255,255,255,0.95)',
-        flexShrink: 0,
-        position: 'relative', zIndex: 10,
-      }}>
-        {[
-          { slug: 'boutique',   label: 'Boutique',   target: 'boutique',   center: false, unlocked: canBoutique,   unlockMsg: NAVBAR_UNLOCK_MESSAGES.boutique },
-          { slug: 'trophees',   label: 'Trophées',   target: 'trophees',   center: false, unlocked: canTrophees,   unlockMsg: NAVBAR_UNLOCK_MESSAGES.trophees },
-          { slug: 'accueil',    label: 'Accueil',    target: null,         center: true,  unlocked: true },
-          { slug: 'amis',       label: 'Amis',       target: 'amis',       center: false, unlocked: canAmis,       unlockMsg: NAVBAR_UNLOCK_MESSAGES.amis },
-          { slug: 'collection', label: 'Collection', target: 'collection', center: false, unlocked: canCollection, unlockMsg: NAVBAR_UNLOCK_MESSAGES.collection },
-        ].map((item) => {
-          const isActive = item.center
-          const isLocked = !item.unlocked
-          return (
-            <button
-              key={item.slug}
-              ref={item.slug === 'collection' ? collectionNavRef : item.slug === 'boutique' ? boutiqueNavRef : undefined}
-              onClick={() => {
-                if (isLocked) return showLockToast(item.unlockMsg)
-                if (item.slug === 'collection' && activeSpotlight === 'collection') dismissSpotlight('collection')
-                if (item.slug === 'boutique' && activeSpotlight === 'boutique') dismissSpotlight('boutique')
-                if (item.slug === 'amis' && onResetSocialNotif) onResetSocialNotif()
-                if (item.target) nav(item.target)
-              }}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(2),
-                background: 'none', border: 'none',
-                cursor: isLocked ? 'default' : 'pointer',
-                padding: `0 ${S(6)}`,
-                position: 'relative',
-                opacity: isLocked ? 0.35 : activeSpotlight && activeSpotlight !== item.slug ? 0.3 : 1,
-                filter: isLocked ? 'grayscale(1)' : 'none',
-                transition: 'opacity 0.2s',
-                WebkitTapHighlightColor: 'transparent',
-                pointerEvents: activeSpotlight && activeSpotlight !== item.slug ? 'none' : 'auto',
-              }}
-            >
-              {item.center ? (
-                <div style={{
-                  width: S(38), height: S(38), borderRadius: '50%',
-                  background: '#FF6B1A',
-                  border: '3px solid white',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginTop: S(-14),
-                  boxShadow: '0 2px 10px rgba(255,107,26,0.4)',
-                }}>
-                  <img src={`/assets/nav/${item.slug}.png`} alt={item.label} style={{ width: S(18), height: S(18), filter: 'brightness(0) invert(1)' }} />
-                </div>
-              ) : (
-                <div style={{ position: 'relative' }}>
-                  <img src={`/assets/nav/${item.slug}.png`} alt={item.label} style={{ width: S(22), height: S(22), opacity: isLocked ? 0.4 : 0.6, transition: 'all 0.2s ease' }} />
-                  {isLocked && (
-                    <div style={{
-                      position: 'absolute', bottom: -4, right: -4,
-                      width: 14, height: 14, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.3)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 7,
-                    }}>🔒</div>
-                  )}
-                  {item.slug === 'amis' && (socialNotifCount > 0 || pendingChallengesCount > 0) && (
-                    <div style={{
-                      position: 'absolute', top: -2, right: -2,
-                      display: 'flex', gap: 2,
-                    }}>
-                      {socialNotifCount > 0 && (
-                        <div style={{
-                          width: 10, height: 10, borderRadius: '50%',
-                          background: '#EF4444', border: '1px solid white',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 6, fontWeight: 900, color: 'white', lineHeight: 1,
-                        }}>
-                          {socialNotifCount > 9 ? '9+' : socialNotifCount}
-                        </div>
-                      )}
-                      {pendingChallengesCount > 0 && (
-                        <div style={{
-                          minWidth: 16, height: 16, borderRadius: 8,
-                          background: '#EF4444', border: '1px solid white',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          padding: '0 4px', fontSize: 9, fontWeight: 900, color: 'white', lineHeight: 1,
-                        }}>
-                          {pendingChallengesCount}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-              <span style={{
-                fontSize: S(10), fontWeight: 700,
-                color: isActive ? '#FF6B1A' : isLocked ? '#aaa' : '#666',
-              }}>
-                {item.label}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Toast débloquage */}
-      {lockToast && (
-        <div style={{
-          position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 300, background: 'rgba(0,0,0,0.85)', color: 'white',
-          borderRadius: 14, padding: '12px 24px',
-          fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-          fontFamily: 'Nunito, sans-serif',
-          animation: 'lockToastFade 2.5s ease forwards',
-          maxWidth: '90vw', textAlign: 'center',
-        }}>
-          {lockToast}
-        </div>
-      )}
+      {/* ═══ ZONE 5 — NAVBAR (via BottomNav unifiée) ════════════════════════════ */}
+      <BottomNav
+        activeSpotlight={activeSpotlight}
+        dismissSpotlight={dismissSpotlight}
+        onResetSocialNotif={onResetSocialNotif}
+        socialNotifCount={socialNotifCount}
+        pendingChallengesCount={pendingChallengesCount}
+        collectionNavRef={collectionNavRef}
+        boutiqueNavRef={boutiqueNavRef}
+        isHome={true}
+        onShowLockToast={showLockToast}
+      />
 
       {/* ═══ MODAL COFFRE ══════════════════════════════════════════════════ */}
       {showCoffreModal && coffreReward && (

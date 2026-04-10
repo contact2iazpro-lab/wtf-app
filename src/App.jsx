@@ -44,6 +44,7 @@ import { checkBadges } from './utils/badgeManager'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
 import { supabase } from './lib/supabase'
+import { usePendingInvite } from './hooks/usePendingInvite'
 
 const SCREENS = {
   HOME: 'home',
@@ -451,6 +452,12 @@ export default function App() {
   const [pendingChallengesCount, setPendingChallengesCount] = useState(0)
 
   const { user, signInWithGoogle } = useAuth()
+  const { inviteState, inviterName, dismiss: dismissInvite } = usePendingInvite()
+
+  // Invitation ami : si needs_auth → ouvrir le ConnectBanner
+  useEffect(() => {
+    if (inviteState === 'needs_auth') setShowConnectBanner(true)
+  }, [inviteState])
 
   // Close ConnectBanner when user successfully connects
   useEffect(() => {
@@ -2033,6 +2040,84 @@ export default function App() {
                 {streakRewardToast.reward.badge && '🏅 Badge !'}
               </>
           }
+        </div>
+      )}
+
+      {/* Modale résultat invitation ami */}
+      {inviteState && inviteState !== 'needs_auth' && inviteState !== 'processing' && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1001,
+            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+          }}
+          onClick={dismissInvite}
+        >
+          <div
+            style={{
+              background: 'white', borderRadius: 24, padding: '32px 24px',
+              maxWidth: 340, width: '100%', textAlign: 'center',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.3)',
+              fontFamily: 'Nunito, sans-serif',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {inviteState === 'done' && (<>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>🎉</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', marginBottom: 8 }}>
+                Ami ajouté !
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#6B7280', marginBottom: 20, lineHeight: 1.4 }}>
+                Tu es maintenant ami avec <strong>{inviterName}</strong>. Vous pouvez vous défier en Blitz !
+              </div>
+            </>)}
+            {inviteState === 'already_friends' && (<>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>🤝</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', marginBottom: 8 }}>
+                Déjà amis !
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#6B7280', marginBottom: 20, lineHeight: 1.4 }}>
+                Tu es déjà ami avec <strong>{inviterName}</strong>.
+              </div>
+            </>)}
+            {inviteState === 'self' && (<>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>😅</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', marginBottom: 8 }}>
+                C'est ton propre lien !
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#6B7280', marginBottom: 20, lineHeight: 1.4 }}>
+                Partage-le à un ami pour qu'il puisse t'ajouter.
+              </div>
+            </>)}
+            {inviteState === 'not_found' && (<>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>😕</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', marginBottom: 8 }}>
+                Lien invalide
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#6B7280', marginBottom: 20, lineHeight: 1.4 }}>
+                Ce lien d'invitation n'existe pas ou a expiré.
+              </div>
+            </>)}
+            {inviteState === 'error' && (<>
+              <div style={{ fontSize: 48, marginBottom: 8 }}>😕</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', marginBottom: 8 }}>
+                Erreur
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#6B7280', marginBottom: 20, lineHeight: 1.4 }}>
+                Impossible de traiter l'invitation. Réessaie plus tard.
+              </div>
+            </>)}
+            <button
+              onClick={dismissInvite}
+              style={{
+                width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
+                background: '#FF6B1A', color: 'white', fontSize: 15, fontWeight: 800,
+                fontFamily: 'Nunito, sans-serif', cursor: 'pointer',
+              }}
+            >
+              {inviteState === 'done' ? 'Jouer !' : 'OK'}
+            </button>
+          </div>
         </div>
       )}
 

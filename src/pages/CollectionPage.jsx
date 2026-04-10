@@ -1,15 +1,14 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 import { useCollection } from '../hooks/useCollection'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
-import LoginModal from '../components/Auth/LoginModal'
-import ConnectBanner from '../components/ConnectBanner'
 import { audio } from '../utils/audio'
 import { readWtfData } from '../utils/storageHelper'
 import renderFormattedText from '../utils/renderFormattedText'
 
 const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
+
+const S = (px) => `calc(${px}px * var(--scale))`
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -60,7 +59,7 @@ function FactDetailView({ fact, onClose, isOnboardingFactDetail }) {
   const S = (px) => `calc(${px}px * var(--scale))`
 
   const share = () => {
-    const text = `🤯 Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct! https://wtf-app-production.up.railway.app/`
+    const text = `Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct ! ${window.location.origin}`
     if (navigator.share) navigator.share({ text }).catch(() => {})
     else navigator.clipboard?.writeText(text).catch(() => {})
   }
@@ -126,17 +125,6 @@ function FactDetailView({ fact, onClose, isOnboardingFactDetail }) {
             }}
           >
             <span style={{ fontSize: S(16), color: '#ffffff', fontWeight: 900, lineHeight: 1, cursor: 'pointer' }}>←</span>
-          </button>
-          <div style={{ flex: 1 }} />
-          <button
-            onClick={() => { audio.play('click') }}
-            style={{
-              width: S(36), height: S(36), borderRadius: '50%',
-              background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}
-          >
-            <img src="/assets/ui/icon-settings.png" style={{ width: S(20), height: S(20) }} alt="" />
           </button>
         </div>
 
@@ -491,13 +479,8 @@ function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, o
 
 // ─── Main collection page ───────────────────────────────────────────────────
 
-const S_main = (px) => `calc(${px}px * var(--scale))`
-
 export default function CollectionPage() {
   const navigate = useNavigate()
-  const { isConnected } = useAuth()
-  const [showLogin, setShowLogin] = useState(false)
-  const [showConnectBanner, setShowConnectBanner] = useState(false)
   const [activeTab, setActiveTab] = useState('vip')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
@@ -877,9 +860,7 @@ export default function CollectionPage() {
 
   // ── Main view ──
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S_main(80) }}>
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} message="Connecte-toi pour sauvegarder ta progression dans le cloud ☁️" />}
-
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80) }}>
       {/* CSS animations onboarding */}
       <style>{`
         @keyframes collectionPulse {
@@ -906,14 +887,6 @@ export default function CollectionPage() {
               <strong style={{ color: '#1a1a2e' }}>{overallUnlocked} / {overallTotal}</strong> F*cts débloqués
             </p>
           </div>
-          <button
-            onClick={() => navigate('/settings')}
-            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
-            title="Paramètres"
-          >
-            <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: 18, height: 18 }} />
-          </button>
         </div>
 
         {/* Global progress bar (overall) */}
@@ -1069,7 +1042,6 @@ export default function CollectionPage() {
       {/* Spotlight overlay (rendu indépendamment de la vue) */}
       {spotlightJSX}
 
-      {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
     </div>
   )
 }

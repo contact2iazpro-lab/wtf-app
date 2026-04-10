@@ -1881,6 +1881,20 @@ export default function App() {
     return () => clearTimeout(t)
   }, [streakRewardToast])
 
+  // Tutorial DÉSACTIVÉ — Auto-skip onboarding au login Google Auth
+  useEffect(() => {
+    if (user) {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      if (!wd.onboardingCompleted) {
+        wd.onboardingCompleted = true
+        wd.gamesPlayed = Math.max(wd.gamesPlayed || 0, 1)
+        wd.wtfCoins = Math.max(wd.wtfCoins || 0, 0)
+        wd.tickets = Math.max(wd.tickets || 0, 0)
+        localStorage.setItem('wtf_data', JSON.stringify(wd))
+      }
+    }
+  }, [user])
+
   // HowToPlayModal only opens manually (via Settings), not automatically
 
   // Push history entry on screen change (back button support)
@@ -1984,21 +1998,6 @@ export default function App() {
       </div>
     )
   }
-
-  // ─── Tutorial DÉSACTIVÉ — Skip au login pour tests Google Auth ───
-  // Auto-set onboardingCompleted au login pour éviter modal
-  useEffect(() => {
-    if (user) {
-      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      if (!wd.onboardingCompleted) {
-        wd.onboardingCompleted = true
-        wd.gamesPlayed = Math.max(wd.gamesPlayed || 0, 1)
-        wd.wtfCoins = Math.max(wd.wtfCoins || 0, 0)
-        wd.tickets = Math.max(wd.tickets || 0, 0)
-        localStorage.setItem('wtf_data', JSON.stringify(wd))
-      }
-    }
-  }, [user])
 
   return (
     <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg" style={{ '--scale': scale, height: '100dvh' }}>

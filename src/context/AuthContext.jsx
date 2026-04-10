@@ -66,8 +66,22 @@ export function AuthProvider({ children }) {
       return
     }
 
+    // Safety timeout: if getSession() hangs due to Web Lock contention (multi-tab),
+    // force loading=false after 5s so the app isn't stuck forever
+    let resolved = false
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        console.warn('[Auth] getSession() timed out (lock contention?), forcing loading=false')
+        setLoading(false)
+        resolved = true
+      }
+    }, 5000)
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (resolved) return // Timeout already fired
+      resolved = true
+      clearTimeout(timeout)
       if (error) {
         // Refresh token invalide/corrompu → forcer sign out propre
         console.warn('[Auth] Session recovery failed, signing out:', error.message)
@@ -86,6 +100,18 @@ export function AuthProvider({ children }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // INITIAL_SESSION bypasses getSession() lock — use it to unblock loading
+        if (event === 'INITIAL_SESSION') {
+          if (!resolved) {
+            resolved = true
+            clearTimeout(timeout)
+          }
+          const u = session?.user ?? null
+          setUser(u)
+          if (u) loadProfile(u.id)
+          setLoading(false)
+          return
+        }
         // Token refresh échoué → nettoyer proprement
         if (event === 'TOKEN_REFRESHED' && !session) {
           console.warn('[Auth] Token refresh failed, signing out')

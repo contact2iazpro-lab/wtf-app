@@ -2,11 +2,18 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { findPlayerByCode, sendFriendRequest, acceptFriendRequest } from '../data/friendService'
+import { audio } from '../utils/audio'
 
 export default function InvitePage() {
   const { code } = useParams()
   const navigate = useNavigate()
   const { user, isConnected, signInWithGoogle } = useAuth()
+
+  // Disable music on this page to avoid audio context spam
+  useEffect(() => {
+    audio.stopMusic()
+    return () => {} // Don't restart on unmount
+  }, [])
 
   const [inviter, setInviter] = useState(null)
   // 'loading' | 'not_found' | 'not_connected' | 'processing' | 'done' | 'already_friends' | 'error'

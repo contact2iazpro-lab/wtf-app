@@ -7,7 +7,7 @@ import { audio } from '../utils/audio'
 export default function InvitePage() {
   const { code } = useParams()
   const navigate = useNavigate()
-  const { user, isConnected, signInWithGoogle } = useAuth()
+  const { user, isConnected, signInWithGoogle, loading } = useAuth()
 
   // Disable music on this page to avoid audio context spam
   useEffect(() => {
@@ -45,7 +45,11 @@ export default function InvitePage() {
 
   // Step 2: auto-accept when user is connected and inviter is found
   useEffect(() => {
-    console.log('[InvitePage] Step 2 check: user=', !!user, 'inviter=', !!inviter, 'processed=', processedRef.current, 'status=', status)
+    console.log('[InvitePage] Step 2 check: user=', !!user, 'inviter=', !!inviter, 'processed=', processedRef.current, 'status=', status, 'loading=', loading)
+    if (loading) {
+      console.log('[InvitePage] Step 2 skipped: still loading auth')
+      return
+    }
     if (!user || !inviter || processedRef.current) {
       console.log('[InvitePage] Step 2 skipped: user=', !!user, 'inviter=', !!inviter, 'processed=', processedRef.current)
       return
@@ -89,7 +93,7 @@ export default function InvitePage() {
         setStatus('error')
       }
     })()
-  }, [user, inviter])
+  }, [user, inviter, loading])
 
   const initial = inviter?.display_name?.charAt(0)?.toUpperCase() || '?'
   const displayName = inviter?.display_name || 'Un joueur'

@@ -28,15 +28,20 @@ export default function SocialPage() {
   const loadData = useCallback(async () => {
     if (!user) return
     try {
+      console.log('[SocialPage] Loading data for user:', user.id)
       const [codeResult, friendsList, pendingList, challengesList] = await Promise.all([
         getOrCreateFriendCode(user.id, user.user_metadata?.name || 'Joueur WTF!', user.user_metadata?.avatar_url),
         getFriends(user.id),
         getPendingRequests(user.id),
         getPlayerChallenges(user.id),
       ])
+      console.log('[SocialPage] getOrCreateFriendCode result:', codeResult)
       if (codeResult?.code) {
+        console.log('[SocialPage] Friend code created/retrieved:', codeResult.code)
         setMyCode(codeResult.code)
         try { localStorage.setItem('wtf_my_friend_code', codeResult.code) } catch {}
+      } else {
+        console.warn('[SocialPage] No code returned from getOrCreateFriendCode')
       }
       setFriends(friendsList || [])
       // Mettre à jour friendCount pour les trophées sociaux

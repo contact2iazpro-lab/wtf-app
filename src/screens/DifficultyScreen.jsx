@@ -59,7 +59,7 @@ function buildRules(difficultyConfig) {
       text: `${difficultyConfig.coinsPerCorrect} coin${difficultyConfig.coinsPerCorrect > 1 ? 's' : ''} / bonne réponse`,
     },
     {
-      icon: '⏱️',
+      emoji: '⏱️',
       text: `${difficultyConfig.duration} secondes`,
     },
   ]
@@ -68,32 +68,19 @@ function buildRules(difficultyConfig) {
 // ── Scaled helper ────────────────────────────────────────────────────────────
 const S = (px) => `calc(${px}px * var(--scale))`
 
+const QUEST_LEVELS = [DIFFICULTY_LEVELS.COOL, DIFFICULTY_LEVELS.HOT, DIFFICULTY_LEVELS.WTF]
+
 export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
   const [selectedId, setSelectedId] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
   const scale = useScale()
   const bgIndex = useRef(Math.floor(Math.random() * BACKGROUNDS.length))
 
-  // Liste des niveaux Quest (Cool, Hot, WTF)
-  const QUEST_LEVELS = [DIFFICULTY_LEVELS.COOL, DIFFICULTY_LEVELS.HOT, DIFFICULTY_LEVELS.WTF]
-
   const handleSelect = (difficultyId) => {
     const d = DIFFICULTY_LEVELS[difficultyId.toUpperCase()]
     if (!d) return
     audio.play('click')
-    onSelectDifficulty({
-      id: d.id,
-      label: d.label,
-      emoji: d.emoji,
-      choices: d.choices,
-      duration: d.duration,
-      hintsAllowed: d.hintsAllowed,
-      freeHints: d.freeHints,
-      paidHints: d.paidHints,
-      hintCost: d.hintCost,
-      coinsPerCorrect: d.coinsPerCorrect,
-      scoring: d.scoring,
-    })
+    onSelectDifficulty(d)
   }
 
   const hasSelection = selectedId !== null
@@ -256,18 +243,12 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                   display: 'flex', alignItems: 'center',
                   gap: S(6), marginBottom: i < rules.length - 1 ? S(3) : 0,
                 }}>
-                  <img
-                    src={rule.icon}
-                    alt=""
-                    style={{
-                      width: S(16), height: S(16),
-                      objectFit: 'contain', flexShrink: 0,
-                    }}
-                  />
-                  <span style={{
-                    fontSize: S(11), fontWeight: 700,
-                    color: 'white',
-                  }}>
+                  {rule.icon ? (
+                    <img src={rule.icon} alt="" style={{ width: S(16), height: S(16), objectFit: 'contain', flexShrink: 0 }} />
+                  ) : (
+                    <span style={{ fontSize: S(14), flexShrink: 0, width: S(16), textAlign: 'center', lineHeight: 1 }}>{rule.emoji}</span>
+                  )}
+                  <span style={{ fontSize: S(11), fontWeight: 700, color: 'white' }}>
                     {rule.text}
                   </span>
                 </div>

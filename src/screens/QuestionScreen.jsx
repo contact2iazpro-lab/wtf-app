@@ -301,7 +301,7 @@ export default function QuestionScreen({
       {Array.from({ length: totalHints }, (_, i) => {
         const hintNum = i + 1
         const hintText = selectedHints[hintNum - 1] ?? null
-        const currentCoins = parseInt(JSON.parse(localStorage.getItem('wtf_data') || '{}').wtfCoins || '0', 10)
+        const currentCoins = playerCoins
         // Distinguish free hints from paid hints
         const isFree = hintNum <= freeHints
         const cost = isFree ? 0 : hintCost
@@ -457,6 +457,9 @@ export default function QuestionScreen({
   }
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
+  const MODE_LABELS = { flash_solo: 'MODE FLASH', marathon: 'MODE EXPLORER', wtf_du_jour: 'MODE HUNT', parcours: 'MODE QUEST' }
+  const modeLabel = MODE_LABELS[sessionType] || (difficulty ? `Mode ${difficulty.label || difficulty.id}` : '')
+
   const optionsToRender = isTutorial && stableTutorialOptions ? stableTutorialOptions : fact.options.map((text, i) => ({ originalIndex: i, text }))
 
   // ── Tutorial-specific state ───────────────────────────────────────────────
@@ -522,12 +525,12 @@ export default function QuestionScreen({
 
     const handleTutorialShare = () => {
       const shareMessages = [
-        `🤯 Mate ce f*ct !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-        `🤯 Tu savais ça ?!\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-        `🤯 WOOW incroyable !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+        `Mate ce f*ct !\n\n"${fact.question}"\n\n${window.location.origin}`,
+        `Tu savais ça ?!\n\n"${fact.question}"\n\n${window.location.origin}`,
+        `Incroyable !\n\n"${fact.question}"\n\n${window.location.origin}`,
       ]
       const shareMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
-      if (navigator.share) navigator.share({ text: shareMessage })
+      if (navigator.share) navigator.share({ text: shareMessage }).catch(() => {})
     }
 
     return (
@@ -1056,21 +1059,17 @@ export default function QuestionScreen({
       {quitModal}
       {header}
 
-      {/* Rappel du mode — nom basé sur sessionType */}
-      {(() => {
-        const modeLabels = { flash_solo: '⚡ MODE FLASH', marathon: '🗺️ MODE EXPLORER', wtf_du_jour: '🔥 MODE HUNT', parcours: '⭐ MODE QUEST' }
-        const label = modeLabels[sessionType] || (difficulty ? `${difficulty.emoji || ''} Mode ${difficulty.label || difficulty.id}` : '')
-        return label ? (
-          <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
-            <span style={{
-              fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-            }}>
-              {label}
-            </span>
-          </div>
-        ) : null
-      })()}
+      {/* Rappel du mode */}
+      {modeLabel && (
+        <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
+          <span style={{
+            fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          }}>
+            {modeLabel}
+          </span>
+        </div>
+      )}
 
       {progressBar}
 
@@ -1145,7 +1144,7 @@ export default function QuestionScreen({
                     else if (closeWrongs.includes(option)) { devType = 'PROCHE'; devBorder = '3px solid #F97316' }
                     else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; devBorder = '3px solid #EF4444' }
                     else { devType = 'AUTRE'; devBorder = '2px solid rgba(255,255,255,0.3)' }
-                  } catch (e) { console.warn('[DEV MODE] Erreur rendu dev:', e) }
+                  } catch { /* ignore */ }
                 }
                 return (
                   <button

@@ -69,7 +69,7 @@ export default function BlitzResultsScreen({
 
   const handleShareChallenge = () => {
     if (!autoChallenge) return
-    const challengeUrl = `https://wtf-app-production.up.railway.app/challenge/${autoChallenge.code}`
+    const challengeUrl = `${window.location.origin}/challenge/${autoChallenge.code}`
     const text = `🎯 Défi WTF! Blitz !\n\n${questionCount} questions en ${finalTime.toFixed(2)}s. Tu fais mieux ? 😏\n\nRelève le défi :`
     if (navigator.share) {
       navigator.share({ title: 'Défi WTF! Blitz ⚡', text, url: challengeUrl }).catch(() => {})
@@ -116,7 +116,7 @@ export default function BlitzResultsScreen({
 
   const handleShare = () => {
     if (!challengeCreated) return
-    const challengeUrl = `https://wtf-app-production.up.railway.app/challenge/${challengeCreated.code}`
+    const challengeUrl = `${window.location.origin}/challenge/${challengeCreated.code}`
     const text = `🎯 Défi WTF! Blitz !\n\n${questionCount} questions en ${finalTime.toFixed(2)}s. Tu fais mieux ? 😏\n\nRelève le défi :`
     if (navigator.share) {
       navigator.share({ title: 'Défi WTF! Blitz ⚡', text, url: challengeUrl }).catch(() => {})

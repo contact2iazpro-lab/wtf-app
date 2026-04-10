@@ -10,7 +10,7 @@ function generateFriendCode() {
 }
 
 export async function getOrCreateFriendCode(userId, displayName, avatarUrl) {
-  console.log('[friendService] getOrCreateFriendCode for user:', userId)
+
   const { data: existing, error: existingError } = await supabase
     .from('friend_codes')
     .select('*')
@@ -22,7 +22,7 @@ export async function getOrCreateFriendCode(userId, displayName, avatarUrl) {
   }
 
   if (existing) {
-    console.log('[friendService] Found existing code:', existing.code)
+
     if (existing.display_name !== displayName || existing.avatar_url !== avatarUrl) {
       await supabase.from('friend_codes').update({ display_name: displayName, avatar_url: avatarUrl }).eq('user_id', userId)
     }
@@ -30,7 +30,7 @@ export async function getOrCreateFriendCode(userId, displayName, avatarUrl) {
   }
 
   const code = generateFriendCode()
-  console.log('[friendService] Creating new friend code:', code)
+
   const { data, error } = await supabase
     .from('friend_codes')
     .insert({ user_id: userId, code, display_name: displayName, avatar_url: avatarUrl })
@@ -41,12 +41,12 @@ export async function getOrCreateFriendCode(userId, displayName, avatarUrl) {
     console.error('[friendService] Error creating friend code:', error)
     throw error
   }
-  console.log('[friendService] Friend code created successfully:', data)
+
   return data
 }
 
 export async function findPlayerByCode(code) {
-  console.log('[friendService] findPlayerByCode looking for:', code.toUpperCase())
+
   // Use light client — no auth session/lock needed for public code lookup
   const { data, error } = await supabaseLight
     .from('friend_codes')
@@ -57,7 +57,7 @@ export async function findPlayerByCode(code) {
     console.error('[friendService] findPlayerByCode error:', error)
     return null
   }
-  console.log('[friendService] findPlayerByCode result:', data)
+
   return data || null
 }
 

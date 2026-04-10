@@ -34,7 +34,6 @@ import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from './screens/DuelSet
 import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
 import ModeLaunchScreen from './screens/ModeLaunchScreen'
-// WelcomeModal supprimé — le tuto gère l'onboarding
 import SettingsModal from './components/SettingsModal'
 import HowToPlayModal from './components/HowToPlayModal'
 import ConnectBanner from './components/ConnectBanner'
@@ -44,7 +43,6 @@ import { checkBadges } from './utils/badgeManager'
 import { useAuth } from './context/AuthContext'
 import { updateCollection } from './services/collectionService'
 import { supabase } from './lib/supabase'
-// usePendingInvite moved to AppRouter (covers all routes)
 
 const SCREENS = {
   HOME: 'home',
@@ -710,7 +708,7 @@ export default function App() {
   // ─── HomeScreen navigation handler ──────────────────────────────────────────
   // ─── Launch mode start callback ─────────────────────────────────────────────
   const launchModeDestination = useCallback((mode) => {
-    console.log('[DEBUG] launchModeDestination called with mode =', mode)
+
     switch (mode) {
       case 'quest':    console.log('[DEBUG] setting SCREENS.DIFFICULTY'); setScreen(SCREENS.DIFFICULTY); break
       case 'blitz':    console.log('[DEBUG] setting SCREENS.BLITZ_LOBBY'); setScreen(SCREENS.BLITZ_LOBBY); break

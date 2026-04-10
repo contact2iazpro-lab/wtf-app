@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
-import { DIFFICULTY_LEVELS, TUTO_FACT_IDS } from './constants/gameConfig'
+import { DIFFICULTY_LEVELS } from './constants/gameConfig'
 import TutoTunnel from './components/TutoTunnel'
 import {
   getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
@@ -10,8 +10,8 @@ import {
   getQuestFacts, getFlashFacts,
   initFacts, resetFacts,
 } from './data/factsService'
-import { pushToServer, syncAfterAction, pullFromServer } from './services/playerSyncService'
-import { updateCoins, updateTickets, updateHints, updateMultiple, setAbsolute, getBalances } from './services/currencyService'
+import { pushToServer, syncAfterAction } from './services/playerSyncService'
+import { updateCoins, updateTickets, updateHints, getBalances } from './services/currencyService'
 import DevPanel from './components/DevPanel'
 import { DEV_PANEL_ENABLED } from './config/devConfig'
 import { logDevEvent } from './utils/devLogger'
@@ -61,10 +61,6 @@ const SCREENS = {
   BLITZ_RESULTS: 'blitz_results',
   BLITZ_LOBBY: 'blitz_lobby',
   MODE_LAUNCH: 'mode_launch',
-  ONBOARDING_FACT: 'onboarding_fact',
-  FLASH_TUTO_COMPLETE: 'flash_tuto_complete',
-  QUEST_TUTO_COMPLETE: 'quest_tuto_complete',
-  TUTORIAL_COMPLETE: 'tutorial_complete',
 }
 
 const MODE_CONFIGS = {
@@ -407,16 +403,12 @@ export default function App() {
   const { totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets } = storage
   const dailyQuestsRemaining = Math.max(0, 3 - (sessionsToday || 0))
 
-  // Session type tracking
-  const [isTutorialSession, setIsTutorialSession] = useState(false)
   const [isChallengeMode, setIsChallengeMode] = useState(false)
-  const [flipInfo, setFlipInfo] = useState(null) // { wrongAnswer, correctAnswer } for tutorial flip
   const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'marathon' | 'duel'
   const [coinsEarnedLastSession, setCoinsEarnedLastSession] = useState(0)
   const [dailyFact, setDailyFact] = useState(null)
   const [dailyFactOverride, setDailyFactOverride] = useState(null)
   const effectiveDailyFact = dailyFactOverride || dailyFact
-  const [onboardingFact, setOnboardingFact] = useState(null)
 
   // Facts loading state
   const [factsReady, setFactsReady] = useState(false)
@@ -710,17 +702,16 @@ export default function App() {
   const launchModeDestination = useCallback((mode) => {
 
     switch (mode) {
-      case 'quest':    console.log('[DEBUG] setting SCREENS.DIFFICULTY'); setScreen(SCREENS.DIFFICULTY); break
-      case 'blitz':    console.log('[DEBUG] setting SCREENS.BLITZ_LOBBY'); setScreen(SCREENS.BLITZ_LOBBY); break
+      case 'quest':    setScreen(SCREENS.DIFFICULTY); break
+      case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
       case 'explorer':
-      case 'marathon': console.log('[DEBUG] setting SCREENS.CATEGORY for', mode); setScreen(SCREENS.CATEGORY); break
+      case 'marathon': setScreen(SCREENS.CATEGORY); break
       case 'flash': {
-        console.log('[DEBUG] setting SCREENS.CATEGORY for flash')
         setScreen(SCREENS.CATEGORY)
         break
       }
-      case 'hunt':     console.log('[DEBUG] calling handleStartWTFSession'); handleStartWTFSession(); break
-      default: console.log('[DEBUG] launchModeDestination default case, mode not handled:', mode); break
+      case 'hunt':     handleStartWTFSession(); break
+      default: break
     }
   }, [handleFlashSolo, handleStartWTFSession])
 
@@ -730,15 +721,11 @@ export default function App() {
 
   // Show MODE_LAUNCH or skip if user opted out
   const showOrSkipLaunch = useCallback((mode) => {
-    console.log('[DEBUG] showOrSkipLaunch called with mode =', mode)
     setLaunchMode(mode)
     const skip = localStorage.getItem(`skip_launch_${mode}`) === 'true'
-    console.log('[DEBUG] skip_launch_' + mode + ' =', skip)
     if (skip) {
-      console.log('[DEBUG] skipping launch, calling launchModeDestination')
       launchModeDestination(mode)
     } else {
-      console.log('[DEBUG] showing MODE_LAUNCH screen')
       setScreen(SCREENS.MODE_LAUNCH)
     }
   }, [launchModeDestination])
@@ -770,20 +757,15 @@ export default function App() {
         break
       }
       case 'marathon': {
-        console.log('[DEBUG] case marathon reached')
         // Explorer mode
         setGameMode('marathon')
         setSessionType('marathon')
-        console.log('[DEBUG] sessionType set to marathon')
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         // Si c'est la première visite à Explorer (explorerPlayedInMode === 0), lancer directement sans règles
         const explorerPlayedInMode = wd.statsByMode?.flash_solo?.gamesPlayed || 0
-        console.log('[DEBUG] explorerPlayedInMode =', explorerPlayedInMode)
         if (explorerPlayedInMode === 0) {
-          console.log('[DEBUG] first Explorer visit, calling launchModeDestination')
           launchModeDestination('explorer')
         } else {
-          console.log('[DEBUG] repeat Explorer, calling showOrSkipLaunch')
           showOrSkipLaunch('explorer')
         }
         break
@@ -1629,8 +1611,6 @@ export default function App() {
     setDuelPlayers([])
     setDuelCurrentPlayerIndex(0)
     setIsQuickPlay(false)
-    setIsTutorialSession(false)
-    setFlipInfo(null)
     setSessionType('parcours')
     setBlitzFacts([])
     setBlitzResults(null)
@@ -1639,15 +1619,6 @@ export default function App() {
     setExplorerPool([])
   }, [])
 
-  const handleTutoComplete = useCallback(() => {
-    completeOnboardingIfNeeded()
-    // Cleanup tutorial IDs
-    localStorage.removeItem('wtf_tuto_used_ids')
-    setIsTutorialSession(false)
-    setSessionFacts([])
-    setCurrentIndex(0)
-    setScreen(SCREENS.HOME)
-  }, [completeOnboardingIfNeeded])
 
   const handleBlitzReplay = useCallback(() => {
     handleBlitzStart(selectedCategory)
@@ -2241,8 +2212,6 @@ export default function App() {
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           playerTickets={tickets}
           sessionType={sessionType}
-          isTutorial={isTutorialSession}
-          onTutoComplete={isTutorialSession ? handleTutoComplete : null}
         />
       )}
 
@@ -2265,8 +2234,6 @@ export default function App() {
           playerTickets={tickets}
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           sessionType={sessionType}
-          wrongAnswer={flipInfo?.wrongAnswer}
-          correctAnswer={flipInfo?.correctAnswer}
         />
       )}
 
@@ -2294,92 +2261,6 @@ export default function App() {
           isFirstGame={(() => { try { const d = JSON.parse(localStorage.getItem('wtf_data') || '{}'); return d.firstFlashTicketGiven && (d.gamesPlayed || 0) <= 1 } catch { return false } })()}
         />
       )}
-
-      {screen === SCREENS.TUTORIAL_COMPLETE && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 400,
-          background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(6px)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: 24, gap: 20, fontFamily: 'Nunito, sans-serif',
-        }}>
-          <div style={{ fontSize: 64, lineHeight: 1 }}>🏆</div>
-          <div style={{
-            fontSize: 22, fontWeight: 900, color: '#FFD700',
-            textAlign: 'center', textShadow: '0 2px 8px rgba(0,0,0,0.5)',
-          }}>
-            Tutoriel termine !
-          </div>
-          <div style={{
-            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.8)',
-            textAlign: 'center', lineHeight: 1.5, maxWidth: 280,
-          }}>
-            Tu maitrises les bases de WTF! Explore les autres modes, gagne des coins et complete ta collection !
-          </div>
-
-          {/* Google Connect Block */}
-          {!user && (
-            <div style={{
-              background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.2)',
-              borderRadius: 16, padding: '20px 16px', width: '100%', maxWidth: 280,
-              textAlign: 'center',
-            }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#FFD700', marginBottom: 8 }}>
-                🔒 Sauvegarde ta progression !
-              </div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', marginBottom: 16, lineHeight: 1.4 }}>
-                Tu as debloque des facts et gagne des coins. Connecte-toi pour ne rien perdre !
-              </div>
-              <button
-                onClick={async () => {
-                  audio.play?.('click')
-                  try {
-                    await signInWithGoogle()
-                  } catch (err) {
-                    console.error('Erreur connexion Google:', err)
-                  }
-                }}
-                className="active:scale-95 transition-all"
-                style={{
-                  width: '100%', padding: '12px 20px', borderRadius: 12,
-                  background: '#fff', border: 'none', color: '#374151',
-                  fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                Se connecter avec Google
-              </button>
-            </div>
-          )}
-
-          <button
-            onClick={() => {
-              audio.play?.('click')
-              handleHome()
-            }}
-            style={{
-              marginTop: 12, padding: '14px 32px', borderRadius: 14,
-              background: '#FF6B1A', color: 'white', border: 'none',
-              fontWeight: 900, fontSize: 16, cursor: 'pointer',
-              fontFamily: 'Nunito, sans-serif',
-              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
-              animation: 'pulse 1.5s ease-in-out infinite',
-            }}
-          >
-            Decouvrir le jeu ! 🚀
-          </button>
-          <style>{`
-            @keyframes pulse {
-              0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(255,107,26,0.4); }
-              50% { transform: scale(1.05); box-shadow: 0 8px 24px rgba(255,107,26,0.6); }
-            }
-          `}</style>
-        </div>
-      )}
-
-      {/* DEPRECATED: Tutorial modals moved to TutoTunnel component */}
 
       {screen === SCREENS.MARATHON_RESULTS && (
         <MarathonScreen

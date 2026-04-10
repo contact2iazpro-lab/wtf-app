@@ -1675,9 +1675,6 @@ export default function App() {
           handleHome()
           break
         default:
-          if (gameMode === 'marathon') {
-            if (!window.confirm(`Tu as répondu à ${currentIndex} question${currentIndex > 1 ? 's' : ''}. Si tu quittes, ton score ne sera pas sauvegardé.`)) break
-          }
           handleHome()
       }
     }
@@ -1955,26 +1952,7 @@ export default function App() {
           onOpenValidate={handleOpenValidate}
           onUseHint={handleUseHint}
           onTimeout={handleTimeout}
-          onQuit={gameMode === 'marathon'
-            ? () => {
-                if (window.confirm(`Tu as répondu à ${currentIndex} question${currentIndex > 1 ? 's' : ''}. Si tu quittes, ton score ne sera pas sauvegardé.`)) {
-                  // ABANDON — appliquer le guard skip si onboarding pas fini
-                  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                  if (!wd.onboardingCompleted && isTutorialSession) {
-                    completeOnboardingIfNeeded()
-                  }
-                  handleHome()
-                }
-              }
-            : () => {
-                // ABANDON — appliquer le guard skip si onboarding pas fini (bouton X, quit button)
-                const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                if (!wd.onboardingCompleted && isTutorialSession) {
-                  completeOnboardingIfNeeded()
-                }
-                handleHome()
-              }
-          }
+          onQuit={handleHome}
           category={selectedCategory}
           gameMode={gameMode}
           difficulty={(gameMode === 'solo' || gameMode === 'marathon') ? selectedDifficulty : null}

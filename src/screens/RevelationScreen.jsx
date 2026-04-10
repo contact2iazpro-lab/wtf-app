@@ -160,7 +160,8 @@ export default function RevelationScreen({
   const [flipped, setFlipped] = useState(true)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showLightbox, setShowLightbox] = useState(false)
-  const [displayedScore, setDisplayedScore] = useState(sessionScore)
+  // sessionScore includes current points already — start display BEFORE this question's points
+  const [displayedScore, setDisplayedScore] = useState(isCorrect ? sessionScore - pointsEarned : sessionScore)
   const [showScorePulse, setShowScorePulse] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
@@ -278,10 +279,7 @@ export default function RevelationScreen({
         <div className="text-2xl text-center mb-3">🏃</div>
         <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter la partie ?</h2>
         <p className="text-sm text-center mb-6 leading-relaxed" style={{ color: '#6B7280' }}>
-          {gameMode === 'marathon'
-            ? 'Tes points accumulés ne seront pas comptabilisés au classement.'
-            : 'Ta progression sera perdue.'
-          }
+          Tes f*cts et tes coins gagnés ne seront pas sauvegardés.
         </p>
         <div className="flex gap-3">
           <button onClick={() => setShowQuitConfirm(false)} className="flex-1 py-4 rounded-2xl font-black text-base"

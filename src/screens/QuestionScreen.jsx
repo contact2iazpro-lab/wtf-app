@@ -120,10 +120,10 @@ export default function QuestionScreen({
           Quitter le parcours ?
         </h2>
         <p className="text-sm text-center mb-6 leading-relaxed" style={{ color: '#6B7280' }}>
-          Tu as exploré{' '}
+          Tu as répondu à{' '}
           <strong style={{ color: '#1a1a2e' }}>{factIndex}</strong>{' '}
-          f*ct{factIndex !== 1 ? 's' : ''} jusqu'ici.<br />
-          Si tu quittes, ils ne seront pas sauvegardés.
+          question{factIndex !== 1 ? 's' : ''} jusqu'ici.<br />
+          Si tu quittes, tes f*cts et tes coins ne seront pas sauvegardés.
         </p>
         <div className="flex flex-col gap-3">
           <button

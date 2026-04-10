@@ -27,27 +27,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
       color: '#ffffff',
       position: 'relative',
     }}>
-      {/* ── Bouton fermer ✕ ────────────────────────────────────────── */}
-      <button
-        onClick={() => { audio.play('click'); onBack() }}
-        style={{
-          position: 'absolute', top: S(12), right: S(12),
-          width: S(36), height: S(36),
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.2)',
-          border: `1.5px solid rgba(255,255,255,0.4)`,
-          color: '#ffffff',
-          fontSize: S(18),
-          fontWeight: 900,
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 10,
-          lineHeight: 1,
-        }}
-      >
-        ✕
-      </button>
-      {/* ── Bouton retour ──────────────────────────────────────────── */}
+      {/* Bouton retour */}
       <div style={{ flexShrink: 0, padding: `${S(16)} ${S(16)} 0` }}>
         <button
           onClick={() => { audio.play('click'); onBack() }}
@@ -63,7 +43,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
         </button>
       </div>
 
-      {/* ── Icône + Titre + Sous-titre ─────────────────────────────── */}
+      {/* Icône + Titre + Sous-titre */}
       <div style={{
         textAlign: 'center', flexShrink: 0,
         padding: `${S(8)} ${S(20)} ${S(8)}`,
@@ -84,7 +64,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
         </p>
       </div>
 
-      {/* ── Règles ──────────────────────────────────────────────────── */}
+      {/* Règles */}
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
         padding: `0 ${S(20)}`,
@@ -99,27 +79,26 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
             borderRadius: S(12), padding: `${S(8)} ${S(12)}`,
           }}>
             <span style={{ fontSize: S(20), flexShrink: 0, lineHeight: 1 }}>{rule.icon}</span>
-            <span style={{
-              fontSize: S(13), fontWeight: 600, lineHeight: 1.35,
-            }}>
+            <span style={{ fontSize: S(13), fontWeight: 600, lineHeight: 1.35 }}>
               {rule.text}
             </span>
           </div>
         ))}
       </div>
 
-      {/* ── Checkbox + Bouton ───────────────────────────────────────── */}
+      {/* Checkbox + Bouton */}
       <div style={{
         flexShrink: 0, padding: `${S(8)} ${S(20)} ${S(12)}`,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}>
-        {/* Checkbox */}
-        <label style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: S(10), marginBottom: S(14), cursor: 'pointer',
-          WebkitTapHighlightColor: 'transparent',
-        }}
+        <button
           onClick={() => setSkipNext(!skipNext)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: S(10), marginBottom: S(14), cursor: 'pointer',
+            background: 'none', border: 'none', padding: 0,
+            WebkitTapHighlightColor: 'transparent',
+          }}
         >
           <div style={{
             width: S(22), height: S(22), borderRadius: S(6),
@@ -137,27 +116,23 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
           }}>
             Ne plus afficher ce message
           </span>
-        </label>
+        </button>
 
         {/* Bouton C'EST PARTI ! */}
         <button
           onClick={handleStart}
+          className="active:scale-95 transition-transform"
           style={{
             width: '85%', padding: `${S(14)} 0`,
             background: '#ffffff',
             border: 'none', borderRadius: S(16),
-            fontFamily: "'Fredoka One', cursive",
-            fontSize: S(18), fontWeight: 400,
+            fontFamily: 'Nunito, sans-serif',
+            fontSize: S(18), fontWeight: 900,
             color: color,
             cursor: 'pointer',
             boxShadow: '0 4px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(0,0,0,0.2)',
-            transition: 'transform 0.1s, box-shadow 0.1s',
             letterSpacing: '0.04em',
           }}
-          onTouchStart={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = '0 1px 0 rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15)' }}
-          onTouchEnd={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(0,0,0,0.2)' }}
-          onMouseDown={e => { e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = '0 1px 0 rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15)' }}
-          onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(0,0,0,0.2)' }}
         >
           C'EST PARTI !
         </button>

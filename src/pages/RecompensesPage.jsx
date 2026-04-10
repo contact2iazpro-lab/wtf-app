@@ -197,20 +197,29 @@ export default function RecompensesPage() {
               </p>
             )}
             {/* Barre de progression */}
-            <div style={{ background: '#F3F4F6', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
-              <div style={{
-                height: '100%', borderRadius: 8,
-                width: `${Math.min(100, Math.round((selectedTrophy.current / (selectedTrophy.target === 'all' ? selectedTrophy.current || 1 : selectedTrophy.target)) * 100))}%`,
-                background: selectedTrophy.earned ? '#22C55E' : '#FF6B1A',
-                transition: 'width 0.5s ease',
-              }} />
-            </div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#6B7280' }}>
-              {selectedTrophy.invertedProgress
-                ? `${(() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzTime?.toFixed(1) || '—' } catch { return '—' } })()} / ${selectedTrophy.target}s`
-                : `${selectedTrophy.current} / ${selectedTrophy.target === 'all' ? '∞' : selectedTrophy.target}`
-              }
-            </div>
+            {(() => {
+              const target = selectedTrophy.target
+              const current = selectedTrophy.current
+              const pct = Math.min(100, Math.round((current / (target || 1)) * 100))
+              return (
+                <>
+                  <div style={{ background: '#F3F4F6', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
+                    <div style={{
+                      height: '100%', borderRadius: 8,
+                      width: `${pct}%`,
+                      background: selectedTrophy.earned ? '#22C55E' : '#FF6B1A',
+                      transition: 'width 0.5s ease',
+                    }} />
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#6B7280' }}>
+                    {selectedTrophy.invertedProgress
+                      ? `${current > 0 ? (selectedTrophy.target - current).toFixed(1) : '—'}s / ${target}s`
+                      : `${current} / ${target}`
+                    }
+                  </div>
+                </>
+              )
+            })()}
             <button
               onClick={() => setSelectedTrophy(null)}
               style={{

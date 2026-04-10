@@ -21,10 +21,11 @@ export default function InvitePage() {
   const [error, setError] = useState(null)
   const processedRef = useRef(false)
 
-  // Step 1: resolve invite code
+  // Step 1: resolve invite code — wait for auth to settle first (RLS needs session)
   useEffect(() => {
+    if (loading) return // Auth not ready yet, wait
     if (!code) { setStatus('not_found'); return }
-    console.log('[InvitePage] Looking up code:', code)
+    console.log('[InvitePage] Looking up code:', code, '(auth ready, user=', !!user, ')')
     findPlayerByCode(code)
       .then(data => {
         console.log('[InvitePage] Code lookup result:', data)
@@ -41,7 +42,7 @@ export default function InvitePage() {
         console.error('[InvitePage] Code lookup error:', err)
         setStatus('not_found')
       })
-  }, [code])
+  }, [code, loading])
 
   // Step 2: auto-accept when user is connected and inviter is found
   useEffect(() => {

@@ -67,7 +67,16 @@ export function AuthProvider({ children }) {
     }
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        // Refresh token invalide/corrompu → forcer sign out propre
+        console.warn('[Auth] Session recovery failed, signing out:', error.message)
+        supabase.auth.signOut().catch(() => {})
+        setUser(null)
+        setProfile(null)
+        setLoading(false)
+        return
+      }
       const u = session?.user ?? null
       setUser(u)
       if (u) loadProfile(u.id)
@@ -77,6 +86,14 @@ export function AuthProvider({ children }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // Token refresh échoué → nettoyer proprement
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          console.warn('[Auth] Token refresh failed, signing out')
+          supabase.auth.signOut().catch(() => {})
+          setUser(null)
+          setProfile(null)
+          return
+        }
         const u = session?.user ?? null
         setUser(u)
         if (u) {

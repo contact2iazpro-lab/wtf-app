@@ -154,8 +154,6 @@ export default function RevelationScreen({
   sessionType = 'parcours',
   wrongAnswer,
   correctAnswer,
-  onSecondChance,
-  secondChanceCost = 5,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -423,22 +421,6 @@ export default function RevelationScreen({
 
         {/* Boutons */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}`, display: 'flex', flexDirection: 'column', gap: S(6) }}>
-          {/* Seconde chance */}
-          {onSecondChance && playerCoins >= secondChanceCost && (
-            <button
-              onClick={() => { audio.play('click'); onSecondChance() }}
-              className="active:scale-95 transition-all"
-              style={{
-                width: '100%', height: S(44), borderRadius: S(14), fontWeight: 900, fontSize: S(13),
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
-                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-                color: '#1a1a2e', border: 'none',
-                boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
-              }}
-            >
-              🔄 Seconde chance ({secondChanceCost} coins)
-            </button>
-          )}
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             <button
               onClick={handleNext}

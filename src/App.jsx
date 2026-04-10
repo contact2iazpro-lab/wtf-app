@@ -1445,18 +1445,6 @@ export default function App() {
     }
   }, [sessionType, selectedCategory, handleFlashSolo, handleSelectCategory])
 
-  const SECOND_CHANCE_COST = 5
-  const handleSecondChance = useCallback(() => {
-    if (getBalances().coins < SECOND_CHANCE_COST) return
-    updateCoins(-SECOND_CHANCE_COST)
-    // Remettre le joueur sur la même question
-    setSelectedAnswer(null)
-    setIsCorrect(null)
-    setPointsEarned(0)
-    setHintsUsed(0)
-    setScreen(SCREENS.QUESTION)
-  }, [])
-
   const handleShare = useCallback(() => {
     if (!currentFact) return
     const text = `🤯 WTF! "${currentFact.shortAnswer}" — ${currentFact.question}\nJoue sur What The F*ct! #WTF`
@@ -2020,8 +2008,6 @@ export default function App() {
           playerTickets={tickets}
           playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           sessionType={sessionType}
-          onSecondChance={!isCorrect && gameMode !== 'duel' ? handleSecondChance : null}
-          secondChanceCost={SECOND_CHANCE_COST}
         />
       )}
 

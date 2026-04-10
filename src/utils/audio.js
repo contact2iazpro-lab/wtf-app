@@ -60,8 +60,10 @@ class AudioManager {
     if (!this._isHidden) return // Guard against double-firing
     this._isHidden = false
 
-    // Resume Web Audio context
-    this._ctx?.resume?.()
+    // Resume Web Audio context (only if it was already created by a user gesture)
+    if (this._ctx && this._ctx.state === 'suspended') {
+      this._ctx.resume().catch(() => {})
+    }
 
     // Restart music if it was playing before hiding
     if (this._wasPlayingBeforeHide && this._musicEnabled) {
@@ -88,13 +90,17 @@ class AudioManager {
       this._sfxGain.gain.value = 0.55
       this._sfxGain.connect(this._ctx.destination)
     }
-    if (this._ctx.state === 'suspended') this._ctx.resume()
+    // Resume only if called from a user gesture (don't call proactively)
+    if (this._ctx.state === 'suspended') {
+      this._ctx.resume().catch(() => {})
+    }
     return this._ctx
   }
 
-  // Low-level tone helper
+  // Low-level tone helper — no-op if AudioContext not yet created (no user gesture yet)
   _tone(freq, dur, type = 'sine', vol = 0.3, delay = 0, dest = 'sfx') {
     try {
+      if (!this._ctx) return // Don't create AudioContext from non-gesture code paths
       const c = this._ctx_get()
       const osc = c.createOscillator()
       const g = c.createGain()
@@ -182,6 +188,7 @@ class AudioManager {
 
   startMusic() {
     if (!this._musicEnabled || this._playing) return
+    if (!this._ctx) return // Don't create AudioContext without user gesture
     try { this._ctx_get() } catch (_) { return }
     this._playing = true
 

@@ -8,11 +8,9 @@ import RecompensesPage from './pages/RecompensesPage'
 import SocialPage from './pages/SocialPage'
 import BottomNav from './components/BottomNav'
 import ChallengeScreen from './screens/ChallengeScreen'
-import InvitePage from './pages/InvitePage'
 import { useScale } from './hooks/useScale'
 import { UnlockContext } from './context/UnlockContext'
 import { UNLOCK_MESSAGES, UNLOCK_THRESHOLDS, SPOTLIGHT_MESSAGES } from './constants/layoutConfig'
-// InviteOverlay removed — InvitePage is now fully standalone
 
 // Pages that show the bottom navigation
 const PAGES_WITH_NAV = ['/collection', '/profil', '/boutique', '/recompenses', '/social']
@@ -146,7 +144,6 @@ export default function AppRouter() {
         <Route path="/recompenses" element={<PageWrapper><RecompensesPage /></PageWrapper>} />
         <Route path="/social" element={<PageWrapper><SocialPage /></PageWrapper>} />
         <Route path="/challenge/:code" element={<PageWrapper><ChallengeScreen /></PageWrapper>} />
-        <Route path="/invite/:code" element={<PageWrapper><InvitePage /></PageWrapper>} />
       </Routes>
     </UnlockProvider>
   )

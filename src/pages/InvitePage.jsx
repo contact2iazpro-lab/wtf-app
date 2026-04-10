@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabaseLight, initLightClientFromStorage } from '../lib/supabase'
-import { useAuth } from '../context/AuthContext'
 
 /**
- * InvitePage — Page standalone d'invitation ami
+ * InvitePage — Page 100% standalone
  *
- * Utilise supabaseLight (pas de lock, pas de contention multi-onglet).
- * Fonctionne indépendamment de l'onglet principal.
+ * HORS de AuthProvider — n'initialise pas le client Supabase principal.
+ * Utilise uniquement supabaseLight (pas de lock, pas de contention).
  */
 export default function InvitePage() {
   const { code } = useParams()
   const navigate = useNavigate()
-  const { signInWithGoogle } = useAuth()
 
   // 'loading' | 'not_found' | 'needs_auth' | 'processing' | 'done' | 'already_friends' | 'self' | 'error'
   const [status, setStatus] = useState('loading')
@@ -162,7 +160,15 @@ export default function InvitePage() {
           <p style={{ fontSize: 14, fontWeight: 600, color: '#64748B', marginBottom: 24, lineHeight: 1.4 }}>
             t'invite à jouer sur What The F*ct !
           </p>
-          <Btn onClick={signInWithGoogle}>Se connecter avec Google</Btn>
+          <Btn onClick={async () => {
+            await supabaseLight.auth.signInWithOAuth({
+              provider: 'google',
+              options: {
+                redirectTo: window.location.href.split('#')[0],
+                queryParams: { prompt: 'select_account' },
+              }
+            })
+          }}>Se connecter avec Google</Btn>
         </>)}
 
         {status === 'processing' && (<>

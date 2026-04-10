@@ -1,8 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import AppRouter from './AppRouter.jsx'
+import InvitePage from './pages/InvitePage.jsx'
 import './index.css'
 
 if (import.meta.env.DEV) {
@@ -33,9 +34,16 @@ if (import.meta.env.DEV) {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <AppRouter />
-      </AuthProvider>
+      <Routes>
+        {/* InvitePage: HORS AuthProvider — pas de supabase principal, pas de lock */}
+        <Route path="/invite/:code" element={<InvitePage />} />
+        {/* Tout le reste: dans AuthProvider normalement */}
+        <Route path="/*" element={
+          <AuthProvider>
+            <AppRouter />
+          </AuthProvider>
+        } />
+      </Routes>
     </BrowserRouter>
   </React.StrictMode>
 )

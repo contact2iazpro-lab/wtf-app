@@ -10,8 +10,8 @@ import { useState } from 'react'
 export default function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, canUse, onReveal, onBuyHint }) {
   const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
 
-  const disabled = !canAfford || !canUse
   const canBuyNow = !canUse && canAfford && !isFree && onBuyHint
+  const disabled = !canAfford && !canUse
 
   const handleClick = () => {
     if (phase !== 'front' || disabled) return
@@ -27,30 +27,28 @@ export default function HintFlipButton({ num, hint, catColor, isFree, cost, canA
   const color = catColor || '#FF6B1A'
 
   // Front label depends on hint state
+  const hintIcon = <img src="/assets/ui/icon-hint.png" alt="" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', opacity: disabled ? 0.5 : 1 }} />
   let frontLabel
-  if (isFree) {
-    // Free hint
+  if (isFree || (canUse && !isFree)) {
+    // Free hint OR paid hint with stock available → no price shown
     frontLabel = (
       <span style={{ fontWeight: 900, fontSize: 13, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
-        <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle' }} />
-        Indice
+        {hintIcon} Indice
       </span>
     )
-  } else if (canAfford) {
-    // Paid hint, can afford
+  } else if (canBuyNow) {
+    // No stock but can buy with coins → show price
     frontLabel = (
       <span style={{ fontWeight: 900, fontSize: 12, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
-        <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle' }} />
-        Indice {cost}
+        {hintIcon} {cost} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 12, height: 12 }} />
       </span>
     )
   } else {
-    // Paid hint, cannot afford
+    // Cannot afford at all
     frontLabel = (
       <>
-        <span style={{ fontWeight: 900, fontSize: 11, color: '#9CA3AF', whiteSpace: 'nowrap', textDecoration: 'line-through', display: 'flex', alignItems: 'center', gap: 3 }}>
-          <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', opacity: 0.5 }} />
-          Indice {cost}
+        <span style={{ fontWeight: 900, fontSize: 11, color: '#9CA3AF', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
+          {hintIcon} {cost} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 12, height: 12, opacity: 0.5 }} />
         </span>
         <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
           Pas assez

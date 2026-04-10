@@ -75,12 +75,17 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
   // En mode Explorer/Flash : seules les catégories débloquées sont jouables
   const isLockedMode = gameMode === 'marathon' || gameMode === 'flash'
 
-  // Catégories avec au moins 1 fact, triées alphabétiquement
+  // Catégories avec au moins 1 fact — débloquées en haut, bloquées en bas, chaque groupe alphabétique
   const visibleCategories = useMemo(() => {
     const cats = getPlayableCategories().filter(cat => (totalPerCategory[cat.id] || 0) > 0)
-    cats.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
+    cats.sort((a, b) => {
+      const aLocked = isLockedMode && !unlockedCatIds.has(a.id)
+      const bLocked = isLockedMode && !unlockedCatIds.has(b.id)
+      if (aLocked !== bLocked) return aLocked ? 1 : -1
+      return a.label.localeCompare(b.label, 'fr')
+    })
     return cats
-  }, [totalPerCategory])
+  }, [totalPerCategory, isLockedMode, unlockedCatIds])
 
   const selectedCat = selectedCatId === 'random'
     ? { label: 'Aléatoire', emoji: '🎲', id: 'random' }

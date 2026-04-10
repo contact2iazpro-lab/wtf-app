@@ -25,24 +25,19 @@ const isLightColor = (hex) => {
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
-export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts = new Set(), gameMode }) {
+export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts = new Set(), gameMode, sessionType }) {
   const [showSettings, setShowSettings] = useState(false)
   const [selectedCatId, setSelectedCatId] = useState(null)
   const scale = useScale()
   const bgIndex = useRef(Math.floor(Math.random() * BACKGROUNDS.length))
 
   // Pool de facts selon le mode de jeu
+  // Flash et Explorer : Funny facts uniquement (pas de VIP)
   const factsPool = useMemo(() => {
-    switch (gameMode) {
-      case 'marathon':
-      case 'flash':
-        return getFunnyFacts()
-      case 'blitz':
-        return getValidFacts()
-      default:
-        return getValidFacts()
-    }
-  }, [gameMode])
+    if (gameMode === 'marathon' || sessionType === 'flash_solo') return getFunnyFacts()
+    if (gameMode === 'blitz') return getValidFacts()
+    return getValidFacts() // Quest, etc.
+  }, [gameMode, sessionType])
 
   const totalPerCategory = useMemo(() => {
     const counts = {}
@@ -73,7 +68,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
   }, [unlockedFacts])
 
   // En mode Explorer/Flash : seules les catégories débloquées sont jouables
-  const isLockedMode = gameMode === 'marathon' || gameMode === 'flash'
+  const isLockedMode = gameMode === 'marathon' || sessionType === 'flash_solo'
 
   // Catégories avec au moins 1 fact — débloquées en haut, bloquées en bas, chaque groupe alphabétique
   const visibleCategories = useMemo(() => {

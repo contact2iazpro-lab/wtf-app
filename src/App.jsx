@@ -1963,6 +1963,7 @@ export default function App() {
           selectedDifficulty={selectedDifficulty}
           unlockedFacts={unlockedFacts}
           gameMode={gameMode}
+          sessionType={sessionType}
         />
       )}
 

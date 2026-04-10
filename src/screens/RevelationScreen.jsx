@@ -154,6 +154,8 @@ export default function RevelationScreen({
   sessionType = 'parcours',
   wrongAnswer,
   correctAnswer,
+  onSecondChance,
+  secondChanceCost = 5,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -420,22 +422,24 @@ export default function RevelationScreen({
         </div>
 
         {/* Boutons */}
-        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}`, position: 'relative' }}>
+        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}`, display: 'flex', flexDirection: 'column', gap: S(6) }}>
+          {/* Seconde chance */}
+          {onSecondChance && playerCoins >= secondChanceCost && (
+            <button
+              onClick={() => { audio.play('click'); onSecondChance() }}
+              className="active:scale-95 transition-all"
+              style={{
+                width: '100%', height: S(44), borderRadius: S(14), fontWeight: 900, fontSize: S(13),
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                color: '#1a1a2e', border: 'none',
+                boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
+              }}
+            >
+              🔄 Seconde chance ({secondChanceCost} coins)
+            </button>
+          )}
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
-            {gamesPlayed > 1 && (
-              <button
-                onClick={handleNativeShare}
-                className="btn-press active:scale-95 transition-all"
-                style={{
-                  flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                  color: 'white', border: '2px solid rgba(255,255,255,0.4)',
-                }}
-              >
-                🤝 Demander de l'aide
-              </button>
-            )}
             <button
               onClick={handleNext}
               className="btn-press active:scale-95 transition-all"
@@ -444,10 +448,6 @@ export default function RevelationScreen({
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
                 border: '2px solid rgba(255,255,255,0.4)',
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                ...(false ? {
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                  boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 0 30px rgba(255,107,26,0.2)',
-                } : {}),
               }}
             >
               {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}

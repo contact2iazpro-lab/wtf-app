@@ -5,19 +5,19 @@ export const DIFFICULTY_LEVELS = {
   COOL: {
     id: 'cool', label: 'Cool', emoji: '❄️',
     choices: 2, duration: 30,
-    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   HOT: {
     id: 'hot', label: 'Hot', emoji: '🔥',
     choices: 4, duration: 20,
-    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   WTF: {
     id: 'wtf', label: 'WTF!', emoji: '⚡',
     choices: 6, duration: 20,
-    hintsAllowed: true, freeHints: 1, paidHints: 0, hintCost: 0,
+    hintsAllowed: true, freeHints: 1, paidHints: 1, hintCost: 8,
     coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 },
   },
   FLASH: {

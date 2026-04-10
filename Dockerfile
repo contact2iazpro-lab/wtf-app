@@ -25,6 +25,7 @@ ENV VITE_GAME_BASE_URL=$VITE_GAME_BASE_URL
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+RUN rm -rf dist node_modules/.vite .vite
 RUN npm run build
 
 # Install + build admin

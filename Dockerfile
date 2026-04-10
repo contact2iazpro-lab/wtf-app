@@ -2,6 +2,10 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
+# Force rebuild by invalidating Docker cache (Railway workaround)
+ARG BUILD_DATE=unknown
+RUN echo "Build date: $BUILD_DATE"
+
 # Vite env vars (injected at build time)
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY

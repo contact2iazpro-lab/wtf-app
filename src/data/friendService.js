@@ -35,11 +35,17 @@ export async function getOrCreateFriendCode(userId, displayName, avatarUrl) {
 }
 
 export async function findPlayerByCode(code) {
-  const { data } = await supabase
+  console.log('[friendService] findPlayerByCode looking for:', code.toUpperCase())
+  const { data, error } = await supabase
     .from('friend_codes')
     .select('*')
     .eq('code', code.toUpperCase())
-    .single()
+    .maybeSingle()
+  if (error) {
+    console.error('[friendService] findPlayerByCode error:', error)
+    return null
+  }
+  console.log('[friendService] findPlayerByCode result:', data)
   return data || null
 }
 

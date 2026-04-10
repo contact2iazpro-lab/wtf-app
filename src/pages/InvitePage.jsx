@@ -17,13 +17,23 @@ export default function InvitePage() {
   // Step 1: resolve invite code
   useEffect(() => {
     if (!code) { setStatus('not_found'); return }
+    console.log('[InvitePage] Looking up code:', code)
     findPlayerByCode(code)
       .then(data => {
-        if (!data) { setStatus('not_found'); return }
+        console.log('[InvitePage] Code lookup result:', data)
+        if (!data) {
+          console.log('[InvitePage] Code not found')
+          setStatus('not_found')
+          return
+        }
+        console.log('[InvitePage] Found inviter:', data)
         setInviter(data)
         if (!isConnected) setStatus('not_connected')
       })
-      .catch(() => setStatus('not_found'))
+      .catch(err => {
+        console.error('[InvitePage] Code lookup error:', err)
+        setStatus('not_found')
+      })
   }, [code])
 
   // Step 2: auto-accept when user is connected and inviter is found

@@ -20,29 +20,79 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts
 - WTF toujours avec ! (sauf "What The F*ct")
-- Facile → Curieux | Normal → À fond | Expert → WTF! Addict
+- Niveaux : Cool | Hot | WTF!
 - Streak → Série | Mode Parcours → Quête WTF!
 - Ratées → À découvrir
+- Flash + Explorer fusionnés → mode "Jouer"
 
-## Règles de jeu — Version finale
+## Règles de jeu — Source de vérité (11/04/2026)
 
-| Mode | QCM | Indice gratuit | Indice payant | Prix | Coins/bonne réponse |
-|------|-----|----------------|---------------|------|---------------------|
-| Curieux | 4 | 1 | 2e indice | 3 coins | 3 |
-| À fond | 4 | 0 | 1er + 2e | 5 coins chacun | 3 |
-| WTF! Addict | 6 | 0 | 1 disponible | 8 coins | 5 |
+### Niveaux Quest
 
-- Timer : 30 secondes (tous modes)
-- Questions par Quête : 5 (TEMP TEST — remettre à 10 au lancement)
-- Badge Perfect : attribué si 100% de bonnes réponses → +1 ticket
+| Niveau | QCM | Timer | Indice gratuit | Indice payant | Prix indice | Coins/bonne réponse |
+|--------|-----|-------|----------------|---------------|-------------|---------------------|
+| Cool   | 2   | 30s   | 1              | 1 (2e)        | 3 coins     | 3                   |
+| Hot    | 4   | 30s   | 0              | 2 (1er + 2e)  | 5 coins     | 3                   |
+| WTF!   | 6   | 30s   | 0              | 1             | 8 coins     | 5                   |
+
+### Mode Jouer (ex-Flash + Explorer)
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Coût | Gratuit illimité |
+| Questions | 5 |
+| QCM | 4 choix |
+| Timer | 30s |
+| Indices | 2 (payants, même prix que Hot) |
+| Coins (aléatoire) | 2 coins/bonne réponse |
+| Coins (catégorie choisie) | 1 coin/bonne réponse |
+| Contenu | F*cts générés uniquement |
+| Sauvegarde | F*cts débloqués immédiatement |
+
+### Mode Blitz
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Coût | Gratuit illimité |
+| Timer | 60s chrono descendant |
+| QCM | 4 choix |
+| Indices | Aucun |
+| Coins | 0 (prestige uniquement) |
+| Paliers | 5, 10, 20, 30, 40, 50 questions |
+| Contenu | F*cts débloqués du joueur |
+
+### Mode Hunt (WTF du Jour)
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Coût | Gratuit, 1×/jour |
+| Questions | 5 |
+| QCM | 4 choix |
+| Timer | 30s |
+| Indices | 2 |
+| Objectif | Débloquer le WTF! VIP du jour |
+
+### Règles communes
 - Indice non disponible si pas assez de coins : bouton grisé, JAMAIS de pause du timer
+- Questions par Quête : 5 (TEMP TEST — remettre à 10 au lancement)
+- Pas de bonus perfect (ni Quest ni Jouer)
+- Nouveau joueur : 25 coins / 1 ticket / 3 indices
 
-## Modes de jeu
-- Session Flash : gratuit illimité, sans récompense
-- Quête WTF! : 1 ticket, coins + f*cts + trophées
-- Marathon : 1 ticket, 20 questions, catégorie au choix, coins + trophées
-- WTF de la Semaine : gratuit 1×/semaine, 1 f*ct non débloqué
-- Blitz : 3/jour gratuits, affirmations Vrai/Faux sur f*cts débloqués
+## Modes de jeu — Résumé
+
+| Mode | Contenu | Coût | Gains | Statut |
+|------|---------|------|-------|--------|
+| Quête WTF! | WTF VIP | 1 ticket | Coins + f*cts VIP | Actif |
+| Jouer | F*cts générés | Gratuit | Coins + f*cts générés | Actif |
+| Blitz | F*cts débloqués | Gratuit | Prestige (records) | Actif |
+| Hunt | WTF VIP | Gratuit 1×/jour | 1 f*ct VIP | Actif |
+| Série | F*cts générés | Gratuit | Multiplicateur coins | V2 |
+| Multi | À définir | À définir | À définir | V2 |
+
+## Architecture contenu
+- **WTF VIP** (350) : f*cts originaux du jeu physique → Quête uniquement
+- **F*cts générés** (1000+) : générés par IA → Jouer, Blitz, Hunt
+- Collection : 2 onglets (WTF! + Funny F*cts)
 
 ## Design system
 - Police : Nunito (400/700/900) via Google Fonts
@@ -72,7 +122,7 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 
 ⚠️ RAILWAY : Ne jamais pusher automatiquement. Commit local uniquement.
 
-## ⚡ Choix du modèle — Règle officielle
+## Choix du modèle — Règle officielle
 
 ### Utiliser SONNET pour :
 - Corrections CSS/style ciblées (1-3 modifications)
@@ -92,5 +142,4 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 
 ## Preview local
 - Preview : npm run dev → localhost:5176
-- Claude peut utiliser les outils mcp__Claude_Preview__* pour vérifier le rendu
 - Ne jamais pusher uniquement pour tester — tester en local d'abord

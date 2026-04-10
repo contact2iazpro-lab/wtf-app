@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useScale } from '../hooks/useScale'
+import { version } from '../../package.json'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -137,7 +138,7 @@ export default function SplashScreen({ onComplete, isReady }) {
         color: 'white', opacity: 0.5, fontSize: 12,
         fontFamily: 'Nunito, sans-serif', fontWeight: 700,
       }}>
-        v{(import.meta.env.VITE_APP_VERSION || 'dev').split('-')[0]}
+        v{version}
       </span>
     </div>
   )

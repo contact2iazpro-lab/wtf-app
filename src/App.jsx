@@ -204,6 +204,7 @@ export default function App() {
   const [showNoTicketModal, setShowNoTicketModal] = useState(false)
   const [gameAlert, setGameAlert] = useState(null) // { emoji, title, message }
   const [showNoEnergyModal, setShowNoEnergyModal] = useState(false)
+  const [trophyQueue, setTrophyQueue] = useState([]) // badges à afficher un par un
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
@@ -1023,6 +1024,7 @@ export default function App() {
   // ─── Navigation (next question / session end) ─────────────────────────────
 
   const handleNext = useCallback(() => {
+    try {
     const nextIndex = currentIndex + 1
 
     if (gameMode === 'duel') {
@@ -1201,10 +1203,13 @@ export default function App() {
         })
 
         // WTF du Jour: unlock the daily fact too
-        if (sessionType === 'wtf_du_jour' && !newUnlocked.has(effectiveDailyFact.id)) {
+        if (sessionType === 'wtf_du_jour' && effectiveDailyFact && !newUnlocked.has(effectiveDailyFact.id)) {
           newUnlocked.add(effectiveDailyFact.id)
-          saveStorage({ ...newStorage, unlockedFacts: newUnlocked })
-          setStorage(prev => ({ ...prev, unlockedFacts: newUnlocked }))
+          setStorage(prev => {
+            const updated = { ...prev, unlockedFacts: newUnlocked }
+            saveStorage(updated)
+            return updated
+          })
           if (user) updateCollection(user.id, effectiveDailyFact.category, effectiveDailyFact.id)
         }
       }
@@ -1238,9 +1243,12 @@ export default function App() {
       // Recalculer les données trophées (facts par catégorie, VIP/Funny counts)
       updateTrophyData()
 
-      // Check badges après mise à jour des stats
+      // Check badges après mise à jour des stats → afficher les modals trophées
       const newBadges = checkBadges()
-      if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
+      if (newBadges.length > 0) {
+        setNewlyEarnedBadges(newBadges)
+        setTrophyQueue(newBadges)
+      }
 
       // Route to appropriate end screen
       if (sessionType === 'wtf_du_jour') {
@@ -1308,6 +1316,7 @@ export default function App() {
       setPointsEarned(0)
       setScreen(SCREENS.QUESTION)
     }
+    } catch (err) { console.error('[handleNext] CRASH:', err); setScreen(SCREENS.RESULTS) }
   }, [gameMode, currentIndex, sessionFacts.length, sessionScore, totalScore, streak, sessionsToday,
       isQuickPlay, sessionCorrectFacts, unlockedFacts, user, sessionType, wtfCoins, wtfDuJourDate,
       effectiveDailyFact, correctCount, isCorrect, sessionAnyHintUsed, selectedAnswer])
@@ -2283,6 +2292,53 @@ export default function App() {
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
       {gameAlert && <GameModal emoji={gameAlert.emoji} title={gameAlert.title} message={gameAlert.message} onConfirm={() => setGameAlert(null)} />}
+
+      {/* Modal trophée débloqué (un par un) */}
+      {trophyQueue.length > 0 && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 600,
+            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+          }}
+          onClick={() => setTrophyQueue(q => q.slice(1))}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 100%)',
+              borderRadius: 24, padding: '32px 24px', maxWidth: 320, width: '100%',
+              textAlign: 'center', fontFamily: 'Nunito, sans-serif',
+              border: '2px solid rgba(255,215,0,0.4)',
+              boxShadow: '0 0 40px rgba(255,215,0,0.3), 0 20px 60px rgba(0,0,0,0.5)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 56, marginBottom: 8 }}>{trophyQueue[0].emoji}</div>
+            <div style={{ fontSize: 12, fontWeight: 900, color: '#FFD700', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+              Trophée débloqué !
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: 'white', marginBottom: 8 }}>
+              {trophyQueue[0].label}
+            </div>
+            {trophyQueue[0].description && (
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 16, lineHeight: 1.4 }}>
+                {trophyQueue[0].description}
+              </div>
+            )}
+            <button
+              onClick={() => setTrophyQueue(q => q.slice(1))}
+              style={{
+                width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
+                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                color: '#1a1a2e', fontSize: 15, fontWeight: 900,
+                fontFamily: 'Nunito, sans-serif', cursor: 'pointer',
+              }}
+            >
+              {trophyQueue.length > 1 ? `Suivant (${trophyQueue.length - 1} de plus)` : 'Continuer'}
+            </button>
+          </div>
+        </div>
+      )}
       {showNoEnergyModal && (
         <GameModal
           emoji="🔋"

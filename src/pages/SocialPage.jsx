@@ -5,9 +5,58 @@ import { supabase } from '../lib/supabase'
 import { getOrCreateFriendCode, acceptFriendRequest, rejectFriendRequest, getFriends, getPendingRequests, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
 import { getPlayerChallenges } from '../data/challengeService'
-import { CATEGORIES, getCategoryById } from '../data/factsService'
+import { getCategoryById } from '../data/factsService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
+
+const formatBlitzTime = (seconds) => {
+  if (seconds < 60) return seconds.toFixed(1) + 's'
+  const min = Math.floor(seconds / 60)
+  const sec = (seconds % 60).toFixed(0)
+  return min + ':' + sec.toString().padStart(2, '0')
+}
+
+function Initial({ name, size = 32 }) {
+  const letter = (name || '?')[0].toUpperCase()
+  const colors = ['#FF6B1A', '#3B82F6', '#22C55E', '#8B5CF6', '#EF4444', '#F59E0B']
+  const color = colors[letter.charCodeAt(0) % colors.length]
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <span style={{ color: 'white', fontWeight: 900, fontSize: size * 0.45 }}>{letter}</span>
+    </div>
+  )
+}
+
+function getProcessedBlitzRecords() {
+  try {
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const blitzRecords = wtfData.blitzRecords || {}
+    const bestBlitzTime = wtfData.bestBlitzTime || null
+
+    if (Object.keys(blitzRecords).length === 0) return { records: [], bestTime: null }
+
+    const recordsArray = Object.entries(blitzRecords).map(([key, time]) => {
+      const [catKey, palier] = key.split('_')
+      const categoryData = catKey === 'all'
+        ? { id: 'all', label: 'Toutes catégories', emoji: '🌍' }
+        : (getCategoryById(catKey) || { id: catKey, label: catKey, emoji: '📚' })
+
+      return {
+        key,
+        categoryLabel: categoryData.label,
+        categoryEmoji: categoryData.emoji,
+        palier: parseInt(palier) || 0,
+        time,
+        isBestTime: bestBlitzTime && Math.abs(time - bestBlitzTime) < 0.01,
+      }
+    })
+
+    recordsArray.sort((a, b) => a.time - b.time)
+    return { records: recordsArray, bestTime: bestBlitzTime }
+  } catch {
+    return { records: [], bestTime: null }
+  }
+}
 
 export default function SocialPage() {
   const navigate = useNavigate()
@@ -28,23 +77,17 @@ export default function SocialPage() {
   const loadData = useCallback(async () => {
     if (!user) return
     try {
-      console.log('[SocialPage] Loading data for user:', user.id)
       const [codeResult, friendsList, pendingList, challengesList] = await Promise.all([
         getOrCreateFriendCode(user.id, user.user_metadata?.name || 'Joueur WTF!', user.user_metadata?.avatar_url),
         getFriends(user.id),
         getPendingRequests(user.id),
         getPlayerChallenges(user.id),
       ])
-      console.log('[SocialPage] getOrCreateFriendCode result:', codeResult)
       if (codeResult?.code) {
-        console.log('[SocialPage] Friend code created/retrieved:', codeResult.code)
         setMyCode(codeResult.code)
         try { localStorage.setItem('wtf_my_friend_code', codeResult.code) } catch {}
-      } else {
-        console.warn('[SocialPage] No code returned from getOrCreateFriendCode')
       }
       setFriends(friendsList || [])
-      // Mettre à jour friendCount pour les trophées sociaux
       try {
         const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         wtfData.friendCount = (friendsList || []).length
@@ -59,7 +102,7 @@ export default function SocialPage() {
 
   useEffect(() => { if (isConnected) loadData() }, [isConnected, loadData])
 
-  // ── Supabase Realtime pour les invitations et défis ──────────────────────────
+  // Supabase Realtime pour les invitations et défis
   useEffect(() => {
     if (!user) return
 
@@ -70,30 +113,22 @@ export default function SocialPage() {
         schema: 'public',
         table: 'friendships',
         filter: 'user2_id=eq.' + user.id,
-      }, () => {
-        console.log('Realtime: friendship update')
-        loadData()
-      })
+      }, () => loadData())
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'challenges',
         filter: 'player2_id=eq.' + user.id,
-      }, () => {
-        console.log('Realtime: challenge update')
-        loadData()
-      })
+      }, () => loadData())
       .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => supabase.removeChannel(channel)
   }, [user, loadData])
 
   const handleAccept = async (id) => {
     try {
       await acceptFriendRequest(id)
-      showToast('✅ Ami ajouté !')
+      showToast('Ami ajouté !')
       loadData()
     } catch (e) { console.warn('Accept error:', e) }
   }
@@ -114,62 +149,13 @@ export default function SocialPage() {
     } catch (e) { console.warn('Remove error:', e) }
   }
 
-  // ── Formater temps Blitz ─────────────────────────────────────────────────────
-  const formatBlitzTime = (seconds) => {
-    if (seconds < 60) return seconds.toFixed(1) + 's'
-    const min = Math.floor(seconds / 60)
-    const sec = (seconds % 60).toFixed(0)
-    return min + ':' + sec.toString().padStart(2, '0')
+  const handleChallenge = () => {
+    audio.play('click')
+    localStorage.setItem('wtf_pending_action', 'challenge')
+    navigate('/')
   }
 
-  // ── Traiter et trier les records Blitz ───────────────────────────────────────
-  const getProcessedBlitzRecords = () => {
-    try {
-      const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      const blitzRecords = wtfData.blitzRecords || {}
-      const bestBlitzTime = wtfData.bestBlitzTime || null
-
-      if (Object.keys(blitzRecords).length === 0) return { records: [], bestTime: null }
-
-      // Parser les clés et créer des objets avec métadonnées
-      const recordsArray = Object.entries(blitzRecords).map(([key, time]) => {
-        const [catKey, palier] = key.split('_')
-        const isAllCategories = catKey === 'all'
-        const categoryData = isAllCategories
-          ? { id: 'all', label: 'Toutes catégories', emoji: '🌍' }
-          : (getCategoryById(catKey) || { id: catKey, label: catKey, emoji: '📚' })
-
-        return {
-          key,
-          categoryId: catKey,
-          categoryLabel: categoryData.label,
-          categoryEmoji: categoryData.emoji,
-          palier: parseInt(palier) || 0,
-          time,
-          isBestTime: bestBlitzTime && Math.abs(time - bestBlitzTime) < 0.01,
-        }
-      })
-
-      // Trier par temps (meilleur en premier)
-      recordsArray.sort((a, b) => a.time - b.time)
-
-      return { records: recordsArray, bestTime: bestBlitzTime }
-    } catch (e) {
-      console.warn('Error processing blitz records:', e)
-      return { records: [], bestTime: null }
-    }
-  }
-
-  const Initial = ({ name, size = 32 }) => {
-    const letter = (name || '?')[0].toUpperCase()
-    const colors = ['#FF6B1A', '#3B82F6', '#22C55E', '#8B5CF6', '#EF4444', '#F59E0B']
-    const color = colors[letter.charCodeAt(0) % colors.length]
-    return (
-      <div style={{ width: size, height: size, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <span style={{ color: 'white', fontWeight: 900, fontSize: size * 0.45 }}>{letter}</span>
-      </div>
-    )
-  }
+  const { records: blitzRecords } = getProcessedBlitzRecords()
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
@@ -204,37 +190,37 @@ export default function SocialPage() {
           </div>
         ) : (
           <>
-            {/* A) 📩 Inviter un ami */}
+            {/* A) Inviter un ami */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>📩 Inviter un ami</h2>
+              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>Inviter un ami</h2>
               <button
                 onClick={() => {
                   if (!myCode) {
-                    showToast('⏳ Chargement en cours, réessaie dans quelques secondes...')
+                    showToast('Chargement en cours, réessaie...')
                     return
                   }
                   audio.play('click')
-                  const inviteUrl = `https://wtf-app-production.up.railway.app/invite/${myCode}`
+                  const inviteUrl = `${window.location.origin}/invite/${myCode}`
                   if (navigator.share) {
-                    navigator.share({ title: 'What The F*ct!', text: 'Rejoins-moi sur What The F*ct! 🤯 Des faits 100% vrais, des réactions 100% fun !', url: inviteUrl }).catch(() => {})
+                    navigator.share({ title: 'What The F*ct!', text: 'Rejoins-moi sur What The F*ct ! Des faits 100% vrais, des réactions 100% fun !', url: inviteUrl }).catch(() => {})
                   } else {
                     navigator.clipboard?.writeText(inviteUrl)
-                    showToast('Lien copié ! 📋')
+                    showToast('Lien copié !')
                   }
                 }}
                 className="active:scale-95 transition-all"
                 style={{ width: '100%', padding: '14px 0', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer', opacity: myCode ? 1 : 0.5 }}
               >
-                📩 Inviter un ami
+                Inviter un ami
               </button>
               <p style={{ fontSize: S(10), color: '#9CA3AF', margin: '8px 0 0', textAlign: 'center' }}>Envoie ton lien par WhatsApp, SMS ou autre</p>
             </div>
 
-            {/* B) 👥 Mes amis */}
+            {/* B) Mes amis */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>👥 Mes amis ({friends.length})</h2>
+              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>Mes amis ({friends.length})</h2>
               {friends.length === 0 ? (
-                <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Pas encore d'amis. Invite quelqu'un ! 🤝</p>
+                <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Pas encore d'amis. Invite quelqu'un !</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {friends.map(friend => (
@@ -244,14 +230,10 @@ export default function SocialPage() {
                         <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
                       </div>
                       <button
-                        onClick={() => {
-                          audio.play('click')
-                          localStorage.setItem('wtf_pending_action', 'challenge')
-                          navigate('/')
-                        }}
+                        onClick={handleChallenge}
                         className="active:scale-90"
                         style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                      >⚡ Défier</button>
+                      >Défier</button>
                       <button onClick={() => handleRemove(friend.friendshipId)} className="active:scale-90" style={{ padding: '4px 8px', borderRadius: 6, background: 'transparent', border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer' }}>✕</button>
                     </div>
                   ))}
@@ -259,65 +241,54 @@ export default function SocialPage() {
               )}
             </div>
 
-            {/* B+) 🏆 Mes Records Blitz (accordéon) */}
-            {(() => {
-              const { records, bestTime } = getProcessedBlitzRecords()
-              return (
-                <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                  <button
-                    onClick={() => setShowBlitzRecordsSection(!showBlitzRecordsSection)}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                  >
-                    <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0 }}>🏆 Mes Records Blitz</h2>
-                    <span style={{ fontSize: 18, color: '#9CA3AF', transition: 'transform 0.2s', transform: showBlitzRecordsSection ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
-                  </button>
+            {/* C) Records Blitz (accordéon) */}
+            <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <button
+                onClick={() => setShowBlitzRecordsSection(!showBlitzRecordsSection)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0 }}>Mes Records Blitz</h2>
+                <span style={{ fontSize: 18, color: '#9CA3AF', transition: 'transform 0.2s', transform: showBlitzRecordsSection ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
+              </button>
 
-                  {showBlitzRecordsSection && (
-                    records.length === 0 ? (
-                      <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0', margin: 0, marginTop: 12 }}>Joue en Blitz pour établir tes premiers records ! ⚡</p>
-                    ) : (
-                      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {records.map((record, idx) => (
-                          <div
-                            key={record.key}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: 10, padding: 10,
-                              borderRadius: 12, background: record.isBestTime ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
-                              border: record.isBestTime ? '1px solid #FFD700' : 'none',
-                            }}
-                          >
-                            <span style={{ fontSize: 18 }}>{record.categoryEmoji}</span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>
-                                {record.categoryLabel}
-                              </span>
-                              <span style={{ fontSize: 10, color: '#9CA3AF', display: 'block' }}>
-                                {record.palier} question{record.palier !== 1 ? 's' : ''}
-                              </span>
-                            </div>
-                            <span style={{ fontSize: 16, fontWeight: 900, color: record.isBestTime ? '#FFD700' : '#FF6B1A' }}>
-                              {formatBlitzTime(record.time)}
-                            </span>
-                            {record.isBestTime && (
-                              <span style={{ fontSize: 12, fontWeight: 900, color: '#FFD700' }}>👑</span>
-                            )}
-                          </div>
-                        ))}
+              {showBlitzRecordsSection && (
+                blitzRecords.length === 0 ? (
+                  <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0', margin: 0, marginTop: 12 }}>Joue en Blitz pour établir tes premiers records !</p>
+                ) : (
+                  <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {blitzRecords.map(record => (
+                      <div
+                        key={record.key}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10, padding: 10,
+                          borderRadius: 12, background: record.isBestTime ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
+                          border: record.isBestTime ? '1px solid #FFD700' : 'none',
+                        }}
+                      >
+                        <span style={{ fontSize: 18 }}>{record.categoryEmoji}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{record.categoryLabel}</span>
+                          <span style={{ fontSize: 10, color: '#9CA3AF', display: 'block' }}>{record.palier} question{record.palier !== 1 ? 's' : ''}</span>
+                        </div>
+                        <span style={{ fontSize: 16, fontWeight: 900, color: record.isBestTime ? '#FFD700' : '#FF6B1A' }}>
+                          {formatBlitzTime(record.time)}
+                        </span>
+                        {record.isBestTime && <span style={{ fontSize: 12, fontWeight: 900, color: '#FFD700' }}>👑</span>}
                       </div>
-                    )
-                  )}
-                </div>
-              )
-            })()}
+                    ))}
+                  </div>
+                )
+              )}
+            </div>
 
-            {/* C) 🎯 Défier (accordéon) */}
+            {/* D) Défier (accordéon) */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               <button
                 onClick={() => setShowChallengeSection(!showChallengeSection)}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
                 <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  🎯 Défier
+                  Défier
                   {pendingChallenges.length > 0 && (
                     <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingChallenges.length}</span>
                   )}
@@ -328,27 +299,11 @@ export default function SocialPage() {
               {showChallengeSection && (
                 <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <button
-                    onClick={() => {
-                      audio.play('click')
-                      localStorage.setItem('wtf_pending_action', 'challenge')
-                      navigate('/')
-                    }}
+                    onClick={handleChallenge}
                     className="active:scale-95 transition-all"
                     style={{ width: '100%', padding: '12px 0', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}
                   >
-                    ⚡ Défier un ami
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      audio.play('click')
-                      localStorage.setItem('wtf_pending_action', 'challenge')
-                      navigate('/')
-                    }}
-                    className="active:scale-95 transition-all"
-                    style={{ width: '100%', padding: '12px 0', borderRadius: 12, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151', fontWeight: 800, fontSize: 13, cursor: 'pointer' }}
-                  >
-                    🔗 Défier quelqu'un (même sans être ami)
+                    Défier un ami
                   </button>
                   <p style={{ fontSize: S(10), color: '#9CA3AF', margin: 0, textAlign: 'center' }}>Lance un Blitz, puis partage le lien du défi</p>
 
@@ -370,7 +325,7 @@ export default function SocialPage() {
                             </div>
                             <div style={{ textAlign: 'right', flexShrink: 0 }}>
                               <span style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', display: 'block' }}>
-                                {challenge.player1_time < 60 ? challenge.player1_time.toFixed(1) + 's' : Math.floor(challenge.player1_time / 60) + ':' + (challenge.player1_time % 60).toFixed(0).padStart(2, '0')}
+                                {formatBlitzTime(challenge.player1_time)}
                               </span>
                               <span style={{ fontSize: 9, color: '#9CA3AF' }}>à battre</span>
                             </div>
@@ -383,11 +338,11 @@ export default function SocialPage() {
               )}
             </div>
 
-            {/* D) Demandes reçues */}
+            {/* E) Demandes reçues */}
             {pendingRequests.length > 0 && (
               <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  📩 Demandes reçues
+                  Demandes reçues
                   <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingRequests.length}</span>
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -397,8 +352,8 @@ export default function SocialPage() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{req.displayName}</span>
                       </div>
-                      <button onClick={() => handleAccept(req.friendshipId)} className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22C55E', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>✅</button>
-                      <button onClick={() => handleReject(req.friendshipId)} className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>❌</button>
+                      <button onClick={() => handleAccept(req.friendshipId)} className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22C55E', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>Accepter</button>
+                      <button onClick={() => handleReject(req.friendshipId)} className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>Refuser</button>
                     </div>
                   ))}
                 </div>

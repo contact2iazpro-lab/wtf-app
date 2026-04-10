@@ -12,7 +12,7 @@ import InvitePage from './pages/InvitePage'
 import { useScale } from './hooks/useScale'
 import { UnlockContext } from './context/UnlockContext'
 import { UNLOCK_MESSAGES, UNLOCK_THRESHOLDS, SPOTLIGHT_MESSAGES } from './constants/layoutConfig'
-import InviteOverlay from './components/InviteOverlay'
+// InviteOverlay removed — InvitePage is now fully standalone
 
 // Pages that show the bottom navigation
 const PAGES_WITH_NAV = ['/collection', '/profil', '/boutique', '/recompenses', '/social']
@@ -138,7 +138,6 @@ function PageWrapper({ children }) {
 export default function AppRouter() {
   return (
     <UnlockProvider>
-      <InviteOverlay />
       <Routes>
         <Route path="/*" element={<App />} />
         <Route path="/collection" element={<PageWrapper><CollectionPage /></PageWrapper>} />

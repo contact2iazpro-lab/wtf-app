@@ -1,4 +1,4 @@
-import { supabase, supabaseAnon } from '../lib/supabase'
+import { supabase, supabaseLight } from '../lib/supabase'
 
 function generateFriendCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -47,8 +47,8 @@ export async function getOrCreateFriendCode(userId, displayName, avatarUrl) {
 
 export async function findPlayerByCode(code) {
   console.log('[friendService] findPlayerByCode looking for:', code.toUpperCase())
-  // Use anon client — no auth session/lock needed for public code lookup
-  const { data, error } = await supabaseAnon
+  // Use light client — no auth session/lock needed for public code lookup
+  const { data, error } = await supabaseLight
     .from('friend_codes')
     .select('*')
     .eq('code', code.toUpperCase())

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
-import GameHeader from '../components/GameHeader'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
@@ -118,18 +117,6 @@ if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID))
       box-shadow: 0 0 15px rgba(255,215,0,0.4), 0 0 30px rgba(255,215,0,0.2);
       animation: goldBorderPulse 2s ease-in-out infinite;
     }
-    .flip-card { perspective: 800px; }
-    .flip-card-inner {
-      position: relative; width: 100%; height: 100%;
-      transform-style: preserve-3d; transition: transform 0.3s ease-in-out;
-    }
-    .flip-card-inner.flipped { transform: rotateX(180deg); }
-    .flip-card-face {
-      position: absolute; inset: 0; backface-visibility: hidden;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: inherit;
-    }
-    .flip-card-back { transform: rotateX(180deg); }
     @keyframes holoRotate {
       from { --holo-angle: 0deg; }
       to   { --holo-angle: 360deg; }
@@ -170,23 +157,7 @@ export default function RevelationScreen({
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
 
-  // ── Flip animation state (mauvaise réponse → bonne réponse) ───────────────
-  // Désactivé : ne pas montrer la bonne réponse sur mauvaise réponse
-  const hasFlipIntro = false
-  const [flipDone, setFlipDone] = useState(true)
-  const [flipCardFlipped, setFlipCardFlipped] = useState(false)
-
-  useEffect(() => {
-    if (!hasFlipIntro) return
-    // Petit délai avant de lancer le flip pour que l'utilisateur voie la mauvaise réponse
-    const startTimer = setTimeout(() => setFlipCardFlipped(true), 600)
-    // Une fois le flip terminé (300ms transition), on enchaîne sur l'écran normal
-    const doneTimer = setTimeout(() => setFlipDone(true), 1200)
-    return () => { clearTimeout(startTimer); clearTimeout(doneTimer) }
-  }, [hasFlipIntro])
-
   const [flipped, setFlipped] = useState(true)
-  const [copied, setCopied] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showLightbox, setShowLightbox] = useState(false)
   const [displayedScore, setDisplayedScore] = useState(sessionScore)
@@ -237,23 +208,15 @@ export default function RevelationScreen({
     }
   }, [isCorrect, isDuel])
 
-  const handleShare = () => {
-    onShare()
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   const handleNativeShare = () => {
     const shareMessages = [
-      `🤯 Mate ce f*ct !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-      `🤯 Tu savais ça ?!\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-      `🤯 WOOW incroyable !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-      `🤯 Regarde ce que j'ai découvert !\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
-      `🤯 Non mais t'as vu ça ?!\n\n"${fact.question}"\n\n👉 https://wtf-app-livid.vercel.app/`,
+      `Mate ce f*ct !\n\n"${fact.question}"\n\n${window.location.origin}`,
+      `Tu savais ça ?!\n\n"${fact.question}"\n\n${window.location.origin}`,
+      `Incroyable !\n\n"${fact.question}"\n\n${window.location.origin}`,
     ]
     const shareMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
     if (navigator.share) {
-      navigator.share({ text: shareMessage })
+      navigator.share({ text: shareMessage }).catch(() => {})
     }
   }
 
@@ -377,41 +340,6 @@ export default function RevelationScreen({
       </button>
     </div>
   )
-
-  // ── Flip intro overlay (mauvaise réponse → bonne réponse) ─────────────────
-  if (hasFlipIntro && !flipDone) {
-    return (
-      <div style={{
-        height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: catGradient,
-      }}>
-        <div className="flip-card" style={{ width: '80%', height: S(80) }}>
-          <div className={`flip-card-inner${flipCardFlipped ? ' flipped' : ''}`}>
-            {/* Face avant : mauvaise réponse */}
-            <div className="flip-card-face" style={{
-              background: 'rgba(244,67,54,0.15)', border: '2px solid #F44336',
-              borderRadius: S(16), padding: `${S(16)} ${S(20)}`,
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: S(10), fontWeight: 900, color: '#F44336', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(6) }}>✗ Ta réponse</div>
-                <div style={{ fontSize: S(15), fontWeight: 900, color: 'white', lineHeight: 1.3 }}>{wrongAnswer}</div>
-              </div>
-            </div>
-            {/* Face arrière : bonne réponse */}
-            <div className="flip-card-face flip-card-back" style={{
-              background: 'rgba(76,175,80,0.15)', border: '2px solid #4CAF50',
-              borderRadius: S(16), padding: `${S(16)} ${S(20)}`,
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(6) }}>✓ Bonne réponse</div>
-                <div style={{ fontSize: S(15), fontWeight: 900, color: 'white', lineHeight: 1.3 }}>{correctAnswer}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
   if (!isCorrect && !isDuel) {

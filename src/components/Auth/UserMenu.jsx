@@ -1,16 +1,20 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { readWtfData } from '../../utils/storageHelper'
 import CoinsIcon from '../CoinsIcon'
 
 export default function UserMenu() {
+  const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
   const [open, setOpen] = useState(false)
 
   if (!user) return null
 
+  const playerData = readWtfData()
   const displayName = profile?.username || user.email?.split('@')[0] || 'Joueur'
-  const coins = profile?.coins ?? 0
-  const streak = profile?.streak_current ?? 0
+  const coins = playerData.wtfCoins ?? profile?.coins ?? 0  // Local data (plus à jour)
+  const streak = playerData.bestStreak ?? profile?.streak_current ?? 0
 
   const handleSignOut = async () => {
     setOpen(false)
@@ -59,21 +63,21 @@ export default function UserMenu() {
               <button
                 className="w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
                 style={{ color: '#374151' }}
-                onClick={() => setOpen(false)}
+                onClick={() => { setOpen(false); navigate('/profil') }}
               >
                 👤 Mon profil
               </button>
               <button
                 className="w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
                 style={{ color: '#374151' }}
-                onClick={() => setOpen(false)}
+                onClick={() => { setOpen(false); navigate('/recompenses') }}
               >
                 🏆 Mes trophées
               </button>
               <button
                 className="w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
                 style={{ color: '#374151' }}
-                onClick={() => setOpen(false)}
+                onClick={() => { setOpen(false); navigate('/boutique') }}
               >
                 🛍️ Boutique
               </button>

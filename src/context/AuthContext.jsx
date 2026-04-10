@@ -130,32 +130,14 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }, [])
 
-  const signInWithFacebook = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'facebook',
-      options: { redirectTo: window.location.origin }
-    })
-    if (error) throw error
-  }, [])
+  const signOut = useCallback(async () => {
+    // Supabase gère automatiquement le nettoyage des tokens
+    await supabase.auth.signOut().catch(() => {})
 
-  const signOut = useCallback(() => {
-    // Supprimer le token Supabase
-    localStorage.removeItem('sb-znoceotakhynqcqhpwgz-auth-token')
-    // Nettoyer toute clé sb-*
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i)
-      if (key && key.startsWith('sb-')) localStorage.removeItem(key)
-    }
-    for (let i = sessionStorage.length - 1; i >= 0; i--) {
-      const key = sessionStorage.key(i)
-      if (key && key.startsWith('sb-')) sessionStorage.removeItem(key)
-    }
-    // Supprimer le flag de connexion
-    localStorage.removeItem('wtf_first_login_done')
-    // Nettoyer les données du joueur précédent
+    // Nettoyer les données du joueur précédent (garder settings uniquement)
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      // Garder les settings (son, musique, etc.) mais vider les données de progression
+      // Garder: coff settings, pas de progression
       const cleanData = {
         coffreClaimedDays: wtfData.coffreClaimedDays,
         coffreWeekStart: wtfData.coffreWeekStart,
@@ -167,6 +149,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('wtf_facts_cache')
       localStorage.removeItem('wtf_tutorial_state')
     } catch { /* ignore */ }
+
     // Reset state
     setUser(null)
     setProfile(null)
@@ -194,7 +177,6 @@ export function AuthProvider({ children }) {
       signUpWithEmail,
       signInWithEmail,
       signInWithGoogle,
-      signInWithFacebook,
       signOut,
       updateProfile,
       isSupabaseConfigured,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { audio } from '../utils/audio'
 import { useAuth } from '../context/AuthContext'
 import HowToPlayModal from './HowToPlayModal'
@@ -117,7 +117,7 @@ function resetLocalProgress() {
 }
 
 function SaveProgressModal({ onClose }) {
-  const { user, isConnected, signInWithGoogle, signInWithFacebook, signOut } = useAuth()
+  const { user, isConnected, signInWithGoogle, signOut } = useAuth()
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(null)
   const [pendingProvider, setPendingProvider] = useState(null)
@@ -135,16 +135,14 @@ function SaveProgressModal({ onClose }) {
   const confirmSignIn = async () => {
     resetLocalProgress()
     setError(null)
-    setLoading(pendingProvider)
+    setLoading('google')
     setPendingProvider(null)
     try {
-      if (pendingProvider === 'google') await signInWithGoogle()
-      else await signInWithFacebook()
+      await signInWithGoogle()
     } catch (e) { setError(e.message); setLoading(null) }
   }
 
   if (pendingProvider) {
-    const providerLabel = pendingProvider === 'google' ? 'Google' : 'Facebook'
     return (
       <div className="fixed inset-0 flex items-center justify-center p-5" style={{ zIndex: 200, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>
         <div className="w-full rounded-3xl overflow-hidden" style={{ maxWidth: 340, background: '#FAFAF8', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
@@ -154,7 +152,7 @@ function SaveProgressModal({ onClose }) {
           </div>
           <div className="p-5">
             <p className="text-sm mb-5 font-bold text-center" style={{ color: '#374151', lineHeight: '1.6' }}>
-              La connexion à {providerLabel} réinitialisera ta progression locale
+              La connexion à Google réinitialisera ta progression locale
               <span style={{ color: '#EF4444' }}> (série, points, f*cts débloqués)</span>.
               <br /><br />
               Cette action est <strong style={{ color: '#EF4444' }}>irréversible</strong>. Continuer ?
@@ -180,8 +178,8 @@ function SaveProgressModal({ onClose }) {
           {isConnected ? (
             <>
               <div className="flex flex-col items-center gap-2 mb-5 p-4 rounded-2xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                <span className="text-3xl">{isGoogleUser ? '🔵' : '🔷'}</span>
-                <span className="font-black text-sm" style={{ color: '#1a1a2e' }}>Connecté avec {isGoogleUser ? 'Google' : 'Facebook'}</span>
+                <span className="text-3xl">🔵</span>
+                <span className="font-black text-sm" style={{ color: '#1a1a2e' }}>Connecté avec Google</span>
                 {email && <span className="text-xs font-semibold" style={{ color: '#6B7280' }}>{email}</span>}
                 <span className="text-xs font-bold" style={{ color: '#22C55E' }}>✅ Progression sauvegardée</span>
               </div>
@@ -212,14 +210,30 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
   const [showRulesModal, setShowRulesModal] = useState(false)
   const [vibrOn, setVibrOn] = useState(() => localStorage.getItem('wtf_vibration') !== 'false')
 
-  const [devAccess] = useState(() => localStorage.getItem('wtf_dev_access') === 'true')
+  const [devAccess, setDevAccess] = useState(() => localStorage.getItem('wtf_dev_access') === 'true')
 
-  const showDevSelector = import.meta.env.DEV || devAccess
+  const showDevSelector = devAccess
 
   const toggleSound = () => { const n = !soundOn; setSoundOn(n); audio.setSfxEnabled(n); if (n) audio.play('click') }
   const toggleMusic = () => { const n = !musicOn; setMusicOn(n); audio.setMusicEnabled(n) }
   const toggleNotif = () => { const n = !notifOn; setNotifOn(n); localStorage.setItem('wtf_notifications', String(n)) }
   const toggleVibr = () => { const n = !vibrOn; setVibrOn(n); localStorage.setItem('wtf_vibration', String(n)); if (n && navigator.vibrate) navigator.vibrate(50) }
+
+  // ── Cheat code: pression 3s sur Vibreur ──
+  const vibrPressTimerRef = useRef(null)
+  const handleVibrPressStart = () => {
+    vibrPressTimerRef.current = setTimeout(() => {
+      localStorage.setItem('wtf_dev_access', 'true')
+      setDevAccess(true)
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100])
+    }, 3000)
+  }
+  const handleVibrPressEnd = () => {
+    if (vibrPressTimerRef.current) {
+      clearTimeout(vibrPressTimerRef.current)
+      vibrPressTimerRef.current = null
+    }
+  }
 
   return (
     <>
@@ -271,7 +285,11 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
                 ].map(p => (
                   <button
                     key={p.icon}
-                    onClick={p.toggle}
+                    onClick={p.icon === 'vibreur' ? undefined : p.toggle}
+                    onMouseDown={p.icon === 'vibreur' ? handleVibrPressStart : undefined}
+                    onMouseUp={p.icon === 'vibreur' ? handleVibrPressEnd : undefined}
+                    onTouchStart={p.icon === 'vibreur' ? handleVibrPressStart : undefined}
+                    onTouchEnd={p.icon === 'vibreur' ? handleVibrPressEnd : undefined}
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                       background: 'none', border: 'none', cursor: 'pointer', padding: 0,
@@ -328,12 +346,12 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
               <SettingRow icon="📄" label="Mentions légales" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
               <SettingRow icon="📋" label="CGU" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
               <SettingRow icon="🔒" label="Politique de confidentialité" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
-
-              {/* Version */}
-              <div className="text-center mt-4 mb-2" style={{ userSelect: 'none' }}>
-                <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v{import.meta.env.VITE_APP_VERSION || '0.0.0'}</span>
-              </div>
             </div>
+          </div>
+
+          {/* Version en bas du footer */}
+          <div className="flex items-center justify-center px-5 pb-4 shrink-0" style={{ borderTop: '1px solid #E5E7EB', textAlign: 'center' }}>
+            <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v2.5.19</span>
           </div>
         </div>
       </div>

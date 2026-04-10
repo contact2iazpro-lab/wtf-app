@@ -48,12 +48,22 @@ export async function pullFromServer(userId) {
       return pushToServer(userId)
     }
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const localTimestamp = saved.lastModified || 0
+    const remoteTimestamp = remote.last_modified || 0
+
+    // Résoudre conflits: si local est plus récent, pousser local vers cloud au lieu d'écraser
+    if (localTimestamp > remoteTimestamp) {
+      console.log('[sync] Local data is newer than remote — pushing local to server instead')
+      return pushToServer(userId)
+    }
+
+    // Remote est plus à jour → syncer depuis cloud vers local
     saved.wtfCoins = remote.coins || 0
     saved.totalScore = remote.total_score || 0
     saved.streak = remote.streak_current || 0
     saved.bestStreak = Math.max(saved.bestStreak || 0, remote.streak_max || 0)
     saved.tickets = remote.tickets || 0
-    saved.lastModified = remote.last_modified || Date.now()
+    saved.lastModified = remoteTimestamp
     localStorage.setItem('wtf_data', JSON.stringify(saved))
     localStorage.setItem('wtf_hints_available', String(remote.hints || 0))
     try {
@@ -84,7 +94,8 @@ export async function pullFromServer(userId) {
 }
 
 let _lastSyncTime = 0
-const THROTTLE_MS = 5000
+const THROTTLE_MS = 5000 // Throttle push à 5s pour éviter surcharge après chaque action
+
 export function syncAfterAction(userId) {
   if (!userId) return
   const now = Date.now()
@@ -92,6 +103,3 @@ export function syncAfterAction(userId) {
   _lastSyncTime = now
   pushToServer(userId).catch(() => {})
 }
-
-export async function syncPlayerData(userId) { return pullFromServer(userId) }
-export function syncPlayerDataAsync(userId) { if (userId) pullFromServer(userId).catch(() => {}) }

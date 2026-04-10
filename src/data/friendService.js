@@ -14,7 +14,7 @@ export async function getOrCreateFriendCode(userId, displayName, avatarUrl) {
     .from('friend_codes')
     .select('*')
     .eq('user_id', userId)
-    .single()
+    .maybeSingle()
 
   if (existing) {
     if (existing.display_name !== displayName || existing.avatar_url !== avatarUrl) {

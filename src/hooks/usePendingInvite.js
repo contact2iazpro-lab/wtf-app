@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { findPlayerByCode, sendFriendRequest, acceptFriendRequest } from '../data/friendService'
 
@@ -10,65 +10,54 @@ import { findPlayerByCode, sendFriendRequest, acceptFriendRequest } from '../dat
  * 2. Si connecté → lookup code, send/accept friend request, affiche résultat
  * 3. Si pas connecté → signale qu'il faut se connecter (needsAuth)
  * 4. Après traitement → nettoie localStorage
- *
- * Retourne : { inviteState, inviterName, dismiss }
- *   inviteState: null | 'needs_auth' | 'processing' | 'done' | 'already_friends' | 'self' | 'not_found' | 'error'
- *   inviterName: string
- *   dismiss: () => void — fermer la modale
  */
 export function usePendingInvite() {
   const { user, isConnected, loading } = useAuth()
 
   const [inviteState, setInviteState] = useState(null)
   const [inviterName, setInviterName] = useState('')
-  const [pendingCode, setPendingCode] = useState(null)
+  const processingRef = useRef(false)
 
-  // Lire le code pending au montage et quand l'auth change
   useEffect(() => {
     if (loading) return
+
     const code = localStorage.getItem('wtf_pending_invite')
     if (!code) return
 
-    setPendingCode(code)
-
+    // Pas connecté → demander auth
     if (!isConnected) {
       setInviteState('needs_auth')
       return
     }
 
+    // Déjà en cours de traitement → skip
+    if (processingRef.current) return
+    processingRef.current = true
+
     // Connecté → traiter l'invitation
     processInvite(code, user.id)
   }, [loading, isConnected, user])
 
-  // Aussi traiter quand l'utilisateur se connecte après avoir vu needs_auth
-  useEffect(() => {
-    if (inviteState === 'needs_auth' && isConnected && pendingCode && user) {
-      processInvite(pendingCode, user.id)
-    }
-  }, [isConnected, inviteState, pendingCode, user])
-
   async function processInvite(code, userId) {
     setInviteState('processing')
+    localStorage.removeItem('wtf_pending_invite')
 
     try {
-      // Lookup du code (utilise supabaseAnon, pas de lock)
       const inviter = await findPlayerByCode(code)
       if (!inviter) {
         setInviteState('not_found')
-        cleanup()
+        processingRef.current = false
         return
       }
 
       setInviterName(inviter.display_name || 'Un joueur')
 
-      // Self-invite ?
       if (inviter.user_id === userId) {
         setInviteState('self')
-        cleanup()
+        processingRef.current = false
         return
       }
 
-      // Envoyer/accepter la friend request
       const result = await sendFriendRequest(userId, inviter.user_id)
       if (result.alreadyExists) {
         if (result.friendship.status === 'accepted') {
@@ -81,22 +70,17 @@ export function usePendingInvite() {
         await acceptFriendRequest(result.friendship.id)
         setInviteState('done')
       }
-      cleanup()
     } catch (err) {
       console.error('[usePendingInvite] Error:', err)
       setInviteState('error')
-      cleanup()
     }
-  }
-
-  function cleanup() {
-    localStorage.removeItem('wtf_pending_invite')
+    processingRef.current = false
   }
 
   const dismiss = useCallback(() => {
     setInviteState(null)
     setInviterName('')
-    setPendingCode(null)
+    processingRef.current = false
     localStorage.removeItem('wtf_pending_invite')
   }, [])
 

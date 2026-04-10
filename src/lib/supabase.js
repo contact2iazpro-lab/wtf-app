@@ -26,5 +26,5 @@ export const supabase = createClient(
 export const supabaseAnon = createClient(
   isSupabaseConfigured ? supabaseUrl : FALLBACK_URL,
   isSupabaseConfigured ? supabaseKey : FALLBACK_KEY,
-  { auth: { persistSession: false, autoRefreshToken: false } }
+  { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-anon-token' } }
 )

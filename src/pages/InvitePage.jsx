@@ -1,43 +1,55 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 /**
  * InvitePage — Trampoline
  *
- * 1. Stocker le code dans localStorage
- * 2. Fermer l'onglet (le lien vient de WhatsApp/SMS → nouvel onglet)
- * 3. L'onglet principal détecte le pending invite au prochain focus
+ * 1. Stocke le code dans localStorage
+ * 2. Tente de fermer l'onglet
+ * 3. Si impossible → affiche un message "Retourne sur l'app"
  *
- * Si window.close() est bloqué par le navigateur → redirect vers /
+ * JAMAIS de redirect vers / (ça crée un 2e onglet avec lock contention)
+ * L'onglet principal détecte le code au focus via usePendingInvite.
  */
 export default function InvitePage() {
   const { code } = useParams()
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (code) {
       localStorage.setItem('wtf_pending_invite', code.toUpperCase())
+      setSaved(true)
     }
 
-    // Tenter de fermer l'onglet (fonctionne si ouvert par un lien externe)
+    // Tenter de fermer l'onglet
     window.close()
-
-    // Fallback si le navigateur bloque window.close() :
-    // attendre 500ms puis rediriger vers la home
-    const fallback = setTimeout(() => {
-      window.location.replace('/')
-    }, 500)
-
-    return () => clearTimeout(fallback)
   }, [code])
 
   return (
     <div style={{
       height: '100dvh', display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 12,
-      background: '#FAFAF8', fontFamily: 'Nunito, sans-serif',
+      alignItems: 'center', justifyContent: 'center', gap: 16,
+      background: '#FAFAF8', fontFamily: 'Nunito, sans-serif', padding: 24,
+      textAlign: 'center',
     }}>
-      <img src="/assets/ui/wtf-logo.png?v=4" alt="WTF!" style={{ width: 60, opacity: 0.5 }} />
-      <p style={{ fontSize: 13, color: '#9CA3AF', fontWeight: 600 }}>Invitation enregistrée...</p>
+      <img src="/assets/ui/wtf-logo.png?v=4" alt="WTF!" style={{ width: 60, marginBottom: 8 }} />
+
+      {saved ? (
+        <>
+          <div style={{ fontSize: 40 }}>✅</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e' }}>
+            Invitation enregistrée !
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#6B7280', lineHeight: 1.5 }}>
+            Retourne sur l'app What The F*ct pour accepter l'invitation.
+          </div>
+          <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>
+            Tu peux fermer cet onglet.
+          </div>
+        </>
+      ) : (
+        <div style={{ fontSize: 14, color: '#9CA3AF', fontWeight: 600 }}>Chargement...</div>
+      )}
     </div>
   )
 }

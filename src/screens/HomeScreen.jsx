@@ -902,7 +902,7 @@ export default function HomeScreen({
             </div>
           </div>
 
-          {/* ZONE 5 — Tagline 100% */}
+          {/* ZONE 5 — Énergie Jouer */}
           <div style={{
             flex: 1,
             width: '100%',
@@ -911,16 +911,22 @@ export default function HomeScreen({
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-            <img
-              src={ASSETS.ui.tagline}
-              alt="Des f*cts 100% vrais, des réactions 100% fun !"
-              style={{
-                width: 'clamp(100px, 70%, 180px)', height: 'auto',
-                objectFit: 'contain', display: 'block',
-                position: 'relative', zIndex: 1,
-                flexShrink: 0,
-              }}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14 }}>🔋</span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{
+                    width: 28, height: 8, borderRadius: 4,
+                    background: i < flashEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
+                    transition: 'background 0.3s',
+                    boxShadow: i < flashEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
+                  }} />
+                ))}
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800, color: flashEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
+                {flashEnergyRemaining}/3
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -965,22 +971,6 @@ export default function HomeScreen({
           </span>
           <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
         </button>
-        {/* Barre d'énergie */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6 }}>
-          <span style={{ fontSize: 12 }}>🔋</span>
-          <div style={{ display: 'flex', gap: 3 }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} style={{
-                width: 24, height: 6, borderRadius: 3,
-                background: i < flashEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.2)',
-                transition: 'background 0.3s',
-              }} />
-            ))}
-          </div>
-          <span style={{ fontSize: 10, fontWeight: 700, color: flashEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
-            {flashEnergyRemaining}/3
-          </span>
-        </div>
       </div>
 
       {/* ═══ ZONE 5 — NAVBAR (via BottomNav unifiée) ════════════════════════════ */}

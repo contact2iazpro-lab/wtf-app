@@ -173,12 +173,8 @@ export default function RevelationScreen({
   const scoreRefTarget = useRef(null)
   const nextButtonRef = useRef(null)
 
-  // Détection du onboarding (basée sur onboardingCompleted ET première Quest)
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-  const onboardingCompleted = wtfData.onboardingCompleted === true
   const gamesPlayed = wtfData.gamesPlayed || 0
-  const isFirstQuest = (wtfData.statsByMode?.parcours?.gamesPlayed || 0) <= 1
-  const showOnboardingIndicator = !onboardingCompleted || (isFirstQuest && sessionType === 'parcours')
 
   const cat = getCategoryById(fact.category)
   const isDuel = !!duelContext
@@ -428,7 +424,7 @@ export default function RevelationScreen({
         {/* Boutons */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}`, position: 'relative' }}>
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
-            {gamesPlayed > 1 && !showOnboardingIndicator && (
+            {gamesPlayed > 1 && (
               <button
                 onClick={handleNativeShare}
                 className="btn-press active:scale-95 transition-all"
@@ -448,9 +444,9 @@ export default function RevelationScreen({
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: showOnboardingIndicator ? '2px solid white' : '2px solid rgba(255,255,255,0.4)',
+                border: '2px solid rgba(255,255,255,0.4)',
                 background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                ...(showOnboardingIndicator ? {
+                ...(false ? {
                   animation: 'pulse 1.5s ease-in-out infinite',
                   boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 0 30px rgba(255,107,26,0.2)',
                 } : {}),
@@ -459,25 +455,6 @@ export default function RevelationScreen({
               {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
             </button>
           </div>
-          {/* Doigt animé en dessous du bouton SUIVANT/RÉSULTATS (pendant le tutoriel onboarding) */}
-          {showOnboardingIndicator && (
-            <div style={{
-              position: 'relative',
-              height: S(40),
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'flex-start',
-              pointerEvents: 'none',
-            }}>
-              <div style={{
-                position: 'absolute',
-                bottom: -S(26),
-                right: S(4),
-                fontSize: S(28),
-                animation: 'bounce 0.8s ease-in-out infinite',
-              }}>👆</div>
-            </div>
-          )}
         </div>
         </div>
       </div>
@@ -486,7 +463,7 @@ export default function RevelationScreen({
 
   // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
   const isVipReveal = !isDuel && isCorrect && fact.isVip
-  const showVipGlow = isVipReveal || (showOnboardingIndicator && isCorrect)
+  const showVipGlow = isVipReveal
   return (
     <div className="relative screen-enter" style={{
       height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
@@ -660,22 +637,17 @@ export default function RevelationScreen({
 
       {/* Boutons — compact */}
       <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
-        {!isDuel && (isCorrect || showOnboardingIndicator) && (
+        {!isDuel && isCorrect && (
           <>
             <div style={{ display: 'flex', gap: S(8), height: S(44), position: 'relative' }}>
               <button
-                onClick={showOnboardingIndicator ? undefined : handleNativeShare}
+                onClick={handleNativeShare}
                 className="btn-press active:scale-95 transition-all"
                 style={{
                   flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
                   background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
                   color: 'white', border: '2px solid rgba(255,255,255,0.4)',
-                  ...(showOnboardingIndicator ? {
-                    opacity: 0.3,
-                    pointerEvents: 'none',
-                    filter: 'grayscale(1)',
-                  } : {}),
                 }}
               >
                 🎩 Partager ce WTF!
@@ -687,19 +659,15 @@ export default function RevelationScreen({
                 style={{
                   flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                   color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                  border: showOnboardingIndicator ? '2px solid white' : '2px solid rgba(255,255,255,0.4)',
+                  border: '2px solid rgba(255,255,255,0.4)',
                   background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                  ...(showOnboardingIndicator ? {
-                    animation: 'pulse 1.5s ease-in-out infinite',
-                    boxShadow: '0 0 15px rgba(255,107,26,0.5), 0 0 30px rgba(255,107,26,0.2)',
-                  } : {}),
                 }}
               >
                 {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
               </button>
             </div>
             {/* Doigt animé en dessous du bouton SUIVANT/RÉSULTATS (pendant le tutoriel onboarding) */}
-            {showOnboardingIndicator && (
+            {false && (
               <div style={{
                 position: 'relative',
                 height: S(40),
@@ -736,17 +704,6 @@ export default function RevelationScreen({
         )}
       </div>
 
-      {/* CSS animations pour onboarding */}
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4); }
-          50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3); }
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-      `}</style>
 
       {/* Lightbox image — bonne réponse uniquement */}
       {showLightbox && fact.imageUrl && (

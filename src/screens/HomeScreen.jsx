@@ -222,8 +222,7 @@ export default function HomeScreen({
 
   // Show badge modal when returning to HomeScreen with new badges
   useEffect(() => {
-    const isOnboarding = !wtfData.onboardingCompleted
-    if (newlyEarnedBadges.length > 0 && !isOnboarding) {
+    if (newlyEarnedBadges.length > 0) {
       setBadgeToShow(newlyEarnedBadges[0])
       setShowBadgeModal(true)
     }
@@ -271,22 +270,8 @@ export default function HomeScreen({
     const ufc = (wd.unlockedFacts || []).length
     const tutoPhase = wd.tutoPhase || 0
 
-    // Tutorial spotlight — controlled by tutoPhase
-    if (!wd.onboardingCompleted) {
-      if (tutoPhase === 1) {
-        setActiveSpotlight('flash')
-      } else if (tutoPhase === 2) {
-        setActiveSpotlight('quest')
-      } else if (tutoPhase === 3) {
-        // Phase 3: Player is on collection, no spotlight on home
-        setActiveSpotlight(null)
-      } else if (tutoPhase === 0) {
-        // Phase 0: First fact loading, no spotlight needed
-        setActiveSpotlight(null)
-      } else {
-        // Fallback: shouldn't reach here
-        setActiveSpotlight(null)
-      }
+    // Tutorial spotlight disabled (lives in TutoTunnel)
+    if (false) {
     } else {
       setActiveSpotlight(null)
     }
@@ -838,7 +823,7 @@ export default function HomeScreen({
               ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
             }}>
               {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
-              <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer && !(explorerPlayedInMode === 0 && gamesPlayed >= 2)} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'marathon') return; const isExplorerNew = explorerPlayedInMode === 0 && gamesPlayed >= 2; if (!canExplorer && !isExplorerNew) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
+              <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer && !(explorerPlayedInMode === 0 && gamesPlayed >= 2)} onClick={() => {  const isExplorerNew = explorerPlayedInMode === 0 && gamesPlayed >= 2; if (!canExplorer && !isExplorerNew) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
             </div>
 
             {/* Blitz — right */}
@@ -851,7 +836,7 @@ export default function HomeScreen({
               ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
             }}>
               {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
-              <ModeIcon ref={blitzBtnRef} src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'blitz') return; if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
+              <ModeIcon ref={blitzBtnRef} src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => {  if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
             </div>
           </div>
 

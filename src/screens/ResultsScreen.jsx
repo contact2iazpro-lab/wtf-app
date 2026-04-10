@@ -109,12 +109,7 @@ export default function ResultsScreen({
   const [confettiActive, setConfettiActive] = useState(false) // COR 4
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const gamesPlayed = wtfData.gamesPlayed || 0
-  const isOnboarding = !wtfData.onboardingCompleted
   const [ticketPopVisible, setTicketPopVisible] = useState(false)
-
-  // Spotlight onboarding sur bouton "Continuer"
-  const continueButtonRef = useRef(null)
-  const [spotRectContinue, setSpotRectContinue] = useState(null)
 
   // Category color (MOD 1)
   const cat = categoryId ? getCategoryById(categoryId) : null
@@ -258,28 +253,11 @@ export default function ResultsScreen({
     }
   }, [coinsEarned])
 
-  // Spotlight onboarding sur bouton "Continuer l'aventure"
-  useEffect(() => {
-    if (!isOnboarding || !continueButtonRef.current) return
-    const timer = setTimeout(() => {
-      const r = continueButtonRef.current?.getBoundingClientRect()
-      if (r) {
-        const pad = 8
-        setSpotRectContinue({
-          top: r.top - pad,
-          left: r.left - pad,
-          width: r.width + pad * 2,
-          height: r.height + pad * 2,
-        })
-      }
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [isOnboarding])
 
   // COR 5 — Share handler natif avec message défi
   const handleShare = () => {
     const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || 'Cool') : 'Cool'
-    const text = `J'ai fait ${correctCount}/10 en mode ${diffLabel} sur What The F*ct! 🎯\nTu peux faire mieux ? Rejoins-moi sur wtf-app.vercel.app`
+    const text = `J'ai fait ${correctCount}/10 en mode ${diffLabel} sur What The F*ct !\nTu peux faire mieux ? ${window.location.origin}`
     if (onShare) {
       onShare(text)
     } else if (navigator.share) {
@@ -589,7 +567,7 @@ export default function ResultsScreen({
       }}>
 
         {/* Ligne 1 : Google (si applicable) */}
-        {!isConnected && !isOnboarding && (
+        {!isConnected && !false && (
           <button
             onClick={() => {
               if (unlockedFactsThisSession.length > 0) {
@@ -643,69 +621,20 @@ export default function ResultsScreen({
 
         {/* Ligne 3 : Home/Continue fullwidth */}
         <button
-          ref={continueButtonRef}
           onClick={handleGoHome}
           className="active:scale-95 transition-all"
           style={{
             width: '100%', padding: `${S(12)} ${S(12)}`, borderRadius: S(12),
-            background: isOnboarding ? '#FF6B1A' : 'transparent',
-            border: isOnboarding ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
-            color: isOnboarding ? 'white' : 'rgba(255,255,255,0.6)',
+            background: false ? '#FF6B1A' : 'transparent',
+            border: false ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
+            color: false ? 'white' : 'rgba(255,255,255,0.6)',
             fontWeight: 900, fontSize: S(12), textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-            boxShadow: isOnboarding ? '0 4px 16px rgba(255,107,26,0.4)' : 'none',
             cursor: 'pointer',
           }}>
-          {isOnboarding ? 'Continuer l\'aventure ! 🚀' : '← Retour'}
+          ← Retour
         </button>
       </div>
 
-      {/* Spotlight onboarding sur bouton "Continuer l'aventure" */}
-      {isOnboarding && spotRectContinue && (
-        <>
-          {/* Overlay léger transparent */}
-          <div style={{
-            position: 'fixed',
-            top: spotRectContinue.top, left: spotRectContinue.left,
-            width: spotRectContinue.width, height: spotRectContinue.height,
-            borderRadius: 14,
-            background: 'transparent',
-            boxShadow: `0 0 0 9999px rgba(0,0,0,0.15), 0 0 24px 6px rgba(255,107,26,0.4)`,
-            zIndex: 101, pointerEvents: 'none',
-            transition: 'all 0.6s ease',
-          }} />
-
-          {/* Doigt animé — positionné au-dessus du bouton */}
-          <div style={{
-            position: 'fixed',
-            top: spotRectContinue.top - 40,
-            left: spotRectContinue.left + spotRectContinue.width / 2,
-            transform: 'translateX(-50%)',
-            fontSize: 32, zIndex: 102, pointerEvents: 'none',
-            animation: 'homeFingerBounce 0.8s ease-in-out infinite',
-            transition: 'top 0.6s ease, left 0.6s ease',
-          }}>👆</div>
-
-          {/* Texte guide au-dessus du doigt */}
-          <div style={{
-            position: 'fixed',
-            top: spotRectContinue.top - 90,
-            left: '50%', transform: 'translateX(-50%)',
-            zIndex: 102, textAlign: 'center',
-          }}>
-            <div style={{ background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: 14, fontWeight: 800, padding: '8px 20px', borderRadius: 12, fontFamily: 'Nunito, sans-serif', whiteSpace: 'nowrap' }}>
-              Continue ton aventure ! 🚀
-            </div>
-          </div>
-
-          {/* CSS animations */}
-          <style>{`
-            @keyframes homeFingerBounce {
-              0%, 100% { transform: translateY(0) translateX(-50%); }
-              50% { transform: translateY(-6px) translateX(-50%); }
-            }
-          `}</style>
-        </>
-      )}
 
 
       {/* Fact detail modal */}

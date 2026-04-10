@@ -65,28 +65,26 @@ export default function InvitePage() {
           return
         }
         // Accepter la demande pendante
-        await supabaseLight
+        const { error: updateErr } = await supabaseLight
           .from('friendships')
           .update({ status: 'accepted', accepted_at: new Date().toISOString() })
           .eq('id', existing.id)
+        if (updateErr) throw updateErr
         setStatus('done')
         return
       }
 
-      // Créer + accepter
-      const { data: friendship, error: insertErr } = await supabaseLight
+      // Créer directement en accepted (pas besoin de pending → accepted)
+      const { error: insertErr } = await supabaseLight
         .from('friendships')
-        .insert({ user1_id: user.id, user2_id: inviterData.user_id, status: 'pending' })
-        .select()
-        .single()
+        .insert({
+          user1_id: user.id,
+          user2_id: inviterData.user_id,
+          status: 'accepted',
+          accepted_at: new Date().toISOString(),
+        })
 
       if (insertErr) throw insertErr
-
-      await supabaseLight
-        .from('friendships')
-        .update({ status: 'accepted', accepted_at: new Date().toISOString() })
-        .eq('id', friendship.id)
-
       setStatus('done')
     } catch (err) {
       console.error('[InvitePage] Error:', err)

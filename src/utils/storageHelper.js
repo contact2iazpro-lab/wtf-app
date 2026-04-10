@@ -2,9 +2,9 @@ import { getValidFacts } from '../data/factsService'
 
 // ─── Storage Helper — Lecture et écriture centralisées de wtf_data ────────────
 
-const TODAY = () => new Date().toISOString().slice(0, 10)
-const TODAY_DATE_STR = () => new Date().toDateString()
-const YESTERDAY_DATE_STR = () => new Date(Date.now() - 86400000).toDateString()
+export const TODAY = () => new Date().toISOString().slice(0, 10)
+export const TODAY_DATE_STR = () => new Date().toDateString()
+export const YESTERDAY_DATE_STR = () => new Date(Date.now() - 86400000).toDateString()
 
 /**
  * Lire wtf_data depuis localStorage (lecture seule)

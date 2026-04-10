@@ -11,7 +11,7 @@ import {
   initFacts, resetFacts,
 } from './data/factsService'
 import { pushToServer, syncAfterAction } from './services/playerSyncService'
-import { loadStorage, saveStorage, updateTrophyData } from './utils/storageHelper'
+import { loadStorage, saveStorage, updateTrophyData, TODAY } from './utils/storageHelper'
 import { updateCoins, updateTickets, updateHints, getBalances } from './services/currencyService'
 import DevPanel from './components/DevPanel'
 import { DEV_PANEL_ENABLED } from './config/devConfig'

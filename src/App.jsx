@@ -38,6 +38,7 @@ import ModeLaunchScreen from './screens/ModeLaunchScreen'
 import SettingsModal from './components/SettingsModal'
 import HowToPlayModal from './components/HowToPlayModal'
 import ConnectBanner from './components/ConnectBanner'
+import NewCategoriesModal from './components/NewCategoriesModal'
 import { audio } from './utils/audio'
 import { checkBadges } from './utils/badgeManager'
 import { useAuth } from './context/AuthContext'
@@ -147,9 +148,10 @@ function loadStorage() {
     const todayDateStr = TODAY_DATE_STR()
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
-    // Initialiser l'ID anonyme unique si absent
+    // Initialiser l'ID anonyme unique si absent — format 000 000 000 (9 chiffres)
     if (!saved.anonymousId) {
-      saved.anonymousId = 'wtf_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9)
+      const randomId = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0')
+      saved.anonymousId = `${randomId.slice(0, 3)} ${randomId.slice(3, 6)} ${randomId.slice(6, 9)}`
       saved.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
@@ -172,14 +174,20 @@ function loadStorage() {
     }
 
     // Migration auto : forcer onboardingCompleted=true pour joueurs existants (une fois)
+    // THÈME A: Tous les nouveaux joueurs commencent avec onboardingCompleted=true
     if (!saved.hasOwnProperty('onboardingCompleted')) {
-      if ((saved.gamesPlayed || 0) > 2 || (saved.unlockedFacts || []).length > 5) {
-        saved.onboardingCompleted = true
-      } else {
-        saved.onboardingCompleted = false
+      saved.onboardingCompleted = true
+      // Initialiser comme s'ils avaient skip le tuto : 25 coins, 1 ticket, 3 indices
+      saved.wtfCoins = Math.max(saved.wtfCoins || 0, 25)
+      saved.tickets = Math.max(saved.tickets || 0, 1)
+      // Initialiser unlockedCategories avec les 5 catégories de base
+      if (!saved.unlockedCategories) {
+        saved.unlockedCategories = ['sport', 'records', 'animaux', 'kids', 'definition']
       }
       saved.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(saved))
+      // Initialiser aussi les indices
+      localStorage.setItem('wtf_hints_available', '3')
     }
 
     // Garde-fou additionnel : si plus de 3 parties jouées, onboarding est FORCEMENT terminé
@@ -430,6 +438,8 @@ export default function App() {
   const [launchMode, setLaunchMode] = useState(null)
   const [explorerPool, setExplorerPool] = useState([])
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
+  const [newlyUnlockedCategories, setNewlyUnlockedCategories] = useState([])
+  const [showNewCategoriesModal, setShowNewCategoriesModal] = useState(false)
   const [completedLevels, setCompletedLevels] = useState([])
   const [sessionIsPerfect, setSessionIsPerfect] = useState(false)
   const [streakRewardToast, setStreakRewardToast] = useState(null)
@@ -521,6 +531,8 @@ export default function App() {
     setSelectedAnswer(null)
     setIsCorrect(null)
     setSessionCorrectFacts([])
+    setNewlyUnlockedCategories([])
+    setShowNewCategoriesModal(false)
     setCompletedLevels([])
     setSessionIsPerfect(false)
     setPointsEarned(0)
@@ -798,11 +810,25 @@ export default function App() {
 
     if (gameMode === 'marathon') {
       // Marathon : 20 questions générées (non-VIP) dans la catégorie choisie
-      let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
+      // THÈME B Point 5: Mode Aléatoire utilise TOUS les funny facts
+      let pool
+      if (selectedCategory === null) {
+        // Mode Aléatoire : tous les funny facts
+        pool = getGeneratedFacts().filter(f => skipUnlockM || !unlockedFacts.has(f.id))
+      } else {
+        // Catégorie choisie
+        pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
+      }
+
       // Dev mode fallback : inclure les déjà débloqués
       if (pool.length < 4 && skipUnlockM) {
-        pool = getGeneratedFactsByCategory(selectedCategory)
+        if (selectedCategory === null) {
+          pool = getGeneratedFacts()
+        } else {
+          pool = getGeneratedFactsByCategory(selectedCategory)
+        }
       }
+
       if (pool.length === 0) {
         alert('Bientôt de nouveaux f*cts dans cette catégorie ! Reviens vite 🎉')
         return
@@ -1134,6 +1160,23 @@ export default function App() {
               newUnlocked.add(currentFact.id)
               const next = { ...prev, unlockedFacts: newUnlocked }
               saveStorage(next)
+
+              // THÈME B Point 1: Débloquer la catégorie si elle n'est pas déjà débloquée
+              const unlockedCategories = wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition']
+              if (currentFact.category && !unlockedCategories.includes(currentFact.category)) {
+                unlockedCategories.push(currentFact.category)
+                wd.unlockedCategories = unlockedCategories
+                wd.lastModified = Date.now()
+                localStorage.setItem('wtf_data', JSON.stringify(wd))
+                // Enregistrer la catégorie comme nouvellement débloquée durant cette session
+                setNewlyUnlockedCategories(prev => {
+                  if (!prev.includes(currentFact.category)) {
+                    return [...prev, currentFact.category]
+                  }
+                  return prev
+                })
+              }
+
               if (user) {
                 import('./services/collectionService').then(({ updateCollection }) => {
                   updateCollection(user.id, currentFact.category, currentFact.id)
@@ -1273,6 +1316,29 @@ export default function App() {
           }
         }
         setCompletedLevels(newlyCompleted)
+
+        // THÈME B Point 1: Débloquer les catégories pour la Quest aussi (parcours)
+        if (sessionType === 'parcours') {
+          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          const unlockedCategories = wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition']
+          const newlyUnlockedCats = []
+
+          for (const fact of toSync) {
+            if (fact.category && !unlockedCategories.includes(fact.category)) {
+              unlockedCategories.push(fact.category)
+              if (!newlyUnlockedCats.includes(fact.category)) {
+                newlyUnlockedCats.push(fact.category)
+              }
+            }
+          }
+
+          if (newlyUnlockedCats.length > 0) {
+            wd.unlockedCategories = unlockedCategories
+            wd.lastModified = Date.now()
+            localStorage.setItem('wtf_data', JSON.stringify(wd))
+            setNewlyUnlockedCategories(newlyUnlockedCats)
+          }
+        }
 
         // Badge Perfect (Quest uniquement) — indices autorisés
         const isPerfectSession = sessionType === 'parcours' && correctCount === sessionFacts.length
@@ -1461,6 +1527,11 @@ export default function App() {
           // DEPRECATED: Tutorial logic moved to TutoTunnel component
         }
 
+        // THÈME B Point 2: Afficher la modal des catégories débloquées si nécessaire
+        if (newlyUnlockedCategories.length > 0) {
+          setShowNewCategoriesModal(true)
+        }
+
         setScreen(SCREENS.RESULTS)
       }
     } else {
@@ -1584,21 +1655,27 @@ export default function App() {
   }, [selectedCategory, handleBlitzStart])
 
   const handleExplorerContinue = useCallback(() => {
-    if (explorerPool.length === 0) {
+    // THÈME C Point 4: Exclure facts débloqués du tirage Explorer
+    const filteredPool = explorerPool.filter(f => !unlockedFacts.has(f.id))
+    if (filteredPool.length === 0) {
       alert('Plus de questions dans cette catégorie ! 🎉')
       return
     }
     const difficulty = DIFFICULTY_LEVELS.HOT
-    const next5 = explorerPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-    setExplorerPool(explorerPool.slice(5))
+    const next5 = filteredPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+    setExplorerPool(filteredPool.slice(5))
     setSessionType('marathon')
     initSessionState(next5)
     setScreen(SCREENS.QUESTION)
-  }, [tickets, explorerPool])
+  }, [tickets, explorerPool, unlockedFacts])
 
   const handleReplay = useCallback(() => {
     if (sessionType === 'flash_solo') {
       handleFlashSolo()
+    } else if (sessionType === 'marathon') {
+      // THÈME C Point 5: Retourner au CategoryScreen pour choisir une nouvelle catégorie
+      setExplorerPool([])
+      setScreen(SCREENS.CATEGORY)
     } else {
       handleSelectCategory(selectedCategory)
     }
@@ -1908,59 +1985,20 @@ export default function App() {
     )
   }
 
-  // ─── Tutorial check: if onboarding not complete, show TutoTunnel ───
-  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-  const showTuto = !wd.onboardingCompleted && (wd.tutoPhase === undefined || wd.tutoPhase === null || wd.tutoPhase < 4)
-
-  if (showTuto && !showSplash) {
-    return (
-      <TutoTunnel
-        onComplete={(firstFactId) => {
-          // Tutorial completed
-          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          wd.onboardingCompleted = true
-          wd.gamesPlayed = (wd.gamesPlayed || 0) + 3
-          // Add first fact to collection
-          if (firstFactId) {
-            if (!wd.unlockedFacts) wd.unlockedFacts = []
-            if (!wd.unlockedFacts.includes(firstFactId)) wd.unlockedFacts.push(firstFactId)
-          }
-          // Give ticket earned during Flash tutorial
-          wd.wtfCoins = Math.max(wd.wtfCoins || 0, 2)
-          wd.tickets = (wd.tickets || 0) + 1
-          // Stats
-          if (!wd.statsByMode) wd.statsByMode = {}
-          if (!wd.statsByMode.flash_solo) wd.statsByMode.flash_solo = { gamesPlayed: 1 }
-          if (!wd.statsByMode.parcours) wd.statsByMode.parcours = { gamesPlayed: 1 }
-          wd.lastModified = Date.now()
-          localStorage.setItem('wtf_data', JSON.stringify(wd))
-          localStorage.removeItem('wtf_tuto_used_ids')
-          localStorage.removeItem('wtf_tuto_first_fact_id')
-          // Refresh app state
-          loadStorage()
-          setScreen(SCREENS.HOME)
-        }}
-        onSkip={() => {
-          // Skip tutorial
-          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          wd.onboardingCompleted = true
-          wd.gamesPlayed = Math.max(wd.gamesPlayed || 0, 10)
-          wd.wtfCoins = Math.max(wd.wtfCoins || 0, 25)
-          wd.tickets = Math.max(wd.tickets || 0, 1)
-          if (!wd.statsByMode) wd.statsByMode = {}
-          if (!wd.statsByMode.flash_solo) wd.statsByMode.flash_solo = { gamesPlayed: 3 }
-          if (!wd.statsByMode.parcours) wd.statsByMode.parcours = { gamesPlayed: 2 }
-          if (!wd.statsByMode.blitz) wd.statsByMode.blitz = { gamesPlayed: 1 }
-          wd.lastModified = Date.now()
-          localStorage.setItem('wtf_data', JSON.stringify(wd))
-          localStorage.removeItem('wtf_tuto_used_ids')
-          localStorage.removeItem('wtf_tuto_first_fact_id')
-          loadStorage()
-          setScreen(SCREENS.HOME)
-        }}
-      />
-    )
-  }
+  // ─── Tutorial DÉSACTIVÉ — Skip au login pour tests Google Auth ───
+  // Auto-set onboardingCompleted au login pour éviter modal
+  useEffect(() => {
+    if (user) {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      if (!wd.onboardingCompleted) {
+        wd.onboardingCompleted = true
+        wd.gamesPlayed = Math.max(wd.gamesPlayed || 0, 1)
+        wd.wtfCoins = Math.max(wd.wtfCoins || 0, 0)
+        wd.tickets = Math.max(wd.tickets || 0, 0)
+        localStorage.setItem('wtf_data', JSON.stringify(wd))
+      }
+    }
+  }, [user])
 
   return (
     <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg" style={{ '--scale': scale, height: '100dvh' }}>
@@ -2586,6 +2624,14 @@ export default function App() {
       )}
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
+
+      {/* THÈME B Point 2: Modal des catégories débloquées */}
+      {showNewCategoriesModal && newlyUnlockedCategories.length > 0 && (
+        <NewCategoriesModal
+          categories={newlyUnlockedCategories}
+          onClose={() => setShowNewCategoriesModal(false)}
+        />
+      )}
 
       {showDevPanel && DEV_PANEL_ENABLED && (
         <DevPanel

@@ -123,7 +123,7 @@ export function AuthProvider({ children }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: window.location.href.split('#')[0], // Preserve current path, discard any fragment
         queryParams: { prompt: 'select_account' },
       }
     })

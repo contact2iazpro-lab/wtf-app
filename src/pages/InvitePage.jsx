@@ -1,35 +1,43 @@
 import { useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 /**
  * InvitePage — Trampoline
  *
- * Le lien d'invitation ne fait qu'une chose :
  * 1. Stocker le code dans localStorage
- * 2. Rediriger vers la home (qui a déjà la session auth)
+ * 2. Fermer l'onglet (le lien vient de WhatsApp/SMS → nouvel onglet)
+ * 3. L'onglet principal détecte le pending invite au prochain focus
  *
- * Tout le traitement se fait dans App.jsx via usePendingInvite.
- * Zéro auth, zéro requête Supabase, zéro problème multi-onglet.
+ * Si window.close() est bloqué par le navigateur → redirect vers /
  */
 export default function InvitePage() {
   const { code } = useParams()
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (code) {
       localStorage.setItem('wtf_pending_invite', code.toUpperCase())
     }
-    // Redirect vers la home — replace pour ne pas garder l'invite dans l'historique
-    navigate('/', { replace: true })
-  }, [code, navigate])
 
-  // Écran de transition minimal (visible <100ms)
+    // Tenter de fermer l'onglet (fonctionne si ouvert par un lien externe)
+    window.close()
+
+    // Fallback si le navigateur bloque window.close() :
+    // attendre 500ms puis rediriger vers la home
+    const fallback = setTimeout(() => {
+      window.location.replace('/')
+    }, 500)
+
+    return () => clearTimeout(fallback)
+  }, [code])
+
   return (
     <div style={{
-      height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      height: '100dvh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', gap: 12,
       background: '#FAFAF8', fontFamily: 'Nunito, sans-serif',
     }}>
       <img src="/assets/ui/wtf-logo.png?v=4" alt="WTF!" style={{ width: 60, opacity: 0.5 }} />
+      <p style={{ fontSize: 13, color: '#9CA3AF', fontWeight: 600 }}>Invitation enregistrée...</p>
     </div>
   )
 }

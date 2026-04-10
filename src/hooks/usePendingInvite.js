@@ -5,11 +5,8 @@ import { findPlayerByCode, sendFriendRequest, acceptFriendRequest } from '../dat
 /**
  * usePendingInvite — Gère les invitations amis stockées par InvitePage (trampoline)
  *
- * Flow :
- * 1. Détecte `wtf_pending_invite` dans localStorage
- * 2. Si connecté → lookup code, send/accept friend request, affiche résultat
- * 3. Si pas connecté → signale qu'il faut se connecter (needsAuth)
- * 4. Après traitement → nettoie localStorage
+ * Détecte `wtf_pending_invite` au montage ET quand l'onglet reprend le focus
+ * (l'invite est stockée par un autre onglet qui se ferme ensuite).
  */
 export function usePendingInvite() {
   const { user, isConnected, loading } = useAuth()
@@ -18,25 +15,38 @@ export function usePendingInvite() {
   const [inviterName, setInviterName] = useState('')
   const processingRef = useRef(false)
 
-  useEffect(() => {
-    if (loading) return
+  const checkAndProcess = useCallback(() => {
+    if (loading || processingRef.current) return
 
     const code = localStorage.getItem('wtf_pending_invite')
     if (!code) return
 
-    // Pas connecté → demander auth
     if (!isConnected) {
       setInviteState('needs_auth')
       return
     }
 
-    // Déjà en cours de traitement → skip
-    if (processingRef.current) return
     processingRef.current = true
-
-    // Connecté → traiter l'invitation
     processInvite(code, user.id)
   }, [loading, isConnected, user])
+
+  // Check au montage et quand l'auth change
+  useEffect(() => {
+    checkAndProcess()
+  }, [checkAndProcess])
+
+  // Check quand l'onglet reprend le focus (l'autre onglet a pu stocker un code)
+  useEffect(() => {
+    const onFocus = () => checkAndProcess()
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) onFocus()
+    })
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onFocus)
+    }
+  }, [checkAndProcess])
 
   async function processInvite(code, userId) {
     setInviteState('processing')

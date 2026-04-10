@@ -20,3 +20,11 @@ export const supabase = createClient(
   isSupabaseConfigured ? supabaseUrl : FALLBACK_URL,
   isSupabaseConfigured ? supabaseKey : FALLBACK_KEY
 )
+
+// Client sans auth — pour les requêtes publiques (ex: lookup friend_codes)
+// Pas de gestion de session/lock, donc pas de contention multi-onglet
+export const supabaseAnon = createClient(
+  isSupabaseConfigured ? supabaseUrl : FALLBACK_URL,
+  isSupabaseConfigured ? supabaseKey : FALLBACK_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+)

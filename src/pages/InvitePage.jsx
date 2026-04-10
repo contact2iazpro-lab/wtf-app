@@ -96,6 +96,14 @@ export default function InvitePage() {
     })()
   }, [user, inviter, loading])
 
+  // Auto-redirect vers la home après succès (3s)
+  useEffect(() => {
+    if (status === 'done' || status === 'already_friends') {
+      const timer = setTimeout(() => navigate('/'), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [status, navigate])
+
   const initial = inviter?.display_name?.charAt(0)?.toUpperCase() || '?'
   const displayName = inviter?.display_name || 'Un joueur'
 
@@ -183,9 +191,10 @@ export default function InvitePage() {
         {status === 'done' && (
           <>
             <p style={{ fontSize: 28, marginBottom: 8 }}>🎉</p>
-            <p style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a', marginBottom: 16 }}>
+            <p style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a', marginBottom: 8 }}>
               Tu es maintenant ami avec {displayName} !
             </p>
+            <p style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 16 }}>Redirection automatique...</p>
             <OrangeButton onClick={() => navigate('/')}>Jouer maintenant 🚀</OrangeButton>
           </>
         )}
@@ -193,9 +202,10 @@ export default function InvitePage() {
         {status === 'already_friends' && (
           <>
             <p style={{ fontSize: 28, marginBottom: 8 }}>🤝</p>
-            <p style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a', marginBottom: 16 }}>
+            <p style={{ fontSize: 18, fontWeight: 800, color: '#1a1a1a', marginBottom: 8 }}>
               Vous êtes déjà amis !
             </p>
+            <p style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 16 }}>Redirection automatique...</p>
             <OrangeButton onClick={() => navigate('/')}>Aller jouer</OrangeButton>
           </>
         )}

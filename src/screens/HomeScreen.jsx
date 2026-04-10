@@ -2,7 +2,6 @@
  * HomeScreen v7 — Refonte complète
  * 5 zones : Header · Badge · Coffres · Corps (3 cols) · Nav
  * Full screen, no scroll, useScale responsive
- * 🔧 BUILD TEST: 10/04/2026 16:30
  */
 
 import { useState, useEffect, useRef } from 'react'
@@ -428,11 +427,6 @@ export default function HomeScreen({
         background: HOME_BG_COLOR,
       }}
     >
-      {/* BUILD TEST — REMOVE AFTER TESTING */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, background: '#FF0000', color: '#fff', textAlign: 'center', padding: '8px', fontWeight: 'bold', fontSize: '16px' }}>
-        ✅ BUILD: 10-04 16:30 OK
-      </div>
-
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* Spotlight unique — basé sur hasSeenX */}

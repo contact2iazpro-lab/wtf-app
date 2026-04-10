@@ -2,10 +2,6 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
-# Force rebuild by invalidating Docker cache (Railway workaround)
-ARG BUILD_DATE=unknown
-RUN echo "Build date: $BUILD_DATE"
-
 # Vite env vars (injected at build time)
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
@@ -25,7 +21,6 @@ ENV VITE_GAME_BASE_URL=$VITE_GAME_BASE_URL
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN rm -rf dist node_modules/.vite .vite
 RUN npm run build
 
 # Install + build admin

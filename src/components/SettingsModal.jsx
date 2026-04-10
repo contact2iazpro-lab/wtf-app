@@ -1,24 +1,16 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { audio } from '../utils/audio'
 import { useAuth } from '../context/AuthContext'
 import HowToPlayModal from './HowToPlayModal'
-
-// ─── Toggle pill ────────────────────────────────────────────────────────────
-function TogglePill({ on }) {
-  return (
-    <div className="relative w-12 h-6 rounded-full transition-all duration-200" style={{ background: on ? '#FF6B1A' : '#D1D5DB' }}>
-      <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200" style={{ left: on ? '26px' : '2px' }} />
-    </div>
-  )
-}
+import { version } from '../../package.json'
 
 // ─── Setting row ────────────────────────────────────────────────────────────
-function SettingRow({ icon, label, right, onClick, style }) {
+function SettingRow({ icon, label, right, onClick }) {
   return (
     <button
       onClick={onClick}
       className="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition-all active:scale-95"
-      style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', ...style }}
+      style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}
     >
       <span className="flex items-center gap-3">
         <span className="text-lg">{icon}</span>
@@ -29,7 +21,7 @@ function SettingRow({ icon, label, right, onClick, style }) {
   )
 }
 
-// ─── Dev mode toggle — visible only in DEV ──────────────────────────────────
+// ─── Dev mode toggle — visible only via cheat code ──────────────────────────
 function GameModeSelector() {
   const currentMode = localStorage.getItem('wtf_dev_mode') === 'true' ? 'dev'
     : localStorage.getItem('wtf_test_mode') === 'true' ? 'test' : 'player'
@@ -39,7 +31,6 @@ function GameModeSelector() {
     const existing = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
     if (mode === 'player') {
-      // Restaurer les vraies valeurs
       const bc = parseInt(localStorage.getItem('wtf_dev_backup_coins') || '0', 10)
       const bt = parseInt(localStorage.getItem('wtf_dev_backup_tickets') || '0', 10)
       const bh = localStorage.getItem('wtf_dev_backup_hints') || '0'
@@ -53,7 +44,6 @@ function GameModeSelector() {
       localStorage.removeItem('wtf_test_mode')
       localStorage.removeItem('wtf_dev_access')
     } else {
-      // Sauvegarder si pas déjà fait
       if (currentMode === 'player') {
         localStorage.setItem('wtf_dev_backup_coins', String(existing.wtfCoins || 0))
         localStorage.setItem('wtf_dev_backup_tickets', String(existing.tickets || 0))
@@ -78,7 +68,7 @@ function GameModeSelector() {
 
   return (
     <div>
-      <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#9CA3AF' }}>🎮 Mode de jeu</p>
+      <p className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#9CA3AF' }}>Mode de jeu</p>
       <div style={{ display: 'flex', gap: 8 }}>
         {modes.map(m => {
           const active = currentMode === m.id
@@ -106,25 +96,13 @@ function GameModeSelector() {
 }
 
 // ─── Save progress modal ────────────────────────────────────────────────────
-function resetLocalProgress() {
-  try {
-    localStorage.setItem('wtf_data', JSON.stringify({
-      totalScore: 0, streak: 0,
-      lastDay: new Date().toDateString(),
-      unlockedFacts: [],
-    }))
-  } catch { /* ignore */ }
-}
-
 function SaveProgressModal({ onClose }) {
   const { user, isConnected, signInWithGoogle, signOut } = useAuth()
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(null)
   const [pendingProvider, setPendingProvider] = useState(null)
 
-  const provider = user?.app_metadata?.provider
   const email = user?.email ?? ''
-  const isGoogleUser = isConnected && provider === 'google'
 
   const handleSignOut = async () => {
     setLoading('signout')
@@ -133,7 +111,6 @@ function SaveProgressModal({ onClose }) {
   }
 
   const confirmSignIn = async () => {
-    resetLocalProgress()
     setError(null)
     setLoading('google')
     setPendingProvider(null)
@@ -147,7 +124,7 @@ function SaveProgressModal({ onClose }) {
       <div className="fixed inset-0 flex items-center justify-center p-5" style={{ zIndex: 200, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>
         <div className="w-full rounded-3xl overflow-hidden" style={{ maxWidth: 340, background: '#FAFAF8', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
           <div className="flex items-center justify-between px-5 py-3" style={{ background: '#FEE2E2' }}>
-            <span className="font-black text-base" style={{ color: '#1a1a2e' }}>⚠️ Attention</span>
+            <span className="font-black text-base" style={{ color: '#1a1a2e' }}>Attention</span>
             <button onClick={() => setPendingProvider(null)} className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90" style={{ background: '#EF4444' }}>✕</button>
           </div>
           <div className="p-5">
@@ -178,10 +155,9 @@ function SaveProgressModal({ onClose }) {
           {isConnected ? (
             <>
               <div className="flex flex-col items-center gap-2 mb-5 p-4 rounded-2xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                <span className="text-3xl">🔵</span>
                 <span className="font-black text-sm" style={{ color: '#1a1a2e' }}>Connecté avec Google</span>
                 {email && <span className="text-xs font-semibold" style={{ color: '#6B7280' }}>{email}</span>}
-                <span className="text-xs font-bold" style={{ color: '#22C55E' }}>✅ Progression sauvegardée</span>
+                <span className="text-xs font-bold" style={{ color: '#22C55E' }}>Progression sauvegardée</span>
               </div>
               <button onClick={handleSignOut} disabled={loading === 'signout'} className="w-full py-3.5 rounded-2xl font-black text-white active:scale-95 transition-all" style={{ background: loading === 'signout' ? '#6B7280' : '#EF4444' }}>
                 {loading === 'signout' ? '...' : 'Se déconnecter'}
@@ -189,7 +165,7 @@ function SaveProgressModal({ onClose }) {
             </>
           ) : (
             <>
-              <p className="text-center text-sm mb-5 font-bold" style={{ color: '#374151' }}>Connectez-vous pour sauvegarder votre progression !</p>
+              <p className="text-center text-sm mb-5 font-bold" style={{ color: '#374151' }}>Connecte-toi pour sauvegarder ta progression !</p>
               <button onClick={() => { setError(null); setPendingProvider('google') }} disabled={!!loading} className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-black text-white active:scale-95 transition-all" style={{ background: '#FF8C00', opacity: loading ? 0.5 : 1 }}>
                 Se connecter avec Google
               </button>
@@ -207,25 +183,22 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
   const [soundOn, setSoundOn] = useState(audio.sfxEnabled)
   const [musicOn, setMusicOn] = useState(audio.musicEnabled)
   const [notifOn, setNotifOn] = useState(() => localStorage.getItem('wtf_notifications') !== 'false')
-  const [showRulesModal, setShowRulesModal] = useState(false)
   const [vibrOn, setVibrOn] = useState(() => localStorage.getItem('wtf_vibration') !== 'false')
-
+  const [showRulesModal, setShowRulesModal] = useState(false)
   const [devAccess, setDevAccess] = useState(() => localStorage.getItem('wtf_dev_access') === 'true')
-
-  const showDevSelector = devAccess
 
   const toggleSound = () => { const n = !soundOn; setSoundOn(n); audio.setSfxEnabled(n); if (n) audio.play('click') }
   const toggleMusic = () => { const n = !musicOn; setMusicOn(n); audio.setMusicEnabled(n) }
   const toggleNotif = () => { const n = !notifOn; setNotifOn(n); localStorage.setItem('wtf_notifications', String(n)) }
-  const toggleVibr = () => { const n = !vibrOn; setVibrOn(n); localStorage.setItem('wtf_vibration', String(n)); if (n && navigator.vibrate) navigator.vibrate(50) }
+  const toggleVibr = () => { const n = !vibrOn; setVibrOn(n); localStorage.setItem('wtf_vibration', String(n)); audio.setVibrationEnabled(n); if (n) audio.vibrate(50) }
 
-  // ── Cheat code: pression 3s sur Vibreur ──
+  // Cheat code: press 3s sur Vibreur pour activer le mode dev
   const vibrPressTimerRef = useRef(null)
   const handleVibrPressStart = () => {
     vibrPressTimerRef.current = setTimeout(() => {
       localStorage.setItem('wtf_dev_access', 'true')
       setDevAccess(true)
-      if (navigator.vibrate) navigator.vibrate([100, 50, 100])
+      audio.vibrate([100, 50, 100])
     }, 3000)
   }
   const handleVibrPressEnd = () => {
@@ -254,7 +227,7 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1px solid #E5E7EB' }}>
-            <h2 className="font-black text-lg" style={{ color: '#1a1a2e' }}>⚙️ Paramètres</h2>
+            <h2 className="font-black text-lg" style={{ color: '#1a1a2e' }}>Paramètres</h2>
             <button
               onClick={(e) => { e.stopPropagation(); e.preventDefault(); onClose() }}
               className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90"
@@ -267,13 +240,13 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
             <div className="flex flex-col gap-2.5">
 
               {/* Dev mode — accessible via cheat code */}
-              {showDevSelector && (
+              {devAccess && (
                 <div className="mb-1 p-3 rounded-2xl" style={{ background: 'rgba(255,100,0,0.08)', border: '1px solid rgba(255,100,0,0.2)' }}>
                   <GameModeSelector />
                 </div>
               )}
 
-              {/* ── Audio & Notifications ── */}
+              {/* Audio & Notifications */}
               <p className="text-xs font-black uppercase tracking-wider mt-1 mb-2" style={{ color: '#9CA3AF' }}>Audio & Notifications</p>
 
               <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-start', padding: '4px 0 8px' }}>
@@ -281,15 +254,15 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
                   { on: soundOn, toggle: toggleSound, icon: 'son', label: 'Son' },
                   { on: musicOn, toggle: toggleMusic, icon: 'musique', label: 'Musique' },
                   { on: notifOn, toggle: toggleNotif, icon: 'notifications', label: 'Notifs' },
-                  { on: vibrOn, toggle: toggleVibr, icon: 'vibreur', label: 'Vibreur' },
+                  { on: vibrOn, toggle: toggleVibr, icon: 'vibreur', label: 'Vibreur', cheat: true },
                 ].map(p => (
                   <button
                     key={p.icon}
-                    onClick={p.icon === 'vibreur' ? undefined : p.toggle}
-                    onMouseDown={p.icon === 'vibreur' ? handleVibrPressStart : undefined}
-                    onMouseUp={p.icon === 'vibreur' ? handleVibrPressEnd : undefined}
-                    onTouchStart={p.icon === 'vibreur' ? handleVibrPressStart : undefined}
-                    onTouchEnd={p.icon === 'vibreur' ? handleVibrPressEnd : undefined}
+                    onClick={p.cheat ? toggleVibr : p.toggle}
+                    onMouseDown={p.cheat ? handleVibrPressStart : undefined}
+                    onMouseUp={p.cheat ? handleVibrPressEnd : undefined}
+                    onTouchStart={p.cheat ? handleVibrPressStart : undefined}
+                    onTouchEnd={p.cheat ? handleVibrPressEnd : undefined}
                     style={{
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                       background: 'none', border: 'none', cursor: 'pointer', padding: 0,
@@ -307,9 +280,7 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
                       <img
                         src={`/assets/ui/icon-${p.icon}${p.on ? '' : '-off'}.png`}
                         alt={p.label}
-                        style={{ width: 38, height: 38, objectFit: 'contain', transition: 'transform 0.15s' }}
-                        onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
-                        onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                        style={{ width: 38, height: 38, objectFit: 'contain' }}
                       />
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 700, color: p.on ? '#1a1a2e' : '#9CA3AF' }}>{p.label}</span>
@@ -317,41 +288,42 @@ export default function SettingsModal({ onClose, onRestartTutorial }) {
                 ))}
               </div>
 
-              {/* ── Langue ── */}
+              {/* Langue */}
               <p className="text-xs font-black uppercase tracking-wider mt-3" style={{ color: '#9CA3AF' }}>Langue</p>
 
               <div className="w-full flex items-center justify-between px-4 py-3 rounded-2xl" style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
                 <span className="flex items-center gap-3">
-                  <img src="/assets/ui/icon-france.png" alt="🇫🇷" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+                  <img src="/assets/ui/icon-france.png" alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />
                   <span className="font-bold text-sm" style={{ color: '#1a1a2e' }}>Français</span>
                 </span>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#E5E7EB', color: '#9CA3AF' }}>Unique</span>
               </div>
 
-              {/* ── Divers ── */}
+              {/* Divers */}
               <p className="text-xs font-black uppercase tracking-wider mt-3" style={{ color: '#9CA3AF' }}>Divers</p>
 
               <SettingRow icon="📖" label="Règles du jeu" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click'); setShowRulesModal(true) }} />
 
               <SettingRow icon="📤" label="Partager l'app" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => {
                 audio.play('click')
-                const text = '🤯 What The F*ct! Vrai ou fou ?\nhttps://wtf-app-production.up.railway.app/'
+                const url = window.location.origin
+                const text = `What The F*ct ! Vrai ou fou ?\n${url}`
                 if (navigator.share) navigator.share({ text }).catch(() => {})
                 else navigator.clipboard?.writeText(text).catch(() => {})
               }} />
 
-              {/* ── Légal ── */}
+              {/* Légal */}
               <p className="text-xs font-black uppercase tracking-wider mt-3" style={{ color: '#9CA3AF' }}>Légal</p>
 
-              <SettingRow icon="📄" label="Mentions légales" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
-              <SettingRow icon="📋" label="CGU" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
-              <SettingRow icon="🔒" label="Politique de confidentialité" right={<span style={{ color: '#D1D5DB' }}>›</span>} onClick={() => { audio.play('click') }} />
+              <SettingRow icon="📄" label="Mentions légales" right={<span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>Bientôt</span>} onClick={() => audio.play('click')} />
+              <SettingRow icon="📋" label="CGU" right={<span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>Bientôt</span>} onClick={() => audio.play('click')} />
+              <SettingRow icon="🔒" label="Politique de confidentialité" right={<span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>Bientôt</span>} onClick={() => audio.play('click')} />
             </div>
           </div>
 
-          {/* Version en bas du footer */}
+          {/* Version */}
           <div className="flex items-center justify-center px-5 pb-4 shrink-0" style={{ borderTop: '1px solid #E5E7EB', textAlign: 'center' }}>
-            <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v2.5.19</span>
+            <span className="text-xs font-bold" style={{ color: '#D1D5DB' }}>What The F*ct! v{version}</span>
           </div>
         </div>
       </div>

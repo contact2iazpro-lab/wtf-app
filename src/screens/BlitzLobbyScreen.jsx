@@ -49,7 +49,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
       overflow: 'hidden', boxSizing: 'border-box',
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
-      background: 'linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 100%)',
+      background: 'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)',
       color: '#ffffff',
     }}>
 

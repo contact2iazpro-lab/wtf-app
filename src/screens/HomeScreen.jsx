@@ -1016,34 +1016,32 @@ export default function HomeScreen({
         >
           <div
             style={{
-              background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)',
-              border: '2px solid #FFD700',
+              background: '#fff',
               borderRadius: 24, padding: '32px 28px',
               textAlign: 'center', maxWidth: 300, width: '100%',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,215,0,0.25)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
               fontFamily: 'Nunito, sans-serif',
             }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ fontSize: 48, marginBottom: 12, lineHeight: 1 }}>{badgeToShow.emoji}</div>
             <div style={{
-              fontSize: 20, fontWeight: 900, color: '#FFD700',
+              fontSize: 20, fontWeight: 900, color: '#FF6B1A',
               marginBottom: 10, letterSpacing: '0.05em',
             }}>
               Badge débloqué ! 🎉
             </div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: 'white', marginBottom: 24 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#1a1a2e', marginBottom: 24 }}>
               {badgeToShow.label}
             </div>
             <button
               onClick={() => { setShowBadgeModal(false); setNextBadgeInfo(getNextBadge()); onBadgeSeen?.() }}
               style={{
-                background: 'linear-gradient(135deg, #FF6B1A 0%, #FF8C42 100%)',
+                background: '#FF6B1A',
                 color: 'white', border: 'none',
                 borderRadius: 16, padding: '13px 36px',
                 fontWeight: 900, fontSize: 15, cursor: 'pointer',
                 fontFamily: 'Nunito, sans-serif',
-                boxShadow: '0 4px 16px rgba(255,107,26,0.45)',
               }}
             >
               Super !

@@ -138,7 +138,7 @@ export default function BlitzResultsScreen({
     return (
       <div
         className="absolute inset-0 flex flex-col overflow-hidden"
-        style={{ '--scale': scale, background: 'linear-gradient(160deg, #0A0F1E 0%, #1a0a35 100%)', fontFamily: 'Nunito, sans-serif' }}
+        style={{ '--scale': scale, background: 'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)', fontFamily: 'Nunito, sans-serif' }}
       >
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-8" style={{ gap: S(20) }}>
           <div style={{ fontSize: S(56) }}>🎯</div>
@@ -192,7 +192,7 @@ export default function BlitzResultsScreen({
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-auto"
-      style={{ '--scale': scale, background: 'linear-gradient(160deg, #0A0F1E 0%, #1a0a35 100%)', fontFamily: 'Nunito, sans-serif' }}
+      style={{ '--scale': scale, background: 'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)', fontFamily: 'Nunito, sans-serif' }}
     >
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-8" style={{ gap: S(16) }}>
 

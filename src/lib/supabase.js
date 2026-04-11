@@ -16,7 +16,6 @@ const FALLBACK_URL = 'https://placeholder.supabase.co'
 const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
 
 // Storage custom — même API que localStorage, SANS Web Lock.
-// Le Web Lock de Supabase bloque indéfiniment sur mobile (multi-tab, PWA, service worker).
 const customStorage = {
   getItem: (key) => {
     try { return globalThis.localStorage?.getItem(key) ?? null } catch { return null }
@@ -29,7 +28,25 @@ const customStorage = {
   },
 }
 
-// Client unique — session persistée, auto-refresh, OAuth callback, SANS Web Lock.
+// Mutex in-memory simple — remplace le Web Lock API bloquant.
+// Le Web Lock bloque entre ONGLETS (cross-tab). Ce mutex ne protège que
+// les opérations DANS le même onglet, ce qui est suffisant pour éviter
+// les race conditions au démarrage (getSession + onAuthStateChange).
+let _lockPromise = Promise.resolve()
+const inMemoryLock = async (_name, _acquireTimeout, fn) => {
+  const prev = _lockPromise
+  let resolve
+  _lockPromise = new Promise(r => { resolve = r })
+  await prev
+  try {
+    return await fn()
+  } finally {
+    resolve()
+  }
+}
+
+// Client unique — session persistée, auto-refresh, OAuth callback.
+// Pas de Web Lock API (bloque sur mobile), remplacé par un mutex in-memory.
 export const supabase = createClient(
   isSupabaseConfigured ? supabaseUrl : FALLBACK_URL,
   isSupabaseConfigured ? supabaseKey : FALLBACK_KEY,
@@ -40,17 +57,14 @@ export const supabase = createClient(
       detectSessionInUrl: true,
       flowType: 'implicit',
       storage: customStorage,
-      // No-op lock — désactive le Web Lock API qui bloque sur mobile
-      lock: async (_name, _acquireTimeout, fn) => fn(),
+      lock: inMemoryLock,
     },
   }
 )
 
-// Alias pour backward compat — pointe vers le même client
-// Les fichiers qui importent supabaseLight continuent de fonctionner
+// Alias backward compat
 export const supabaseLight = supabase
 
-// Pas besoin de initLightClientFromStorage — le client principal gère tout
 export async function initLightClientFromStorage() {
   try {
     const { data: { session } } = await supabase.auth.getSession()

@@ -87,6 +87,15 @@ export default function App() {
     localStorage.setItem('wtf_hints_available', '0')
   }
 
+  // TEMP DEBUG : créditer 200 tickets/coins/indices au démarrage pour les tests
+  // TODO: SUPPRIMER AVANT PROD
+  if (import.meta.env.DEV) {
+    const d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    d.tickets = 200; d.wtfCoins = 200; d.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(d))
+    localStorage.setItem('wtf_hints_available', '200')
+  }
+
   // ── Challenge Blitz : démarrer un défi depuis ChallengeScreen ──
   useEffect(() => {
     const pendingJson = localStorage.getItem('wtf_pending_challenge_blitz')
@@ -519,8 +528,14 @@ export default function App() {
   const handleHomeNavigate = useCallback((target) => {
     switch (target) {
       case 'difficulty': {
-        // Quest migré vers /quest route
-        navigate('/quest')
+        setGameMode('solo'); setSessionType('parcours')
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        if ((wd.questsPlayed || 0) === 0) {
+          setSelectedDifficulty(DIFFICULTY_LEVELS.COOL)
+          handleSelectDifficulty(DIFFICULTY_LEVELS.COOL)
+          return
+        }
+        showOrSkipLaunch('quest')
         break
       }
       case 'wtfDuJour':

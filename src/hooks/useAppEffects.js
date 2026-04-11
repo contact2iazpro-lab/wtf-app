@@ -119,19 +119,7 @@ export function useAppEffects({
     return () => clearTimeout(t)
   }, [streakRewardToast])
 
-  // Auto-skip onboarding on Google login
-  useEffect(() => {
-    if (user) {
-      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      if (!wd.onboardingCompleted) {
-        wd.onboardingCompleted = true
-        wd.gamesPlayed = Math.max(wd.gamesPlayed || 0, 1)
-        wd.wtfCoins = Math.max(wd.wtfCoins || 0, 0)
-        wd.tickets = Math.max(wd.tickets || 0, 0)
-        localStorage.setItem('wtf_data', JSON.stringify(wd))
-      }
-    }
-  }, [user])
+  // Onboarding auto-skip supprimé — sera dans TutoTunnel
 
   // Push history entry on screen change
   useEffect(() => {
@@ -146,17 +134,14 @@ export function useAppEffects({
         case SCREENS.HOME: break
         case SCREENS.MODE_LAUNCH:
         case SCREENS.WTF_TEASER:
-          completeOnboardingIfNeeded()
           setScreen(SCREENS.HOME)
           break
         case SCREENS.CATEGORY:
         case SCREENS.BLITZ_LOBBY:
-          completeOnboardingIfNeeded()
           setScreen(SCREENS.HOME)
           setGameMode('solo')
           break
         case SCREENS.DUEL_SETUP:
-          completeOnboardingIfNeeded()
           setScreen(SCREENS.HOME)
           break
         case SCREENS.RESULTS:

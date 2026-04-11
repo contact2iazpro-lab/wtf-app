@@ -61,9 +61,7 @@ export function useSelectionHandlers({
 
     // Quest
     const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    const isFirstQuestEver = !wd.onboardingCompleted && (wd.questsPlayed || 0) === 0
-    if (!isDevModeQuest && !isFirstQuestEver) {
+    if (!isDevModeQuest) {
       if ((tickets || 0) < 1) { setShowNoTicketModal(true); return }
       updateTickets(-1)
       setStorage(loadStorage())

@@ -67,10 +67,7 @@ export function useQuestionFlow({
 
     // Débloquer le fact immédiatement (Explorer/Flash)
     if (isCorrect && currentFact && (sessionType === 'marathon' || sessionType === 'flash_solo')) {
-      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      if (wd.onboardingCompleted) {
-        onFactUnlocked?.(currentFact.id, currentFact.category)
-      }
+      onFactUnlocked?.(currentFact.id, currentFact.category)
     }
 
     onAnswered?.(answerIndex, isCorrect, points)

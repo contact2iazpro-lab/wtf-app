@@ -59,22 +59,9 @@ export function loadStorage() {
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
 
-    // Migration : forcer onboardingCompleted=true pour joueurs existants
-    if (!saved.hasOwnProperty('onboardingCompleted')) {
-      saved.onboardingCompleted = true
-      saved.wtfCoins = saved.wtfCoins || 0
-      saved.tickets = Math.max(saved.tickets || 0, 1)
-      if (!saved.unlockedCategories) {
-        saved.unlockedCategories = ['sport', 'records', 'animaux', 'kids', 'definition']
-      }
-      saved.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(saved))
-      localStorage.setItem('wtf_hints_available', '3')
-    }
-
-    // Garde-fou : si plus de 3 parties, onboarding est terminé
-    if ((saved.gamesPlayed || 0) > 3 && !saved.onboardingCompleted) {
-      saved.onboardingCompleted = true
+    // Initialiser les catégories par défaut si absent
+    if (!saved.unlockedCategories) {
+      saved.unlockedCategories = ['sport', 'records', 'animaux', 'kids', 'definition']
       saved.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }

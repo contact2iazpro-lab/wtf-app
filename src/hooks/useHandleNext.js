@@ -74,10 +74,9 @@ export function useHandleNext({
       const newUnlocked = new Set(unlockedFacts)
       const toSync = []
       const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      const isOnboarding = !wd.onboardingCompleted
 
       for (const fact of sessionCorrectFacts) {
-        if (!newUnlocked.has(fact.id) && !isOnboarding) {
+        if (!newUnlocked.has(fact.id)) {
           newUnlocked.add(fact.id)
           toSync.push(fact)
         }
@@ -126,21 +125,7 @@ export function useHandleNext({
       }
       setSessionIsPerfect(isPerfectSession)
 
-      // First flash ticket
-      let firstFlashTicketGiven = false
-      if (sessionType === 'flash_solo') {
-        try {
-          const wdFlash = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          const isFirstFlash = !wdFlash.onboardingCompleted && !wdFlash.firstFlashTicketGiven
-          if (isFirstFlash) {
-            wdFlash.firstFlashTicketGiven = true
-            wdFlash.lastModified = Date.now()
-            localStorage.setItem('wtf_data', JSON.stringify(wdFlash))
-            updateTickets(1)
-            firstFlashTicketGiven = true
-          }
-        } catch {}
-      }
+      // Ticket bonus onboarding supprimé — sera réimplémenté avec le tuto
 
       // Bonus coins
       let bonusCoins = 0
@@ -165,10 +150,7 @@ export function useHandleNext({
         if (streakReward.special === 'wtf_premium') {
           setShowStreakSpecialModal(true)
         } else {
-          const wtfDataStreak = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          if (wtfDataStreak.onboardingCompleted) {
-            setStreakRewardToast({ days: newStreak, reward: streakReward })
-          }
+          setStreakRewardToast({ days: newStreak, reward: streakReward })
         }
       }
 
@@ -245,45 +227,6 @@ export function useHandleNext({
     } else if (sessionType === 'marathon') {
       setScreen(SCREENS.MARATHON_RESULTS)
     } else {
-      const wtfDataOnb = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      const totalGames = wtfDataOnb.gamesPlayed || 0
-      if (totalGames > 3 && !wtfDataOnb.onboardingCompleted) {
-        wtfDataOnb.onboardingCompleted = true
-        wtfDataOnb.lastModified = Date.now()
-        localStorage.setItem('wtf_data', JSON.stringify(wtfDataOnb))
-        localStorage.removeItem('wtf_tuto_used_ids')
-      }
-
-      const isOnboardingSession = !wtfDataOnb.onboardingCompleted
-      const tutoPhase = wtfDataOnb.tutoPhase || 0
-
-      if (isOnboardingSession && sessionType !== 'wtf_du_jour') {
-        if (tutoPhase === 0 && sessionType === 'parcours' && sessionFacts.length === 1) {
-          try {
-            if (isCorrect) {
-              const firstFactId = parseInt(localStorage.getItem('wtf_tuto_first_fact_id') || '0')
-              if (firstFactId) {
-                const unlocked = wtfDataOnb.unlockedFacts || []
-                if (!unlocked.includes(firstFactId)) {
-                  unlocked.push(firstFactId)
-                  wtfDataOnb.unlockedFacts = unlocked
-                }
-              }
-            }
-            wtfDataOnb.tutoPhase = 1
-            wtfDataOnb.gamesPlayed = (wtfDataOnb.gamesPlayed || 0) + 1
-            wtfDataOnb.lastModified = Date.now()
-            localStorage.setItem('wtf_data', JSON.stringify(wtfDataOnb))
-          } catch {}
-          setScreen(SCREENS.HOME)
-          return
-        }
-      }
-
-      if (setNewlyUnlockedCategories.length > 0) {
-        setShowNewCategoriesModal(true)
-      }
-
       setScreen(SCREENS.RESULTS)
     }
     } catch (err) { console.error('[handleNext] CRASH:', err); setScreen(SCREENS.RESULTS) }

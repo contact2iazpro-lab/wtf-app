@@ -521,7 +521,7 @@ export default function App() {
           streak={streak}
           onStart={handleStartWTFSession}
           onBack={() => {
-            completeOnboardingIfNeeded()
+            
             setScreen(SCREENS.HOME)
           }}
         />
@@ -545,11 +545,6 @@ export default function App() {
           {...MODE_CONFIGS[launchMode]}
           onStart={handleLaunchStart}
           onBack={() => {
-            // ABANDON — appliquer le guard skip si onboarding pas fini ET pas en launchMode
-            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            if (!wd.onboardingCompleted && !launchMode) {
-              completeOnboardingIfNeeded()
-            }
             setScreen(SCREENS.HOME)
           }}
         />
@@ -559,7 +554,7 @@ export default function App() {
         <DifficultyScreen
           onSelectDifficulty={handleSelectDifficulty}
           onBack={() => {
-            if (!launchMode) completeOnboardingIfNeeded()
+            if (!launchMode) 
             setScreen(launchMode ? SCREENS.MODE_LAUNCH : SCREENS.HOME)
           }}
         />
@@ -569,7 +564,7 @@ export default function App() {
         <CategoryScreen
           onSelectCategory={handleSelectCategory}
           onBack={() => {
-            if (!launchMode) completeOnboardingIfNeeded()
+            if (!launchMode) 
             setScreen(launchMode ? SCREENS.MODE_LAUNCH : SCREENS.HOME)
           }}
           selectedDifficulty={selectedDifficulty}
@@ -638,7 +633,7 @@ export default function App() {
           sessionsToday={sessionsToday}
           onSaveTempFacts={handleSaveTempFacts}
           onCollection={() => { handleHome(); navigate('/collection') }}
-          isFirstGame={(() => { try { const d = JSON.parse(localStorage.getItem('wtf_data') || '{}'); return d.firstFlashTicketGiven && (d.gamesPlayed || 0) <= 1 } catch { return false } })()}
+          isFirstGame={false}
         />
       )}
 

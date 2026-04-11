@@ -88,10 +88,9 @@ export function useSessionEnd({
     const newUnlocked = new Set(unlockedFacts)
     const toSync = []
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    const isOnboarding = !wd.onboardingCompleted
 
     for (const fact of sessionCorrectFacts) {
-      if (!newUnlocked.has(fact.id) && !isOnboarding) {
+      if (!newUnlocked.has(fact.id)) {
         newUnlocked.add(fact.id)
         toSync.push(fact)
       }
@@ -140,17 +139,7 @@ export function useSessionEnd({
     }
     result.isPerfect = isPerfectSession
 
-    // ── Première partie Flash → ticket bonus ─────────────────────────────
-    if (sessionType === 'flash_solo') {
-      const isFirstFlash = !wd.onboardingCompleted && !wd.firstFlashTicketGiven
-      if (isFirstFlash) {
-        wd.firstFlashTicketGiven = true
-        wd.lastModified = Date.now()
-        localStorage.setItem('wtf_data', JSON.stringify(wd))
-        updateTickets(1)
-        result.firstFlashTicketGiven = true
-      }
-    }
+    // Ticket bonus onboarding supprimé — sera réimplémenté avec le tuto
 
     // ── Bonus coins ──────────────────────────────────────────────────────
     let bonusCoins = 0
@@ -176,7 +165,7 @@ export function useSessionEnd({
       if (streakReward.badge) localStorage.setItem(`wtf_badge_streak_${newStreak}`, 'true')
       if (streakReward.special === 'wtf_premium') {
         onStreakSpecial?.()
-      } else if (wd.onboardingCompleted) {
+      } else {
         onStreakReward?.({ days: newStreak, reward: streakReward })
       }
     }

@@ -79,31 +79,29 @@ export function useGameHandlers({
           const newUnlocked = new Set(prev.unlockedFacts)
           if (!newUnlocked.has(currentFact.id)) {
             const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            if (wd.onboardingCompleted) {
-              newUnlocked.add(currentFact.id)
-              const next = { ...prev, unlockedFacts: newUnlocked }
-              saveStorage(next)
+            newUnlocked.add(currentFact.id)
+            const next = { ...prev, unlockedFacts: newUnlocked }
+            saveStorage(next)
 
-              // Débloquer la catégorie
-              const unlockedCategories = wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition']
-              if (currentFact.category && !unlockedCategories.includes(currentFact.category)) {
-                unlockedCategories.push(currentFact.category)
-                wd.unlockedCategories = unlockedCategories
-                wd.lastModified = Date.now()
-                localStorage.setItem('wtf_data', JSON.stringify(wd))
-                setNewlyUnlockedCategories(prev => {
-                  if (!prev.includes(currentFact.category)) return [...prev, currentFact.category]
-                  return prev
-                })
-              }
-
-              if (user) {
-                import('../services/collectionService').then(({ updateCollection }) => {
-                  updateCollection(user.id, currentFact.category, currentFact.id)
-                })
-              }
-              return next
+            // Débloquer la catégorie
+            const unlockedCategories = wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition']
+            if (currentFact.category && !unlockedCategories.includes(currentFact.category)) {
+              unlockedCategories.push(currentFact.category)
+              wd.unlockedCategories = unlockedCategories
+              wd.lastModified = Date.now()
+              localStorage.setItem('wtf_data', JSON.stringify(wd))
+              setNewlyUnlockedCategories(prev => {
+                if (!prev.includes(currentFact.category)) return [...prev, currentFact.category]
+                return prev
+              })
             }
+
+            if (user) {
+              import('../services/collectionService').then(({ updateCollection }) => {
+                updateCollection(user.id, currentFact.category, currentFact.id)
+              })
+            }
+            return next
           }
           return prev
         })

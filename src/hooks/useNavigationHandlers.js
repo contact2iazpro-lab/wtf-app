@@ -64,12 +64,6 @@ export function useNavigationHandlers({
     switch (target) {
       case 'difficulty': {
         setGameMode('solo'); setSessionType('parcours')
-        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        if ((wd.questsPlayed || 0) === 0) {
-          setSelectedDifficulty(DIFFICULTY_LEVELS.COOL)
-          handleSelectDifficulty(DIFFICULTY_LEVELS.COOL)
-          return
-        }
         showOrSkipLaunch('quest')
         break
       }
@@ -151,20 +145,8 @@ export function useNavigationHandlers({
     })
   }, [user, sessionCorrectFacts])
 
-  const completeOnboardingIfNeeded = useCallback(() => {
-    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    if (!wd.onboardingCompleted) {
-      wd.onboardingCompleted = true; wd.tutoPhase = undefined
-      wd.gamesPlayed = Math.max(wd.gamesPlayed || 0, 10)
-      wd.wtfCoins = Math.max(wd.wtfCoins || 0, 25)
-      wd.tickets = Math.max(wd.tickets || 0, 1)
-      wd.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(wd))
-      localStorage.removeItem('wtf_tuto_used_ids')
-      localStorage.removeItem('wtf_tuto_first_fact_id')
-      window.dispatchEvent(new Event('wtf_storage_sync'))
-    }
-  }, [])
+  // completeOnboardingIfNeeded supprimé — sera dans TutoTunnel
+  const completeOnboardingIfNeeded = useCallback(() => {}, [])
 
   const handleHome = useCallback(() => {
     setScreen(SCREENS.HOME); setGameMode('solo'); setSelectedCategory(null)

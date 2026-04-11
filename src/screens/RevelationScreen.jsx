@@ -157,7 +157,7 @@ export default function RevelationScreen({
   correctAnswer,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { tickets: _currencyTickets, hints: _currencyHints } = useCurrency()
+  const { coins: _currencyCoins, tickets: _currencyTickets, hints: _currencyHints } = useCurrency()
 
   const [flipped, setFlipped] = useState(true)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -317,7 +317,7 @@ export default function RevelationScreen({
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
           <img src="/assets/ui/icon-coins.png" style={{ width: S(16), height: S(16) }} alt="" />
-          <span ref={scoreRefTarget} className={showScorePulse ? 'score-pulse' : ''} style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{displayedScore}</span>
+          <span ref={scoreRefTarget} className={showScorePulse ? 'score-pulse' : ''} style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyCoins}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
           <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />

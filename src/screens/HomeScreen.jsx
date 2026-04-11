@@ -172,32 +172,31 @@ export default function HomeScreen({
     } catch {}
   }
 
-  // ── Utiliser UnlockContext pour toutes les conditions ───────────────────
-  const unlock = useUnlock()
+  // UnlockContext désactivé — tout est déverrouillé (onboarding sera réimplémenté plus tard)
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const isDevOrTest = isDevMode || isTestMode
 
-  // Mode unlock conditions (from context)
-  const canQuest = isDevOrTest || unlock.canQuest
-  const canBlitz = isDevOrTest || unlock.canBlitz
-  const canHunt = isDevOrTest || unlock.canHunt
-  const canExplorer = isDevOrTest || unlock.canExplorer
-  const canMulti = isDevOrTest || unlock.canMulti
-  const canSerie = isDevOrTest || unlock.canSerie
-
-  // Navbar unlock conditions (from context)
-  const canBoutique = isDevOrTest || unlock.canBoutique
-  const canTrophees = isDevOrTest || unlock.canTrophees
-  const canCollection = isDevOrTest || unlock.canCollection
-  const canAmis = isDevOrTest || unlock.canAmis
+  // Tous les modes et pages sont déverrouillés (onboarding gérera le verrouillage plus tard)
+  const canQuest = true
+  const canBlitz = true
+  const canHunt = true
+  const canExplorer = true
+  const canMulti = true
+  const canSerie = true
+  const canBoutique = true
+  const canTrophees = true
+  const canCollection = true
+  const canAmis = true
 
   // UI feature display (from context)
-  const showStreakDisplay = unlock.showStreakDisplay
-  const showBadgeDisplay = unlock.showBadgeDisplay
-  const showCoffresDisplay = unlock.showCoffresDisplay
+  const showStreakDisplay = true
+  const showBadgeDisplay = true
+  const showCoffresDisplay = true
 
   // Use messages from layoutConfig (imported at top)
-  const spotlightMessages = unlock.spotlightMessages || SPOTLIGHT_MESSAGES
+  // Spotlight désactivé — tout est déverrouillé
+  const activeSpotlight = null
+  const setActiveSpotlight = () => {}
 
   const seenModes = (() => {
     try { return readWtfData().seenModes || [] } catch { return [] }
@@ -262,7 +261,7 @@ export default function HomeScreen({
   const coffreZoneRef = useRef(null)
   const boutiqueNavRef = useRef(null)
   const blitzBtnRef = useRef(null)
-  const [activeSpotlight, setActiveSpotlight] = useState(null)
+  // activeSpotlight désormais toujours null (défini plus haut)
   const [spotlightRect, setSpotlightRect] = useState(null)
 
   useEffect(() => {
@@ -271,9 +270,7 @@ export default function HomeScreen({
     const gp = wd.gamesPlayed || 0
     const qp = wd.statsByMode?.parcours?.gamesPlayed || 0
     const ufc = (wd.unlockedFacts || []).length
-    const tutoPhase = wd.tutoPhase || 0
-
-    // Tutorial spotlight disabled (lives in TutoTunnel)
+    // tutoPhase supprimé — sera dans TutoTunnel
     if (false) {
     } else {
       setActiveSpotlight(null)
@@ -807,101 +804,65 @@ export default function HomeScreen({
             />
           </div>
 
-          {/* ZONE 2 — Explorer | Blitz */}
+          {/* ZONE 2-4 — Grille modes + logo central */}
           <div style={{
-            flex: 1,
+            flex: 3,
             width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gridTemplateRows: '1fr auto 1fr',
             alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
+            justifyItems: 'center',
+            padding: `0 ${S(4)}`,
           }}>
-            {/* Explorer — left */}
+            {/* Row 1: Explorer (left) — Blitz (right) */}
             <div style={{
-              position: 'absolute',
-              left: '5%',
-              top: '50%',
-              transform: 'translateY(-50%)',
               zIndex: 1,
-              ...(explorerPlayedInMode === 0 && gamesPlayed >= 2 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+              ...(canExplorer && explorerPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+              position: 'relative',
             }}>
-              {explorerPlayedInMode === 0 && gamesPlayed >= 2 && <NewBadge />}
-              <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={!canExplorer && !(explorerPlayedInMode === 0 && gamesPlayed >= 2)} onClick={() => {  const isExplorerNew = explorerPlayedInMode === 0 && gamesPlayed >= 2; if (!canExplorer && !isExplorerNew) return showLockToast(UNLOCK_MESSAGES.explorer); nav('marathon') }} />
+              {canExplorer && explorerPlayedInMode === 0 && <NewBadge />}
+              <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={false} onClick={() => { nav('marathon') }} />
             </div>
-
-            {/* Blitz — right */}
             <div style={{
-              position: 'absolute',
-              right: '5%',
-              top: '50%',
-              transform: 'translateY(-50%)',
               zIndex: activeSpotlight === 'blitz' ? 101 : 1,
               ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+              position: 'relative',
             }}>
               {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
-              <ModeIcon ref={blitzBtnRef} src="/assets/modes/blitz.png" label="Blitz" locked={!canBlitz} onClick={() => {  if (!canBlitz) return showLockToast(UNLOCK_MESSAGES.blitz); if (activeSpotlight === 'blitz') dismissSpotlight('blitz'); markSeen('hasSeenBlitz'); nav('blitz') }} />
+              <ModeIcon ref={blitzBtnRef} src="/assets/modes/blitz.png" label="Blitz" locked={false} onClick={() => { markSeen('hasSeenBlitz'); nav('blitz') }} />
             </div>
-          </div>
 
-          {/* ZONE 3 — Étoile WTF */}
-          <div style={{
-            flex: 1,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <img
-              src={ASSETS.ui.wtfLogo}
-              alt="WTF!"
-              style={{
-                width: 'clamp(80px, 55%, 130px)', height: 'auto',
-                objectFit: 'contain', display: 'block',
-                filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
-                position: 'relative', zIndex: 1,
-                WebkitUserSelect: 'none', userSelect: 'none',
-                transform: 'scale(1)',
-                transition: 'transform 0.3s ease',
-                flexShrink: 0,
-              }}
-            />
-          </div>
+            {/* Row 2: Logo WTF central (spans 2 columns) */}
+            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: `${S(8)} 0` }}>
+              <img
+                src={ASSETS.ui.wtfLogo}
+                alt="WTF!"
+                style={{
+                  width: 'clamp(80px, 55%, 130px)', height: 'auto',
+                  objectFit: 'contain', display: 'block',
+                  filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
+                  WebkitUserSelect: 'none', userSelect: 'none',
+                  flexShrink: 0,
+                }}
+              />
+            </div>
 
-          {/* ZONE 4 — Quest | Multi */}
-          <div style={{
-            flex: 1,
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-          }}>
-            {/* Quest — left */}
+            {/* Row 3: Quest (left) — Multi (right) */}
             <div style={{
-              position: 'absolute',
-              left: '5%',
-              top: '50%',
-              transform: 'translateY(-50%)',
               zIndex: activeSpotlight === 'quest' ? 101 : 1,
               ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+              position: 'relative',
             }}>
               {canQuest && questsPlayedInMode === 0 && <NewBadge />}
-              <ModeIcon ref={questBtnRef} src="/assets/modes/quete.png" label="Quest" locked={!canQuest} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'quest') return; if (!canQuest) return showLockToast(UNLOCK_MESSAGES.quest); if (activeSpotlight === 'quest') dismissSpotlight('quest'); markSeen('hasSeenQuest'); nav('difficulty') }} />
+              <ModeIcon ref={questBtnRef} src="/assets/modes/quete.png" label="Quest" locked={false} onClick={() => { markSeen('hasSeenQuest'); nav('difficulty') }} />
             </div>
-
-            {/* Multi — right */}
             <div style={{
-              position: 'absolute',
-              right: '5%',
-              top: '50%',
-              transform: 'translateY(-50%)',
               zIndex: 1,
+              position: 'relative',
             }}>
               {canMulti && modeIsNew('multi') && <NewBadge />}
-              <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={!canMulti} onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'multi') return; if (!canMulti) return showLockToast(UNLOCK_MESSAGES.multi); nav('amis') }} />
+              <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={false} onClick={() => { nav('amis') }} />
             </div>
           </div>
 
@@ -947,7 +908,7 @@ export default function HomeScreen({
       }}>
         <button
           ref={flashBtnRef}
-          onClick={() => { if (!wtfData.onboardingCompleted && activeSpotlight !== 'flash') return; if (activeSpotlight === 'flash') dismissSpotlight('flash'); nav('categoryFlash') }}
+          onClick={() => { nav('categoryFlash') }}
           style={{
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
             borderRadius: 14, border: 'none',

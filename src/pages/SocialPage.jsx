@@ -76,9 +76,17 @@ export default function SocialPage() {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (retried = false) => {
     if (!user) return
     try {
+      // S'assurer que la session Supabase est valide avant les requêtes RLS
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session && !retried) {
+        // Session expirée — tenter un refresh
+        const { error: refreshErr } = await supabase.auth.refreshSession()
+        if (!refreshErr) return loadData(true)
+      }
+
       const [codeResult, friendsList, pendingList, challengesList] = await Promise.all([
         getOrCreateFriendCode(user.id, user.user_metadata?.name || 'Joueur WTF!', user.user_metadata?.avatar_url),
         getFriends(user.id),

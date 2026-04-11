@@ -174,8 +174,17 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    // Supabase gère automatiquement le nettoyage des tokens
-    await supabase.auth.signOut().catch(() => {})
+    // signOut via les deux clients pour garantir le nettoyage
+    // Le client principal peut bloquer à cause du Web Lock → timeout 3s
+    const signOutPromise = supabase.auth.signOut().catch(() => {})
+    const timeout = new Promise(resolve => setTimeout(resolve, 3000))
+    await Promise.race([signOutPromise, timeout])
+
+    // Nettoyer le token manuellement si signOut a timeout
+    try {
+      const storageKey = `sb-${import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`
+      localStorage.removeItem(storageKey)
+    } catch {}
 
     // Nettoyer les données du joueur précédent (garder settings uniquement)
     try {

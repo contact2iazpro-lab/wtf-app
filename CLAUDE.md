@@ -23,30 +23,42 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 - Niveaux : Cool | Hot | WTF!
 - Streak → Série | Mode Parcours → Quête WTF!
 - Ratées → À découvrir
-- Flash + Explorer fusionnés → mode "Jouer"
+- Ratées → À découvrir
 
 ## Règles de jeu — Source de vérité (11/04/2026)
 
 ### Niveaux Quest
 
-| Niveau | QCM | Timer | Indices (stock gratuit) | Coins/bonne réponse |
-|--------|-----|-------|------------------------|---------------------|
-| Cool   | 2   | 30s   | 2                      | 2                   |
-| Hot    | 4   | 20s   | 2                      | 2                   |
-| WTF!   | 6   | 20s   | 1                      | 1                   |
+| Niveau | QCM | Timer | Indices | Coins/bonne réponse |
+|--------|-----|-------|---------|---------------------|
+| Cool   | 2   | 30s   | 2       | 2                   |
+| Hot    | 4   | 20s   | 2       | 2                   |
+| WTF!   | 6   | 20s   | 1       | 1                   |
 
-### Mode Jouer (ex-Flash + Explorer)
+### Mode Flash (Jouer)
 
 | Paramètre | Valeur |
 |-----------|--------|
-| Coût | 3 sessions gratuites/jour (reset minuit), +10 coins/session extra |
+| Coût | 1 énergie (3 gratuites/jour, +10 coins/extra) |
 | Questions | 5 |
 | QCM | 4 choix |
 | Timer | 20s |
-| Indices | 2 (stock gratuit) |
-| Coins (aléatoire) | 2 coins/bonne réponse |
-| Coins (catégorie choisie) | 1 coin/bonne réponse |
-| Contenu | F*cts générés uniquement |
+| Catégorie | **Aléatoire uniquement** (pas de CategoryScreen) |
+| Coins | 2 coins/bonne réponse |
+| Contenu | Funny facts uniquement (catégories débloquées) |
+| Sauvegarde | F*cts débloqués immédiatement |
+
+### Mode Explorer
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Coût | 1 énergie (3 gratuites/jour, +10 coins/extra) |
+| Questions | 5 |
+| QCM | 4 choix |
+| Timer | 20s |
+| Catégorie | **Choix obligatoire** (pas d'aléatoire) |
+| Coins | 1 coin/bonne réponse (catégorie choisie) |
+| Contenu | Funny facts uniquement (catégories débloquées) |
 | Sauvegarde | F*cts débloqués immédiatement |
 
 ### Mode Blitz

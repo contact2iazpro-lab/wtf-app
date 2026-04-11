@@ -42,7 +42,7 @@ export function useNavigationHandlers({
       case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
       case 'explorer':
       case 'marathon': setScreen(SCREENS.CATEGORY); break
-      case 'flash':    setScreen(SCREENS.CATEGORY); break
+      case 'flash':    handleFlashSolo(); break  // Flash = aléatoire direct, pas de CategoryScreen
       case 'hunt':     handleStartWTFSession(); break
       default: break
     }

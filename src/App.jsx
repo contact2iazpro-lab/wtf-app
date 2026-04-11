@@ -157,14 +157,7 @@ export default function App() {
   const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const [showSplash, setShowSplash] = useState(false)
   const handleSplashComplete = async () => {
-    // Initialize audio immediately after splash
-    audio.play('click')
-
-    // Start music only if onboarding is complete (existing players)
-    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    if (wd.onboardingCompleted) {
-      audio.startMusic()
-    }
+    // Audio et musique OFF par défaut — le joueur les active dans les paramètres
 
     sessionStorage.setItem('wtf_splash_done', 'true')
     setShowSplash(false)

@@ -347,9 +347,17 @@ export default function App() {
     window.location.reload()
   }
 
-  // ─── HomeScreen navigation handler ──────────────────────────────────────────
-  // ─── Launch mode start callback ─────────────────────────────────────────────
-  // ─── Navigation, Duel, Replay, Share → extraits dans useNavigationHandlers hook
+  // ─── Selection handlers (AVANT navigation car handleHomeNavigate en dépend) ──
+  const { handleSelectDifficulty, handleSelectCategory, handleMarathonMode } = useSelectionHandlers({
+    gameMode, sessionType, selectedDifficulty, selectedCategory,
+    unlockedFacts, tickets,
+    initSessionState, handleBlitzStart,
+    setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
+    setIsQuickPlay, setExplorerPool, setScreen, setStorage,
+    setShowNoTicketModal, setGameAlert, setMiniParcours,
+  })
+
+  // ─── Navigation, Duel, Replay, Share ──────────────────────────────────────
   const {
     launchModeDestination, handleLaunchStart, showOrSkipLaunch,
     handleHomeNavigate,
@@ -369,16 +377,6 @@ export default function App() {
     setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
     setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
     setStorage,
-  })
-
-  // Selection handlers -> extraits dans useSelectionHandlers hook
-  const { handleSelectDifficulty, handleSelectCategory, handleMarathonMode } = useSelectionHandlers({
-    gameMode, sessionType, selectedDifficulty, selectedCategory,
-    unlockedFacts, tickets,
-    initSessionState, handleBlitzStart,
-    setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
-    setIsQuickPlay, setExplorerPool, setScreen, setStorage,
-    setShowNoTicketModal, setGameAlert, setMiniParcours,
   })
 
 

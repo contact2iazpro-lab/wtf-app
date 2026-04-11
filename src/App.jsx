@@ -49,6 +49,8 @@ import { getFlashEnergy, consumeFlashEnergy, buyExtraSession } from './services/
 import { FLASH_ENERGY } from './constants/gameConfig'
 import { useGameHandlers } from './hooks/useGameHandlers'
 import { useHandleNext } from './hooks/useHandleNext'
+import { useBlitzHandlers } from './hooks/useBlitzHandlers'
+import { useModeStarters } from './hooks/useModeStarters'
 
 
 
@@ -318,195 +320,51 @@ export default function App() {
     setSessionAnyHintUsed, setStorage, setNewlyUnlockedCategories, setScreen,
   })
 
+  // ─── Blitz handlers → extraits dans useBlitzHandlers hook ──────────────────
+  const { handleBlitzStart, handleBlitzFinish } = useBlitzHandlers({
+    user, selectedCategory, isChallengeMode,
+    setGameAlert, setSessionType, setGameMode, setSelectedCategory,
+    setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
+    setNewlyEarnedBadges, setIsChallengeMode,
+  })
+
+  // ─── Mode starters → extraits dans useModeStarters hook ──────────────────
+  const {
+    initSessionState, handleWTFDuJour, handleStartWTFSession,
+    handleFlashSolo, handleQuickPlay, handlePlay,
+  } = useModeStarters({
+    effectiveDailyFact, unlockedFacts, user,
+    setSessionFacts, setCurrentIndex, setSessionScore, setCorrectCount,
+    setHintsUsed, setSessionAnyHintUsed, setSelectedAnswer, setIsCorrect,
+    setSessionCorrectFacts, setNewlyUnlockedCategories, setShowNewCategoriesModal,
+    setCompletedLevels, setSessionIsPerfect, setPointsEarned,
+    setSessionType, setGameMode, setIsQuickPlay, setSelectedDifficulty,
+    setSelectedCategory, setScreen, setGameAlert, setMiniParcours,
+  })
+
   // ─── Session starters ────────────────────────────────────────────────────
 
   const canPlayFlashCheck = () => getFlashEnergy().remaining > 0
 
-  function initSessionState(facts) {
-    setSessionFacts(facts)
-    setCurrentIndex(0)
-    setSessionScore(0)
-    setCorrectCount(0)
-    setHintsUsed(0)
-    setSessionAnyHintUsed(false)
-    setSelectedAnswer(null)
-    setIsCorrect(null)
-    setSessionCorrectFacts([])
-    setNewlyUnlockedCategories([])
-    setShowNewCategoriesModal(false)
-    setCompletedLevels([])
-    setSessionIsPerfect(false)
-    setPointsEarned(0)
-  }
+  // ─── Mode starters + initSessionState → extraits dans useModeStarters hook ─
 
   // Reset complet onboarding
   const resetOnboarding = () => {
     const freshData = {
-      gamesPlayed: 0,
-      totalScore: 0,
-      streak: 0,
-      wtfCoins: 0,
-      tickets: 0,
-      unlockedFacts: [],
-      sessionsToday: 0,
-      statsByMode: {},
-      lastModified: Date.now(),
+      gamesPlayed: 0, totalScore: 0, streak: 0, wtfCoins: 0, tickets: 0,
+      unlockedFacts: [], sessionsToday: 0, statsByMode: {}, lastModified: Date.now(),
     }
     localStorage.setItem('wtf_data', JSON.stringify(freshData))
     localStorage.removeItem('tutorial_state')
     localStorage.setItem('wtf_hints_available', '0')
-    // Supprimer les skip_launch flags
     localStorage.removeItem('skip_launch_quest')
     localStorage.removeItem('skip_launch_flash')
     localStorage.removeItem('skip_launch_blitz')
     localStorage.removeItem('skip_launch_explorer')
     localStorage.removeItem('skip_launch_hunt')
-    // Vider sessionStorage pour repasser par SplashScreen
     sessionStorage.clear()
-    // Recharger la page pour repartir du splash
     window.location.reload()
   }
-
-  // WTF du Jour → go to teaser screen
-  const handleWTFDuJour = useCallback(() => {
-    audio.play('click')
-    setScreen(SCREENS.WTF_TEASER)
-  }, [])
-
-  // From teaser: start the 5-question Flash session for WTF du Jour
-  const handleStartWTFSession = useCallback(() => {
-    audio.play('click')
-    // Fallback si dailyFact null (mode dev/test)
-    let huntFact = effectiveDailyFact
-    if (!huntFact) {
-      const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-      if (isDevOrTest) {
-        const allValid = getQuestFacts()
-        huntFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
-      }
-      if (!huntFact) {
-        setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct du jour n\'est pas encore chargé. Réessaie dans quelques secondes !' })
-        return
-      }
-    }
-    const category = huntFact.category
-    const skipUnlock = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    // Session : Funny Facts (non-VIP) uniquement, même catégorie, exclure débloqués
-    let pool = getGeneratedFacts().filter(f => f.category === category && f.id !== huntFact.id && (skipUnlock || !unlockedFacts.has(f.id)))
-    if (pool.length < 5) {
-      pool = getGeneratedFacts().filter(f => f.id !== huntFact.id && (skipUnlock || !unlockedFacts.has(f.id)))
-    }
-    const facts = [...pool]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 5)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.HUNT) }))
-    setSessionType('wtf_du_jour')
-    setGameMode('solo')
-    setIsQuickPlay(false)
-    setSelectedDifficulty(DIFFICULTY_LEVELS.HUNT)
-    setSelectedCategory(category)
-    initSessionState(facts)
-    logDevEvent('session_started', { type: 'wtf_du_jour', category, factId: huntFact.id })
-    setScreen(SCREENS.QUESTION)
-  }, [effectiveDailyFact, unlockedFacts])
-
-  // Standalone Flash Solo session — non-VIP facts only, 5 questions, gratuit
-  const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
-  const handleFlashSolo = useCallback(() => {
-    audio.play('click')
-
-    // DEPRECATED: Tutorial logic moved to TutoTunnel component
-
-    // Pool : facts non-VIP uniquement, exclure les déjà débloqués
-    // Non connecté : catégories limitées
-    const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
-    const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
-    const skipUnlock = isDevMode || isTestMode
-    const pool = getGeneratedFacts().filter(f =>
-      skipUnlock || !unlockedFacts.has(f.id)
-    )
-
-    if (pool.length < 5) {
-      if (isDevMode) {
-        pool.push(...getGeneratedFacts().filter(f => !pool.some(p => p.id === f.id)))
-      }
-      if (pool.length === 0) {
-        setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt. Reviens vite !' })
-        return
-      }
-      if (pool.length < 5) {
-        const price = pool.length === 1 ? 5 : 10
-        const preparedFacts = [...pool].sort(() => Math.random() - 0.5)
-          .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'flash', categoryId: null, difficulty: DIFFICULTY_LEVELS.FLASH })
-        return
-      }
-    }
-
-    const facts = [...pool]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 5)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
-
-    setSessionType('flash_solo')
-    setGameMode('solo')
-    setIsQuickPlay(false)
-    setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH)
-    setSelectedCategory(null)
-    consumeFlashEnergy()
-    initSessionState(facts)
-    setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts, user])
-
-  // Quick play — no streak/score save (existing behavior kept)
-  const handleQuickPlay = useCallback(() => {
-    const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
-    const validCats = getPlayableCategories().filter(cat =>
-      getValidFacts().some(f => f.category === cat.id) &&
-      (childMode || cat.id !== 'kids')
-    )
-    const randomCat = validCats[Math.floor(Math.random() * validCats.length)]
-    const difficulty = DIFFICULTY_LEVELS.HOT
-    const facts = [...getValidFacts().filter(f => f.category === randomCat.id)]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, QUESTIONS_PER_GAME)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-
-    setSessionType('parcours')
-    setIsQuickPlay(true)
-    setGameMode('solo')
-    setSelectedDifficulty(difficulty)
-    setSelectedCategory(randomCat.id)
-    initSessionState(facts)
-    setScreen(SCREENS.QUESTION)
-  }, [])
-
-  // Solo parcours flow — Quest : VIP facts only, random toutes catégories, direct
-  const handlePlay = useCallback(() => {
-    audio.play('click')
-    const difficulty = DIFFICULTY_LEVELS.HOT
-    // Pool : facts VIP uniquement (type = 'vip' ou sans type = VIP par défaut)
-    let pool = getQuestFacts()
-    // Exclure les facts déjà débloqués pour plus de variété
-    const skipUnlockQ = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    if (!skipUnlockQ) {
-      const unplayed = pool.filter(f => !unlockedFacts.has(f.id))
-      if (unplayed.length >= QUESTIONS_PER_GAME) pool = unplayed
-    }
-
-    const facts = [...pool]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, QUESTIONS_PER_GAME)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-
-    setSessionType('parcours')
-    setGameMode('solo')
-    setIsQuickPlay(false)
-    setSelectedDifficulty(difficulty)
-    setSelectedCategory(null)
-    initSessionState(facts)
-    setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts])
 
   // ─── HomeScreen navigation handler ──────────────────────────────────────────
   // ─── Launch mode start callback ─────────────────────────────────────────────
@@ -694,132 +552,7 @@ export default function App() {
   }, [])
 
   // ─── Blitz start ───────────────────────────────────────────────────────────
-  const handleBlitzStart = useCallback((categoryId, questionCount) => {
-    audio.play('click')
-    // Blitz = facts déjà débloqués uniquement (mode rapidité)
-    let pool = getBlitzFacts()
-    if (categoryId) pool = pool.filter(f => f.category === categoryId)
-
-    if (pool.length < 4) {
-      setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Jouer ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
-      return
-    }
-
-    const count = questionCount || pool.length
-    const shuffled = [...pool]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, count)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
-
-    setSessionType('blitz')
-    setGameMode('blitz')
-    setSelectedCategory(categoryId)
-    setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
-    setBlitzFacts(shuffled)
-    setBlitzResults(null)
-    setScreen(SCREENS.BLITZ)
-  }, [])
-
-  const handleBlitzFinish = useCallback((results) => {
-    const { finalTime, correctCount, totalAnswered, penalties } = results
-
-    // Track Blitz stats + bestBlitzTime
-    let isNewRecord = false
-    let bestTime = null
-    try {
-      const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      if (!wtfData.statsByMode) wtfData.statsByMode = {}
-      if (!wtfData.statsByMode.blitz) {
-        wtfData.statsByMode.blitz = { gamesPlayed: 0, totalCorrect: 0, totalAnswered: 0, bestStreak: 0 }
-      }
-      const ms = wtfData.statsByMode.blitz
-      ms.gamesPlayed += 1
-      ms.totalCorrect += correctCount
-      ms.totalAnswered += totalAnswered
-      if (correctCount > ms.bestStreak) ms.bestStreak = correctCount
-      // Record = meilleur temps (le plus bas)
-      if (!wtfData.bestBlitzTime || finalTime < wtfData.bestBlitzTime) {
-        wtfData.bestBlitzTime = finalTime
-        isNewRecord = true
-      }
-      bestTime = wtfData.bestBlitzTime
-      // Sauvegarder le record par catégorie + palier
-      if (!wtfData.blitzRecords) wtfData.blitzRecords = {}
-      const catKey = selectedCategory || 'all'
-      const palierKey = `${catKey}_${totalAnswered}`
-      const existingRecord = wtfData.blitzRecords[palierKey]
-      if (!existingRecord || finalTime < existingRecord) {
-        wtfData.blitzRecords[palierKey] = finalTime
-      }
-      wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
-      wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount
-      wtfData.totalAnswered = (wtfData.totalAnswered || 0) + totalAnswered
-      // Blitz perfect (0 erreurs)
-      if (correctCount === totalAnswered && totalAnswered > 0) {
-        wtfData.blitzPerfects = (wtfData.blitzPerfects || 0) + 1
-      }
-      wtfData.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(wtfData))
-    } catch { /* ignore */ }
-
-    updateTrophyData()
-
-    // Check badges après Blitz
-    const newBadges = checkBadges()
-    if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
-
-    // Complete challenge if active
-    const challengeJson = localStorage.getItem('wtf_active_challenge')
-    if (challengeJson && user) {
-      try {
-        const challengeInfo = JSON.parse(challengeJson)
-        localStorage.removeItem('wtf_active_challenge')
-        import('./data/challengeService').then(({ completeChallenge: complete }) => {
-          complete({
-            challengeId: challengeInfo.challengeId,
-            playerTime: finalTime,
-            playerId: user.id,
-            playerName: user.user_metadata?.name || 'Joueur WTF!',
-          }).catch(e => console.warn('Challenge complete error:', e))
-        })
-      } catch { /* ignore */ }
-    }
-
-    if (isChallengeMode) {
-      // Mode défi : créer le défi automatiquement et afficher l'écran de partage
-      const challengeData = {
-        finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord,
-        categoryId: selectedCategory,
-        categoryLabel: selectedCategory ? (getCategoryById(selectedCategory)?.label || selectedCategory) : 'Toutes catégories',
-        questionCount: totalAnswered,
-      }
-      setBlitzResults(challengeData)
-      setScreen(SCREENS.BLITZ_RESULTS)
-
-      // Créer le défi dans Supabase automatiquement
-      if (user) {
-        import('./data/challengeService').then(({ createChallenge }) => {
-          createChallenge({
-            categoryId: selectedCategory || 'all',
-            categoryLabel: challengeData.categoryLabel,
-            questionCount: totalAnswered,
-            playerTime: finalTime,
-            playerId: user.id,
-            playerName: user.user_metadata?.name || 'Joueur WTF!',
-          }).then(challenge => {
-            // Stocker le challenge créé pour que BlitzResultsScreen puisse le partager
-            localStorage.setItem('wtf_auto_challenge', JSON.stringify(challenge))
-            window.dispatchEvent(new Event('wtf_challenge_created'))
-          }).catch(e => console.warn('Auto challenge creation failed:', e))
-        })
-      }
-      setIsChallengeMode(false)
-      return
-    }
-
-    setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
-    setScreen(SCREENS.BLITZ_RESULTS)
-  }, [user, navigate, isChallengeMode, selectedCategory])
+  // ─── Blitz handlers → extraits dans useBlitzHandlers hook ──────────────────
 
   const handleSelectCategory = useCallback((categoryId) => {
     // Blitz : démarrer directement sans choisir la difficulté

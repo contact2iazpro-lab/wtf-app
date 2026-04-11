@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useScale } from './hooks/useScale'
+import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS } from './constants/gameConfig'
 import TutoTunnel from './components/TutoTunnel'
 import { getDailyFact, getTitrePartiel, getCategoryById, initFacts, resetFacts } from './data/factsService'

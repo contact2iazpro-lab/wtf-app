@@ -5,31 +5,31 @@ export const DIFFICULTY_LEVELS = {
   COOL: {
     id: 'cool', label: 'Cool', emoji: '❄️',
     choices: 2, duration: 30,
-    hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
+    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   HOT: {
     id: 'hot', label: 'Hot', emoji: '🔥',
     choices: 4, duration: 20,
-    hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
+    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   WTF: {
     id: 'wtf', label: 'WTF!', emoji: '⚡',
     choices: 6, duration: 20,
-    hintsAllowed: true, freeHints: 1, paidHints: 1, hintCost: 8,
+    hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0,
     coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 },
   },
   FLASH: {
     id: 'flash', label: 'Jouer', emoji: '🎯',
     choices: 4, duration: 20,
-    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   HUNT: {
     id: 'hunt', label: 'Hunt', emoji: '🔥',
     choices: 4, duration: 20,
-    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   BLITZ: {
@@ -127,14 +127,14 @@ export function getStreakReward(streakDays) {
 export const TUTO_FLASH_CONFIG = {
   id: 'tuto_flash', label: 'Tutoriel', emoji: '🎯',
   choices: 2, duration: 20,
-  hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+  hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
   coinsPerCorrect: 2, questionsCount: 5, scoring: { correct: 5, wrong: 0 },
 }
 
 export const TUTO_QUEST_CONFIG = {
   id: 'tuto_quest', label: 'Tutoriel Quest', emoji: '🎯',
   choices: 2, duration: 30,
-  hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+  hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
   coinsPerCorrect: 2, questionsCount: 5, scoring: { correct: 5, wrong: 0 },
 }
 

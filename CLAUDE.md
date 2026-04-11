@@ -90,7 +90,7 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 | TTF (sessions avant achat) | ~3 sessions Flash |
 
 ### Règles communes
-- Indices = stock gratuit (rechargeable en boutique avec coins)
+- Indices = chaque utilisation débite 1 du stock (pas d'indices gratuits)
 - Indice non disponible si stock vide : bouton grisé, JAMAIS de pause du timer
 - Questions par Quête : 5 (TEMP TEST — remettre à 10 au lancement)
 - Pas de bonus perfect (ni Quest ni Jouer)
@@ -120,6 +120,25 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 - Formule : Math.min(window.innerHeight/667, window.innerWidth/375)
 - Toutes les tailles : calc(Xpx * var(--scale))
 - Règle isLightColor : texte #1a1a1a sur fond clair, #ffffff sur fond sombre
+
+### Couleurs des catégories (source unique : src/data/facts.js)
+| Catégorie | Couleur | Catégorie | Couleur |
+|-----------|---------|-----------|---------|
+| Animaux | #6BCB77 | Lois | #6366B8 |
+| Animaux Marins | #40B4D8 | Musique | #E84B8A |
+| Animaux Terrestres | #E8712A | Mythologie | #C8A84B |
+| Architecture | #A0826D | Phobies | #7B5EA7 |
+| Art | #A07CD8 | Politique | #B24B4B |
+| Célébrités | #FFD700 | Psychologie | #8E44AD |
+| Cinéma | #D4AF37 | Records | #E8B84B |
+| Corps Humain | #F07070 | Santé | #90F090 |
+| Crimes | #8B4789 | Sciences | #80C8E8 |
+| Définition | #4A9BD9 | Sport | #E84535 |
+| Dictons | #4CAF50 | Technologie | #7B8FA0 |
+| Espace | #2E1A47 | Internet | #5B8DBE |
+| Gastronomie | #FFA500 | Inventions | #5BC0DE |
+| Géographie | #40D9C8 | Jeux & Jouets | #9B59B6 |
+| Histoire | #E8A030 | Kids | #FFEF60 |
 
 ## Toggle Mode Dev
 - Clé localStorage : wtf_dev_mode

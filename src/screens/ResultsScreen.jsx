@@ -64,15 +64,9 @@ export default function ResultsScreen({
   difficulty = null,
   ticketEarned = false,
   categoryId = null,
-  onShare = null,
-  onFactDetail = null,
-  onChallengeUp = null,
   unlockedFactsThisSession = [],
   allSessionFacts = [],
   sessionsToday = 0,
-  playerCoins = 0,
-  playerTickets = 0,
-  playerHints = 0,
   onSaveTempFacts = null,
   onCollection = null,
 }) {
@@ -395,6 +389,22 @@ export default function ResultsScreen({
         position: 'relative', zIndex: 2, padding: `${S(12)} ${S(16)}`, gap: S(8),
       }}>
 
+        {/* Badge mode + difficulté */}
+        {difficulty && (
+          <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: S(6),
+              background: 'rgba(255,255,255,0.15)', borderRadius: S(20),
+              padding: `${S(4)} ${S(14)}`, border: '1px solid rgba(255,255,255,0.25)',
+            }}>
+              <span style={{ fontSize: S(12) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
+              <span style={{ fontSize: S(11), fontWeight: 800, color: textOnBg }}>
+                {sessionType === 'parcours' ? 'Quest' : sessionType === 'flash_solo' ? 'Jouer' : sessionType === 'marathon' ? 'Explorer' : 'Mode'} — {DIFFICULTY_LABELS[difficulty.id] || difficulty.label}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Rang + Label compact */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, gap: S(2) }}>
           <div
@@ -568,8 +578,24 @@ export default function ResultsScreen({
         borderTop: '1px solid rgba(255,255,255,0.1)',
       }}>
 
-        {/* Ligne 1 : Google (si applicable) */}
-        {!isConnected && !false && (
+        {/* Bouton monter en difficulté (Quest uniquement, si pas déjà WTF!) */}
+        {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && difficulty.id !== 'wtf' && (
+          <button
+            onClick={onReplay}
+            className="active:scale-95 transition-all"
+            style={{
+              width: '100%', padding: `${S(12)} ${S(12)}`, borderRadius: S(12),
+              background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+              border: 'none', color: '#1a1a2e', fontWeight: 900, fontSize: S(13),
+              cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+            }}>
+            {CHALLENGE_LABELS[difficulty.id]}
+          </button>
+        )}
+
+        {/* Google sign-in (si applicable) */}
+        {!isConnected && (
           <button
             onClick={() => {
               if (unlockedFactsThisSession.length > 0) {
@@ -627,9 +653,9 @@ export default function ResultsScreen({
           className="active:scale-95 transition-all"
           style={{
             width: '100%', padding: `${S(12)} ${S(12)}`, borderRadius: S(12),
-            background: false ? '#FF6B1A' : 'transparent',
-            border: false ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
-            color: false ? 'white' : 'rgba(255,255,255,0.6)',
+            background: 'transparent',
+            border: '1.5px solid rgba(255,255,255,0.3)',
+            color: 'rgba(255,255,255,0.6)',
             fontWeight: 900, fontSize: S(12), textShadow: '0 1px 3px rgba(0,0,0,0.5)',
             cursor: 'pointer',
           }}>
@@ -689,41 +715,7 @@ export default function ResultsScreen({
 
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
 
-      {showGoogleBanner && (
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          background: 'rgba(255,255,255,0.95)',
-          borderTop: '1px solid rgba(0,0,0,0.1)',
-          padding: '12px 16px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 10,
-          zIndex: 50,
-          fontFamily: 'Nunito, sans-serif',
-        }}>
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e' }}>Sauvegarde ta progression</span>
-            <span style={{ fontSize: 11, color: '#6B7280', display: 'block', marginTop: 2 }}>Connecte-toi pour ne rien perdre</span>
-          </div>
-          <button
-            onClick={() => { dismissGoogle(); signInWithGoogle() }}
-            style={{
-              padding: '8px 16px', borderRadius: 10,
-              background: '#FF6B1A', color: 'white', border: 'none',
-              fontWeight: 800, fontSize: 12, cursor: 'pointer',
-              whiteSpace: 'nowrap', flexShrink: 0,
-            }}
-          >
-            Google
-          </button>
-          <button
-            onClick={dismissGoogle}
-            style={{
-              background: 'none', border: 'none', color: '#9CA3AF',
-              fontSize: 18, cursor: 'pointer', padding: '4px 8px', flexShrink: 0,
-            }}
-          >✕</button>
-        </div>
-      )}
+      {/* Google banner supprimé — utilise ConnectBanner unique */}
     </div>
   )
 }

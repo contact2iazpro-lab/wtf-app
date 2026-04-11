@@ -84,13 +84,16 @@ export default function App() {
     if (_initData.tickets === undefined) { _initData.tickets = 10; _initData.wtfCoins = 10; _initData.lastModified = Date.now(); localStorage.setItem('wtf_data', JSON.stringify(_initData)) }
   }
 
-  // DEV: 100/100/100 pour les tests (localhost uniquement)
-  if (import.meta.env.DEV) {
-    const _d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    _d.tickets = 100; _d.wtfCoins = 100; _d.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(_d))
-    localStorage.setItem('wtf_hints_available', '100')
-  }
+  // DEV: 100/100/100 pour les tests — UNE SEULE FOIS au premier lancement
+  useState(() => {
+    if (import.meta.env.DEV && !sessionStorage.getItem('wtf_dev_credits_done')) {
+      const _d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      _d.tickets = 100; _d.wtfCoins = 100; _d.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(_d))
+      localStorage.setItem('wtf_hints_available', '100')
+      sessionStorage.setItem('wtf_dev_credits_done', 'true')
+    }
+  })
 
 
   // ── Challenge Blitz : démarrer un défi depuis ChallengeScreen ──
@@ -633,7 +636,6 @@ export default function App() {
           sessionsToday={sessionsToday}
           onSaveTempFacts={handleSaveTempFacts}
           onCollection={() => { handleHome(); navigate('/collection') }}
-          isFirstGame={false}
         />
       )}
 

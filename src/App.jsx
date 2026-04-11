@@ -1,22 +1,17 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
-import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS, QUESTIONS_PER_GAME, getStreakReward } from './constants/gameConfig'
+import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS } from './constants/gameConfig'
 import TutoTunnel from './components/TutoTunnel'
-import {
-  getFactsByCategory, getValidFacts, getParcoursFacts, getCategoryLevelFactIds,
-  getDailyFact, getTitrePartiel, CATEGORIES, getPlayableCategories, getCategoryById,
-  getGeneratedFacts, getGeneratedFactsByCategory, getBlitzFacts,
-  getQuestFacts, getFlashFacts,
-  initFacts, resetFacts,
-} from './data/factsService'
-import { pushToServer, syncAfterAction } from './services/playerSyncService'
-import { loadStorage, saveStorage, updateTrophyData, TODAY } from './utils/storageHelper'
-import { updateCoins, updateTickets, updateHints, getBalances } from './services/currencyService'
-import DevPanel from './components/DevPanel'
-import { DEV_PANEL_ENABLED } from './config/devConfig'
-import { logDevEvent } from './utils/devLogger'
-import { getAnswerOptions } from './utils/answers'
+import { getValidFacts, getDailyFact, getTitrePartiel, getCategoryById, initFacts, resetFacts } from './data/factsService'
+import { loadStorage, saveStorage } from './utils/storageHelper'
+import { updateTickets, getBalances } from './services/currencyService'
+import { supabase } from './lib/supabase'
+import { getFlashEnergy } from './services/energyService'
+import { audio } from './utils/audio'
+import { useAuth } from './context/AuthContext'
+import AppModals from './components/AppModals'
+// Screens
 import HomeScreen from './screens/HomeScreen'
 import SplashScreen from './screens/SplashScreen'
 import FalkonIntroScreen from './screens/FalkonIntroScreen'
@@ -35,18 +30,7 @@ import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from './screens/DuelSet
 import DuelPassScreen from './screens/DuelPassScreen'
 import DuelResultsScreen from './screens/DuelResultsScreen'
 import ModeLaunchScreen from './screens/ModeLaunchScreen'
-import SettingsModal from './components/SettingsModal'
-import HowToPlayModal from './components/HowToPlayModal'
-import ConnectBanner from './components/ConnectBanner'
-import NewCategoriesModal from './components/NewCategoriesModal'
-import { audio } from './utils/audio'
-import { checkBadges } from './utils/badgeManager'
-import { useAuth } from './context/AuthContext'
-import { updateCollection } from './services/collectionService'
-import { supabase } from './lib/supabase'
-import GameModal from './components/GameModal'
-import { getFlashEnergy, consumeFlashEnergy, buyExtraSession } from './services/energyService'
-import { FLASH_ENERGY } from './constants/gameConfig'
+// Hooks
 import { useGameHandlers } from './hooks/useGameHandlers'
 import { useHandleNext } from './hooks/useHandleNext'
 import { useBlitzHandlers } from './hooks/useBlitzHandlers'
@@ -54,6 +38,8 @@ import { useModeStarters } from './hooks/useModeStarters'
 import { useSelectionHandlers } from './hooks/useSelectionHandlers'
 import { useNavigationHandlers } from './hooks/useNavigationHandlers'
 import { useAppEffects } from './hooks/useAppEffects'
+import { useDevActions } from './hooks/useDevActions'
+
 
 
 
@@ -422,66 +408,12 @@ export default function App() {
 
   // ─── handleNext → extrait dans useHandleNext hook ──────────────────────────
 
-  // ─── Dev Panel helpers ────────────────────────────────────────────────────
-
-  const applyStorage = useCallback((patch) => {
-    setStorage(prev => {
-      const today = TODAY()
-      const merged = { ...prev, ...patch }
-      const next = { ...merged, wtfDuJourFait: merged.wtfDuJourDate === today }
-      saveStorage(next)
-      return next
-    })
-  }, [])
-
-  const devActions = {
-    getStorage: () => storage,
-    setStreak: (n) => applyStorage({ streak: n }),
-    setCoins: (n) => applyStorage({ wtfCoins: n }),
-    addCoins: (n) => applyStorage({ wtfCoins: storage.wtfCoins + n }),
-    resetCollection: () => applyStorage({ unlockedFacts: new Set() }),
-    resetWTFDuJour: () => applyStorage({ wtfDuJourDate: null }),
-    resetSessionsToday: () => applyStorage({ sessionsToday: 0 }),
-    resetScore: () => applyStorage({ totalScore: 0 }),
-    simulateNewPlayer: () => applyStorage({ streak: 0, wtfCoins: 0, totalScore: 0, unlockedFacts: new Set(), wtfDuJourDate: null, sessionsToday: 0 }),
-    simulateJ7: () => applyStorage({ streak: 7 }),
-    simulateCollectionAnimaux: () => {
-      const animauxIds = getValidFacts().filter(f => f.category === 'animaux').map(f => f.id)
-      applyStorage({ unlockedFacts: new Set([...storage.unlockedFacts, ...animauxIds]) })
-    },
-    setTickets: (n) => applyStorage({ tickets: n }),
-    setHints: (n) => localStorage.setItem('wtf_hints_available', String(n)),
-    cheat999: () => {
-      const existing = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      existing.wtfCoins = 999
-      existing.tickets = 999
-      existing.streak = existing.streak || 0
-      existing.totalScore = existing.totalScore || 0
-      existing.unlockedFacts = existing.unlockedFacts || []
-      existing.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(existing))
-      localStorage.setItem('wtf_hints_available', '999')
-      window.location.reload()
-    },
-    simulatePurchase: () => applyStorage({ wtfCoins: storage.wtfCoins + 100 }),
-    unlockRandomFacts: (n = 10) => {
-      const locked = getValidFacts().filter(f => !storage.unlockedFacts.has(f.id))
-      const toUnlock = [...locked].sort(() => Math.random() - 0.5).slice(0, n).map(f => f.id)
-      applyStorage({ unlockedFacts: new Set([...storage.unlockedFacts, ...toUnlock]) })
-    },
-    overrideDailyFact: (id) => {
-      const fact = getValidFacts().find(f => f.id === Number(id))
-      if (fact) setDailyFactOverride(fact)
-    },
-    testVIPReveal: () => {
-      setSessionType('wtf_du_jour')
-      setCoinsEarnedLastSession(5)
-      setSessionScore(12)
-      setCorrectCount(4)
-      setSessionFacts(new Array(5).fill(null))
-      setScreen(SCREENS.WTF_REVEAL)
-    },
-  }
+  // ─── Dev actions → extraits dans useDevActions hook ─────────────────────────
+  const { devActions } = useDevActions({
+    storage, setStorage, setDailyFactOverride,
+    setSessionType, setCoinsEarnedLastSession, setSessionScore,
+    setCorrectCount, setSessionFacts, setScreen,
+  })
 
   // Multiplayer context
   const duelContext = gameMode === 'duel' ? {

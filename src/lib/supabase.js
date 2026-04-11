@@ -15,39 +15,46 @@ if (!isSupabaseConfigured) {
 const FALLBACK_URL = 'https://placeholder.supabase.co'
 const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder'
 
-// Client principal — avec session, lock, refresh token
+// Storage custom — même API que localStorage, SANS Web Lock.
+// Le Web Lock de Supabase bloque indéfiniment sur mobile (multi-tab, PWA, service worker).
+const customStorage = {
+  getItem: (key) => {
+    try { return globalThis.localStorage?.getItem(key) ?? null } catch { return null }
+  },
+  setItem: (key, value) => {
+    try { globalThis.localStorage?.setItem(key, value) } catch {}
+  },
+  removeItem: (key) => {
+    try { globalThis.localStorage?.removeItem(key) } catch {}
+  },
+}
+
+// Client unique — session persistée, auto-refresh, OAuth callback, SANS Web Lock.
 export const supabase = createClient(
   isSupabaseConfigured ? supabaseUrl : FALLBACK_URL,
-  isSupabaseConfigured ? supabaseKey : FALLBACK_KEY
-)
-
-// Client léger — pas de session/lock, pour les pages secondaires (invite, challenge)
-// Pas de contention multi-onglet
-export const supabaseLight = createClient(
-  isSupabaseConfigured ? supabaseUrl : FALLBACK_URL,
   isSupabaseConfigured ? supabaseKey : FALLBACK_KEY,
-  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'implicit',
+      storage: customStorage,
+      // No-op lock — désactive le Web Lock API qui bloque sur mobile
+      lock: async (_name, _acquireTimeout, fn) => fn(),
+    },
+  }
 )
 
-/**
- * Injecte le token d'auth existant dans le client léger.
- * Lit directement le localStorage — pas de lock, pas de contention.
- * Retourne le user si un token valide existe, null sinon.
- */
+// Alias pour backward compat — pointe vers le même client
+// Les fichiers qui importent supabaseLight continuent de fonctionner
+export const supabaseLight = supabase
+
+// Pas besoin de initLightClientFromStorage — le client principal gère tout
 export async function initLightClientFromStorage() {
   try {
-    const storageKey = `sb-${supabaseUrl?.split('//')[1]?.split('.')[0]}-auth-token`
-    const raw = localStorage.getItem(storageKey)
-    if (!raw) return null
-    const session = JSON.parse(raw)
-    if (!session?.access_token) return null
-
-    const { data, error } = await supabaseLight.auth.setSession({
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
-    })
-    if (error) return null
-    return data?.user ?? null
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.user ?? null
   } catch {
     return null
   }

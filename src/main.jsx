@@ -35,18 +35,14 @@ if (import.meta.env.DEV) {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
-        {/* InvitePage: HORS AuthProvider pour éviter lock multi-tab sur mobile */}
-        <Route path="/invite/:code" element={<InvitePage />} />
-        {/* Tout le reste: dans AuthProvider */}
-        <Route path="/*" element={
-          <AuthProvider>
-            <CurrencyProvider>
-              <AppRouter />
-            </CurrencyProvider>
-          </AuthProvider>
-        } />
-      </Routes>
+      <AuthProvider>
+        <CurrencyProvider>
+          <Routes>
+            <Route path="/invite/:code" element={<InvitePage />} />
+            <Route path="/*" element={<AppRouter />} />
+          </Routes>
+        </CurrencyProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 )

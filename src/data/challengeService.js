@@ -1,4 +1,4 @@
-import { supabase, supabaseLight } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 // Générer un code unique de 6 caractères (pas de I, O, 0, 1 pour éviter la confusion)
 function generateCode() {
@@ -66,7 +66,7 @@ export async function completeChallenge({ challengeId, playerTime, playerId, pla
 
 // Récupérer les défis d'un joueur
 export async function getPlayerChallenges(playerId) {
-  const { data, error } = await supabaseLight
+  const { data, error } = await supabase
     .from('challenges')
     .select('*')
     .or(`player1_id.eq.${playerId},player2_id.eq.${playerId}`)

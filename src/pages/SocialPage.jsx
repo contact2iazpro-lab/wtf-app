@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import GameModal from '../components/GameModal'
 import { useAuth } from '../context/AuthContext'
-import { supabase, supabaseLight } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 import { getOrCreateFriendCode, acceptFriendRequest, rejectFriendRequest, getFriends, getPendingRequests, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
 import { getPlayerChallenges } from '../data/challengeService'
@@ -113,7 +113,7 @@ export default function SocialPage() {
   useEffect(() => {
     if (!user) return
 
-    const channel = supabaseLight
+    const channel = supabase
       .channel('social-updates-' + user.id)
       .on('postgres_changes', {
         event: '*',
@@ -129,7 +129,7 @@ export default function SocialPage() {
       }, () => loadData())
       .subscribe()
 
-    return () => supabaseLight.removeChannel(channel)
+    return () => supabase.removeChannel(channel)
   }, [user, loadData])
 
   const handleAccept = async (id) => {

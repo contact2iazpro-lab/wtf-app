@@ -1246,7 +1246,8 @@ export default function App() {
       // Check badges après mise à jour des stats → afficher les modals trophées
       const newBadges = checkBadges()
       if (newBadges.length > 0) {
-        setNewlyEarnedBadges(newBadges)
+        // Utiliser uniquement trophyQueue (modal overlay) — pas newlyEarnedBadges
+        // pour éviter le doublon avec la modal HomeScreen
         setTrophyQueue(newBadges)
       }
 

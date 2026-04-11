@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import GameModal from '../components/GameModal'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -61,6 +61,7 @@ function getProcessedBlitzRecords() {
 
 export default function SocialPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, isConnected, signInWithGoogle } = useAuth()
 
   const [myCode, setMyCode] = useState(() => {
@@ -110,7 +111,8 @@ export default function SocialPage() {
     } catch (e) { console.warn('Social load error:', e) }
   }, [user])
 
-  useEffect(() => { if (isConnected) loadData() }, [isConnected, loadData])
+  // Refresh à chaque navigation vers cette page (pas seulement au mount)
+  useEffect(() => { if (isConnected) loadData() }, [isConnected, loadData, location.key])
 
   // Supabase Realtime pour les invitations et défis
   useEffect(() => {

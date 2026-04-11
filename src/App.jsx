@@ -629,7 +629,7 @@ export default function App() {
           allSessionFacts={sessionFacts}
           sessionsToday={sessionsToday}
           onSaveTempFacts={handleSaveTempFacts}
-          onCollection={() => { handleHome(); navigate('/collection') }}
+          onCollection={() => navigate('/collection')}
         />
       )}
 

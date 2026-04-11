@@ -622,7 +622,10 @@ export default function ResultsScreen({
               cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
             }}>
-            🎫 Rejouer en {DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}
+            {sessionType === 'parcours' ? `🎫 Rejouer en ${DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}` :
+             sessionType === 'flash_solo' ? '🔋 Rejouer en Jouer' :
+             sessionType === 'marathon' ? '🔋 Rejouer en Explorer' :
+             '🔄 Rejouer'}
           </button>
           {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && difficulty.id !== 'wtf' && (
             <button

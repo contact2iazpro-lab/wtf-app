@@ -87,7 +87,12 @@ export function useModeStarters({
     const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
     const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
     const skipUnlock = isDevMode || isTestMode
-    const pool = getGeneratedFacts().filter(f => skipUnlock || !unlockedFacts.has(f.id))
+    // Ne montrer que des facts des catégories débloquées
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const unlockedCats = new Set(wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition'])
+    const pool = getGeneratedFacts().filter(f =>
+      (skipUnlock || !unlockedFacts.has(f.id)) && (skipUnlock || unlockedCats.has(f.category))
+    )
 
     if (pool.length < 5) {
       if (isDevMode) pool.push(...getGeneratedFacts().filter(f => !pool.some(p => p.id === f.id)))

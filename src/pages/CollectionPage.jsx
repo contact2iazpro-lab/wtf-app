@@ -35,10 +35,12 @@ function ProgressBar({ percentage, color }) {
 }
 
 export default function CollectionPage() {
-  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('vip')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
+
+  const navigate = useNavigate()
+  const [openedFromExternal, setOpenedFromExternal] = useState(false)
 
   // Auto-open fact detail si venant de ResultsScreen
   useEffect(() => {
@@ -47,7 +49,10 @@ export default function CollectionPage() {
       localStorage.removeItem('wtf_open_fact_id')
       const allFacts = getValidFacts()
       const fact = allFacts.find(f => f.id === Number(factId))
-      if (fact) setSelectedFact(fact)
+      if (fact) {
+        setSelectedFact(fact)
+        setOpenedFromExternal(true)
+      }
     }
   }, [])
 
@@ -131,7 +136,14 @@ export default function CollectionPage() {
 
   // Sub-views
   if (selectedFact) {
-    return <FactDetailView fact={selectedFact} onClose={() => setSelectedFact(null)} />
+    return <FactDetailView fact={selectedFact} onClose={() => {
+      if (openedFromExternal) {
+        // Retour à la page précédente (ResultsScreen ou autre)
+        navigate(-1)
+      } else {
+        setSelectedFact(null)
+      }
+    }} />
   }
 
   if (selectedCatStats) {

@@ -112,25 +112,29 @@ export function useSelectionHandlers({
       return
     }
 
-    // Flash/Jouer
+    // Flash/Jouer — uniquement les catégories débloquées
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const unlockedCats = new Set(wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition'])
+    const generatedFacts = getGeneratedFacts().filter(f => unlockedCats.has(f.category))
+
     let facts = []
     if (categoryId === null) {
-      const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
+      // Aléatoire : piocher dans les catégories débloquées uniquement
       const validCategories = getPlayableCategories().filter(cat =>
-        getValidFacts().some(f => f.category === cat.id) && (childMode || cat.id !== 'kids')
+        unlockedCats.has(cat.id) && generatedFacts.some(f => f.category === cat.id)
       )
-      if (validCategories.length < 10) {
-        facts = [...getValidFacts()].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
+      if (validCategories.length < 5) {
+        facts = [...generatedFacts].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
       } else {
         const selectedCats = [...validCategories].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
         facts = selectedCats.map(cat => {
-          const catFacts = getValidFacts().filter(f => f.category === cat.id)
+          const catFacts = generatedFacts.filter(f => f.category === cat.id)
           return catFacts[Math.floor(Math.random() * catFacts.length)]
         })
         facts.sort(() => Math.random() - 0.5)
       }
     } else {
-      facts = [...getFactsByCategory(categoryId)].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
+      facts = [...generatedFacts.filter(f => f.category === categoryId)].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
     }
 
     const factsWithOptions = facts.map(fact => ({ ...fact, ...getAnswerOptions(fact, selectedDifficulty) }))

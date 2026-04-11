@@ -74,7 +74,8 @@ export function useGameHandlers({
       if (points > 0) updateCoins(points)
 
       // Explorer/Marathon : débloquer le f*ct immédiatement
-      if (isAnswerCorrect && currentFact && (sessionType === 'marathon' || sessionType === 'flash_solo')) {
+      // Débloquer le fact immédiatement pour TOUS les modes (pas attendre la fin de session)
+      if (isAnswerCorrect && currentFact) {
         setStorage(prev => {
           const newUnlocked = new Set(prev.unlockedFacts)
           if (!newUnlocked.has(currentFact.id)) {

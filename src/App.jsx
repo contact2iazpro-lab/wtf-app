@@ -634,15 +634,21 @@ export default function App() {
       )}
 
       {screen === SCREENS.MARATHON_RESULTS && (
-        <MarathonScreen
+        <ResultsScreen
+          score={sessionScore}
           correctCount={correctCount}
           totalFacts={sessionFacts.length}
-          sessionScore={sessionScore}
           coinsEarned={coinsEarnedLastSession}
-          isPerfect={correctCount === sessionFacts.length}
+          sessionType="marathon"
           difficulty={selectedDifficulty}
+          ticketEarned={false}
           onReplay={handleReplay}
           onHome={handleHome}
+          unlockedFactsThisSession={sessionCorrectFacts}
+          allSessionFacts={sessionFacts}
+          sessionsToday={sessionsToday}
+          onSaveTempFacts={handleSaveTempFacts}
+          onCollection={() => navigate('/collection')}
         />
       )}
 

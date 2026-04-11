@@ -3,6 +3,7 @@ import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
+import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
 import ConnectBanner from '../components/ConnectBanner'
 
@@ -76,6 +77,7 @@ export default function ResultsScreen({
   onCollection = null,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
+  const { coins: _cCoins, tickets: _cTickets, hints: _cHints } = useCurrency()
   const { isConnected, signInWithGoogle } = useAuth()
   const googleDismissed = (() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').googlePromptDismissed || 0 } catch { return 0 } })()
   const [showGoogleBanner, setShowGoogleBanner] = useState(!isConnected && googleDismissed < 2)
@@ -368,15 +370,15 @@ export default function ResultsScreen({
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
             <img src="/assets/ui/icon-coins.png" style={{ width: S(14), height: S(14) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{playerCoins}</span>
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cCoins}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
             <img src="/assets/ui/icon-tickets.png" style={{ width: S(14), height: S(14) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{playerTickets}</span>
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cTickets}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
             <img src="/assets/ui/icon-hint.png" style={{ width: S(14), height: S(14) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{playerHints}</span>
+            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cHints}</span>
           </div>
         </div>
         <button

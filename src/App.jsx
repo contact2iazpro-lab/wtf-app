@@ -47,6 +47,7 @@ import { supabase } from './lib/supabase'
 import GameModal from './components/GameModal'
 import { getFlashEnergy, consumeFlashEnergy, buyExtraSession } from './services/energyService'
 import { FLASH_ENERGY } from './constants/gameConfig'
+import { useGameHandlers } from './hooks/useGameHandlers'
 
 
 
@@ -301,6 +302,20 @@ export default function App() {
   const totalRounds = gameMode === 'duel'
     ? Math.floor(sessionFacts.length / numPlayers)
     : sessionFacts.length
+
+  // ─── Game handlers (extrait pour réduire App.jsx) ────────────────────────
+  const {
+    handleSelectAnswer,
+    handleOpenValidate,
+    handleTimeout,
+    handleUseHint,
+  } = useGameHandlers({
+    currentFact, gameMode, sessionType, selectedDifficulty, selectedCategory,
+    hintsUsed, selectedAnswer, duelCurrentPlayerIndex, user, unlockedFacts,
+    setSelectedAnswer, setIsCorrect, setPointsEarned, setSessionScore,
+    setCorrectCount, setSessionCorrectFacts, setDuelPlayers, setHintsUsed,
+    setSessionAnyHintUsed, setStorage, setNewlyUnlockedCategories, setScreen,
+  })
 
   // ─── Session starters ────────────────────────────────────────────────────
 
@@ -881,151 +896,7 @@ export default function App() {
     setScreen(SCREENS.QUESTION)
   }, [selectedDifficulty, gameMode, sessionType, handleBlitzStart])
 
-  // ─── Answer handlers ─────────────────────────────────────────────────────
-
-  const handleSelectAnswer = useCallback((answerIndex) => {
-    if (!currentFact) return
-    const isAnswerCorrect = answerIndex === currentFact.correctIndex
-
-    let points = 0
-    if (isAnswerCorrect) {
-      if (selectedDifficulty.coinsPerCorrect !== undefined) {
-        // Nouveau système : récompense fixe, pas de dégradation par indice
-        points = selectedDifficulty.coinsPerCorrect
-        // Mode Jouer avec catégorie choisie → 1 coin au lieu de 2
-        if (sessionType === 'flash_solo' && selectedCategory !== null) {
-          points = 1
-        }
-      } else {
-        // Legacy (Flash) : dégradation selon les indices utilisés
-        const sc = selectedDifficulty.scoring.correct
-        points = Array.isArray(sc) ? (sc[hintsUsed] ?? sc[sc.length - 1]) : sc
-      }
-    }
-
-    setSelectedAnswer(answerIndex)
-    setIsCorrect(isAnswerCorrect)
-    setPointsEarned(points)
-
-    if (isAnswerCorrect && currentFact) {
-      setSessionCorrectFacts(prev => [...prev, currentFact])
-    }
-
-    if (gameMode === 'duel') {
-      setDuelPlayers(ps => ps.map((p, i) => i === duelCurrentPlayerIndex ? { ...p, score: p.score + points } : p))
-    } else {
-      setSessionScore(s => s + points)
-      if (isAnswerCorrect) setCorrectCount(c => c + 1)
-      // Sauvegarde coins en temps réel (listener synchronise le state automatiquement)
-      if (points > 0) {
-        updateCoins(points)
-      }
-
-      // Explorer/Marathon : sauvegarder le f*ct débloqué immédiatement (pas attendre la fin de session)
-      if (isAnswerCorrect && currentFact && (sessionType === 'marathon' || sessionType === 'flash_solo')) {
-        setStorage(prev => {
-          const newUnlocked = new Set(prev.unlockedFacts)
-          if (!newUnlocked.has(currentFact.id)) {
-            // Pendant le tuto : ne pas ajouter ce fact à la collection
-            const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-            const shouldUnlock = wd.onboardingCompleted
-            if (shouldUnlock) {
-              newUnlocked.add(currentFact.id)
-              const next = { ...prev, unlockedFacts: newUnlocked }
-              saveStorage(next)
-
-              // THÈME B Point 1: Débloquer la catégorie si elle n'est pas déjà débloquée
-              const unlockedCategories = wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition']
-              if (currentFact.category && !unlockedCategories.includes(currentFact.category)) {
-                unlockedCategories.push(currentFact.category)
-                wd.unlockedCategories = unlockedCategories
-                wd.lastModified = Date.now()
-                localStorage.setItem('wtf_data', JSON.stringify(wd))
-                // Enregistrer la catégorie comme nouvellement débloquée durant cette session
-                setNewlyUnlockedCategories(prev => {
-                  if (!prev.includes(currentFact.category)) {
-                    return [...prev, currentFact.category]
-                  }
-                  return prev
-                })
-              }
-
-              if (user) {
-                import('./services/collectionService').then(({ updateCollection }) => {
-                  updateCollection(user.id, currentFact.category, currentFact.id)
-                })
-              }
-              return next
-            }
-          }
-          return prev
-        })
-      }
-    }
-
-    setScreen(SCREENS.REVELATION)
-  }, [currentFact, gameMode, duelCurrentPlayerIndex, hintsUsed, selectedDifficulty, sessionType, user])
-
-  const handleOpenValidate = useCallback((isCorrect) => {
-    let points = 0
-    if (isCorrect) {
-      if (selectedDifficulty.coinsPerCorrect !== undefined) {
-        points = selectedDifficulty.coinsPerCorrect
-        // Mode Jouer avec catégorie choisie → 1 coin au lieu de 2
-        if (sessionType === 'flash_solo' && selectedCategory !== null) {
-          points = 1
-        }
-      } else {
-        // Legacy (Hunt) : dégradation selon les indices utilisés
-        const sc = selectedDifficulty.scoring.correct
-        points = Array.isArray(sc) ? (sc[hintsUsed] ?? sc[sc.length - 1]) : sc
-      }
-    }
-
-    setSelectedAnswer(isCorrect ? 100 : -2)
-    setIsCorrect(isCorrect)
-    setPointsEarned(points)
-
-    if (isCorrect && currentFact) {
-      setSessionCorrectFacts(prev => [...prev, currentFact])
-    }
-
-    if (gameMode === 'duel') {
-      setDuelPlayers(ps => ps.map((p, i) => i === duelCurrentPlayerIndex ? { ...p, score: p.score + points } : p))
-    } else {
-      setSessionScore(s => s + points)
-      if (isCorrect) setCorrectCount(c => c + 1)
-      // Sauvegarde coins en temps réel (listener synchronise le state automatiquement)
-      if (points > 0) {
-        updateCoins(points)
-      }
-    }
-
-    setScreen(SCREENS.REVELATION)
-  }, [hintsUsed, gameMode, duelCurrentPlayerIndex, currentFact, selectedDifficulty, sessionType, selectedCategory])
-
-  const handleTimeout = useCallback(() => {
-    if (selectedAnswer !== null) return
-    setSelectedAnswer(-1)
-    setIsCorrect(false)
-    setPointsEarned(0)
-    setScreen(SCREENS.REVELATION)
-  }, [selectedAnswer])
-
-  const handleUseHint = useCallback((hintNum) => {
-    // Vérifier si l'indice est payant (au-delà des indices gratuits)
-    const freeHints = selectedDifficulty?.freeHints || 0
-    const isPaidHint = hintNum > freeHints
-
-    // Si indice payant, consommer du stock
-    if (isPaidHint) {
-      if (getBalances().hints < 1) return
-      updateHints(-1)
-    }
-
-    setHintsUsed(hintNum)
-    setSessionAnyHintUsed(true)
-  }, [selectedDifficulty])
+  // ─── Answer handlers → extraits dans useGameHandlers hook ──────────────────
 
   // ─── Navigation (next question / session end) ─────────────────────────────
 

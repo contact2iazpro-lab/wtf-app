@@ -6,6 +6,7 @@ import HintFlipButton from '../components/HintFlipButton'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import { updateCoins, updateTickets, updateHints, setAbsolute, getBalances } from '../services/currencyService'
+import { useCurrency } from '../context/CurrencyContext'
 import renderFormattedText from '../utils/renderFormattedText'
 
 // ── Main QuestionScreen ──────────────────────────────────────────────────────
@@ -31,6 +32,7 @@ export default function QuestionScreen({
   sessionType = 'parcours',
 }) {
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
+  const { coins: _cCoins, hints: _cHints } = useCurrency()
 
   // Solo et marathon → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
@@ -39,18 +41,18 @@ export default function QuestionScreen({
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [coinFlash, setCoinFlash] = useState(null)
-  const prevCoinsRef = useRef(playerCoins)
+  const prevCoinsRef = useRef(_cCoins)
 
   useEffect(() => {
-    const diff = playerCoins - prevCoinsRef.current
+    const diff = _cCoins - prevCoinsRef.current
     if (diff > 0) {
       setCoinFlash(`+${diff}`)
       const t = setTimeout(() => setCoinFlash(null), 1200)
-      prevCoinsRef.current = playerCoins
+      prevCoinsRef.current = _cCoins
       return () => clearTimeout(t)
     }
-    prevCoinsRef.current = playerCoins
-  }, [playerCoins])
+    prevCoinsRef.current = _cCoins
+  }, [_cCoins])
 
   const cat = getCategoryById(fact.category)
 
@@ -226,8 +228,8 @@ export default function QuestionScreen({
   const freeHints  = difficulty?.freeHints  ?? 0
   const paidHints  = difficulty?.paidHints  ?? 0
   const totalHints = Math.min(freeHints + paidHints, selectedHints.length)
-  // Stock restant = playerHints - indices déjà utilisés dans cette question
-  const stockRemaining = Math.max(0, playerHints - hintsUsed)
+  // Stock restant = hints du context - indices déjà utilisés dans cette question
+  const stockRemaining = Math.max(0, _cHints - hintsUsed)
 
   // Dev mode: 4 indices pré-révélés
   const devHintButtons = isDevMode && (
@@ -259,8 +261,8 @@ export default function QuestionScreen({
         const isFree = hintNum <= freeHints
         const cost = isFree ? 0 : hintCost
         // Paid hint: can use if has stock OR can buy with coins
-        const canAfford = isFree || playerCoins >= cost || stockRemaining > 0
-        const canUseHint = isFree ? (hintsUsed < freeHints) : (stockRemaining > 0 || playerCoins >= cost)
+        const canAfford = isFree || _cCoins >= cost || stockRemaining > 0
+        const canUseHint = isFree ? (hintsUsed < freeHints) : (stockRemaining > 0 || _cCoins >= cost)
         return (
           <HintFlipButton
             key={hintNum}

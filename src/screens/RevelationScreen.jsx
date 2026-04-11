@@ -4,6 +4,7 @@ import CoinsIcon from '../components/CoinsIcon'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
+import { useCurrency } from '../context/CurrencyContext'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -156,6 +157,7 @@ export default function RevelationScreen({
   correctAnswer,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
+  const { tickets: _currencyTickets, hints: _currencyHints } = useCurrency()
 
   const [flipped, setFlipped] = useState(true)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -319,11 +321,11 @@ export default function RevelationScreen({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
           <img src="/assets/ui/icon-tickets.png" style={{ width: S(16), height: S(16) }} alt="" />
-          <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerTickets}</span>
+          <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyTickets}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
           <img src="/assets/ui/icon-hint.png" style={{ width: S(16), height: S(16) }} alt="" />
-          <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{playerHints}</span>
+          <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyHints}</span>
         </div>
       </div>
       <button

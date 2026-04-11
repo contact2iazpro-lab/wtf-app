@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import SettingsModal from './SettingsModal'
 import { audio } from '../utils/audio'
+import { useCurrency } from '../context/CurrencyContext'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -16,9 +17,8 @@ const Pill = ({ icon, value, alt }) => (
 )
 
 export default function GameHeader({
-  playerCoins = 0,
-  playerHints = 0,
-  playerTickets = 0,
+  // Les devises ne sont PLUS passées en props — lues depuis CurrencyContext
+  // Props conservées pour backward compat mais ignorées si context dispo
   showTickets = false,
   categoryLabel = null,
   categoryColor = null,
@@ -27,6 +27,9 @@ export default function GameHeader({
   coinFlash = null,
 }) {
   const [showSettings, setShowSettings] = useState(false)
+
+  // Source unique de vérité pour les devises
+  const { coins, tickets, hints } = useCurrency()
 
   return (
     <>
@@ -74,7 +77,7 @@ export default function GameHeader({
         {/* Droite : pills + settings */}
         <div style={{ display: 'flex', alignItems: 'center', gap: S(6), flexShrink: 0 }}>
           <div style={{ position: 'relative' }}>
-            <Pill icon="/assets/ui/icon-coins.png" value={playerCoins} alt="coins" />
+            <Pill icon="/assets/ui/icon-coins.png" value={coins} alt="coins" />
             {coinFlash && (
               <span style={{
                 position: 'absolute', top: '-12px', right: S(4),
@@ -85,8 +88,8 @@ export default function GameHeader({
               </span>
             )}
           </div>
-          <Pill icon="/assets/ui/icon-tickets.png" value={playerTickets} alt="tickets" />
-          <Pill icon="/assets/ui/icon-hint.png" value={playerHints} alt="hints" />
+          <Pill icon="/assets/ui/icon-tickets.png" value={tickets} alt="tickets" />
+          <Pill icon="/assets/ui/icon-hint.png" value={hints} alt="hints" />
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}
             style={{

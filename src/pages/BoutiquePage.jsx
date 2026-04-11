@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CoinsIcon from '../components/CoinsIcon'
 import { updateCoins, updateHints, updateTickets, getBalances } from '../services/currencyService'
+import { useCurrency } from '../context/CurrencyContext'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -50,19 +51,12 @@ function PackButton({ emoji, label, price, discount, canBuy, onClick }) {
 export default function BoutiquePage() {
   const navigate = useNavigate()
 
-  const [balances, setBalances] = useState(() => getBalances())
+  const { coins, tickets, hints } = useCurrency()
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
 
-  useEffect(() => {
-    const refresh = () => setBalances(getBalances())
-    window.addEventListener('wtf_currency_updated', refresh)
-    window.addEventListener('wtf_storage_sync', refresh)
-    return () => {
-      window.removeEventListener('wtf_currency_updated', refresh)
-      window.removeEventListener('wtf_storage_sync', refresh)
-    }
-  }, [])
+  // Backward compat : les endroits qui lisent balances.coins
+  const balances = { coins, tickets, hints }
 
   const showToast = (msg) => {
     setToast(msg)
@@ -70,11 +64,10 @@ export default function BoutiquePage() {
   }
 
   const buyPack = (type, quantity, price) => {
-    if (balances.coins < price) return
+    if (coins < price) return
     updateCoins(-price)
     if (type === 'hint') updateHints(quantity)
     else updateTickets(quantity)
-    setBalances(getBalances())
     const unit = type === 'hint' ? 'indice' : 'ticket'
     showToast(`+${quantity} ${unit}${quantity > 1 ? 's' : ''} !`)
   }

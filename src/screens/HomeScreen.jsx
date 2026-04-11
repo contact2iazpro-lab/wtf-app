@@ -9,6 +9,7 @@ import SettingsModal from '../components/SettingsModal'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import { useUnlock } from '../context/UnlockContext'
+import { useCurrency } from '../context/CurrencyContext'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
@@ -158,6 +159,7 @@ export default function HomeScreen({
   flashEnergyRemaining = 3,
 }) {
   const { isConnected } = useAuth()
+  const { coins: _cCoins, tickets: _cTickets, hints: _cHints } = useCurrency()
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
   const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
 
@@ -519,7 +521,7 @@ export default function HomeScreen({
             }}
           >
             <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: S(14), height: S(14), flexShrink: 0 }} />
-            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{playerCoins}</span>
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{_cCoins}</span>
           </button>
           <button
             onClick={() => nav('boutique')}
@@ -531,7 +533,7 @@ export default function HomeScreen({
             }}
           >
             <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: S(14), height: S(14), flexShrink: 0 }} />
-            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{playerTickets}</span>
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{_cTickets}</span>
           </button>
           <button
             onClick={() => nav('boutique')}
@@ -543,7 +545,7 @@ export default function HomeScreen({
             }}
           >
             <img src="/assets/ui/icon-hint.png" alt="hints" style={{ width: S(14), height: S(14), objectFit: 'contain', flexShrink: 0 }} />
-            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{playerHints}</span>
+            <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{_cHints}</span>
           </button>
           <button
             onClick={handleSettings}

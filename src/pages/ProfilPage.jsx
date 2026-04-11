@@ -7,6 +7,7 @@ import { getValidFacts } from '../data/factsService'
 import SettingsModal from '../components/SettingsModal'
 import { getAllBadges } from '../utils/badgeManager'
 import { getBalances } from '../services/currencyService'
+import { useCurrency } from '../context/CurrencyContext'
 import { readWtfData } from '../utils/storageHelper'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -136,7 +137,8 @@ export default function ProfilPage() {
   const totalAnswered = playerData.totalAnswered || 0
   const successRate = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0
 
-  const balances = getBalances()
+  const { coins, tickets, hints } = useCurrency()
+  const balances = { coins, tickets, hints }
   const unlockedWtf = allFacts.filter(f => unlockedIds.has(f.id) && f.isVip).length
   const unlockedFunny = allFacts.filter(f => unlockedIds.has(f.id) && !f.isVip).length
 

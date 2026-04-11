@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-const STYLE_LABELS = {
+const STYLE_LABELS_MAP = {
   'realiste': '📷 Réaliste',
   'humoristique': '😂 Humoristique',
   'metaphorique': '🎭 Métaphorique',
   'retro': '🎨 Rétro Pop Art',
   'ultra_realiste_absurde': '📸 Ultra Réaliste Absurde',
   'wtf_cinematique': '🤯 WTF Cinématique',
-  'REALISTE': '📷 Réaliste',
-  'HUMORISTIQUE': '😂 Humoristique',
-  'METAPHORIQUE': '🎭 Métaphorique',
-  'RETRO': '🎨 Rétro Pop Art',
-  'ULTRA_REALISTE_ABSURDE': '📸 Ultra Réaliste Absurde',
-  'WTF_CINEMATIQUE': '🤯 WTF Cinématique',
 }
+// Case-insensitive lookup — handles both lowercase and UPPERCASE values from API
+const STYLE_LABELS = new Proxy(STYLE_LABELS_MAP, {
+  get(target, key) {
+    if (typeof key === 'string') return target[key.toLowerCase()] || key
+    return target[key]
+  }
+})
 
 export default function ImagePipelinePage() {
   // ──────────────────────────────────────────────────────────────────────────────

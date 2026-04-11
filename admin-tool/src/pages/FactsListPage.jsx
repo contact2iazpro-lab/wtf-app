@@ -217,32 +217,6 @@ export default function FactsListPage({ toast }) {
   // Reset page on filter change
   useEffect(() => { setPage(0); setSelected(new Set()) }, [filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, pageSize])
 
-  // Debug: Check for draft facts on mount
-  useEffect(() => {
-    const checkDraftFacts = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('facts')
-          .select('id, question, status, created_at')
-          .eq('status', 'draft')
-          .order('created_at', { ascending: false })
-          .limit(10)
-
-        if (!error) {
-          console.log('[FactsListPage] Draft facts in database:', {
-            count: data?.length || 0,
-            recent: data?.slice(0, 3).map(f => ({ id: f.id, question: f.question?.slice(0, 40), status: f.status })),
-          })
-        } else {
-          console.error('[FactsListPage] Erreur chargement draft facts:', error)
-        }
-      } catch (err) {
-        console.error('[FactsListPage] Exception:', err)
-      }
-    }
-    checkDraftFacts()
-  }, [])
-
   // Load facts
   useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, sortField, sortDir])
 
@@ -276,16 +250,6 @@ export default function FactsListPage({ toast }) {
 
       const { data, count, error } = await q
       if (error) throw error
-
-      // Debug: Log facts loaded and draft status
-      console.log(`[FactsListPage] Chargé ${data?.length || 0} facts sur ${count} total`, {
-        filterStatus,
-        filterPublished,
-        debouncedSearch,
-        filterCategories,
-        hasDrafts: data?.some(f => f.status === 'draft'),
-        draftCount: data?.filter(f => f.status === 'draft').length || 0,
-      })
 
       setFacts(data || [])
       setTotal(count || 0)
@@ -361,7 +325,6 @@ export default function FactsListPage({ toast }) {
       }
       else if (action === 'pack') updateObj = { pack_id: batchValue }
 
-      console.log('executeBatch:', action, 'ids:', ids.length, 'updateObj:', updateObj)
       const { error } = await supabase.from('facts').update(updateObj).in('id', ids)
       if (error) throw error
       toast?.(`✓ ${ids.length} facts mis à jour`)

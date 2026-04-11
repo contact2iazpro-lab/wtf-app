@@ -82,16 +82,8 @@ export default function DashboardPage({ toast }) {
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
   const enrichCancelRef = useRef(false)
 
-  // Generate facts state
-  const [generateTheme, setGenerateTheme] = useState('')
-  const [generateCategory, setGenerateCategory] = useState('')
-  const [newCategoryName, setNewCategoryName] = useState('')
-  const [generateCount, setGenerateCount] = useState('5')
-  const [generateStatus, setGenerateStatus] = useState(null) // null | 'running' | 'done' | 'error'
-  const [generateMessage, setGenerateMessage] = useState('')
-  const [categories, setCategories] = useState([])
 
-  useEffect(() => { load(); fetchQualityIssues(); fetchShortHintsCount(); fetchCategories() }, [])
+  useEffect(() => { load(); fetchQualityIssues(); fetchShortHintsCount() }, [])
 
   async function load() {
     setLoading(true)
@@ -301,7 +293,7 @@ export default function DashboardPage({ toast }) {
       // Filter client-side for single-word hints (no spaces)
       const shortHints = all.filter(f => {
         const h1Short = f.hint1 && !f.hint1.includes(' ')
-        const h2Short = f.hint2 && f.hint2 && !f.hint2.includes(' ')
+        const h2Short = f.hint2 && !f.hint2.includes(' ')
         return h1Short || h2Short
       })
 
@@ -309,90 +301,6 @@ export default function DashboardPage({ toast }) {
     } catch (err) {
       console.error('Erreur comptage indices courts:', err)
       setShortHintsCount(0)
-    }
-  }
-
-  async function fetchCategories() {
-    try {
-      const { data, error } = await supabase
-        .from('facts')
-        .select('category')
-        .not('category', 'is', null)
-        .neq('category', '')
-
-      if (error) throw error
-      const unique = [...new Set((data || []).map(f => f.category))].sort()
-      setCategories(unique)
-    } catch (err) {
-      console.error('Erreur fetch categories:', err)
-      setCategories([])
-    }
-  }
-
-  async function handleGenerateFacts() {
-    if (!generateTheme.trim()) {
-      setGenerateStatus('error')
-      setGenerateMessage('Theme requis')
-      return
-    }
-
-    if (!generateCategory) {
-      setGenerateStatus('error')
-      setGenerateMessage('Catégorie requise')
-      return
-    }
-
-    const finalCategory = generateCategory === '__NEW__' ? newCategoryName : generateCategory
-    if (!finalCategory.trim()) {
-      setGenerateStatus('error')
-      setGenerateMessage('Nom de catégorie requis')
-      return
-    }
-
-    setGenerateStatus('running')
-    setGenerateMessage('Génération des f*cts en cours...')
-
-    try {
-      const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/generate-facts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminPassword}`,
-        },
-        body: JSON.stringify({
-          theme: generateTheme,
-          category: finalCategory,
-          count: parseInt(generateCount, 10),
-        }),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        setGenerateStatus('error')
-        setGenerateMessage(`Erreur: ${result.error || 'Erreur inconnue'}`)
-        return
-      }
-
-      setGenerateStatus('done')
-      setGenerateMessage(`✓ ${result.count || generateCount} f*cts générés avec succès (statut: draft)`)
-
-      // Reset form
-      setTimeout(() => {
-        setGenerateTheme('')
-        setGenerateCategory('')
-        setNewCategoryName('')
-        setGenerateCount('5')
-        setGenerateStatus(null)
-        setGenerateMessage('')
-      }, 2000)
-    } catch (err) {
-      console.error('Erreur generate facts:', err)
-      setGenerateStatus('error')
-      setGenerateMessage(`Erreur: ${err.message}`)
     }
   }
 
@@ -415,7 +323,7 @@ export default function DashboardPage({ toast }) {
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break
-        console.log('Page ' + Math.ceil(from/PAGE) + ': ' + data.length + ' facts trouvés')
+
         all.push(...data)
         if (data.length < PAGE) break
         from += PAGE
@@ -460,14 +368,14 @@ export default function DashboardPage({ toast }) {
               }),
             }
           )
-          console.log('Fact #' + fact.id + ' response status:', resp.status)
+
           if (!resp.ok) {
             const errText = await resp.text()
-            console.error('Fact #' + fact.id + ' erreur:', errText)
+  
             throw new Error(errText || 'Erreur API')
           }
           const enrichResult = await resp.json()
-          console.log('Fact #' + fact.id + ' enrichi:', Object.keys(enrichResult))
+
 
           const { error: updateError } = await supabase
             .from('facts')
@@ -525,7 +433,7 @@ export default function DashboardPage({ toast }) {
 
         if (error) throw error
         if (!data || data.length === 0) break
-        console.log('Page ' + Math.ceil(from/PAGE) + ': ' + data.length + ' facts trouvés')
+
         all.push(...data)
         if (data.length < PAGE) break
         from += PAGE
@@ -534,7 +442,7 @@ export default function DashboardPage({ toast }) {
       // Filter client-side for single-word hints (no spaces)
       const shortHints = all.filter(f => {
         const h1Short = f.hint1 && !f.hint1.includes(' ')
-        const h2Short = f.hint2 && f.hint2 && !f.hint2.includes(' ')
+        const h2Short = f.hint2 && !f.hint2.includes(' ')
         return h1Short || h2Short
       })
 
@@ -577,14 +485,14 @@ export default function DashboardPage({ toast }) {
               }),
             }
           )
-          console.log('Fact #' + fact.id + ' response status:', resp.status)
+
           if (!resp.ok) {
             const errText = await resp.text()
-            console.error('Fact #' + fact.id + ' erreur:', errText)
+  
             throw new Error(errText || 'Erreur API')
           }
           const enrichResult = await resp.json()
-          console.log('Fact #' + fact.id + ' enrichi:', Object.keys(enrichResult))
+
 
           const { error: updateError } = await supabase
             .from('facts')
@@ -662,7 +570,7 @@ export default function DashboardPage({ toast }) {
 
       {/* Quality Dashboard — unified */}
       {(() => {
-        const totalFacts = qualityIssues?._total || 351
+        const totalFacts = qualityIssues?._total || 0
         const totalAlerts = qualityIssues
           ? ALL_QUALITY_CHECKS.reduce((sum, c) => sum + (qualityIssues[c.key]?.length ?? 0), 0)
           : 0
@@ -850,7 +758,7 @@ export default function DashboardPage({ toast }) {
                 : '🔍 Remplir les URLs manquantes (Opus)'}
             </button>
             <p className="text-xs text-slate-500 mt-2">
-              Le f*ct #351 recevra www.zebulo.com — les 25 autres seront recherchés automatiquement par Opus
+              Recherche automatique de sources via Claude Opus pour les facts sans URL
             </p>
 
             {/* Erreur */}
@@ -1081,7 +989,7 @@ export default function DashboardPage({ toast }) {
                       <tr
                         key={r.id}
                         className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
-                        onClick={() => { window.location.href = `/facts?category=${r.id}` }}
+                        onClick={() => { window.location.href = `/admin/facts?category=${r.id}` }}
                       >
                         <td className="px-4 py-2.5">
                           <div className="flex items-center gap-2">
@@ -1136,104 +1044,6 @@ export default function DashboardPage({ toast }) {
           </div>
         )
       })()}
-
-      {/* Générer des f*cts */}
-      <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
-        <h2 className="text-base font-black text-white mb-2">✨ Générer des f*cts</h2>
-        <p className="text-slate-400 text-sm mb-4">
-          Génère des f*cts en brouillon basés sur un thème personnalisé via Claude Opus.
-          Les f*cts seront créés avec le statut 'draft' pour révision avant publication.
-        </p>
-
-        <div className="space-y-3 mb-4">
-          {/* Theme input */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Thème</label>
-            <input
-              type="text"
-              placeholder="Ex: Les animaux marins, Les inventions du 20e siècle..."
-              value={generateTheme}
-              onChange={(e) => setGenerateTheme(e.target.value)}
-              disabled={generateStatus === 'running'}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
-            />
-          </div>
-
-          {/* Category select */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Catégorie</label>
-            <select
-              value={generateCategory}
-              onChange={(e) => setGenerateCategory(e.target.value)}
-              disabled={generateStatus === 'running'}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
-            >
-              <option value="">-- Sélectionner une catégorie --</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-              <option value="__NEW__">+ Créer une nouvelle catégorie</option>
-            </select>
-          </div>
-
-          {/* New category name (conditional) */}
-          {generateCategory === '__NEW__' && (
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-1.5">Nom de la nouvelle catégorie</label>
-              <input
-                type="text"
-                placeholder="Ex: Technologie, Histoire..."
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                disabled={generateStatus === 'running'}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
-              />
-            </div>
-          )}
-
-          {/* Count select */}
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Nombre de f*cts à générer</label>
-            <select
-              value={generateCount}
-              onChange={(e) => setGenerateCount(e.target.value)}
-              disabled={generateStatus === 'running'}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 disabled:opacity-50"
-            >
-              <option value="5">5 f*cts</option>
-              <option value="10">10 f*cts</option>
-              <option value="20">20 f*cts</option>
-            </select>
-          </div>
-        </div>
-
-        {generateMessage && (
-          <div
-            className="mb-4 px-4 py-3 rounded-xl text-sm font-semibold border"
-            style={{
-              background: generateStatus === 'error' ? 'rgba(239,68,68,0.1)' : generateStatus === 'done' ? 'rgba(34,197,94,0.1)' : 'rgba(139,92,246,0.1)',
-              borderColor: generateStatus === 'error' ? 'rgba(239,68,68,0.3)' : generateStatus === 'done' ? 'rgba(34,197,94,0.3)' : 'rgba(139,92,246,0.3)',
-              color: generateStatus === 'error' ? '#EF4444' : generateStatus === 'done' ? '#22C55E' : '#8B5CF6',
-            }}
-          >
-            {generateStatus === 'running' && (
-              <span className="inline-block animate-spin mr-2">⟳</span>
-            )}
-            {generateMessage}
-          </div>
-        )}
-
-        <div className="flex gap-3 flex-wrap">
-          <button
-            disabled={!generateTheme.trim() || !generateCategory || generateStatus === 'running'}
-            onClick={handleGenerateFacts}
-            className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
-          >
-            {generateStatus === 'running' ? 'Génération en cours...' : '✨ Générer les f*cts'}
-          </button>
-        </div>
-      </div>
 
       {/* Enrichir les incomplets */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">

@@ -35,18 +35,14 @@ if (import.meta.env.DEV) {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <Routes>
-        {/* InvitePage: HORS AuthProvider — pas de supabase principal, pas de lock */}
-        <Route path="/invite/:code" element={<InvitePage />} />
-        {/* Tout le reste: dans AuthProvider normalement */}
-        <Route path="/*" element={
-          <AuthProvider>
-            <CurrencyProvider>
-              <AppRouter />
-            </CurrencyProvider>
-          </AuthProvider>
-        } />
-      </Routes>
+      <AuthProvider>
+        <CurrencyProvider>
+          <Routes>
+            <Route path="/invite/:code" element={<InvitePage />} />
+            <Route path="/*" element={<AppRouter />} />
+          </Routes>
+        </CurrencyProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 )

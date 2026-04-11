@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { supabaseLight, initLightClientFromStorage } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 
 /**
- * InvitePage — Page 100% standalone
- *
- * HORS de AuthProvider — n'initialise pas le client Supabase principal.
- * Utilise uniquement supabaseLight (pas de lock, pas de contention).
+ * InvitePage — Gère les liens d'invitation amis.
+ * Maintenant DANS AuthProvider — utilise le client Supabase principal
+ * pour garantir que l'INSERT friendship passe avec la bonne session RLS.
  */
 export default function InvitePage() {
   const { code } = useParams()
   const navigate = useNavigate()
+  const { user, isConnected, loading: authLoading, signInWithGoogle } = useAuth()
 
   // 'loading' | 'not_found' | 'needs_auth' | 'processing' | 'done' | 'already_friends' | 'self' | 'error'
   const [status, setStatus] = useState('loading')
@@ -19,12 +20,20 @@ export default function InvitePage() {
 
   useEffect(() => {
     if (!code) { setStatus('not_found'); return }
-    processInvite(code.toUpperCase())
-  }, [code])
+    if (authLoading) return // Attendre que l'auth soit résolue
 
-  async function processInvite(inviteCode) {
-    // 1. Lookup le code (requête publique, pas besoin d'auth)
-    const { data: inviterData, error: lookupErr } = await supabaseLight
+    lookupInviter(code.toUpperCase())
+  }, [code, authLoading])
+
+  // Quand le user se connecte (après redirect Google), relancer le processus
+  useEffect(() => {
+    if (isConnected && inviter && status === 'needs_auth') {
+      processInvite()
+    }
+  }, [isConnected, inviter, status])
+
+  async function lookupInviter(inviteCode) {
+    const { data: inviterData, error: lookupErr } = await supabase
       .from('friend_codes')
       .select('*')
       .eq('code', inviteCode)
@@ -36,27 +45,34 @@ export default function InvitePage() {
     }
     setInviter(inviterData)
 
-    // 2. Récupérer la session depuis le localStorage (sans lock)
-    const user = await initLightClientFromStorage()
-    if (!user) {
+    if (!isConnected) {
       setStatus('needs_auth')
       return
     }
 
+    // User déjà connecté → traiter directement
+    await processInviteWithUser(inviterData, user)
+  }
+
+  async function processInvite() {
+    if (!user || !inviter) return
+    await processInviteWithUser(inviter, user)
+  }
+
+  async function processInviteWithUser(inviterData, currentUser) {
     // Self-invite ?
-    if (user.id === inviterData.user_id) {
+    if (currentUser.id === inviterData.user_id) {
       setStatus('self')
       return
     }
 
-    // 3. Envoyer/accepter la friend request via le client léger
     setStatus('processing')
     try {
       // Check si déjà amis
-      const { data: existing } = await supabaseLight
+      const { data: existing } = await supabase
         .from('friendships')
         .select('*')
-        .or(`and(user1_id.eq.${user.id},user2_id.eq.${inviterData.user_id}),and(user1_id.eq.${inviterData.user_id},user2_id.eq.${user.id})`)
+        .or(`and(user1_id.eq.${currentUser.id},user2_id.eq.${inviterData.user_id}),and(user1_id.eq.${inviterData.user_id},user2_id.eq.${currentUser.id})`)
         .maybeSingle()
 
       if (existing) {
@@ -65,7 +81,7 @@ export default function InvitePage() {
           return
         }
         // Accepter la demande pendante
-        const { error: updateErr } = await supabaseLight
+        const { error: updateErr } = await supabase
           .from('friendships')
           .update({ status: 'accepted', accepted_at: new Date().toISOString() })
           .eq('id', existing.id)
@@ -74,11 +90,11 @@ export default function InvitePage() {
         return
       }
 
-      // Créer directement en accepted (pas besoin de pending → accepted)
-      const { error: insertErr } = await supabaseLight
+      // Créer directement en accepted
+      const { error: insertErr } = await supabase
         .from('friendships')
         .insert({
-          user1_id: user.id,
+          user1_id: currentUser.id,
           user2_id: inviterData.user_id,
           status: 'accepted',
           accepted_at: new Date().toISOString(),
@@ -138,7 +154,7 @@ export default function InvitePage() {
         boxShadow: '0 4px 24px rgba(0,0,0,0.08)', maxWidth: 360, width: '100%',
         textAlign: 'center',
       }}>
-        {status === 'loading' && (
+        {(status === 'loading' || authLoading) && (
           <p style={{ color: '#94A3B8', fontSize: 14, fontWeight: 600 }}>Chargement...</p>
         )}
 
@@ -158,15 +174,7 @@ export default function InvitePage() {
           <p style={{ fontSize: 14, fontWeight: 600, color: '#64748B', marginBottom: 24, lineHeight: 1.4 }}>
             t'invite à jouer sur What The F*ct !
           </p>
-          <Btn onClick={async () => {
-            await supabaseLight.auth.signInWithOAuth({
-              provider: 'google',
-              options: {
-                redirectTo: window.location.href.split('#')[0],
-                queryParams: { prompt: 'select_account' },
-              }
-            })
-          }}>Se connecter avec Google</Btn>
+          <Btn onClick={() => signInWithGoogle()}>Se connecter avec Google</Btn>
         </>)}
 
         {status === 'processing' && (<>

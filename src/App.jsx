@@ -1,9 +1,7 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
-import { useScale } from './hooks/useScale'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS } from './constants/gameConfig'
 import TutoTunnel from './components/TutoTunnel'
-import { getValidFacts, getDailyFact, getTitrePartiel, getCategoryById, initFacts, resetFacts } from './data/factsService'
+import { getDailyFact, getTitrePartiel, getCategoryById, initFacts, resetFacts } from './data/factsService'
 import { loadStorage, saveStorage } from './utils/storageHelper'
 import { updateTickets, getBalances } from './services/currencyService'
 import { supabase } from './lib/supabase'
@@ -80,14 +78,6 @@ export default function App() {
     localStorage.setItem('wtf_hints_available', '0')
   }
 
-  // TEMP DEBUG : créditer 200 tickets/coins/indices au démarrage pour les tests
-  // TODO: SUPPRIMER AVANT PROD
-  if (import.meta.env.DEV) {
-    const d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    d.tickets = 200; d.wtfCoins = 200; d.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(d))
-    localStorage.setItem('wtf_hints_available', '200')
-  }
 
   // ── Challenge Blitz : démarrer un défi depuis ChallengeScreen ──
   useEffect(() => {
@@ -495,9 +485,6 @@ export default function App() {
 
       {screen === SCREENS.HOME && (
         <HomeScreen
-          playerCoins={wtfCoins}
-          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
-          playerTickets={tickets}
           currentStreak={streak}
           dailyQuestsRemaining={dailyQuestsRemaining}
           newlyEarnedBadges={newlyEarnedBadges}
@@ -607,9 +594,6 @@ export default function App() {
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
-          playerCoins={wtfCoins}
-          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
-          playerTickets={tickets}
           sessionType={sessionType}
         />
       )}
@@ -629,9 +613,6 @@ export default function App() {
           duelContext={duelContext}
           gameMode={gameMode}
           sessionScore={gameMode === 'duel' ? 0 : sessionScore}
-          playerCoins={wtfCoins}
-          playerTickets={tickets}
-          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           sessionType={sessionType}
         />
       )}
@@ -652,9 +633,6 @@ export default function App() {
           unlockedFactsThisSession={sessionCorrectFacts}
           allSessionFacts={sessionFacts}
           sessionsToday={sessionsToday}
-          playerCoins={wtfCoins}
-          playerTickets={tickets}
-          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           onSaveTempFacts={handleSaveTempFacts}
           onCollection={() => { handleHome(); navigate('/collection') }}
           isFirstGame={(() => { try { const d = JSON.parse(localStorage.getItem('wtf_data') || '{}'); return d.firstFlashTicketGiven && (d.gamesPlayed || 0) <= 1 } catch { return false } })()}
@@ -689,8 +667,6 @@ export default function App() {
           category={selectedCategory}
           onFinish={handleBlitzFinish}
           onQuit={handleHome}
-          playerCoins={wtfCoins}
-          playerHints={parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)}
           onUseHint={handleUseHint}
         />
       )}

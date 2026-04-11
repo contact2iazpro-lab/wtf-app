@@ -5,14 +5,12 @@ export async function pushToServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    const hints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
+    // Note: coins/tickets/hints ne sont PLUS syncés ici — ils passent par le delta RPC
+    // via CurrencyContext → syncQueue → apply_currency_delta
     const payload = {
-      coins: saved.wtfCoins || 0,
       total_score: saved.totalScore || 0,
       streak_current: saved.streak || 0,
       streak_max: Math.max(saved.streak || 0, saved.bestStreak || 0),
-      tickets: saved.tickets || 0,
-      hints,
       last_played_date: new Date().toISOString().slice(0, 10),
       updated_at: new Date().toISOString(),
       last_modified: Date.now(),
@@ -31,41 +29,31 @@ export async function pushToServer(userId) {
 export async function pullFromServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
+    // Note: les DEVISES (coins/tickets/hints) sont gérées par CurrencyContext + delta RPC.
+    // pullFromServer ne synce plus que les données NON-devise (score, streak, collections).
     const { data: remote, error } = await supabase
       .from('profiles')
-      .select('coins, total_score, streak_current, streak_max, tickets, hints, last_played_date, last_modified')
+      .select('total_score, streak_current, streak_max, last_played_date, last_modified')
       .eq('id', userId)
       .single()
     if (error) throw error
     if (!remote) return null
-    const isNewProfile = (remote.coins || 0) === 0
-      && (remote.total_score || 0) === 0
-      && (remote.tickets || 0) === 0
-      && (remote.hints || 0) === 0
-      && (remote.streak_current || 0) === 0
-    if (isNewProfile) {
-      console.log('[sync] New profile detected — pushing local to Supabase')
-      return pushToServer(userId)
-    }
+
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     const localTimestamp = saved.lastModified || 0
     const remoteTimestamp = remote.last_modified || 0
 
-    // Résoudre conflits: si local est plus récent, pousser local vers cloud au lieu d'écraser
-    if (localTimestamp > remoteTimestamp) {
-      console.log('[sync] Local data is newer than remote — pushing local to server instead')
+    // Pour les données non-devise : si remote est plus récent, on pull
+    if (remoteTimestamp > localTimestamp) {
+      saved.totalScore = remote.total_score || 0
+      saved.streak = remote.streak_current || 0
+      saved.bestStreak = Math.max(saved.bestStreak || 0, remote.streak_max || 0)
+      saved.lastModified = remoteTimestamp
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    } else if (localTimestamp > remoteTimestamp) {
+      // Local plus récent → push les données non-devise vers serveur
       return pushToServer(userId)
     }
-
-    // Remote est plus à jour → syncer depuis cloud vers local
-    saved.wtfCoins = remote.coins || 0
-    saved.totalScore = remote.total_score || 0
-    saved.streak = remote.streak_current || 0
-    saved.bestStreak = Math.max(saved.bestStreak || 0, remote.streak_max || 0)
-    saved.tickets = remote.tickets || 0
-    saved.lastModified = remoteTimestamp
-    localStorage.setItem('wtf_data', JSON.stringify(saved))
-    localStorage.setItem('wtf_hints_available', String(remote.hints || 0))
     try {
       const { data: collections } = await supabase
         .from('collections')

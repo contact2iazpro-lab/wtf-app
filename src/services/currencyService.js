@@ -1,15 +1,36 @@
 /**
  * CurrencyService — Point unique d'écriture des devises (tickets, coins, hints)
  *
- * RÈGLE : AUCUN autre fichier ne doit écrire directement tickets/coins/hints
- * dans localStorage. Tout passe par ce service.
+ * ARCHITECTURE V2 :
+ * - Ce service est maintenant un BRIDGE entre l'ancien code (qui appelle updateCoins/etc.)
+ *   et le nouveau CurrencyContext (source de vérité pour les connectés).
+ * - Pour les joueurs CONNECTÉS : délègue au CurrencyContext via _contextRef
+ * - Pour les joueurs ANONYMES : écrit directement dans localStorage (comportement legacy)
  *
- * Flow : lire local → appliquer delta → écrire local → push Supabase → dispatch event
+ * Migration progressive : les appelants existants (App.jsx, etc.) continuent d'appeler
+ * updateCoins(delta) sans changement. Le service route vers le bon backend.
+ *
+ * RÈGLE : AUCUN autre fichier ne doit écrire directement tickets/coins/hints
+ * dans localStorage. Tout passe par ce service ou le CurrencyContext.
  */
 
-import { pushToServer } from './playerSyncService'
+// ── Référence au CurrencyContext (injectée par le Provider) ──────────────────
 
-// ── Helpers de lecture ────────────────────────────────────────────────────────
+let _contextRef = null
+
+/**
+ * Appelé par CurrencyProvider au mount pour injecter les fonctions du context.
+ * @param {{ addCoins: Function, addTickets: Function, addHints: Function, refreshFromServer: Function } | null} ctx
+ */
+export function setCurrencyContext(ctx) {
+  _contextRef = ctx
+}
+
+function isConnected() {
+  return _contextRef !== null
+}
+
+// ── Helpers localStorage (legacy, pour anonymes) ─────────────────────────────
 
 function readWtfData() {
   try {
@@ -24,28 +45,23 @@ function writeWtfData(data) {
   localStorage.setItem('wtf_data', JSON.stringify(data))
 }
 
-function getUserId() {
-  try {
-    const auth = JSON.parse(localStorage.getItem('sb-znoceotakhynqcqhpwgz-auth-token') || '{}')
-    return auth?.user?.id || null
-  } catch {
-    return null
-  }
-}
-
 // ── Fonctions publiques ──────────────────────────────────────────────────────
 
 /**
  * Modifier les coins du joueur
  * @param {number} delta — positif pour ajouter, négatif pour retirer
- * @returns {number} nouveau solde
+ * @returns {number} nouveau solde (optimistic)
  */
 export function updateCoins(delta) {
+  if (isConnected()) {
+    _contextRef.addCoins(delta)
+    return // Le context gère tout
+  }
+
+  // Fallback anonyme
   const data = readWtfData()
-  const oldValue = data.wtfCoins || 0
-  data.wtfCoins = Math.max(0, oldValue + delta)
+  data.wtfCoins = Math.max(0, (data.wtfCoins || 0) + delta)
   writeWtfData(data)
-  syncToServer()
   notifyUI()
   return data.wtfCoins
 }
@@ -53,14 +69,17 @@ export function updateCoins(delta) {
 /**
  * Modifier les tickets du joueur
  * @param {number} delta — positif pour ajouter, négatif pour retirer
- * @returns {number} nouveau solde
+ * @returns {number} nouveau solde (optimistic)
  */
 export function updateTickets(delta) {
+  if (isConnected()) {
+    _contextRef.addTickets(delta)
+    return
+  }
+
   const data = readWtfData()
-  const oldValue = data.tickets || 0
-  data.tickets = Math.max(0, oldValue + delta)
+  data.tickets = Math.max(0, (data.tickets || 0) + delta)
   writeWtfData(data)
-  syncToServer()
   notifyUI()
   return data.tickets
 }
@@ -68,36 +87,44 @@ export function updateTickets(delta) {
 /**
  * Modifier les indices du joueur
  * @param {number} delta — positif pour ajouter, négatif pour retirer
- * @returns {number} nouveau solde
+ * @returns {number} nouveau solde (optimistic)
  */
 export function updateHints(delta) {
+  if (isConnected()) {
+    _contextRef.addHints(delta)
+    return
+  }
+
   const current = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
   const newValue = Math.max(0, current + delta)
   localStorage.setItem('wtf_hints_available', String(newValue))
-  // Aussi mettre à jour lastModified dans wtf_data pour la sync
   const data = readWtfData()
-  writeWtfData(data)
-  syncToServer()
+  writeWtfData(data) // Met à jour lastModified
   notifyUI()
   return newValue
 }
 
 /**
  * Modifier plusieurs devises en une seule opération
- * (évite plusieurs push Supabase successifs)
  * @param {{ coins?: number, tickets?: number, hints?: number }} deltas
  * @returns {{ coins: number, tickets: number, hints: number }} nouveaux soldes
  */
 export function updateMultiple(deltas) {
-  const data = readWtfData()
+  if (isConnected()) {
+    if (deltas.coins) _contextRef.addCoins(deltas.coins)
+    if (deltas.tickets) _contextRef.addTickets(deltas.tickets)
+    if (deltas.hints) _contextRef.addHints(deltas.hints)
+    return
+  }
 
+  // Fallback anonyme
+  const data = readWtfData()
   if (deltas.coins !== undefined) {
     data.wtfCoins = Math.max(0, (data.wtfCoins || 0) + deltas.coins)
   }
   if (deltas.tickets !== undefined) {
     data.tickets = Math.max(0, (data.tickets || 0) + deltas.tickets)
   }
-
   writeWtfData(data)
 
   if (deltas.hints !== undefined) {
@@ -105,7 +132,6 @@ export function updateMultiple(deltas) {
     localStorage.setItem('wtf_hints_available', String(Math.max(0, current + deltas.hints)))
   }
 
-  syncToServer()
   notifyUI()
 
   return {
@@ -119,6 +145,8 @@ export function updateMultiple(deltas) {
  * Lire les soldes actuels (lecture seule, pas de modification)
  */
 export function getBalances() {
+  // Note : pour les connectés, préférer useCurrency() dans les composants React.
+  // Cette fonction est gardée pour le code non-React (storageHelper, etc.)
   const data = readWtfData()
   return {
     coins: data.wtfCoins || 0,
@@ -139,18 +167,11 @@ export function setAbsolute(values) {
   if (values.hints !== undefined) {
     localStorage.setItem('wtf_hints_available', String(values.hints))
   }
-  syncToServer()
+  // Note : setAbsolute n'utilise PAS le delta RPC — c'est pour le dev mode uniquement
   notifyUI()
 }
 
 // ── Internes ─────────────────────────────────────────────────────────────────
-
-function syncToServer() {
-  const userId = getUserId()
-  if (userId) {
-    pushToServer(userId).catch(() => {})
-  }
-}
 
 function notifyUI() {
   window.dispatchEvent(new Event('wtf_currency_updated'))

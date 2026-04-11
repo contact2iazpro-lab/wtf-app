@@ -76,7 +76,8 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 
 | Paramètre | Valeur |
 |-----------|--------|
-| Nouveau joueur | 0 coins / 1 ticket / 3 indices |
+| Nouveau joueur | 0 coins / 0 tickets / 0 indices (sera modifié par l'onboarding) |
+| Nouveau joueur TEMP (avant onboarding) | 10 coins / 10 tickets / 10 indices |
 | 1 ticket (boutique) | 25 coins |
 | 1 indice (boutique) | 10 coins |
 | 3 indices (boutique) | 30 coins |

@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
         // Nouveau profil → créer avec les valeurs de départ
         const result = await supabase
           .from('profiles')
-          .insert({ id: userId, username, coins: 0, tickets: 3, hints: 3 })
+          .insert({ id: userId, username, coins: 10, tickets: 10, hints: 10 })
           .select()
           .single()
         data = result.data

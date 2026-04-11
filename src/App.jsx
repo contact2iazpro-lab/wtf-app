@@ -75,9 +75,21 @@ export default function App() {
     }
   })
 
-  // Initialiser les indices à 0 pour les nouveaux joueurs
+  // Initialiser les devises pour les nouveaux joueurs (TEMP: 10/10/10 avant onboarding)
   if (localStorage.getItem('wtf_hints_available') === null) {
-    localStorage.setItem('wtf_hints_available', '0')
+    localStorage.setItem('wtf_hints_available', '10')
+  }
+  if (localStorage.getItem('wtf_data')) {
+    const _initData = JSON.parse(localStorage.getItem('wtf_data'))
+    if (_initData.tickets === undefined) { _initData.tickets = 10; _initData.wtfCoins = 10; _initData.lastModified = Date.now(); localStorage.setItem('wtf_data', JSON.stringify(_initData)) }
+  }
+
+  // DEV: 100/100/100 pour les tests (localhost uniquement)
+  if (import.meta.env.DEV) {
+    const _d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    _d.tickets = 100; _d.wtfCoins = 100; _d.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(_d))
+    localStorage.setItem('wtf_hints_available', '100')
   }
 
 
@@ -480,8 +492,6 @@ export default function App() {
 
   return (
     <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg" style={{ '--scale': scale, height: '100dvh' }}>
-
-      )}
 
       {screen === SCREENS.HOME && (
         <HomeScreen

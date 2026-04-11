@@ -248,9 +248,9 @@ export default function SocialPage() {
                   onClick={() => loadData()}
                   disabled={socialLoading}
                   className="active:scale-90 transition-all"
-                  style={{ background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', opacity: socialLoading ? 0.4 : 0.6 }}
+                  style={{ background: '#EF4444', border: 'none', fontSize: 12, cursor: 'pointer', color: 'white', borderRadius: 8, padding: '4px 10px', fontWeight: 900 }}
                 >
-                  {socialLoading ? '⟳' : '↻'}
+                  {socialLoading ? '...' : 'Refresh'}
                 </button>
               </div>
               {socialLoading && friends.length === 0 ? (

@@ -8,6 +8,7 @@ import RecompensesPage from './pages/RecompensesPage'
 import SocialPage from './pages/SocialPage'
 import BottomNav from './components/BottomNav'
 import ChallengeScreen from './screens/ChallengeScreen'
+import QuestRoute from './routes/QuestRoute'
 import { useScale } from './hooks/useScale'
 import { UnlockContext } from './context/UnlockContext'
 import { UNLOCK_MESSAGES, UNLOCK_THRESHOLDS, SPOTLIGHT_MESSAGES } from './constants/layoutConfig'
@@ -138,6 +139,7 @@ export default function AppRouter() {
     <UnlockProvider>
       <Routes>
         <Route path="/*" element={<App />} />
+        <Route path="/quest" element={<QuestRoute />} />
         <Route path="/collection" element={<PageWrapper><CollectionPage /></PageWrapper>} />
         <Route path="/profil" element={<PageWrapper><ProfilPage /></PageWrapper>} />
         <Route path="/boutique" element={<PageWrapper><BoutiquePage /></PageWrapper>} />

@@ -519,18 +519,8 @@ export default function App() {
   const handleHomeNavigate = useCallback((target) => {
     switch (target) {
       case 'difficulty': {
-        setGameMode('solo'); setSessionType('parcours')
-        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-
-        // DEPRECATED: Tutorial logic moved to TutoTunnel component
-
-        // Normal quest — first time: skip launch + difficulty, force Cool
-        if ((wd.questsPlayed || 0) === 0) {
-          setSelectedDifficulty(DIFFICULTY_LEVELS.COOL)
-          handleSelectDifficulty(DIFFICULTY_LEVELS.COOL)
-          return
-        }
-        showOrSkipLaunch('quest')
+        // Quest migré vers /quest route
+        navigate('/quest')
         break
       }
       case 'wtfDuJour':

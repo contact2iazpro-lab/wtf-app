@@ -48,12 +48,25 @@ const CHAPTERS = [
     shortTitle: 'Jouer',
     title: 'Jouer',
     content: [
-      { icon: '🆓', text: '**Gratuit illimité** — pas de ticket requis.' },
+      { icon: '🔋', text: '**3 sessions gratuites par jour** (reset à minuit). Après : **10 coins** par session.' },
       { icon: '⚡', text: 'Session rapide de **5 questions**.' },
       { icon: '🎯', text: '**Mode Aléatoire** : catégories mélangées · **2 coins**/bonne réponse.' },
       { icon: '🗂️', text: '**Mode Catégorie** : catégorie au choix · **1 coin**/bonne réponse.' },
       { icon: '💡', text: '**2 indices** gratuits par question, 4 QCM, 20s timer.' },
       { icon: '🚪', text: 'Tes coins et f*cts sont sauvegardés même si tu quittes.' },
+    ],
+  },
+  {
+    id: 'energy',
+    emoji: '🔋',
+    shortTitle: 'Énergie',
+    title: 'Énergie',
+    content: [
+      { icon: '🔋', text: 'Les modes **Jouer** et **Explorer** utilisent de l\'**énergie**.' },
+      { icon: '🆓', text: 'Tu as **3 sessions gratuites** par jour (les 3 barres oranges sur l\'écran d\'accueil).' },
+      { icon: '⏰', text: 'L\'énergie se **recharge à minuit** automatiquement.' },
+      { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 session pour 10 coins**.' },
+      { icon: '♾️', text: 'Les modes **Quest**, **Blitz** et **Hunt** ne consomment **pas d\'énergie**.' },
     ],
   },
   {
@@ -193,6 +206,9 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
         return (wd.statsByMode?.parcours?.gamesPlayed || 0) >= 1
 
       case 'explorer':
+        return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
+
+      case 'energy':
         return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
 
       case 'marathon':
@@ -336,7 +352,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               )}
 
               {/* Checkbox réafficher les règles des modes — bien visible */}
-              {['quest', 'explorer', 'blitz', 'hunt', 'marathon'].includes(chapter.id) && (
+              {['quest', 'explorer', 'blitz', 'hunt', 'marathon', 'energy'].includes(chapter.id) && (
                 <label style={{
                   display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
                   cursor: 'pointer', marginTop: 12, padding: '8px', background: 'rgba(255,107,26,0.08)',

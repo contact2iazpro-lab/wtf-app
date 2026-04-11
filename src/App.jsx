@@ -204,6 +204,7 @@ export default function App() {
   const [showNoTicketModal, setShowNoTicketModal] = useState(false)
   const [gameAlert, setGameAlert] = useState(null) // { emoji, title, message }
   const [showNoEnergyModal, setShowNoEnergyModal] = useState(false)
+  const [noEnergyOrigin, setNoEnergyOrigin] = useState('flash') // 'flash' | 'marathon'
   const [trophyQueue, setTrophyQueue] = useState([]) // badges à afficher un par un
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
@@ -537,14 +538,14 @@ export default function App() {
         break
       case 'categoryFlash': {
         const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && !canPlayFlashCheck()) { setShowNoEnergyModal(true); break }
+        if (!isDevOrTest && !canPlayFlashCheck()) { setNoEnergyOrigin('flash'); setShowNoEnergyModal(true); break }
         setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
         showOrSkipLaunch('flash')
         break
       }
       case 'marathon': {
         const isDevOrTest2 = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest2 && !canPlayFlashCheck()) { setShowNoEnergyModal(true); break }
+        if (!isDevOrTest2 && !canPlayFlashCheck()) { setNoEnergyOrigin('marathon'); setShowNoEnergyModal(true); break }
         setGameMode('marathon')
         setSessionType('marathon')
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
@@ -2336,9 +2337,15 @@ export default function App() {
           onConfirm={() => {
             if (buyExtraSession()) {
               setShowNoEnergyModal(false)
-              // Relancer le flow flash directement
-              setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
-              showOrSkipLaunch('flash')
+              if (noEnergyOrigin === 'marathon') {
+                // Relancer Explorer
+                setGameMode('marathon'); setSessionType('marathon')
+                showOrSkipLaunch('explorer')
+              } else {
+                // Relancer Flash
+                setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
+                showOrSkipLaunch('flash')
+              }
             } else {
               setShowNoEnergyModal(false)
               setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: `Il te faut ${FLASH_ENERGY.EXTRA_SESSION_COST} coins pour acheter une session.` })

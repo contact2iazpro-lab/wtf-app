@@ -4,6 +4,7 @@ import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
 import { useCurrency } from '../context/CurrencyContext'
+import { updateCoins } from '../services/currencyService'
 import { useAuth } from '../context/AuthContext'
 import ConnectBanner from '../components/ConnectBanner'
 
@@ -96,6 +97,19 @@ export default function ResultsScreen({
       setSavedAfterConnect(true)
     }
   }, [isConnected, savedAfterConnect, onSaveTempFacts, sessionType])
+
+  // Proposer la connexion Google après 2s si pas connecté (une seule fois par session)
+  useEffect(() => {
+    if (isConnected || googleDismissed >= 2) return
+    const t = setTimeout(() => {
+      if (unlockedFactsThisSession.length > 0) {
+        localStorage.setItem('wtf_temp_facts', JSON.stringify(unlockedFactsThisSession.map(f => f.id)))
+      }
+      setShowConnectBanner(true)
+    }, 2000)
+    return () => clearTimeout(t)
+  }, [isConnected, googleDismissed])
+
   const [coinAnimActive, setCoinAnimActive] = useState(false)
   const [audioDuration, setAudioDuration] = useState(2.5)
   const [rankVisible, setRankVisible] = useState(false)      // MOD 6
@@ -117,14 +131,16 @@ export default function ResultsScreen({
   const stars = getStars(correctCount, totalFacts)
   const isPerfect = totalFacts > 0 && correctCount >= totalFacts
 
-  // COR 1 — Fond variable selon le score
-  const screenBg = isPerfect
-    ? 'linear-gradient(160deg, #FEF3C722 0%, #F59E0B 100%)'
-    : correctCount >= 7
-    ? 'linear-gradient(160deg, #ECFDF522 0%, #10B981 100%)'
-    : correctCount >= 4
-    ? 'linear-gradient(160deg, #EFF6FF22 0%, #3B82F6 100%)'
-    : 'linear-gradient(160deg, #F5F3FF22 0%, #6366F1 100%)'
+  // Fond : même style pastel que la home
+  const PASTEL_GRADIENTS = [
+    'linear-gradient(160deg, #5a7fa5 0%, #7b9fc7 40%, #99b8d9 70%, #5a7fa5 100%)',
+    'linear-gradient(160deg, #8b7b9a 0%, #ad9bbb 40%, #c5b5d2 70%, #8b7b9a 100%)',
+    'linear-gradient(160deg, #5a9a8b 0%, #7bbbad 40%, #99d2c5 70%, #5a9a8b 100%)',
+    'linear-gradient(160deg, #9a7b7b 0%, #bb9d9d 40%, #d2b5b5 70%, #9a7b7b 100%)',
+    'linear-gradient(160deg, #7b8b9a 0%, #9dadbb 40%, #b5c5d2 70%, #7b8b9a 100%)',
+  ]
+  const bgRef = useRef(PASTEL_GRADIENTS[Math.floor(Math.random() * PASTEL_GRADIENTS.length)])
+  const screenBg = bgRef.current
 
   // COR 6 — Taux moyen pseudo-aléatoire stable par catégorie
   const avgSuccessRate = 15 + ((categoryId ? categoryId.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 50) % 40)
@@ -287,9 +303,7 @@ export default function ResultsScreen({
     <div style={{
       position: 'fixed', inset: 0, zIndex: 0,
       display: 'flex', flexDirection: 'column',
-      backgroundImage: 'url(/assets/backgrounds/results-victory.webp)',
-      backgroundSize: 'cover', backgroundPosition: 'center',
-      backgroundColor: '#0a0f1e',
+      background: screenBg,
       overflow: 'hidden',
     }}>
       {/* Overlay léger */}
@@ -475,7 +489,7 @@ export default function ResultsScreen({
             </div>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: S(14), fontWeight: 900, color: textOnBg }}>{totalFacts - correctCount}</div>
-              <div style={{ fontSize: S(9), fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Ratés</div>
+              <div style={{ fontSize: S(9), fontWeight: 600, color: textOnBg, opacity: 0.5 }}>À découvrir</div>
             </div>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ fontSize: S(14), fontWeight: 900, color: catColor }}>{precision}%</div>
@@ -494,38 +508,56 @@ export default function ResultsScreen({
             <div style={{ display: 'flex', flexDirection: 'column', gap: S(4), flexShrink: 0 }}>
               <span style={{ fontSize: S(10), fontWeight: 800, color: textOnBg, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {unlocked.length > 0 ? `🔓 ${unlocked.length} trouvé${unlocked.length > 1 ? 's' : ''}` : ''}
-                {locked.length > 0 ? ` · 🔒 ${locked.length} raté${locked.length > 1 ? 's' : ''}` : ''}
+                {locked.length > 0 ? ` · 🔒 ${locked.length} à découvrir` : ''}
               </span>
-              <div style={{ display: 'flex', gap: S(6), overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingRight: S(4) }}>
+              <div style={{ display: 'flex', gap: S(4), width: '100%' }}>
                 {sorted.map((fact) => {
                   const isUnlocked = unlockedIds.has(fact.id)
                   const factCat = CATEGORIES.find(c => c.id === fact.category)
                   const factCatColor = factCat?.color || catColor
                   return (
-                    <div
-                      key={fact.id}
-                      onClick={() => isUnlocked && (onFactDetail ? onFactDetail(fact.id) : onCollection?.())}
-                      style={{
-                        width: S(70), height: S(70), flexShrink: 0,
-                        borderRadius: S(8), overflow: 'hidden', position: 'relative',
+                    <div key={fact.id} style={{ width: 0, flexGrow: 1, flexShrink: 0, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+                      onClick={() => {
+                        if (isUnlocked) {
+                          // Stocker l'ID pour que CollectionPage ouvre le détail directement
+                          localStorage.setItem('wtf_open_fact_id', String(fact.id))
+                          onCollection?.()
+                        } else {
+                          setSelectedFact({ ...fact, _locked: true, _catColor: factCatColor, _catEmoji: factCat?.emoji, _catLabel: factCat?.label })
+                        }
+                      }}>
+                      {/* Image */}
+                      <div style={{
+                        aspectRatio: '1', borderRadius: `${S(8)} ${S(8)} 0 0`, overflow: 'hidden', position: 'relative',
                         border: isUnlocked ? `2px solid ${factCatColor}` : '2px solid #6B7280',
+                        borderBottom: 'none',
                         cursor: isUnlocked ? 'pointer' : 'default',
                         background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})`,
                       }}>
-                      {fact.imageUrl ? (
-                        <img src={fact.imageUrl} alt=""
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', filter: !isUnlocked ? 'blur(4px) brightness(0.4)' : 'none' }}
+                        {fact.imageUrl ? (
+                          <img src={fact.imageUrl} alt=""
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: !isUnlocked ? 'blur(4px) brightness(0.4)' : 'none' }}
+                            onError={e => { e.target.style.display = 'none' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: !isUnlocked ? 'brightness(0.4)' : 'none' }}>
+                            <span style={{ fontSize: S(20), opacity: 0.3 }}>?</span>
+                          </div>
+                        )}
+                        {!isUnlocked && (
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: S(16), opacity: 0.8 }}>🔒</span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Bandeau catégorie */}
+                      <div style={{
+                        background: factCatColor, borderRadius: `0 0 ${S(6)} ${S(6)}`,
+                        padding: `${S(2)} 0`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <img src={`/assets/categories/${fact.category}.png`} alt=""
+                          style={{ width: S(14), height: S(14), borderRadius: S(3), objectFit: 'cover' }}
                           onError={e => { e.target.style.display = 'none' }} />
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: !isUnlocked ? 'brightness(0.4)' : 'none' }}>
-                          <span style={{ fontSize: S(20), opacity: 0.3 }}>?</span>
-                        </div>
-                      )}
-                      {!isUnlocked && (
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontSize: S(16), opacity: 0.8 }}>🔒</span>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   )
                 })}
@@ -578,137 +610,131 @@ export default function ResultsScreen({
         borderTop: '1px solid rgba(255,255,255,0.1)',
       }}>
 
-        {/* Bouton monter en difficulté (Quest uniquement, si pas déjà WTF!) */}
-        {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && difficulty.id !== 'wtf' && (
+        {/* Ligne 1 : Rejouer + Monter en difficulté */}
+        <div style={{ display: 'flex', gap: S(8) }}>
           <button
             onClick={onReplay}
             className="active:scale-95 transition-all"
             style={{
-              width: '100%', padding: `${S(12)} ${S(12)}`, borderRadius: S(12),
+              flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
               background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-              border: 'none', color: '#1a1a2e', fontWeight: 900, fontSize: S(13),
+              border: 'none', color: '#1a1a2e', fontWeight: 900, fontSize: S(11),
               cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
             }}>
-            {CHALLENGE_LABELS[difficulty.id]}
+            🎫 Rejouer en {DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}
           </button>
-        )}
+          {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && difficulty.id !== 'wtf' && (
+            <button
+              onClick={onReplay}
+              className="active:scale-95 transition-all"
+              style={{
+                flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
+                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                border: 'none', color: '#1a1a2e', fontWeight: 900, fontSize: S(11),
+                cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+              {CHALLENGE_LABELS[difficulty.id]}
+            </button>
+          )}
+        </div>
 
-        {/* Google sign-in (si applicable) */}
-        {!isConnected && (
-          <button
-            onClick={() => {
-              if (unlockedFactsThisSession.length > 0) {
-                localStorage.setItem('wtf_temp_facts', JSON.stringify(unlockedFactsThisSession.map(f => f.id)))
-              }
-              setShowConnectBanner(true)
-            }}
-            className="active:scale-95 transition-all"
-            style={{
-              background: '#fff', border: 'none', color: '#374151',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
-              padding: `${S(10)} ${S(12)}`, borderRadius: S(12), fontWeight: 700, fontSize: S(12),
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              cursor: 'pointer',
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-            Sauvegarder
-          </button>
-        )}
-
-        {/* Ligne 2 : Partager + Rejouer côte à côte */}
+        {/* Ligne 2 : Partager + Accueil */}
         <div style={{ display: 'flex', gap: S(8) }}>
           <button
             onClick={handleShare}
             className="active:scale-95 transition-all"
             style={{
-              flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(12),
-              background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.3)',
-              color: '#fff', fontWeight: 700, fontSize: S(12), textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+              flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
+              background: 'rgba(255,255,255,0.25)', border: '2px solid rgba(255,255,255,0.4)',
+              color: '#fff', fontWeight: 800, fontSize: S(11),
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
             }}>
-            <span>{sharedCopied ? '✅' : '📤'}</span>
-            {sharedCopied ? 'Copié !' : 'Partager'}
+            {sharedCopied ? '✅ Copié !' : '📤 Partager'}
           </button>
           <button
-            onClick={onReplay}
+            onClick={handleGoHome}
             className="active:scale-95 transition-all"
             style={{
-              flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(12),
-              background: '#FF6B1A', border: 'none',
-              color: 'white', fontWeight: 900, fontSize: S(12), textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-              boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
+              flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
+              background: 'rgba(255,255,255,0.25)', border: '2px solid rgba(255,255,255,0.4)',
+              color: '#fff', fontWeight: 800, fontSize: S(11),
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
             }}>
-            🔄 Rejouer
+            ← Accueil
           </button>
         </div>
-
-        {/* Ligne 3 : Home/Continue fullwidth */}
-        <button
-          onClick={handleGoHome}
-          className="active:scale-95 transition-all"
-          style={{
-            width: '100%', padding: `${S(12)} ${S(12)}`, borderRadius: S(12),
-            background: 'transparent',
-            border: '1.5px solid rgba(255,255,255,0.3)',
-            color: 'rgba(255,255,255,0.6)',
-            fontWeight: 900, fontSize: S(12), textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-            cursor: 'pointer',
-          }}>
-          ← Retour
-        </button>
       </div>
 
 
 
       {/* Fact detail modal */}
-      {selectedFact && (
+      {/* Modal fact verrouillé — proposer de débloquer */}
+      {selectedFact && selectedFact._locked && (
         <div
           style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)', padding: 16 }}
           onClick={() => setSelectedFact(null)}
         >
           <div
-            style={{ background: '#fff', borderRadius: 20, maxWidth: 360, width: '90%', maxHeight: '85vh', overflow: 'auto', position: 'relative' }}
+            style={{ background: '#fff', borderRadius: 20, maxWidth: 320, width: '90%', textAlign: 'center', padding: '28px 24px', position: 'relative' }}
             onClick={e => e.stopPropagation()}
           >
-            <button onClick={() => setSelectedFact(null)} style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: 14, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            <button onClick={() => setSelectedFact(null)} style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.1)', border: 'none', color: '#666', fontSize: 14, fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
 
-            {/* Image */}
-            {selectedFact.imageUrl ? (
-              <img src={selectedFact.imageUrl} alt="" style={{ width: '100%', maxHeight: '35vh', objectFit: 'cover', borderRadius: '20px 20px 0 0' }} onError={e => { e.target.style.display = 'none' }} />
-            ) : (
-              <div style={{ height: 120, background: `linear-gradient(135deg, ${catColor}44, ${catColor})`, borderRadius: '20px 20px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 40, opacity: 0.3 }}>?</span>
+            {/* Icône catégorie */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 16, margin: '0 auto 12px',
+              background: selectedFact._catColor || '#FF6B1A',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: `0 4px 16px ${selectedFact._catColor || '#FF6B1A'}40`,
+            }}>
+              <img src={`/assets/categories/${selectedFact.category}.png`} alt=""
+                style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover' }}
+                onError={e => { e.target.textContent = selectedFact._catEmoji || '❓' }} />
+            </div>
+
+            <div style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e', marginBottom: 4 }}>
+              {selectedFact._catLabel || 'Catégorie'}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 16, lineHeight: 1.4 }}>
+              Ce f*ct est encore verrouillé. Dépense 5 coins pour le découvrir !
+            </div>
+
+            <button
+              onClick={() => {
+                if (_cCoins < 5) return
+                // Débiter 5 coins et débloquer le fact
+                updateCoins(-5)
+                // Ajouter aux unlockedFacts
+                try {
+                  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                  const unlocked = wd.unlockedFacts || []
+                  if (!unlocked.includes(selectedFact.id)) unlocked.push(selectedFact.id)
+                  wd.unlockedFacts = unlocked
+                  wd.lastModified = Date.now()
+                  localStorage.setItem('wtf_data', JSON.stringify(wd))
+                  window.dispatchEvent(new Event('wtf_storage_sync'))
+                } catch {}
+                setSelectedFact(null)
+              }}
+              disabled={_cCoins < 5}
+              style={{
+                width: '100%', padding: '12px 0', borderRadius: 14, border: 'none',
+                background: _cCoins >= 5 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : '#E5E7EB',
+                color: _cCoins >= 5 ? '#1a1a2e' : '#9CA3AF', fontWeight: 900, fontSize: 14,
+                cursor: _cCoins >= 5 ? 'pointer' : 'not-allowed',
+                boxShadow: _cCoins >= 5 ? '0 4px 16px rgba(255,215,0,0.4)' : 'none',
+              }}>
+              🪙 Débloquer (5 coins)
+            </button>
+            {_cCoins < 5 && (
+              <div style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, marginTop: 8 }}>
+                Pas assez de coins ({_cCoins} 🪙)
               </div>
             )}
-
-            <div style={{ padding: '16px 20px 20px' }}>
-              {/* Question */}
-              <p style={{ fontSize: 14, fontWeight: 800, color: '#1a1a2e', lineHeight: 1.4, margin: '0 0 12px' }}>{selectedFact.question}</p>
-
-              {/* Bonne réponse */}
-              <div style={{ background: 'rgba(34,197,94,0.1)', border: '1.5px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '10px 14px', marginBottom: 12 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: '#22C55E', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Bonne réponse</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e' }}>{selectedFact.shortAnswer || selectedFact.options?.[selectedFact.correctIndex]}</div>
-              </div>
-
-              {/* Explication */}
-              {selectedFact.explanation && (
-                <div style={{ background: '#F9FAFB', borderRadius: 12, padding: '10px 14px', marginBottom: 12 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#FF6B1A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>🧠 Le saviez-vous ?</div>
-                  <p style={{ fontSize: 12, fontWeight: 500, color: '#374151', lineHeight: 1.5, margin: 0 }}>{selectedFact.explanation}</p>
-                </div>
-              )}
-
-              {/* Source */}
-              {selectedFact.sourceUrl && (
-                <a href={selectedFact.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, color: '#9CA3AF', textDecoration: 'underline' }}>Source</a>
-              )}
-            </div>
           </div>
         </div>
       )}

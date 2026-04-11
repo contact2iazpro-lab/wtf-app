@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCollection } from '../hooks/useCollection'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
@@ -39,6 +39,17 @@ export default function CollectionPage() {
   const [activeTab, setActiveTab] = useState('vip')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
+
+  // Auto-open fact detail si venant de ResultsScreen
+  useEffect(() => {
+    const factId = localStorage.getItem('wtf_open_fact_id')
+    if (factId) {
+      localStorage.removeItem('wtf_open_fact_id')
+      const allFacts = getValidFacts()
+      const fact = allFacts.find(f => f.id === Number(factId))
+      if (fact) setSelectedFact(fact)
+    }
+  }, [])
 
   // Local unlocked facts
   const localUnlocked = useMemo(() => {

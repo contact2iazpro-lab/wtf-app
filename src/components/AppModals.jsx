@@ -117,15 +117,15 @@ export default function AppModals({
 
       {/* Trophy queue */}
       {trophyQueue.length > 0 && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 600, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+        <div style={{ position: 'fixed', inset: 0, zIndex: 600, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
           onClick={() => setTrophyQueue(q => q.slice(1))}>
-          <div style={{ background: 'linear-gradient(145deg, #1a1a2e, #2d1b4e)', borderRadius: 24, padding: '32px 28px', maxWidth: 340, width: '100%', textAlign: 'center', border: '2px solid rgba(255,215,0,0.4)', boxShadow: '0 0 40px rgba(255,215,0,0.3), 0 20px 60px rgba(0,0,0,0.5)' }}
+          <div style={{ background: '#fff', borderRadius: 24, padding: '32px 28px', maxWidth: 340, width: '100%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 56, marginBottom: 8 }}>{trophyQueue[0].emoji}</div>
-            <div style={{ fontSize: 12, fontWeight: 900, color: '#FFD700', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Trophée débloqué !</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: 'white', marginBottom: 8 }}>{trophyQueue[0].label}</div>
-            {trophyQueue[0].description && <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: 16, lineHeight: 1.4 }}>{trophyQueue[0].description}</div>}
-            <button onClick={() => setTrophyQueue(q => q.slice(1))} style={{ width: '100%', padding: '14px 0', borderRadius: 16, border: 'none', background: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#1a1a2e', fontSize: 15, fontWeight: 900, fontFamily: 'Nunito, sans-serif', cursor: 'pointer' }}>
+            <div style={{ fontSize: 12, fontWeight: 900, color: '#FF6B1A', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Trophée débloqué !</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', marginBottom: 8 }}>{trophyQueue[0].label}</div>
+            {trophyQueue[0].description && <div style={{ fontSize: 13, fontWeight: 600, color: '#6B7280', marginBottom: 16, lineHeight: 1.4 }}>{trophyQueue[0].description}</div>}
+            <button onClick={() => setTrophyQueue(q => q.slice(1))} style={{ width: '100%', padding: '14px 0', borderRadius: 16, border: 'none', background: '#FF6B1A', color: 'white', fontSize: 15, fontWeight: 900, fontFamily: 'Nunito, sans-serif', cursor: 'pointer' }}>
               {trophyQueue.length > 1 ? `Suivant (${trophyQueue.length - 1} de plus)` : 'Continuer'}
             </button>
           </div>

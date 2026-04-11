@@ -556,20 +556,14 @@ export default function App() {
       {screen === SCREENS.DIFFICULTY && (
         <DifficultyScreen
           onSelectDifficulty={handleSelectDifficulty}
-          onBack={() => {
-            if (!launchMode) 
-            setScreen(launchMode ? SCREENS.MODE_LAUNCH : SCREENS.HOME)
-          }}
+          onBack={() => setScreen(SCREENS.HOME)}
         />
       )}
 
       {screen === SCREENS.CATEGORY && (
         <CategoryScreen
           onSelectCategory={handleSelectCategory}
-          onBack={() => {
-            if (!launchMode) 
-            setScreen(launchMode ? SCREENS.MODE_LAUNCH : SCREENS.HOME)
-          }}
+          onBack={() => setScreen(SCREENS.HOME)}
           selectedDifficulty={selectedDifficulty}
           unlockedFacts={unlockedFacts}
           gameMode={gameMode}

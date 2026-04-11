@@ -150,7 +150,8 @@ export function useHandleNext({
         if (streakReward.special === 'wtf_premium') {
           setShowStreakSpecialModal(true)
         } else {
-          setStreakRewardToast({ days: newStreak, reward: streakReward })
+          // Streak toast désactivé sur ResultsScreen — sera réintégré dans le flow global
+          // setStreakRewardToast({ days: newStreak, reward: streakReward })
         }
       }
 

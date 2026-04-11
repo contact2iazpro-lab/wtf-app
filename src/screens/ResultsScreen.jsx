@@ -413,7 +413,10 @@ export default function ResultsScreen({
             }}>
               <span style={{ fontSize: S(12) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
               <span style={{ fontSize: S(11), fontWeight: 800, color: textOnBg }}>
-                {sessionType === 'parcours' ? 'Quest' : sessionType === 'flash_solo' ? 'Jouer' : sessionType === 'marathon' ? 'Explorer' : 'Mode'} — {DIFFICULTY_LABELS[difficulty.id] || difficulty.label}
+                {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` :
+                 sessionType === 'flash_solo' ? 'Mode Jouer' :
+                 sessionType === 'marathon' ? 'Mode Explorer' :
+                 'Mode'}
               </span>
             </div>
           </div>
@@ -623,8 +626,8 @@ export default function ResultsScreen({
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
             }}>
             {sessionType === 'parcours' ? `🎫 Rejouer en ${DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}` :
-             sessionType === 'flash_solo' ? '🔋 Rejouer en Jouer' :
-             sessionType === 'marathon' ? '🔋 Rejouer en Explorer' :
+             sessionType === 'flash_solo' ? '🔋 Rejouer' :
+             sessionType === 'marathon' ? '🔋 Rejouer' :
              '🔄 Rejouer'}
           </button>
           {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && difficulty.id !== 'wtf' && (

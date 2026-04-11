@@ -21,7 +21,7 @@ export const DIFFICULTY_LEVELS = {
     coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 },
   },
   FLASH: {
-    id: 'flash', label: 'Jouer', emoji: '🎯',
+    id: 'flash', label: 'Standard', emoji: '🎯',
     choices: 4, duration: 20,
     hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },

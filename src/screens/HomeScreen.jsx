@@ -16,6 +16,7 @@ import { useScale } from '../hooks/useScale'
 import { getNextBadge } from '../utils/badgeManager'
 import { updateCoins, updateTickets, updateHints } from '../services/currencyService'
 import { ZONE_HEIGHTS, GRID_CONFIG, ICON_SIZES, ASSETS, UNLOCK_MESSAGES, SPOTLIGHT_MESSAGES, THEME } from '../constants/layoutConfig'
+import RouletteModal from '../components/RouletteModal'
 
 // ── Fond pastel aléatoire par session ─────────────────────────────────────────
 const PASTEL_GRADIENTS = [
@@ -220,6 +221,7 @@ export default function HomeScreen({
   const { coffres, todayIndex, getStatus, openCoffre } = useDailyCoffre()
   const [nextBadgeInfo, setNextBadgeInfo] = useState(() => getNextBadge())
   const [showBadgeModal, setShowBadgeModal] = useState(false)
+  const [showRoulette, setShowRoulette] = useState(false)
   const [badgeToShow, setBadgeToShow] = useState(null)
 
   // Show badge modal when returning to HomeScreen with new badges
@@ -705,7 +707,28 @@ export default function HomeScreen({
       </div>
       )}
 
-
+      {/* ═══ ZONE 3B — BOUTON ROULETTE ═══════════════════════ */}
+      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: '4px 10px 0' }}>
+        <button
+          onClick={() => { audio.play('click'); setShowRoulette(true) }}
+          style={{
+            background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)',
+            borderRadius: 12, padding: '6px 16px',
+            display: 'flex', alignItems: 'center', gap: 6,
+            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ fontSize: S(14) }}>🎰</span>
+          <span style={{ fontSize: S(11), fontWeight: 800, color: 'white' }}>Roulette</span>
+          {!readWtfData().rouletteFreeDate || readWtfData().rouletteFreeDate !== new Date().toISOString().slice(0, 10) ? (
+            <span style={{
+              fontSize: S(8), fontWeight: 900, color: '#FF6B1A',
+              background: 'rgba(255,107,26,0.15)', borderRadius: 6, padding: '2px 6px',
+            }}>GRATUIT</span>
+          ) : null}
+        </button>
+      </div>
 
       {/* ═══ ZONE 4 — CORPS PRINCIPAL (flex: 1) ════════════════════════════ */}
       <div style={{
@@ -1002,6 +1025,14 @@ export default function HomeScreen({
         </div>
       )}
 
+
+      {/* ═══ MODAL ROULETTE ════════════════════════════════════════════════ */}
+      {showRoulette && (
+        <RouletteModal
+          onClose={() => setShowRoulette(false)}
+          scale={scale}
+        />
+      )}
 
       {/* ═══ MODAL NOUVEAU BADGE ════════════════════════════════════════════ */}
       {showBadgeModal && badgeToShow && (

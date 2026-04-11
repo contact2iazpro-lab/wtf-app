@@ -11,11 +11,13 @@ import { initFacts, getDailyFact, getValidFacts } from '../data/factsService'
 import { pushToServer, syncAfterAction } from '../services/playerSyncService'
 import { loadStorage, saveStorage, updateTrophyData } from '../utils/storageHelper'
 import { updateCollection } from '../services/collectionService'
+import { supabase } from '../lib/supabase'
 
 export function useAppEffects({
   user, factsReady, screen, streakRewardToast,
   setFactsReady, setFactsError, setDailyFact, setStorage,
   setStreakRewardToast, setScreen, setGameMode,
+  setSocialNotifCount, setPendingChallengesCount,
   handleHome, completeOnboardingIfNeeded,
 }) {
 
@@ -119,7 +121,36 @@ export function useAppEffects({
     return () => clearTimeout(t)
   }, [streakRewardToast])
 
-  // Onboarding auto-skip supprimé — sera dans TutoTunnel
+  // ── Realtime social notifications ────────────────────────────────────────
+  useEffect(() => {
+    if (!user || !setSocialNotifCount) return
+    const channel = supabase
+      .channel('notif-badge-' + user.id)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'friendships', filter: 'user2_id=eq.' + user.id }, () => {
+        setSocialNotifCount(prev => prev + 1)
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'challenges', filter: 'player2_id=eq.' + user.id }, () => {
+        setSocialNotifCount(prev => prev + 1)
+      })
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [user])
+
+  // ── Pending challenges badge ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!setPendingChallengesCount) return
+    if (!user) { setPendingChallengesCount(0); return }
+    const fetchPending = async () => {
+      const { data } = await supabase.from('challenges').select('id').eq('status', 'pending').neq('player1_id', user.id)
+      setPendingChallengesCount((data || []).length)
+    }
+    fetchPending()
+    const channel = supabase
+      .channel('nav-challenges-' + user.id)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'challenges' }, () => fetchPending())
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [user])
 
   // Push history entry on screen change
   useEffect(() => {

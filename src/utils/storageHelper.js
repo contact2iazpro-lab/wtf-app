@@ -66,11 +66,26 @@ export function loadStorage() {
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
 
-    const streak = saved.lastDay === todayDateStr
-      ? saved.streak
-      : saved.lastDay === YESTERDAY_DATE_STR()
-        ? saved.streak || 0
-        : 0
+    // Streak logic avec Streak Freeze
+    let streak
+    if (saved.lastDay === todayDateStr) {
+      // Déjà joué aujourd'hui
+      streak = saved.streak
+    } else if (saved.lastDay === YESTERDAY_DATE_STR()) {
+      // Joué hier — streak continue
+      streak = saved.streak || 0
+    } else if ((saved.streakFreezeCount || 0) > 0 && saved.lastDay) {
+      // Jour manqué MAIS a un Streak Freeze → consommer le freeze, garder le streak
+      saved.streakFreezeCount = (saved.streakFreezeCount || 0) - 1
+      saved.streakFreezeUsedDate = todayDateStr
+      saved.lastDay = YESTERDAY_DATE_STR() // Simule comme si joué hier
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+      streak = saved.streak || 0
+    } else {
+      // Streak cassé
+      streak = 0
+    }
 
     // Filet de sécurité : détecter unlockedFacts anormalement élevés
     if (!isDev && !isTest) {

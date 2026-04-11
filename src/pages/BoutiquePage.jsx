@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CoinsIcon from '../components/CoinsIcon'
-import { updateCoins, updateHints, updateTickets, getBalances } from '../services/currencyService'
+import { updateCoins, updateHints, updateTickets } from '../services/currencyService'
+import { readWtfData } from '../utils/storageHelper'
+import { getValidFacts, getVipFacts, getFunnyFacts, getCategoryById } from '../data/factsService'
 import { useCurrency } from '../context/CurrencyContext'
+import { useScale } from '../hooks/useScale'
+import RouletteModal from '../components/RouletteModal'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -54,6 +58,12 @@ export default function BoutiquePage() {
   const { coins, tickets, hints } = useCurrency()
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
+  const [streakFreezeCount, setStreakFreezeCount] = useState(() => readWtfData().streakFreezeCount || 0)
+  const [packResult, setPackResult] = useState(null) // { facts: [...], packType: 'standard'|'wtf' }
+  const [packRevealed, setPackRevealed] = useState(false)
+  const [packRevealIndex, setPackRevealIndex] = useState(0)
+  const [showRoulette, setShowRoulette] = useState(false)
+  const scale = useScale()
 
   // Backward compat : les endroits qui lisent balances.coins
   const balances = { coins, tickets, hints }
@@ -63,13 +73,87 @@ export default function BoutiquePage() {
     setTimeout(() => setToast(null), 2000)
   }
 
+  const buyMysteryPack = (packType) => {
+    const isWtf = packType === 'wtf'
+    const price = isWtf ? 50 : 25
+    const count = isWtf ? 5 : 3
+    if (coins < price) return
+
+    const wd = readWtfData()
+    const unlockedIds = new Set(wd.unlockedFacts || [])
+
+    // Pool : facts non débloqués
+    const allFacts = getValidFacts()
+    const vipPool = getVipFacts().filter(f => !unlockedIds.has(f.id))
+    const funnyPool = getFunnyFacts().filter(f => !unlockedIds.has(f.id))
+
+    if (vipPool.length + funnyPool.length < count) {
+      showToast('Pas assez de f*cts à débloquer !')
+      return
+    }
+
+    updateCoins(-price)
+
+    // Sélection aléatoire
+    const selected = []
+    const usedIds = new Set()
+
+    // WTF! pack : au moins 1 VIP garanti
+    if (isWtf && vipPool.length > 0) {
+      const vip = vipPool[Math.floor(Math.random() * vipPool.length)]
+      selected.push(vip)
+      usedIds.add(vip.id)
+    }
+
+    // Pity system : si 10+ packs sans VIP → forcer 1 VIP
+    const pityCount = (wd.mysteryPackPityCounter || 0) + 1
+    if (!isWtf && pityCount >= 10 && vipPool.length > 0) {
+      const vip = vipPool.filter(f => !usedIds.has(f.id))[0]
+      if (vip) { selected.push(vip); usedIds.add(vip.id) }
+      wd.mysteryPackPityCounter = 0
+    } else if (!isWtf) {
+      wd.mysteryPackPityCounter = pityCount
+    } else {
+      wd.mysteryPackPityCounter = 0
+    }
+
+    // Remplir le reste
+    const remainingPool = [...vipPool, ...funnyPool].filter(f => !usedIds.has(f.id))
+    const shuffled = remainingPool.sort(() => Math.random() - 0.5)
+    while (selected.length < count && shuffled.length > 0) {
+      selected.push(shuffled.shift())
+    }
+
+    // Débloquer les facts
+    for (const fact of selected) {
+      unlockedIds.add(fact.id)
+    }
+    wd.unlockedFacts = [...unlockedIds]
+    wd.mysteryPacksOpened = (wd.mysteryPacksOpened || 0) + 1
+    wd.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(wd))
+
+    // Afficher le résultat
+    setPackResult({ facts: selected, packType: packType })
+    setPackRevealed(false)
+    setPackRevealIndex(0)
+  }
+
   const buyPack = (type, quantity, price) => {
     if (coins < price) return
     updateCoins(-price)
     if (type === 'hint') updateHints(quantity)
-    else updateTickets(quantity)
-    const unit = type === 'hint' ? 'indice' : 'ticket'
-    showToast(`+${quantity} ${unit}${quantity > 1 ? 's' : ''} !`)
+    else if (type === 'ticket') updateTickets(quantity)
+    else if (type === 'streakFreeze') {
+      const wd = readWtfData()
+      wd.streakFreezeCount = (wd.streakFreezeCount || 0) + 1
+      wd.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(wd))
+      setStreakFreezeCount(wd.streakFreezeCount)
+    }
+    const labels = { hint: 'indice', ticket: 'ticket', streakFreeze: 'Streak Freeze' }
+    const unit = labels[type] || type
+    showToast(`+${quantity} ${unit}${quantity > 1 && type !== 'streakFreeze' ? 's' : ''} !`)
   }
 
   return (
@@ -109,7 +193,13 @@ export default function BoutiquePage() {
               </button>
               <button
                 onClick={() => {
-                  buyPack(confirmPurchase.type, confirmPurchase.quantity, confirmPurchase.price)
+                  if (confirmPurchase.type === 'mysteryStandard') {
+                    buyMysteryPack('standard')
+                  } else if (confirmPurchase.type === 'mysteryWtf') {
+                    buyMysteryPack('wtf')
+                  } else {
+                    buyPack(confirmPurchase.type, confirmPurchase.quantity, confirmPurchase.price)
+                  }
                   setConfirmPurchase(null)
                 }}
                 style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: '#FF6B1A', border: 'none', color: 'white', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
@@ -117,6 +207,86 @@ export default function BoutiquePage() {
                 Acheter
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal révélation Mystery Pack */}
+      {packResult && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={() => { setPackResult(null); setPackRevealed(false) }}
+        >
+          <div
+            style={{ background: 'white', borderRadius: 24, padding: 24, maxWidth: 340, width: '100%', textAlign: 'center', fontFamily: 'Nunito, sans-serif' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 40, marginBottom: 8 }}>{packResult.packType === 'wtf' ? '✨' : '📦'}</div>
+            <h3 style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', margin: '0 0 4px' }}>
+              {packResult.packType === 'wtf' ? 'WTF! Pack' : 'Mystery Pack'}
+            </h3>
+            <p style={{ fontSize: 12, color: '#9CA3AF', margin: '0 0 16px' }}>
+              {packResult.facts.length} f*cts débloqués !
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+              {packResult.facts.map((fact, i) => {
+                const revealed = packRevealed || i <= packRevealIndex
+                const cat = getCategoryById(fact.category)
+                return (
+                  <div
+                    key={fact.id}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (!packRevealed && i === packRevealIndex + 1) setPackRevealIndex(i)
+                    }}
+                    style={{
+                      padding: '10px 14px', borderRadius: 12,
+                      background: revealed
+                        ? fact.isVip ? 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))' : 'rgba(243,244,246,1)'
+                        : 'rgba(0,0,0,0.06)',
+                      border: revealed && fact.isVip ? '1.5px solid rgba(255,215,0,0.4)' : '1px solid rgba(0,0,0,0.06)',
+                      cursor: !revealed && i === packRevealIndex + 1 ? 'pointer' : 'default',
+                      transition: 'all 0.3s ease',
+                      textAlign: 'left',
+                    }}
+                  >
+                    {revealed ? (
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          {fact.isVip && <span style={{ fontSize: 12, color: '#D97706', fontWeight: 900 }}>VIP</span>}
+                          <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 700 }}>{cat?.label || fact.category}</span>
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.3 }}>
+                          {fact.text?.slice(0, 80)}{fact.text?.length > 80 ? '...' : ''}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '4px 0' }}>
+                        <span style={{ fontSize: 20 }}>❓</span>
+                        <span style={{ fontSize: 11, color: '#9CA3AF', display: 'block', marginTop: 2 }}>Touche pour révéler</span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {!packRevealed ? (
+              <button
+                onClick={(e) => { e.stopPropagation(); setPackRevealed(true) }}
+                style={{ width: '100%', padding: '12px 0', borderRadius: 14, fontWeight: 900, fontSize: 14, background: '#FF6B1A', color: 'white', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+              >
+                Tout révéler
+              </button>
+            ) : (
+              <button
+                onClick={() => { setPackResult(null); setPackRevealed(false) }}
+                style={{ width: '100%', padding: '12px 0', borderRadius: 14, fontWeight: 900, fontSize: 14, background: '#F3F4F6', color: '#374151', border: '1px solid #E5E7EB', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+              >
+                Fermer
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -138,6 +308,34 @@ export default function BoutiquePage() {
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
+
+        {/* Roulette quotidienne */}
+        <button
+          onClick={() => setShowRoulette(true)}
+          className="w-full rounded-2xl p-4 mb-4 flex items-center gap-3 active:scale-95 transition-all"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,107,26,0.1), rgba(249,115,22,0.15))',
+            border: '1.5px solid rgba(255,107,26,0.3)',
+            cursor: 'pointer', textAlign: 'left',
+          }}
+        >
+          <span style={{ fontSize: 28 }}>🎰</span>
+          <div className="flex-1">
+            <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Roulette du jour</span>
+            <span className="text-xs" style={{ color: '#6B7280' }}>Tente ta chance pour des récompenses !</span>
+          </div>
+          {(() => {
+            const wd = readWtfData()
+            const isFree = !wd.rouletteFreeDate || wd.rouletteFreeDate !== new Date().toISOString().slice(0, 10)
+            return isFree ? (
+              <span className="px-2 py-1 rounded-lg text-xs font-black" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>
+                GRATUIT
+              </span>
+            ) : (
+              <span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>10 <CoinsIcon size={10} /></span>
+            )
+          })()}
+        </button>
 
         {/* Section Indices */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
@@ -189,6 +387,79 @@ export default function BoutiquePage() {
           </div>
         </div>
 
+        {/* Section Mystery Packs */}
+        <div className="rounded-2xl p-4 mb-4" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(236,72,153,0.08))', border: '1px solid rgba(168,85,247,0.25)' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <span style={{ fontSize: 20 }}>🎁</span>
+            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Mystery Packs</h2>
+          </div>
+          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Débloque des f*cts aléatoires — surprise garantie !</p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => setConfirmPurchase({ type: 'mysteryStandard', quantity: 3, price: 25, label: 'Mystery Pack (3 f*cts)' })}
+              disabled={coins < 25}
+              className="w-full flex items-center gap-3 rounded-xl active:scale-95 transition-all"
+              style={{
+                padding: '12px 16px',
+                background: coins >= 25 ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)',
+                border: '1px solid rgba(0,0,0,0.08)',
+                cursor: coins >= 25 ? 'pointer' : 'not-allowed',
+                opacity: coins >= 25 ? 1 : 0.4,
+              }}
+            >
+              <span style={{ fontSize: 22 }}>📦</span>
+              <div className="flex-1 text-left">
+                <span className="font-bold text-sm block" style={{ color: '#1a1a2e' }}>Mystery Pack</span>
+                <span className="text-xs" style={{ color: '#9CA3AF' }}>3 f*cts aléatoires</span>
+              </div>
+              <span className="flex items-center gap-1 font-black text-sm" style={{ color: '#FF6B1A' }}>
+                25 <CoinsIcon size={14} />
+              </span>
+            </button>
+            <button
+              onClick={() => setConfirmPurchase({ type: 'mysteryWtf', quantity: 5, price: 50, label: 'WTF! Pack (5 f*cts dont 1 VIP)' })}
+              disabled={coins < 50}
+              className="w-full flex items-center gap-3 rounded-xl active:scale-95 transition-all"
+              style={{
+                padding: '12px 16px',
+                background: coins >= 50 ? 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1))' : 'rgba(255,255,255,0.5)',
+                border: coins >= 50 ? '1px solid rgba(255,215,0,0.3)' : '1px solid rgba(0,0,0,0.08)',
+                cursor: coins >= 50 ? 'pointer' : 'not-allowed',
+                opacity: coins >= 50 ? 1 : 0.4,
+              }}
+            >
+              <span style={{ fontSize: 22 }}>✨</span>
+              <div className="flex-1 text-left">
+                <span className="font-bold text-sm block" style={{ color: '#1a1a2e' }}>WTF! Pack</span>
+                <span className="text-xs" style={{ color: '#D97706' }}>5 f*cts dont 1 VIP garanti</span>
+              </div>
+              <span className="flex items-center gap-1 font-black text-sm" style={{ color: '#FF6B1A' }}>
+                50 <CoinsIcon size={14} />
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Section Streak Freeze */}
+        <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <span style={{ fontSize: 20 }}>🛡️</span>
+            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Streak Freeze</h2>
+            <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6' }}>
+              Stock : {streakFreezeCount}
+            </span>
+          </div>
+          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Protège ta série si tu manques un jour</p>
+          <PackButton
+            emoji="🛡️"
+            label="1 Streak Freeze"
+            price={15}
+            discount={null}
+            canBuy={coins >= 15}
+            onClick={() => setConfirmPurchase({ type: 'streakFreeze', quantity: 1, price: 15, label: '1 Streak Freeze' })}
+          />
+        </div>
+
         {/* Packs de Coins (bientôt) */}
         <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Packs de Coins</h2>
         <div className="flex flex-col gap-2 mb-4">
@@ -217,6 +488,11 @@ export default function BoutiquePage() {
           <span className="text-lg" style={{ color: '#D1D5DB' }}>Bientôt</span>
         </div>
       </div>
+
+      {/* Modal Roulette */}
+      {showRoulette && (
+        <RouletteModal onClose={() => setShowRoulette(false)} scale={scale} />
+      )}
     </div>
   )
 }

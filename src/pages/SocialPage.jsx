@@ -74,16 +74,17 @@ export default function SocialPage() {
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
   const [toast, setToast] = useState(null)
   const [confirmRemove, setConfirmRemove] = useState(null)
+  const [socialLoading, setSocialLoading] = useState(false)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 
   const loadData = useCallback(async (retried = false) => {
     if (!user) return
+    setSocialLoading(true)
     try {
       // S'assurer que la session Supabase est valide avant les requêtes RLS
       const { data: { session } } = await supabase.auth.getSession()
       if (!session && !retried) {
-        // Session expirée — tenter un refresh
         const { error: refreshErr } = await supabase.auth.refreshSession()
         if (!refreshErr) return loadData(true)
       }
@@ -109,6 +110,7 @@ export default function SocialPage() {
       const received = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id !== user.id)
       setPendingChallenges(received)
     } catch (e) { console.warn('Social load error:', e) }
+    finally { setSocialLoading(false) }
   }, [user])
 
   // Refresh à chaque navigation vers cette page (pas seulement au mount)
@@ -247,8 +249,20 @@ export default function SocialPage() {
 
             {/* B) Mes amis */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>Mes amis ({friends.length})</h2>
-              {friends.length === 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 10px' }}>
+                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0 }}>Mes amis ({friends.length})</h2>
+                <button
+                  onClick={() => loadData()}
+                  disabled={socialLoading}
+                  className="active:scale-90 transition-all"
+                  style={{ background: 'none', border: 'none', fontSize: 16, cursor: 'pointer', opacity: socialLoading ? 0.4 : 0.6 }}
+                >
+                  {socialLoading ? '⟳' : '↻'}
+                </button>
+              </div>
+              {socialLoading && friends.length === 0 ? (
+                <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Chargement...</p>
+              ) : friends.length === 0 ? (
                 <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Pas encore d'amis. Invite quelqu'un !</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

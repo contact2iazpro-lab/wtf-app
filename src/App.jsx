@@ -51,6 +51,7 @@ import { useGameHandlers } from './hooks/useGameHandlers'
 import { useHandleNext } from './hooks/useHandleNext'
 import { useBlitzHandlers } from './hooks/useBlitzHandlers'
 import { useModeStarters } from './hooks/useModeStarters'
+import { useSelectionHandlers } from './hooks/useSelectionHandlers'
 
 
 
@@ -451,184 +452,16 @@ export default function App() {
     }
   }, [handlePlay, handleWTFDuJour, handleFlashSolo, handleStartWTFSession, showOrSkipLaunch, navigate])
 
-  const handleSelectDifficulty = useCallback((difficulty) => {
-    setSelectedDifficulty(difficulty)
+  // Selection handlers -> extraits dans useSelectionHandlers hook
+  const { handleSelectDifficulty, handleSelectCategory, handleMarathonMode } = useSelectionHandlers({
+    gameMode, sessionType, selectedDifficulty, selectedCategory,
+    unlockedFacts, tickets,
+    initSessionState, handleBlitzStart,
+    setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
+    setIsQuickPlay, setExplorerPool, setScreen, setStorage,
+    setShowNoTicketModal, setGameAlert, setMiniParcours,
+  })
 
-    const skipUnlockM = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-
-    if (gameMode === 'marathon') {
-      // Marathon : 20 questions générées (non-VIP) dans la catégorie choisie
-      // THÈME B Point 5: Mode Aléatoire utilise TOUS les funny facts
-      let pool
-      if (selectedCategory === null) {
-        // Mode Aléatoire : tous les funny facts
-        pool = getGeneratedFacts().filter(f => skipUnlockM || !unlockedFacts.has(f.id))
-      } else {
-        // Catégorie choisie
-        pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
-      }
-
-      // Dev mode fallback : inclure les déjà débloqués
-      if (pool.length < 4 && skipUnlockM) {
-        if (selectedCategory === null) {
-          pool = getGeneratedFacts()
-        } else {
-          pool = getGeneratedFactsByCategory(selectedCategory)
-        }
-      }
-
-      if (pool.length === 0) {
-        setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' })
-        return
-      }
-      if (pool.length < 4) {
-        const price = pool.length === 1 ? 5 : 10
-        const preparedFacts = [...pool].sort(() => Math.random() - 0.5)
-          .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId: selectedCategory, difficulty })
-        return
-      }
-
-      const facts = [...pool]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 20)
-        .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-      setIsQuickPlay(false)
-      setSessionType('marathon')
-      initSessionState(facts)
-      setScreen(SCREENS.QUESTION)
-      return
-    }
-
-    // Parcours/Quest : VIP uniquement, filtrés par difficulté — coûte 1 ticket
-    const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    const isFirstQuestEver = !wd.onboardingCompleted && (wd.questsPlayed || 0) === 0
-    if (!isDevModeQuest && !isFirstQuestEver) {
-      if ((tickets || 0) < 1) {
-        setShowNoTicketModal(true)
-        return
-      }
-      // Décrémenter 1 ticket
-      updateTickets(-1)
-      setStorage(loadStorage())
-    }
-
-    const skipUnlockD = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    // Pool Quest : VIP avec difficulté, puis fallback élargi
-    let available = getParcoursFacts().filter(f =>
-      f.isVip && f.difficulty === difficulty.id && (skipUnlockD || !unlockedFacts.has(f.id))
-    )
-    // Fallback 1 : ignorer le filtre difficulty
-    if (available.length < QUESTIONS_PER_GAME) {
-      available = getParcoursFacts().filter(f =>
-        f.isVip && (skipUnlockD || !unlockedFacts.has(f.id))
-      )
-    }
-    // Fallback 2 : tous les VIP valides (sans filtre difficulty)
-    if (available.length < QUESTIONS_PER_GAME) {
-      available = getQuestFacts()
-    }
-    // Fallback 3 : tous les facts valides
-    if (available.length < QUESTIONS_PER_GAME) {
-      available = getValidFacts()
-    }
-    const facts = [...available]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, QUESTIONS_PER_GAME)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-    setIsQuickPlay(false)
-    setGameMode('solo')
-    setSelectedCategory(null)
-    setSessionType('parcours')
-    initSessionState(facts)
-    setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts, gameMode, selectedCategory])
-
-  const handleMarathonMode = useCallback(() => {
-    setGameMode('marathon')
-    setSessionType('marathon')
-    setScreen(SCREENS.CATEGORY)
-  }, [])
-
-  // ─── Blitz start ───────────────────────────────────────────────────────────
-  // ─── Blitz handlers → extraits dans useBlitzHandlers hook ──────────────────
-
-  const handleSelectCategory = useCallback((categoryId) => {
-    // Blitz : démarrer directement sans choisir la difficulté
-    if (gameMode === 'blitz') {
-      handleBlitzStart(categoryId)
-      return
-    }
-
-    // Explorer : 10 questions, garder le pool restant pour continuation
-    if (gameMode === 'marathon') {
-      const difficulty = DIFFICULTY_LEVELS.HOT
-      const skipUnlockE = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-      let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
-      // Dev mode fallback : inclure les déjà débloqués
-      if (pool.length < 4 && skipUnlockE) {
-        pool = getGeneratedFactsByCategory(categoryId)
-      }
-      if (pool.length === 0) {
-        setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' })
-        return
-      }
-      if (pool.length < 4) {
-        const price = pool.length === 1 ? 5 : 10
-        const preparedFacts = [...pool].sort(() => Math.random() - 0.5)
-          .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId, difficulty })
-        return
-      }
-
-      const shuffled = [...pool].sort(() => Math.random() - 0.5)
-      const sessionFacts = shuffled.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-      const remaining = shuffled.slice(5) // pool restant pour continuation
-      setExplorerPool(remaining)
-      setSelectedCategory(categoryId)
-      setSelectedDifficulty(difficulty)
-      setIsQuickPlay(false)
-      setSessionType('marathon')
-      consumeFlashEnergy()
-      initSessionState(sessionFacts)
-      setScreen(SCREENS.QUESTION)
-      return
-    }
-
-    let facts = []
-
-    if (categoryId === null) {
-      const childMode = localStorage.getItem('wtf_child_mode') !== 'false'
-      const validCategories = getPlayableCategories().filter(cat =>
-        getValidFacts().some(f => f.category === cat.id) &&
-        (childMode || cat.id !== 'kids')
-      )
-
-      if (validCategories.length < 10) {
-        facts = [...getValidFacts()].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
-      } else {
-        const selectedCats = [...validCategories].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
-        facts = selectedCats.map(cat => {
-          const catFacts = getValidFacts().filter(f => f.category === cat.id)
-          return catFacts[Math.floor(Math.random() * catFacts.length)]
-        })
-        facts.sort(() => Math.random() - 0.5)
-      }
-    } else {
-      facts = [...getFactsByCategory(categoryId)].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
-    }
-
-    const factsWithOptions = facts.map(fact => ({
-      ...fact,
-      ...getAnswerOptions(fact, selectedDifficulty)
-    }))
-
-    setSelectedCategory(categoryId)
-    if (sessionType === 'flash_solo' || sessionType === 'marathon') consumeFlashEnergy()
-    initSessionState(factsWithOptions)
-    setScreen(SCREENS.QUESTION)
-  }, [selectedDifficulty, gameMode, sessionType, handleBlitzStart])
 
   // ─── Answer handlers → extraits dans useGameHandlers hook ──────────────────
 

@@ -293,12 +293,8 @@ export default function QuestRoute() {
 
       {screen === QUEST_SCREENS.DIFFICULTY && (
         <DifficultyScreen
-          onSelect={handleSelectDifficulty}
+          onSelectDifficulty={handleSelectDifficulty}
           onBack={handleHome}
-          selectedDifficulty={selectedDifficulty}
-          unlockedFacts={unlockedFacts}
-          gameMode="solo"
-          sessionType="parcours"
         />
       )}
 

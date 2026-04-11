@@ -4,7 +4,7 @@
  * Full screen, no scroll, useScale responsive
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, forwardRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
@@ -325,10 +325,11 @@ export default function HomeScreen({
   }
 
   // ── Mode icon component ────────────────────────────────────────────────────
-  const ModeIcon = ({ src, label, onClick, disabled, locked }) => {
+  const ModeIcon = forwardRef(({ src, label, onClick, disabled, locked }, ref) => {
     const dimmed = disabled || locked
     return (
       <button
+        ref={ref}
         onClick={dimmed && !locked ? undefined : onClick}
         style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(3),
@@ -386,7 +387,7 @@ export default function HomeScreen({
         )}
       </button>
     )
-  }
+  })
 
   const NewBadge = () => (
     <div style={{

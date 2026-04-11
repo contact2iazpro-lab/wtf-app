@@ -156,20 +156,7 @@ function buildAll(rawFacts) {
     _categoryLevelIds[key].add(f.id)
   })
 
-  // ─── AUDIT: Tracer la distribution des facts ────────────────────────────────
-  console.log('[FACTS AUDIT]', {
-    totalRaw: _rawFacts?.length || 0,
-    totalValid: _validFacts?.length || 0,
-    totalParcours: _parcoursFacts?.length || 0,
-    vip: _validFacts?.filter(f => f.isVip).length || 0,
-    generated: _validFacts?.filter(f => !f.isVip).length || 0,
-    byType: {
-      vip_type: _rawFacts?.filter(f => f.type === 'vip').length || 0,
-      generated_type: _rawFacts?.filter(f => f.type === 'generated').length || 0,
-      other_type: _rawFacts?.filter(f => f.type && f.type !== 'vip' && f.type !== 'generated').length || 0,
-      null_type: _rawFacts?.filter(f => !f.type).length || 0,
-    },
-  })
+  // AUDIT supprimé (était un console.log de debug)
 }
 
 // ─── Cache localStorage ─────────────────────────────────────────────────────
@@ -236,7 +223,7 @@ export async function initFacts() {
     const cached = loadCacheFromLocal()
     if (cached) {
       buildAll(cached.map(fromRow))
-      console.log(`[factsService] ${cached.length} facts chargés depuis le cache local`)
+      // log supprimé
     }
 
     // Étape 2 : fetch Supabase (mise à jour en background)
@@ -245,7 +232,7 @@ export async function initFacts() {
         const data = await fetchFromSupabase()
         buildAll(data.map(fromRow))
         saveCacheToLocal(data)
-        console.log(`[factsService] ${data.length} facts chargés depuis Supabase (tentative ${attempt})`)
+        // log supprimé
         return { success: true }
       } catch (err) {
         console.warn(`[factsService] Tentative ${attempt}/${MAX_RETRIES} échouée :`, err.message)

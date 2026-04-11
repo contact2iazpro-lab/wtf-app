@@ -100,8 +100,7 @@ export async function getFriends(userId) {
   const { data, error } = await supabase
     .from('friendships')
     .select('*')
-    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-    .eq('status', 'accepted')
+    .or(`and(user1_id.eq.${userId},status.eq.accepted),and(user2_id.eq.${userId},status.eq.accepted)`)
   if (error) throw error
 
   const friendIds = (data || []).map(f => f.user1_id === userId ? f.user2_id : f.user1_id)

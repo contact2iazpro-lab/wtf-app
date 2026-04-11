@@ -3,16 +3,18 @@ import { audio } from '../utils/audio'
 
 // ── Chapters data ───────────────────────────────────────────────────────────
 const CHAPTERS = [
+  // ═══ INTRODUCTION ═══
   {
     id: 'goal',
     emoji: '🤯',
     shortTitle: 'But du jeu',
     title: 'Le But du Jeu',
     content: [
-      { icon: '🎯', text: 'Des faits incroyables te sont présentés — à toi de trouver la **bonne réponse** !' },
-      { icon: '⏱️', text: 'Timer : **Cool = 30s**, **Hot / WTF! / Jouer / Hunt = 20s** par question.' },
-      { icon: '🪙', text: 'Gagne des **WTF! Coins** à chaque bonne réponse.' },
-      { icon: '📚', text: 'Débloque des **f*cts VIP** en Quest. Joue **gratuitement** en Jouer.' },
+      { icon: '🎯', text: 'Des faits incroyables te sont présentés — à toi de trouver la **bonne réponse** parmi les choix proposés !' },
+      { icon: '⏱️', text: 'Chaque question a un **timer** — réponds avant la fin du temps !' },
+      { icon: '🪙', text: 'Gagne des **WTF! Coins** à chaque bonne réponse pour débloquer du contenu.' },
+      { icon: '📚', text: 'Débloque des **f*cts** et enrichis ta **Collection** personnelle.' },
+      { icon: '🏆', text: 'Remporte des **trophées**, maintiens ta **série** et grimpe dans les classements !' },
     ],
   },
   {
@@ -23,128 +25,257 @@ const CHAPTERS = [
     content: [
       { icon: '🎮', text: 'Lors de ta première partie, WTF! te guide **pas à pas** avec un f*ct spécial.' },
       { icon: '💡', text: 'Tu découvres les bases : **question, indices, réponse et révélation**.' },
+      { icon: '🏅', text: 'À la fin du tutoriel, tu gagnes tes **premiers coins** pour bien démarrer.' },
       { icon: '🔄', text: 'Si tu veux revivre cette expérience, clique ci-dessous.' },
     ],
     tutorialButton: true,
   },
+
+  // ═══ MODES DE JEU ═══
   {
     id: 'quest',
     emoji: '⭐',
     shortTitle: 'Quest',
-    title: 'Quest',
+    title: 'Quête WTF!',
     content: [
-      { icon: '🎫', text: '**Coûte 1 ticket** (25 coins) par session.' },
-      { icon: '🎯', text: 'Choisis un **niveau de difficulté** : Cool, Hot, ou WTF!.' },
-      { icon: '❄️', text: '**Cool** — 2 QCM · 30s · 2 indices gratuits · **2 coins**/bonne réponse' },
-      { icon: '🔥', text: '**Hot** — 4 QCM · 20s · 2 indices gratuits · **2 coins**/bonne réponse' },
-      { icon: '⚡', text: '**WTF!** — 6 QCM · 20s · 1 indice gratuit · **1 coin**/bonne réponse' },
+      { icon: '🎫', text: '**Coûte 1 ticket** (25 coins en boutique) par session.' },
+      { icon: '🎯', text: 'Choisis un **niveau de difficulté** : Cool, Hot ou WTF!.' },
+      { icon: '❄️', text: '**Cool** — 2 QCM · 30s · 2 indices dispo · **2 coins**/bonne réponse' },
+      { icon: '🔥', text: '**Hot** — 4 QCM · 20s · 2 indices dispo · **2 coins**/bonne réponse' },
+      { icon: '⚡', text: '**WTF!** — 6 QCM · 20s · 1 indice dispo · **1 coin**/bonne réponse' },
       { icon: '📚', text: '**5 questions** par session. Les f*cts trouvés rejoignent ta **Collection**.' },
-      { icon: '🏆', text: 'Score parfait (5/5) = **bonus de 10 coins** !' },
+      { icon: '💎', text: 'Contenu exclusif : les **f*cts WTF! VIP** ne sont disponibles qu\'en Quest !' },
+    ],
+  },
+  {
+    id: 'flash',
+    emoji: '🎯',
+    shortTitle: 'Flash',
+    title: 'Mode Flash (Jouer)',
+    content: [
+      { icon: '🔋', text: 'Coûte **1 énergie** — 3 gratuites par jour, puis **10 coins** par session.' },
+      { icon: '⚡', text: 'Session rapide de **5 questions** · 4 QCM · **20s** par question.' },
+      { icon: '🎲', text: 'Catégories **aléatoires** uniquement — pas de choix de catégorie.' },
+      { icon: '🪙', text: '**2 coins** par bonne réponse.' },
+      { icon: '💡', text: 'Jusqu\'à **2 indices** utilisables par question (consomme ton stock).' },
+      { icon: '📚', text: 'Les f*cts débloqués sont **sauvegardés immédiatement** dans ta Collection.' },
     ],
   },
   {
     id: 'explorer',
-    emoji: '🎮',
-    shortTitle: 'Jouer',
-    title: 'Jouer',
+    emoji: '🗺️',
+    shortTitle: 'Explorer',
+    title: 'Mode Explorer',
     content: [
-      { icon: '🔋', text: '**3 sessions gratuites par jour** (reset à minuit). Après : **10 coins** par session.' },
-      { icon: '⚡', text: 'Session rapide de **5 questions**.' },
-      { icon: '🎯', text: '**Mode Aléatoire** : catégories mélangées · **2 coins**/bonne réponse.' },
-      { icon: '🗂️', text: '**Mode Catégorie** : catégorie au choix · **1 coin**/bonne réponse.' },
-      { icon: '💡', text: '**2 indices** gratuits par question, 4 QCM, 20s timer.' },
-      { icon: '🚪', text: 'Tes coins et f*cts sont sauvegardés même si tu quittes.' },
-    ],
-  },
-  {
-    id: 'energy',
-    emoji: '🔋',
-    shortTitle: 'Énergie',
-    title: 'Énergie',
-    content: [
-      { icon: '🔋', text: 'Les modes **Jouer** et **Explorer** utilisent de l\'**énergie**.' },
-      { icon: '🆓', text: 'Tu as **3 sessions gratuites** par jour (les 3 barres oranges sur l\'écran d\'accueil).' },
-      { icon: '⏰', text: 'L\'énergie se **recharge à minuit** automatiquement.' },
-      { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 session pour 10 coins**.' },
-      { icon: '♾️', text: 'Les modes **Quest**, **Blitz** et **Hunt** ne consomment **pas d\'énergie**.' },
-    ],
-  },
-  {
-    id: 'marathon',
-    emoji: '🏃',
-    shortTitle: 'Marathon',
-    title: 'Marathon',
-    content: [
-      { icon: '📊', text: '**20 questions** — test ta connaissance sur un plus long parcours.' },
-      { icon: '🎯', text: 'Format : 4 QCM, **20s** par question, **2 indices** disponibles.' },
-      { icon: '🪙', text: 'Gains : **3 coins** par bonne réponse · **20 coins bonus** si score parfait (20/20).' },
-      { icon: '🆓', text: '**Gratuit** — pas de ticket requis, pas de collecte de f*cts.' },
-      { icon: '🏆', text: 'Entraîne-toi pour améliorer ton score personnel.' },
+      { icon: '🔋', text: 'Coûte **1 énergie** — 3 gratuites par jour, puis **10 coins** par session.' },
+      { icon: '📂', text: '**Choisis ta catégorie** — explore le thème qui t\'intéresse !' },
+      { icon: '⚡', text: '**5 questions** · 4 QCM · **20s** par question.' },
+      { icon: '🪙', text: '**1 coin** par bonne réponse (catégorie choisie = gains réduits).' },
+      { icon: '💡', text: 'Jusqu\'à **2 indices** utilisables par question (consomme ton stock).' },
+      { icon: '📚', text: 'Les f*cts débloqués sont **sauvegardés immédiatement** dans ta Collection.' },
     ],
   },
   {
     id: 'blitz',
     emoji: '⚡',
     shortTitle: 'Blitz',
-    title: 'Blitz',
+    title: 'Mode Blitz',
     content: [
-      { icon: '⏱️', text: '**Chrono montant** — réponds le plus vite possible, accumule les points.' },
-      { icon: '📊', text: 'Paliers : **5 / 10 / 20 / 30 / 40 / 50+ questions**.' },
-      { icon: '✅', text: 'Bonne réponse = **+2s** · Mauvaise = **-3s** (pénalité).' },
-      { icon: '🚫', text: '**Pas d\'indices** — c\'est la mémoire pure, 4 QCM par question.' },
-      { icon: '💰', text: '**Pas de coins** — seul le **prestige** compte !' },
-      { icon: '🏆', text: '**Jeu illimité** — bats tes records personnels.' },
+      { icon: '🆓', text: '**Gratuit et illimité** — joue autant que tu veux !' },
+      { icon: '⏱️', text: 'Chrono de **60 secondes** qui descend — réponds le plus vite possible.' },
+      { icon: '📊', text: 'Choisis ton palier : **5 / 10 / 20 / 30 / 40 / 50 questions**.' },
+      { icon: '✅', text: 'Bonne réponse = **+2s** au chrono · Mauvaise = **-3s** de pénalité.' },
+      { icon: '🚫', text: '**Pas d\'indices** — c\'est la mémoire pure !' },
+      { icon: '🧠', text: 'Joue uniquement avec tes **f*cts déjà débloqués**.' },
+      { icon: '💰', text: '**0 coin** — seul le **prestige** et tes **records** comptent !' },
+      { icon: '🏆', text: 'Bats tes **records personnels** de vitesse.' },
     ],
   },
   {
     id: 'hunt',
     emoji: '🔥',
     shortTitle: 'Hunt',
-    title: 'Hunt',
+    title: 'Hunt (WTF! du Jour)',
     content: [
-      { icon: '🆓', text: '**Gratuit** — pas de ticket requis, **1 fois par jour**.' },
-      { icon: '🎯', text: 'Un **f*ct WTF spécial** à découvrir chaque jour. Débloque le WTF du Jour !' },
-      { icon: '📚', text: '**5 questions** pour le débloquer · 4 QCM · **20s** · **2 indices**.' },
-      { icon: '🪙', text: 'Gagne le **WTF du Jour** et des **coins bonus**.' },
-      { icon: '📅', text: 'Reviens **chaque jour** pour un nouveau WTF du Jour !' },
+      { icon: '🆓', text: '**Gratuit** — disponible **1 fois par jour**.' },
+      { icon: '🎯', text: 'Un **f*ct WTF! spécial** à découvrir chaque jour !' },
+      { icon: '⚡', text: '**5 questions** · 4 QCM · **20s** par question.' },
+      { icon: '💡', text: 'Jusqu\'à **2 indices** utilisables (consomme ton stock).' },
+      { icon: '🪙', text: 'Gagne des **coins** et débloque le **WTF! du Jour**.' },
+      { icon: '📅', text: 'Reviens **chaque jour** — un nouveau WTF! t\'attend !' },
+      { icon: '🔒', text: 'Si tu rates le jour, le f*ct disparaît — pas de rattrapage !' },
     ],
   },
+
+  // ═══ ÉNERGIE ═══
+  {
+    id: 'energy',
+    emoji: '🔋',
+    shortTitle: 'Énergie',
+    title: 'Système d\'Énergie',
+    content: [
+      { icon: '🔋', text: 'Les modes **Flash** et **Explorer** consomment de l\'**énergie**.' },
+      { icon: '🆓', text: 'Tu as **3 sessions gratuites** par jour (les barres oranges sur l\'accueil).' },
+      { icon: '⏰', text: 'L\'énergie se **recharge à minuit** automatiquement.' },
+      { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 session pour 10 coins** en boutique.' },
+      { icon: '📦', text: 'Tu peux aussi acheter des **packs d\'énergie** avec réduction en boutique.' },
+      { icon: '♾️', text: 'Les modes **Quest**, **Blitz** et **Hunt** ne consomment **pas d\'énergie**.' },
+    ],
+  },
+
+  // ═══ INDICES ═══
   {
     id: 'hints',
     emoji: '💡',
     shortTitle: 'Indices',
-    title: 'Indices & Coins',
+    title: 'Les Indices',
     content: [
-      { icon: '💡', text: 'Les indices **éliminent une mauvaise réponse** et consomment 1 indice du stock.' },
-      { icon: '❄️', text: '**Cool / Hot** : jusqu\'à **2 indices gratuits** par question.' },
-      { icon: '⚡', text: '**WTF!** : **1 indice gratuit** par question.' },
-      { icon: '🎁', text: 'Gagne des indices via les **coffres quotidiens**, les **bonus Blitz** et ta **série**.' },
+      { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
+      { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
+      { icon: '❄️', text: '**Cool / Hot / Flash / Explorer / Hunt** : jusqu\'à **2 indices** par question.' },
+      { icon: '⚡', text: '**WTF!** (Quest) : **1 seul indice** par question.' },
+      { icon: '🚫', text: '**Blitz** : aucun indice disponible.' },
+      { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
+      { icon: '🛒', text: 'Achète des indices en **boutique** : 1 pour 10 coins, 3 pour 30, 5 pour 45.' },
+      { icon: '🎁', text: 'Gagne des indices via la **roulette**, les **récompenses de série** et les **mystery packs**.' },
     ],
   },
+
+  // ═══ COINS ═══
   {
-    id: 'collection',
-    emoji: '📚',
-    shortTitle: 'Collection',
-    title: 'Collection',
+    id: 'coins',
+    emoji: '🪙',
+    shortTitle: 'Coins',
+    title: 'WTF! Coins',
     content: [
-      { icon: '🗂️', text: 'Tes f*cts débloqués sont organisés par **catégorie**.' },
-      { icon: '💡', text: 'Un f*ct déjà débloqué **ne réapparaît plus** en Quest.' },
-      { icon: '📊', text: 'Suis ta **progression par catégorie** depuis l\'écran Collection.' },
-      { icon: '🏆', text: 'Complète une catégorie pour débloquer des **récompenses** !' },
+      { icon: '🪙', text: 'Les **WTF! Coins** sont la monnaie du jeu — tu en gagnes en jouant.' },
+      { icon: '⭐', text: '**Quest** : 2 coins/réponse (Cool/Hot) · 1 coin/réponse (WTF!).' },
+      { icon: '🎯', text: '**Flash** : **2 coins** par bonne réponse.' },
+      { icon: '🗺️', text: '**Explorer** : **1 coin** par bonne réponse.' },
+      { icon: '🔥', text: '**Hunt** : **2 coins** par bonne réponse.' },
+      { icon: '⚡', text: '**Blitz** : **0 coin** — prestige uniquement.' },
+      { icon: '🎰', text: 'Gagne aussi des coins via la **roulette quotidienne** et ta **série**.' },
+      { icon: '🛒', text: 'Dépense-les en **boutique** : tickets, indices, énergie, mystery packs, streak freezes.' },
     ],
   },
+
+  // ═══ SÉRIE (STREAK) ═══
   {
     id: 'streak',
     emoji: '🔥',
     shortTitle: 'Série',
-    title: 'Série & Coffres',
+    title: 'Série Quotidienne',
     content: [
-      { icon: '📅', text: 'Joue **chaque jour** pour maintenir ta série.' },
-      { icon: '🪙', text: 'Une série élevée = plus de **coins bonus** après chaque session.' },
-      { icon: '🎁', text: 'Ouvre un **coffre** chaque jour pour gagner des coins ou des indices gratuits.' },
-      { icon: '📦', text: 'Les coffres contiennent entre **5 et 10 coins** ou **1 à 2 indices**.' },
+      { icon: '📅', text: 'Joue **au moins 1 partie par jour** pour maintenir ta série.' },
+      { icon: '🔥', text: 'La série se **reset à 0** si tu manques un jour (sauf avec un Streak Freeze).' },
+      { icon: '🪙', text: '**Jour 1** : 2 coins.' },
+      { icon: '💡', text: '**Jour 3** : 2 indices.' },
+      { icon: '🎫', text: '**Jour 7** : 10 coins + 1 ticket.' },
+      { icon: '🎁', text: '**Jour 14** : 1 ticket + 3 indices.' },
+      { icon: '👑', text: '**Jour 30** : récompense spéciale premium !' },
+      { icon: '🛡️', text: 'Achète un **Streak Freeze** (15 coins) pour protéger ta série si tu rates un jour.' },
+      { icon: '🏆', text: 'Des **trophées** sont liés à ta série : 7, 30 et 100 jours consécutifs.' },
     ],
   },
+
+  // ═══ ROULETTE ═══
+  {
+    id: 'roulette',
+    emoji: '🎰',
+    shortTitle: 'Roulette',
+    title: 'Roulette Quotidienne',
+    content: [
+      { icon: '🆓', text: '**1 tour gratuit** par jour — reviens chaque jour !' },
+      { icon: '🪙', text: 'Tours supplémentaires : **10 coins** chacun.' },
+      { icon: '🎯', text: 'La roue contient : **5, 10, 20 ou 50 coins** · **1 ou 2 indices** · **1 ticket** · **1 Streak Freeze**.' },
+      { icon: '📊', text: 'Les gains les plus rares (50 coins, Streak Freeze) ont **moins de chances** de tomber.' },
+      { icon: '💎', text: 'Combine la roulette avec ta série pour **maximiser tes gains quotidiens** !' },
+    ],
+  },
+
+  // ═══ BOUTIQUE ═══
+  {
+    id: 'shop',
+    emoji: '🛒',
+    shortTitle: 'Boutique',
+    title: 'La Boutique',
+    content: [
+      { icon: '💡', text: '**Indices** : 1 (10 coins) · 3 (30 coins) · 5 (45 coins, -10%).' },
+      { icon: '🎫', text: '**Tickets** : 1 (25 coins) · 3 (65 coins, -13%) · 5 (100 coins, -20%).' },
+      { icon: '🔋', text: '**Énergie** : 1 (10 coins) · 3 (25 coins, -17%) · 5 (40 coins, -20%).' },
+      { icon: '🛡️', text: '**Streak Freeze** : 15 coins — protège ta série pendant 1 jour.' },
+      { icon: '📦', text: '**Mystery Packs** : ouvre des packs pour débloquer des f*cts aléatoires !' },
+      { icon: '💰', text: 'Achète en **lots** pour profiter des **réductions** !' },
+    ],
+  },
+
+  // ═══ MYSTERY PACKS ═══
+  {
+    id: 'mystery',
+    emoji: '📦',
+    shortTitle: 'Packs',
+    title: 'Mystery Packs',
+    content: [
+      { icon: '📦', text: '**Pack Découverte** (15 coins) : 2 Funny f*cts aléatoires.' },
+      { icon: '🎁', text: '**Pack Standard** (35 coins) : 5 Funny f*cts aléatoires.' },
+      { icon: '📂', text: '**Pack Catégorie** (40 coins) : 4 Funny f*cts d\'une **catégorie au choix**.' },
+      { icon: '✨', text: '**Pack Premium** (80 coins) : 7 f*cts avec **5% de chance VIP** chacun.' },
+      { icon: '🏆', text: '**Pack Mega** (150 coins) : 12 f*cts + **1 VIP garanti** !' },
+      { icon: '🎰', text: '**Pity system** : après 5 Packs Premium sans VIP, le suivant en **garantit 1**.' },
+      { icon: '📚', text: 'Les f*cts débloqués par pack vont directement dans ta **Collection**.' },
+    ],
+  },
+
+  // ═══ COLLECTION ═══
+  {
+    id: 'collection',
+    emoji: '📚',
+    shortTitle: 'Collection',
+    title: 'Ta Collection',
+    content: [
+      { icon: '🗂️', text: 'Tes f*cts débloqués sont organisés par **catégorie** (15+ catégories).' },
+      { icon: '📊', text: 'Suis ta **progression par catégorie** avec les barres de progression.' },
+      { icon: '⭐', text: '2 onglets : **WTF! VIP** (f*cts exclusifs Quest) et **Funny F*cts** (tous les autres).' },
+      { icon: '🔄', text: 'Un f*ct déjà débloqué **ne réapparaît plus** dans les quiz.' },
+      { icon: '🏆', text: 'Complète des catégories pour débloquer des **trophées** !' },
+    ],
+  },
+
+  // ═══ TROPHÉES ═══
+  {
+    id: 'trophies',
+    emoji: '🏆',
+    shortTitle: 'Trophées',
+    title: 'Les Trophées',
+    content: [
+      { icon: '🌍', text: '**Progression** : débloque 1, 10, 50, 100 ou 200 f*cts au total.' },
+      { icon: '⭐', text: '**WTF! & Funny** : collectionne des f*cts VIP (1, 10, 25, 50) et Funny (1, 10, 25, 50).' },
+      { icon: '📂', text: '**Par catégorie** : 5 paliers par catégorie (5, 10, 15, 20, tous) = **75 trophées** !' },
+      { icon: '🔥', text: '**Séries** : maintiens une série de 7, 30 ou 100 jours.' },
+      { icon: '⚡', text: '**Blitz** : rookie, pro (<30s), master (<20s), légende (<15s), sans faute.' },
+      { icon: '🎮', text: '**Parties** : joue 10, 50, 100 ou 500 parties au total.' },
+      { icon: '👥', text: '**Social** : ajoute des amis et envoie des défis.' },
+      { icon: '👑', text: '**Perfect** : fais un score parfait en Quest.' },
+      { icon: '📊', text: 'Suis ta progression et ton **prochain objectif** sur la page Trophées.' },
+    ],
+  },
+
+  // ═══ PROFIL ═══
+  {
+    id: 'profile',
+    emoji: '👤',
+    shortTitle: 'Profil',
+    title: 'Ton Profil',
+    content: [
+      { icon: '✏️', text: 'Personnalise ton **pseudo** et ton **avatar**.' },
+      { icon: '📊', text: 'Consulte tes **statistiques** par mode : parties jouées, score moyen, etc.' },
+      { icon: '🔗', text: 'Connecte-toi avec **Google** pour **sauvegarder ta progression** dans le cloud.' },
+      { icon: '📱', text: 'La connexion te permet de **retrouver tes données** si tu changes d\'appareil.' },
+      { icon: '⚙️', text: 'Accède aux **paramètres** : son, vibrations, mode sombre, etc.' },
+    ],
+  },
+
+  // ═══ MULTI ═══
   {
     id: 'multi',
     emoji: '👥',
@@ -155,6 +286,23 @@ const CHAPTERS = [
       { icon: '🏆', text: 'Ajoute des amis via leur **pseudo** et envoie des **défis**.' },
       { icon: '⚡', text: 'Mode **Blitz** — réponds le plus vite possible pour vaincre tes adversaires.' },
       { icon: '📊', text: 'Grimpe dans le **classement** avec tes amis et deviens champion !' },
+    ],
+  },
+
+  // ═══ ASTUCES ═══
+  {
+    id: 'tips',
+    emoji: '✨',
+    shortTitle: 'Astuces',
+    title: 'Astuces & Conseils',
+    content: [
+      { icon: '🎯', text: 'Commence par le mode **Flash** pour gagner des coins et débloquer des f*cts.' },
+      { icon: '💡', text: 'Garde tes **indices** pour les questions difficiles en Quest WTF!.' },
+      { icon: '📅', text: 'Joue **chaque jour** : la série + la roulette = **30-50 coins/jour** gratuits !' },
+      { icon: '🧠', text: 'Joue en **Blitz** pour réviser tes f*cts débloqués et améliorer tes records.' },
+      { icon: '📦', text: 'Les **Packs Catégorie** sont idéaux pour compléter une catégorie spécifique.' },
+      { icon: '🛡️', text: 'Achète un **Streak Freeze** avant un week-end chargé pour protéger ta série !' },
+      { icon: '🔥', text: 'Le **Hunt** est 100% gratuit — ne rate jamais le WTF! du Jour !' },
     ],
   },
 ]
@@ -169,8 +317,8 @@ function renderText(text) {
 function getChapterIcon(chapterId) {
   const modeIcons = {
     quest: '/assets/modes/quete.png',
+    flash: '/assets/modes/marathon.png',
     explorer: '/assets/modes/marathon.png',
-    marathon: '/assets/modes/marathon.png',
     blitz: '/assets/modes/blitz.png',
     streak: '/assets/modes/serie.png',
     multi: '/assets/modes/multi.png',
@@ -180,7 +328,7 @@ function getChapterIcon(chapterId) {
     return <img src={modeIcons[chapterId]} style={{ width: 40, height: 40, objectFit: 'contain' }} alt="" />
   }
 
-  // For hunt and non-mode chapters, use emoji
+  // For non-mode chapters, use emoji
   const chapter = CHAPTERS.find(c => c.id === chapterId)
   return <span style={{ fontSize: 20 }}>{chapter?.emoji || ''}</span>
 }
@@ -199,20 +347,21 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
       case 'goal':
       case 'tutorial':
       case 'hints':
-      case 'collection':
+      case 'coins':
+      case 'tips':
         return true // Always visible
 
       case 'quest':
         return (wd.statsByMode?.parcours?.gamesPlayed || 0) >= 1
+
+      case 'flash':
+        return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
 
       case 'explorer':
         return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
 
       case 'energy':
         return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
-
-      case 'marathon':
-        return (wd.statsByMode?.marathon?.gamesPlayed || 0) >= 1
 
       case 'blitz':
         return (wd.statsByMode?.blitz?.gamesPlayed || 0) >= 1
@@ -222,6 +371,24 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
 
       case 'streak':
         return (wd.gamesPlayed || 0) >= 3
+
+      case 'roulette':
+        return (wd.gamesPlayed || 0) >= 1
+
+      case 'shop':
+        return (wd.gamesPlayed || 0) >= 1
+
+      case 'mystery':
+        return (wd.gamesPlayed || 0) >= 3
+
+      case 'collection':
+        return (wd.unlockedFacts?.length || 0) >= 1
+
+      case 'trophies':
+        return (wd.badgesEarned?.length || 0) >= 1
+
+      case 'profile':
+        return (wd.gamesPlayed || 0) >= 1
 
       case 'multi':
         return (wd.statsByMode?.blitz?.gamesPlayed || 0) >= 1
@@ -273,15 +440,18 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             const isActive = ch.id === activeId
             const colors = {
               goal: '#3B82F6', tutorial: '#8B5CF6', quest: '#EF4444',
-              explorer: '#22C55E', marathon: '#F59E0B', blitz: '#FF6B1A',
-              hunt: '#EC4899', hints: '#6366F1', collection: '#14B8A6',
-              streak: '#F97316', multi: '#8B5CF6',
+              flash: '#FFD700', explorer: '#22C55E', blitz: '#FF6B1A',
+              hunt: '#EC4899', energy: '#10B981', hints: '#6366F1',
+              coins: '#F59E0B', streak: '#F97316', roulette: '#A855F7',
+              shop: '#06B6D4', mystery: '#7C3AED', collection: '#14B8A6',
+              trophies: '#EAB308', profile: '#64748B', multi: '#8B5CF6',
+              tips: '#22C55E',
             }
             const color = colors[ch.id] || '#FF6B1A'
             const modeIcons = {
               quest: '/assets/modes/quete.png',
+              flash: '/assets/modes/marathon.png',
               explorer: '/assets/modes/marathon.png',
-              marathon: '/assets/modes/marathon.png',
               blitz: '/assets/modes/blitz.png',
               streak: '/assets/modes/serie.png',
               multi: '/assets/modes/multi.png',
@@ -352,7 +522,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               )}
 
               {/* Checkbox réafficher les règles des modes — bien visible */}
-              {['quest', 'explorer', 'blitz', 'hunt', 'marathon', 'energy'].includes(chapter.id) && (
+              {['quest', 'flash', 'explorer', 'blitz', 'hunt', 'energy'].includes(chapter.id) && (
                 <label style={{
                   display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
                   cursor: 'pointer', marginTop: 12, padding: '8px', background: 'rgba(255,107,26,0.08)',

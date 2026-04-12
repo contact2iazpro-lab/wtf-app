@@ -7,6 +7,7 @@ import { getBlitzFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
+import { useDuelContext } from '../features/duels/context/DuelContext'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -23,6 +24,7 @@ export default function ChallengeScreen() {
   const navigate = useNavigate()
   const scale = useScale()
   const { user, isConnected, signInWithGoogle } = useAuth()
+  const { startAcceptDefi } = useDuelContext()
 
   const [challenge, setChallenge] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -57,21 +59,12 @@ export default function ChallengeScreen() {
     // Prepare facts for the Blitz
     const shuffled = shuffle(playerFacts)
       .slice(0, Math.min(challenge.question_count, playerFacts.length))
-
-    // Store challenge info for after Blitz (code inclus pour redirection auto
-    // vers /challenge/:code après completion — affiche la comparaison).
-    localStorage.setItem('wtf_active_challenge', JSON.stringify({
-      challengeId: challenge.id,
-      code: challenge.code,
-      player1Time: challenge.player1_time,
-      player1Name: challenge.player1_name,
-      categoryLabel: challenge.category_label,
-    }))
-
-    // Navigate to main app with challenge Blitz
     const factsWithOptions = shuffled.map(f => ({ ...f, ...getAnswerOptions(f, { id: 'blitz', choices: 4 }) }))
-    localStorage.setItem('wtf_challenge_facts', JSON.stringify(factsWithOptions))
-    navigate('/?startChallengeBlitz=true')
+
+    // Nouveau : passer par le DuelContext en mémoire. Plus de localStorage
+    // pour transférer le state entre routes.
+    startAcceptDefi(challenge, factsWithOptions)
+    navigate('/')
   }
 
   // Loading

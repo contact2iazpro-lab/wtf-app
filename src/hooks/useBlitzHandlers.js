@@ -18,6 +18,8 @@ export function useBlitzHandlers({
   setNewlyEarnedBadges, setIsChallengeMode,
   // A.9.3 — persistance flags via RPC merge_player_flags
   mergeFlags,
+  // DuelContext — pendingDuel lu en mémoire React
+  pendingDuel, clearPendingDuel,
 }) {
 
   const handleBlitzStart = useCallback((categoryId, questionCount) => {
@@ -97,31 +99,26 @@ export function useBlitzHandlers({
     const newBadges = checkBadges()
     if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
 
-    // Complete challenge if active (user accepted a defi et vient de finir le Blitz)
-    const challengeJson = localStorage.getItem('wtf_active_challenge')
-    if (challengeJson && user) {
-      try {
-        const challengeInfo = JSON.parse(challengeJson)
-        localStorage.removeItem('wtf_active_challenge')
-        import('../data/duelService').then(async ({ completeDuelRound }) => {
-          try {
-            await completeDuelRound({
-              roundId: challengeInfo.challengeId,
-              playerTime: finalTime,
-              playerId: user.id,
-              playerName: user.user_metadata?.name || 'Joueur WTF!',
-            })
-            // Redirection auto vers ChallengeScreen pour voir la comparaison
-            // (l'écran affichera la branche isCompleted avec les 2 temps + winner)
-            if (challengeInfo.code) {
-              window.location.href = `/challenge/${challengeInfo.code}`
-            }
-          } catch (e) {
-            console.warn('Duel round complete error:', e?.message || e)
-          }
-        })
-      } catch {}
-      return // on ne veut pas déclencher le flow "isChallengeMode" en plus
+    // Complete duel round si l'user vient d'accepter un défi (mode accept)
+    if (pendingDuel?.mode === 'accept' && pendingDuel.roundId && user) {
+      const roundId = pendingDuel.roundId
+      const code = pendingDuel.code
+      clearPendingDuel?.()
+      import('../data/duelService').then(async ({ completeDuelRound }) => {
+        try {
+          await completeDuelRound({
+            roundId,
+            playerTime: finalTime,
+            playerId: user.id,
+            playerName: user.user_metadata?.name || 'Joueur WTF!',
+          })
+          // Redirection auto vers ChallengeScreen pour voir la comparaison
+          if (code) window.location.href = `/challenge/${code}`
+        } catch (e) {
+          console.warn('Duel round complete error:', e?.message || e)
+        }
+      })
+      return
     }
 
     if (isChallengeMode) {
@@ -135,7 +132,7 @@ export function useBlitzHandlers({
       setScreen(SCREENS.BLITZ_RESULTS)
 
       if (user) {
-        const opponentId = localStorage.getItem('wtf_challenge_opponent') || null
+        const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
         import('../data/duelService').then(async ({ getOrCreateDuel, createDuelRound }) => {
           try {
             let duelId = null
@@ -153,7 +150,7 @@ export function useBlitzHandlers({
               player1Name: user.user_metadata?.name || 'Joueur WTF!',
               opponentId,
             })
-            localStorage.removeItem('wtf_challenge_opponent')
+            clearPendingDuel?.()
             localStorage.setItem('wtf_auto_challenge', JSON.stringify(round))
             window.dispatchEvent(new Event('wtf_challenge_created'))
           } catch (e) {

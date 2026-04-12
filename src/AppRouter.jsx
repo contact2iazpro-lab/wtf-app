@@ -9,6 +9,7 @@ import SocialPage from './pages/SocialPage'
 import BottomNav from './components/BottomNav'
 import ChallengeScreen from './screens/ChallengeScreen'
 import DuelHistoryScreen from './screens/DuelHistoryScreen'
+import { DuelProvider } from './features/duels/context/DuelContext'
 import { useScale } from './hooks/useScale'
 import { UnlockContext } from './context/UnlockContext'
 import { UNLOCK_MESSAGES, UNLOCK_THRESHOLDS, SPOTLIGHT_MESSAGES } from './constants/layoutConfig'
@@ -143,16 +144,18 @@ function PageWrapper({ children }) {
 export default function AppRouter() {
   return (
     <UnlockProvider>
-      <Routes>
-        <Route path="/*" element={<App />} />
-        <Route path="/collection" element={<PageWrapper><CollectionPage /></PageWrapper>} />
-        <Route path="/profil" element={<PageWrapper><ProfilPage /></PageWrapper>} />
-        <Route path="/boutique" element={<PageWrapper><BoutiquePage /></PageWrapper>} />
-        <Route path="/recompenses" element={<PageWrapper><RecompensesPage /></PageWrapper>} />
-        <Route path="/social" element={<PageWrapper><SocialPage /></PageWrapper>} />
-        <Route path="/challenge/:code" element={<PageWrapper><ChallengeScreen /></PageWrapper>} />
-        <Route path="/duels/:opponentId" element={<PageWrapper><DuelHistoryScreen /></PageWrapper>} />
-      </Routes>
+      <DuelProvider>
+        <Routes>
+          <Route path="/*" element={<App />} />
+          <Route path="/collection" element={<PageWrapper><CollectionPage /></PageWrapper>} />
+          <Route path="/profil" element={<PageWrapper><ProfilPage /></PageWrapper>} />
+          <Route path="/boutique" element={<PageWrapper><BoutiquePage /></PageWrapper>} />
+          <Route path="/recompenses" element={<PageWrapper><RecompensesPage /></PageWrapper>} />
+          <Route path="/social" element={<PageWrapper><SocialPage /></PageWrapper>} />
+          <Route path="/challenge/:code" element={<PageWrapper><ChallengeScreen /></PageWrapper>} />
+          <Route path="/duels/:opponentId" element={<PageWrapper><DuelHistoryScreen /></PageWrapper>} />
+        </Routes>
+      </DuelProvider>
     </UnlockProvider>
   )
 }

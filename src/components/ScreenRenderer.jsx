@@ -211,7 +211,6 @@ export default function ScreenRenderer({
         <BlitzLobbyScreen
           onSelectCategory={handleBlitzStart}
           onBack={handleHome}
-          unlockedFacts={storage.unlockedFacts}
           bestBlitzTime={JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzTime || null}
         />
       )}

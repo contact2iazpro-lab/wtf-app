@@ -2,28 +2,21 @@ import { useState, useMemo } from 'react'
 import { useScale } from '../hooks/useScale'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { audio } from '../utils/audio'
+import { useDuelContext } from '../features/duels/context/DuelContext'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 
-export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFacts = new Set(), bestBlitzTime = null }) {
+export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTime = null }) {
   const scale = useScale()
   const [selectedCatId, setSelectedCatId] = useState('all')
   const [questionCount, setQuestionCount] = useState(null)
 
+  // Source de vérité : DuelContext → lit collections Supabase direct.
+  // Plus de dépendance à App.jsx state ni à localStorage.
+  const { unlockedFacts: effectiveUnlocked, unlockedLoading } = useDuelContext()
   const allFacts = getValidFacts()
-  // Fallback : si le prop unlockedFacts est vide, relire localStorage au cas où
-  // App.jsx state n'a pas été refresh après un pullFromServer tardif.
-  const effectiveUnlocked = useMemo(() => {
-    if (unlockedFacts && unlockedFacts.size > 0) return unlockedFacts
-    try {
-      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      const ids = Array.isArray(wd.unlockedFacts) ? wd.unlockedFacts : []
-      return new Set(ids)
-    } catch { return new Set() }
-  }, [unlockedFacts])
-  console.log('[BlitzLobby] unlocked size (prop):', unlockedFacts?.size, 'effective:', effectiveUnlocked.size, 'total facts:', allFacts.length)
   const totalUnlocked = allFacts.filter(f => effectiveUnlocked.has(f.id)).length
 
   // Categories with >= 5 unlocked facts (seuil minimum pour Blitz)

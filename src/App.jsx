@@ -14,6 +14,7 @@ import FalkonIntroScreen from './screens/FalkonIntroScreen'
 // Hooks
 import { useGameHandlers } from './hooks/useGameHandlers'
 import { usePlayerProfile } from './hooks/usePlayerProfile'
+import { useDuelContext } from './features/duels/context/DuelContext'
 import { useHandleNext } from './hooks/useHandleNext'
 import { useBlitzHandlers } from './hooks/useBlitzHandlers'
 import { useModeStarters } from './hooks/useModeStarters'
@@ -29,8 +30,9 @@ export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
   // Phase A — profil Supabase (source de vérité pour devises/unlocks/flags)
-  // Déclaré en tête du composant pour être accessible dans tous les useEffect et handlers.
   const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
+  // DuelContext — pending nav state en mémoire (remplace localStorage pour Défi)
+  const { pendingDuel, clearPendingDuel } = useDuelContext()
 
   // Desktop ≥768px → active le décor fullscreen (dégradé animé + particules)
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
@@ -54,17 +56,10 @@ export default function App() {
       localStorage.removeItem('wtf_test_mode')
       window.history.replaceState({}, '', window.location.pathname)
     }
-    // Challenge Blitz from ChallengeScreen
+    // Legacy ?startChallengeBlitz=true : cleanup URL mais plus d'action.
+    // Le flow passe maintenant par DuelContext.pendingDuel (mémoire React).
     if (urlParams.get('startChallengeBlitz') === 'true') {
       window.history.replaceState({}, '', window.location.pathname)
-      try {
-        const facts = JSON.parse(localStorage.getItem('wtf_challenge_facts') || '[]')
-        localStorage.removeItem('wtf_challenge_facts')
-        if (facts.length > 0) {
-          // Will be picked up by the useEffect below
-          localStorage.setItem('wtf_pending_challenge_blitz', JSON.stringify(facts))
-        }
-      } catch { /* ignore */ }
     }
   })
 
@@ -103,34 +98,20 @@ export default function App() {
   })
 
 
-  // ── Challenge Blitz : démarrer un défi depuis ChallengeScreen ──
-  useEffect(() => {
-    const pendingJson = localStorage.getItem('wtf_pending_challenge_blitz')
-    if (!pendingJson) return
-    localStorage.removeItem('wtf_pending_challenge_blitz')
-    try {
-      const facts = JSON.parse(pendingJson)
-      if (facts.length > 0) {
-        setSessionType('blitz')
-        setGameMode('blitz')
-        setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
-        setBlitzFacts(facts)
-        setBlitzResults(null)
-        setScreen(SCREENS.BLITZ)
-      }
-    } catch { /* ignore */ }
-  }, [])
+  // ── Legacy : le vieux flow wtf_pending_challenge_blitz est retiré,
+  // ChallengeScreen passe maintenant par DuelContext.startAcceptDefi qui
+  // est consommé dans l'useEffect sur pendingDuel ci-dessous.
 
-  // ── Pending action depuis SocialPage : lancer un Blitz défi ──
+  // ── Pending Duel depuis SocialPage / ChallengeScreen ──
+  // Nouveau : lit depuis DuelContext (mémoire React), plus aucun localStorage.
   useEffect(() => {
-    const action = localStorage.getItem('wtf_pending_action')
-    if (!action) return
-    localStorage.removeItem('wtf_pending_action')
-    if (action === 'challenge') {
-      // Mode défi : vérifier le ticket
+    if (!pendingDuel) return
+
+    if (pendingDuel.mode === 'create') {
       const balances = getBalances()
       if (balances.tickets < 1) {
         setGameAlert({ emoji: '🎫', title: 'Pas de ticket', message: 'Tu n\'as pas de ticket pour lancer un défi !' })
+        clearPendingDuel()
         return
       }
       updateTickets(-1)
@@ -143,14 +124,19 @@ export default function App() {
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
       setSelectedCategory(null)
       setScreen(SCREENS.BLITZ_LOBBY)
-    } else if (action === 'blitz') {
-      setGameMode('blitz')
+      // On laisse pendingDuel en place pour que handleBlitzFinish puisse
+      // lire opponentId. Sera cleared par handleHome ou après création du round.
+    } else if (pendingDuel.mode === 'accept' && pendingDuel.facts) {
+      // User accepte un défi : lance directement le Blitz avec les facts préparés
       setSessionType('blitz')
+      setGameMode('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
-      setSelectedCategory(null)
-      setScreen(SCREENS.BLITZ_LOBBY)
+      setBlitzFacts(pendingDuel.facts)
+      setBlitzResults(null)
+      setScreen(SCREENS.BLITZ)
+      // pendingDuel.roundId sera consommé par handleBlitzFinish pour completeDuelRound
     }
-  }, [])
+  }, [pendingDuel, applyCurrencyDelta, clearPendingDuel])
 
   // ── Cache busting : force reload si nouvelle version déployée ──
   useEffect(() => {
@@ -275,6 +261,7 @@ export default function App() {
     setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
     setNewlyEarnedBadges, setIsChallengeMode,
     mergeFlags, // A.9.3 persistance records
+    pendingDuel, clearPendingDuel, // Duel nav state mémoire
   })
 
   // ─── Mode starters → extraits dans useModeStarters hook ──────────────────
@@ -344,6 +331,7 @@ export default function App() {
     setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
     setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
     setStorage,
+    clearPendingDuel,
   })
 
 

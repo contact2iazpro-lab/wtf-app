@@ -1,13 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import GameModal from '../components/GameModal'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../lib/supabase'
-import { getOrCreateFriendCode, acceptFriendRequest, rejectFriendRequest, getFriends, getPendingRequests, removeFriend } from '../data/friendService'
+import { acceptFriendRequest, rejectFriendRequest, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
-import { getPlayerChallenges } from '../data/challengeService'
-import { getUserDuels, computeDuelState, markRoundSeen } from '../data/duelService'
+import { markRoundSeen } from '../data/duelService'
 import { getCategoryById } from '../data/factsService'
+import { useDuelContext } from '../features/duels/context/DuelContext'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -62,235 +61,68 @@ function getProcessedBlitzRecords() {
 
 export default function SocialPage() {
   const navigate = useNavigate()
-  const location = useLocation()
   const { user, isConnected, signInWithGoogle } = useAuth()
 
-  const [myCode, setMyCode] = useState(() => {
-    try { return localStorage.getItem('wtf_my_friend_code') || null } catch { return null }
-  })
-  // Cache friends dans localStorage pour éviter le flash "Pas encore d'amis"
-  // à chaque remount de SocialPage (navigation interne).
-  const [friends, setFriends] = useState(() => {
-    try {
-      const cached = localStorage.getItem('wtf_cached_friends')
-      if (cached) return JSON.parse(cached) || []
-    } catch { /* ignore */ }
-    return []
-  })
-  const [pendingRequests, setPendingRequests] = useState([])
-  const [pendingChallenges, setPendingChallenges] = useState([])
-  const [hasSentPending, setHasSentPending] = useState(false)
-  // Map friendUserId → { duel, lastRound } pour le bouton par-ami
-  const [duelsByFriend, setDuelsByFriend] = useState({})
-  const [showChallengeSection, setShowChallengeSection] = useState(false)
+  // Source de vérité unique : DuelContext (Supabase direct + Realtime)
+  const {
+    friends, pendingReceived, friendsLoading,
+    refreshFriends,
+    byFriendId,
+    getDuelStateFor,
+    myCode,
+    startCreateDefi,
+  } = useDuelContext()
+
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
   const [toast, setToast] = useState(null)
   const [confirmRemove, setConfirmRemove] = useState(null)
-  const [socialLoading, setSocialLoading] = useState(false)
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
-
-  // Déduplique les appels simultanés de loadData (Realtime + useEffect peuvent les lancer en parallèle)
-  const loadingRef = useRef(false)
-
-  const loadData = useCallback(async () => {
-    if (!user) return
-    if (loadingRef.current) {
-      console.log('[SocialPage] loadData skipped (already in progress)')
-      return
-    }
-    loadingRef.current = true
-    setSocialLoading(true)
-    try {
-      console.log('[SocialPage] loadData start — user.id =', user.id)
-      // Appels séparés pour voir lequel échoue (au lieu d'un Promise.all qui
-      // fait tout crasher si un seul fail)
-      let codeResult = null
-      try {
-        codeResult = await getOrCreateFriendCode(
-          user.id,
-          user.user_metadata?.name || 'Joueur WTF!',
-          user.user_metadata?.avatar_url
-        )
-        console.log('[SocialPage] getOrCreateFriendCode →', codeResult)
-      } catch (e) {
-        console.error('[SocialPage] getOrCreateFriendCode FAILED:', e)
-      }
-      let friendsList = []
-      try {
-        friendsList = await getFriends(user.id)
-        console.log('[SocialPage] getFriends →', friendsList?.length, 'friends')
-      } catch (e) {
-        console.error('[SocialPage] getFriends FAILED:', e)
-      }
-      let pendingList = []
-      try {
-        pendingList = await getPendingRequests(user.id)
-        console.log('[SocialPage] getPendingRequests →', pendingList?.length, 'pending')
-      } catch (e) {
-        console.error('[SocialPage] getPendingRequests FAILED:', e)
-      }
-      let challengesList = []
-      try {
-        challengesList = await getPlayerChallenges(user.id)
-        console.log('[SocialPage] getPlayerChallenges →', challengesList?.length, 'challenges')
-      } catch (e) {
-        console.error('[SocialPage] getPlayerChallenges FAILED:', e)
-      }
-      // Charger les duels pour afficher le bon bouton par-ami
-      try {
-        const userDuels = await getUserDuels(user.id)
-        console.log('[SocialPage] getUserDuels →', userDuels?.length, 'duels')
-        const map = {}
-        for (const { duel, lastRound } of userDuels) {
-          const friendId = duel.player1_id === user.id ? duel.player2_id : duel.player1_id
-          map[friendId] = { duel, lastRound }
-        }
-        setDuelsByFriend(map)
-      } catch (e) {
-        console.error('[SocialPage] getUserDuels FAILED:', e)
-      }
-
-      if (codeResult?.code) {
-        setMyCode(codeResult.code)
-        try { localStorage.setItem('wtf_my_friend_code', codeResult.code) } catch {}
-      }
-      setFriends(friendsList || [])
-      // Persiste la liste pour le prochain mount (évite flash "Pas encore d'amis")
-      try {
-        localStorage.setItem('wtf_cached_friends', JSON.stringify(friendsList || []))
-      } catch { /* ignore */ }
-      try {
-        const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        wtfData.friendCount = (friendsList || []).length
-        wtfData.lastModified = Date.now()
-        localStorage.setItem('wtf_data', JSON.stringify(wtfData))
-      } catch { /* ignore */ }
-      setPendingRequests(pendingList || [])
-      const received = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id !== user.id)
-      setPendingChallenges(received)
-      const sent = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id === user.id)
-      setHasSentPending(sent.length > 0)
-
-      // Compter les notifications "Amis" : défis à relever + résultats de duel à voir
-      try {
-        const userDuelsForCount = await getUserDuels(user.id)
-        let resultsToSee = 0
-        for (const { duel, lastRound } of (userDuelsForCount || [])) {
-          const st = computeDuelState(duel, lastRound, user.id)
-          if (st.hasResultToSee) resultsToSee += 1
-        }
-        const total = (received?.length || 0) + resultsToSee
-        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        if (wd.pendingChallengesCount !== total) {
-          wd.pendingChallengesCount = total
-          wd.lastModified = Date.now()
-          localStorage.setItem('wtf_data', JSON.stringify(wd))
-          window.dispatchEvent(new Event('wtf_pending_challenges_updated'))
-        }
-      } catch (e) { console.warn('[SocialPage] pendingCount compute failed:', e) }
-    } catch (e) {
-      console.error('[SocialPage] loadData UNEXPECTED error:', e)
-    }
-    finally {
-      setSocialLoading(false)
-      loadingRef.current = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id])
-
-  // Refresh à chaque navigation vers cette page (pas seulement au mount).
-  // Dep sur user?.id (stable) au lieu de loadData (référence qui changeait à chaque
-  // re-fetch de user dans AuthContext et cascadait en multiples appels).
-  useEffect(() => {
-    if (isConnected && user?.id) loadData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, user?.id, location.key])
-
-  // Supabase Realtime pour les invitations et défis
-  useEffect(() => {
-    if (!user?.id) return
-
-    const channel = supabase
-      .channel('social-updates-' + user.id)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'friendships',
-        filter: 'user2_id=eq.' + user.id,
-      }, () => loadData())
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'challenges',
-        filter: 'player2_id=eq.' + user.id,
-      }, () => loadData())
-      .subscribe()
-
-    return () => supabase.removeChannel(channel)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id])
 
   const handleAccept = async (id) => {
     try {
       await acceptFriendRequest(id)
       showToast('Ami ajouté !')
-      loadData()
+      refreshFriends()
     } catch (e) { console.warn('Accept error:', e) }
   }
 
   const handleReject = async (id) => {
     try {
       await rejectFriendRequest(id)
-      loadData()
+      refreshFriends()
     } catch (e) { console.warn('Reject error:', e) }
   }
 
-  const handleRemove = async (id) => {
-    setConfirmRemove(id)
-  }
+  const handleRemove = (id) => setConfirmRemove(id)
 
   const confirmRemoveFriend = async () => {
     if (!confirmRemove) return
     try {
       await removeFriend(confirmRemove)
       showToast('Ami supprimé')
-      loadData()
+      refreshFriends()
     } catch (e) { console.warn('Remove error:', e) }
     setConfirmRemove(null)
   }
 
-  const handleChallenge = () => {
-    audio.play('click')
-    localStorage.setItem('wtf_pending_action', 'challenge')
-    navigate('/')
-  }
-
-  // Nouveau : bouton dynamique par-ami selon l'état du duel
+  // Bouton dynamique par-ami — lit directement l'état du duel via context
   const handleFriendDuelAction = async (friend, state) => {
     audio.play('click')
     if (!state?.action) return
     if (state.action === 'create' || state.action === 'rematch') {
-      // Lancer un Blitz de défi ciblé vers cet ami précis
-      localStorage.setItem('wtf_pending_action', 'challenge')
-      localStorage.setItem('wtf_challenge_opponent', friend.userId)
+      // Nav state en mémoire (plus de localStorage) → App.jsx le consomme via DuelContext
+      startCreateDefi(friend.userId)
       navigate('/')
       return
     }
-    if (state.action === 'accept') {
-      // Rejoindre le round en cours
-      const round = duelsByFriend[friend.userId]?.lastRound
-      if (round?.code) navigate(`/challenge/${round.code}`)
-      return
-    }
-    if (state.action === 'view') {
-      // Marquer comme vu et ouvrir l'écran résultat
-      if (state.roundId) {
+    if (state.action === 'accept' || state.action === 'view') {
+      if (state.roundId && state.action === 'view') {
         try { await markRoundSeen(state.roundId, user.id) } catch {}
       }
-      const round = duelsByFriend[friend.userId]?.lastRound
-      if (round?.code) navigate(`/challenge/${round.code}`)
-      return
+      const entry = byFriendId.get(friend.userId)
+      const code = entry?.lastRound?.code
+      if (code) navigate(`/challenge/${code}`)
     }
   }
 
@@ -322,8 +154,8 @@ export default function SocialPage() {
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/')} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>←</button>
           <h1 className="flex-1 text-lg font-black" style={{ color: '#1a1a2e' }}>Amis</h1>
-          {pendingRequests.length > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-xs font-black" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>{pendingRequests.length}</span>
+          {pendingReceived.length > 0 && (
+            <span className="px-2 py-0.5 rounded-full text-xs font-black" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>{pendingReceived.length}</span>
           )}
         </div>
       </div>
@@ -433,15 +265,14 @@ export default function SocialPage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 10px' }}>
                 <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0 }}>Mes amis ({friends.length})</h2>
               </div>
-              {socialLoading && friends.length === 0 ? (
+              {friendsLoading && friends.length === 0 ? (
                 <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Chargement...</p>
               ) : friends.length === 0 ? (
                 <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Pas encore d'amis. Invite quelqu'un !</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {friends.map(friend => {
-                    const entry = duelsByFriend[friend.userId]
-                    const state = computeDuelState(entry?.duel, entry?.lastRound, user.id)
+                    const state = getDuelStateFor(friend.userId)
                     const isHot = state.action === 'accept' || state.action === 'view'
                     return (
                       <div key={friend.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
@@ -515,84 +346,15 @@ export default function SocialPage() {
               )}
             </div>
 
-            {/* D) Défier (accordéon) */}
-            <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <button
-                onClick={() => setShowChallengeSection(!showChallengeSection)}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              >
-                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  Défier
-                  {pendingChallenges.length > 0 && (
-                    <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingChallenges.length}</span>
-                  )}
-                </h2>
-                <span style={{ fontSize: 18, color: '#9CA3AF', transition: 'transform 0.2s', transform: showChallengeSection ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
-              </button>
-
-              {showChallengeSection && (
-                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {!hasSentPending && pendingChallenges.length === 0 ? (
-                    <>
-                      <button
-                        onClick={handleChallenge}
-                        className="active:scale-95 transition-all"
-                        style={{ width: '100%', padding: '12px 0', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}
-                      >
-                        Défier un ami
-                      </button>
-                      <p style={{ fontSize: S(10), color: '#9CA3AF', margin: 0, textAlign: 'center' }}>Lance un Blitz, puis partage le lien du défi</p>
-                    </>
-                  ) : (
-                    <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(255,107,26,0.08)', border: '1px dashed rgba(255,107,26,0.35)' }}>
-                      <p style={{ fontSize: S(11), color: '#FF6B1A', margin: 0, fontWeight: 800, textAlign: 'center' }}>
-                        {hasSentPending
-                          ? '⏳ Défi en cours — attends que ton ami joue'
-                          : '👇 Termine d\'abord les défis que tu as reçus'}
-                      </p>
-                    </div>
-                  )}
-
-                  {pendingChallenges.length > 0 && (
-                    <div style={{ marginTop: 4 }}>
-                      <p style={{ fontSize: S(12), fontWeight: 800, color: '#1a1a2e', margin: '0 0 8px' }}>Défis à relever :</p>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {pendingChallenges.map(challenge => (
-                          <button
-                            key={challenge.id}
-                            onClick={() => { audio.play('click'); navigate(`/challenge/${challenge.code}`) }}
-                            className="active:scale-95 transition-all"
-                            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)', width: '100%', cursor: 'pointer', textAlign: 'left' }}
-                          >
-                            <Initial name={challenge.player1_name} size={36} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{challenge.player1_name}</span>
-                              <span style={{ fontSize: 11, color: '#6B7280' }}>{challenge.category_label} · {challenge.question_count} questions</span>
-                            </div>
-                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                              <span style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', display: 'block' }}>
-                                {formatBlitzTime(challenge.player1_time)}
-                              </span>
-                              <span style={{ fontSize: 9, color: '#9CA3AF' }}>à battre</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* E) Demandes reçues */}
-            {pendingRequests.length > 0 && (
+            {/* D) Demandes reçues */}
+            {pendingReceived.length > 0 && (
               <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
                   Demandes reçues
-                  <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingRequests.length}</span>
+                  <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingReceived.length}</span>
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {pendingRequests.map(req => (
+                  {pendingReceived.map(req => (
                     <div key={req.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
                       <Initial name={req.displayName} size={36} />
                       <div style={{ flex: 1, minWidth: 0 }}>

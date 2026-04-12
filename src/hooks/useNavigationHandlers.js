@@ -33,6 +33,8 @@ export function useNavigationHandlers({
   setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
   setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
   setStorage,
+  // DuelContext cleanup
+  clearPendingDuel,
 }) {
   const navigate = useNavigate()
   const canPlayFlashCheck = () => getFlashEnergy().remaining > 0
@@ -161,12 +163,9 @@ export function useNavigationHandlers({
     setDuelPlayers([]); setDuelCurrentPlayerIndex(0); setIsQuickPlay(false)
     setSessionType('parcours'); setBlitzFacts([]); setBlitzResults(null)
     setIsChallengeMode(false); setLaunchMode(null); setExplorerPool([])
-    // Cleanup contexte défi si l'user quitte le flow sans finir
-    try {
-      localStorage.removeItem('wtf_challenge_opponent')
-      localStorage.removeItem('wtf_active_challenge')
-    } catch { /* ignore */ }
-  }, [])
+    // Cleanup pending duel si l'user abandonne le flow
+    clearPendingDuel?.()
+  }, [clearPendingDuel])
 
   const handleBlitzReplay = useCallback(() => {
     handleBlitzStart(selectedCategory)

@@ -128,10 +128,19 @@ export const MODE_CONFIGS = {
 // ── Nombre de questions par session
 export const QUESTIONS_PER_GAME = 5
 
-// ── Énergie Explorer (sessions gratuites par jour)
+// ── Énergie Flash/Explorer — modèle stock+régen (T91, 2026-04-12)
+// Stock persistant max 5, régénération +1 toutes les 8h jusqu'au cap de 5.
+// L'achat en boutique permet d'aller jusqu'au cap mais pas au-delà.
+// Un joueur qui dépasse le cap (via achat au-dessus) ne régénère plus jusqu'à
+// redescendre sous le cap.
 export const FLASH_ENERGY = {
+  INITIAL_STOCK: 3,           // nouveau joueur à la création
+  MAX_STOCK: 5,               // cap soft pour régén
+  REGEN_HOURS: 8,             // 1 énergie régénérée toutes les 8h
+  REGEN_MS: 8 * 60 * 60 * 1000,
+  EXTRA_SESSION_COST: 10,     // coins (legacy, à revoir en T95)
+  // Clé legacy conservée pour retro-compat dans le code qui la référence encore
   FREE_SESSIONS_PER_DAY: 3,
-  EXTRA_SESSION_COST: 10, // coins
 }
 
 // ── Paliers de récompenses fidélité Streak

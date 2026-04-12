@@ -121,8 +121,8 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Paramètre | Valeur |
 |-----------|--------|
 | **Nouveau joueur** | **0 coins / 1 ticket / 3 indices / 3 énergies** (Notion officiel) |
-| Énergie max (stock) | 10 (achat possible via boutique au-dessus de 3) |
-| Régénération énergie | +1 toutes les 8h jusqu'au cap de 3 (pas de régén au-dessus) |
+| Énergie max (stock) | 5 (achat boutique peut dépasser, pas de régén au-dessus) |
+| Régénération énergie | +1 toutes les 8h jusqu'au cap de 5 (modèle stock persistant) |
 | 1 ticket (boutique) | 25 coins |
 | 1 indice (boutique) | 10 coins |
 | 3 indices (boutique) | 30 coins |

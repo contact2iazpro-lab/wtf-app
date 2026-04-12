@@ -593,6 +593,27 @@ SELECT grantee, privilege_type
 FROM information_schema.routine_privileges
 WHERE routine_name = 'seed_from_local';
 
+-- ────────────────────────────────────────────────────────────────────────────
+-- BLOC 6 — T91 Énergie stock+régén (2026-04-12)
+-- Cap passé de 10 à 5 (modèle F2P standard).
+-- Le client migre automatiquement le state localStorage (energyService.js).
+-- ────────────────────────────────────────────────────────────────────────────
+
+ALTER TABLE profiles
+  DROP CONSTRAINT IF EXISTS profiles_energy_bounds;
+
+ALTER TABLE profiles
+  ADD CONSTRAINT profiles_energy_bounds CHECK (energy >= 0 AND energy <= 10);
+-- NOTE : on garde le CHECK à 10 côté DB pour autoriser les achats qui
+-- dépassent le cap soft de 5 (un joueur qui achète 3 énergies alors qu'il en
+-- a déjà 4 passe à 7 et reste à 7 jusqu'à consommer). La régén s'arrête
+-- côté client quand energy >= MAX_STOCK (5).
+
+-- Si tu veux imposer le hard cap 5 strict (bloquer les achats au-delà) :
+-- ALTER TABLE profiles
+--   ADD CONSTRAINT profiles_energy_hard_cap CHECK (energy <= 5);
+
+
 -- 3. Récap complet de tout ce qui a été créé dans la Phase A
 SELECT
   'profiles columns ajoutées' AS item,

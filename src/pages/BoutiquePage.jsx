@@ -5,7 +5,7 @@ import { updateCoins, updateHints, updateTickets } from '../services/currencySer
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { getValidFacts, getVipFacts, getFunnyFacts, getCategoryById, getPlayableCategories } from '../data/factsService'
-import { getFlashEnergy } from '../services/energyService'
+import { getFlashEnergy, addFlashEnergy } from '../services/energyService'
 import { FLASH_ENERGY } from '../constants/gameConfig'
 import { useCurrency } from '../context/CurrencyContext'
 import { useScale } from '../hooks/useScale'
@@ -210,17 +210,8 @@ export default function BoutiquePage() {
       console.warn('[BoutiquePage] buyPack RPC failed:', e?.message || e)
     )
     if (type === 'energy') {
-      // Ajouter des sessions gratuites en réduisant le compteur "used"
-      const wd = readWtfData()
-      const today = new Date().toISOString().slice(0, 10)
-      if (wd.flashEnergyDate !== today) {
-        wd.flashEnergyUsed = 0
-        wd.flashEnergyDate = today
-      }
-      wd.flashEnergyUsed = Math.max(0, (wd.flashEnergyUsed || 0) - quantity)
-      wd.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(wd))
-      window.dispatchEvent(new Event('wtf_energy_updated'))
+      // Nouveau modèle T91 : stock persistant via addFlashEnergy
+      addFlashEnergy(quantity)
     } else if (type === 'streakFreeze') {
       const wd = readWtfData()
       wd.streakFreezeCount = (wd.streakFreezeCount || 0) + 1

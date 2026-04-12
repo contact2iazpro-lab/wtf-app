@@ -104,6 +104,16 @@ export const MODE_CONFIGS = {
       { icon: '💡', text: `${DIFFICULTY_LEVELS.HUNT.freeHints} indices (stock gratuit)` },
     ],
   },
+  explorer: {
+    modeId: 'explorer', modeName: 'Explorer', subtitle: 'Explore une catégorie', emoji: '🧭', color: '#6BCB77',
+    rules: [
+      { icon: '🔋', text: '3 sessions gratuites par jour (partagé avec Jouer)' },
+      { icon: '📂', text: 'Choisis une catégorie — 5 questions dedans' },
+      { icon: '⚡', text: '4 QCM · 20s par question' },
+      { icon: '💡', text: `${DIFFICULTY_LEVELS.HOT.freeHints} indices (stock gratuit)` },
+      { icon: '🎯', text: '1 coin/bonne réponse' },
+    ],
+  },
 }
 
 // ── Nombre de questions par session

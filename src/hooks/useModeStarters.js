@@ -1,7 +1,7 @@
 /**
  * useModeStarters — Session starters pour chaque mode de jeu.
  *
- * Extrait de App.jsx : handleWTFDuJour, handleStartWTFSession,
+ * Extrait de App.jsx : handleWTFWeekly, handleStartWTFSession,
  * handleFlashSolo, handleQuickPlay, handlePlay, initSessionState.
  */
 
@@ -44,7 +44,7 @@ export function useModeStarters({
     setPointsEarned(0)
   }, [])
 
-  const handleWTFDuJour = useCallback(() => {
+  const handleWTFWeekly = useCallback(() => {
     audio.play('click')
     setScreen(SCREENS.WTF_TEASER)
   }, [])
@@ -59,7 +59,7 @@ export function useModeStarters({
         huntFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
       }
       if (!huntFact) {
-        setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct du jour n\'est pas encore chargé. Réessaie dans quelques secondes !' })
+        setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct de la semaine n\'est pas encore chargé. Réessaie dans quelques secondes !' })
         return
       }
     }
@@ -188,7 +188,7 @@ export function useModeStarters({
 
   return {
     initSessionState,
-    handleWTFDuJour,
+    handleWTFWeekly,
     handleStartWTFSession,
     handleFlashSolo,
     handleQuickPlay,

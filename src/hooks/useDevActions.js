@@ -28,7 +28,7 @@ export function useDevActions({
     setCoins: (n) => applyStorage({ wtfCoins: n }),
     addCoins: (n) => applyStorage({ wtfCoins: storage.wtfCoins + n }),
     resetCollection: () => applyStorage({ unlockedFacts: new Set() }),
-    resetWTFDuJour: () => applyStorage({ wtfDuJourDate: null }),
+    resetWTFWeekly: () => applyStorage({ wtfDuJourDate: null }), // clé legacy conservée pour compat
     resetSessionsToday: () => applyStorage({ sessionsToday: 0 }),
     resetScore: () => applyStorage({ totalScore: 0 }),
     simulateNewPlayer: () => applyStorage({ streak: 0, wtfCoins: 0, totalScore: 0, unlockedFacts: new Set(), wtfDuJourDate: null, sessionsToday: 0 }),

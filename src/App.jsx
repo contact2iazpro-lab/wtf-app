@@ -278,7 +278,7 @@ export default function App() {
 
   // ─── Mode starters → extraits dans useModeStarters hook ──────────────────
   const {
-    initSessionState, handleWTFDuJour, handleStartWTFSession,
+    initSessionState, handleWTFWeekly, handleStartWTFSession,
     handleFlashSolo, handleQuickPlay, handlePlay,
   } = useModeStarters({
     effectiveDailyFact, unlockedFacts, user,

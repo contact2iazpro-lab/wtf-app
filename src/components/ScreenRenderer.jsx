@@ -6,8 +6,8 @@
 
 import { SCREENS } from '../constants/gameConfig'
 import HomeScreen from '../screens/HomeScreen'
-import WTFDuJourTeaserScreen from '../screens/WTFDuJourTeaserScreen'
-import WTFDuJourRevealScreen from '../screens/WTFDuJourRevealScreen'
+import WTFWeeklyTeaserScreen from '../screens/WTFWeeklyTeaserScreen'
+import WTFWeeklyRevealScreen from '../screens/WTFWeeklyRevealScreen'
 import ModeLaunchScreen from '../screens/ModeLaunchScreen'
 import DifficultyScreen from '../screens/DifficultyScreen'
 import CategoryScreen from '../screens/CategoryScreen'
@@ -77,7 +77,7 @@ export default function ScreenRenderer({
       )}
 
       {screen === SCREENS.WTF_TEASER && (
-        <WTFDuJourTeaserScreen
+        <WTFWeeklyTeaserScreen
           fact={effectiveDailyFact}
           titrePartiel={getTitrePartiel(effectiveDailyFact)}
           streak={streak}
@@ -87,7 +87,7 @@ export default function ScreenRenderer({
       )}
 
       {screen === SCREENS.WTF_REVEAL && (
-        <WTFDuJourRevealScreen
+        <WTFWeeklyRevealScreen
           fact={effectiveDailyFact}
           sessionScore={sessionScore}
           correctCount={correctCount}

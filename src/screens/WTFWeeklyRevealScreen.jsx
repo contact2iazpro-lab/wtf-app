@@ -4,7 +4,7 @@ import { audio } from '../utils/audio'
 import CoinsIcon from '../components/CoinsIcon'
 import { useScale } from '../hooks/useScale'
 
-export default function WTFDuJourRevealScreen({
+export default function WTFWeeklyRevealScreen({
   fact,
   sessionScore,
   correctCount,

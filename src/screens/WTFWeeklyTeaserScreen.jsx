@@ -11,7 +11,7 @@ function getDailyPlayerCount() {
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
-export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onStart, onBack }) {
+export default function WTFWeeklyTeaserScreen({ fact, titrePartiel, streak, onStart, onBack }) {
   const [visible, setVisible] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const cat = getCategoryById(fact.category)
@@ -45,7 +45,7 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
           }}
         >←</button>
         <div style={{ flex: 1, textAlign: 'center' }}>
-          <div className="font-black text-base tracking-wide" style={{ color: '#FF6B1A' }}>WTF! du Jour</div>
+          <div className="font-black text-base tracking-wide" style={{ color: '#FF6B1A' }}>WTF! de la Semaine</div>
           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(10) }}>Tous les jours, un nouveau f*ct</div>
         </div>
         <button

@@ -68,7 +68,7 @@ export function useNavigationHandlers({
         showOrSkipLaunch('quest')
         break
       }
-      case 'wtfDuJour':
+      case 'wtfWeekly':
         showOrSkipLaunch('hunt')
         break
       case 'categoryFlash': {

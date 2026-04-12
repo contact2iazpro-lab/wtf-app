@@ -311,7 +311,7 @@ const CHAPTERS = [
       { icon: '🧠', text: 'Joue en **Blitz** pour réviser tes f*cts débloqués et améliorer tes records.' },
       { icon: '📦', text: 'Les **Packs Catégorie** sont idéaux pour compléter une catégorie spécifique.' },
       { icon: '🛡️', text: 'Achète un **Streak Freeze** avant un week-end chargé pour protéger ta série !' },
-      { icon: '🔥', text: 'Le **Hunt** est 100% gratuit — ne rate jamais le WTF! du Jour !' },
+      { icon: '🔥', text: 'Le **Hunt** est 100% gratuit — ne rate jamais le WTF! de la Semaine !' },
     ],
   },
 ]

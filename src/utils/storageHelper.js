@@ -140,6 +140,9 @@ export function loadStorage() {
       streak,
       unlockedFacts: new Set(saved.unlockedFacts || []),
       wtfCoins: saved.wtfCoins || 0,
+      // NOTE : clés legacy wtfDuJour* conservées pour compatibilité avec l'état
+      // persisté des joueurs existants. Sémantiquement c'est le WTF de la Semaine
+      // (Hunt 1×/semaine dimanche) — voir T92 pour le renommage complet si migration.
       wtfDuJourDate: saved.wtfDuJourDate || null,
       wtfDuJourFait: (saved.wtfDuJourDate || null) === today,
       sessionsToday: saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0,

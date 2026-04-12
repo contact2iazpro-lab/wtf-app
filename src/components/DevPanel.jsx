@@ -113,8 +113,8 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
   // ─── Notifications ──────────────────────────────────────────────────────────
   const NOTIFS = [
     {
-      label: '📬 WTF! du Jour',
-      title: '🤯 Le f*ct du jour t\'attend',
+      label: '📬 WTF! de la Semaine',
+      title: '🤯 Le f*ct de la semaine t\'attend',
       body: `[${cat?.label || 'Sciences'}] Il pleut des diamants sur... → Joue pour découvrir et l'ajouter à ta collection`,
     },
     {
@@ -228,8 +228,8 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
             <Btn danger onClick={() => act('Collection reset', () => devActions.resetCollection())}>Reset</Btn>
           </StateRow>
 
-          <StateRow label="🤯 WTF! du Jour" value={wtfDuJourFait ? '✅ Joué aujourd\'hui' : '⏳ Pas encore joué'}>
-            <Btn color="#F59E0B" onClick={() => act('WTF! du Jour reset', () => devActions.resetWTFDuJour())}>Rejouer</Btn>
+          <StateRow label="🤯 WTF! de la Semaine" value={wtfDuJourFait ? '✅ Joué cette semaine' : '⏳ Pas encore joué'}>
+            <Btn color="#F59E0B" onClick={() => act('WTF! de la Semaine reset', () => devActions.resetWTFWeekly())}>Rejouer</Btn>
           </StateRow>
 
           <StateRow label="⚡ Sessions aujourd'hui" value={`${sessionsToday} session${sessionsToday !== 1 ? 's' : ''}`}>

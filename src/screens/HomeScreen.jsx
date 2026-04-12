@@ -671,7 +671,7 @@ export default function HomeScreen({
                   // Le mark se fait dans handleStartWTFSession (clic "Jouer" sur le
                   // teaser) = vrai point de non-retour. L'user peut revenir en
                   // arrière depuis le teaser sans perdre son coffre.
-                  nav('wtfDuJour')
+                  nav('wtfWeekly')
                 }}
                 style={{
                   flex: 1,

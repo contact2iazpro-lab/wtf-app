@@ -19,7 +19,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { useAuth } from './AuthContext'
-import { initSyncQueue, clearQueue } from '../services/syncQueue'
 import { setCurrencyContext } from '../services/currencyService'
 
 const CurrencyContext = createContext(null)
@@ -56,15 +55,7 @@ export function CurrencyProvider({ children }) {
   const { user, isConnected } = useAuth()
   const [balances, setBalances] = useState(() => readLocalBalances())
   const [isServerSynced, setIsServerSynced] = useState(false)
-  const drainTimerRef = useRef(null)
   const prevUserIdRef = useRef(null)
-
-  // Init sync queue avec le client Supabase
-  useEffect(() => {
-    if (isSupabaseConfigured) {
-      initSyncQueue(supabase)
-    }
-  }, [])
 
   // ── Pull depuis le serveur au login ────────────────────────────────────
   useEffect(() => {
@@ -81,9 +72,8 @@ export function CurrencyProvider({ children }) {
 
     async function initFromServer() {
       try {
-        // Phase A : plus de drain() au mount (queue plus alimentée).
-        // On purge d'éventuels résidus legacy pour éviter une future 404.
-        await clearQueue().catch(() => {})
+        // Purge de l'IndexedDB legacy wtf_sync si elle existe encore
+        try { indexedDB.deleteDatabase('wtf_sync') } catch { /* ignore */ }
 
         // Récupérer les balances serveur
         const { data, error } = await supabase.rpc('get_balances')

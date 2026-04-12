@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import App from './App'
 import CollectionPage from './pages/CollectionPage'
 import ProfilPage from './pages/ProfilPage'
@@ -123,6 +123,12 @@ function UnlockProvider({ children }) {
 function PageWrapper({ children }) {
   const scale = useScale()
   const showNav = PAGES_WITH_NAV.includes(useLocation().pathname)
+  // Si l'user visite une page interne (Profil, Boutique, etc.), on considère
+  // qu'il est déjà dans l'app et a passé le splash. Évite le bug où cliquer
+  // "Home" depuis /profil après un login OAuth re-déclenchait FalkonIntro+Splash.
+  useEffect(() => {
+    try { sessionStorage.setItem('wtf_splash_done', 'true') } catch { /* ignore */ }
+  }, [])
   return (
     <div className="w-full h-full max-w-md mx-auto relative overflow-hidden" style={{ '--scale': scale, height: '100dvh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflow: 'auto' }}>

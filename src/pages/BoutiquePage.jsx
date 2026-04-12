@@ -92,7 +92,9 @@ export default function BoutiquePage() {
   }
 
   const notEnoughCoins = (price) => {
-    audio.play?.('wrong')
+    // Buzzer neutre (pas le son "wrong" réservé aux mauvaises réponses en jeu)
+    audio.play?.('buzzer')
+    audio.vibrate?.([30, 20, 30])
     const missing = price - coins
     showToast(`Pas assez de coins — il te manque ${missing} 🪙`)
   }

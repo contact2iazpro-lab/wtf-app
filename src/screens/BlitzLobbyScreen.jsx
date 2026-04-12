@@ -15,7 +15,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
   const allFacts = getValidFacts()
   const totalUnlocked = allFacts.filter(f => unlockedFacts.has(f.id)).length
 
-  // Categories with >= 4 unlocked facts
+  // Categories with >= 5 unlocked facts (seuil minimum pour Blitz)
   const categories = useMemo(() => {
     const cats = getPlayableCategories()
     return cats
@@ -23,7 +23,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
         const count = allFacts.filter(f => f.category === cat.id && unlockedFacts.has(f.id)).length
         return { ...cat, count }
       })
-      .filter(c => c.count >= 4)
+      .filter(c => c.count >= 5)
       .sort((a, b) => b.count - a.count)
   }, [allFacts, unlockedFacts])
 
@@ -34,7 +34,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
 
   const questionOptions = [5, 10, 20, 30, 40, 50]
   const effectiveCount = questionCount || (poolSize >= 50 ? 50 : poolSize >= 40 ? 40 : poolSize >= 30 ? 30 : poolSize >= 20 ? 20 : poolSize >= 10 ? 10 : poolSize >= 5 ? 5 : poolSize)
-  const hasSelection = selectedCatId !== null && poolSize >= 4
+  const hasSelection = selectedCatId !== null && poolSize >= 5
 
   const handleGo = () => {
     if (!hasSelection) return
@@ -159,16 +159,16 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
             )
           })}
 
-          {totalUnlocked < 4 && (
+          {totalUnlocked < 5 && (
             <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.4)', fontSize: S(12) }}>
-              Débloque au moins 4 f*cts pour jouer en Blitz ! 🔓
+              Débloque au moins 5 f*cts pour jouer en Blitz ! 🔓
             </div>
           )}
         </div>
       </div>
 
       {/* Question count selector */}
-      {poolSize >= 4 && (
+      {poolSize >= 5 && (
         <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(8)}` }}>
           <div style={{ fontSize: S(14), fontWeight: 900, color: 'white', marginBottom: S(8), textAlign: 'center' }}>Nombre de questions</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
@@ -204,17 +204,17 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
       {/* CTA */}
       <div style={{ flexShrink: 0, padding: `${S(8)} ${S(12)} ${S(14)}` }}>
         <button
-          onClick={hasSelection && totalUnlocked >= 4 ? handleGo : undefined}
+          onClick={hasSelection && totalUnlocked >= 5 ? handleGo : undefined}
           style={{
             width: '100%', padding: S(14),
             borderRadius: S(14), fontSize: S(18), fontWeight: 900,
             textTransform: 'uppercase', letterSpacing: '0.04em',
             border: 'none', fontFamily: 'Nunito, sans-serif',
-            cursor: hasSelection && totalUnlocked >= 4 ? 'pointer' : 'default',
-            pointerEvents: hasSelection && totalUnlocked >= 4 ? 'auto' : 'none',
-            background: hasSelection && totalUnlocked >= 4 ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : 'rgba(255,255,255,0.15)',
-            color: hasSelection && totalUnlocked >= 4 ? 'white' : 'rgba(255,255,255,0.4)',
-            boxShadow: hasSelection && totalUnlocked >= 4 ? '0 6px 24px rgba(255,107,26,0.4)' : 'none',
+            cursor: hasSelection && totalUnlocked >= 5 ? 'pointer' : 'default',
+            pointerEvents: hasSelection && totalUnlocked >= 5 ? 'auto' : 'none',
+            background: hasSelection && totalUnlocked >= 5 ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : 'rgba(255,255,255,0.15)',
+            color: hasSelection && totalUnlocked >= 5 ? 'white' : 'rgba(255,255,255,0.4)',
+            boxShadow: hasSelection && totalUnlocked >= 5 ? '0 6px 24px rgba(255,107,26,0.4)' : 'none',
           }}
         >
           GO ! ⚡

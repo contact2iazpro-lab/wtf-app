@@ -40,7 +40,7 @@ function buildLevelSession(level) {
 }
 
 export default function RouteScreen({ onHome, setStorage }) {
-  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
   const [state, setState] = useState(readRouteState)
   const [session, setSession] = useState(null)
   const [qIndex, setQIndex] = useState(0)
@@ -99,6 +99,10 @@ export default function RouteScreen({ onHome, setStorage }) {
             stars: { ...state.stars, [state.level]: 3 },
           }
           writeRouteState(nextState); setState(nextState)
+          // A.9.4 — miroir Supabase pour route progress
+          mergeFlags?.({ route: nextState }).catch(e =>
+            console.warn('[RouteScreen] route mergeFlags failed:', e?.message || e)
+          )
         }
         setShowResult(true)
       }

@@ -30,6 +30,8 @@ export function useHandleNext({
   setTrophyQueue,
   // Phase A.6 — miroir Supabase
   applyCurrencyDelta,
+  // Phase A.9 — flags persistés
+  mergeFlags,
 }) {
 
   const handleNext = useCallback(() => {
@@ -228,6 +230,15 @@ export function useHandleNext({
       wtfData.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(wtfData))
       window.dispatchEvent(new Event('wtf_storage_sync'))
+
+      // A.9.6 — miroir Supabase : stats + totaux
+      mergeFlags?.({
+        statsByMode: wtfData.statsByMode,
+        gamesPlayed: wtfData.gamesPlayed,
+        questsPlayed: wtfData.questsPlayed,
+        totalCorrect: wtfData.totalCorrect,
+        totalAnswered: wtfData.totalAnswered,
+      }).catch(e => console.warn('[useHandleNext] stats mergeFlags failed:', e?.message || e))
     } catch {}
 
     updateTrophyData()

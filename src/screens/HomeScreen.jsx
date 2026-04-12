@@ -61,7 +61,7 @@ function getWeekStart() {
   return monday.toISOString().slice(0, 10)
 }
 
-function useDailyCoffre(applyCurrencyDelta) {
+function useDailyCoffre(applyCurrencyDelta, mergeFlags) {
   const now = new Date()
   const todayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1 // lundi=0 ... dimanche=6
   const weekStart = getWeekStart()
@@ -107,6 +107,10 @@ function useDailyCoffre(applyCurrencyDelta) {
     wtfData.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(wtfData))
     setCoffreData({ claimedDays: newClaimed, weekStart })
+    // A.9.5 — miroir Supabase pour éviter le double claim cross-device
+    mergeFlags?.({ coffreClaimedDays: newClaimed, coffreWeekStart: weekStart }).catch(e =>
+      console.warn('[HomeScreen] coffre mergeFlags failed:', e?.message || e)
+    )
     const coffreConfig = COFFRE_REWARDS[todayIndex]
     applyCofreReward(coffreConfig.reward, applyCurrencyDelta)
     if (coffreConfig.reward.bonus) applyCofreReward(coffreConfig.reward.bonus, applyCurrencyDelta)
@@ -123,6 +127,9 @@ function useDailyCoffre(applyCurrencyDelta) {
     wtfData.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(wtfData))
     setCoffreData({ claimedDays: newClaimed, weekStart })
+    mergeFlags?.({ coffreClaimedDays: newClaimed, coffreWeekStart: weekStart }).catch(e =>
+      console.warn('[HomeScreen] coffre mergeFlags failed:', e?.message || e)
+    )
     const coffreConfig = COFFRE_REWARDS[index]
     applyCofreReward(coffreConfig.reward, applyCurrencyDelta)
     if (coffreConfig.reward.bonus) applyCofreReward(coffreConfig.reward.bonus, applyCurrencyDelta)
@@ -256,9 +263,9 @@ export default function HomeScreen({
     setLockToast(message)
     setTimeout(() => setLockToast(null), 2500)
   }
-  // Phase A.6 — miroir Supabase pour coffres + accelerate
-  const { applyCurrencyDelta } = usePlayerProfile()
-  const { coffres, todayIndex, getStatus, openCoffre, openEarly } = useDailyCoffre(applyCurrencyDelta)
+  // Phase A.6/A.9 — miroir Supabase pour coffres + accelerate + flags
+  const { applyCurrencyDelta, mergeFlags } = usePlayerProfile()
+  const { coffres, todayIndex, getStatus, openCoffre, openEarly } = useDailyCoffre(applyCurrencyDelta, mergeFlags)
   const [earlyCoffreTarget, setEarlyCoffreTarget] = useState(null)
   const [nextBadgeInfo, setNextBadgeInfo] = useState(() => getNextBadge())
   const [showBadgeModal, setShowBadgeModal] = useState(false)

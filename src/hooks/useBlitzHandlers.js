@@ -16,6 +16,8 @@ export function useBlitzHandlers({
   setGameAlert, setSessionType, setGameMode, setSelectedCategory,
   setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
   setNewlyEarnedBadges, setIsChallengeMode,
+  // A.9.3 — persistance flags via RPC merge_player_flags
+  mergeFlags,
 }) {
 
   const handleBlitzStart = useCallback((categoryId, questionCount) => {
@@ -78,6 +80,17 @@ export function useBlitzHandlers({
       }
       wtfData.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+
+      // A.9.3/A.9.6 — miroir Supabase : blitzRecords + stats + total
+      mergeFlags?.({
+        blitzRecords: wtfData.blitzRecords,
+        bestBlitzTime: wtfData.bestBlitzTime,
+        statsByMode: wtfData.statsByMode,
+        gamesPlayed: wtfData.gamesPlayed,
+        totalCorrect: wtfData.totalCorrect,
+        totalAnswered: wtfData.totalAnswered,
+        blitzPerfects: wtfData.blitzPerfects,
+      }).catch(e => console.warn('[useBlitzHandlers] mergeFlags failed:', e?.message || e))
     } catch {}
 
     updateTrophyData()

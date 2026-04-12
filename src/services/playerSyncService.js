@@ -61,8 +61,16 @@ export async function pullFromServer(userId) {
         if (remote.flags.coffreWeekStart) saved.coffreWeekStart = remote.flags.coffreWeekStart
         if (remote.flags.streakFreezeCount !== undefined) saved.streakFreezeCount = remote.flags.streakFreezeCount
         if (remote.flags.bestBlitzTime) saved.bestBlitzTime = remote.flags.bestBlitzTime
+        // A.9.6 — stats et totaux
+        if (remote.flags.statsByMode) saved.statsByMode = remote.flags.statsByMode
+        if (remote.flags.gamesPlayed !== undefined) saved.gamesPlayed = remote.flags.gamesPlayed
+        if (remote.flags.questsPlayed !== undefined) saved.questsPlayed = remote.flags.questsPlayed
+        if (remote.flags.totalCorrect !== undefined) saved.totalCorrect = remote.flags.totalCorrect
+        if (remote.flags.totalAnswered !== undefined) saved.totalAnswered = remote.flags.totalAnswered
+        if (remote.flags.blitzPerfects !== undefined) saved.blitzPerfects = remote.flags.blitzPerfects
       }
-      if (remote.stats_by_mode && typeof remote.stats_by_mode === 'object') {
+      if (remote.stats_by_mode && typeof remote.stats_by_mode === 'object' && !saved.statsByMode) {
+        // Fallback : si flags.statsByMode absent, utiliser la colonne stats_by_mode
         saved.statsByMode = remote.stats_by_mode
       }
       localStorage.setItem('wtf_data', JSON.stringify(saved))

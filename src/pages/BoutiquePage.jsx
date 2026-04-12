@@ -74,8 +74,8 @@ export default function BoutiquePage() {
   const navigate = useNavigate()
 
   const { coins, tickets, hints } = useCurrency()
-  // Phase A.6/A.7 — RPC Supabase en parallèle du legacy currencyService
-  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
+  // Phase A.6/A.7/A.9 — RPC Supabase en parallèle du legacy
+  const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
   const [streakFreezeCount, setStreakFreezeCount] = useState(() => readWtfData().streakFreezeCount || 0)
@@ -218,6 +218,10 @@ export default function BoutiquePage() {
       wd.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(wd))
       setStreakFreezeCount(wd.streakFreezeCount)
+      // A.9 — miroir Supabase
+      mergeFlags?.({ streakFreezeCount: wd.streakFreezeCount }).catch(e =>
+        console.warn('[BoutiquePage] streakFreeze mergeFlags failed:', e?.message || e)
+      )
     }
     const labels = { hint: 'indice', ticket: 'ticket', energy: 'énergie', streakFreeze: 'Streak Freeze' }
     const unit = labels[type] || type

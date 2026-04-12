@@ -28,9 +28,9 @@ import { useDevActions } from './hooks/useDevActions'
 export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
-  // Phase A — profil Supabase (source de vérité pour devises/unlocks)
+  // Phase A — profil Supabase (source de vérité pour devises/unlocks/flags)
   // Déclaré en tête du composant pour être accessible dans tous les useEffect et handlers.
-  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
 
   // Desktop ≥768px → active le décor fullscreen (dégradé animé + particules)
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
@@ -274,6 +274,7 @@ export default function App() {
     setGameAlert, setSessionType, setGameMode, setSelectedCategory,
     setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
     setNewlyEarnedBadges, setIsChallengeMode,
+    mergeFlags, // A.9.3 persistance records
   })
 
   // ─── Mode starters → extraits dans useModeStarters hook ──────────────────
@@ -358,6 +359,7 @@ export default function App() {
     setShowNewCategoriesModal, setShowStreakSpecialModal, setStreakRewardToast,
     setTrophyQueue,
     applyCurrencyDelta, // Phase A.6 — miroir Supabase
+    mergeFlags,         // Phase A.9 — stats + totaux
   })
 
   // ─── Dev actions → extraits dans useDevActions hook ─────────────────────────

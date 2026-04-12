@@ -13,6 +13,7 @@ import SplashScreen from './screens/SplashScreen'
 import FalkonIntroScreen from './screens/FalkonIntroScreen'
 // Hooks
 import { useGameHandlers } from './hooks/useGameHandlers'
+import { usePlayerProfile } from './hooks/usePlayerProfile'
 import { useHandleNext } from './hooks/useHandleNext'
 import { useBlitzHandlers } from './hooks/useBlitzHandlers'
 import { useModeStarters } from './hooks/useModeStarters'
@@ -245,6 +246,11 @@ export default function App() {
     ? Math.floor(sessionFacts.length / numPlayers)
     : sessionFacts.length
 
+  // ─── Phase A — Profil joueur via Supabase (source de vérité) ────────────
+  // Coexistence avec l'ancien currencyService : les mutations légitimes sont
+  // doublées (legacy + RPC). À terme, legacy sera retiré.
+  const { applyCurrencyDelta } = usePlayerProfile()
+
   // ─── Game handlers (extrait pour réduire App.jsx) ────────────────────────
   const {
     handleSelectAnswer,
@@ -257,6 +263,7 @@ export default function App() {
     setSelectedAnswer, setIsCorrect, setPointsEarned, setSessionScore,
     setCorrectCount, setSessionCorrectFacts, setDuelPlayers, setHintsUsed,
     setSessionAnyHintUsed, setStorage, setNewlyUnlockedCategories, setScreen,
+    applyCurrencyDelta, // Phase A : doublement des mutations coins
   })
 
   // ─── Blitz handlers → extraits dans useBlitzHandlers hook ──────────────────

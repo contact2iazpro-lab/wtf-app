@@ -38,6 +38,8 @@ export function useGameHandlers({
   setStorage,
   setNewlyUnlockedCategories,
   setScreen,
+  // Phase A — Supabase source of truth (coexistence avec legacy currencyService)
+  applyCurrencyDelta,
 }) {
 
   // ── Calcul des points ──────────────────────────────────────────────────
@@ -71,7 +73,15 @@ export function useGameHandlers({
     } else {
       setSessionScore(s => s + points)
       if (isAnswerCorrect) setCorrectCount(c => c + 1)
-      if (points > 0) updateCoins(points)
+      if (points > 0) {
+        updateCoins(points) // legacy (localStorage)
+        // Phase A : miroir côté Supabase via RPC (optimistic + anti-replay)
+        if (applyCurrencyDelta) {
+          applyCurrencyDelta({ coins: points }, `${sessionType}_correct`).catch(e => {
+            console.warn('[useGameHandlers] applyCurrencyDelta failed:', e?.message || e)
+          })
+        }
+      }
 
       // Explorer/Marathon : débloquer le f*ct immédiatement
       // Débloquer le fact immédiatement pour TOUS les modes (pas attendre la fin de session)
@@ -110,7 +120,7 @@ export function useGameHandlers({
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [currentFact, gameMode, duelCurrentPlayerIndex, calcPoints, sessionType, user, selectedCategory])
+  }, [currentFact, gameMode, duelCurrentPlayerIndex, calcPoints, sessionType, user, selectedCategory, applyCurrencyDelta])
 
   // ── handleOpenValidate ─────────────────────────────────────────────────
   const handleOpenValidate = useCallback((isCorrect) => {
@@ -129,11 +139,18 @@ export function useGameHandlers({
     } else {
       setSessionScore(s => s + points)
       if (isCorrect) setCorrectCount(c => c + 1)
-      if (points > 0) updateCoins(points)
+      if (points > 0) {
+        updateCoins(points)
+        if (applyCurrencyDelta) {
+          applyCurrencyDelta({ coins: points }, `${sessionType}_validate`).catch(e => {
+            console.warn('[useGameHandlers] applyCurrencyDelta failed:', e?.message || e)
+          })
+        }
+      }
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [calcPoints, gameMode, duelCurrentPlayerIndex, currentFact])
+  }, [calcPoints, gameMode, duelCurrentPlayerIndex, currentFact, sessionType, applyCurrencyDelta])
 
   // ── handleTimeout ──────────────────────────────────────────────────────
   const handleTimeout = useCallback(() => {

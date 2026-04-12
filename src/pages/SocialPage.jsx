@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 import { getOrCreateFriendCode, acceptFriendRequest, rejectFriendRequest, getFriends, getPendingRequests, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
 import { getPlayerChallenges } from '../data/challengeService'
+import { getUserDuels, computeDuelState, markRoundSeen } from '../data/duelService'
 import { getCategoryById } from '../data/factsService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -79,6 +80,8 @@ export default function SocialPage() {
   const [pendingRequests, setPendingRequests] = useState([])
   const [pendingChallenges, setPendingChallenges] = useState([])
   const [hasSentPending, setHasSentPending] = useState(false)
+  // Map friendUserId → { duel, lastRound } pour le bouton par-ami
+  const [duelsByFriend, setDuelsByFriend] = useState({})
   const [showChallengeSection, setShowChallengeSection] = useState(false)
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
   const [toast, setToast] = useState(null)
@@ -133,6 +136,19 @@ export default function SocialPage() {
         console.log('[SocialPage] getPlayerChallenges →', challengesList?.length, 'challenges')
       } catch (e) {
         console.error('[SocialPage] getPlayerChallenges FAILED:', e)
+      }
+      // Charger les duels pour afficher le bon bouton par-ami
+      try {
+        const userDuels = await getUserDuels(user.id)
+        console.log('[SocialPage] getUserDuels →', userDuels?.length, 'duels')
+        const map = {}
+        for (const { duel, lastRound } of userDuels) {
+          const friendId = duel.player1_id === user.id ? duel.player2_id : duel.player1_id
+          map[friendId] = { duel, lastRound }
+        }
+        setDuelsByFriend(map)
+      } catch (e) {
+        console.error('[SocialPage] getUserDuels FAILED:', e)
       }
 
       if (codeResult?.code) {
@@ -230,6 +246,34 @@ export default function SocialPage() {
     audio.play('click')
     localStorage.setItem('wtf_pending_action', 'challenge')
     navigate('/')
+  }
+
+  // Nouveau : bouton dynamique par-ami selon l'état du duel
+  const handleFriendDuelAction = async (friend, state) => {
+    audio.play('click')
+    if (!state?.action) return
+    if (state.action === 'create' || state.action === 'rematch') {
+      // Lancer un Blitz de défi ciblé vers cet ami précis
+      localStorage.setItem('wtf_pending_action', 'challenge')
+      localStorage.setItem('wtf_challenge_opponent', friend.userId)
+      navigate('/')
+      return
+    }
+    if (state.action === 'accept') {
+      // Rejoindre le round en cours
+      const round = duelsByFriend[friend.userId]?.lastRound
+      if (round?.code) navigate(`/challenge/${round.code}`)
+      return
+    }
+    if (state.action === 'view') {
+      // Marquer comme vu et ouvrir l'écran résultat
+      if (state.roundId) {
+        try { await markRoundSeen(state.roundId, user.id) } catch {}
+      }
+      const round = duelsByFriend[friend.userId]?.lastRound
+      if (round?.code) navigate(`/challenge/${round.code}`)
+      return
+    }
   }
 
   const { records: blitzRecords } = getProcessedBlitzRecords()
@@ -385,22 +429,34 @@ export default function SocialPage() {
                 <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Pas encore d'amis. Invite quelqu'un !</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {friends.map(friend => (
-                    <div key={friend.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
-                      <Initial name={friend.displayName} size={36} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
-                      </div>
-                      {!hasSentPending && pendingChallenges.length === 0 && (
+                  {friends.map(friend => {
+                    const entry = duelsByFriend[friend.userId]
+                    const state = computeDuelState(entry?.duel, entry?.lastRound, user.id)
+                    const isHot = state.action === 'accept' || state.action === 'view'
+                    return (
+                      <div key={friend.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
+                        <Initial name={friend.displayName} size={36} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
+                        </div>
                         <button
-                          onClick={handleChallenge}
+                          onClick={() => handleFriendDuelAction(friend, state)}
+                          disabled={state.disabled}
                           className="active:scale-90"
-                          style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                        >Défier</button>
-                      )}
-                      <button onClick={() => handleRemove(friend.friendshipId)} className="active:scale-90" style={{ padding: '4px 8px', borderRadius: 6, background: 'transparent', border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer' }}>✕</button>
-                    </div>
-                  ))}
+                          style={{
+                            padding: '6px 10px', borderRadius: 8,
+                            background: state.disabled ? 'rgba(0,0,0,0.05)' : (isHot ? '#FF6B1A' : 'rgba(255,107,26,0.1)'),
+                            border: state.disabled ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,107,26,0.3)',
+                            color: state.disabled ? '#9CA3AF' : (isHot ? 'white' : '#FF6B1A'),
+                            fontWeight: 800, fontSize: 11,
+                            cursor: state.disabled ? 'default' : 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >{state.label}</button>
+                        <button onClick={() => handleRemove(friend.friendshipId)} className="active:scale-90" style={{ padding: '4px 8px', borderRadius: 6, background: 'transparent', border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>

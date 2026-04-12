@@ -112,22 +112,32 @@ export function useBlitzHandlers({
       setScreen(SCREENS.BLITZ_RESULTS)
 
       if (user) {
-        import('../data/challengeService').then(({ createChallenge }) => {
-          createChallenge({
-            categoryId: selectedCategory || 'all',
-            categoryLabel: challengeData.categoryLabel,
-            questionCount: totalAnswered,
-            playerTime: finalTime,
-            playerId: user.id,
-            playerName: user.user_metadata?.name || 'Joueur WTF!',
-          }).then(challenge => {
-            localStorage.setItem('wtf_auto_challenge', JSON.stringify(challenge))
+        const opponentId = localStorage.getItem('wtf_challenge_opponent') || null
+        import('../data/duelService').then(async ({ getOrCreateDuel, createDuelRound }) => {
+          try {
+            let duelId = null
+            if (opponentId) {
+              const duel = await getOrCreateDuel(user.id, opponentId)
+              duelId = duel?.id || null
+            }
+            const round = await createDuelRound({
+              duelId,
+              categoryId: selectedCategory || 'all',
+              categoryLabel: challengeData.categoryLabel,
+              questionCount: totalAnswered,
+              player1Time: finalTime,
+              player1Id: user.id,
+              player1Name: user.user_metadata?.name || 'Joueur WTF!',
+              opponentId,
+            })
+            localStorage.removeItem('wtf_challenge_opponent')
+            localStorage.setItem('wtf_auto_challenge', JSON.stringify(round))
             window.dispatchEvent(new Event('wtf_challenge_created'))
-          }).catch(e => {
-            console.error('[useBlitzHandlers] Auto challenge creation failed:', e)
+          } catch (e) {
+            console.error('[useBlitzHandlers] Auto duel round creation failed:', e)
             localStorage.setItem('wtf_auto_challenge_error', e?.message || 'Erreur inconnue')
             window.dispatchEvent(new Event('wtf_challenge_created'))
-          })
+          }
         })
       }
       // Ne PAS reset isChallengeMode ici — on garde le flag true pour que

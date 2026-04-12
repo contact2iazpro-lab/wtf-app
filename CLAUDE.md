@@ -158,6 +158,81 @@ séparé, sous-domaine privé, ou en local uniquement).
 - **Blitz** pioche dans TOUS les f*cts déjà débloqués (VIP + Funny confondus)
 - Collection : 2 onglets (WTF! + Funny F*cts)
 
+## Architecture Data — Règle d'or (décidée 2026-04-12)
+
+**Principe** : Supabase = source de vérité pour tout ce qui "compte". localStorage = cache optimiste stale-while-revalidate. React state = UI éphémère.
+
+### Répartition des entités
+
+**Supabase (canonique)** — toute mutation passe par RPC ou Edge Function, jamais d'écriture localStorage directe :
+- coins, tickets, indices, énergie
+- unlockedFacts (set d'IDs)
+- streak (jour courant + historique)
+- badges / trophées
+- blitzRecords (meilleurs temps par catégorie/palier)
+- Route WTF! progress (level, stars)
+- coffres réclamés (dimanche WTF + daily)
+- stats par mode (gamesPlayed, totalCorrect, bestStreak…)
+- duels / challenges / friendships (déjà fait)
+
+**localStorage (UI state, non syncé)** :
+- onboardingCompleted, tutoStep, skip_launch_*
+- son on/off, thème, mode dev/test
+- wtf_cached_friends (pur cache de l'entité Supabase)
+
+**React state (éphémère)** :
+- écran courant, modals ouverts
+- session de jeu en cours (questions, score)
+
+### Règles de lecture (cache stale-while-revalidate)
+
+- Tout hook `useSupabaseResource` lit le cache localStorage en premier (affichage immédiat, pas de flash)
+- Fetch silencieux en arrière-plan sur mount + reconnexion réseau
+- Mise à jour du cache + re-render quand le serveur répond
+- Si pas de cache (nouveau device) → skeleton `—` sur la valeur, pas de blocage global de la page
+
+### Règles de mutation
+
+- **Aucune écriture directe** à `players.coins`, `wtf_data.unlockedFacts`, etc. depuis le client
+- Toutes les mutations passent par :
+  - **RPC Supabase** pour les mutations triviales (markSeen, setTutoStep)
+  - **Edge Function** pour les mutations à valeur (apply_currency_delta, unlock_fact) avec validation anti-triche
+- Optimistic update local immédiat, réconciliation au retour serveur
+- En cas d'erreur : retry automatique 3× avec backoff exponentiel, puis toast + rollback
+- Si erreur = validation refusée (triche détectée) : rollback immédiat, pas de retry, log serveur
+
+### Résolution des conflits multi-device
+
+- **Entités additives** (coins, tickets, unlockedFacts) : deltas envoyés au serveur, addition atomique côté SQL. Aucune perte possible.
+- **Entités scalaires** (préférences UI) : last-write-wins, stockées uniquement en localStorage de toute façon.
+- **Jamais** de version vector ou CRDT — trop complexe pour le gain.
+
+### Offline
+
+- Modes solo (Flash, Quest, Blitz, Explorer, Puzzle, Route) : jouables offline. Les mutations sont **mises en queue** (`wtf_mutation_queue` localStorage) et rejouées au retour en ligne.
+- Edge Function valide les deltas avec timestamp — un burst de 10 mutations "gagner 2 coins" dans la même seconde est refusé (anti-triche offline).
+- Modes nécessitant réseau (Défi, Hunt si fact non pré-fetché) : écran "connexion requise".
+
+### Auth anonyme
+
+- Premier mount : création automatique d'un user anonyme via `supabase.auth.signInAnonymously()`.
+- Toutes les features (économie, collection, records) fonctionnent dès la première seconde, attachées à ce user_id anonyme.
+- Upgrade vers Google/Apple : `supabase.auth.linkIdentity()` — préserve user_id et toutes les données.
+- Plus jamais de "non connecté = 100% local, sync ignoré".
+
+### Mode dev / test
+
+- Mode dev = **local-only bypass** : ne sync rien vers Supabase, permet de tester l'UI sans polluer la base.
+- Mode test = **compte dédié** pour QA (même flow que joueur normal, données persistées, user réservé).
+- Jamais de header "dev" qui bypasse l'Edge Function en prod — porte ouverte trop dangereuse.
+
+### Migration des joueurs existants
+
+- Au premier mount après déploiement Phase B : RPC `seed_from_local(payload)` one-shot.
+- Edge Function plafonne : coins ≤ 500, unlockedFacts ≤ 50 (max réaliste early-game).
+- Flag `wtf_data.seeded = true` pour ne jamais reseeder.
+- Après seed : localStorage écomomie devient pur cache, plus source.
+
 ## Design system
 - Police : Nunito (400/700/900) via Google Fonts
 - Couleur principale : #FF6B1A (orange WTF!)

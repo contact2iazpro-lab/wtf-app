@@ -74,6 +74,24 @@ export function useModeStarters({
       .sort(() => Math.random() - 0.5)
       .slice(0, 5)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.HUNT) }))
+
+    // Marquer le coffre WTF du dimanche comme "claimé" — point de non-retour.
+    // Si l'user quitte après ce point (même en abandonnant la session), il
+    // ne pourra plus re-tenter le défi cette semaine.
+    try {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      const claimed = Array.isArray(wd.coffreClaimedDays) ? wd.coffreClaimedDays : []
+      if (!claimed.includes(6)) claimed.push(6)
+      wd.coffreClaimedDays = claimed
+      const now = new Date()
+      const monday = new Date(now)
+      monday.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1))
+      wd.coffreWeekStart = monday.toISOString().slice(0, 10)
+      wd.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(wd))
+      window.dispatchEvent(new Event('wtf_storage_sync'))
+    } catch { /* ignore */ }
+
     setSessionType('wtf_du_jour')
     setGameMode('solo')
     setIsQuickPlay(false)

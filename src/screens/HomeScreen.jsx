@@ -658,19 +658,10 @@ export default function HomeScreen({
                 onClick={() => {
                   audio.play?.('click')
                   markSeen('hasSeenHunt')
-                  // Marquer immédiatement le coffre dimanche comme "claimé" pour
-                  // éviter qu'il reste cliquable au retour de la session si l'user
-                  // abandonne avant le déblocage du fact VIP.
-                  try {
-                    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                    const claimed = Array.isArray(wd.coffreClaimedDays) ? wd.coffreClaimedDays : []
-                    if (!claimed.includes(6)) claimed.push(6)
-                    wd.coffreClaimedDays = claimed
-                    wd.coffreWeekStart = getWeekStart()
-                    wd.lastModified = Date.now()
-                    localStorage.setItem('wtf_data', JSON.stringify(wd))
-                    window.dispatchEvent(new Event('wtf_storage_sync'))
-                  } catch { /* ignore */ }
+                  // Note : on ne marque PAS le coffre comme claimé ici.
+                  // Le mark se fait dans handleStartWTFSession (clic "Jouer" sur le
+                  // teaser) = vrai point de non-retour. L'user peut revenir en
+                  // arrière depuis le teaser sans perdre son coffre.
                   nav('wtfDuJour')
                 }}
                 style={{

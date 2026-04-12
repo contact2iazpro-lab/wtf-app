@@ -146,11 +146,12 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
         </p>
       </div>
 
-      {/* ── 3 cartes niveaux ───────────────────────────────────────────── */}
+      {/* ── 2 cartes niveaux (Cool + Hot) — plein espace ────────────────── */}
       <div style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'column',
         padding: `0 ${S(12)}`,
+        gap: S(10),
       }}>
         {QUEST_LEVELS.map((d) => {
           const isSelected = selectedId === d.id
@@ -163,14 +164,16 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
               style={{
                 position: 'relative',
                 background: isSelected ? uiConfig.selectedGradient : uiConfig.cardGradient,
-                borderRadius: S(16),
-                padding: S(10),
-                marginBottom: S(6),
+                borderRadius: S(18),
+                padding: S(16),
                 width: '100%', boxSizing: 'border-box',
-                border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
+                flex: 1,                          // Se répartit sur l'espace dispo
+                minHeight: 0,
+                display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                border: isSelected ? '3px solid white' : '2.5px solid transparent',
                 boxShadow: isSelected
-                  ? '0 0 24px rgba(255,255,255,0.3), 0 4px 16px rgba(0,0,0,0.3), inset 0 0 12px rgba(255,255,255,0.15)'
-                  : '0 4px 12px rgba(0,0,0,0.2)',
+                  ? '0 0 28px rgba(255,255,255,0.35), 0 6px 20px rgba(0,0,0,0.35), inset 0 0 14px rgba(255,255,255,0.18)'
+                  : '0 4px 14px rgba(0,0,0,0.22)',
                 transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                 cursor: 'pointer',
                 textAlign: 'left',
@@ -184,40 +187,40 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
                 display: 'flex', alignItems: 'center',
                 justifyContent: 'space-between',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: S(8) }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: S(12) }}>
                   <img
                     src={uiConfig.icon}
                     alt={d.label}
                     style={{
-                      width: S(32), height: S(32),
+                      width: S(44), height: S(44),
                       objectFit: 'contain', flexShrink: 0,
-                      borderRadius: S(6),
+                      borderRadius: S(8),
                     }}
                   />
                   <div>
                     <span style={{
-                      fontSize: S(18), fontWeight: 900, color: 'white',
+                      fontSize: S(24), fontWeight: 900, color: 'white',
                       textShadow: '0 1px 4px rgba(0,0,0,0.3)',
                       display: 'block', lineHeight: 1.1,
                     }}>
                       {d.label}
                     </span>
                     <span style={{
-                      fontSize: S(9), fontWeight: 700,
-                      color: 'rgba(255,255,255,0.7)',
-                      display: 'block', marginTop: S(1),
+                      fontSize: S(11), fontWeight: 700,
+                      color: 'rgba(255,255,255,0.8)',
+                      display: 'block', marginTop: S(2),
                     }}>
                       {uiConfig.subtitle}
                     </span>
                   </div>
                 </div>
                 <span style={{
-                  background: 'rgba(0,0,0,0.25)',
+                  background: 'rgba(0,0,0,0.3)',
                   borderRadius: S(20),
-                  padding: `${S(3)} ${S(8)}`,
-                  fontSize: S(9), fontWeight: 800,
+                  padding: `${S(5)} ${S(12)}`,
+                  fontSize: S(10), fontWeight: 900,
                   color: 'white', textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
+                  letterSpacing: '0.8px',
                   flexShrink: 0,
                 }}>
                   {uiConfig.tag}
@@ -227,21 +230,21 @@ export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
               {/* Séparateur */}
               <div style={{
                 borderTop: '1px solid rgba(255,255,255,0.3)',
-                margin: `${S(8)} 0`,
+                margin: `${S(12)} 0`,
               }} />
 
-              {/* 4 lignes de règles (dynamiques) */}
+              {/* Règles — plus grandes + plus d'espacement vertical */}
               {rules.map((rule, i) => (
                 <div key={i} style={{
                   display: 'flex', alignItems: 'center',
-                  gap: S(6), marginBottom: i < rules.length - 1 ? S(3) : 0,
+                  gap: S(10), marginBottom: i < rules.length - 1 ? S(6) : 0,
                 }}>
                   {rule.icon ? (
-                    <img src={rule.icon} alt="" style={{ width: S(16), height: S(16), objectFit: 'contain', flexShrink: 0 }} />
+                    <img src={rule.icon} alt="" style={{ width: S(20), height: S(20), objectFit: 'contain', flexShrink: 0 }} />
                   ) : (
-                    <span style={{ fontSize: S(14), flexShrink: 0, width: S(16), textAlign: 'center', lineHeight: 1 }}>{rule.emoji}</span>
+                    <span style={{ fontSize: S(18), flexShrink: 0, width: S(20), textAlign: 'center', lineHeight: 1 }}>{rule.emoji}</span>
                   )}
-                  <span style={{ fontSize: S(11), fontWeight: 700, color: 'white' }}>
+                  <span style={{ fontSize: S(13), fontWeight: 700, color: 'white' }}>
                     {rule.text}
                   </span>
                 </div>

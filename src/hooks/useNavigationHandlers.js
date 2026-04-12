@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS, QUESTIONS_PER_GAME } from '../constants/gameConfig'
 import { getFactsByCategory } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
+import { shuffle } from '../utils/shuffle'
 import { getFlashEnergy, consumeFlashEnergy } from '../services/energyService'
 import { saveStorage, loadStorage } from '../utils/storageHelper'
 import { updateCollection } from '../services/collectionService'
@@ -121,7 +122,7 @@ export function useNavigationHandlers({
   const handleDuelStart = useCallback((playerNames) => {
     const n = playerNames.length
     const allFacts = getFactsByCategory(null)
-    const shuffled = [...allFacts].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME * n)
+    const shuffled = shuffle(allFacts).slice(0, QUESTIONS_PER_GAME * n)
     setDuelPlayers(playerNames.map(name => ({ name, score: 0 })))
     setDuelCurrentPlayerIndex(0)
     setGameMode('duel')

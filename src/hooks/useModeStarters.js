@@ -12,6 +12,7 @@ import {
   getPlayableCategories,
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
+import { shuffle } from '../utils/shuffle'
 import { consumeFlashEnergy } from '../services/energyService'
 import { logDevEvent } from '../utils/devLogger'
 import { audio } from '../utils/audio'
@@ -70,8 +71,7 @@ export function useModeStarters({
       const already = sameCat.filter(f => !pool.some(p => p.id === f.id))
       pool = [...pool, ...already]
     }
-    const facts = [...pool]
-      .sort(() => Math.random() - 0.5)
+    const facts = shuffle(pool)
       .slice(0, 5)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.HUNT) }))
 
@@ -122,15 +122,14 @@ export function useModeStarters({
       }
       if (pool.length < 5) {
         const price = pool.length === 1 ? 5 : 10
-        const preparedFacts = [...pool].sort(() => Math.random() - 0.5)
+        const preparedFacts = shuffle(pool)
           .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
         setMiniParcours({ pool: preparedFacts, price, mode: 'flash', categoryId: null, difficulty: DIFFICULTY_LEVELS.FLASH })
         return
       }
     }
 
-    const facts = [...pool]
-      .sort(() => Math.random() - 0.5)
+    const facts = shuffle(pool)
       .slice(0, 5)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
 
@@ -151,8 +150,7 @@ export function useModeStarters({
     )
     const randomCat = validCats[Math.floor(Math.random() * validCats.length)]
     const difficulty = DIFFICULTY_LEVELS.HOT
-    const facts = [...getValidFacts().filter(f => f.category === randomCat.id)]
-      .sort(() => Math.random() - 0.5)
+    const facts = shuffle(getValidFacts().filter(f => f.category === randomCat.id))
       .slice(0, QUESTIONS_PER_GAME)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
 
@@ -175,8 +173,7 @@ export function useModeStarters({
       if (unplayed.length >= QUESTIONS_PER_GAME) pool = unplayed
     }
 
-    const facts = [...pool]
-      .sort(() => Math.random() - 0.5)
+    const facts = shuffle(pool)
       .slice(0, QUESTIONS_PER_GAME)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
 

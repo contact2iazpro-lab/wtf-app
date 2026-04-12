@@ -12,6 +12,7 @@ import {
   getPlayableCategories,
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
+import { shuffle } from '../utils/shuffle'
 import { loadStorage } from '../utils/storageHelper'
 import { updateTickets } from '../services/currencyService'
 import { consumeFlashEnergy } from '../services/energyService'
@@ -45,12 +46,12 @@ export function useSelectionHandlers({
       }
       if (pool.length < 4) {
         const price = pool.length === 1 ? 5 : 10
-        const preparedFacts = [...pool].sort(() => Math.random() - 0.5)
+        const preparedFacts = shuffle(pool)
           .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
         setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId: selectedCategory, difficulty })
         return
       }
-      const facts = [...pool].sort(() => Math.random() - 0.5).slice(0, 20)
+      const facts = shuffle(pool).slice(0, 20)
         .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
       setIsQuickPlay(false)
       setSessionType('explorer')
@@ -68,12 +69,24 @@ export function useSelectionHandlers({
     }
 
     const skipUnlockD = isDevModeQuest
+    // Filtre anti-redite : ne jamais re-proposer un f*ct VIP déjà débloqué (T89)
+    // Les fallbacks gardent TOUJOURS le filtre unlockedFacts actif
     let available = getParcoursFacts().filter(f => f.isVip && f.difficulty === difficulty.id && (skipUnlockD || !unlockedFacts.has(f.id)))
-    if (available.length < QUESTIONS_PER_GAME) available = getParcoursFacts().filter(f => f.isVip && (skipUnlockD || !unlockedFacts.has(f.id)))
-    if (available.length < QUESTIONS_PER_GAME) available = getQuestFacts()
-    if (available.length < QUESTIONS_PER_GAME) available = getValidFacts()
+    if (available.length < QUESTIONS_PER_GAME) {
+      // Fallback 1 : toutes difficultés VIP, mais toujours filtré sur unlocked
+      available = getParcoursFacts().filter(f => f.isVip && (skipUnlockD || !unlockedFacts.has(f.id)))
+    }
+    if (available.length < QUESTIONS_PER_GAME) {
+      // Fallback 2 : tous les Quest facts (VIP) encore non débloqués
+      available = getQuestFacts().filter(f => skipUnlockD || !unlockedFacts.has(f.id))
+    }
+    if (available.length < QUESTIONS_PER_GAME) {
+      // Fallback ultime : tous les facts valides non débloqués
+      available = getValidFacts().filter(f => skipUnlockD || !unlockedFacts.has(f.id))
+    }
 
-    const facts = [...available].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
+    // Fisher-Yates shuffle (vrai aléatoire, pas le sort biaisé)
+    const facts = shuffle(available).slice(0, QUESTIONS_PER_GAME)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
     setIsQuickPlay(false)
     setGameMode('solo')
@@ -94,11 +107,11 @@ export function useSelectionHandlers({
       if (pool.length === 0) { setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' }); return }
       if (pool.length < 4) {
         const price = pool.length === 1 ? 5 : 10
-        const preparedFacts = [...pool].sort(() => Math.random() - 0.5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+        const preparedFacts = shuffle(pool).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
         setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId, difficulty })
         return
       }
-      const shuffled = [...pool].sort(() => Math.random() - 0.5)
+      const shuffled = shuffle(pool)
       const sessionFacts = shuffled.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
       const remaining = shuffled.slice(5)
       setExplorerPool(remaining)
@@ -124,17 +137,17 @@ export function useSelectionHandlers({
         unlockedCats.has(cat.id) && generatedFacts.some(f => f.category === cat.id)
       )
       if (validCategories.length < 5) {
-        facts = [...generatedFacts].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
+        facts = shuffle(generatedFacts).slice(0, QUESTIONS_PER_GAME)
       } else {
-        const selectedCats = [...validCategories].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
+        const selectedCats = shuffle(validCategories).slice(0, QUESTIONS_PER_GAME)
         facts = selectedCats.map(cat => {
           const catFacts = generatedFacts.filter(f => f.category === cat.id)
           return catFacts[Math.floor(Math.random() * catFacts.length)]
         })
-        facts.sort(() => Math.random() - 0.5)
+        facts = shuffle(facts)
       }
     } else {
-      facts = [...generatedFacts.filter(f => f.category === categoryId)].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME)
+      facts = shuffle(generatedFacts.filter(f => f.category === categoryId)).slice(0, QUESTIONS_PER_GAME)
     }
 
     const factsWithOptions = facts.map(fact => ({ ...fact, ...getAnswerOptions(fact, selectedDifficulty) }))

@@ -6,6 +6,7 @@ import { useCallback } from 'react'
 import { DIFFICULTY_LEVELS, SCREENS } from '../constants/gameConfig'
 import { getBlitzFacts, getCategoryById } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
+import { shuffle } from '../utils/shuffle'
 import { updateTrophyData } from '../utils/storageHelper'
 import { checkBadges } from '../utils/badgeManager'
 import { audio } from '../utils/audio'
@@ -28,8 +29,7 @@ export function useBlitzHandlers({
     }
 
     const count = questionCount || pool.length
-    const shuffled = [...pool]
-      .sort(() => Math.random() - 0.5)
+    const shuffled = shuffle(pool)
       .slice(0, count)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
 

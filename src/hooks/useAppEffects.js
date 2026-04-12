@@ -142,7 +142,16 @@ export function useAppEffects({
     if (!user) { setPendingChallengesCount(0); return }
     const fetchPending = async () => {
       const { data } = await supabase.from('challenges').select('id').eq('status', 'pending').neq('player1_id', user.id)
-      setPendingChallengesCount((data || []).length)
+      const count = (data || []).length
+      setPendingChallengesCount(count)
+      // Persist pour BottomNav (autonome)
+      try {
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        wd.pendingChallengesCount = count
+        wd.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(wd))
+        window.dispatchEvent(new Event('wtf_pending_challenges_updated'))
+      } catch { /* ignore */ }
     }
     fetchPending()
     const channel = supabase

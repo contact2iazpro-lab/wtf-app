@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useScale } from '../hooks/useScale'
 import { version } from '../../package.json'
+import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -14,6 +15,24 @@ export default function SplashScreen({ onComplete, isReady }) {
   const [forceReady, setForceReady] = useState(false)
   const scale = useScale()
   const timers = useRef([])
+
+  // Tenter de jouer le son d'intro — fonctionne si l'AudioContext existe déjà
+  // (reload ou navigation SPA). Sur cold load, le navigateur bloque jusqu'au
+  // premier geste → on pose un listener one-shot qui rattrape le premier tap.
+  useEffect(() => {
+    try { audio.play('click') } catch { /* ignore */ }
+    const unlock = () => {
+      try { audio.play('click') } catch { /* ignore */ }
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('touchstart', unlock)
+    }
+    window.addEventListener('pointerdown', unlock, { once: true })
+    window.addEventListener('touchstart', unlock, { once: true })
+    return () => {
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('touchstart', unlock)
+    }
+  }, [])
 
   // Animations d'entrée (logo + tagline)
   useEffect(() => {

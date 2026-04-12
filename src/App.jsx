@@ -8,6 +8,7 @@ import { updateTickets, getBalances } from './services/currencyService'
 import { useAuth } from './context/AuthContext'
 import AppModals from './components/AppModals'
 import ScreenRenderer from './components/ScreenRenderer'
+import DesktopDecor from './components/DesktopDecor'
 import SplashScreen from './screens/SplashScreen'
 import FalkonIntroScreen from './screens/FalkonIntroScreen'
 // Hooks
@@ -26,6 +27,14 @@ import { useDevActions } from './hooks/useDevActions'
 export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
+
+  // Desktop ≥768px → active le décor fullscreen (dégradé animé + particules)
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   // Dev mode URL param: ?devmode=wtf2026 to enable, ?devmode=off to disable
   // Challenge Blitz: ?startChallengeBlitz=true to start a challenge Blitz
@@ -68,11 +77,12 @@ export default function App() {
     } catch { /* ignore */ }
   }
 
-  // Initialiser les devises pour les nouveaux joueurs (TEMP: 10/10/10 avant onboarding)
+  // Initialiser les devises pour les nouveaux joueurs — valeurs officielles Notion F2P
+  // Nouveau joueur : 0 coins / 1 ticket / 3 indices (juste de quoi faire 1 Quest découverte)
   if (localStorage.getItem('wtf_data')) {
     const _initData = JSON.parse(localStorage.getItem('wtf_data'))
     if (_initData.tickets === undefined) {
-      _initData.tickets = 10; _initData.wtfCoins = 10; _initData.hints = 10
+      _initData.tickets = 1; _initData.wtfCoins = 0; _initData.hints = 3
       _initData.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(_initData))
     }
@@ -177,7 +187,7 @@ export default function App() {
   const dailyQuestsRemaining = Math.max(0, 3 - (sessionsToday || 0))
 
   const [isChallengeMode, setIsChallengeMode] = useState(false)
-  const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'marathon' | 'duel'
+  const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'explorer' | 'duel'
   const [coinsEarnedLastSession, setCoinsEarnedLastSession] = useState(0)
   const [dailyFact, setDailyFact] = useState(null)
   const [dailyFactOverride, setDailyFactOverride] = useState(null)
@@ -192,13 +202,13 @@ export default function App() {
   // Multiplayer state
   const [duelPlayers, setDuelPlayers] = useState([])
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
-  const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'marathon'
+  const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'explorer'
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showNoTicketModal, setShowNoTicketModal] = useState(false)
   const [gameAlert, setGameAlert] = useState(null) // { emoji, title, message }
   const [showNoEnergyModal, setShowNoEnergyModal] = useState(false)
-  const [noEnergyOrigin, setNoEnergyOrigin] = useState('flash') // 'flash' | 'marathon'
+  const [noEnergyOrigin, setNoEnergyOrigin] = useState('flash') // 'flash' | 'explorer'
   const [trophyQueue, setTrophyQueue] = useState([]) // badges à afficher un par un
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
@@ -292,7 +302,7 @@ export default function App() {
   }
 
   // ─── Selection handlers (AVANT navigation car handleHomeNavigate en dépend) ──
-  const { handleSelectDifficulty, handleSelectCategory, handleMarathonMode } = useSelectionHandlers({
+  const { handleSelectDifficulty, handleSelectCategory, handleExplorerMode } = useSelectionHandlers({
     gameMode, sessionType, selectedDifficulty, selectedCategory,
     unlockedFacts, tickets,
     initSessionState, handleBlitzStart,
@@ -307,10 +317,11 @@ export default function App() {
     handleHomeNavigate,
     handleDuelNextPlayer, handleDuelMode, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
-    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay,
+    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay, handleReplayHarder,
     handleShare, handleShareDailyFact, handleShowRules,
   } = useNavigationHandlers({
     launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
+    selectedDifficulty,
     explorerPool, unlockedFacts, duelPlayers, user, sessionCorrectFacts,
     handleStartWTFSession, handleFlashSolo, handleSelectDifficulty,
     handleSelectCategory, handleBlitzStart, initSessionState,
@@ -419,7 +430,24 @@ export default function App() {
   }
 
   return (
-    <div className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg" style={{ '--scale': scale, height: '100dvh' }}>
+    <>
+    {isDesktop && <DesktopDecor />}
+    <div
+      className="w-full h-full max-w-md mx-auto relative overflow-hidden bg-wtf-bg"
+      style={{
+        '--scale': scale,
+        height: '100dvh',
+        ...(isDesktop ? {
+          zIndex: 1,
+          boxShadow: '0 0 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08)',
+          borderRadius: 24,
+          overflow: 'hidden',
+          marginTop: 'max(0px, calc((100dvh - 760px) / 2))',
+          marginBottom: 'max(0px, calc((100dvh - 760px) / 2))',
+          maxHeight: 760,
+        } : {}),
+      }}
+    >
 
       <ScreenRenderer
         screen={screen} gameMode={gameMode} sessionType={sessionType}
@@ -443,7 +471,7 @@ export default function App() {
         handleUseHint={handleUseHint} handleTimeout={handleTimeout}
         handleNext={handleNext} handleDuelNextPlayer={handleDuelNextPlayer}
         handleDuelStart={handleDuelStart} handleDuelPassReady={handleDuelPassReady}
-        handleDuelReplay={handleDuelReplay} handleReplay={handleReplay}
+        handleDuelReplay={handleDuelReplay} handleReplay={handleReplay} handleReplayHarder={handleReplayHarder}
         handleBlitzReplay={handleBlitzReplay} handleBlitzStart={handleBlitzStart}
         handleBlitzFinish={handleBlitzFinish} handleStartWTFSession={handleStartWTFSession}
         handleShare={handleShare} handleShareDailyFact={handleShareDailyFact}
@@ -490,5 +518,6 @@ export default function App() {
         devActions={devActions} signInWithGoogle={signInWithGoogle}
       />
     </div>
+    </>
   )
 }

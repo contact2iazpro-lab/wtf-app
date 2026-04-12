@@ -34,9 +34,9 @@ export default function QuestionScreen({
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
   const { coins: _cCoins, hints: _cHints } = useCurrency()
 
-  // Solo et marathon → QCM direct, duel → sélection du mode
+  // Solo et explorer → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
-    (gameMode === 'solo' || gameMode === 'marathon') ? 'qcm' : null
+    (gameMode === 'solo' || gameMode === 'explorer') ? 'qcm' : null
   )
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -413,7 +413,7 @@ export default function QuestionScreen({
   }
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
-  const MODE_LABELS = { flash_solo: 'MODE FLASH', marathon: 'MODE EXPLORER', wtf_du_jour: 'MODE HUNT', parcours: 'MODE QUEST' }
+  const MODE_LABELS = { flash_solo: 'MODE FLASH', explorer: 'MODE EXPLORER', wtf_du_jour: 'MODE HUNT', parcours: 'MODE QUEST' }
   const modeLabel = MODE_LABELS[sessionType] || (difficulty ? `Mode ${difficulty.label || difficulty.id}` : '')
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────

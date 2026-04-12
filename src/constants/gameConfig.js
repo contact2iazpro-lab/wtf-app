@@ -53,7 +53,7 @@ export const SCREENS = {
   DUEL_SETUP: 'duel_setup',
   DUEL_PASS: 'duel_pass',
   DUEL_RESULTS: 'duel_results',
-  MARATHON_RESULTS: 'marathon_results',
+  EXPLORER_RESULTS: 'explorer_results',
   BLITZ: 'blitz',
   BLITZ_RESULTS: 'blitz_results',
   BLITZ_LOBBY: 'blitz_lobby',
@@ -86,7 +86,7 @@ export const MODE_CONFIGS = {
     ],
   },
   flash: {
-    modeId: 'flash', modeName: 'Jouer', subtitle: 'Partie rapide, gratuite', emoji: '🎯', color: '#FFD700',
+    modeId: 'flash', modeName: 'Flash', subtitle: 'Partie rapide, gratuite', emoji: '🎯', color: '#FFD700',
     rules: [
       { icon: '🔋', text: '3 sessions gratuites par jour' },
       { icon: '⚡', text: '5 questions · 4 QCM · 20s' },

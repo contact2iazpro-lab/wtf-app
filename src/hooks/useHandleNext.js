@@ -136,7 +136,7 @@ export function useHandleNext({
         bonusCoins = isPerfectFlash ? 10 : 0
       } else if (sessionType === 'parcours') {
         bonusCoins = isPerfectSession ? 10 : 0
-      } else if (sessionType === 'marathon') {
+      } else if (sessionType === 'explorer') {
         const isPerfectExplorer = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length
         bonusCoins = isPerfectExplorer ? 10 : 0
       }
@@ -157,7 +157,7 @@ export function useHandleNext({
 
       const streakRewardCoins = streakReward?.coins ?? 0
       const newWtfDuJourDate = sessionType === 'wtf_du_jour' ? TODAY() : wtfDuJourDate
-      const marathonSessionsToday = sessionType === 'marathon' ? sessionsToday : newSessionsToday
+      const explorerSessionsToday = sessionType === 'explorer' ? sessionsToday : newSessionsToday
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
       const totalBonusTickets = (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0)
@@ -172,7 +172,7 @@ export function useHandleNext({
           unlockedFacts: newUnlocked,
           wtfCoins: getBalances().coins,
           wtfDuJourDate: newWtfDuJourDate,
-          sessionsToday: marathonSessionsToday,
+          sessionsToday: explorerSessionsToday,
           tickets: getBalances().tickets,
           wtfDuJourFait: newWtfDuJourDate === TODAY(),
         }
@@ -225,8 +225,8 @@ export function useHandleNext({
     // Route to end screen
     if (sessionType === 'wtf_du_jour') {
       setScreen(SCREENS.WTF_REVEAL)
-    } else if (sessionType === 'marathon') {
-      setScreen(SCREENS.MARATHON_RESULTS)
+    } else if (sessionType === 'explorer') {
+      setScreen(SCREENS.EXPLORER_RESULTS)
     } else {
       setScreen(SCREENS.RESULTS)
     }

@@ -9,6 +9,7 @@ import { FLASH_ENERGY } from '../constants/gameConfig'
 import { useCurrency } from '../context/CurrencyContext'
 import { useScale } from '../hooks/useScale'
 import RouletteModal from '../components/RouletteModal'
+import { AVATAR_FRAMES, readFrameState, addOwnedFrame } from '../data/avatarFrames'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -93,6 +94,15 @@ export default function BoutiquePage() {
   const [selectedPackCategory, setSelectedPackCategory] = useState(null)
   const [showCategoryPicker, setShowCategoryPicker] = useState(false)
   const [pendingPack, setPendingPack] = useState(null)
+  // Onglets de la boutique : Packs | Essentiels | Abonnement
+  const [activeTab, setActiveTab] = useState('packs')
+  // Cadres profil possédés (refresh via wtf_storage_sync)
+  const [frameState, setFrameState] = useState(() => readFrameState())
+  useEffect(() => {
+    const refresh = () => setFrameState(readFrameState())
+    window.addEventListener('wtf_storage_sync', refresh)
+    return () => window.removeEventListener('wtf_storage_sync', refresh)
+  }, [])
 
   const buyMysteryPack = (packId, categoryFilter = null) => {
     const packDef = MYSTERY_PACKS.find(p => p.id === packId)
@@ -423,9 +433,39 @@ export default function BoutiquePage() {
         </div>
       </div>
 
+      {/* Barre d'onglets */}
+      <div className="px-4 pt-2 pb-3 shrink-0" style={{ display: 'flex', gap: 6 }}>
+        {[
+          { id: 'packs', label: 'Packs', emoji: '🎁' },
+          { id: 'essentials', label: 'Tickets & Indices', emoji: '🎟️' },
+          { id: 'subscription', label: 'Abonnement', emoji: '👑' },
+        ].map(t => {
+          const isActive = activeTab === t.id
+          return (
+            <button
+              key={t.id}
+              onClick={() => { audio.play('click'); setActiveTab(t.id) }}
+              style={{
+                flex: 1, padding: '8px 4px', borderRadius: 12,
+                background: isActive ? '#FF6B1A' : '#F3F4F6',
+                border: isActive ? '1px solid #FF6B1A' : '1px solid #E5E7EB',
+                color: isActive ? 'white' : '#6B7280',
+                fontWeight: 900, fontSize: 11,
+                cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ fontSize: 16 }}>{t.emoji}</span>
+              <span>{t.label}</span>
+            </button>
+          )
+        })}
+      </div>
+
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
 
-        {/* Roulette quotidienne */}
+        {/* Roulette quotidienne (toujours visible) */}
         <button
           onClick={() => setShowRoulette(true)}
           className="w-full rounded-2xl p-4 mb-4 flex items-center gap-3 active:scale-95 transition-all"
@@ -453,6 +493,8 @@ export default function BoutiquePage() {
           })()}
         </button>
 
+        {activeTab === 'essentials' && (
+        <>
         {/* Section Indices */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
@@ -527,6 +569,111 @@ export default function BoutiquePage() {
             ))}
           </div>
         </div>
+        </>
+        )}
+
+        {activeTab === 'packs' && (
+        <>
+        {/* Section Offres de bienvenue (Starter packs €) */}
+        {(() => {
+          const wd = readWtfData()
+          const firstSeen = wd.firstSeenDate || Date.now()
+          const daysSinceInstall = (Date.now() - firstSeen) / 86400000
+          const inWelcomeWindow = daysSinceInstall <= 7
+          const lightBought = !!wd.starterLightBought
+          const proBought = !!wd.starterProBought
+          const shouldShow = inWelcomeWindow && (!lightBought || !proBought)
+          if (!shouldShow) return null
+          const daysLeft = Math.max(0, Math.ceil(7 - daysSinceInstall))
+          return (
+            <div className="rounded-2xl p-4 mb-4" style={{
+              background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,107,26,0.12))',
+              border: '1.5px solid rgba(255,165,0,0.5)',
+              boxShadow: '0 2px 16px rgba(255,165,0,0.15)',
+            }}>
+              <div className="flex items-center gap-2 mb-1">
+                <span style={{ fontSize: 20 }}>🎁</span>
+                <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Offres de bienvenue</h2>
+                <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-black" style={{ background: '#FF6B1A', color: 'white' }}>
+                  {daysLeft}j restant{daysLeft > 1 ? 's' : ''}
+                </span>
+              </div>
+              <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Achetable une seule fois pendant 7 jours après installation</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {/* Starter Light */}
+                {!lightBought && (
+                  <div style={{
+                    background: 'white', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14,
+                    padding: 12, display: 'flex', alignItems: 'center', gap: 12,
+                  }}>
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 12,
+                      background: 'linear-gradient(135deg, #CD7F32, #a06020)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 24, flexShrink: 0,
+                    }}>📦</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Starter Light</span>
+                      <span className="text-xs block" style={{ color: '#6B7280' }}>3 tickets · 5 indices · cadre Bronze</span>
+                    </div>
+                    <button
+                      disabled
+                      style={{
+                        background: '#F3F4F6', border: '1px solid #E5E7EB',
+                        borderRadius: 10, padding: '8px 14px',
+                        fontWeight: 900, fontSize: 12, color: '#9CA3AF',
+                        fontFamily: 'Nunito, sans-serif', cursor: 'not-allowed',
+                        flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                      }}
+                    >
+                      <span>1,99 €</span>
+                      <span style={{ fontSize: 8, fontWeight: 700 }}>Bientôt</span>
+                    </button>
+                  </div>
+                )}
+                {/* Starter Pro */}
+                {!proBought && (
+                  <div style={{
+                    background: 'white', border: '1.5px solid rgba(255,215,0,0.5)', borderRadius: 14,
+                    padding: 12, display: 'flex', alignItems: 'center', gap: 12,
+                    position: 'relative',
+                  }}>
+                    <span style={{
+                      position: 'absolute', top: -8, right: 10,
+                      background: '#FF6B1A', color: 'white',
+                      fontSize: 9, fontWeight: 900, padding: '2px 8px',
+                      borderRadius: 8, textTransform: 'uppercase', letterSpacing: '0.03em',
+                    }}>Meilleure offre</span>
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 12,
+                      background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 24, flexShrink: 0,
+                      boxShadow: '0 0 14px rgba(255,215,0,0.6)',
+                    }}>👑</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Starter Pro</span>
+                      <span className="text-xs block" style={{ color: '#6B7280' }}>10 tickets · 15 indices · cadre Or · 100 coins</span>
+                    </div>
+                    <button
+                      disabled
+                      style={{
+                        background: '#F3F4F6', border: '1px solid #E5E7EB',
+                        borderRadius: 10, padding: '8px 14px',
+                        fontWeight: 900, fontSize: 12, color: '#9CA3AF',
+                        fontFamily: 'Nunito, sans-serif', cursor: 'not-allowed',
+                        flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                      }}
+                    >
+                      <span>4,99 €</span>
+                      <span style={{ fontSize: 8, fontWeight: 700 }}>Bientôt</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Section Mystery Packs */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(236,72,153,0.08))', border: '1px solid rgba(168,85,247,0.25)' }}>
@@ -585,6 +732,63 @@ export default function BoutiquePage() {
           />
         </div>
 
+        {/* Section Cadres de profil */}
+        <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,215,0,0.06)', border: '1px solid rgba(255,215,0,0.25)' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <span style={{ fontSize: 20 }}>✨</span>
+            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Cadres de profil</h2>
+          </div>
+          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Personnalise ta photo de profil avec un cadre unique</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+            {AVATAR_FRAMES.filter(f => f.cost > 0).map(frame => {
+              const isOwned = frameState.owned.includes(frame.id)
+              const canBuy = !isOwned && coins >= frame.cost
+              return (
+                <button
+                  key={frame.id}
+                  onClick={() => {
+                    if (!canBuy) return
+                    updateCoins(-frame.cost)
+                    addOwnedFrame(frame.id)
+                    setToast(`✨ Cadre ${frame.label} débloqué !`)
+                    setTimeout(() => setToast(null), 2000)
+                  }}
+                  disabled={!canBuy}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: 10, borderRadius: 12,
+                    background: isOwned ? 'rgba(34,197,94,0.1)' : canBuy ? 'white' : '#F3F4F6',
+                    border: isOwned ? '1.5px solid #22C55E' : '1px solid #E5E7EB',
+                    cursor: canBuy ? 'pointer' : 'default',
+                    opacity: canBuy || isOwned ? 1 : 0.55,
+                    fontFamily: 'Nunito, sans-serif', textAlign: 'left',
+                  }}
+                >
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '50%',
+                    background: '#D1D5DB', flexShrink: 0,
+                    border: frame.border, boxShadow: frame.glow,
+                  }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 12, fontWeight: 900, color: '#1a1a2e', display: 'block' }}>{frame.label}</span>
+                    {isOwned ? (
+                      <span style={{ fontSize: 10, fontWeight: 800, color: '#22C55E' }}>✓ Débloqué</span>
+                    ) : (
+                      <span style={{ fontSize: 10, fontWeight: 800, color: '#FF6B1A', display: 'flex', alignItems: 'center', gap: 3 }}>
+                        {frame.cost} <CoinsIcon size={10} />
+                      </span>
+                    )}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        </>
+        )}
+
+        {activeTab === 'subscription' && (
+        <>
         {/* Packs de Coins (bientôt) */}
         <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Packs de Coins</h2>
         <div className="flex flex-col gap-2 mb-4">
@@ -606,12 +810,15 @@ export default function BoutiquePage() {
 
         {/* Abonnement */}
         <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Abonnement Premium</h2>
-        <div className="rounded-2xl p-4 text-center mb-4" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', opacity: 0.5 }}>
+        <div className="rounded-2xl p-4 text-center mb-4" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,165,0,0.18))', border: '1.5px solid rgba(255,165,0,0.4)' }}>
           <span className="text-3xl block mb-2">👑</span>
-          <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>WTF! Premium</span>
-          <span className="text-xs block mb-2" style={{ color: '#9CA3AF' }}>Coins illimités, indices gratuits, pas de pub</span>
-          <span className="text-lg" style={{ color: '#D1D5DB' }}>Bientôt</span>
+          <span className="font-black text-base block" style={{ color: '#1a1a2e' }}>WTF! Premium</span>
+          <span className="text-xs block mb-2" style={{ color: '#6B7280' }}>Tickets illimités · 3 indices/jour · badge VIP</span>
+          <span className="text-sm font-black block" style={{ color: '#FF6B1A' }}>4,99 €/mois</span>
+          <span className="inline-block mt-3 px-4 py-1 rounded-lg text-xs font-bold" style={{ background: 'rgba(0,0,0,0.06)', color: '#9CA3AF' }}>Bientôt</span>
         </div>
+        </>
+        )}
       </div>
 
       {/* Modal sélection catégorie (Pack Catégorie) */}

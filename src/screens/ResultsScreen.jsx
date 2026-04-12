@@ -58,6 +58,7 @@ export default function ResultsScreen({
   correctCount,
   totalFacts,
   onReplay,
+  onReplayHarder,
   onHome,
   completedCategoryLevels = [],
   coinsEarned = 0,
@@ -89,6 +90,8 @@ export default function ResultsScreen({
   const [showConnectBanner, setShowConnectBanner] = useState(false)
   const [savedAfterConnect, setSavedAfterConnect] = useState(false)
   const [selectedFact, setSelectedFact] = useState(null)
+  // F*cts débloqués par achat depuis ce ResultsScreen (pour refresh immédiat du carrousel)
+  const [extraUnlockedIds, setExtraUnlockedIds] = useState(() => new Set())
 
   // Persister les facts temporaires quand le joueur se connecte depuis ResultsScreen
   useEffect(() => {
@@ -144,8 +147,18 @@ export default function ResultsScreen({
 
   // COR 6 — Taux moyen pseudo-aléatoire stable par catégorie
   const avgSuccessRate = 15 + ((categoryId ? categoryId.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 50) % 40)
-  const perfectBonus = isPerfect ? 25 : 0
-  const totalCoins = coinsEarned + perfectBonus
+  // Récap gains structuré
+  const coinsPerCorrect = difficulty?.coinsPerCorrect ?? 0
+  const baseCoins = correctCount * coinsPerCorrect
+  const bonusCoins = Math.max(0, coinsEarned - baseCoins)
+
+  // Fact le plus WTF de la session : priorité VIP, sinon dernier débloqué
+  const featuredFact = (() => {
+    if (!unlockedFactsThisSession || unlockedFactsThisSession.length === 0) return null
+    const vip = unlockedFactsThisSession.find(f => f.isVip)
+    if (vip) return vip
+    return unlockedFactsThisSession[unlockedFactsThisSession.length - 1]
+  })()
 
   // MOD 3 — Precision based on correct answers
   const precision = totalFacts > 0 ? Math.round((correctCount / totalFacts) * 100) : 0
@@ -301,11 +314,12 @@ export default function ResultsScreen({
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 0,
+      position: 'absolute', inset: 0, zIndex: 0,
       display: 'flex', flexDirection: 'column',
       background: screenBg,
       overflow: 'hidden',
     }}>
+      <style>{`.results-content::-webkit-scrollbar { display: none; }`}</style>
       {/* Overlay léger */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 0,
@@ -397,10 +411,12 @@ export default function ResultsScreen({
         </button>
       </div>
 
-      {/* ═══ CONTENT CENTRAL (flex-1, no scroll) ═══ */}
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        position: 'relative', zIndex: 2, padding: `${S(12)} ${S(16)}`, gap: S(8),
+      {/* ═══ CONTENT CENTRAL (flex-1, no scroll prioritaire, fallback auto) ═══ */}
+      <div className="results-content" style={{
+        flex: 1, minHeight: 0,
+        display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden',
+        position: 'relative', zIndex: 2, padding: `${S(10)} ${S(14)}`, gap: S(6),
+        scrollbarWidth: 'none',
       }}>
 
         {/* Badge mode + difficulté */}
@@ -414,49 +430,50 @@ export default function ResultsScreen({
               <span style={{ fontSize: S(12) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
               <span style={{ fontSize: S(11), fontWeight: 800, color: textOnBg }}>
                 {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` :
-                 sessionType === 'flash_solo' ? 'Mode Jouer' :
-                 sessionType === 'marathon' ? 'Mode Explorer' :
+                 sessionType === 'flash_solo' ? 'Mode Flash' :
+                 sessionType === 'explorer' ? 'Mode Explorer' :
                  'Mode'}
               </span>
             </div>
           </div>
         )}
 
-        {/* Rang + Label compact */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, gap: S(2) }}>
+        {/* Rang + Étoiles — ligne horizontale compact */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(10), flexShrink: 0 }}>
           <div
             style={{
-              fontSize: S(48), lineHeight: 1,
+              fontSize: S(38), lineHeight: 1,
               transform: rankVisible ? 'scale(1)' : 'scale(0)',
               transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
             }}>
             {currentRank.emoji}
           </div>
-          <div
-            style={{
-              fontSize: S(14), fontWeight: 900, textAlign: 'center', color: textOnBg,
-              transform: rankVisible ? 'scale(1)' : 'scale(0)',
-              transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
-            }}>
-            {currentRank.label}
-          </div>
-        </div>
-
-        {/* Étoiles — 24px chacune */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: S(8), flexShrink: 0 }}>
-          {[1, 2, 3].map((s) => (
-            <span
-              key={s}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: S(2) }}>
+            <div
               style={{
-                fontSize: S(24), lineHeight: 1,
-                transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
-                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                filter: s <= stars ? `drop-shadow(0 0 12px ${catColor})` : 'none',
-                opacity: s <= stars ? 1 : 0.2,
+                fontSize: S(13), fontWeight: 900, color: textOnBg, lineHeight: 1,
+                transform: rankVisible ? 'scale(1)' : 'scale(0)',
+                transformOrigin: 'left center',
+                transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
               }}>
-              ⭐
-            </span>
-          ))}
+              {currentRank.label}
+            </div>
+            <div style={{ display: 'flex', gap: S(4) }}>
+              {[1, 2, 3].map((s) => (
+                <span
+                  key={s}
+                  style={{
+                    fontSize: S(18), lineHeight: 1,
+                    transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
+                    transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    filter: s <= stars ? `drop-shadow(0 0 10px ${catColor})` : 'none',
+                    opacity: s <= stars ? 1 : 0.2,
+                  }}>
+                  ⭐
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Badge Perfect — compact, fontSize 12 */}
@@ -474,36 +491,142 @@ export default function ResultsScreen({
           </div>
         )}
 
-        {/* Score card — UNE ligne horizontale compact */}
+        {/* Score card — récap gains structuré */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: S(8),
-          background: 'rgba(0,0,0,0.3)', border: '1.5px solid rgba(255,255,255,0.15)',
-          borderRadius: S(12), padding: S(8), flexShrink: 0,
+          background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.15)',
+          borderRadius: S(12), padding: `${S(8)} ${S(12)}`, flexShrink: 0,
           textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+          display: 'flex', flexDirection: 'column', gap: S(4),
         }}>
-          <div style={{ textAlign: 'center', flex: 0.4 }}>
-            <div style={{ fontSize: S(16), fontWeight: 900, color: textOnBg }}>+{animatedScore} 🪙</div>
+          {/* Ligne 1 : Base */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: S(10), fontWeight: 700, color: textOnBg, opacity: 0.85 }}>
+              ✅ {correctCount} bonne{correctCount > 1 ? 's' : ''} × {coinsPerCorrect}
+            </span>
+            <span style={{ fontSize: S(11), fontWeight: 900, color: textOnBg }}>
+              +{baseCoins} 🪙
+            </span>
           </div>
-          <div style={{ width: 1, height: S(24), background: 'rgba(255,255,255,0.15)' }} />
-          <div style={{ display: 'flex', gap: S(8), flex: 0.6 }}>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontSize: S(14), fontWeight: 900, color: textOnBg }}>{correctCount}</div>
-              <div style={{ fontSize: S(9), fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Trouvés</div>
+          {/* Ligne 2 : Bonus (si > 0) */}
+          {bonusCoins > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: S(10), fontWeight: 700, color: '#FDE047', opacity: 0.95 }}>
+                ⭐ Bonus {isPerfect ? 'Perfect' : ''}
+              </span>
+              <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
+                +{bonusCoins} 🪙
+              </span>
             </div>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontSize: S(14), fontWeight: 900, color: textOnBg }}>{totalFacts - correctCount}</div>
-              <div style={{ fontSize: S(9), fontWeight: 600, color: textOnBg, opacity: 0.5 }}>À découvrir</div>
+          )}
+          {/* Ligne 3 : Ticket (si gagné) */}
+          {ticketEarned && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: S(10), fontWeight: 700, color: '#FDE047', opacity: 0.95 }}>
+                🎟️ Ticket bonus
+              </span>
+              <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
+                +1
+              </span>
             </div>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <div style={{ fontSize: S(14), fontWeight: 900, color: catColor }}>{precision}%</div>
-              <div style={{ fontSize: S(9), fontWeight: 600, color: textOnBg, opacity: 0.5 }}>Précision</div>
-            </div>
+          )}
+          {/* Séparateur */}
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.18)', margin: `${S(2)} 0` }} />
+          {/* Ligne total */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: S(11), fontWeight: 900, color: textOnBg, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Total
+            </span>
+            <span style={{ fontSize: S(16), fontWeight: 900, color: catColor }}>
+              +{animatedScore} 🪙
+            </span>
+          </div>
+          {/* Mini stats secondaires */}
+          <div style={{ display: 'flex', gap: S(12), justifyContent: 'center', marginTop: S(2), opacity: 0.6 }}>
+            <span style={{ fontSize: S(9), fontWeight: 700, color: textOnBg }}>
+              {correctCount}/{totalFacts} trouvés
+            </span>
+            <span style={{ fontSize: S(9), fontWeight: 700, color: catColor }}>
+              {precision}% précision
+            </span>
           </div>
         </div>
 
+        {/* Fact le plus WTF en avant */}
+        {featuredFact && (() => {
+          const fCat = CATEGORIES.find(c => c.id === featuredFact.category)
+          const fColor = fCat?.color || catColor
+          return (
+            <div
+              onClick={() => {
+                audio.play?.('click')
+                localStorage.setItem('wtf_open_fact_id', String(featuredFact.id))
+                onCollection?.()
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: S(10),
+                background: `linear-gradient(135deg, ${fColor}33, ${fColor}11)`,
+                border: `1.5px solid ${fColor}`,
+                borderRadius: S(12), padding: S(8), flexShrink: 0,
+                cursor: 'pointer',
+                boxShadow: `0 0 20px ${fColor}44`,
+                animation: 'wtf-featured-glow 2.4s ease-in-out infinite',
+                position: 'relative', overflow: 'hidden',
+              }}
+            >
+              <style>{`@keyframes wtf-featured-glow {
+                0%, 100% { box-shadow: 0 0 14px ${fColor}33; }
+                50%      { box-shadow: 0 0 26px ${fColor}77; }
+              }`}</style>
+              {/* Image carrée */}
+              <div style={{
+                width: S(52), height: S(52), borderRadius: S(8),
+                background: `linear-gradient(135deg, ${fColor}66, ${fColor})`,
+                flexShrink: 0, overflow: 'hidden', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                border: `1.5px solid ${fColor}`,
+              }}>
+                {featuredFact.imageUrl ? (
+                  <img
+                    src={featuredFact.imageUrl}
+                    alt=""
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={e => { e.target.style.display = 'none' }}
+                  />
+                ) : (
+                  <span style={{ fontSize: S(22) }}>{fCat?.emoji || '⭐'}</span>
+                )}
+              </div>
+              {/* Texte */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: S(8), fontWeight: 900, color: fColor,
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  marginBottom: S(2), display: 'flex', alignItems: 'center', gap: S(4),
+                }}>
+                  ✨ {featuredFact.isVip ? 'Le plus WTF (VIP)' : 'Le plus WTF'}
+                </div>
+                <div style={{
+                  fontSize: S(11), fontWeight: 800, color: textOnBg, lineHeight: 1.25,
+                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}>
+                  {featuredFact.question || featuredFact.shortAnswer || fCat?.label || '—'}
+                </div>
+              </div>
+              {/* Chevron */}
+              <span style={{
+                fontSize: S(16), color: fColor, flexShrink: 0, fontWeight: 900,
+              }}>›</span>
+            </div>
+          )
+        })()}
+
         {/* Carrousel facts — max 80px height */}
         {allSessionFacts.length > 0 && (() => {
-          const unlockedIds = new Set(unlockedFactsThisSession.map(f => f.id))
+          const unlockedIds = new Set([
+            ...unlockedFactsThisSession.map(f => f.id),
+            ...extraUnlockedIds,
+          ])
           const unlocked = allSessionFacts.filter(f => unlockedIds.has(f.id))
           const locked = allSessionFacts.filter(f => !unlockedIds.has(f.id))
           const sorted = [...unlocked, ...locked]
@@ -627,18 +750,18 @@ export default function ResultsScreen({
             }}>
             {sessionType === 'parcours' ? `🎫 Rejouer en ${DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}` :
              sessionType === 'flash_solo' ? '🔋 Rejouer' :
-             sessionType === 'marathon' ? '🔋 Rejouer' :
+             sessionType === 'explorer' ? '🔋 Rejouer' :
              '🔄 Rejouer'}
           </button>
           {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && difficulty.id !== 'wtf' && (
             <button
-              onClick={onReplay}
+              onClick={onReplayHarder || onReplay}
               className="active:scale-95 transition-all"
               style={{
                 flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
-                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-                border: 'none', color: '#1a1a2e', fontWeight: 900, fontSize: S(11),
-                cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
+                background: 'linear-gradient(135deg, #FF6B1A, #D94A10)',
+                border: 'none', color: 'white', fontWeight: 900, fontSize: S(11),
+                cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
               {CHALLENGE_LABELS[difficulty.id]}
@@ -705,42 +828,56 @@ export default function ResultsScreen({
             <div style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e', marginBottom: 4 }}>
               {selectedFact._catLabel || 'Catégorie'}
             </div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 16, lineHeight: 1.4 }}>
-              Ce f*ct est encore verrouillé. Dépense 5 coins pour le découvrir !
-            </div>
+            {(() => {
+              const unlockCost = selectedFact.isVip ? 25 : 5
+              const canUnlock = _cCoins >= unlockCost
+              return (
+                <>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 16, lineHeight: 1.4 }}>
+                    {selectedFact.isVip
+                      ? `Ce f*ct ⭐ VIP est encore verrouillé. Dépense ${unlockCost} coins pour le découvrir !`
+                      : `Ce f*ct est encore verrouillé. Dépense ${unlockCost} coins pour le découvrir !`}
+                  </div>
 
-            <button
-              onClick={() => {
-                if (_cCoins < 5) return
-                // Débiter 5 coins et débloquer le fact
-                updateCoins(-5)
-                // Ajouter aux unlockedFacts
-                try {
-                  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-                  const unlocked = wd.unlockedFacts || []
-                  if (!unlocked.includes(selectedFact.id)) unlocked.push(selectedFact.id)
-                  wd.unlockedFacts = unlocked
-                  wd.lastModified = Date.now()
-                  localStorage.setItem('wtf_data', JSON.stringify(wd))
-                  window.dispatchEvent(new Event('wtf_storage_sync'))
-                } catch {}
-                setSelectedFact(null)
-              }}
-              disabled={_cCoins < 5}
-              style={{
-                width: '100%', padding: '12px 0', borderRadius: 14, border: 'none',
-                background: _cCoins >= 5 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : '#E5E7EB',
-                color: _cCoins >= 5 ? '#1a1a2e' : '#9CA3AF', fontWeight: 900, fontSize: 14,
-                cursor: _cCoins >= 5 ? 'pointer' : 'not-allowed',
-                boxShadow: _cCoins >= 5 ? '0 4px 16px rgba(255,215,0,0.4)' : 'none',
-              }}>
-              🪙 Débloquer (5 coins)
-            </button>
-            {_cCoins < 5 && (
-              <div style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, marginTop: 8 }}>
-                Pas assez de coins ({_cCoins} 🪙)
-              </div>
-            )}
+                  <button
+                    onClick={() => {
+                      if (!canUnlock) return
+                      updateCoins(-unlockCost)
+                      try {
+                        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                        const unlocked = wd.unlockedFacts || []
+                        if (!unlocked.includes(selectedFact.id)) unlocked.push(selectedFact.id)
+                        wd.unlockedFacts = unlocked
+                        wd.lastModified = Date.now()
+                        localStorage.setItem('wtf_data', JSON.stringify(wd))
+                        window.dispatchEvent(new Event('wtf_storage_sync'))
+                      } catch { /* ignore */ }
+                      setExtraUnlockedIds(prev => {
+                        const next = new Set(prev)
+                        next.add(selectedFact.id)
+                        return next
+                      })
+                      audio.play?.('correct')
+                      setSelectedFact(null)
+                    }}
+                    disabled={!canUnlock}
+                    style={{
+                      width: '100%', padding: '12px 0', borderRadius: 14, border: 'none',
+                      background: canUnlock ? 'linear-gradient(135deg, #FFD700, #FFA500)' : '#E5E7EB',
+                      color: canUnlock ? '#1a1a2e' : '#9CA3AF', fontWeight: 900, fontSize: 14,
+                      cursor: canUnlock ? 'pointer' : 'not-allowed',
+                      boxShadow: canUnlock ? '0 4px 16px rgba(255,215,0,0.4)' : 'none',
+                    }}>
+                    🪙 Débloquer ({unlockCost} coins)
+                  </button>
+                  {!canUnlock && (
+                    <div style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, marginTop: 8 }}>
+                      Pas assez de coins ({_cCoins} 🪙)
+                    </div>
+                  )}
+                </>
+              )
+            })()}
           </div>
         </div>
       )}

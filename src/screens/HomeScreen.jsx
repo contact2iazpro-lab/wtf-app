@@ -98,7 +98,23 @@ function useDailyCoffre() {
     return coffreConfig.reward
   }
 
-  return { coffres: COFFRE_REWARDS, todayIndex, getStatus, openCoffre }
+  // Ouvre un coffre futur (J+1) moyennant un paiement en coins
+  const openEarly = (index) => {
+    if (coffreData.claimedDays.includes(index)) return null
+    const newClaimed = [...coffreData.claimedDays, index]
+    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    wtfData.coffreClaimedDays = newClaimed
+    wtfData.coffreWeekStart = weekStart
+    wtfData.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+    setCoffreData({ claimedDays: newClaimed, weekStart })
+    const coffreConfig = COFFRE_REWARDS[index]
+    applyCofreReward(coffreConfig.reward)
+    if (coffreConfig.reward.bonus) applyCofreReward(coffreConfig.reward.bonus)
+    return coffreConfig.reward
+  }
+
+  return { coffres: COFFRE_REWARDS, todayIndex, getStatus, openCoffre, openEarly }
 }
 
 function applyCofreReward(reward) {
@@ -219,7 +235,8 @@ export default function HomeScreen({
     setLockToast(message)
     setTimeout(() => setLockToast(null), 2500)
   }
-  const { coffres, todayIndex, getStatus, openCoffre } = useDailyCoffre()
+  const { coffres, todayIndex, getStatus, openCoffre, openEarly } = useDailyCoffre()
+  const [earlyCoffreTarget, setEarlyCoffreTarget] = useState(null)
   const [nextBadgeInfo, setNextBadgeInfo] = useState(() => getNextBadge())
   const [showBadgeModal, setShowBadgeModal] = useState(false)
   const [showRoulette, setShowRoulette] = useState(false)
@@ -325,14 +342,17 @@ export default function HomeScreen({
   }
 
   // ── Mode icon component ────────────────────────────────────────────────────
+  // Le label n'est PAS rendu visuellement (le nom est intégré à l'icône)
+  // mais il reste utilisé comme `alt` pour l'accessibilité.
   const ModeIcon = forwardRef(({ src, label, onClick, disabled, locked }, ref) => {
     const dimmed = disabled || locked
     return (
       <button
         ref={ref}
         onClick={dimmed && !locked ? undefined : onClick}
+        aria-label={label}
         style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(3),
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'none', border: 'none', padding: 0,
           cursor: dimmed && !locked ? 'default' : 'pointer',
           WebkitTapHighlightColor: 'transparent',
@@ -367,18 +387,6 @@ export default function HomeScreen({
             }}>🔒</div>
           )}
         </div>
-        <span style={{
-          fontFamily: "'Fredoka One', cursive",
-          fontSize: 9, fontWeight: 400, color: 'white',
-          textAlign: 'center', lineHeight: 1.2,
-          letterSpacing: '0.5px',
-          maxWidth: 70, wordWrap: 'break-word',
-          whiteSpace: 'normal',
-          marginTop: 3,
-          opacity: dimmed ? 0.5 : 1,
-          textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-          display: 'none',
-        }}>{label}</span>
         {disabled && (
           <span style={{
             fontSize: S(6), fontWeight: 700, color: 'white', opacity: 0.6,
@@ -667,16 +675,23 @@ export default function HomeScreen({
           }
 
           // Sinon: coffre normal
+          const canAccelerate = status === 'locked' && i === todayIndex + 1
           return (
             <button
               key={i}
               onClick={() => {
-                if (!isAvail) return
-                audio.play?.('click')
-                const reward = openCoffre()
-                if (reward) {
-                  setCoffreReward(reward)
-                  setShowCoffreModal(true)
+                if (isAvail) {
+                  audio.play?.('click')
+                  const reward = openCoffre()
+                  if (reward) {
+                    setCoffreReward(reward)
+                    setShowCoffreModal(true)
+                  }
+                  return
+                }
+                if (canAccelerate) {
+                  audio.play?.('click')
+                  setEarlyCoffreTarget(i)
                 }
               }}
               style={{
@@ -685,12 +700,13 @@ export default function HomeScreen({
                 alignItems: 'center', justifyContent: 'center',
                 gap: S(1), padding: `${S(3)} ${S(1)}`,
                 borderRadius: S(6),
-                background: isAvail ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)',
-                border: `1px solid ${isAvail ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.08)'}`,
-                cursor: isAvail ? 'pointer' : 'default',
-                opacity: isColl ? 0.35 : isMissed ? 0.25 : status === 'locked' ? 0.5 : 1,
+                background: isAvail ? 'rgba(255,255,255,0.4)' : canAccelerate ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.15)',
+                border: `1px solid ${isAvail ? 'rgba(255,255,255,0.6)' : canAccelerate ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                cursor: isAvail || canAccelerate ? 'pointer' : 'default',
+                opacity: isColl ? 0.35 : isMissed ? 0.25 : canAccelerate ? 0.85 : status === 'locked' ? 0.5 : 1,
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'opacity 0.2s, background 0.2s',
+                position: 'relative',
               }}
             >
               <img
@@ -898,7 +914,7 @@ export default function HomeScreen({
               position: 'relative',
             }}>
               {canExplorer && explorerPlayedInMode === 0 && <NewBadge />}
-              <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={false} onClick={() => { nav('marathon') }} />
+              <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={false} onClick={() => { nav('explorer') }} />
             </div>
             <div style={{
               zIndex: activeSpotlight === 'blitz' ? 101 : 1,
@@ -1078,6 +1094,92 @@ export default function HomeScreen({
         </div>
       )}
 
+      {/* ═══ MODAL ACCÉLÉRER COFFRE J+1 ═══════════════════════════════════ */}
+      {earlyCoffreTarget !== null && (() => {
+        const ACCELERATE_COST = 15
+        const canAfford = _cCoins >= ACCELERATE_COST
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 1000,
+              background: 'rgba(0,0,0,0.7)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 20,
+            }}
+            onClick={() => setEarlyCoffreTarget(null)}
+          >
+            <div
+              style={{
+                background: 'white',
+                borderRadius: 24, padding: 28,
+                textAlign: 'center', maxWidth: 340, width: '90%',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                fontFamily: 'Nunito, sans-serif',
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ fontSize: 44, marginBottom: 8 }}>⏩</div>
+              <div style={{ fontSize: 17, fontWeight: 900, color: '#1a1a2e', marginBottom: 6 }}>
+                Ouvrir le coffre de demain ?
+              </div>
+              <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 16, lineHeight: 1.4 }}>
+                Tu auras ta récompense tout de suite, mais plus de coffre à ouvrir demain.
+              </div>
+              <div style={{
+                background: '#FFF7ED', border: '1px solid #FFEDD5', borderRadius: 12,
+                padding: '10px 16px', marginBottom: 14,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#6B7280' }}>Coût</span>
+                <span style={{ fontSize: 18, fontWeight: 900, color: '#FF6B1A', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {ACCELERATE_COST}<img src="/assets/ui/icon-coins.png" alt="" style={{ width: 16, height: 16 }} />
+                </span>
+              </div>
+              {!canAfford && (
+                <div style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, marginBottom: 10 }}>
+                  Pas assez de coins ({_cCoins} 🪙)
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  onClick={() => setEarlyCoffreTarget(null)}
+                  style={{
+                    flex: 1, padding: '12px 0', borderRadius: 12,
+                    background: '#F3F4F6', border: '1px solid #E5E7EB',
+                    color: '#6B7280', fontWeight: 800, fontSize: 14,
+                    cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  disabled={!canAfford}
+                  onClick={() => {
+                    if (!canAfford) return
+                    updateCoins(-ACCELERATE_COST)
+                    const reward = openEarly(earlyCoffreTarget)
+                    setEarlyCoffreTarget(null)
+                    if (reward) {
+                      setCoffreReward(reward)
+                      setShowCoffreModal(true)
+                    }
+                  }}
+                  style={{
+                    flex: 1, padding: '12px 0', borderRadius: 12,
+                    background: canAfford ? 'linear-gradient(135deg, #FFD700, #FFA500)' : '#E5E7EB',
+                    color: canAfford ? '#1a1a2e' : '#9CA3AF',
+                    border: 'none', fontWeight: 900, fontSize: 14,
+                    cursor: canAfford ? 'pointer' : 'not-allowed',
+                    fontFamily: 'Nunito, sans-serif',
+                  }}
+                >
+                  Ouvrir
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ═══ MODAL ROULETTE ════════════════════════════════════════════════ */}
       {showRoulette && (

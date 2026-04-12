@@ -1,6 +1,17 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 
+// ── Couleurs par chapitre (partagées entre carousel et bandeau) ────────────
+const CHAPTER_COLORS = {
+  goal: '#3B82F6', tutorial: '#8B5CF6', quest: '#EF4444',
+  flash: '#FFD700', explorer: '#22C55E', blitz: '#FF6B1A',
+  hunt: '#EC4899', energy: '#10B981', hints: '#6366F1',
+  coins: '#F59E0B', streak: '#F97316', roulette: '#A855F7',
+  shop: '#06B6D4', mystery: '#7C3AED', collection: '#14B8A6',
+  trophies: '#EAB308', profile: '#64748B', multi: '#8B5CF6',
+  tips: '#22C55E',
+}
+
 // ── Chapters data ───────────────────────────────────────────────────────────
 const CHAPTERS = [
   // ═══ INTRODUCTION ═══
@@ -438,16 +449,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
         }}>
           {visibleChapters.map(ch => {
             const isActive = ch.id === activeId
-            const colors = {
-              goal: '#3B82F6', tutorial: '#8B5CF6', quest: '#EF4444',
-              flash: '#FFD700', explorer: '#22C55E', blitz: '#FF6B1A',
-              hunt: '#EC4899', energy: '#10B981', hints: '#6366F1',
-              coins: '#F59E0B', streak: '#F97316', roulette: '#A855F7',
-              shop: '#06B6D4', mystery: '#7C3AED', collection: '#14B8A6',
-              trophies: '#EAB308', profile: '#64748B', multi: '#8B5CF6',
-              tips: '#22C55E',
-            }
-            const color = colors[ch.id] || '#FF6B1A'
+            const color = CHAPTER_COLORS[ch.id] || '#FF6B1A'
             const modeIcons = {
               quest: '/assets/modes/quete.png',
               flash: '/assets/modes/marathon.png',
@@ -485,15 +487,41 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           })}
         </div>
 
-        {/* ── Content area - scrollable full width ───────────────────────────── */}
-        <div className="flex-1 overflow-y-auto p-4" style={{ display: 'flex', flexDirection: 'column' }}>
-            {/* Chapter title */}
-            <div className="flex items-center gap-2 mb-4" style={{ flexShrink: 0 }}>
-              {getChapterIcon(chapter.id)}
-              <h2 className="font-black" style={{ color: '#1a1a2e', lineHeight: '1.6', fontSize: '18px' }}>
+        {/* ── Bandeau coloré du chapitre actif ───────────────────────────── */}
+        {(() => {
+          const chapterColor = CHAPTER_COLORS[chapter.id] || '#FF6B1A'
+          return (
+            <div style={{
+              flexShrink: 0,
+              background: `linear-gradient(90deg, ${chapterColor}, ${chapterColor}CC)`,
+              padding: '10px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              borderBottom: `2px solid ${chapterColor}`,
+              boxShadow: `0 2px 8px ${chapterColor}33`,
+            }}>
+              <span style={{ fontSize: 22 }}>{chapter.emoji}</span>
+              <h2 className="font-black" style={{
+                color: '#ffffff',
+                lineHeight: 1.2,
+                fontSize: 17,
+                margin: 0,
+                textShadow: '0 1px 2px rgba(0,0,0,0.25)',
+                flex: 1,
+              }}>
                 {chapter.title}
               </h2>
             </div>
+          )
+        })()}
+
+        {/* ── Content area - scrollable full width ───────────────────────────── */}
+        <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+        <div className="overflow-y-auto p-4" style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', flexDirection: 'column',
+        }}>
 
             {/* Rules items */}
             <div className="flex flex-col gap-2" style={{ flexShrink: 0 }}>
@@ -551,10 +579,17 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               )}
             </div>
           </div>
+          {/* Fade gradient bas pour indiquer le scroll */}
+          <div style={{
+            position: 'absolute', left: 0, right: 0, bottom: 0, height: 24,
+            background: 'linear-gradient(to bottom, rgba(250,250,248,0), rgba(250,250,248,1))',
+            pointerEvents: 'none',
+          }} />
+        </div>
 
         {/* ── Footer ─────────────────────────────────────────────────────── */}
         <div
-          className="px-5 pb-5 pt-3 shrink-0 flex gap-3"
+          className="px-5 pb-5 pt-3 shrink-0 flex items-center gap-3"
           style={{ borderTop: '1px solid #E5E7EB' }}
         >
           {/* Prev / Next shortcuts */}
@@ -570,6 +605,13 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           >
             ←
           </button>
+          {/* Indicateur de progression */}
+          <span style={{
+            fontSize: 11, fontWeight: 800, color: '#9CA3AF',
+            minWidth: 38, textAlign: 'center', fontVariantNumeric: 'tabular-nums',
+          }}>
+            {visibleChapters.findIndex(c => c.id === activeId) + 1}/{visibleChapters.length}
+          </span>
           <button
             onClick={() => {
               audio.play('click')

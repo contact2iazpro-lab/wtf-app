@@ -42,6 +42,21 @@ export function loadStorage() {
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
 
+    // Date d'installation (pour fenêtres d'offre de bienvenue)
+    if (!saved.firstSeenDate) {
+      saved.firstSeenDate = Date.now()
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    }
+
+    // Migration douce : statsByMode.marathon → statsByMode.explorer
+    if (saved.statsByMode && saved.statsByMode.marathon && !saved.statsByMode.explorer) {
+      saved.statsByMode.explorer = saved.statsByMode.marathon
+      delete saved.statsByMode.marathon
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    }
+
     // Initialiser le pseudo par défaut si absent
     if (!saved.playerName) {
       saved.playerName = 'Joueur WTF!'

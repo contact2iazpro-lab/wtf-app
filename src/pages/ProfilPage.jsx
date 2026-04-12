@@ -9,13 +9,14 @@ import { getAllBadges } from '../utils/badgeManager'
 import { getBalances } from '../services/currencyService'
 import { useCurrency } from '../context/CurrencyContext'
 import { readWtfData } from '../utils/storageHelper'
+import { AVATAR_FRAMES, getFrameById, readFrameState, setEquippedFrame } from '../data/avatarFrames'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const MODE_LABELS = {
   flash_solo: { icon: '⚡', name: 'Flash' },
   parcours: { icon: '⭐', name: 'Quest' },
-  marathon: { icon: '🗺️', name: 'Explorer' },
+  explorer: { icon: '🗺️', name: 'Explorer' },
   blitz: { icon: '⏱️', name: 'Blitz' },
   wtf_du_jour: { icon: '🔥', name: 'Hunt' },
 }
@@ -34,6 +35,14 @@ export default function ProfilPage() {
   const avatarInputRef = useRef(null)
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [frameState, setFrameState] = useState(() => readFrameState())
+  const [showFrameSelector, setShowFrameSelector] = useState(false)
+  useEffect(() => {
+    const refresh = () => setFrameState(readFrameState())
+    window.addEventListener('wtf_storage_sync', refresh)
+    return () => window.removeEventListener('wtf_storage_sync', refresh)
+  }, [])
+  const currentFrame = getFrameById(frameState.equipped)
 
   // Load avatar from user metadata or localStorage
   useEffect(() => {
@@ -210,10 +219,11 @@ export default function ProfilPage() {
               alt="avatar"
               className="rounded-full"
               style={{
-                width: 72, height: 72, border: '3px solid white',
+                width: 72, height: 72,
+                border: currentFrame.border,
                 objectFit: 'cover', cursor: 'pointer',
-                opacity: uploadingAvatar ? 0.5 : 1, transition: 'opacity 0.3s',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+                opacity: uploadingAvatar ? 0.5 : 1, transition: 'opacity 0.3s, box-shadow 0.3s, border-color 0.3s',
+                boxShadow: currentFrame.glow,
               }}
               onClick={() => avatarInputRef.current?.click()}
             />
@@ -224,6 +234,14 @@ export default function ProfilPage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 11, cursor: 'pointer',
             }} onClick={() => avatarInputRef.current?.click()}>📷</div>
+            <div style={{
+              position: 'absolute', top: -2, right: -2,
+              width: 24, height: 24, borderRadius: '50%',
+              background: '#FFD700', border: '2px solid white',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 11, cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            }} onClick={() => setShowFrameSelector(true)} title="Changer de cadre">✨</div>
             {uploadingAvatar && (
               <div style={{
                 position: 'absolute', inset: 0, borderRadius: '50%',
@@ -256,9 +274,20 @@ export default function ProfilPage() {
             </div>
           )}
 
-          {/* Email si connecté */}
-          {isConnected && (
+          {/* Email si connecté, ID anonyme sinon */}
+          {isConnected ? (
             <span className="text-xs font-semibold" style={{ color: '#6B7280', marginTop: 4 }}>{user?.email}</span>
+          ) : (
+            <span
+              className="text-xs font-bold"
+              style={{
+                color: '#9CA3AF', marginTop: 4,
+                fontVariantNumeric: 'tabular-nums', letterSpacing: '0.06em',
+              }}
+              title="ID local (pour support)"
+            >
+              ID : {playerData.anonymousId || '000 000 000'}
+            </span>
           )}
 
           {isConnected ? (
@@ -377,6 +406,79 @@ export default function ProfilPage() {
           </p>
         </div>
       </div>
+
+      {/* Modal sélection de cadre */}
+      {showFrameSelector && (
+        <div
+          onClick={() => setShowFrameSelector(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 500,
+            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'white', borderRadius: 20, padding: 20,
+              maxWidth: 360, width: '100%',
+              fontFamily: 'Nunito, sans-serif',
+              maxHeight: '85vh', overflowY: 'auto',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ fontSize: 17, fontWeight: 900, color: '#1a1a2e', margin: 0 }}>✨ Cadre de profil</h3>
+              <button
+                onClick={() => setShowFrameSelector(false)}
+                style={{ background: '#F3F4F6', border: 'none', borderRadius: 8, width: 28, height: 28, fontSize: 14, fontWeight: 900, cursor: 'pointer', color: '#6B7280' }}
+              >✕</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+              {AVATAR_FRAMES.map(frame => {
+                const isOwned = frameState.owned.includes(frame.id)
+                const isEquipped = frameState.equipped === frame.id
+                return (
+                  <button
+                    key={frame.id}
+                    onClick={() => {
+                      if (!isOwned) return
+                      setEquippedFrame(frame.id)
+                      setFrameState(readFrameState())
+                    }}
+                    disabled={!isOwned}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                      padding: 10, borderRadius: 12,
+                      background: isEquipped ? 'rgba(255,107,26,0.1)' : '#F9FAFB',
+                      border: isEquipped ? '2px solid #FF6B1A' : '1.5px solid #E5E7EB',
+                      cursor: isOwned ? 'pointer' : 'not-allowed',
+                      opacity: isOwned ? 1 : 0.45,
+                      fontFamily: 'Nunito, sans-serif',
+                    }}
+                  >
+                    <div style={{
+                      width: 48, height: 48, borderRadius: '50%',
+                      background: '#D1D5DB',
+                      border: frame.border, boxShadow: frame.glow,
+                    }} />
+                    <span style={{ fontSize: 11, fontWeight: 900, color: '#1a1a2e' }}>{frame.label}</span>
+                    {isEquipped ? (
+                      <span style={{ fontSize: 9, fontWeight: 900, color: '#FF6B1A' }}>✓ Équipé</span>
+                    ) : isOwned ? (
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF' }}>Équiper</span>
+                    ) : (
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF' }}>🔒 {frame.cost} 🪙</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: 10, color: '#9CA3AF', textAlign: 'center', marginTop: 12 }}>
+              Débloque de nouveaux cadres dans la Boutique
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

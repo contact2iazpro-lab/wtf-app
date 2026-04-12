@@ -140,7 +140,7 @@ export default function AppModals({
           onConfirm={() => {
             if (buyExtraSession()) {
               setShowNoEnergyModal(false)
-              if (noEnergyOrigin === 'marathon') { setGameMode('marathon'); setSessionType('marathon'); showOrSkipLaunch('explorer') }
+              if (noEnergyOrigin === 'explorer') { setGameMode('explorer'); setSessionType('explorer'); showOrSkipLaunch('explorer') }
               else { setGameMode('solo'); setSessionType('flash_solo'); setSelectedCategory(null); showOrSkipLaunch('flash') }
             } else { setShowNoEnergyModal(false); setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: `Il te faut ${FLASH_ENERGY.EXTRA_SESSION_COST} coins pour acheter une session.` }) }
           }}
@@ -189,7 +189,7 @@ export default function AppModals({
                 setStorage(prev => { const next = { ...prev, wtfCoins: prev.wtfCoins - miniParcours.price }; saveStorage(next); return next })
                 const { pool, mode, categoryId, difficulty } = miniParcours
                 if (mode === 'flash') { setSessionType('flash_solo'); setGameMode('solo'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(null) }
-                else if (mode === 'explorer') { setSessionType('marathon'); setGameMode('marathon'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId); setExplorerPool([]) }
+                else if (mode === 'explorer') { setSessionType('explorer'); setGameMode('explorer'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId); setExplorerPool([]) }
                 else if (mode === 'quest') { setSessionType('parcours'); setGameMode('solo'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId) }
                 initSessionState(pool); setMiniParcours(null); setScreen(SCREENS.QUESTION)
               }} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: wtfCoins >= miniParcours.price ? '#FF6B1A' : '#E5E7EB', border: 'none', color: wtfCoins >= miniParcours.price ? 'white' : '#9CA3AF', cursor: wtfCoins >= miniParcours.price ? 'pointer' : 'not-allowed' }}>

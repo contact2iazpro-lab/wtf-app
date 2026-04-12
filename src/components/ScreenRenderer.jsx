@@ -38,7 +38,7 @@ export default function ScreenRenderer({
   handleHomeNavigate, handleHome, handleSelectDifficulty, handleSelectCategory,
   handleSelectAnswer, handleOpenValidate, handleUseHint, handleTimeout,
   handleNext, handleDuelNextPlayer, handleDuelStart, handleDuelPassReady,
-  handleDuelReplay, handleReplay, handleBlitzReplay, handleBlitzStart,
+  handleDuelReplay, handleReplay, handleReplayHarder, handleBlitzReplay, handleBlitzStart,
   handleBlitzFinish, handleStartWTFSession, handleShare, handleShareDailyFact,
   handleSaveTempFacts, handleLaunchStart,
   // Setters
@@ -139,7 +139,7 @@ export default function ScreenRenderer({
           onQuit={handleHome}
           category={selectedCategory}
           gameMode={gameMode}
-          difficulty={(gameMode === 'solo' || gameMode === 'marathon') ? selectedDifficulty : null}
+          difficulty={(gameMode === 'solo' || gameMode === 'explorer') ? selectedDifficulty : null}
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
@@ -176,6 +176,7 @@ export default function ScreenRenderer({
           difficulty={selectedDifficulty}
           ticketEarned={sessionIsPerfect}
           onReplay={handleReplay}
+          onReplayHarder={handleReplayHarder}
           onHome={handleHome}
           completedCategoryLevels={completedLevels}
           categoryId={selectedCategory}
@@ -187,13 +188,13 @@ export default function ScreenRenderer({
         />
       )}
 
-      {screen === SCREENS.MARATHON_RESULTS && (
+      {screen === SCREENS.EXPLORER_RESULTS && (
         <ResultsScreen
           score={sessionScore}
           correctCount={correctCount}
           totalFacts={sessionFacts.length}
           coinsEarned={coinsEarnedLastSession}
-          sessionType="marathon"
+          sessionType="explorer"
           difficulty={selectedDifficulty}
           ticketEarned={false}
           onReplay={handleReplay}

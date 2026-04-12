@@ -34,7 +34,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
   // Pool de facts selon le mode de jeu
   // Flash et Explorer : Funny facts uniquement (pas de VIP)
   const factsPool = useMemo(() => {
-    if (gameMode === 'marathon' || sessionType === 'flash_solo') return getFunnyFacts()
+    if (gameMode === 'explorer' || sessionType === 'flash_solo') return getFunnyFacts()
     if (gameMode === 'blitz') return getValidFacts()
     return getValidFacts() // Quest, etc.
   }, [gameMode, sessionType])
@@ -68,7 +68,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
   }, [unlockedFacts])
 
   // En mode Explorer/Flash : seules les catégories débloquées sont jouables
-  const isLockedMode = gameMode === 'marathon' || sessionType === 'flash_solo'
+  const isLockedMode = gameMode === 'explorer' || sessionType === 'flash_solo'
 
   // Catégories avec au moins 1 fact — débloquées en haut, bloquées en bas, chaque groupe alphabétique
   const visibleCategories = useMemo(() => {
@@ -176,8 +176,8 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
 
-          {/* Aléatoire — masqué en mode Explorer (marathon) */}
-          {gameMode !== 'marathon' && <button
+          {/* Aléatoire — masqué en mode Explorer */}
+          {gameMode !== 'explorer' && <button
             onClick={() => handleCategoryClick('random')}
             style={{
               background: selectedCatId === 'random'

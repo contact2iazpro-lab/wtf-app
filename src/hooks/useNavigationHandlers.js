@@ -19,6 +19,7 @@ import { syncAfterAction } from '../services/playerSyncService'
 export function useNavigationHandlers({
   // State
   launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
+  selectedDifficulty,
   explorerPool, unlockedFacts, duelPlayers, user, sessionCorrectFacts,
   // Hooks extraits
   handleStartWTFSession, handleFlashSolo, handleSelectDifficulty,
@@ -40,8 +41,7 @@ export function useNavigationHandlers({
     switch (mode) {
       case 'quest':    setScreen(SCREENS.DIFFICULTY); break
       case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
-      case 'explorer':
-      case 'marathon': setScreen(SCREENS.CATEGORY); break
+      case 'explorer': setScreen(SCREENS.CATEGORY); break
       case 'flash':    handleFlashSolo(); break  // Flash = aléatoire direct, pas de CategoryScreen
       case 'hunt':     handleStartWTFSession(); break
       default: break
@@ -77,10 +77,10 @@ export function useNavigationHandlers({
         showOrSkipLaunch('flash')
         break
       }
-      case 'marathon': {
+      case 'explorer': {
         const isDevOrTest2 = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest2 && !canPlayFlashCheck()) { setNoEnergyOrigin('marathon'); setShowNoEnergyModal(true); break }
-        setGameMode('marathon'); setSessionType('marathon')
+        if (!isDevOrTest2 && !canPlayFlashCheck()) { setNoEnergyOrigin('explorer'); setShowNoEnergyModal(true); break }
+        setGameMode('explorer'); setSessionType('explorer')
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         const explorerPlayedInMode = wd.statsByMode?.flash_solo?.gamesPlayed || 0
         if (explorerPlayedInMode === 0) launchModeDestination('explorer')
@@ -175,16 +175,27 @@ export function useNavigationHandlers({
     const difficulty = DIFFICULTY_LEVELS.HOT
     const next5 = filteredPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
     setExplorerPool(filteredPool.slice(5))
-    setSessionType('marathon')
+    setSessionType('explorer')
     initSessionState(next5)
     setScreen(SCREENS.QUESTION)
   }, [explorerPool, unlockedFacts, initSessionState])
 
   const handleReplay = useCallback(() => {
     if (sessionType === 'flash_solo') handleFlashSolo()
-    else if (sessionType === 'marathon') { setExplorerPool([]); setScreen(SCREENS.CATEGORY) }
+    else if (sessionType === 'explorer') { setExplorerPool([]); setScreen(SCREENS.CATEGORY) }
     else handleSelectCategory(selectedCategory)
   }, [sessionType, selectedCategory, handleFlashSolo, handleSelectCategory])
+
+  // Rejoue Quest en montant d'un niveau (Cool→Hot, Hot→WTF!)
+  const handleReplayHarder = useCallback(() => {
+    if (sessionType !== 'parcours') return
+    const current = selectedDifficulty?.id
+    const next = current === 'cool' ? DIFFICULTY_LEVELS.HOT
+               : current === 'hot'  ? DIFFICULTY_LEVELS.WTF
+               : null
+    if (!next) return
+    handleSelectDifficulty(next)
+  }, [sessionType, selectedDifficulty, handleSelectDifficulty])
 
   const handleShare = useCallback(() => {
     if (!currentFact) return
@@ -206,7 +217,7 @@ export function useNavigationHandlers({
     handleHomeNavigate,
     handleDuelNextPlayer, handleDuelMode, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
-    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay,
+    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay, handleReplayHarder,
     handleShare, handleShareDailyFact, handleShowRules,
   }
 }

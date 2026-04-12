@@ -1,7 +1,7 @@
 /**
  * useSelectionHandlers — Handlers pour la sélection de difficulté et catégorie.
  *
- * Extrait de App.jsx : handleSelectDifficulty, handleSelectCategory, handleMarathonMode.
+ * Extrait de App.jsx : handleSelectDifficulty, handleSelectCategory, handleExplorerMode.
  */
 
 import { useCallback } from 'react'
@@ -29,7 +29,7 @@ export function useSelectionHandlers({
     setSelectedDifficulty(difficulty)
     const skipUnlockM = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
 
-    if (gameMode === 'marathon') {
+    if (gameMode === 'explorer') {
       let pool
       if (selectedCategory === null) {
         pool = getGeneratedFacts().filter(f => skipUnlockM || !unlockedFacts.has(f.id))
@@ -53,7 +53,7 @@ export function useSelectionHandlers({
       const facts = [...pool].sort(() => Math.random() - 0.5).slice(0, 20)
         .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
       setIsQuickPlay(false)
-      setSessionType('marathon')
+      setSessionType('explorer')
       initSessionState(facts)
       setScreen(SCREENS.QUESTION)
       return
@@ -86,7 +86,7 @@ export function useSelectionHandlers({
   const handleSelectCategory = useCallback((categoryId) => {
     if (gameMode === 'blitz') { handleBlitzStart(categoryId); return }
 
-    if (gameMode === 'marathon') {
+    if (gameMode === 'explorer') {
       const difficulty = DIFFICULTY_LEVELS.HOT
       const skipUnlockE = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
       let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
@@ -105,7 +105,7 @@ export function useSelectionHandlers({
       setSelectedCategory(categoryId)
       setSelectedDifficulty(difficulty)
       setIsQuickPlay(false)
-      setSessionType('marathon')
+      setSessionType('explorer')
       consumeFlashEnergy()
       initSessionState(sessionFacts)
       setScreen(SCREENS.QUESTION)
@@ -139,16 +139,16 @@ export function useSelectionHandlers({
 
     const factsWithOptions = facts.map(fact => ({ ...fact, ...getAnswerOptions(fact, selectedDifficulty) }))
     setSelectedCategory(categoryId)
-    if (sessionType === 'flash_solo' || sessionType === 'marathon') consumeFlashEnergy()
+    if (sessionType === 'flash_solo' || sessionType === 'explorer') consumeFlashEnergy()
     initSessionState(factsWithOptions)
     setScreen(SCREENS.QUESTION)
   }, [selectedDifficulty, gameMode, sessionType, handleBlitzStart, unlockedFacts, initSessionState])
 
-  const handleMarathonMode = useCallback(() => {
-    setGameMode('marathon')
-    setSessionType('marathon')
+  const handleExplorerMode = useCallback(() => {
+    setGameMode('explorer')
+    setSessionType('explorer')
     setScreen(SCREENS.CATEGORY)
   }, [])
 
-  return { handleSelectDifficulty, handleSelectCategory, handleMarathonMode }
+  return { handleSelectDifficulty, handleSelectCategory, handleExplorerMode }
 }

@@ -21,8 +21,8 @@ class AudioManager {
     // File audio tracking
     this._activeFileAudios = new Set()
 
-    // Settings — tout OFF par défaut (le joueur active dans les paramètres)
-    this._sfxEnabled = localStorage.getItem('wtf_sfx') === 'true'
+    // Settings — Son ON, Musique OFF, Vibration ON par défaut
+    this._sfxEnabled = localStorage.getItem('wtf_sfx') !== 'false'
     this._musicEnabled = localStorage.getItem('wtf_music') === 'true'
     this._vibrationEnabled = localStorage.getItem('wtf_vibration') !== 'false'
 

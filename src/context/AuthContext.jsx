@@ -114,8 +114,22 @@ export function AuthProvider({ children }) {
         if (event === 'INITIAL_SESSION') {
           const u = session?.user ?? null
           setUser(u)
-          if (u) loadProfile(u.id)
           setLoading(false)
+          if (u) {
+            loadProfile(u.id)
+            // IMPORTANT : rapatrier collections + profile depuis Supabase pour
+            // les users non-anonymes qui reprennent une session existante.
+            // Sans ça, le localStorage reste vide (unlockedFacts=0) même si
+            // le serveur a des données.
+            if (!u.is_anonymous) {
+              try {
+                await pullFromServer(u.id)
+                window.dispatchEvent(new Event('wtf_storage_sync'))
+              } catch (e) {
+                console.warn('[Auth] INITIAL_SESSION pullFromServer failed:', e?.message || e)
+              }
+            }
+          }
           return
         }
         if (event === 'TOKEN_REFRESHED' && !session) {

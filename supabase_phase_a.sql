@@ -614,6 +614,89 @@ ALTER TABLE profiles
 --   ADD CONSTRAINT profiles_energy_hard_cap CHECK (energy <= 5);
 
 
+-- ────────────────────────────────────────────────────────────────────────────
+-- BLOC 7 — A.9.1 RPC merge_player_flags (2026-04-12)
+-- Fusion atomique d'un payload JSONB dans profiles.flags. Utilisé pour
+-- persister tout ce qui n'est pas monétaire : blitzRecords, route progress,
+-- coffreClaimedDays, streakFreezeCount, statsByMode, badges, etc.
+--
+-- Merge stratégie : jsonb_merge_patch-like (écrase les clés top-level).
+-- Pour les structures imbriquées, le caller envoie la sous-arbre complète.
+-- ────────────────────────────────────────────────────────────────────────────
+
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT oid::regprocedure AS sig
+    FROM pg_proc
+    WHERE proname = 'merge_player_flags'
+      AND pronamespace = 'public'::regnamespace
+  LOOP
+    EXECUTE 'DROP FUNCTION ' || r.sig || ' CASCADE';
+  END LOOP;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.merge_player_flags(p_patch JSONB)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID;
+  v_new_flags JSONB;
+BEGIN
+  v_user_id := auth.uid();
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'unauthorized: no auth.uid()';
+  END IF;
+
+  IF p_patch IS NULL OR jsonb_typeof(p_patch) != 'object' THEN
+    RAISE EXCEPTION 'invalid_patch: must be a jsonb object';
+  END IF;
+
+  -- Garde-fou : limiter la taille du payload pour éviter les abus
+  IF length(p_patch::text) > 50000 THEN
+    RAISE EXCEPTION 'patch_too_large';
+  END IF;
+
+  -- Merge : || opérateur JSONB = top-level merge (patch écrase)
+  UPDATE profiles
+     SET flags = COALESCE(flags, '{}'::jsonb) || p_patch,
+         updated_at = NOW()
+   WHERE id = v_user_id
+  RETURNING flags INTO v_new_flags;
+
+  IF v_new_flags IS NULL THEN
+    RAISE EXCEPTION 'profile_not_found for user %', v_user_id;
+  END IF;
+
+  RETURN v_new_flags;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.merge_player_flags(JSONB) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.merge_player_flags(JSONB) TO authenticated, anon;
+
+COMMENT ON FUNCTION public.merge_player_flags IS
+  'Merge atomique d un payload JSONB dans profiles.flags. Utilise || (top-level merge). Pour structures imbriquees, envoyer la sous-arbre complete.';
+
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- VÉRIFICATIONS BLOC 7
+-- ════════════════════════════════════════════════════════════════════════════
+
+-- Fonction créée
+SELECT proname, pg_get_function_arguments(oid), prosecdef
+FROM pg_proc WHERE proname = 'merge_player_flags';
+
+-- Grants
+SELECT grantee, privilege_type
+FROM information_schema.routine_privileges
+WHERE routine_name = 'merge_player_flags';
+
+
 -- 3. Récap complet de tout ce qui a été créé dans la Phase A
 SELECT
   'profiles columns ajoutées' AS item,

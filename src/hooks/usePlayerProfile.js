@@ -90,12 +90,41 @@ export function usePlayerProfile() {
     return data
   }, [])
 
+  /**
+   * mergeFlags — merge atomique d'un patch JSONB dans profiles.flags.
+   * Utilisé pour persister blitzRecords, route progress, coffreClaimedDays,
+   * streakFreezeCount, statsByMode, badges, etc.
+   *
+   * @param {Object} patch - Objet à merger (top-level keys écrasent)
+   * @example
+   *   await mergeFlags({ blitzRecords: { 'sport_10': 23.5 } })
+   *   await mergeFlags({ route: { level: 12, stars: {...} } })
+   */
+  const mergeFlags = useCallback(async (patch) => {
+    if (!patch || typeof patch !== 'object') return null
+    return mutate({
+      optimistic: (prev) => ({
+        ...prev,
+        flags: { ...(prev?.flags || {}), ...patch },
+      }),
+      commit: async (prev) => {
+        const { data, error } = await supabase.rpc('merge_player_flags', {
+          p_patch: patch,
+        })
+        if (error) throw error
+        // data = le nouveau flags complet côté serveur
+        return { ...prev, flags: data || prev?.flags || {} }
+      },
+    })
+  }, [mutate])
+
   return {
     profile,
     loading,
     error,
     applyCurrencyDelta,
     unlockFact,
+    mergeFlags,
     refetch,
     setData,
     // Raccourcis pratiques
@@ -103,5 +132,6 @@ export function usePlayerProfile() {
     tickets: profile?.tickets ?? null,
     hints:   profile?.hints   ?? null,
     energy:  profile?.energy  ?? null,
+    flags:   profile?.flags   ?? {},
   }
 }

@@ -33,7 +33,7 @@ export async function pullFromServer(userId) {
     // pullFromServer ne synce plus que les données NON-devise (score, streak, collections).
     const { data: remote, error } = await supabase
       .from('profiles')
-      .select('total_score, streak_current, streak_max, last_played_date, last_modified')
+      .select('total_score, streak_current, streak_max, last_played_date, last_modified, flags, stats_by_mode')
       .eq('id', userId)
       .single()
     if (error) throw error
@@ -49,6 +49,22 @@ export async function pullFromServer(userId) {
       saved.streak = remote.streak_current || 0
       saved.bestStreak = Math.max(saved.bestStreak || 0, remote.streak_max || 0)
       saved.lastModified = remoteTimestamp
+      // A.9 : rapatrier aussi flags (blitzRecords, route, coffre, badges, etc.)
+      // et stats_by_mode depuis Supabase
+      if (remote.flags && typeof remote.flags === 'object') {
+        saved.flags = { ...(saved.flags || {}), ...remote.flags }
+        // Dépoter certains flags bien connus dans leur emplacement legacy
+        // pour que le code existant continue à marcher sans modification
+        if (remote.flags.blitzRecords) saved.blitzRecords = remote.flags.blitzRecords
+        if (remote.flags.route) saved.route = remote.flags.route
+        if (remote.flags.coffreClaimedDays) saved.coffreClaimedDays = remote.flags.coffreClaimedDays
+        if (remote.flags.coffreWeekStart) saved.coffreWeekStart = remote.flags.coffreWeekStart
+        if (remote.flags.streakFreezeCount !== undefined) saved.streakFreezeCount = remote.flags.streakFreezeCount
+        if (remote.flags.bestBlitzTime) saved.bestBlitzTime = remote.flags.bestBlitzTime
+      }
+      if (remote.stats_by_mode && typeof remote.stats_by_mode === 'object') {
+        saved.statsByMode = remote.stats_by_mode
+      }
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     } else if (localTimestamp > remoteTimestamp) {
       // Local plus récent → push score/streak vers serveur (fire & forget,

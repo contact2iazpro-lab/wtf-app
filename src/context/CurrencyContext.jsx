@@ -19,7 +19,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { useAuth } from './AuthContext'
-import { initSyncQueue, enqueue, drain, clearQueue } from '../services/syncQueue'
+import { initSyncQueue, clearQueue } from '../services/syncQueue'
 import { setCurrencyContext } from '../services/currencyService'
 
 const CurrencyContext = createContext(null)
@@ -81,10 +81,11 @@ export function CurrencyProvider({ children }) {
 
     async function initFromServer() {
       try {
-        // 1. Drainer la queue pendante (si elle existe)
-        const drainResult = await drain()
+        // Phase A : plus de drain() au mount (queue plus alimentée).
+        // On purge d'éventuels résidus legacy pour éviter une future 404.
+        await clearQueue().catch(() => {})
 
-        // 2. Récupérer les balances serveur
+        // Récupérer les balances serveur
         const { data, error } = await supabase.rpc('get_balances')
         if (error) throw error
 
@@ -108,47 +109,10 @@ export function CurrencyProvider({ children }) {
     initFromServer()
   }, [isConnected, user?.id])
 
-  // ── Timer de drain périodique (30s) ────────────────────────────────────
-  useEffect(() => {
-    if (!isConnected) return
-
-    drainTimerRef.current = setInterval(async () => {
-      const result = await drain()
-      if (result) {
-        setBalances({ coins: result.coins || 0, tickets: result.tickets || 0, hints: result.hints || 0 })
-        setIsServerSynced(true)
-      }
-    }, 30000)
-
-    return () => clearInterval(drainTimerRef.current)
-  }, [isConnected])
-
-  // ── Drain sur visibilitychange + pagehide ──────────────────────────────
-  useEffect(() => {
-    if (!isConnected) return
-
-    function handleVisibilityChange() {
-      if (document.hidden) {
-        drain().then(result => {
-          if (result) setBalances({ coins: result.coins || 0, tickets: result.tickets || 0, hints: result.hints || 0 })
-        })
-      }
-    }
-
-    function handleOnline() {
-      drain().then(result => {
-        if (result) setBalances({ coins: result.coins || 0, tickets: result.tickets || 0, hints: result.hints || 0 })
-      })
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('online', handleOnline)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('online', handleOnline)
-    }
-  }, [isConnected])
+  // Phase A : drain timer 30s + visibilitychange retirés.
+  // La queue syncQueue n'est plus alimentée (enqueue commenté) donc il n'y a
+  // plus rien à drainer. Les mutations serveur passent par applyCurrencyDelta
+  // direct via usePlayerProfile.
 
   // ── Écouter les anciens events pour backward compat ────────────────────
   useEffect(() => {
@@ -167,62 +131,45 @@ export function CurrencyProvider({ children }) {
 
   // ── Mutations ──────────────────────────────────────────────────────────
 
+  // Phase A (2026-04-12) : enqueue() retiré pour éviter le double comptage.
+  // Les mutations serveur passent désormais uniquement par applyCurrencyDelta
+  // de usePlayerProfile (Phase A migration complète). CurrencyContext garde
+  // son rôle d'affichage optimistic local (cache localStorage + React state).
   const addCoins = useCallback((delta) => {
     if (delta === 0) return
-
-    // Optimistic UI
     setBalances(prev => {
       const updated = { ...prev, coins: Math.max(0, prev.coins + delta) }
-      writeLocalBalances(updated) // Toujours sync localStorage pour backward compat
+      writeLocalBalances(updated)
       return updated
     })
-
-    // Queue pour sync serveur
-    if (isConnected) {
-      enqueue({ coins: delta })
-    }
-
-    // Notifier les anciens listeners
     window.dispatchEvent(new Event('wtf_currency_updated'))
-  }, [isConnected])
+  }, [])
 
   const addTickets = useCallback((delta) => {
     if (delta === 0) return
-
     setBalances(prev => {
       const updated = { ...prev, tickets: Math.max(0, prev.tickets + delta) }
       writeLocalBalances(updated)
       return updated
     })
-
-    if (isConnected) {
-      enqueue({ tickets: delta })
-    }
-
     window.dispatchEvent(new Event('wtf_currency_updated'))
-  }, [isConnected])
+  }, [])
 
   const addHints = useCallback((delta) => {
     if (delta === 0) return
-
     setBalances(prev => {
       const updated = { ...prev, hints: Math.max(0, prev.hints + delta) }
       writeLocalBalances(updated)
       return updated
     })
-
-    if (isConnected) {
-      enqueue({ hints: delta })
-    }
-
     window.dispatchEvent(new Event('wtf_currency_updated'))
-  }, [isConnected])
+  }, [])
 
   const refreshFromServer = useCallback(async () => {
     if (!isConnected) return
 
     try {
-      const drainResult = await drain()
+      // Phase A : plus de drain(). On lit directement l'état serveur.
       const { data, error } = await supabase.rpc('get_balances')
       if (error) throw error
 

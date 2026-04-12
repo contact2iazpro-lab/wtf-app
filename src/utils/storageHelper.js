@@ -123,17 +123,12 @@ export function loadStorage() {
       streak = 0
     }
 
-    // Filet de sécurité : détecter unlockedFacts anormalement élevés
-    if (!isDev && !isTest) {
-      const unlocked = saved.unlockedFacts || []
-      const gamesPlayed = saved.gamesPlayed || 0
-      const maxReasonable = Math.max(50, gamesPlayed * 6)
-      if (unlocked.length > maxReasonable && !saved._savedUnlockedFacts) {
-        saved.unlockedFacts = []
-        saved.lastModified = Date.now()
-        localStorage.setItem('wtf_data', JSON.stringify(saved))
-      }
-    }
+    // Filet de sécurité anti-triche retiré 2026-04-12 :
+    // - Supabase est désormais source de vérité via mutation_ledger (Phase A)
+    // - Le filet était déclenché par pullFromServer qui hydrate unlockedFacts
+    //   sans mettre à jour gamesPlayed → faux positif systématique
+    // - L'anti-triche officielle est côté serveur : CHECK constraints sur
+    //   profiles + UNIQUE nonce sur mutation_ledger + plafonds seed_from_local
 
     return {
       totalScore: saved.totalScore || 0,

@@ -24,10 +24,11 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  // Create profile on first sign-up
+  // Create profile on first sign-up (supporte users anonymes : email peut être null)
   const createProfile = useCallback(async (userId, email) => {
     if (!isSupabaseConfigured) return
-    const username = email.split('@')[0]
+    // Anonymous users ont email=null → username par défaut
+    const username = email ? email.split('@')[0] : `joueur_${userId.slice(0, 8)}`
     try {
       const { data: existing } = await supabase
         .from('profiles')
@@ -37,15 +38,15 @@ export function AuthProvider({ children }) {
 
       let data
       if (!existing) {
-        // Nouveau profil → créer avec les valeurs de départ
+        // Nouveau profil → créer avec les valeurs de départ (cohérent avec bloc 1 SQL)
         const result = await supabase
           .from('profiles')
-          .insert({ id: userId, username, coins: 0, tickets: 1, hints: 3 })
+          .insert({ id: userId, username, coins: 0, tickets: 1, hints: 3, energy: 3 })
           .select()
           .single()
         data = result.data
-      } else {
-        // Profil existant → juste mettre à jour le username si vide
+      } else if (email) {
+        // Profil existant ET on a un vrai email → mettre à jour le username
         const result = await supabase
           .from('profiles')
           .update({ username })
@@ -60,26 +61,51 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  // Crée une session anonyme si aucune n'existe. Retourne true si une nouvelle
+  // session anonyme a été créée, false si une session (anonyme ou non) existait déjà.
+  const ensureAnonymousSession = useCallback(async () => {
+    if (!isSupabaseConfigured) return false
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) return false
+      const { data, error } = await supabase.auth.signInAnonymously()
+      if (error) {
+        console.error('[Auth] signInAnonymously failed:', error.message)
+        return false
+      }
+      console.log('[Auth] Anonymous session created:', data.user?.id)
+      return true
+    } catch (e) {
+      console.error('[Auth] ensureAnonymousSession error:', e)
+      return false
+    }
+  }, [])
+
   useEffect(() => {
     if (!isSupabaseConfigured) {
       setLoading(false)
       return
     }
 
-    // Get initial session — plus de timeout car le Web Lock est désactivé
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    // Get initial session. Si aucune session → crée automatiquement une session
+    // anonyme. L'event SIGNED_IN déclenché par signInAnonymously se charge du reste.
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (error) {
-        console.warn('[Auth] Session recovery failed, signing out:', error.message)
-        supabase.auth.signOut().catch(() => {})
-        setUser(null)
-        setProfile(null)
-        setLoading(false)
+        console.warn('[Auth] Session recovery failed, re-anonymizing:', error.message)
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+        await ensureAnonymousSession()
         return
       }
       const u = session?.user ?? null
-      setUser(u)
-      if (u) loadProfile(u.id)
-      setLoading(false)
+      if (u) {
+        setUser(u)
+        loadProfile(u.id)
+        setLoading(false)
+      } else {
+        // Aucune session → anonymize. Le reste du cycle passera par onAuthStateChange.
+        await ensureAnonymousSession()
+        // loading sera set à false dans SIGNED_IN handler
+      }
     })
 
     // Listen for auth changes
@@ -101,10 +127,16 @@ export function AuthProvider({ children }) {
         }
         const u = session?.user ?? null
         setUser(u)
+        setLoading(false)
         if (u) {
           if (event === 'SIGNED_IN') await createProfile(u.id, u.email)
           loadProfile(u.id)
           // Sync local data to/from Supabase on sign-in, then refresh App state
+          // Skip pullFromServer pour users anonymes (pas de données legacy à rapatrier)
+          if (u.is_anonymous) {
+            window.dispatchEvent(new Event('wtf_storage_sync'))
+            return
+          }
           try {
             await pullFromServer(u.id)
             // Sync local name/avatar to Supabase si pas de données cloud
@@ -151,15 +183,29 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signInWithGoogle = useCallback(async () => {
+    // Si l'user courant est anonyme → linkIdentity préserve son user_id et ses données.
+    // Sinon → signInWithOAuth standard (upgrade d'un compte déjà Google, ou premier login).
+    const isAnon = user?.is_anonymous === true
+    if (isAnon) {
+      const { error } = await supabase.auth.linkIdentity({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.href.split('#')[0],
+          queryParams: { prompt: 'select_account' },
+        }
+      })
+      if (error) throw error
+      return
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.href.split('#')[0], // Preserve current path, discard any fragment
+        redirectTo: window.location.href.split('#')[0],
         queryParams: { prompt: 'select_account' },
       }
     })
     if (error) throw error
-  }, [])
+  }, [user])
 
   const signOut = useCallback(async () => {
     // 1. Déconnexion Supabase — scope 'local' pour clear le token localStorage
@@ -206,7 +252,11 @@ export function AuthProvider({ children }) {
     // 4. Reset state React
     setUser(null)
     setProfile(null)
-  }, [])
+
+    // 5. Recrée une session anonyme immédiatement. L'user peut continuer à
+    //    jouer sans compte, son state repart à zéro (nouveau user_id).
+    await ensureAnonymousSession()
+  }, [ensureAnonymousSession])
 
   const updateProfile = useCallback(async (updates) => {
     if (!user) return
@@ -221,12 +271,22 @@ export function AuthProvider({ children }) {
     return data
   }, [user])
 
+  // isAnonymous : true si l'user courant est une session anonyme Supabase
+  // isConnected : true SEULEMENT si compte réel (pas anonyme). Les features
+  //               sociales (amis, défis, profil Google) utilisent isConnected.
+  //               Les features économie/collection utilisent hasSession (=!!user).
+  const isAnonymous = !!user?.is_anonymous
+  const hasSession  = !!user
+  const isConnected = hasSession && !isAnonymous
+
   return (
     <AuthContext.Provider value={{
       user,
       profile,
       loading,
-      isConnected: !!user,
+      hasSession,
+      isAnonymous,
+      isConnected,
       signUpWithEmail,
       signInWithEmail,
       signInWithGoogle,

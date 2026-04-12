@@ -76,10 +76,11 @@ export function useGameHandlers({
       if (points > 0) {
         updateCoins(points) // legacy (localStorage)
         // Phase A : miroir côté Supabase via RPC (optimistic + anti-replay)
+        console.log('[PhaseA] about to call applyCurrencyDelta', { points, sessionType, hasFn: !!applyCurrencyDelta })
         if (applyCurrencyDelta) {
-          applyCurrencyDelta({ coins: points }, `${sessionType}_correct`).catch(e => {
-            console.warn('[useGameHandlers] applyCurrencyDelta failed:', e?.message || e)
-          })
+          applyCurrencyDelta({ coins: points }, `${sessionType}_correct`)
+            .then(r => console.log('[PhaseA] applyCurrencyDelta OK', r))
+            .catch(e => console.error('[PhaseA] applyCurrencyDelta FAILED:', e?.message || e, e))
         }
       }
 
@@ -141,10 +142,11 @@ export function useGameHandlers({
       if (isCorrect) setCorrectCount(c => c + 1)
       if (points > 0) {
         updateCoins(points)
+        console.log('[PhaseA] validate: about to call applyCurrencyDelta', { points, sessionType, hasFn: !!applyCurrencyDelta })
         if (applyCurrencyDelta) {
-          applyCurrencyDelta({ coins: points }, `${sessionType}_validate`).catch(e => {
-            console.warn('[useGameHandlers] applyCurrencyDelta failed:', e?.message || e)
-          })
+          applyCurrencyDelta({ coins: points }, `${sessionType}_validate`)
+            .then(r => console.log('[PhaseA] validate applyCurrencyDelta OK', r))
+            .catch(e => console.error('[PhaseA] validate applyCurrencyDelta FAILED:', e?.message || e, e))
         }
       }
     }

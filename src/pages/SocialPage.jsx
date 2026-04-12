@@ -171,6 +171,24 @@ export default function SocialPage() {
       setPendingChallenges(received)
       const sent = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id === user.id)
       setHasSentPending(sent.length > 0)
+
+      // Compter les notifications "Amis" : défis à relever + résultats de duel à voir
+      try {
+        const userDuelsForCount = await getUserDuels(user.id)
+        let resultsToSee = 0
+        for (const { duel, lastRound } of (userDuelsForCount || [])) {
+          const st = computeDuelState(duel, lastRound, user.id)
+          if (st.hasResultToSee) resultsToSee += 1
+        }
+        const total = (received?.length || 0) + resultsToSee
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        if (wd.pendingChallengesCount !== total) {
+          wd.pendingChallengesCount = total
+          wd.lastModified = Date.now()
+          localStorage.setItem('wtf_data', JSON.stringify(wd))
+          window.dispatchEvent(new Event('wtf_pending_challenges_updated'))
+        }
+      } catch (e) { console.warn('[SocialPage] pendingCount compute failed:', e) }
     } catch (e) {
       console.error('[SocialPage] loadData UNEXPECTED error:', e)
     }

@@ -32,6 +32,10 @@ export function useSelectionHandlers({
     const skipUnlockM = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
 
     if (gameMode === 'explorer') {
+      // Explorer utilise toujours sa difficulté dédiée (20s / 1 coin / 4 QCM)
+      // peu importe celle passée en argument (legacy)
+      const explorerDiff = DIFFICULTY_LEVELS.EXPLORER
+      setSelectedDifficulty(explorerDiff)
       let pool
       if (selectedCategory === null) {
         pool = getGeneratedFacts().filter(f => skipUnlockM || !unlockedFacts.has(f.id))
@@ -48,12 +52,12 @@ export function useSelectionHandlers({
       if (pool.length < 4) {
         const price = pool.length === 1 ? 5 : 10
         const preparedFacts = shuffle(pool)
-          .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId: selectedCategory, difficulty })
+          .map(fact => ({ ...fact, ...getAnswerOptions(fact, explorerDiff) }))
+        setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId: selectedCategory, difficulty: explorerDiff })
         return
       }
       const facts = shuffle(pool).slice(0, 20)
-        .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+        .map(fact => ({ ...fact, ...getAnswerOptions(fact, explorerDiff) }))
       setIsQuickPlay(false)
       setSessionType('explorer')
       initSessionState(facts)
@@ -104,7 +108,7 @@ export function useSelectionHandlers({
     if (gameMode === 'blitz') { handleBlitzStart(categoryId); return }
 
     if (gameMode === 'explorer') {
-      const difficulty = DIFFICULTY_LEVELS.HOT
+      const difficulty = DIFFICULTY_LEVELS.EXPLORER
       const skipUnlockE = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
       let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
       if (pool.length < 4 && skipUnlockE) pool = getGeneratedFactsByCategory(categoryId)

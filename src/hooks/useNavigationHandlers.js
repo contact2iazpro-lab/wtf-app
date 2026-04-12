@@ -173,9 +173,10 @@ export function useNavigationHandlers({
       setGameAlert({ emoji: '🎉', title: 'Catégorie terminée !', message: 'Tu as répondu à toutes les questions de cette catégorie !' })
       return
     }
-    const difficulty = DIFFICULTY_LEVELS.HOT
+    const difficulty = DIFFICULTY_LEVELS.EXPLORER
     const next5 = filteredPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
     setExplorerPool(filteredPool.slice(5))
+    setSelectedDifficulty(difficulty)
     setSessionType('explorer')
     initSessionState(next5)
     setScreen(SCREENS.QUESTION)

@@ -28,6 +28,14 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
+  // Explorer : comme Flash mais catégorie imposée → seulement 1 coin/correct
+  // (CLAUDE.md §Mode Explorer)
+  EXPLORER: {
+    id: 'explorer', label: 'Explorer', emoji: '🧭',
+    choices: 4, duration: 20,
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 },
+  },
   HUNT: {
     id: 'hunt', label: 'Hunt', emoji: '🔥',
     choices: 4, duration: 20,

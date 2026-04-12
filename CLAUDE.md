@@ -126,11 +126,17 @@ séparé, sous-domaine privé, ou en local uniquement).
 | 1 ticket (boutique) | 25 coins |
 | 1 indice (boutique) | 10 coins |
 | 3 indices (boutique) | 30 coins |
-| 5 indices (boutique) | 45 coins |
+| 5 indices (boutique) | 45 coins (-10%) |
+| Pack Découverte (mystery) | 15 coins → 2 funny f*cts |
+| Pack Standard (mystery) | 35 coins → 5 funny f*cts |
+| Pack Catégorie (mystery) | 40 coins → 4 funny d'une catégorie au choix |
+| Pack Premium (mystery) | 80 coins → 7 f*cts avec 5% chance VIP chacun |
+| Pack Mega (mystery) | 150 coins → 12 f*cts + 1 VIP garanti |
 | Streak J1 | 2 coins |
 | Streak J3 | 2 indices |
-| Streak J7 | 10 coins + 1 ticket |
+| Streak J7 | 10 coins + 1 ticket + badge |
 | Streak J14 | 1 ticket + 3 indices |
+| Streak J30 | Pack WTF Premium (unlock 10 f*cts random) |
 | Gains journaliers cible | 30-50 coins/jour |
 | TTF (sessions avant achat) | ~3 sessions Flash |
 

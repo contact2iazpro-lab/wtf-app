@@ -44,16 +44,17 @@ export function useGameHandlers({
 }) {
 
   // ── Calcul des points ──────────────────────────────────────────────────
+  // Chaque difficulté porte sa propre coinsPerCorrect. Plus d'override bâtard
+  // depuis T94.a : Explorer utilise DIFFICULTY_LEVELS.EXPLORER (1 coin) et
+  // Flash utilise DIFFICULTY_LEVELS.FLASH (2 coins) — plus de condition.
   const calcPoints = useCallback((isCorrect) => {
     if (!isCorrect) return 0
     if (selectedDifficulty?.coinsPerCorrect !== undefined) {
-      let pts = selectedDifficulty.coinsPerCorrect
-      if (sessionType === 'flash_solo' && selectedCategory !== null) pts = 1
-      return pts
+      return selectedDifficulty.coinsPerCorrect
     }
     const sc = selectedDifficulty?.scoring?.correct
     return Array.isArray(sc) ? (sc[hintsUsed] ?? sc[sc.length - 1]) : (sc || 0)
-  }, [selectedDifficulty, sessionType, selectedCategory, hintsUsed])
+  }, [selectedDifficulty, hintsUsed])
 
   // ── handleSelectAnswer ─────────────────────────────────────────────────
   const handleSelectAnswer = useCallback((answerIndex) => {

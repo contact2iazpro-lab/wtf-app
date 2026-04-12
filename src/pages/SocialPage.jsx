@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import GameModal from '../components/GameModal'
 import { useAuth } from '../context/AuthContext'
@@ -79,8 +79,16 @@ export default function SocialPage() {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 
+  // Déduplique les appels simultanés de loadData (Realtime + useEffect peuvent les lancer en parallèle)
+  const loadingRef = useRef(false)
+
   const loadData = useCallback(async () => {
     if (!user) return
+    if (loadingRef.current) {
+      console.log('[SocialPage] loadData skipped (already in progress)')
+      return
+    }
+    loadingRef.current = true
     setSocialLoading(true)
     try {
       console.log('[SocialPage] loadData start — user.id =', user.id)
@@ -138,7 +146,10 @@ export default function SocialPage() {
     } catch (e) {
       console.error('[SocialPage] loadData UNEXPECTED error:', e)
     }
-    finally { setSocialLoading(false) }
+    finally {
+      setSocialLoading(false)
+      loadingRef.current = false
+    }
   }, [user])
 
   // Refresh à chaque navigation vers cette page (pas seulement au mount)
@@ -235,6 +246,67 @@ export default function SocialPage() {
           )}
         </div>
       </div>
+
+      {/* Carte identité joueur (visible uniquement si connecté) */}
+      {isConnected && (
+        <div className="px-4 pb-2 shrink-0">
+          <div className="rounded-2xl flex items-center gap-3" style={{
+            background: 'linear-gradient(135deg, rgba(255,107,26,0.08), rgba(255,215,0,0.08))',
+            border: '1.5px solid rgba(255,107,26,0.25)',
+            padding: 12,
+          }}>
+            {/* Avatar */}
+            {(() => {
+              const avatarUrl = user?.user_metadata?.avatar_url
+                || user?.user_metadata?.picture
+                || user?.identities?.[0]?.identity_data?.avatar_url
+                || user?.identities?.[0]?.identity_data?.picture
+              if (avatarUrl) {
+                return (
+                  <img
+                    src={avatarUrl}
+                    alt="avatar"
+                    style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', border: '2px solid #FF6B1A', flexShrink: 0 }}
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                )
+              }
+              return <Initial name={user?.user_metadata?.name || '?'} size={42} />
+            })()}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: '#1a1a2e', lineHeight: 1.2 }}>
+                {user?.user_metadata?.name || user?.user_metadata?.full_name || 'Joueur WTF!'}
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#6B7280', marginTop: 2 }}>
+                Code ami :
+                <span style={{
+                  fontFamily: 'monospace', fontSize: 12, fontWeight: 900, color: '#FF6B1A',
+                  marginLeft: 4, letterSpacing: '0.05em',
+                }}>
+                  {myCode || '...'}
+                </span>
+              </div>
+            </div>
+            {myCode && (
+              <button
+                onClick={() => {
+                  audio.play('click')
+                  navigator.clipboard?.writeText(myCode).catch(() => {})
+                  showToast('Code copié !')
+                }}
+                style={{
+                  padding: '6px 10px', borderRadius: 8,
+                  background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.3)',
+                  color: '#FF6B1A', fontWeight: 900, fontSize: 10, cursor: 'pointer',
+                  fontFamily: 'Nunito, sans-serif', flexShrink: 0,
+                }}
+              >
+                Copier
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto px-4">
 

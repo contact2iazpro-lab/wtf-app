@@ -97,21 +97,31 @@ export function useBlitzHandlers({
     const newBadges = checkBadges()
     if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
 
-    // Complete challenge if active
+    // Complete challenge if active (user accepted a defi et vient de finir le Blitz)
     const challengeJson = localStorage.getItem('wtf_active_challenge')
     if (challengeJson && user) {
       try {
         const challengeInfo = JSON.parse(challengeJson)
         localStorage.removeItem('wtf_active_challenge')
-        import('../data/duelService').then(({ completeDuelRound }) => {
-          completeDuelRound({
-            roundId: challengeInfo.challengeId,
-            playerTime: finalTime,
-            playerId: user.id,
-            playerName: user.user_metadata?.name || 'Joueur WTF!',
-          }).catch(e => console.warn('Duel round complete error:', e))
+        import('../data/duelService').then(async ({ completeDuelRound }) => {
+          try {
+            await completeDuelRound({
+              roundId: challengeInfo.challengeId,
+              playerTime: finalTime,
+              playerId: user.id,
+              playerName: user.user_metadata?.name || 'Joueur WTF!',
+            })
+            // Redirection auto vers ChallengeScreen pour voir la comparaison
+            // (l'écran affichera la branche isCompleted avec les 2 temps + winner)
+            if (challengeInfo.code) {
+              window.location.href = `/challenge/${challengeInfo.code}`
+            }
+          } catch (e) {
+            console.warn('Duel round complete error:', e?.message || e)
+          }
         })
       } catch {}
+      return // on ne veut pas déclencher le flow "isChallengeMode" en plus
     }
 
     if (isChallengeMode) {

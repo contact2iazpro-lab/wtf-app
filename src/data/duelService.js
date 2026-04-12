@@ -93,8 +93,12 @@ export function computeDuelState(duel, lastRound, meId) {
   const theirField = isMe1 ? 'player2_time' : 'player1_time'
   const mySeenField = isMe1 ? 'seen_by_p1' : 'seen_by_p2'
 
-  // Round expiré → on peut relancer un défi neuf
-  if (lastRound.status === 'expired') {
+  // Round expiré (côté SQL OU côté client si expires_at dépassé).
+  // Sans cron Supabase qui passe expire_old_challenges, on compense ici.
+  const isExpiredByDate = lastRound.expires_at
+    && new Date(lastRound.expires_at) < new Date()
+    && lastRound.status === 'pending'
+  if (lastRound.status === 'expired' || isExpiredByDate) {
     return { label: '⚔️ Défier', action: 'create', disabled: false }
   }
 

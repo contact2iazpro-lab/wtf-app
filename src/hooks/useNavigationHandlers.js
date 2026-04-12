@@ -161,6 +161,11 @@ export function useNavigationHandlers({
     setDuelPlayers([]); setDuelCurrentPlayerIndex(0); setIsQuickPlay(false)
     setSessionType('parcours'); setBlitzFacts([]); setBlitzResults(null)
     setIsChallengeMode(false); setLaunchMode(null); setExplorerPool([])
+    // Cleanup contexte défi si l'user quitte le flow sans finir
+    try {
+      localStorage.removeItem('wtf_challenge_opponent')
+      localStorage.removeItem('wtf_active_challenge')
+    } catch { /* ignore */ }
   }, [])
 
   const handleBlitzReplay = useCallback(() => {

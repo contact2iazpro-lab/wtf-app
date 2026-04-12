@@ -58,9 +58,11 @@ export default function ChallengeScreen() {
     const shuffled = shuffle(playerFacts)
       .slice(0, Math.min(challenge.question_count, playerFacts.length))
 
-    // Store challenge info for after Blitz
+    // Store challenge info for after Blitz (code inclus pour redirection auto
+    // vers /challenge/:code après completion — affiche la comparaison).
     localStorage.setItem('wtf_active_challenge', JSON.stringify({
       challengeId: challenge.id,
+      code: challenge.code,
       player1Time: challenge.player1_time,
       player1Name: challenge.player1_name,
       categoryLabel: challenge.category_label,

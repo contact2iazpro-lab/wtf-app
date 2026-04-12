@@ -5,7 +5,7 @@
 import { useCallback } from 'react'
 import { SCREENS } from '../constants/gameConfig'
 import { getValidFacts } from '../data/factsService'
-import { saveStorage, TODAY } from '../utils/storageHelper'
+import { saveStorage, TODAY, updateWtfData } from '../utils/storageHelper'
 
 export function useDevActions({
   storage, setStorage, setDailyFactOverride,
@@ -39,16 +39,15 @@ export function useDevActions({
     },
     setTickets: (n) => applyStorage({ tickets: n }),
     setHints: (n) => {
-      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      wd.hints = n; wd.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(wd))
+      updateWtfData(wd => { wd.hints = n })
     },
     cheat999: () => {
-      const existing = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      existing.wtfCoins = 999; existing.tickets = 999; existing.hints = 999
-      existing.streak = existing.streak || 0; existing.totalScore = existing.totalScore || 0
-      existing.unlockedFacts = existing.unlockedFacts || []; existing.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(existing))
+      updateWtfData(wd => {
+        wd.wtfCoins = 999; wd.tickets = 999; wd.hints = 999
+        wd.streak = wd.streak || 0
+        wd.totalScore = wd.totalScore || 0
+        wd.unlockedFacts = wd.unlockedFacts || []
+      })
       window.location.reload()
     },
     simulatePurchase: () => applyStorage({ wtfCoins: storage.wtfCoins + 100 }),

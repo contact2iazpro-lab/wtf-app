@@ -18,6 +18,27 @@ export function readWtfData() {
 }
 
 /**
+ * Mettre à jour wtf_data via une fonction mutator.
+ * Pattern read-modify-write centralisé pour éviter les 60+ duplications.
+ * @param {(data: object) => void} mutator - reçoit l'objet wtf_data, peut le muter
+ * @returns {object} le nouvel état après mutation
+ *
+ * Exemple :
+ *   updateWtfData(wd => { wd.wtfCoins = 100; wd.tickets = 5 })
+ */
+export function updateWtfData(mutator) {
+  try {
+    const data = readWtfData()
+    mutator(data)
+    data.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(data))
+    return data
+  } catch {
+    return {}
+  }
+}
+
+/**
  * Lire une clé spécifique de wtf_data
  */
 export function readWtfField(key, defaultValue = null) {

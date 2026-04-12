@@ -83,12 +83,42 @@ export default function SocialPage() {
     if (!user) return
     setSocialLoading(true)
     try {
-      const [codeResult, friendsList, pendingList, challengesList] = await Promise.all([
-        getOrCreateFriendCode(user.id, user.user_metadata?.name || 'Joueur WTF!', user.user_metadata?.avatar_url),
-        getFriends(user.id),
-        getPendingRequests(user.id),
-        getPlayerChallenges(user.id),
-      ])
+      console.log('[SocialPage] loadData start — user.id =', user.id)
+      // Appels séparés pour voir lequel échoue (au lieu d'un Promise.all qui
+      // fait tout crasher si un seul fail)
+      let codeResult = null
+      try {
+        codeResult = await getOrCreateFriendCode(
+          user.id,
+          user.user_metadata?.name || 'Joueur WTF!',
+          user.user_metadata?.avatar_url
+        )
+        console.log('[SocialPage] getOrCreateFriendCode →', codeResult)
+      } catch (e) {
+        console.error('[SocialPage] getOrCreateFriendCode FAILED:', e)
+      }
+      let friendsList = []
+      try {
+        friendsList = await getFriends(user.id)
+        console.log('[SocialPage] getFriends →', friendsList?.length, 'friends')
+      } catch (e) {
+        console.error('[SocialPage] getFriends FAILED:', e)
+      }
+      let pendingList = []
+      try {
+        pendingList = await getPendingRequests(user.id)
+        console.log('[SocialPage] getPendingRequests →', pendingList?.length, 'pending')
+      } catch (e) {
+        console.error('[SocialPage] getPendingRequests FAILED:', e)
+      }
+      let challengesList = []
+      try {
+        challengesList = await getPlayerChallenges(user.id)
+        console.log('[SocialPage] getPlayerChallenges →', challengesList?.length, 'challenges')
+      } catch (e) {
+        console.error('[SocialPage] getPlayerChallenges FAILED:', e)
+      }
+
       if (codeResult?.code) {
         setMyCode(codeResult.code)
         try { localStorage.setItem('wtf_my_friend_code', codeResult.code) } catch {}
@@ -105,7 +135,9 @@ export default function SocialPage() {
       setPendingChallenges(received)
       const sent = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id === user.id)
       setHasSentPending(sent.length > 0)
-    } catch (e) { console.warn('Social load error:', e) }
+    } catch (e) {
+      console.error('[SocialPage] loadData UNEXPECTED error:', e)
+    }
     finally { setSocialLoading(false) }
   }, [user])
 

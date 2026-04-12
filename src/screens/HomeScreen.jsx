@@ -658,6 +658,19 @@ export default function HomeScreen({
                 onClick={() => {
                   audio.play?.('click')
                   markSeen('hasSeenHunt')
+                  // Marquer immédiatement le coffre dimanche comme "claimé" pour
+                  // éviter qu'il reste cliquable au retour de la session si l'user
+                  // abandonne avant le déblocage du fact VIP.
+                  try {
+                    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+                    const claimed = Array.isArray(wd.coffreClaimedDays) ? wd.coffreClaimedDays : []
+                    if (!claimed.includes(6)) claimed.push(6)
+                    wd.coffreClaimedDays = claimed
+                    wd.coffreWeekStart = getWeekStart()
+                    wd.lastModified = Date.now()
+                    localStorage.setItem('wtf_data', JSON.stringify(wd))
+                    window.dispatchEvent(new Event('wtf_storage_sync'))
+                  } catch { /* ignore */ }
                   nav('wtfDuJour')
                 }}
                 style={{

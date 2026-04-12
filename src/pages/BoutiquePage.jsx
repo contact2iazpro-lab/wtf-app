@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CoinsIcon from '../components/CoinsIcon'
 import { updateCoins, updateHints, updateTickets } from '../services/currencyService'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { getValidFacts, getVipFacts, getFunnyFacts, getCategoryById, getPlayableCategories } from '../data/factsService'
 import { getFlashEnergy } from '../services/energyService'
@@ -73,6 +74,8 @@ export default function BoutiquePage() {
   const navigate = useNavigate()
 
   const { coins, tickets, hints } = useCurrency()
+  // Phase A.6 — RPC Supabase en parallèle du legacy currencyService
+  const { applyCurrencyDelta } = usePlayerProfile()
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
   const [streakFreezeCount, setStreakFreezeCount] = useState(() => readWtfData().streakFreezeCount || 0)
@@ -128,6 +131,10 @@ export default function BoutiquePage() {
     }
 
     updateCoins(-packDef.price)
+    // Phase A : miroir Supabase
+    applyCurrencyDelta?.({ coins: -packDef.price }, `shop_mystery_pack_${packId}`).catch(e =>
+      console.warn('[BoutiquePage] mystery pack RPC failed:', e?.message || e)
+    )
 
     const selected = []
     const usedIds = new Set()
@@ -189,7 +196,15 @@ export default function BoutiquePage() {
     updateCoins(-price)
     if (type === 'hint') updateHints(quantity)
     else if (type === 'ticket') updateTickets(quantity)
-    else if (type === 'energy') {
+    // Phase A : miroir Supabase — fusion coins-=price + contrepartie en une RPC atomique
+    const rpcDelta = { coins: -price }
+    if (type === 'hint')    rpcDelta.hints   = quantity
+    if (type === 'ticket')  rpcDelta.tickets = quantity
+    if (type === 'energy')  rpcDelta.energy  = quantity
+    applyCurrencyDelta?.(rpcDelta, `shop_buy_${type}`).catch(e =>
+      console.warn('[BoutiquePage] buyPack RPC failed:', e?.message || e)
+    )
+    if (type === 'energy') {
       // Ajouter des sessions gratuites en réduisant le compteur "used"
       const wd = readWtfData()
       const today = new Date().toISOString().slice(0, 10)
@@ -776,6 +791,9 @@ export default function BoutiquePage() {
                   onClick={() => {
                     if (!canBuy) return
                     updateCoins(-frame.cost)
+                    applyCurrencyDelta?.({ coins: -frame.cost }, `shop_buy_frame_${frame.id}`).catch(e =>
+                      console.warn('[BoutiquePage] frame RPC failed:', e?.message || e)
+                    )
                     addOwnedFrame(frame.id)
                     setToast(`✨ Cadre ${frame.label} débloqué !`)
                     setTimeout(() => setToast(null), 2000)

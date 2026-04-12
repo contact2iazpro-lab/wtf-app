@@ -45,9 +45,15 @@ export default function ProfilPage() {
   const currentFrame = getFrameById(frameState.equipped)
 
   // Load avatar from user metadata or localStorage
+  // Google peut exposer l'avatar dans plusieurs champs selon la configuration :
+  // user_metadata.avatar_url | user_metadata.picture | identities[0].identity_data.*
   useEffect(() => {
-    const url = user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar')
-    if (url) setAvatarUrl(url)
+    const url = user?.user_metadata?.avatar_url
+             || user?.user_metadata?.picture
+             || user?.identities?.[0]?.identity_data?.avatar_url
+             || user?.identities?.[0]?.identity_data?.picture
+             || localStorage.getItem('wtf_player_avatar')
+    setAvatarUrl(url || null)
   }, [user])
 
   async function handleSaveName() {

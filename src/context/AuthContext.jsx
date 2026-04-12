@@ -117,6 +117,15 @@ export function AuthProvider({ children }) {
             if (localAvatar && !u.user_metadata?.avatar_url && !localAvatar.startsWith('data:')) {
               // Ne pas sync les base64 vers Supabase (trop gros)
             }
+            // Re-fetch le user complet pour s'assurer qu'on a tous les metadata
+            // (avatar_url, name, identities, etc.) — après SIGNED_IN/TOKEN_REFRESHED
+            // l'objet session peut être partiel.
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+              try {
+                const { data: { user: freshUser } } = await supabase.auth.getUser()
+                if (freshUser) setUser(freshUser)
+              } catch { /* ignore */ }
+            }
             // Notify App.jsx to reload storage from localStorage
             window.dispatchEvent(new Event('wtf_storage_sync'))
           } catch { /* ignore */ }

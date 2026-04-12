@@ -10,6 +10,7 @@ import { useCurrency } from '../context/CurrencyContext'
 import { useScale } from '../hooks/useScale'
 import RouletteModal from '../components/RouletteModal'
 import { AVATAR_FRAMES, readFrameState, addOwnedFrame } from '../data/avatarFrames'
+import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -39,18 +40,17 @@ const MYSTERY_PACKS = [
   { id: 'mega',        emoji: '🏆', label: 'Pack Mega',       desc: '12 f*cts + 1 VIP garanti',               price: 150, count: 12, vipChance: 0,    vipGuaranteed: true },
 ]
 
-function PackButton({ emoji, label, price, discount, canBuy, onClick }) {
+function PackButton({ emoji, label, price, discount, canBuy, onClick, onCannotBuy }) {
   return (
     <button
-      onClick={onClick}
-      disabled={!canBuy}
+      onClick={canBuy ? onClick : onCannotBuy}
       className="w-full flex items-center gap-3 rounded-xl active:scale-95 transition-all"
       style={{
         padding: '12px 16px',
-        background: canBuy ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)',
-        border: '1px solid rgba(0,0,0,0.08)',
-        cursor: canBuy ? 'pointer' : 'not-allowed',
-        opacity: canBuy ? 1 : 0.4,
+        background: canBuy ? 'white' : 'rgba(255,255,255,0.7)',
+        border: canBuy ? '1px solid rgba(0,0,0,0.08)' : '1px dashed rgba(0,0,0,0.2)',
+        cursor: 'pointer',
+        opacity: canBuy ? 1 : 0.6,
       }}
     >
       <span style={{ fontSize: 22, flexShrink: 0 }}>{emoji}</span>
@@ -89,6 +89,12 @@ export default function BoutiquePage() {
   const showToast = (msg) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2000)
+  }
+
+  const notEnoughCoins = (price) => {
+    audio.play?.('wrong')
+    const missing = price - coins
+    showToast(`Pas assez de coins — il te manque ${missing} 🪙`)
   }
 
   const [selectedPackCategory, setSelectedPackCategory] = useState(null)
@@ -524,6 +530,7 @@ export default function BoutiquePage() {
                 discount={pack.discount}
                 canBuy={balances.coins >= pack.price}
                 onClick={() => setConfirmPurchase({ type: 'hint', quantity: pack.quantity, price: pack.price, label: pack.label })}
+                onCannotBuy={() => notEnoughCoins(pack.price)}
               />
             ))}
           </div>
@@ -549,6 +556,7 @@ export default function BoutiquePage() {
                 discount={pack.discount}
                 canBuy={balances.coins >= pack.price}
                 onClick={() => setConfirmPurchase({ type: 'ticket', quantity: pack.quantity, price: pack.price, label: pack.label })}
+                onCannotBuy={() => notEnoughCoins(pack.price)}
               />
             ))}
           </div>
@@ -574,6 +582,7 @@ export default function BoutiquePage() {
                 discount={pack.discount}
                 canBuy={coins >= pack.price}
                 onClick={() => setConfirmPurchase({ type: 'energy', quantity: pack.quantity, price: pack.price, label: pack.label })}
+                onCannotBuy={() => notEnoughCoins(pack.price)}
               />
             ))}
           </div>
@@ -692,20 +701,26 @@ export default function BoutiquePage() {
           </div>
           <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Débloque des f*cts aléatoires — surprise garantie !</p>
           <div className="flex flex-col gap-2">
-            {MYSTERY_PACKS.map(pack => (
+            {MYSTERY_PACKS.map(pack => {
+              const canBuyPack = coins >= pack.price
+              return (
               <button
                 key={pack.id}
-                onClick={() => setConfirmPurchase({ type: `mystery_${pack.id}`, quantity: pack.count, price: pack.price, label: `${pack.label} (${pack.desc})` })}
-                disabled={coins < pack.price}
+                onClick={canBuyPack
+                  ? () => setConfirmPurchase({ type: `mystery_${pack.id}`, quantity: pack.count, price: pack.price, label: `${pack.label} (${pack.desc})` })
+                  : () => notEnoughCoins(pack.price)
+                }
                 className="w-full flex items-center gap-3 rounded-xl active:scale-95 transition-all"
                 style={{
                   padding: '12px 16px',
-                  background: coins >= pack.price
-                    ? (pack.vipGuaranteed ? 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1))' : 'rgba(255,255,255,0.9)')
-                    : 'rgba(255,255,255,0.5)',
-                  border: pack.vipGuaranteed && coins >= pack.price ? '1px solid rgba(255,215,0,0.3)' : '1px solid rgba(0,0,0,0.08)',
-                  cursor: coins >= pack.price ? 'pointer' : 'not-allowed',
-                  opacity: coins >= pack.price ? 1 : 0.4,
+                  background: canBuyPack
+                    ? (pack.vipGuaranteed ? 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1))' : 'white')
+                    : 'rgba(255,255,255,0.7)',
+                  border: pack.vipGuaranteed && canBuyPack
+                    ? '1px solid rgba(255,215,0,0.3)'
+                    : canBuyPack ? '1px solid rgba(0,0,0,0.08)' : '1px dashed rgba(0,0,0,0.2)',
+                  cursor: 'pointer',
+                  opacity: canBuyPack ? 1 : 0.6,
                 }}
               >
                 <span style={{ fontSize: 22 }}>{pack.emoji}</span>
@@ -717,7 +732,8 @@ export default function BoutiquePage() {
                   {pack.price} <CoinsIcon size={14} />
                 </span>
               </button>
-            ))}
+              )
+            })}
           </div>
         </div>
 

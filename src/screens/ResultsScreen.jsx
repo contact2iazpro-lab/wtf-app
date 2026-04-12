@@ -7,6 +7,7 @@ import { useCurrency } from '../context/CurrencyContext'
 import { updateCoins } from '../services/currencyService'
 import { useAuth } from '../context/AuthContext'
 import ConnectBanner from '../components/ConnectBanner'
+import FactDetailView from '../components/FactDetailView'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -45,8 +46,7 @@ const DIFFICULTY_LABELS = { cool: 'Cool', hot: 'Hot', wtf: 'WTF!' }
 const DIFFICULTY_EMOJIS = { cool: '❄️', hot: '🔥', wtf: '⚡' }
 const CHALLENGE_LABELS = {
   cool: 'Tenter le niveau Hot ? 🔥',
-  hot:  'Oser le WTF! ? ⚡',
-  wtf:  'Rejouer en WTF! 🏆',
+  // hot : pas de niveau supérieur (WTF! retiré) — on ne montre pas de challenge
 }
 
 // COR 4 — Confetti colors
@@ -90,6 +90,8 @@ export default function ResultsScreen({
   const [showConnectBanner, setShowConnectBanner] = useState(false)
   const [savedAfterConnect, setSavedAfterConnect] = useState(false)
   const [selectedFact, setSelectedFact] = useState(null)
+  // F*ct en cours de visualisation (détail overlay — pour les f*cts déjà débloqués)
+  const [viewingFact, setViewingFact] = useState(null)
   // F*cts débloqués par achat depuis ce ResultsScreen (pour refresh immédiat du carrousel)
   const [extraUnlockedIds, setExtraUnlockedIds] = useState(() => new Set())
 
@@ -559,8 +561,7 @@ export default function ResultsScreen({
             <div
               onClick={() => {
                 audio.play?.('click')
-                localStorage.setItem('wtf_open_fact_id', String(featuredFact.id))
-                onCollection?.()
+                setViewingFact(featuredFact)
               }}
               style={{
                 display: 'flex', alignItems: 'center', gap: S(10),
@@ -645,9 +646,9 @@ export default function ResultsScreen({
                     <div key={fact.id} style={{ width: 0, flexGrow: 1, flexShrink: 0, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
                       onClick={() => {
                         if (isUnlocked) {
-                          // Stocker l'ID pour que CollectionPage ouvre le détail directement
-                          localStorage.setItem('wtf_open_fact_id', String(fact.id))
-                          onCollection?.()
+                          // Ouvrir le détail en overlay SUR ResultsScreen (reste ici)
+                          audio.play?.('click')
+                          setViewingFact(fact)
                         } else {
                           setSelectedFact({ ...fact, _locked: true, _catColor: factCatColor, _catEmoji: factCat?.emoji, _catLabel: factCat?.label })
                         }
@@ -753,7 +754,7 @@ export default function ResultsScreen({
              sessionType === 'explorer' ? '🔋 Rejouer' :
              '🔄 Rejouer'}
           </button>
-          {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && difficulty.id !== 'wtf' && (
+          {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && (
             <button
               onClick={onReplayHarder || onReplay}
               className="active:scale-95 transition-all"
@@ -885,6 +886,11 @@ export default function ResultsScreen({
       {showConnectBanner && <ConnectBanner onClose={() => setShowConnectBanner(false)} />}
 
       {/* Google banner supprimé — utilise ConnectBanner unique */}
+
+      {/* Détail d'un f*ct débloqué (overlay, reste sur ResultsScreen) */}
+      {viewingFact && (
+        <FactDetailView fact={viewingFact} onClose={() => setViewingFact(null)} />
+      )}
     </div>
   )
 }

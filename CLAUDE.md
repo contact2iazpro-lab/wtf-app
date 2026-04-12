@@ -35,13 +35,14 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 ## Règles de jeu — Source de vérité (11/04/2026)
 
-### Niveaux Quest
+### Niveaux Quest (2 niveaux — WTF! retiré le 12/04/2026)
 
 | Niveau | QCM | Timer | Indices gratuits | Indice payant | Coins/bonne réponse |
 |--------|-----|-------|------------------|---------------|---------------------|
-| Cool   | 2   | 30s   | 2                | +1 (8 coins)  | 2                   |
-| Hot    | 4   | 20s   | 2                | +1 (8 coins)  | 2                   |
-| WTF!   | 6   | 20s   | 1                | +1 (8 coins)  | 1                   |
+| Cool   | 2   | 20s   | 2                | +1 (8 coins)  | 2                   |
+| Hot    | 4   | 30s   | 2                | +1 (8 coins)  | 2                   |
+
+**Note** : Cool a 20s (court) car 2 QCM uniquement, Hot a 30s (plus long) car 4 QCM à lire.
 
 ### Mode Flash (Jouer)
 

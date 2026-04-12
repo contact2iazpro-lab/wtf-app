@@ -4,16 +4,18 @@
 export const DIFFICULTY_LEVELS = {
   COOL: {
     id: 'cool', label: 'Cool', emoji: '❄️',
-    choices: 2, duration: 30,
+    choices: 2, duration: 20,
     hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   HOT: {
     id: 'hot', label: 'Hot', emoji: '🔥',
-    choices: 4, duration: 20,
+    choices: 4, duration: 30,
     hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
+  // WTF! retiré de Quest (2026-04-12) — gardé en legacy pour compat
+  // avec d'éventuels facts difficulty='wtf' en base. Pas affiché en UI.
   WTF: {
     id: 'wtf', label: 'WTF!', emoji: '⚡',
     choices: 6, duration: 20,
@@ -70,7 +72,6 @@ export const MODE_CONFIGS = {
       { icon: '🎫', text: '1 ticket (25 coins) par session' },
       { icon: '❄️', text: `Cool : ${DIFFICULTY_LEVELS.COOL.choices} choix · ${DIFFICULTY_LEVELS.COOL.freeHints} indices · ${DIFFICULTY_LEVELS.COOL.duration}s · ${DIFFICULTY_LEVELS.COOL.coinsPerCorrect} coins` },
       { icon: '🔥', text: `Hot : ${DIFFICULTY_LEVELS.HOT.choices} choix · ${DIFFICULTY_LEVELS.HOT.freeHints} indices · ${DIFFICULTY_LEVELS.HOT.duration}s · ${DIFFICULTY_LEVELS.HOT.coinsPerCorrect} coins` },
-      { icon: '⚡', text: `WTF! : ${DIFFICULTY_LEVELS.WTF.choices} choix · ${DIFFICULTY_LEVELS.WTF.freeHints} indice · ${DIFFICULTY_LEVELS.WTF.duration}s · ${DIFFICULTY_LEVELS.WTF.coinsPerCorrect} coin` },
       { icon: '📚', text: '5 questions — les f*cts trouvés vont dans ta Collection' },
     ],
   },

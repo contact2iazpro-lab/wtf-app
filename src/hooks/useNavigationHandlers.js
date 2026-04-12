@@ -186,13 +186,12 @@ export function useNavigationHandlers({
     else handleSelectCategory(selectedCategory)
   }, [sessionType, selectedCategory, handleFlashSolo, handleSelectCategory])
 
-  // Rejoue Quest en montant d'un niveau (Cool→Hot, Hot→WTF!)
+  // Rejoue Quest en montant d'un niveau (Cool → Hot uniquement).
+  // WTF! retiré de Quest le 2026-04-12 — Hot est le niveau max.
   const handleReplayHarder = useCallback(() => {
     if (sessionType !== 'parcours') return
     const current = selectedDifficulty?.id
-    const next = current === 'cool' ? DIFFICULTY_LEVELS.HOT
-               : current === 'hot'  ? DIFFICULTY_LEVELS.WTF
-               : null
+    const next = current === 'cool' ? DIFFICULTY_LEVELS.HOT : null
     if (!next) return
     handleSelectDifficulty(next)
   }, [sessionType, selectedDifficulty, handleSelectDifficulty])

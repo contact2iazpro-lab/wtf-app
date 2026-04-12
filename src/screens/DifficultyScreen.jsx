@@ -13,8 +13,9 @@ const BACKGROUNDS = [
   '/assets/backgrounds/home-violet.webp',
 ]
 
-// ── UI Configuration pour les 3 niveaux Quest (Cool, Hot, WTF) ─────────────────
+// ── UI Configuration pour les niveaux Quest (Cool, Hot) ─────────────────
 // Données visuelles + règles dynamiques basées sur DIFFICULTY_LEVELS
+// Le niveau WTF! a été retiré de Quest le 2026-04-12 (garde 2 niveaux uniquement)
 const DIFFICULTY_UI_CONFIG = {
   cool: {
     subtitle: 'Pour les Noobs',
@@ -31,14 +32,6 @@ const DIFFICULTY_UI_CONFIG = {
     cardGradient: 'linear-gradient(135deg, #FF6B1A, #DC2626)',
     selectedGradient: 'linear-gradient(135deg, #FF8C4A, #EF4444)',
     ctaColor: '#DC2626',
-  },
-  wtf: {
-    subtitle: 'Pour les Cracks',
-    icon: '/assets/ui/level-wtf.png',
-    tag: 'ULTIME',
-    cardGradient: 'linear-gradient(135deg, #22C55E, #15803D)',
-    selectedGradient: 'linear-gradient(135deg, #4ADE80, #22C55E)',
-    ctaColor: '#15803D',
   },
 }
 
@@ -68,7 +61,7 @@ function buildRules(difficultyConfig) {
 // ── Scaled helper ────────────────────────────────────────────────────────────
 const S = (px) => `calc(${px}px * var(--scale))`
 
-const QUEST_LEVELS = [DIFFICULTY_LEVELS.COOL, DIFFICULTY_LEVELS.HOT, DIFFICULTY_LEVELS.WTF]
+const QUEST_LEVELS = [DIFFICULTY_LEVELS.COOL, DIFFICULTY_LEVELS.HOT]
 
 export default function DifficultyScreen({ onSelectDifficulty, onBack }) {
   const [selectedId, setSelectedId] = useState(null)

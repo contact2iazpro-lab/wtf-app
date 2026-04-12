@@ -64,9 +64,11 @@ export function useModeStarters({
     }
     const category = huntFact.category
     const skipUnlock = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    let pool = getGeneratedFacts().filter(f => f.category === category && f.id !== huntFact.id && (skipUnlock || !unlockedFacts.has(f.id)))
+    const sameCat = getGeneratedFacts().filter(f => f.category === category && f.id !== huntFact.id)
+    let pool = sameCat.filter(f => skipUnlock || !unlockedFacts.has(f.id))
     if (pool.length < 5) {
-      pool = getGeneratedFacts().filter(f => f.id !== huntFact.id && (skipUnlock || !unlockedFacts.has(f.id)))
+      const already = sameCat.filter(f => !pool.some(p => p.id === f.id))
+      pool = [...pool, ...already]
     }
     const facts = [...pool]
       .sort(() => Math.random() - 0.5)

@@ -45,6 +45,21 @@ function writeWtfData(data) {
   localStorage.setItem('wtf_data', JSON.stringify(data))
 }
 
+// Migration douce : si l'ancienne clé wtf_hints_available existe, la rapatrier
+// dans wtf_data.hints puis la supprimer. Exécuté une fois au démarrage.
+export function migrateHintsKey() {
+  try {
+    const legacy = localStorage.getItem('wtf_hints_available')
+    if (legacy === null) return
+    const data = readWtfData()
+    if (data.hints === undefined) {
+      data.hints = parseInt(legacy || '0', 10) || 0
+      writeWtfData(data)
+    }
+    localStorage.removeItem('wtf_hints_available')
+  } catch { /* ignore */ }
+}
+
 // ── Fonctions publiques ──────────────────────────────────────────────────────
 
 /**
@@ -95,11 +110,11 @@ export function updateHints(delta) {
     return
   }
 
-  const current = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
-  const newValue = Math.max(0, current + delta)
-  localStorage.setItem('wtf_hints_available', String(newValue))
   const data = readWtfData()
-  writeWtfData(data) // Met à jour lastModified
+  const current = parseInt(data.hints || 0, 10) || 0
+  const newValue = Math.max(0, current + delta)
+  data.hints = newValue
+  writeWtfData(data)
   notifyUI()
   return newValue
 }
@@ -125,19 +140,17 @@ export function updateMultiple(deltas) {
   if (deltas.tickets !== undefined) {
     data.tickets = Math.max(0, (data.tickets || 0) + deltas.tickets)
   }
-  writeWtfData(data)
-
   if (deltas.hints !== undefined) {
-    const current = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10)
-    localStorage.setItem('wtf_hints_available', String(Math.max(0, current + deltas.hints)))
+    data.hints = Math.max(0, (data.hints || 0) + deltas.hints)
   }
+  writeWtfData(data)
 
   notifyUI()
 
   return {
     coins: data.wtfCoins || 0,
     tickets: data.tickets || 0,
-    hints: parseInt(localStorage.getItem('wtf_hints_available') || '0', 10),
+    hints: data.hints || 0,
   }
 }
 
@@ -151,7 +164,7 @@ export function getBalances() {
   return {
     coins: data.wtfCoins || 0,
     tickets: data.tickets || 0,
-    hints: parseInt(localStorage.getItem('wtf_hints_available') || '0', 10),
+    hints: data.hints || 0,
   }
 }
 
@@ -163,10 +176,8 @@ export function setAbsolute(values) {
   const data = readWtfData()
   if (values.coins !== undefined) data.wtfCoins = values.coins
   if (values.tickets !== undefined) data.tickets = values.tickets
+  if (values.hints !== undefined) data.hints = values.hints
   writeWtfData(data)
-  if (values.hints !== undefined) {
-    localStorage.setItem('wtf_hints_available', String(values.hints))
-  }
   // Note : setAbsolute n'utilise PAS le delta RPC — c'est pour le dev mode uniquement
   notifyUI()
 }

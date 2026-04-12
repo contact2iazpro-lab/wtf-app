@@ -29,11 +29,11 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 
 ### Niveaux Quest
 
-| Niveau | QCM | Timer | Indices | Coins/bonne réponse |
-|--------|-----|-------|---------|---------------------|
-| Cool   | 2   | 30s   | 2       | 2                   |
-| Hot    | 4   | 20s   | 2       | 2                   |
-| WTF!   | 6   | 20s   | 1       | 1                   |
+| Niveau | QCM | Timer | Indices gratuits | Indice payant | Coins/bonne réponse |
+|--------|-----|-------|------------------|---------------|---------------------|
+| Cool   | 2   | 30s   | 2                | +1 (8 coins)  | 2                   |
+| Hot    | 4   | 20s   | 2                | +1 (8 coins)  | 2                   |
+| WTF!   | 6   | 20s   | 1                | +1 (8 coins)  | 1                   |
 
 ### Mode Flash (Jouer)
 
@@ -73,16 +73,39 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 | Paliers | 5, 10, 20, 30, 40, 50 questions |
 | Contenu | F*cts débloqués du joueur |
 
-### Mode Hunt (WTF du Jour)
+### Mode Hunt (WTF de la Semaine)
 
 | Paramètre | Valeur |
 |-----------|--------|
-| Coût | Gratuit, 1×/jour |
+| Coût | Gratuit, 1×/semaine (dimanche) |
 | Questions | 5 |
 | QCM | 4 choix |
 | Timer | 20s |
 | Indices | 2 (stock gratuit) |
-| Objectif | Débloquer le WTF! VIP du jour |
+| Sélection fact | Seed ISO-week : fact stable lundi→dimanche |
+| Objectif | Débloquer le WTF! VIP de la semaine |
+
+### Mode Puzzle du Jour
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Coût | Gratuit, 1×/jour |
+| Questions | 1 funny fact (4 QCM) |
+| Tentatives | 3 (erreur = élimine une option) |
+| Coins | 6 / 4 / 2 selon tentatives restantes |
+| Contenu | Funny fact seed sur la date |
+| Partage | Format Wordle (🟩🟥) |
+
+### Mode Route WTF!
+
+| Paramètre | Valeur |
+|-----------|--------|
+| Coût | Gratuit illimité |
+| Structure | Niveaux infinis (3 Q funny) |
+| Boss | Tous les 10 niveaux (1 Q VIP HOT) |
+| Coins | 6 / niveau · 20 / boss |
+| Persistance | wtf_data.route = { level, stars } |
+| Avancement | Niveau parfait requis |
 
 ### Économie F2P
 
@@ -104,7 +127,7 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 ### Règles communes
 - Indices = chaque utilisation débite 1 du stock (pas d'indices gratuits)
 - Indice non disponible si stock vide : bouton grisé, JAMAIS de pause du timer
-- Questions par Quête : 5 (TEMP TEST — remettre à 10 au lancement)
+- Questions par Quête : 5 (valeur officielle)
 - Pas de bonus perfect (ni Quest ni Jouer)
 
 ## Modes de jeu — Résumé
@@ -112,9 +135,12 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 | Mode | Contenu | Coût | Gains | Statut |
 |------|---------|------|-------|--------|
 | Quête WTF! | WTF VIP | 1 ticket | Coins + f*cts VIP | Actif |
-| Jouer | F*cts générés | Gratuit | Coins + f*cts générés | Actif |
+| Jouer (Flash) | F*cts générés | Gratuit (3/j partagé Explorer) | Coins + f*cts générés | Actif |
+| Explorer | F*cts générés | Gratuit (3/j partagé Flash) | Coins + f*cts générés | Actif |
 | Blitz | F*cts débloqués | Gratuit | Prestige (records) | Actif |
-| Hunt | WTF VIP | Gratuit 1×/jour | 1 f*ct VIP | Actif |
+| Hunt | WTF VIP | Gratuit 1×/semaine | 1 f*ct VIP | Actif |
+| Puzzle du Jour | F*ct funny daily | Gratuit 1×/jour | 6/4/2 coins | Actif |
+| Route WTF! | F*cts funny + VIP boss | Gratuit illimité | 6/niveau + 20/boss | Actif |
 | Série | F*cts générés | Gratuit | Multiplicateur coins | V2 |
 | Multi | À définir | À définir | À définir | V2 |
 

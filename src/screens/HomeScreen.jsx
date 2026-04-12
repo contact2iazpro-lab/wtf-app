@@ -158,6 +158,7 @@ export default function HomeScreen({
   onResetSocialNotif,
   pendingChallengesCount = 0,
   flashEnergyRemaining = 3,
+  dailyFactUnlocked = false,
 }) {
   const { isConnected } = useAuth()
   const { coins: _cCoins, tickets: _cTickets, hints: _cHints } = useCurrency()
@@ -609,15 +610,17 @@ export default function HomeScreen({
         animation: 'coffreSlideIn 0.5s ease-out',
       }}>
         {coffres.map((c, i) => {
-          const status = getStatus(i)
+          const rawStatus = getStatus(i)
+          const isSunday = i === 6
+          const isToday = new Date().getDay() === 0 // 0 = dimanche
+          // Dimanche : considéré comme collecté si le f*ct VIP du jour est débloqué
+          const status = (isSunday && dailyFactUnlocked) ? 'collected' : rawStatus
           const isAvail = status === 'available'
           const isColl = status === 'collected'
           const isMissed = status === 'missed'
-          const isSunday = i === 6
-          const isToday = new Date().getDay() === 0 // 0 = dimanche
 
           // Special case: dimanche et disponible → affiche WTF du Dimanche
-          const isWtfDimanche = isSunday && isAvail && isToday
+          const isWtfDimanche = isSunday && isAvail && isToday && !dailyFactUnlocked
 
           const chestSrc = isAvail
             ? '/assets/ui/chest-open.png'
@@ -707,26 +710,76 @@ export default function HomeScreen({
       </div>
       )}
 
-      {/* ═══ ZONE 3B — BOUTON ROULETTE ═══════════════════════ */}
-      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: '4px 10px 0' }}>
+      {/* ═══ ZONE 3B — ROULETTE + PUZZLE + ROUTE ═══════════════════════ */}
+      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', gap: 6, padding: '4px 10px 0', flexWrap: 'wrap' }}>
         <button
           onClick={() => { audio.play('click'); setShowRoulette(true) }}
           style={{
             background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)',
-            borderRadius: 12, padding: '6px 16px',
-            display: 'flex', alignItems: 'center', gap: 6,
+            borderRadius: 12, padding: '6px 12px',
+            display: 'flex', alignItems: 'center', gap: 5,
             cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <span style={{ fontSize: S(14) }}>🎰</span>
-          <span style={{ fontSize: S(11), fontWeight: 800, color: 'white' }}>Roulette</span>
+          <span style={{ fontSize: S(13) }}>🎰</span>
+          <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Roulette</span>
           {!readWtfData().rouletteFreeDate || readWtfData().rouletteFreeDate !== new Date().toISOString().slice(0, 10) ? (
             <span style={{
-              fontSize: S(8), fontWeight: 900, color: '#FF6B1A',
-              background: 'rgba(255,107,26,0.15)', borderRadius: 6, padding: '2px 6px',
+              fontSize: S(7), fontWeight: 900, color: '#FF6B1A',
+              background: 'rgba(255,107,26,0.15)', borderRadius: 6, padding: '2px 5px',
             }}>GRATUIT</span>
           ) : null}
+        </button>
+        <button
+          onClick={() => { audio.play('click'); nav('puzzle') }}
+          style={{
+            background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)',
+            borderRadius: 12, padding: '6px 12px',
+            display: 'flex', alignItems: 'center', gap: 5,
+            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ fontSize: S(13) }}>🧩</span>
+          <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Puzzle</span>
+          {(() => {
+            try {
+              const today = new Date().toISOString().slice(0, 10)
+              const done = !!localStorage.getItem('wtf_puzzle_' + today)
+              return done ? null : (
+                <span style={{
+                  fontSize: S(7), fontWeight: 900, color: '#FF6B1A',
+                  background: 'rgba(255,107,26,0.15)', borderRadius: 6, padding: '2px 5px',
+                }}>DAILY</span>
+              )
+            } catch { return null }
+          })()}
+        </button>
+        <button
+          onClick={() => { audio.play('click'); nav('route') }}
+          style={{
+            background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)',
+            borderRadius: 12, padding: '6px 12px',
+            display: 'flex', alignItems: 'center', gap: 5,
+            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ fontSize: S(13) }}>🗺️</span>
+          <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Route</span>
+          {(() => {
+            try {
+              const r = readWtfData().route
+              const lvl = r?.level || 1
+              return (
+                <span style={{
+                  fontSize: S(7), fontWeight: 900, color: '#FF6B1A',
+                  background: 'rgba(255,107,26,0.15)', borderRadius: 6, padding: '2px 5px',
+                }}>N{lvl}</span>
+              )
+            } catch { return null }
+          })()}
         </button>
       </div>
 

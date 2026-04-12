@@ -97,6 +97,12 @@ export function useNavigationHandlers({
         setGameMode('blitz'); setSessionType('blitz'); setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ); setSelectedCategory(null)
         showOrSkipLaunch('blitz')
         break
+      case 'puzzle':
+        setScreen(SCREENS.PUZZLE_DU_JOUR)
+        break
+      case 'route':
+        setScreen(SCREENS.ROUTE)
+        break
       default: break
     }
   }, [handleFlashSolo, handleStartWTFSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])
@@ -188,7 +194,7 @@ export function useNavigationHandlers({
   }, [currentFact])
 
   const handleShareDailyFact = useCallback(() => {
-    const text = `🤯 WTF du Jour !\n\n"${effectiveDailyFact.shortAnswer}"\n\n${effectiveDailyFact.explanation}\n\nJoue sur What The F*ct! #WTF`
+    const text = `🤯 WTF de la Semaine !\n\n"${effectiveDailyFact.shortAnswer}"\n\n${effectiveDailyFact.explanation}\n\nJoue sur What The F*ct! #WTF`
     if (navigator.share) navigator.share({ text }).catch(() => {})
     else navigator.clipboard?.writeText(text).catch(() => {})
   }, [effectiveDailyFact])

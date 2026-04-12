@@ -55,22 +55,35 @@ export default function App() {
     }
   })
 
-  // Initialiser les devises pour les nouveaux joueurs (TEMP: 10/10/10 avant onboarding)
-  if (localStorage.getItem('wtf_hints_available') === null) {
-    localStorage.setItem('wtf_hints_available', '10')
+  // Migration douce : si wtf_hints_available existe, rapatrier dans wtf_data.hints
+  if (localStorage.getItem('wtf_hints_available') !== null) {
+    try {
+      const _migData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      if (_migData.hints === undefined) {
+        _migData.hints = parseInt(localStorage.getItem('wtf_hints_available') || '0', 10) || 0
+        _migData.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(_migData))
+      }
+      localStorage.removeItem('wtf_hints_available')
+    } catch { /* ignore */ }
   }
+
+  // Initialiser les devises pour les nouveaux joueurs (TEMP: 10/10/10 avant onboarding)
   if (localStorage.getItem('wtf_data')) {
     const _initData = JSON.parse(localStorage.getItem('wtf_data'))
-    if (_initData.tickets === undefined) { _initData.tickets = 10; _initData.wtfCoins = 10; _initData.lastModified = Date.now(); localStorage.setItem('wtf_data', JSON.stringify(_initData)) }
+    if (_initData.tickets === undefined) {
+      _initData.tickets = 10; _initData.wtfCoins = 10; _initData.hints = 10
+      _initData.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(_initData))
+    }
   }
 
   // DEV: 100/100/100 pour les tests — UNE SEULE FOIS au premier lancement
   useState(() => {
     if (import.meta.env.DEV && !sessionStorage.getItem('wtf_dev_credits_done')) {
       const _d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      _d.tickets = 100; _d.wtfCoins = 100; _d.lastModified = Date.now()
+      _d.tickets = 100; _d.wtfCoins = 100; _d.hints = 100; _d.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(_d))
-      localStorage.setItem('wtf_hints_available', '100')
       sessionStorage.setItem('wtf_dev_credits_done', 'true')
     }
   })
@@ -263,12 +276,12 @@ export default function App() {
   // Reset complet onboarding
   const resetOnboarding = () => {
     const freshData = {
-      gamesPlayed: 0, totalScore: 0, streak: 0, wtfCoins: 0, tickets: 0,
+      gamesPlayed: 0, totalScore: 0, streak: 0, wtfCoins: 0, tickets: 0, hints: 0,
       unlockedFacts: [], sessionsToday: 0, statsByMode: {}, lastModified: Date.now(),
     }
     localStorage.setItem('wtf_data', JSON.stringify(freshData))
     localStorage.removeItem('tutorial_state')
-    localStorage.setItem('wtf_hints_available', '0')
+    localStorage.removeItem('wtf_hints_available')
     localStorage.removeItem('skip_launch_quest')
     localStorage.removeItem('skip_launch_flash')
     localStorage.removeItem('skip_launch_blitz')

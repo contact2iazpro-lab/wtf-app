@@ -33,10 +33,9 @@ function GameModeSelector() {
     if (mode === 'player') {
       const bc = parseInt(localStorage.getItem('wtf_dev_backup_coins') || '0', 10)
       const bt = parseInt(localStorage.getItem('wtf_dev_backup_tickets') || '0', 10)
-      const bh = localStorage.getItem('wtf_dev_backup_hints') || '0'
-      existing.wtfCoins = bc; existing.tickets = bt
+      const bh = parseInt(localStorage.getItem('wtf_dev_backup_hints') || '0', 10)
+      existing.wtfCoins = bc; existing.tickets = bt; existing.hints = bh
       localStorage.setItem('wtf_data', JSON.stringify(existing))
-      localStorage.setItem('wtf_hints_available', bh)
       localStorage.removeItem('wtf_dev_backup_coins')
       localStorage.removeItem('wtf_dev_backup_tickets')
       localStorage.removeItem('wtf_dev_backup_hints')
@@ -47,11 +46,10 @@ function GameModeSelector() {
       if (currentMode === 'player') {
         localStorage.setItem('wtf_dev_backup_coins', String(existing.wtfCoins || 0))
         localStorage.setItem('wtf_dev_backup_tickets', String(existing.tickets || 0))
-        localStorage.setItem('wtf_dev_backup_hints', localStorage.getItem('wtf_hints_available') || '0')
+        localStorage.setItem('wtf_dev_backup_hints', String(existing.hints || 0))
       }
-      existing.wtfCoins = 999; existing.tickets = 999
+      existing.wtfCoins = 999; existing.tickets = 999; existing.hints = 999
       localStorage.setItem('wtf_data', JSON.stringify(existing))
-      localStorage.setItem('wtf_hints_available', '999')
       localStorage.setItem('wtf_dev_mode', String(mode === 'dev'))
       localStorage.setItem('wtf_test_mode', String(mode === 'test'))
       if (mode === 'dev') localStorage.removeItem('wtf_test_mode')

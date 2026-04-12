@@ -32,7 +32,7 @@ function readLocalBalances() {
     return {
       coins: data.wtfCoins || 0,
       tickets: data.tickets || 0,
-      hints: parseInt(localStorage.getItem('wtf_hints_available') || '0', 10),
+      hints: parseInt(data.hints || 0, 10) || 0,
     }
   } catch {
     return { coins: 0, tickets: 0, hints: 0 }
@@ -44,9 +44,9 @@ function writeLocalBalances(balances) {
     const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     data.wtfCoins = balances.coins
     data.tickets = balances.tickets
+    data.hints = balances.hints
     data.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(data))
-    localStorage.setItem('wtf_hints_available', String(balances.hints))
   } catch { /* ignore */ }
 }
 

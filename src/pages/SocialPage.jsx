@@ -70,6 +70,7 @@ export default function SocialPage() {
   const [friends, setFriends] = useState([])
   const [pendingRequests, setPendingRequests] = useState([])
   const [pendingChallenges, setPendingChallenges] = useState([])
+  const [hasSentPending, setHasSentPending] = useState(false)
   const [showChallengeSection, setShowChallengeSection] = useState(false)
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
   const [toast, setToast] = useState(null)
@@ -102,6 +103,8 @@ export default function SocialPage() {
       setPendingRequests(pendingList || [])
       const received = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id !== user.id)
       setPendingChallenges(received)
+      const sent = (challengesList || []).filter(c => c.status === 'pending' && c.player1_id === user.id)
+      setHasSentPending(sent.length > 0)
     } catch (e) { console.warn('Social load error:', e) }
     finally { setSocialLoading(false) }
   }, [user])
@@ -265,11 +268,13 @@ export default function SocialPage() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
                       </div>
-                      <button
-                        onClick={handleChallenge}
-                        className="active:scale-90"
-                        style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                      >Défier</button>
+                      {!hasSentPending && pendingChallenges.length === 0 && (
+                        <button
+                          onClick={handleChallenge}
+                          className="active:scale-90"
+                          style={{ padding: '6px 10px', borderRadius: 8, background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)', color: '#FF6B1A', fontWeight: 800, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                        >Défier</button>
+                      )}
                       <button onClick={() => handleRemove(friend.friendshipId)} className="active:scale-90" style={{ padding: '4px 8px', borderRadius: 6, background: 'transparent', border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer' }}>✕</button>
                     </div>
                   ))}
@@ -334,14 +339,26 @@ export default function SocialPage() {
 
               {showChallengeSection && (
                 <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <button
-                    onClick={handleChallenge}
-                    className="active:scale-95 transition-all"
-                    style={{ width: '100%', padding: '12px 0', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}
-                  >
-                    Défier un ami
-                  </button>
-                  <p style={{ fontSize: S(10), color: '#9CA3AF', margin: 0, textAlign: 'center' }}>Lance un Blitz, puis partage le lien du défi</p>
+                  {!hasSentPending && pendingChallenges.length === 0 ? (
+                    <>
+                      <button
+                        onClick={handleChallenge}
+                        className="active:scale-95 transition-all"
+                        style={{ width: '100%', padding: '12px 0', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}
+                      >
+                        Défier un ami
+                      </button>
+                      <p style={{ fontSize: S(10), color: '#9CA3AF', margin: 0, textAlign: 'center' }}>Lance un Blitz, puis partage le lien du défi</p>
+                    </>
+                  ) : (
+                    <div style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(255,107,26,0.08)', border: '1px dashed rgba(255,107,26,0.35)' }}>
+                      <p style={{ fontSize: S(11), color: '#FF6B1A', margin: 0, fontWeight: 800, textAlign: 'center' }}>
+                        {hasSentPending
+                          ? '⏳ Défi en cours — attends que ton ami joue'
+                          : '👇 Termine d\'abord les défis que tu as reçus'}
+                      </p>
+                    </div>
+                  )}
 
                   {pendingChallenges.length > 0 && (
                     <div style={{ marginTop: 4 }}>

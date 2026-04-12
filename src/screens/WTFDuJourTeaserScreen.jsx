@@ -111,7 +111,7 @@ export default function WTFDuJourTeaserScreen({ fact, titrePartiel, streak, onSt
           flexShrink: 0,
         }}>
           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(9), fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: S(6), textAlign: 'center' }}>
-            Le f*ct du jour
+            Le f*ct de la semaine
           </div>
           <div style={{ color: 'white', fontWeight: 900, fontSize: S(15), lineHeight: 1.35, textAlign: 'center' }}>
             {titrePartiel}

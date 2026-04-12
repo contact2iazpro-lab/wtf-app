@@ -67,9 +67,9 @@ export default function QuestionScreen({
   const catTextColor = cat?.color ? (isLightColor(cat.color) ? '#1a1a1a' : '#ffffff') : '#ffffff'
   const S = (px) => `calc(${px}px * var(--scale))`
 
-  // Timer duration — Flash mode = 20s per question
+  // Timer duration — source unique : difficulty.duration (gameConfig.js)
   const isFlash = difficulty?.id === 'flash'
-  const timerDuration = answerMode === 'open' ? 60 : isFlash ? 20 : (difficulty?.duration || 20)
+  const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
 
   // Progress display — Flash shows X/10
   const displayTotalFacts = totalFacts

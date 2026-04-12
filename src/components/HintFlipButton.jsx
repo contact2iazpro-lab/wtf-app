@@ -85,24 +85,31 @@ export default function HintFlipButton({ num, hint, catColor, isFree, cost, canA
     >
       {phase !== 'back' ? (
         frontLabel
-      ) : (
-        <span
-          style={{
-            fontSize: 18,
-            fontWeight: 700,
-            color: '#1a1a2e',
-            textAlign: 'center',
-            lineHeight: 1.35,
-            wordBreak: 'break-word',
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
-          {hint || '—'}
-        </span>
-      )}
+      ) : (() => {
+        const h = hint || '—'
+        const len = h.length
+        const dynFontSize = len > 80 ? 11 : len > 55 ? 13 : len > 35 ? 15 : 18
+        const dynLineClamp = len > 55 ? 4 : 3
+        return (
+          <span
+            style={{
+              fontSize: dynFontSize,
+              fontWeight: 700,
+              color: '#1a1a2e',
+              textAlign: 'center',
+              lineHeight: 1.3,
+              wordBreak: 'break-word',
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: dynLineClamp,
+              WebkitBoxOrient: 'vertical',
+              padding: '0 6px',
+            }}
+          >
+            {h}
+          </span>
+        )
+      })()}
     </button>
   )
 }

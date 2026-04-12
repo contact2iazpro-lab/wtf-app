@@ -20,6 +20,8 @@ import BlitzResultsScreen from '../screens/BlitzResultsScreen'
 import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from '../screens/DuelSetupScreen'
 import DuelPassScreen from '../screens/DuelPassScreen'
 import DuelResultsScreen from '../screens/DuelResultsScreen'
+import PuzzleDuJourScreen from '../screens/PuzzleDuJourScreen'
+import RouteScreen from '../screens/RouteScreen'
 import { getFlashEnergy } from '../services/energyService'
 import { getCategoryById, getTitrePartiel } from '../data/factsService'
 
@@ -48,6 +50,13 @@ export default function ScreenRenderer({
     <>
       {screen === SCREENS.HOME && (
         <HomeScreen
+          dailyFactUnlocked={(() => {
+            if (!effectiveDailyFact) return false
+            const u = storage.unlockedFacts
+            if (u instanceof Set) return u.has(effectiveDailyFact.id)
+            if (Array.isArray(u)) return u.includes(effectiveDailyFact.id)
+            return false
+          })()}
           currentStreak={streak}
           dailyQuestsRemaining={Math.max(0, 3 - (sessionsToday || 0))}
           newlyEarnedBadges={newlyEarnedBadges}
@@ -277,6 +286,14 @@ export default function ScreenRenderer({
           onReplay={handleDuelReplay}
           onHome={handleHome}
         />
+      )}
+
+      {screen === SCREENS.PUZZLE_DU_JOUR && (
+        <PuzzleDuJourScreen onHome={handleHome} setStorage={setStorage} />
+      )}
+
+      {screen === SCREENS.ROUTE && (
+        <RouteScreen onHome={handleHome} setStorage={setStorage} />
       )}
     </>
   )

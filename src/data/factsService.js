@@ -352,12 +352,21 @@ export function getWeeklyFacts(categoryId) {
   return getFunnyFactsByCategory(categoryId)
 }
 
-/** Mode WTF du Jour : pioche dans les VIP uniquement */
+/** Mode WTF de la Semaine : pioche 1 VIP stable du lundi au dimanche.
+ *  Seed basée sur l'ISO week number + année — change chaque lundi. */
 export function getDailyFact() {
-  const dateStr = new Date().toISOString().slice(0, 10)
-  const seed    = dateStr.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-  const pool    = getVipFacts()
-  if (pool.length === 0) return getValidFacts()[0] // fallback ultime
+  const d = new Date()
+  const target = new Date(d.valueOf())
+  const dayNr = (d.getDay() + 6) % 7 // 0=Lundi
+  target.setDate(target.getDate() - dayNr + 3)
+  const firstThursday = target.valueOf()
+  target.setMonth(0, 1)
+  if (target.getDay() !== 4) target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7)
+  const weekNr = 1 + Math.ceil((firstThursday - target) / 604800000)
+  const year = d.getFullYear()
+  const seed = `${year}-W${weekNr}`.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  const pool = getVipFacts()
+  if (pool.length === 0) return getValidFacts()[0]
   return pool[seed % pool.length]
 }
 

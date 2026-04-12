@@ -5,31 +5,31 @@ export const DIFFICULTY_LEVELS = {
   COOL: {
     id: 'cool', label: 'Cool', emoji: '❄️',
     choices: 2, duration: 30,
-    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
+    hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   HOT: {
     id: 'hot', label: 'Hot', emoji: '🔥',
     choices: 4, duration: 20,
-    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
+    hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   WTF: {
     id: 'wtf', label: 'WTF!', emoji: '⚡',
     choices: 6, duration: 20,
-    hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 0,
+    hintsAllowed: true, freeHints: 1, paidHints: 1, hintCost: 8,
     coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 },
   },
   FLASH: {
     id: 'flash', label: 'Standard', emoji: '🎯',
     choices: 4, duration: 20,
-    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   HUNT: {
     id: 'hunt', label: 'Hunt', emoji: '🔥',
     choices: 4, duration: 20,
-    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
   },
   BLITZ: {
@@ -58,6 +58,8 @@ export const SCREENS = {
   BLITZ_RESULTS: 'blitz_results',
   BLITZ_LOBBY: 'blitz_lobby',
   MODE_LAUNCH: 'mode_launch',
+  PUZZLE_DU_JOUR: 'puzzle_du_jour',
+  ROUTE: 'route',
 }
 
 // ── Mode launch configs (rules displayed before each mode)
@@ -94,10 +96,10 @@ export const MODE_CONFIGS = {
     ],
   },
   hunt: {
-    modeId: 'hunt', modeName: 'Hunt', subtitle: 'Le WTF! du jour !', emoji: '🔥', color: '#E91E63',
+    modeId: 'hunt', modeName: 'Hunt', subtitle: 'Le WTF! de la semaine !', emoji: '🔥', color: '#E91E63',
     rules: [
-      { icon: '🆓', text: 'Gratuit — 1 fois par jour' },
-      { icon: '🎯', text: 'Un f*ct WTF! spécial à découvrir chaque jour' },
+      { icon: '🆓', text: 'Gratuit — 1 fois par semaine (dimanche)' },
+      { icon: '🎯', text: 'Un f*ct WTF! spécial à découvrir chaque semaine' },
       { icon: '⚡', text: '5 questions · 4 QCM · 20s' },
       { icon: '💡', text: `${DIFFICULTY_LEVELS.HUNT.freeHints} indices (stock gratuit)` },
     ],

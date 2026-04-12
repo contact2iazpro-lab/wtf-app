@@ -165,7 +165,7 @@ export function AuthProvider({ children }) {
         seenModes: wtfData.seenModes,
       }
       localStorage.setItem('wtf_data', JSON.stringify(cleanData))
-      localStorage.removeItem('wtf_hints_available')
+      localStorage.removeItem('wtf_hints_available') // legacy, plus utilisé
       localStorage.removeItem('wtf_my_friend_code')
       localStorage.removeItem('wtf_facts_cache')
       localStorage.removeItem('wtf_tutorial_state')

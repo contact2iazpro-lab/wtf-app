@@ -162,12 +162,32 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut().catch(() => {})
+    // 1. Déconnexion Supabase — scope 'local' pour clear le token localStorage
+    //    même si le réseau est down. Log explicite si erreur (pas de silent catch).
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' })
+      if (error) console.warn('[Auth] signOut warning:', error.message)
+    } catch (e) {
+      console.error('[Auth] signOut error:', e)
+    }
 
-    // Nettoyer les données du joueur précédent (garder settings uniquement)
+    // 2. Force-clear toutes les clés Supabase résiduelles (au cas où signOut
+    //    local n'a pas tout nettoyé à cause d'un state bizarre). Les clés
+    //    Supabase commencent par sb-<project-ref>-
+    try {
+      const keysToRemove = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i)
+        if (k && (k.startsWith('sb-') || k.startsWith('supabase.auth'))) {
+          keysToRemove.push(k)
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k))
+    } catch { /* ignore */ }
+
+    // 3. Nettoyer les données du joueur précédent (garder settings uniquement)
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      // Garder: coff settings, pas de progression
       const cleanData = {
         coffreClaimedDays: wtfData.coffreClaimedDays,
         coffreWeekStart: wtfData.coffreWeekStart,
@@ -178,9 +198,12 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('wtf_my_friend_code')
       localStorage.removeItem('wtf_facts_cache')
       localStorage.removeItem('wtf_tutorial_state')
+      localStorage.removeItem('wtf_cached_friends')
+      localStorage.removeItem('wtf_player_avatar')
+      localStorage.removeItem('wtf_player_name')
     } catch { /* ignore */ }
 
-    // Reset state
+    // 4. Reset state React
     setUser(null)
     setProfile(null)
   }, [])

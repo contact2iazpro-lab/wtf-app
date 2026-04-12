@@ -123,10 +123,16 @@ export function useBlitzHandlers({
           }).then(challenge => {
             localStorage.setItem('wtf_auto_challenge', JSON.stringify(challenge))
             window.dispatchEvent(new Event('wtf_challenge_created'))
-          }).catch(e => console.warn('Auto challenge creation failed:', e))
+          }).catch(e => {
+            console.error('[useBlitzHandlers] Auto challenge creation failed:', e)
+            localStorage.setItem('wtf_auto_challenge_error', e?.message || 'Erreur inconnue')
+            window.dispatchEvent(new Event('wtf_challenge_created'))
+          })
         })
       }
-      setIsChallengeMode(false)
+      // Ne PAS reset isChallengeMode ici — on garde le flag true pour que
+      // BlitzResultsScreen affiche la vue "Création du défi..." / "Défi créé!".
+      // Le reset se fait quand l'user clique "Accueil" via handleHome.
       return
     }
 

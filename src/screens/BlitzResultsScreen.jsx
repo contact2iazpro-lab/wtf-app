@@ -50,6 +50,7 @@ export default function BlitzResultsScreen({
     return `${m}:${s.padStart(5, '0')}`
   }
 
+  const [challengeError, setChallengeError] = useState(null)
   useEffect(() => {
     if (!isChallengeMode) return
     const handleCreated = () => {
@@ -58,6 +59,11 @@ export default function BlitzResultsScreen({
         if (challenge) {
           setAutoChallenge(challenge)
           localStorage.removeItem('wtf_auto_challenge')
+        }
+        const err = localStorage.getItem('wtf_auto_challenge_error')
+        if (err) {
+          setChallengeError(err)
+          localStorage.removeItem('wtf_auto_challenge_error')
         }
       } catch { /* ignore */ }
     }
@@ -163,17 +169,36 @@ export default function BlitzResultsScreen({
             </div>
           </div>
 
-          {/* Bouton partager */}
+          {/* Bouton partager / état */}
           {autoChallenge ? (
-            <button
-              onClick={handleShareChallenge}
-              className="w-full py-4 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
-              style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16), maxWidth: 340 }}
-            >
-              {copied ? '✅ Lien copié !' : '📤 Partager le défi'}
-            </button>
+            <>
+              <div style={{
+                fontSize: S(13), fontWeight: 700, color: 'white',
+                background: 'rgba(0,0,0,0.3)', padding: '10px 16px', borderRadius: 12,
+                fontFamily: 'monospace', letterSpacing: 3, textAlign: 'center',
+                maxWidth: 340, width: '100%',
+              }}>
+                Code : <span style={{ fontSize: S(18), color: '#FFD700' }}>{autoChallenge.code}</span>
+              </div>
+              <button
+                onClick={handleShareChallenge}
+                className="w-full py-4 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
+                style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16), maxWidth: 340 }}
+              >
+                {copied ? '✅ Lien copié !' : '📤 Partager le défi'}
+              </button>
+            </>
+          ) : challengeError ? (
+            <div style={{
+              color: '#EF4444', fontSize: S(13), textAlign: 'center', padding: '12px 16px',
+              background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+              borderRadius: 12, maxWidth: 340,
+            }}>
+              ❌ Erreur création défi<br />
+              <span style={{ fontSize: S(11), opacity: 0.8 }}>{challengeError}</span>
+            </div>
           ) : (
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(14) }}>⏳ Envoi en cours...</div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(14) }}>⏳ Création en cours...</div>
           )}
 
           {/* Bouton accueil */}

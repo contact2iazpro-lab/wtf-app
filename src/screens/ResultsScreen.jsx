@@ -76,8 +76,8 @@ export default function ResultsScreen({
   const S = (px) => `calc(${px}px * var(--scale))`
   const { coins: _cCoins, tickets: _cTickets, hints: _cHints } = useCurrency()
   const { isConnected, signInWithGoogle } = useAuth()
-  // Phase A.6 — miroir Supabase pour achat fact post-session
-  const { applyCurrencyDelta } = usePlayerProfile()
+  // Phase A.6/A.7 — miroir Supabase pour achat fact post-session
+  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const googleDismissed = (() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').googlePromptDismissed || 0 } catch { return 0 } })()
   const [showGoogleBanner, setShowGoogleBanner] = useState(!isConnected && googleDismissed < 2)
   const dismissGoogle = () => {
@@ -849,6 +849,9 @@ export default function ResultsScreen({
                       updateCoins(-unlockCost)
                       applyCurrencyDelta?.({ coins: -unlockCost }, 'unlock_fact_post_session').catch(e =>
                         console.warn('[ResultsScreen] unlock fact RPC failed:', e?.message || e)
+                      )
+                      unlockFact?.(selectedFact.id, selectedFact.category, 'unlock_fact_post_session').catch(e =>
+                        console.warn('[ResultsScreen] unlockFact RPC failed:', e?.message || e)
                       )
                       try {
                         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')

@@ -63,8 +63,8 @@ export default function RouletteModal({ onClose, scale }) {
   const [spinData, setSpinData] = useState(getSpinData)
   const [showProbas, setShowProbas] = useState(false)
   const canvasRef = useRef(null)
-  // Phase A.6 — miroir Supabase
-  const { applyCurrencyDelta } = usePlayerProfile()
+  // Phase A.6/A.7 — miroir Supabase
+  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
 
   const isFree = !spinData.freeUsed
 
@@ -186,6 +186,10 @@ export default function RouletteModal({ onClose, scale }) {
             const vip = pool[Math.floor(Math.random() * pool.length)]
             owned.add(vip.id)
             wd.unlockedFacts = [...owned]
+            // Phase A.7 : miroir Supabase
+            unlockFact?.(vip.id, vip.category, 'roulette_reward_vip').catch(e =>
+              console.warn('[RouletteModal] unlockFact RPC failed:', e?.message || e)
+            )
           }
           wd.lastModified = Date.now()
           localStorage.setItem('wtf_data', JSON.stringify(wd))

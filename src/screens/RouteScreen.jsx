@@ -40,7 +40,7 @@ function buildLevelSession(level) {
 }
 
 export default function RouteScreen({ onHome, setStorage }) {
-  const { applyCurrencyDelta } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const [state, setState] = useState(readRouteState)
   const [session, setSession] = useState(null)
   const [qIndex, setQIndex] = useState(0)
@@ -88,6 +88,12 @@ export default function RouteScreen({ onHome, setStorage }) {
               return { ...prev, unlockedFacts: u }
             })
           }
+          // Phase A.7 : miroir unlock_fact pour chaque fact du niveau
+          session.facts.forEach(f => {
+            unlockFact?.(f.id, f.category, session.boss ? 'route_boss_unlock' : 'route_level_unlock').catch(e =>
+              console.warn('[RouteScreen] unlockFact RPC failed:', e?.message || e)
+            )
+          })
           const nextState = {
             level: state.level + 1,
             stars: { ...state.stars, [state.level]: 3 },

@@ -30,7 +30,7 @@ export default function App() {
   const scale = useScale()
   // Phase A — profil Supabase (source de vérité pour devises/unlocks)
   // Déclaré en tête du composant pour être accessible dans tous les useEffect et handlers.
-  const { applyCurrencyDelta } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
 
   // Desktop ≥768px → active le décor fullscreen (dégradé animé + particules)
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
@@ -265,6 +265,7 @@ export default function App() {
     setCorrectCount, setSessionCorrectFacts, setDuelPlayers, setHintsUsed,
     setSessionAnyHintUsed, setStorage, setNewlyUnlockedCategories, setScreen,
     applyCurrencyDelta, // Phase A : doublement des mutations coins
+    unlockFact,         // Phase A.7 : miroir unlock_fact RPC
   })
 
   // ─── Blitz handlers → extraits dans useBlitzHandlers hook ──────────────────

@@ -74,8 +74,8 @@ export default function BoutiquePage() {
   const navigate = useNavigate()
 
   const { coins, tickets, hints } = useCurrency()
-  // Phase A.6 — RPC Supabase en parallèle du legacy currencyService
-  const { applyCurrencyDelta } = usePlayerProfile()
+  // Phase A.6/A.7 — RPC Supabase en parallèle du legacy currencyService
+  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
   const [streakFreezeCount, setStreakFreezeCount] = useState(() => readWtfData().streakFreezeCount || 0)
@@ -179,8 +179,13 @@ export default function BoutiquePage() {
       usedIds.add(fact.id)
     }
 
-    // Débloquer les facts
-    for (const fact of selected) unlockedIds.add(fact.id)
+    // Débloquer les facts (localStorage + RPC miroir)
+    for (const fact of selected) {
+      unlockedIds.add(fact.id)
+      unlockFact?.(fact.id, fact.category, `shop_mystery_pack_${packId}`).catch(e =>
+        console.warn('[BoutiquePage] unlockFact RPC failed:', e?.message || e)
+      )
+    }
     wd.unlockedFacts = [...unlockedIds]
     wd.mysteryPacksOpened = (wd.mysteryPacksOpened || 0) + 1
     wd.lastModified = Date.now()

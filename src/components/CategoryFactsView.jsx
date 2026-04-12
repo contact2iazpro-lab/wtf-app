@@ -22,7 +22,7 @@ const TAB_CONFIG = {
 export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, onClose }) {
   const tab = TAB_CONFIG[activeTab]
   const { coins } = useCurrency()
-  const { applyCurrencyDelta } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const [sessionUnlocked, setSessionUnlocked] = useState(() => new Set())
   const [purchaseFact, setPurchaseFact] = useState(null)
   // Merge ids passés en prop avec les achats effectués dans cette vue
@@ -38,6 +38,9 @@ export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, 
     updateCoins(-cost)
     applyCurrencyDelta?.({ coins: -cost }, `buy_fact_${purchaseFact.isVip ? 'vip' : 'funny'}`).catch(e =>
       console.warn('[CategoryFactsView] buy fact RPC failed:', e?.message || e)
+    )
+    unlockFact?.(purchaseFact.id, purchaseFact.category, `buy_fact_${purchaseFact.isVip ? 'vip' : 'funny'}`).catch(e =>
+      console.warn('[CategoryFactsView] unlockFact RPC failed:', e?.message || e)
     )
     try {
       const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')

@@ -71,11 +71,31 @@ export function usePlayerProfile() {
     })
   }, [profile, mutate])
 
+  /**
+   * unlockFact — marque un fact comme débloqué côté Supabase (RPC idempotente).
+   * Anti-replay via nonce. Retourne { category, facts_completed, was_new }.
+   * Appelée en parallèle du legacy updateCollection, coexistence Phase A.
+   */
+  const unlockFact = useCallback(async (factId, category, reason = 'session_correct', sessionId = null) => {
+    if (!factId || !category) return null
+    const nonce = generateNonce()
+    const { data, error } = await supabase.rpc('unlock_fact', {
+      p_fact_id: factId,
+      p_category: category,
+      p_reason: reason,
+      p_client_nonce: nonce,
+      p_session_id: sessionId,
+    })
+    if (error) throw error
+    return data
+  }, [])
+
   return {
     profile,
     loading,
     error,
     applyCurrencyDelta,
+    unlockFact,
     refetch,
     setData,
     // Raccourcis pratiques

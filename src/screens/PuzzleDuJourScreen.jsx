@@ -19,7 +19,7 @@ function dailyHash(str) {
 }
 
 export default function PuzzleDuJourScreen({ onHome, setStorage }) {
-  const { applyCurrencyDelta } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const dateStr = todayKey()
   const storageKey = STORAGE_KEY_PREFIX + dateStr
 
@@ -63,6 +63,10 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
           u.add(fact.id)
           return { ...prev, unlockedFacts: u }
         })
+        // Phase A.7 : miroir Supabase
+        unlockFact?.(fact.id, fact.category, `puzzle_du_jour_attempt_${attemptsLeft}`).catch(e =>
+          console.warn('[PuzzleDuJour] unlockFact RPC failed:', e?.message || e)
+        )
       }
       setDone(true); setWon(true); setCoinsEarned(gain)
       audio.play('correct')

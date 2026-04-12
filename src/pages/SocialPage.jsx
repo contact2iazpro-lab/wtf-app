@@ -436,9 +436,13 @@ export default function SocialPage() {
                     return (
                       <div key={friend.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
                         <Initial name={friend.displayName} size={36} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <button
+                          onClick={() => { audio.play('click'); navigate(`/duels/${friend.userId}`) }}
+                          style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
+                        >
                           <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
-                        </div>
+                          <span style={{ fontSize: 10, color: '#9CA3AF' }}>Voir l'historique →</span>
+                        </button>
                         <button
                           onClick={() => handleFriendDuelAction(friend, state)}
                           disabled={state.disabled}

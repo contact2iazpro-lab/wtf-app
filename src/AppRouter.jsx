@@ -8,6 +8,7 @@ import RecompensesPage from './pages/RecompensesPage'
 import SocialPage from './pages/SocialPage'
 import BottomNav from './components/BottomNav'
 import ChallengeScreen from './screens/ChallengeScreen'
+import DuelHistoryScreen from './screens/DuelHistoryScreen'
 import { useScale } from './hooks/useScale'
 import { UnlockContext } from './context/UnlockContext'
 import { UNLOCK_MESSAGES, UNLOCK_THRESHOLDS, SPOTLIGHT_MESSAGES } from './constants/layoutConfig'
@@ -150,6 +151,7 @@ export default function AppRouter() {
         <Route path="/recompenses" element={<PageWrapper><RecompensesPage /></PageWrapper>} />
         <Route path="/social" element={<PageWrapper><SocialPage /></PageWrapper>} />
         <Route path="/challenge/:code" element={<PageWrapper><ChallengeScreen /></PageWrapper>} />
+        <Route path="/duels/:opponentId" element={<PageWrapper><DuelHistoryScreen /></PageWrapper>} />
       </Routes>
     </UnlockProvider>
   )

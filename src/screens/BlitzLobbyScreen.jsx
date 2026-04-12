@@ -13,19 +13,30 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, unlockedFac
   const [questionCount, setQuestionCount] = useState(null)
 
   const allFacts = getValidFacts()
-  const totalUnlocked = allFacts.filter(f => unlockedFacts.has(f.id)).length
+  // Fallback : si le prop unlockedFacts est vide, relire localStorage au cas où
+  // App.jsx state n'a pas été refresh après un pullFromServer tardif.
+  const effectiveUnlocked = useMemo(() => {
+    if (unlockedFacts && unlockedFacts.size > 0) return unlockedFacts
+    try {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      const ids = Array.isArray(wd.unlockedFacts) ? wd.unlockedFacts : []
+      return new Set(ids)
+    } catch { return new Set() }
+  }, [unlockedFacts])
+  console.log('[BlitzLobby] unlocked size (prop):', unlockedFacts?.size, 'effective:', effectiveUnlocked.size, 'total facts:', allFacts.length)
+  const totalUnlocked = allFacts.filter(f => effectiveUnlocked.has(f.id)).length
 
   // Categories with >= 5 unlocked facts (seuil minimum pour Blitz)
   const categories = useMemo(() => {
     const cats = getPlayableCategories()
     return cats
       .map(cat => {
-        const count = allFacts.filter(f => f.category === cat.id && unlockedFacts.has(f.id)).length
+        const count = allFacts.filter(f => f.category === cat.id && effectiveUnlocked.has(f.id)).length
         return { ...cat, count }
       })
       .filter(c => c.count >= 5)
       .sort((a, b) => b.count - a.count)
-  }, [allFacts, unlockedFacts])
+  }, [allFacts, effectiveUnlocked])
 
   // Pool size for selected category
   const poolSize = selectedCatId === 'all'

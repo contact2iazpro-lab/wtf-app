@@ -3,18 +3,16 @@ FROM node:22-alpine AS build
 WORKDIR /app
 
 # Vite env vars (injected at build time)
+# ⚠️ CRITIQUE : NE JAMAIS passer VITE_SUPABASE_SERVICE_KEY ici.
+# Tout ce qui commence par VITE_ est inliné dans le JS public du bundle.
+# La clé service_role bypasse RLS — si elle fuite, tout Supabase est compromis.
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
-ARG VITE_SUPABASE_SERVICE_KEY
-ARG VITE_ADMIN_PASSWORD
-ARG VITE_ANTHROPIC_KEY
 ARG VITE_GAME_BASE_URL
 
 # Expose Vite env vars for build
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
-ENV VITE_SUPABASE_SERVICE_KEY=$VITE_SUPABASE_SERVICE_KEY
-ENV VITE_ADMIN_PASSWORD=$VITE_ADMIN_PASSWORD
 ENV VITE_GAME_BASE_URL=$VITE_GAME_BASE_URL
 
 # Install + build game
@@ -23,14 +21,10 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Install + build admin
-WORKDIR /app/admin-tool
-ENV VITE_ANTHROPIC_KEY=$VITE_ANTHROPIC_KEY
-RUN npm ci
-RUN npm run build
-
-# Merge admin into game dist
-RUN cp -r /app/admin-tool/dist /app/dist/admin
+# ⚠️ admin-tool NE DOIT PAS être mergé dans le build principal.
+# Il contient la clé service_role dans son bundle (via VITE_SUPABASE_SERVICE_KEY)
+# et doit être déployé séparément sur un sous-domaine privé ou en local uniquement.
+# Pour tester l'admin : `cd admin-tool && npm run dev` (jamais en prod public).
 
 # Stage 2 — Serve
 FROM nginx:alpine

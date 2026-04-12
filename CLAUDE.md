@@ -5,9 +5,17 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 ## Projet
 - App mobile trivia basée sur un jeu physique validé (350 cartes)
 - URL prod : https://wtf-app-production.up.railway.app/
-- Admin Tool : https://wtf-app-production.up.railway.app/admin
+- Admin Tool : ⚠️ À déployer séparément (ne plus mélanger au build principal — faille RLS)
 - Stack : React + Vite + Supabase + Tailwind + Nunito
 - Deploy : Railway auto sur push master
+
+## ⚠️ Sécurité — ne jamais exposer dans le bundle client
+Toute variable préfixée `VITE_` est inlinée dans le JS public et lisible via DevTools.
+**Interdit dans le build principal** : `VITE_SUPABASE_SERVICE_KEY`, `VITE_ADMIN_PASSWORD`,
+`VITE_ANTHROPIC_KEY`, ou toute clé qui bypasse RLS / coûte de l'argent API.
+Le client principal utilise uniquement `VITE_SUPABASE_ANON_KEY` + RLS Supabase.
+L'admin-tool (clé service_role) doit être déployé **en isolation** (service Railway
+séparé, sous-domaine privé, ou en local uniquement).
 
 ## Règles absolues
 1. Ne JAMAIS pusher automatiquement — commit local uniquement

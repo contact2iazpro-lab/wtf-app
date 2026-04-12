@@ -23,7 +23,7 @@ export async function getOrCreateFriendCode(userId, displayName, avatarUrl) {
 
   if (existing) {
     if (existing.display_name !== displayName || existing.avatar_url !== avatarUrl) {
-      // Écriture via client principal (ou light — les deux ont la clé service_role)
+      // Écriture via client principal (clé anon — RLS s'applique, l'utilisateur doit être auth)
       await supabase.from('friend_codes').update({ display_name: displayName, avatar_url: avatarUrl }).eq('user_id', userId)
     }
     return existing

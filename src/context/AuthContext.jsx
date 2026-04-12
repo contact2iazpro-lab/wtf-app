@@ -183,28 +183,34 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signInWithGoogle = useCallback(async () => {
-    // Si l'user courant est anonyme → linkIdentity préserve son user_id et ses données.
-    // Sinon → signInWithOAuth standard (upgrade d'un compte déjà Google, ou premier login).
+    // Si user anonyme → tenter linkIdentity pour préserver user_id + données.
+    // Requiert "Manual Linking" activé dans Supabase Auth settings. Si désactivé
+    // ou si linkIdentity échoue, fallback sur signInWithOAuth standard
+    // (l'user anonyme devient orphan mais le login réussit).
     const isAnon = user?.is_anonymous === true
-    if (isAnon) {
-      const { error } = await supabase.auth.linkIdentity({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.href.split('#')[0],
-          queryParams: { prompt: 'select_account' },
-        }
-      })
-      if (error) throw error
-      return
-    }
-    const { error } = await supabase.auth.signInWithOAuth({
+    const oauthOptions = {
       provider: 'google',
       options: {
         redirectTo: window.location.href.split('#')[0],
         queryParams: { prompt: 'select_account' },
+      },
+    }
+    if (isAnon) {
+      try {
+        const { error } = await supabase.auth.linkIdentity(oauthOptions)
+        if (error) throw error
+        console.log('[Auth] linkIdentity initiated (anonymous → Google)')
+        return
+      } catch (e) {
+        console.warn('[Auth] linkIdentity failed, falling back to signInWithOAuth:', e?.message || e)
+        // Fallback : standard OAuth (nouvel user, les données anon seront perdues)
       }
-    })
-    if (error) throw error
+    }
+    const { error } = await supabase.auth.signInWithOAuth(oauthOptions)
+    if (error) {
+      console.error('[Auth] signInWithOAuth failed:', error.message)
+      throw error
+    }
   }, [user])
 
   const signOut = useCallback(async () => {

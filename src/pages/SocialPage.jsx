@@ -396,7 +396,7 @@ export default function SocialPage() {
           <div className="rounded-2xl p-6 text-center" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <span className="text-3xl block mb-3">👥</span>
             <p style={{ fontSize: S(14), fontWeight: 700, color: '#1a1a2e', margin: '0 0 12px' }}>Connecte-toi pour ajouter des amis et relever des défis</p>
-            <button onClick={signInWithGoogle} className="active:scale-95 transition-all" style={{ padding: '12px 28px', borderRadius: 14, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}>
+            <button onClick={() => signInWithGoogle().catch(e => { console.error('[SocialPage] Google sign-in failed:', e?.message || e); showToast('Connexion échouée : ' + (e?.message || 'erreur')) })} className="active:scale-95 transition-all" style={{ padding: '12px 28px', borderRadius: 14, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}>
               Se connecter avec Google
             </button>
           </div>

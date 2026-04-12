@@ -320,7 +320,10 @@ export default function ProfilPage() {
             </>
           ) : (
             <button
-              onClick={() => signInWithGoogle()}
+              onClick={() => signInWithGoogle().catch(e => {
+                console.error('[ProfilPage] Google sign-in failed:', e?.message || e)
+                alert('Connexion Google échouée : ' + (e?.message || 'erreur inconnue'))
+              })}
               className="rounded-2xl font-black text-sm active:scale-95 transition-all"
               style={{ background: '#FF6B1A', color: 'white', border: 'none', marginTop: 8, padding: '10px 20px' }}
             >

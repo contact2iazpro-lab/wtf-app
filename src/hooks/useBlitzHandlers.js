@@ -90,13 +90,13 @@ export function useBlitzHandlers({
       try {
         const challengeInfo = JSON.parse(challengeJson)
         localStorage.removeItem('wtf_active_challenge')
-        import('../data/challengeService').then(({ completeChallenge: complete }) => {
-          complete({
-            challengeId: challengeInfo.challengeId,
+        import('../data/duelService').then(({ completeDuelRound }) => {
+          completeDuelRound({
+            roundId: challengeInfo.challengeId,
             playerTime: finalTime,
             playerId: user.id,
             playerName: user.user_metadata?.name || 'Joueur WTF!',
-          }).catch(e => console.warn('Challenge complete error:', e))
+          }).catch(e => console.warn('Duel round complete error:', e))
         })
       } catch {}
     }

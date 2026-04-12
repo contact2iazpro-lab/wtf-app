@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { getChallenge } from '../data/challengeService'
 import { getBlitzFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
+import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -54,8 +55,7 @@ export default function ChallengeScreen() {
     audio.play('click')
 
     // Prepare facts for the Blitz
-    const shuffled = [...playerFacts]
-      .sort(() => Math.random() - 0.5)
+    const shuffled = shuffle(playerFacts)
       .slice(0, Math.min(challenge.question_count, playerFacts.length))
 
     // Store challenge info for after Blitz

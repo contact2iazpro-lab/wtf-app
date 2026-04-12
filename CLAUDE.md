@@ -80,7 +80,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Indices | Aucun |
 | Coins | 0 (prestige uniquement) |
 | Paliers | 5, 10, 20, 30, 40, 50 questions |
-| Contenu | F*cts débloqués du joueur |
+| Contenu | **Tous** les f*cts débloqués du joueur (VIP + Funny) |
 
 ### Mode Hunt (WTF de la Semaine)
 
@@ -153,8 +153,9 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Multi | À définir | À définir | À définir | V2 |
 
 ## Architecture contenu
-- **WTF VIP** (350) : f*cts originaux du jeu physique → Quête uniquement
-- **F*cts générés** (1000+) : générés par IA → Jouer, Blitz, Hunt
+- **WTF VIP** (350) : f*cts originaux du jeu physique → Quête (source unique de déblocage VIP) + **Blitz** (une fois débloqués)
+- **F*cts générés** (1000+) : générés par IA → Jouer, Explorer, Hunt, Puzzle, Route + **Blitz** (une fois débloqués)
+- **Blitz** pioche dans TOUS les f*cts déjà débloqués (VIP + Funny confondus)
 - Collection : 2 onglets (WTF! + Funny F*cts)
 
 ## Design system

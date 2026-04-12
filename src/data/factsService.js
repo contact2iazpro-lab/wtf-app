@@ -330,7 +330,7 @@ export function getMarathonFacts(categoryId) {
   return getFunnyFactsByCategory(categoryId)
 }
 
-/** Mode Blitz : uniquement les facts déjà débloqués par le joueur */
+/** Mode Blitz : tous les f*cts débloqués (VIP + Funny confondus) */
 export function getBlitzFacts() {
   try {
     const wtfData = readWtfData()

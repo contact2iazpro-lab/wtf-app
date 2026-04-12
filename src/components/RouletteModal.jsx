@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import CoinsIcon from './CoinsIcon'
 import { updateCoins, updateHints, updateTickets } from '../services/currencyService'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { getVipFacts } from '../data/factsService'
 
@@ -62,6 +63,8 @@ export default function RouletteModal({ onClose, scale }) {
   const [spinData, setSpinData] = useState(getSpinData)
   const [showProbas, setShowProbas] = useState(false)
   const canvasRef = useRef(null)
+  // Phase A.6 — miroir Supabase
+  const { applyCurrencyDelta } = usePlayerProfile()
 
   const isFree = !spinData.freeUsed
 
@@ -134,6 +137,9 @@ export default function RouletteModal({ onClose, scale }) {
       const wd = readWtfData()
       if ((wd.wtfCoins || 0) < EXTRA_SPIN_COST) return
       updateCoins(-EXTRA_SPIN_COST)
+      applyCurrencyDelta?.({ coins: -EXTRA_SPIN_COST }, 'roulette_spin_paid').catch(e =>
+        console.warn('[RouletteModal] spin cost RPC failed:', e?.message || e)
+      )
     }
 
     setSpinning(true)
@@ -154,10 +160,17 @@ export default function RouletteModal({ onClose, scale }) {
       const seg = SEGMENTS[winIndex]
       setResult(seg)
 
-      // Appliquer la récompense
+      // Appliquer la récompense (legacy + miroir Supabase)
       if (seg.reward.type === 'coins') updateCoins(seg.reward.amount)
       else if (seg.reward.type === 'hints') updateHints(seg.reward.amount)
       else if (seg.reward.type === 'tickets') updateTickets(seg.reward.amount)
+      // Phase A : miroir RPC pour les 3 types monétaires
+      if (['coins', 'hints', 'tickets'].includes(seg.reward.type)) {
+        const rpcDelta = { [seg.reward.type]: seg.reward.amount }
+        applyCurrencyDelta?.(rpcDelta, `roulette_reward_${seg.reward.type}`).catch(e =>
+          console.warn('[RouletteModal] reward RPC failed:', e?.message || e)
+        )
+      }
       else if (seg.reward.type === 'freeze') {
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         wd.streakFreezeCount = (wd.streakFreezeCount || 0) + 1

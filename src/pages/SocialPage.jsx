@@ -432,14 +432,6 @@ export default function SocialPage() {
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 10px' }}>
                 <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0 }}>Mes amis ({friends.length})</h2>
-                <button
-                  onClick={() => loadData()}
-                  disabled={socialLoading}
-                  className="active:scale-90 transition-all"
-                  style={{ background: '#EF4444', border: 'none', fontSize: 12, cursor: 'pointer', color: 'white', borderRadius: 8, padding: '4px 10px', fontWeight: 900 }}
-                >
-                  {socialLoading ? '...' : 'Refresh'}
-                </button>
               </div>
               {socialLoading && friends.length === 0 ? (
                 <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Chargement...</p>

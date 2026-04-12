@@ -139,6 +139,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Streak J30 | Pack WTF Premium (unlock 10 f*cts random) |
 | Gains journaliers cible | 30-50 coins/jour |
 | TTF (sessions avant achat) | ~3 sessions Flash |
+| **Profil F2P choisi** | **Équilibré** — 1 achat stratégique/semaine (pack facts ou tickets), casual mobile (décidé 2026-04-12) |
 
 **Cette table est la SEULE source de vérité.** Toute divergence (trigger DB, code client, defaults de colonne, fallbacks, resets) doit être alignée ici. Points de convergence actuels :
 - Trigger DB `handle_new_user` : 0/1/3/3 ✅

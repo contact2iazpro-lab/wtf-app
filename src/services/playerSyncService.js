@@ -43,7 +43,7 @@ export async function pullFromServer(userId) {
     const localTimestamp = saved.lastModified || 0
     const remoteTimestamp = remote.last_modified || 0
 
-    // Pour les données non-devise : si remote est plus récent, on pull
+    // Pour les données non-devise (score/streak) : last-write-wins
     if (remoteTimestamp > localTimestamp) {
       saved.totalScore = remote.total_score || 0
       saved.streak = remote.streak_current || 0
@@ -51,26 +51,32 @@ export async function pullFromServer(userId) {
       saved.lastModified = remoteTimestamp
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     } else if (localTimestamp > remoteTimestamp) {
-      // Local plus récent → push les données non-devise vers serveur
-      return pushToServer(userId)
+      // Local plus récent → push score/streak vers serveur (fire & forget,
+      // on NE return PAS — la synchro des collections doit toujours se faire
+      // car le timestamp profiles peut être désaligné avec collections).
+      pushToServer(userId).catch(() => {})
     }
     try {
       const { data: collections } = await supabase
         .from('collections')
         .select('facts_completed')
         .eq('user_id', userId)
+      const serverIds = []
       if (collections && collections.length > 0) {
-        const allUnlockedIds = []
         for (const row of collections) {
-          if (Array.isArray(row.facts_completed)) allUnlockedIds.push(...row.facts_completed)
+          if (Array.isArray(row.facts_completed)) serverIds.push(...row.facts_completed)
         }
-        if (allUnlockedIds.length > 0) {
-          const s = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          // REMPLACER les unlockedFacts (pas merger — évite la contamination entre comptes)
-          s.unlockedFacts = [...new Set(allUnlockedIds)]
-          s.lastModified = Date.now()
-          localStorage.setItem('wtf_data', JSON.stringify(s))
-        }
+      }
+      const s = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      const localIds = Array.isArray(s.unlockedFacts) ? s.unlockedFacts : []
+      // Union locale + serveur : on ne perd jamais de f*ct connu d'un côté.
+      // Les unlocks locaux en attente seront de toute façon pushés vers
+      // collections au prochain unlock (via updateCollection/unlock_fact RPC).
+      const merged = [...new Set([...localIds, ...serverIds])]
+      if (merged.length !== localIds.length || merged.length !== serverIds.length) {
+        s.unlockedFacts = merged
+        s.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(s))
       }
     } catch (err) { console.warn('[sync] unlockedFacts sync failed:', err.message) }
     window.dispatchEvent(new Event('wtf_storage_sync'))

@@ -437,7 +437,7 @@ export default function BoutiquePage() {
       <div className="px-4 pt-2 pb-3 shrink-0" style={{ display: 'flex', gap: 6 }}>
         {[
           { id: 'packs', label: 'Packs', emoji: '🎁' },
-          { id: 'essentials', label: 'Tickets & Indices', emoji: '🎟️' },
+          { id: 'essentials', label: 'Essentiels', emoji: '🎟️' },
           { id: 'subscription', label: 'Abonnement', emoji: '👑' },
         ].map(t => {
           const isActive = activeTab === t.id
@@ -445,18 +445,27 @@ export default function BoutiquePage() {
             <button
               key={t.id}
               onClick={() => { audio.play('click'); setActiveTab(t.id) }}
+              className="active:scale-95 transition-all"
               style={{
-                flex: 1, padding: '8px 4px', borderRadius: 12,
-                background: isActive ? '#FF6B1A' : '#F3F4F6',
-                border: isActive ? '1px solid #FF6B1A' : '1px solid #E5E7EB',
-                color: isActive ? 'white' : '#6B7280',
+                flex: 1, padding: '10px 6px', borderRadius: 12,
+                background: isActive
+                  ? 'linear-gradient(135deg, #FF6B1A, #D94A10)'
+                  : 'white',
+                border: isActive
+                  ? '1.5px solid #FF6B1A'
+                  : '1.5px solid #D1D5DB',
+                color: isActive ? 'white' : '#1a1a2e',
                 fontWeight: 900, fontSize: 11,
                 cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                 WebkitTapHighlightColor: 'transparent',
+                boxShadow: isActive
+                  ? '0 4px 14px rgba(255,107,26,0.35)'
+                  : '0 1px 3px rgba(0,0,0,0.06)',
+                transition: 'all 0.15s ease',
               }}
             >
-              <span style={{ fontSize: 16 }}>{t.emoji}</span>
+              <span style={{ fontSize: 18 }}>{t.emoji}</span>
               <span>{t.label}</span>
             </button>
           )

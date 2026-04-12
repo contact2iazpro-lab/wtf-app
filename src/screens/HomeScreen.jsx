@@ -75,6 +75,20 @@ function useDailyCoffre() {
 
   const [coffreData, setCoffreData] = useState(read)
 
+  // Re-lire localStorage à chaque sync externe (retour depuis une autre page,
+  // achat boutique qui touche wtf_data, dev mode, etc.). Fix le bug où un coffre
+  // déjà ouvert réapparaît "jouable" après navigation.
+  useEffect(() => {
+    const refresh = () => setCoffreData(read())
+    window.addEventListener('wtf_storage_sync', refresh)
+    window.addEventListener('focus', refresh)
+    return () => {
+      window.removeEventListener('wtf_storage_sync', refresh)
+      window.removeEventListener('focus', refresh)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const getStatus = (i) => {
     const { claimedDays } = coffreData
     if (claimedDays.includes(i)) return 'collected'

@@ -116,11 +116,13 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Persistance | wtf_data.route = { level, stars } |
 | Avancement | Niveau parfait requis |
 
-### Économie F2P
+### Économie F2P — Source de vérité unique
 
 | Paramètre | Valeur |
 |-----------|--------|
-| Nouveau joueur | 0 coins / 1 ticket / 3 indices (valeurs officielles Notion) |
+| **Nouveau joueur** | **0 coins / 1 ticket / 3 indices / 3 énergies** (Notion officiel) |
+| Énergie max (stock) | 10 (achat possible via boutique au-dessus de 3) |
+| Régénération énergie | +1 toutes les 8h jusqu'au cap de 3 (pas de régén au-dessus) |
 | 1 ticket (boutique) | 25 coins |
 | 1 indice (boutique) | 10 coins |
 | 3 indices (boutique) | 30 coins |
@@ -131,6 +133,14 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Streak J14 | 1 ticket + 3 indices |
 | Gains journaliers cible | 30-50 coins/jour |
 | TTF (sessions avant achat) | ~3 sessions Flash |
+
+**Cette table est la SEULE source de vérité.** Toute divergence (trigger DB, code client, defaults de colonne, fallbacks, resets) doit être alignée ici. Points de convergence actuels :
+- Trigger DB `handle_new_user` : 0/1/3/3 ✅
+- `AuthContext.createProfile` : 0/1/3/3 ✅
+- `App.jsx` init `wtf_data` : 0/1/3/— (energy géré séparément) ✅
+- `App.jsx resetOnboarding` : 0/1/3/— ✅
+- `storageHelper.js` fallback : 0/1/3/— ✅
+- `ProfilPage.jsx executeReset` : 0/1/3/3 ✅
 
 ### Règles communes
 - Indices = chaque utilisation débite 1 du stock (pas d'indices gratuits)

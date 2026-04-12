@@ -290,10 +290,11 @@ export default function App() {
 
   // ─── Mode starters + initSessionState → extraits dans useModeStarters hook ─
 
-  // Reset complet onboarding
+  // Reset complet onboarding — valeurs F2P officielles CLAUDE.md : 0/1/3/3
   const resetOnboarding = () => {
     const freshData = {
-      gamesPlayed: 0, totalScore: 0, streak: 0, wtfCoins: 0, tickets: 0, hints: 0,
+      gamesPlayed: 0, totalScore: 0, streak: 0,
+      wtfCoins: 0, tickets: 1, hints: 3,
       unlockedFacts: [], sessionsToday: 0, statsByMode: {}, lastModified: Date.now(),
     }
     localStorage.setItem('wtf_data', JSON.stringify(freshData))

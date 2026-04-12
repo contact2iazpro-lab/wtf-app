@@ -56,13 +56,22 @@ export default function CollectionPage() {
     }
   }, [])
 
-  // Local unlocked facts
+  // Local unlocked facts — re-lu à chaque wtf_storage_sync
+  // (nécessaire pour que l'achat d'un fact dans CategoryFactsView persiste
+  // visuellement au retour sur la liste des facts)
+  const [unlockedTick, setUnlockedTick] = useState(0)
+  useEffect(() => {
+    const refresh = () => setUnlockedTick(t => t + 1)
+    window.addEventListener('wtf_storage_sync', refresh)
+    return () => window.removeEventListener('wtf_storage_sync', refresh)
+  }, [])
   const localUnlocked = useMemo(() => {
     try {
       const saved = readWtfData()
       return new Set(saved.unlockedFacts || [])
     } catch { return new Set() }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unlockedTick])
 
   const { unlockedByCategory } = useCollection(localUnlocked)
 

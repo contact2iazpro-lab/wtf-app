@@ -47,16 +47,18 @@ export function usePlayerProfile() {
    * @param {string} [sessionId] - optionnel, groupe les mutations d'une session
    */
   const applyCurrencyDelta = useCallback(async (delta, reason, sessionId = null) => {
-    if (!profile) throw new Error('no_profile_loaded')
+    // Pas de guard sur profile : le RPC serveur est la source de vérité, pas
+    // besoin d'attendre que le cache local soit hydraté pour envoyer le delta.
+    // L'optimistic update est null-safe (si prev null, on le laisse tel quel).
     const nonce = generateNonce()
     return mutate({
-      optimistic: (prev) => ({
+      optimistic: (prev) => prev ? {
         ...prev,
         coins:   (prev.coins   ?? 0) + (delta.coins   ?? 0),
         tickets: (prev.tickets ?? 0) + (delta.tickets ?? 0),
         hints:   (prev.hints   ?? 0) + (delta.hints   ?? 0),
         energy:  Math.min((prev.energy ?? 0) + (delta.energy ?? 0), 10),
-      }),
+      } : prev,
       commit: async (prev) => {
         const { data, error } = await supabase.rpc('apply_currency_delta', {
           p_delta: delta,
@@ -65,11 +67,10 @@ export function usePlayerProfile() {
           p_session_id: sessionId,
         })
         if (error) throw error
-        // data = { coins, tickets, hints, energy } — l'état canonique post-mutation
-        return { ...prev, ...data }
+        return { ...(prev || {}), ...data }
       },
     })
-  }, [profile, mutate])
+  }, [mutate])
 
   /**
    * unlockFact — marque un fact comme débloqué côté Supabase (RPC idempotente).

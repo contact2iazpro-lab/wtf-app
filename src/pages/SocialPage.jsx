@@ -67,7 +67,15 @@ export default function SocialPage() {
   const [myCode, setMyCode] = useState(() => {
     try { return localStorage.getItem('wtf_my_friend_code') || null } catch { return null }
   })
-  const [friends, setFriends] = useState([])
+  // Cache friends dans localStorage pour éviter le flash "Pas encore d'amis"
+  // à chaque remount de SocialPage (navigation interne).
+  const [friends, setFriends] = useState(() => {
+    try {
+      const cached = localStorage.getItem('wtf_cached_friends')
+      if (cached) return JSON.parse(cached) || []
+    } catch { /* ignore */ }
+    return []
+  })
   const [pendingRequests, setPendingRequests] = useState([])
   const [pendingChallenges, setPendingChallenges] = useState([])
   const [hasSentPending, setHasSentPending] = useState(false)
@@ -132,6 +140,10 @@ export default function SocialPage() {
         try { localStorage.setItem('wtf_my_friend_code', codeResult.code) } catch {}
       }
       setFriends(friendsList || [])
+      // Persiste la liste pour le prochain mount (évite flash "Pas encore d'amis")
+      try {
+        localStorage.setItem('wtf_cached_friends', JSON.stringify(friendsList || []))
+      } catch { /* ignore */ }
       try {
         const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         wtfData.friendCount = (friendsList || []).length
@@ -150,14 +162,20 @@ export default function SocialPage() {
       setSocialLoading(false)
       loadingRef.current = false
     }
-  }, [user])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
 
-  // Refresh à chaque navigation vers cette page (pas seulement au mount)
-  useEffect(() => { if (isConnected) loadData() }, [isConnected, loadData, location.key])
+  // Refresh à chaque navigation vers cette page (pas seulement au mount).
+  // Dep sur user?.id (stable) au lieu de loadData (référence qui changeait à chaque
+  // re-fetch de user dans AuthContext et cascadait en multiples appels).
+  useEffect(() => {
+    if (isConnected && user?.id) loadData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, user?.id, location.key])
 
   // Supabase Realtime pour les invitations et défis
   useEffect(() => {
-    if (!user) return
+    if (!user?.id) return
 
     const channel = supabase
       .channel('social-updates-' + user.id)
@@ -176,7 +194,8 @@ export default function SocialPage() {
       .subscribe()
 
     return () => supabase.removeChannel(channel)
-  }, [user, loadData])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
 
   const handleAccept = async (id) => {
     try {

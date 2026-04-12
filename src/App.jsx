@@ -354,6 +354,7 @@ export default function App() {
     setSessionIsPerfect, setCompletedLevels, setNewlyUnlockedCategories,
     setShowNewCategoriesModal, setShowStreakSpecialModal, setStreakRewardToast,
     setTrophyQueue,
+    applyCurrencyDelta, // Phase A.6 — miroir Supabase
   })
 
   // ─── Dev actions → extraits dans useDevActions hook ─────────────────────────

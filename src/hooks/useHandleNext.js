@@ -28,6 +28,8 @@ export function useHandleNext({
   setSessionIsPerfect, setCompletedLevels, setNewlyUnlockedCategories,
   setShowNewCategoriesModal, setShowStreakSpecialModal, setStreakRewardToast,
   setTrophyQueue,
+  // Phase A.6 — miroir Supabase
+  applyCurrencyDelta,
 }) {
 
   const handleNext = useCallback(() => {
@@ -163,6 +165,16 @@ export function useHandleNext({
       const totalBonusTickets = (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0)
       if (totalBonusCoins > 0) updateCoins(totalBonusCoins)
       if (totalBonusTickets > 0) updateTickets(totalBonusTickets)
+      // Phase A : miroir Supabase — delta fusionné coins+tickets+hints en une RPC atomique
+      const sessionEndDelta = {}
+      if (totalBonusCoins > 0)                sessionEndDelta.coins   = totalBonusCoins
+      if (totalBonusTickets > 0)              sessionEndDelta.tickets = totalBonusTickets
+      if ((streakReward?.hints ?? 0) > 0)     sessionEndDelta.hints   = streakReward.hints
+      if (Object.keys(sessionEndDelta).length > 0) {
+        applyCurrencyDelta?.(sessionEndDelta, `session_end_${sessionType}`).catch(e =>
+          console.warn('[useHandleNext] session end RPC failed:', e?.message || e)
+        )
+      }
 
       // Save storage
       setStorage(prev => {

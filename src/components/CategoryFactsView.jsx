@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { audio } from '../utils/audio'
 import { useCurrency } from '../context/CurrencyContext'
 import { updateCoins } from '../services/currencyService'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import CoinsIcon from './CoinsIcon'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -21,6 +22,7 @@ const TAB_CONFIG = {
 export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, onSelectFact, onClose }) {
   const tab = TAB_CONFIG[activeTab]
   const { coins } = useCurrency()
+  const { applyCurrencyDelta } = usePlayerProfile()
   const [sessionUnlocked, setSessionUnlocked] = useState(() => new Set())
   const [purchaseFact, setPurchaseFact] = useState(null)
   // Merge ids passés en prop avec les achats effectués dans cette vue
@@ -34,6 +36,9 @@ export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, 
     const cost = purchaseFact.isVip ? 25 : 5
     if (coins < cost) return
     updateCoins(-cost)
+    applyCurrencyDelta?.({ coins: -cost }, `buy_fact_${purchaseFact.isVip ? 'vip' : 'funny'}`).catch(e =>
+      console.warn('[CategoryFactsView] buy fact RPC failed:', e?.message || e)
+    )
     try {
       const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       const list = wd.unlockedFacts || []

@@ -5,6 +5,7 @@ import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
 import { useCurrency } from '../context/CurrencyContext'
 import { updateCoins } from '../services/currencyService'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { useAuth } from '../context/AuthContext'
 import ConnectBanner from '../components/ConnectBanner'
 import FactDetailView from '../components/FactDetailView'
@@ -75,6 +76,8 @@ export default function ResultsScreen({
   const S = (px) => `calc(${px}px * var(--scale))`
   const { coins: _cCoins, tickets: _cTickets, hints: _cHints } = useCurrency()
   const { isConnected, signInWithGoogle } = useAuth()
+  // Phase A.6 — miroir Supabase pour achat fact post-session
+  const { applyCurrencyDelta } = usePlayerProfile()
   const googleDismissed = (() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').googlePromptDismissed || 0 } catch { return 0 } })()
   const [showGoogleBanner, setShowGoogleBanner] = useState(!isConnected && googleDismissed < 2)
   const dismissGoogle = () => {
@@ -844,6 +847,9 @@ export default function ResultsScreen({
                     onClick={() => {
                       if (!canUnlock) return
                       updateCoins(-unlockCost)
+                      applyCurrencyDelta?.({ coins: -unlockCost }, 'unlock_fact_post_session').catch(e =>
+                        console.warn('[ResultsScreen] unlock fact RPC failed:', e?.message || e)
+                      )
                       try {
                         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
                         const unlocked = wd.unlockedFacts || []

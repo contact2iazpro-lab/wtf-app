@@ -168,10 +168,13 @@ export function useGameHandlers({
     if (isPaidHint) {
       if (getBalances().hints < 1) return
       updateHints(-1)
+      applyCurrencyDelta?.({ hints: -1 }, 'hint_used_in_session').catch(e =>
+        console.warn('[useGameHandlers] hint RPC failed:', e?.message || e)
+      )
     }
     setHintsUsed(hintNum)
     setSessionAnyHintUsed(true)
-  }, [selectedDifficulty])
+  }, [selectedDifficulty, applyCurrencyDelta])
 
   return {
     handleSelectAnswer,

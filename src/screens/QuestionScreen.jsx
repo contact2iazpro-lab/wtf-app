@@ -6,6 +6,7 @@ import HintFlipButton from '../components/HintFlipButton'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import { updateCoins, updateTickets, updateHints, setAbsolute, getBalances } from '../services/currencyService'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { useCurrency } from '../context/CurrencyContext'
 import renderFormattedText from '../utils/renderFormattedText'
 
@@ -42,6 +43,8 @@ export default function QuestionScreen({
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [coinFlash, setCoinFlash] = useState(null)
   const prevCoinsRef = useRef(_cCoins)
+  // Phase A.6 — miroir Supabase pour achat indice en session
+  const { applyCurrencyDelta } = usePlayerProfile()
 
   useEffect(() => {
     const diff = _cCoins - prevCoinsRef.current
@@ -277,6 +280,9 @@ export default function QuestionScreen({
             onBuyHint={!isFree && cost > 0 ? () => {
               updateCoins(-cost)
               updateHints(1)
+              applyCurrencyDelta?.({ coins: -cost, hints: 1 }, 'buy_hint_in_session').catch(e =>
+                console.warn('[QuestionScreen] buy hint RPC failed:', e?.message || e)
+              )
             } : null}
           />
         )

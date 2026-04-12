@@ -3,6 +3,7 @@ import { getGeneratedFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { updateCoins } from '../services/currencyService'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 
 const STORAGE_KEY_PREFIX = 'wtf_puzzle_'
@@ -18,6 +19,7 @@ function dailyHash(str) {
 }
 
 export default function PuzzleDuJourScreen({ onHome, setStorage }) {
+  const { applyCurrencyDelta } = usePlayerProfile()
   const dateStr = todayKey()
   const storageKey = STORAGE_KEY_PREFIX + dateStr
 
@@ -52,6 +54,9 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
     if (idx === correctIndex) {
       const gain = attemptsLeft === 3 ? 6 : attemptsLeft === 2 ? 4 : 2
       updateCoins(gain)
+      applyCurrencyDelta?.({ coins: gain }, `puzzle_du_jour_attempt_${attemptsLeft}`).catch(e =>
+        console.warn('[PuzzleDuJour] reward RPC failed:', e?.message || e)
+      )
       if (setStorage && fact) {
         setStorage(prev => {
           const u = new Set(prev.unlockedFacts || [])

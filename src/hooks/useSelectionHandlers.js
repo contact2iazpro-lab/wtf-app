@@ -24,6 +24,7 @@ export function useSelectionHandlers({
   setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
   setIsQuickPlay, setExplorerPool, setScreen, setStorage,
   setShowNoTicketModal, setGameAlert, setMiniParcours,
+  applyCurrencyDelta, // Phase A.6
 }) {
 
   const handleSelectDifficulty = useCallback((difficulty) => {
@@ -65,6 +66,9 @@ export function useSelectionHandlers({
     if (!isDevModeQuest) {
       if ((tickets || 0) < 1) { setShowNoTicketModal(true); return }
       updateTickets(-1)
+      applyCurrencyDelta?.({ tickets: -1 }, 'quest_start').catch(e =>
+        console.warn('[useSelectionHandlers] quest start RPC failed:', e?.message || e)
+      )
       setStorage(loadStorage())
     }
 

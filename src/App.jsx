@@ -28,6 +28,9 @@ import { useDevActions } from './hooks/useDevActions'
 export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
+  // Phase A — profil Supabase (source de vérité pour devises/unlocks)
+  // Déclaré en tête du composant pour être accessible dans tous les useEffect et handlers.
+  const { applyCurrencyDelta } = usePlayerProfile()
 
   // Desktop ≥768px → active le décor fullscreen (dégradé animé + particules)
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
@@ -131,6 +134,9 @@ export default function App() {
         return
       }
       updateTickets(-1)
+      applyCurrencyDelta?.({ tickets: -1 }, 'challenge_start').catch(e =>
+        console.warn('[App] challenge start RPC failed:', e?.message || e)
+      )
       setIsChallengeMode(true)
       setGameMode('blitz')
       setSessionType('blitz')
@@ -246,11 +252,6 @@ export default function App() {
     ? Math.floor(sessionFacts.length / numPlayers)
     : sessionFacts.length
 
-  // ─── Phase A — Profil joueur via Supabase (source de vérité) ────────────
-  // Coexistence avec l'ancien currencyService : les mutations légitimes sont
-  // doublées (legacy + RPC). À terme, legacy sera retiré.
-  const { applyCurrencyDelta } = usePlayerProfile()
-
   // ─── Game handlers (extrait pour réduire App.jsx) ────────────────────────
   const {
     handleSelectAnswer,
@@ -317,6 +318,7 @@ export default function App() {
     setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
     setIsQuickPlay, setExplorerPool, setScreen, setStorage,
     setShowNoTicketModal, setGameAlert, setMiniParcours,
+    applyCurrencyDelta, // Phase A.6
   })
 
   // ─── Navigation, Duel, Replay, Share ──────────────────────────────────────

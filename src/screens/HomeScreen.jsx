@@ -15,6 +15,7 @@ import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import { getNextBadge } from '../utils/badgeManager'
 import { updateCoins, updateTickets, updateHints } from '../services/currencyService'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { ZONE_HEIGHTS, GRID_CONFIG, ICON_SIZES, ASSETS, UNLOCK_MESSAGES, SPOTLIGHT_MESSAGES, THEME } from '../constants/layoutConfig'
 import RouletteModal from '../components/RouletteModal'
 
@@ -60,7 +61,7 @@ function getWeekStart() {
   return monday.toISOString().slice(0, 10)
 }
 
-function useDailyCoffre() {
+function useDailyCoffre(applyCurrencyDelta) {
   const now = new Date()
   const todayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1 // lundi=0 ... dimanche=6
   const weekStart = getWeekStart()
@@ -107,8 +108,8 @@ function useDailyCoffre() {
     localStorage.setItem('wtf_data', JSON.stringify(wtfData))
     setCoffreData({ claimedDays: newClaimed, weekStart })
     const coffreConfig = COFFRE_REWARDS[todayIndex]
-    applyCofreReward(coffreConfig.reward)
-    if (coffreConfig.reward.bonus) applyCofreReward(coffreConfig.reward.bonus)
+    applyCofreReward(coffreConfig.reward, applyCurrencyDelta)
+    if (coffreConfig.reward.bonus) applyCofreReward(coffreConfig.reward.bonus, applyCurrencyDelta)
     return coffreConfig.reward
   }
 
@@ -123,19 +124,25 @@ function useDailyCoffre() {
     localStorage.setItem('wtf_data', JSON.stringify(wtfData))
     setCoffreData({ claimedDays: newClaimed, weekStart })
     const coffreConfig = COFFRE_REWARDS[index]
-    applyCofreReward(coffreConfig.reward)
-    if (coffreConfig.reward.bonus) applyCofreReward(coffreConfig.reward.bonus)
+    applyCofreReward(coffreConfig.reward, applyCurrencyDelta)
+    if (coffreConfig.reward.bonus) applyCofreReward(coffreConfig.reward.bonus, applyCurrencyDelta)
     return coffreConfig.reward
   }
 
   return { coffres: COFFRE_REWARDS, todayIndex, getStatus, openCoffre, openEarly }
 }
 
-function applyCofreReward(reward) {
+function applyCofreReward(reward, applyCurrencyDelta = null) {
   try {
     if (reward.type === 'coins') updateCoins(reward.amount)
     else if (reward.type === 'hints') updateHints(reward.amount)
     else if (reward.type === 'tickets') updateTickets(reward.amount)
+    // Phase A : miroir Supabase (si dispo)
+    if (applyCurrencyDelta && ['coins', 'hints', 'tickets'].includes(reward.type)) {
+      applyCurrencyDelta({ [reward.type]: reward.amount }, 'daily_coffre_claim').catch(e =>
+        console.warn('[HomeScreen] coffre RPC failed:', e?.message || e)
+      )
+    }
   } catch { /* ignore */ }
 }
 
@@ -249,7 +256,9 @@ export default function HomeScreen({
     setLockToast(message)
     setTimeout(() => setLockToast(null), 2500)
   }
-  const { coffres, todayIndex, getStatus, openCoffre, openEarly } = useDailyCoffre()
+  // Phase A.6 — miroir Supabase pour coffres + accelerate
+  const { applyCurrencyDelta } = usePlayerProfile()
+  const { coffres, todayIndex, getStatus, openCoffre, openEarly } = useDailyCoffre(applyCurrencyDelta)
   const [earlyCoffreTarget, setEarlyCoffreTarget] = useState(null)
   const [nextBadgeInfo, setNextBadgeInfo] = useState(() => getNextBadge())
   const [showBadgeModal, setShowBadgeModal] = useState(false)
@@ -1175,6 +1184,9 @@ export default function HomeScreen({
                   onClick={() => {
                     if (!canAfford) return
                     updateCoins(-ACCELERATE_COST)
+                    applyCurrencyDelta?.({ coins: -ACCELERATE_COST }, 'coffre_accelerate').catch(e =>
+                      console.warn('[HomeScreen] accelerate RPC failed:', e?.message || e)
+                    )
                     const reward = openEarly(earlyCoffreTarget)
                     setEarlyCoffreTarget(null)
                     if (reward) {

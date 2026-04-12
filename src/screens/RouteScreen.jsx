@@ -3,6 +3,7 @@ import { getGeneratedFacts, getVipFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { updateCoins } from '../services/currencyService'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 
 function readRouteState() {
@@ -39,6 +40,7 @@ function buildLevelSession(level) {
 }
 
 export default function RouteScreen({ onHome, setStorage }) {
+  const { applyCurrencyDelta } = usePlayerProfile()
   const [state, setState] = useState(readRouteState)
   const [session, setSession] = useState(null)
   const [qIndex, setQIndex] = useState(0)
@@ -76,6 +78,9 @@ export default function RouteScreen({ onHome, setStorage }) {
         if (perfect) {
           const coins = session.boss ? 20 : 6
           updateCoins(coins)
+          applyCurrencyDelta?.({ coins }, session.boss ? 'route_boss_cleared' : 'route_level_cleared').catch(e =>
+            console.warn('[RouteScreen] reward RPC failed:', e?.message || e)
+          )
           if (setStorage) {
             setStorage(prev => {
               const u = new Set(prev.unlockedFacts || [])

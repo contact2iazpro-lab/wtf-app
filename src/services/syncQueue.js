@@ -140,11 +140,16 @@ export async function drain() {
       return null
     }
 
-    // Appeler le RPC
+    // Phase A : la RPC a changé de signature (3 args scalaires → 1 jsonb +
+    // reason + nonce). On appelle la nouvelle forme avec un nonce unique.
+    const nonce = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `syncqueue-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
     const { data, error } = await _supabaseRef.rpc('apply_currency_delta', {
-      p_coins_delta: coalesced.coins,
-      p_tickets_delta: coalesced.tickets,
-      p_hints_delta: coalesced.hints,
+      p_delta: coalesced,
+      p_reason: 'sync_queue_drain',
+      p_client_nonce: nonce,
+      p_session_id: null,
     })
 
     if (error) {

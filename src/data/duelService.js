@@ -120,7 +120,7 @@ function computeRoundState(round, meId, isMe1) {
     if (!iveSeenIt) {
       return { label: '🏆 Résultat', action: 'view', disabled: false, hasResultToSee: true }
     }
-    return { label: '⚔️ Revanche', action: 'rematch', disabled: false }
+    return { label: '⚔️ Revanche', action: 'rematch', disabled: false, canDecline: true }
   }
 
   return null

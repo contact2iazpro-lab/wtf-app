@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GameModal from '../components/GameModal'
-import CategorySelectorModal from '../components/CategorySelectorModal'
 import { useAuth } from '../context/AuthContext'
 import { acceptFriendRequest, rejectFriendRequest, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
@@ -79,7 +78,6 @@ export default function SocialPage() {
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
   const [toast, setToast] = useState(null)
   const [confirmRemove, setConfirmRemove] = useState(null)
-  const [categorySelector, setCategorySelector] = useState(null) // { friendId, action }
   const [expandedFriend, setExpandedFriend] = useState(null) // friendId du ami dont on voit les défis
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
@@ -116,8 +114,10 @@ export default function SocialPage() {
     audio.play('click')
     if (!duelState?.action) return
     if (duelState.action === 'create' || duelState.action === 'rematch') {
-      // Afficher modal de sélection de catégorie
-      setCategorySelector({ friendId: friend.userId, action: duelState.action })
+      // Skip le modal : aller directement à BlitzScreen avec le friendId
+      // BlitzScreen affichera les catégories disponibles
+      startCreateDefi(friend.userId, 'all')
+      navigate('/')
       return
     }
     if (duelState.action === 'accept' || duelState.action === 'view') {
@@ -133,26 +133,10 @@ export default function SocialPage() {
     }
   }
 
-  // Après sélection de catégorie dans le modal
-  const handleCategorySelected = (categoryId) => {
-    if (!categorySelector) return
-    startCreateDefi(categorySelector.friendId, categoryId)
-    setCategorySelector(null)
-    navigate('/')
-  }
-
   const { records: blitzRecords } = getProcessedBlitzRecords()
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
-      {/* Modal sélection catégorie */}
-      {categorySelector && (
-        <CategorySelectorModal
-          onSelect={handleCategorySelected}
-          onCancel={() => setCategorySelector(null)}
-        />
-      )}
-
       {/* Toast */}
       {confirmRemove && (
         <GameModal
@@ -175,7 +159,7 @@ export default function SocialPage() {
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>←</button>
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>←</button>
           <h1 className="flex-1 text-lg font-black" style={{ color: '#1a1a2e' }}>Amis</h1>
           {pendingReceived.length > 0 && (
             <span className="px-2 py-0.5 rounded-full text-xs font-black" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>{pendingReceived.length}</span>
@@ -360,7 +344,8 @@ export default function SocialPage() {
                               <button
                                 onClick={() => {
                                   audio.play('click')
-                                  setCategorySelector({ friendId: friend.userId, action: 'create' })
+                                  startCreateDefi(friend.userId, 'all')
+                                  navigate('/')
                                 }}
                                 style={{
                                   padding: '8px 12px', borderRadius: 8,
@@ -377,36 +362,61 @@ export default function SocialPage() {
                                 {allStates.map((duelState, idx) => {
                                   const isHot = duelState.action === 'accept' || duelState.action === 'view'
                                   const isBad = duelState.action === null && duelState.pending
+                                  const isRematch = duelState.action === 'rematch' && duelState.canDecline
                                   return (
-                                    <button
-                                      key={duelState.roundId}
-                                      onClick={() => handleDuelAction(friend, duelState)}
-                                      disabled={duelState.disabled}
-                                      style={{
-                                        padding: '8px 12px', borderRadius: 8,
-                                        background: duelState.disabled ? 'rgba(0,0,0,0.03)' : (isHot ? '#FF6B1A' : 'rgba(255,107,26,0.1)'),
-                                        border: duelState.disabled ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,107,26,0.3)',
-                                        color: duelState.disabled ? '#9CA3AF' : (isHot ? 'white' : '#FF6B1A'),
-                                        fontWeight: 800, fontSize: 11,
-                                        cursor: duelState.disabled ? 'default' : 'pointer',
-                                        fontFamily: 'Nunito, sans-serif',
-                                        textAlign: 'left', width: '100%',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-                                      }}
-                                      className={duelState.disabled ? '' : 'active:scale-95'}
-                                    >
-                                      <span>{duelState.label}</span>
-                                      <span style={{ fontSize: 9, opacity: 0.7, marginLeft: 8 }}>
-                                        {duelState.categoryLabel}
-                                      </span>
-                                    </button>
+                                    <div key={duelState.roundId} style={{ display: 'flex', gap: 6 }}>
+                                      <button
+                                        onClick={() => handleDuelAction(friend, duelState)}
+                                        disabled={duelState.disabled}
+                                        style={{
+                                          flex: 1, padding: '8px 12px', borderRadius: 8,
+                                          background: duelState.disabled ? 'rgba(0,0,0,0.03)' : (isHot ? '#FF6B1A' : 'rgba(255,107,26,0.1)'),
+                                          border: duelState.disabled ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,107,26,0.3)',
+                                          color: duelState.disabled ? '#9CA3AF' : (isHot ? 'white' : '#FF6B1A'),
+                                          fontWeight: 800, fontSize: 11,
+                                          cursor: duelState.disabled ? 'default' : 'pointer',
+                                          fontFamily: 'Nunito, sans-serif',
+                                          textAlign: 'left',
+                                          display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                                        }}
+                                        className={duelState.disabled ? '' : 'active:scale-95'}
+                                      >
+                                        <span>{duelState.label}</span>
+                                        <span style={{ fontSize: 9, opacity: 0.7, marginLeft: 8 }}>
+                                          {duelState.categoryLabel}
+                                        </span>
+                                      </button>
+                                      {/* Bouton refuser pour les revanches */}
+                                      {isRematch && (
+                                        <button
+                                          onClick={() => {
+                                            audio.play('click')
+                                            // Marquer comme vu (archived de la liste)
+                                            markRoundSeen(duelState.roundId, user.id).catch(() => {})
+                                            // Refetch pour mettre à jour
+                                            refreshDuels().catch(() => {})
+                                          }}
+                                          style={{
+                                            padding: '8px 10px', borderRadius: 8,
+                                            background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.1)',
+                                            color: '#6B7280', fontWeight: 800, fontSize: 11,
+                                            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                                            whiteSpace: 'nowrap'
+                                          }}
+                                          className="active:scale-95"
+                                        >
+                                          ✕ Refuser
+                                        </button>
+                                      )}
+                                    </div>
                                   )
                                 })}
                                 {/* Bouton créer un nouveau défi */}
                                 <button
                                   onClick={() => {
                                     audio.play('click')
-                                    setCategorySelector({ friendId: friend.userId, action: 'create' })
+                                    startCreateDefi(friend.userId, 'all')
+                                    navigate('/')
                                   }}
                                   style={{
                                     padding: '8px 12px', borderRadius: 8,

@@ -83,49 +83,96 @@ export async function getUserDuels(userId) {
  *
  * @returns {Object} { label, action, disabled, pending, hasResultToSee, opponentId }
  */
+/**
+ * Calcule l'état d'un seul round (challenge).
+ * Helper interne pour computeAllDuelStates.
+ */
+function computeRoundState(round, meId, isMe1) {
+  const myField = isMe1 ? 'player1_time' : 'player2_time'
+  const theirField = isMe1 ? 'player2_time' : 'player1_time'
+  const mySeenField = isMe1 ? 'seen_by_p1' : 'seen_by_p2'
+
+  // Round expiré
+  const isExpiredByDate = round.expires_at
+    && new Date(round.expires_at) < new Date()
+    && round.status === 'pending'
+  if (round.status === 'expired' || isExpiredByDate) {
+    return null // Expiré, ne pas afficher
+  }
+
+  // Round pending : un des 2 doit encore jouer
+  if (round.status === 'pending') {
+    const iHavePlayed = round[myField] != null
+    const theyHavePlayed = round[theirField] != null
+    if (iHavePlayed && !theyHavePlayed) {
+      return { label: '⏳ Attente', action: null, disabled: true, pending: true }
+    }
+    if (!iHavePlayed && theyHavePlayed) {
+      return { label: '🎯 Relever', action: 'accept', disabled: false }
+    }
+    // Aucun n'a joué → ne pas afficher
+    return null
+  }
+
+  // Round complété : voir résultat OU revanche
+  if (round.status === 'completed') {
+    const iveSeenIt = round[mySeenField] === true
+    if (!iveSeenIt) {
+      return { label: '🏆 Résultat', action: 'view', disabled: false, hasResultToSee: true }
+    }
+    return { label: '⚔️ Revanche', action: 'rematch', disabled: false }
+  }
+
+  return null
+}
+
+/**
+ * Calcule l'état de TOUS les défis d'un duel (pas juste le dernier).
+ * Retourne une liste de { label, action, disabled, code, created_at, ...state }
+ */
+export function computeAllDuelStates(duel, allRounds, meId) {
+  if (!duel) return []
+
+  const isMe1 = duel.player1_id === meId
+  const states = []
+
+  // Traiter tous les rounds, du plus récent au plus ancien
+  for (const round of allRounds) {
+    const roundState = computeRoundState(round, meId, isMe1)
+    if (roundState) {
+      states.push({
+        ...roundState,
+        roundId: round.id,
+        code: round.code,
+        categoryLabel: round.category_label,
+        created_at: round.created_at,
+      })
+    }
+  }
+
+  return states
+}
+
+/**
+ * Calcule l'état d'un duel pour un user donné — utilisé pour afficher
+ * le bon bouton/label à côté de chaque ami dans SocialPage.
+ *
+ * @returns {Object} { label, action, disabled, pending, hasResultToSee, opponentId }
+ */
 export function computeDuelState(duel, lastRound, meId) {
   if (!duel || !lastRound) {
     return { label: '⚔️ Défier', action: 'create', disabled: false }
   }
 
   const isMe1 = duel.player1_id === meId
-  const myField = isMe1 ? 'player1_time' : 'player2_time'
-  const theirField = isMe1 ? 'player2_time' : 'player1_time'
-  const mySeenField = isMe1 ? 'seen_by_p1' : 'seen_by_p2'
+  const state = computeRoundState(lastRound, meId, isMe1)
 
-  // Round expiré (côté SQL OU côté client si expires_at dépassé).
-  // Sans cron Supabase qui passe expire_old_challenges, on compense ici.
-  const isExpiredByDate = lastRound.expires_at
-    && new Date(lastRound.expires_at) < new Date()
-    && lastRound.status === 'pending'
-  if (lastRound.status === 'expired' || isExpiredByDate) {
+  // Si le dernier round n'est pas affichable, revenir à "Défier"
+  if (!state) {
     return { label: '⚔️ Défier', action: 'create', disabled: false }
   }
 
-  // Round pending : un des 2 doit encore jouer
-  if (lastRound.status === 'pending') {
-    const iHavePlayed = lastRound[myField] != null
-    const theyHavePlayed = lastRound[theirField] != null
-    if (iHavePlayed && !theyHavePlayed) {
-      return { label: '⏳ Attente', action: null, disabled: true, pending: true }
-    }
-    if (!iHavePlayed && theyHavePlayed) {
-      return { label: '🎯 Relever', action: 'accept', disabled: false, roundId: lastRound.id }
-    }
-    // Aucun n'a joué (cas rare, juste créé) → afficher "Défier" (reprise)
-    return { label: '⚔️ Défier', action: 'create', disabled: false }
-  }
-
-  // Round complété : voir résultat OU revanche
-  if (lastRound.status === 'completed') {
-    const iveSeenIt = lastRound[mySeenField] === true
-    if (!iveSeenIt) {
-      return { label: '🏆 Résultat', action: 'view', disabled: false, roundId: lastRound.id, hasResultToSee: true }
-    }
-    return { label: '⚔️ Revanche', action: 'rematch', disabled: false, roundId: lastRound.id }
-  }
-
-  return { label: '⚔️ Défier', action: 'create', disabled: false }
+  return { ...state, roundId: lastRound.id }
 }
 
 /**

@@ -16,7 +16,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../context/AuthContext'
-import { computeDuelState } from '../../../data/duelService'
+import { computeDuelState, computeAllDuelStates } from '../../../data/duelService'
 
 async function fetchDuels(userId) {
   if (!userId) return []
@@ -108,6 +108,12 @@ export function useDuels() {
     return computeDuelState(entry?.duel, entry?.lastRound, userId)
   }, [byFriendId, userId])
 
+  // Retourne TOUS les états de défis pour un ami (pas juste le dernier)
+  const getStatesFor = useCallback((friendId) => {
+    const entry = byFriendId.get(friendId)
+    return computeAllDuelStates(entry?.duel, entry?.allRounds || [], userId)
+  }, [byFriendId, userId])
+
   // Notifications agrégées : défis à relever + résultats à voir
   const notificationCount = useMemo(() => {
     let n = 0
@@ -118,5 +124,5 @@ export function useDuels() {
     return n
   }, [byFriendId, userId])
 
-  return { duels, byFriendId, getStateFor, notificationCount, loading, error, refresh }
+  return { duels, byFriendId, getStateFor, getStatesFor, notificationCount, loading, error, refresh }
 }

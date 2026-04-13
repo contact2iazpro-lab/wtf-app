@@ -70,6 +70,7 @@ export default function SocialPage() {
     refreshFriends,
     byFriendId,
     getDuelStateFor,
+    getDuelStatesFor,
     myCode,
     startCreateDefi,
     refreshDuels,
@@ -79,6 +80,7 @@ export default function SocialPage() {
   const [toast, setToast] = useState(null)
   const [confirmRemove, setConfirmRemove] = useState(null)
   const [categorySelector, setCategorySelector] = useState(null) // { friendId, action }
+  const [expandedFriend, setExpandedFriend] = useState(null) // friendId du ami dont on voit les défis
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 
@@ -109,25 +111,24 @@ export default function SocialPage() {
     setConfirmRemove(null)
   }
 
-  // Bouton dynamique par-ami — lit directement l'état du duel via context
-  const handleFriendDuelAction = async (friend, state) => {
+  // Action sur un défi spécifique (avec roundId et action)
+  const handleDuelAction = async (friend, duelState) => {
     audio.play('click')
-    if (!state?.action) return
-    if (state.action === 'create' || state.action === 'rematch') {
+    if (!duelState?.action) return
+    if (duelState.action === 'create' || duelState.action === 'rematch') {
       // Afficher modal de sélection de catégorie
-      setCategorySelector({ friendId: friend.userId, action: state.action })
+      setCategorySelector({ friendId: friend.userId, action: duelState.action })
       return
     }
-    if (state.action === 'accept' || state.action === 'view') {
-      if (state.roundId && state.action === 'view') {
+    if (duelState.action === 'accept' || duelState.action === 'view') {
+      if (duelState.roundId && duelState.action === 'view') {
         try {
-          await markRoundSeen(state.roundId, user.id)
+          await markRoundSeen(duelState.roundId, user.id)
           // Refetch immédiatement pour afficher "Revanche" au lieu de "Résultat"
           await refreshDuels()
         } catch {}
       }
-      const entry = byFriendId.get(friend.userId)
-      const code = entry?.lastRound?.code
+      const code = duelState.code
       if (code) navigate(`/challenge/${code}`)
     }
   }
@@ -294,33 +295,133 @@ export default function SocialPage() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {friends.map(friend => {
-                    const state = getDuelStateFor(friend.userId)
-                    const isHot = state.action === 'accept' || state.action === 'view'
+                    const isExpanded = expandedFriend === friend.userId
+                    const allStates = getDuelStatesFor(friend.userId)
+                    const hasDefis = allStates.length > 0
                     return (
-                      <div key={friend.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
-                        <Initial name={friend.displayName} size={36} />
+                      <div key={friend.friendshipId}>
+                        {/* Ligne ami : header expandable */}
                         <button
-                          onClick={() => { audio.play('click'); navigate(`/duels/${friend.userId}`) }}
-                          style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}
-                        >
-                          <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
-                          <span style={{ fontSize: 10, color: '#9CA3AF' }}>Voir l'historique →</span>
-                        </button>
-                        <button
-                          onClick={() => handleFriendDuelAction(friend, state)}
-                          disabled={state.disabled}
-                          className="active:scale-90"
+                          onClick={() => setExpandedFriend(isExpanded ? null : friend.userId)}
                           style={{
-                            padding: '6px 10px', borderRadius: 8,
-                            background: state.disabled ? 'rgba(0,0,0,0.05)' : (isHot ? '#FF6B1A' : 'rgba(255,107,26,0.1)'),
-                            border: state.disabled ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,107,26,0.3)',
-                            color: state.disabled ? '#9CA3AF' : (isHot ? 'white' : '#FF6B1A'),
-                            fontWeight: 800, fontSize: 11,
-                            cursor: state.disabled ? 'default' : 'pointer',
-                            whiteSpace: 'nowrap',
+                            width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
+                            borderRadius: 10, background: 'rgba(0,0,0,0.03)', border: 'none',
+                            cursor: 'pointer', transition: 'all 0.2s'
                           }}
-                        >{state.label}</button>
-                        <button onClick={() => handleRemove(friend.friendshipId)} className="active:scale-90" style={{ padding: '4px 8px', borderRadius: 6, background: 'transparent', border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer' }}>✕</button>
+                          onMouseOver={e => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+                          onMouseOut={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                        >
+                          <Initial name={friend.displayName} size={36} />
+                          <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                            <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
+                            <span style={{ fontSize: 10, color: '#9CA3AF' }}>
+                              {hasDefis ? `${allStates.length} défi${allStates.length > 1 ? 's' : ''}` : 'Aucun défi'}
+                            </span>
+                          </div>
+                          <span style={{
+                            fontSize: 16, color: '#9CA3AF', transition: 'transform 0.2s',
+                            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)',
+                            flexShrink: 0
+                          }}>▼</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              audio.play('click')
+                              navigate(`/duels/${friend.userId}`)
+                            }}
+                            style={{
+                              padding: '4px 8px', borderRadius: 6, background: 'transparent',
+                              border: '1px solid rgba(0,0,0,0.1)', color: '#6B7280', fontSize: 10,
+                              fontWeight: 800, cursor: 'pointer', flexShrink: 0
+                            }}
+                          >
+                            Histo
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              audio.play('click')
+                              handleRemove(friend.friendshipId)
+                            }}
+                            className="active:scale-90"
+                            style={{
+                              padding: '4px 8px', borderRadius: 6, background: 'transparent',
+                              border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer', flexShrink: 0
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </button>
+
+                        {/* Liste des défis si expanded */}
+                        {isExpanded && (
+                          <div style={{ marginTop: 8, paddingLeft: 10, display: 'flex', flexDirection: 'column', gap: 6, borderLeft: '2px solid rgba(255,107,26,0.2)' }}>
+                            {allStates.length === 0 ? (
+                              <button
+                                onClick={() => {
+                                  audio.play('click')
+                                  setCategorySelector({ friendId: friend.userId, action: 'create' })
+                                }}
+                                style={{
+                                  padding: '8px 12px', borderRadius: 8,
+                                  background: 'rgba(255,107,26,0.1)', border: '1px solid rgba(255,107,26,0.3)',
+                                  color: '#FF6B1A', fontWeight: 800, fontSize: 11,
+                                  cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                                  textAlign: 'left'
+                                }}
+                              >
+                                ⚔️ Créer un défi
+                              </button>
+                            ) : (
+                              <>
+                                {allStates.map((duelState, idx) => {
+                                  const isHot = duelState.action === 'accept' || duelState.action === 'view'
+                                  const isBad = duelState.action === null && duelState.pending
+                                  return (
+                                    <button
+                                      key={duelState.roundId}
+                                      onClick={() => handleDuelAction(friend, duelState)}
+                                      disabled={duelState.disabled}
+                                      style={{
+                                        padding: '8px 12px', borderRadius: 8,
+                                        background: duelState.disabled ? 'rgba(0,0,0,0.03)' : (isHot ? '#FF6B1A' : 'rgba(255,107,26,0.1)'),
+                                        border: duelState.disabled ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,107,26,0.3)',
+                                        color: duelState.disabled ? '#9CA3AF' : (isHot ? 'white' : '#FF6B1A'),
+                                        fontWeight: 800, fontSize: 11,
+                                        cursor: duelState.disabled ? 'default' : 'pointer',
+                                        fontFamily: 'Nunito, sans-serif',
+                                        textAlign: 'left', width: '100%',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                                      }}
+                                      className={duelState.disabled ? '' : 'active:scale-95'}
+                                    >
+                                      <span>{duelState.label}</span>
+                                      <span style={{ fontSize: 9, opacity: 0.7, marginLeft: 8 }}>
+                                        {duelState.categoryLabel}
+                                      </span>
+                                    </button>
+                                  )
+                                })}
+                                {/* Bouton créer un nouveau défi */}
+                                <button
+                                  onClick={() => {
+                                    audio.play('click')
+                                    setCategorySelector({ friendId: friend.userId, action: 'create' })
+                                  }}
+                                  style={{
+                                    padding: '8px 12px', borderRadius: 8,
+                                    background: 'transparent', border: '2px dashed rgba(255,107,26,0.3)',
+                                    color: '#FF6B1A', fontWeight: 800, fontSize: 11,
+                                    cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                                    marginTop: 4
+                                  }}
+                                >
+                                  ➕ Nouveau défi
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   })}

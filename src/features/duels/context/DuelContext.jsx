@@ -56,6 +56,7 @@ export function DuelProvider({ children }) {
     duels: duelsState.duels,
     byFriendId: duelsState.byFriendId,
     getDuelStateFor: duelsState.getStateFor,
+    getDuelStatesFor: duelsState.getStatesFor,
     notificationCount: duelsState.notificationCount,
     duelsLoading: duelsState.loading,
     refreshDuels: duelsState.refresh,
@@ -73,7 +74,7 @@ export function DuelProvider({ children }) {
   }), [
     friendsState.friends, friendsState.pendingReceived, friendsState.pendingSent,
     friendsState.loading, friendsState.refresh,
-    duelsState.duels, duelsState.byFriendId, duelsState.getStateFor, duelsState.notificationCount,
+    duelsState.duels, duelsState.byFriendId, duelsState.getStateFor, duelsState.getStatesFor, duelsState.notificationCount,
     duelsState.loading, duelsState.refresh,
     unlockedState.unlocked, unlockedState.loading, unlockedState.refresh,
     myCodeState.code,

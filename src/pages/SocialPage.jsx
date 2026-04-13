@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import GameModal from '../components/GameModal'
+import CategorySelectorModal from '../components/CategorySelectorModal'
 import { useAuth } from '../context/AuthContext'
 import { acceptFriendRequest, rejectFriendRequest, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
@@ -77,6 +78,7 @@ export default function SocialPage() {
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
   const [toast, setToast] = useState(null)
   const [confirmRemove, setConfirmRemove] = useState(null)
+  const [categorySelector, setCategorySelector] = useState(null) // { friendId, action }
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 
@@ -112,12 +114,8 @@ export default function SocialPage() {
     audio.play('click')
     if (!state?.action) return
     if (state.action === 'create' || state.action === 'rematch') {
-      // Demander catégorie: 'all' pour aléatoire ou catégorie spécifique
-      const categoryId = prompt('Catégorie du défi:\n- all (aléatoire)\n- sports\n- sciences\n- etc.\n\nOu laisse vide pour aléatoire', 'all')
-      if (!categoryId) return // Annulé
-      // Nav state en mémoire (plus de localStorage) → App.jsx le consomme via DuelContext
-      startCreateDefi(friend.userId, categoryId || 'all')
-      navigate('/')
+      // Afficher modal de sélection de catégorie
+      setCategorySelector({ friendId: friend.userId, action: state.action })
       return
     }
     if (state.action === 'accept' || state.action === 'view') {
@@ -134,10 +132,26 @@ export default function SocialPage() {
     }
   }
 
+  // Après sélection de catégorie dans le modal
+  const handleCategorySelected = (categoryId) => {
+    if (!categorySelector) return
+    startCreateDefi(categorySelector.friendId, categoryId)
+    setCategorySelector(null)
+    navigate('/')
+  }
+
   const { records: blitzRecords } = getProcessedBlitzRecords()
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
+      {/* Modal sélection catégorie */}
+      {categorySelector && (
+        <CategorySelectorModal
+          onSelect={handleCategorySelected}
+          onCancel={() => setCategorySelector(null)}
+        />
+      )}
+
       {/* Toast */}
       {confirmRemove && (
         <GameModal

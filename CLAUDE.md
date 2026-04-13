@@ -31,7 +31,8 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
 - ✅ Realtime subscriptions (friendships, challenges, duels)
 - ✅ RLS policies simplifiées (4 policies au lieu de 12)
 - ✅ Console warnings fixés (React setState, Supabase 406, favicon)
-- ⏳ **unlockedFacts migration** : Colonne ajoutée à Supabase, migration hook créée, intégration en cours (voir Architecture Data)
+- ✅ Race condition fix (ChallengeScreen waits for facts init)
+- 🔧 **unlockedFacts infra** : Colonne Supabase préparée, code reste en localStorage (migration non-commencée, voir Architecture Data)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client
 Toute variable préfixée `VITE_` est inlinée dans le JS public et lisible via DevTools.
@@ -279,7 +280,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 **Supabase (canonique)** — toute mutation passe par RPC ou Edge Function, jamais d'écriture localStorage directe :
 - coins, tickets, indices, énergie ✅
-- **unlockedFacts (set d'IDs)** ⏳ *Colonne `unlocked_facts INTEGER[]` ajoutée, migration hook créé, intégration en cours*
+- **unlockedFacts (set d'IDs)** 🔧 *Colonne infra préparée, code reste en localStorage — migration non-commencée*
 - streak (jour courant + historique) ⏳
 - badges / trophées ⏳
 - blitzRecords (meilleurs temps par catégorie/palier) ⏳
@@ -288,10 +289,10 @@ séparé, sous-domaine privé, ou en local uniquement).
 - stats par mode (gamesPlayed, totalCorrect, bestStreak…) ⏳
 - duels / challenges / friendships ✅ (Realtime subscriptions opérationnelles)
 
-**localStorage (UI state, non syncé)** :
+**localStorage (source de vérité jusqu'à Phase A complet)** :
 - onboardingCompleted, tutoStep, skip_launch_*
 - son on/off, thème, mode dev/test
-- **unlockedFacts** ⏳ *Actuellement source de vérité, à remplacer par Supabase une fois migration complète*
+- **unlockedFacts** ✅ *Source actuelle de vérité pour les f*cts débloqués. Sera migrée vers Supabase quand Phase A unlockedFacts sera complète*
 - wtf_cached_friends (pur cache de l'entité Supabase)
 
 **React state (éphémère)** :

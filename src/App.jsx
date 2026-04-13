@@ -5,6 +5,7 @@ import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS } from './constants/gameConfig
 import { getDailyFact, initFacts, resetFacts } from './data/factsService'
 import { loadStorage, saveStorage } from './utils/storageHelper'
 import { updateTickets, getBalances } from './services/currencyService'
+import { getFlashEnergy } from './services/energyService'
 import { useAuth } from './context/AuthContext'
 import AppModals from './components/AppModals'
 import ScreenRenderer from './components/ScreenRenderer'
@@ -178,6 +179,16 @@ export default function App() {
   const [storage, setStorage] = useState(loadStorage)
   const { totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets } = storage
   const dailyQuestsRemaining = Math.max(0, 3 - (sessionsToday || 0))
+
+  // Fix React warning: état flashEnergy pour éviter setState pendant le render de ScreenRenderer
+  const [flashEnergy, setFlashEnergy] = useState(() => getFlashEnergy())
+  useEffect(() => {
+    const updateFlashEnergy = () => {
+      setFlashEnergy(getFlashEnergy())
+    }
+    window.addEventListener('wtf_energy_updated', updateFlashEnergy)
+    return () => window.removeEventListener('wtf_energy_updated', updateFlashEnergy)
+  }, [])
 
   const [isChallengeMode, setIsChallengeMode] = useState(false)
   const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'explorer' | 'duel'
@@ -466,6 +477,7 @@ export default function App() {
         duelContext={duelContext} isChallengeMode={isChallengeMode}
         user={user} storage={storage} streak={streak}
         newlyEarnedBadges={newlyEarnedBadges} showHowToPlay={showHowToPlay}
+        flashEnergy={flashEnergy}
         modeConfigs={MODE_CONFIGS}
         handleHomeNavigate={handleHomeNavigate} handleHome={handleHome}
         handleSelectDifficulty={handleSelectDifficulty} handleSelectCategory={handleSelectCategory}

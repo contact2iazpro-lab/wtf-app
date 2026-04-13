@@ -22,7 +22,6 @@ import DuelPassScreen from '../screens/DuelPassScreen'
 import DuelResultsScreen from '../screens/DuelResultsScreen'
 import PuzzleDuJourScreen from '../screens/PuzzleDuJourScreen'
 import RouteScreen from '../screens/RouteScreen'
-import { getFlashEnergy } from '../services/energyService'
 import { getCategoryById, getTitrePartiel } from '../data/factsService'
 
 export default function ScreenRenderer({
@@ -32,7 +31,7 @@ export default function ScreenRenderer({
   sessionCorrectFacts, sessionFacts, sessionsToday, sessionIsPerfect,
   completedLevels, effectiveDailyFact, launchMode, blitzFacts, blitzResults,
   duelPlayers, duelCurrentPlayerIndex, duelContext, isChallengeMode,
-  user, storage, streak, newlyEarnedBadges,
+  user, storage, streak, newlyEarnedBadges, flashEnergy,
   showHowToPlay, modeConfigs,
   // Handlers
   handleHomeNavigate, handleHome, handleSelectDifficulty, handleSelectCategory,
@@ -61,7 +60,7 @@ export default function ScreenRenderer({
           dailyQuestsRemaining={Math.max(0, 3 - (sessionsToday || 0))}
           newlyEarnedBadges={newlyEarnedBadges}
           onBadgeSeen={onBadgeSeen}
-          flashEnergyRemaining={getFlashEnergy().remaining}
+          flashEnergyRemaining={flashEnergy.remaining}
           onNavigate={handleHomeNavigate}
           onOpenSettings={() => setShowSettings(true)}
           playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}

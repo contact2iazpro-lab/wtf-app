@@ -111,8 +111,11 @@ export default function SocialPage() {
     audio.play('click')
     if (!state?.action) return
     if (state.action === 'create' || state.action === 'rematch') {
+      // Demander catégorie: 'all' pour aléatoire ou catégorie spécifique
+      const categoryId = prompt('Catégorie du défi:\n- all (aléatoire)\n- sports\n- sciences\n- etc.\n\nOu laisse vide pour aléatoire', 'all')
+      if (!categoryId) return // Annulé
       // Nav state en mémoire (plus de localStorage) → App.jsx le consomme via DuelContext
-      startCreateDefi(friend.userId)
+      startCreateDefi(friend.userId, categoryId || 'all')
       navigate('/')
       return
     }

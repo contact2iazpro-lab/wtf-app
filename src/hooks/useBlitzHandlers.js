@@ -153,6 +153,10 @@ export function useBlitzHandlers({
               player1Name: user.user_metadata?.name || 'Joueur WTF!',
               opponentId,
             })
+            // Débiter le ticket APRÈS que le défi est créé (succès garanti)
+            mergeFlags?.({ tickets: -1 }, 'challenge_create').catch(e =>
+              console.warn('[useBlitzHandlers] debit ticket RPC failed:', e?.message || e)
+            )
             clearPendingDuel?.()
             localStorage.setItem('wtf_auto_challenge', JSON.stringify(round))
             window.dispatchEvent(new Event('wtf_challenge_created'))

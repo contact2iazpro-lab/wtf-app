@@ -109,24 +109,22 @@ export default function App() {
     if (!pendingDuel) return
 
     if (pendingDuel.mode === 'create') {
+      // Vérifier tickets mais on débite après createDuelRound() en handleBlitzFinish
       const balances = getBalances()
       if (balances.tickets < 1) {
         setGameAlert({ emoji: '🎫', title: 'Pas de ticket', message: 'Tu n\'as pas de ticket pour lancer un défi !' })
         clearPendingDuel()
         return
       }
-      updateTickets(-1)
-      applyCurrencyDelta?.({ tickets: -1 }, 'challenge_start').catch(e =>
-        console.warn('[App] challenge start RPC failed:', e?.message || e)
-      )
       setIsChallengeMode(true)
       setGameMode('blitz')
       setSessionType('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
-      setSelectedCategory(null)
+      setSelectedCategory(pendingDuel.categoryId || 'all')
       setScreen(SCREENS.BLITZ_LOBBY)
+      // NOTE: Ticket débité dans handleBlitzFinish APRÈS createDuelRound() réussit
       // On laisse pendingDuel en place pour que handleBlitzFinish puisse
-      // lire opponentId. Sera cleared par handleHome ou après création du round.
+      // lire opponentId + categoryId. Sera cleared par handleHome ou après création du round.
     } else if (pendingDuel.mode === 'accept' && pendingDuel.facts) {
       // User accepte un défi : lance directement le Blitz avec les facts préparés
       setSessionType('blitz')

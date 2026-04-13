@@ -27,8 +27,8 @@ export function DuelProvider({ children }) {
   // { mode: 'create' | 'accept', opponentId?, roundId?, code?, facts? }
   const [pendingDuel, setPendingDuel] = useState(null)
 
-  const startCreateDefi = useCallback((friendId) => {
-    setPendingDuel({ mode: 'create', opponentId: friendId })
+  const startCreateDefi = useCallback((friendId, categoryId) => {
+    setPendingDuel({ mode: 'create', opponentId: friendId, categoryId })
   }, [])
 
   const startAcceptDefi = useCallback((round, preparedFacts) => {

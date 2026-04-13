@@ -32,6 +32,10 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
 - ✅ RLS policies simplifiées (4 policies au lieu de 12)
 - ✅ Console warnings fixés (React setState, Supabase 406, favicon)
 - ✅ Race condition fix (ChallengeScreen waits for facts init)
+- ✅ **Mode Défi Blitz** : 3 bloquants fermés (2026-04-13)
+  - ✅ Catégorie choisie avant créer défi
+  - ✅ Ticket débité APRÈS createDuelRound() (pas avant jeu)
+  - ✅ TRIGGER SQL pour calculer winner_id
 - 🔧 **unlockedFacts infra** : Colonne Supabase préparée, code reste en localStorage (migration non-commencée, voir Architecture Data)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client

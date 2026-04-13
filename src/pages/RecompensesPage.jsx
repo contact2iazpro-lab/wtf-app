@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { getTrophySections, getNextBadge, CATEGORY_LABELS } from '../utils/badgeManager'
+import { useGoBack } from '../hooks/useGoBack'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
 export default function RecompensesPage() {
-  const navigate = useNavigate()
+  const goBack = useGoBack()
   const [sections, setSections] = useState([])
   const [nextTrophy, setNextTrophy] = useState(null)
   const [expanded, setExpanded] = useState({ global: true, type: true, categories: false, streak: true, blitz: true, games: true, social: true, perfect: true })
@@ -37,7 +37,7 @@ export default function RecompensesPage() {
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>←</button>
+          <button onClick={goBack} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>←</button>
           <h1 className="flex-1 text-lg font-black" style={{ color: '#1a1a2e' }}>Trophées</h1>
           <span className="px-3 py-1 rounded-xl text-xs font-black" style={{ background: 'rgba(255,215,0,0.15)', color: '#D97706' }}>
             {totalEarned}/{totalCount}

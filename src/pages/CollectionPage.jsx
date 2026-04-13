@@ -1,11 +1,11 @@
 import { useMemo, useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useCollection } from '../hooks/useCollection'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { audio } from '../utils/audio'
 import { readWtfData } from '../utils/storageHelper'
 import FactDetailView from '../components/FactDetailView'
 import CategoryFactsView from '../components/CategoryFactsView'
+import { useGoBack } from '../hooks/useGoBack'
 
 const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
 
@@ -39,7 +39,7 @@ export default function CollectionPage() {
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
 
-  const navigate = useNavigate()
+  const goBack = useGoBack()
   const [openedFromExternal, setOpenedFromExternal] = useState(false)
 
   // Auto-open fact detail si venant de ResultsScreen
@@ -175,7 +175,7 @@ export default function CollectionPage() {
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3 mb-3">
           <button
-            onClick={() => navigate('/')}
+            onClick={goBack}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
             style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
           >←</button>

@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import GameModal from '../components/GameModal'
-import { useNavigate } from 'react-router-dom'
+import { useGoBack } from '../hooks/useGoBack'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getValidFacts } from '../data/factsService'
@@ -22,7 +22,7 @@ const MODE_LABELS = {
 }
 
 export default function ProfilPage() {
-  const navigate = useNavigate()
+  const goBack = useGoBack()
   const { isConnected, user, signInWithGoogle, signOut } = useAuth()
   const [showSettings, setShowSettings] = useState(false)
 
@@ -202,7 +202,7 @@ export default function ProfilPage() {
       <div className="px-4 pt-2 pb-1 shrink-0">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => navigate('/')}
+            onClick={goBack}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
             style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
           >←</button>

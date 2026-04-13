@@ -116,6 +116,78 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Persistance | wtf_data.route = { level, stars } |
 | Avancement | Niveau parfait requis |
 
+### Mode Amis & Défis Blitz (Option A — Asynchrone)
+
+| Paramètre | Valeur |
+|-----------|--------|
+| **Concept** | Joueur A lance un Blitz, défie un ami B. B joue à son rythme, meilleur temps gagne. |
+| Coût A | 1 ticket pour créer le défi |
+| Coût B | Gratuit pour relever |
+| Questions | Même nombre, **affirmations différentes** (seed aléatoire) |
+| Catégorie | Choisie par A, B doit en avoir min 5 facts |
+| Timer | 10s par affirmation |
+| Pénalité erreur | +3 secondes |
+| Gagnant | Meilleur temps (le plus bas) |
+| Expiration | 48h (expires_at vérifié client-side) |
+| Notifications | Realtime Supabase sur `friendships`, `challenges`, `duels` |
+
+**Flow exact :**
+1. A joue Blitz classique (catégorie choisie) → `handleBlitzFinish` → `createDuelRound()`
+2. DB : `challenges` INSERT (status='pending', code='ABC123', player1_time=X)
+3. A reçoit lien : `/challenge/ABC123` → share via SMS/WhatsApp
+4. B ouvre lien → ChallengeScreen : "A t'a défié ! Temps : Xs" → clique "Relever"
+5. B joue même catégorie, même nb questions → `handleBlitzFinish` avec mode='accept'
+6. DB : `challenges` UPDATE (player2_time=Y, status='completed') + TRIGGER winner_id
+7. ChallengeScreen : affichage résultats côte à côte (temps + gagnant)
+
+### Système Amis — Règles Complètes
+
+**Tables Supabase :**
+- `friend_codes` : { user_id, code (8 chars unique), display_name, avatar_url }
+- `friendships` : { id, user1_id, user2_id, status ('pending'|'accepted'|'blocked'), created_at, accepted_at }
+
+**Flow d'ajout d'ami (Michael → 2iaz) :**
+1. Michael ouvre SocialPage → voit son Friend Code (ex: `A2B3C4D5`)
+2. Michael clique "Inviter un ami" → partage lien `/invite/A2B3C4D5`
+3. Michael envoie lien à 2iaz
+4. 2iaz clique lien → InvitePage traite : lookup friend_codes, crée friendship(status='accepted')
+5. ✅ Ils sont amis (Realtime update sur les deux clients)
+
+**Statuts d'amitié :**
+- `pending` : invitation en attente (2iaz doit accepter)
+- `accepted` : amis confirmés, peuvent se défier
+- `blocked` : impossible de défier
+
+**Vérifications avant défi :**
+- Statut amitié = `accepted`
+- Player 2 a min 5 facts dans la catégorie
+- Player 1 a 1 ticket
+- Défi pas expiré (expires_at < now)
+
+### Architecture DuelContext & Realtime
+
+**Files clés :**
+- `src/features/duels/context/DuelContext.jsx` : provider, pendingDuel state
+- `src/features/duels/hooks/useFriends.js` : friends + pendingRequests + Realtime
+- `src/features/duels/hooks/useDuels.js` : duels/challenges + Realtime
+- `src/data/friendService.js` : CRUD amis (sendFriendRequest, acceptFriendRequest, etc.)
+- `src/data/duelService.js` : CRUD défis (createDuelRound, completeDuelRound, etc.)
+
+**pendingDuel mémoire :**
+```javascript
+{
+  mode: 'create' | 'accept',        // Créateur ou accepteur
+  opponentId: uuid,                 // Ami défié/défiant
+  roundId: uuid,                    // challenges.id
+  code: '6char',                    // Code défi partageé
+  facts: [...]                      // Facts prépréparés (mode='accept' only)
+}
+```
+
+**Realtime subscriptions (auto via hooks) :**
+- `friendships` → change → refresh useFriends
+- `challenges` → change → refresh useDuels → refresh UI
+
 ### Économie F2P — Source de vérité unique
 
 | Paramètre | Valeur |

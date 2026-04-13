@@ -389,12 +389,22 @@ export default function SocialPage() {
                                       {/* Bouton refuser pour les revanches */}
                                       {isRematch && (
                                         <button
-                                          onClick={() => {
+                                          onClick={async () => {
                                             audio.play('click')
-                                            // Marquer comme vu (archived de la liste)
-                                            markRoundSeen(duelState.roundId, user.id).catch(() => {})
-                                            // Refetch pour mettre à jour
-                                            refreshDuels().catch(() => {})
+                                            try {
+                                              // Archiver le défi refusé en localStorage
+                                              const declined = JSON.parse(localStorage.getItem('wtf_declined_rematches') || '[]')
+                                              if (!declined.includes(duelState.roundId)) {
+                                                declined.push(duelState.roundId)
+                                                localStorage.setItem('wtf_declined_rematches', JSON.stringify(declined))
+                                              }
+                                              // Refetch pour mettre à jour la liste (awaiter pour que le state se mette à jour)
+                                              await refreshDuels()
+                                              showToast('Revanche refusée')
+                                            } catch (e) {
+                                              console.warn('[SocialPage] Decline error:', e)
+                                              showToast('Erreur lors du refus')
+                                            }
                                           }}
                                           style={{
                                             padding: '8px 10px', borderRadius: 8,

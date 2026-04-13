@@ -16,6 +16,7 @@ export default function BlitzResultsScreen({
   isChallengeMode = false,
   onHome,
   onReplay,
+  opponentId = null,
 }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
@@ -169,8 +170,16 @@ export default function BlitzResultsScreen({
             </div>
           </div>
 
-          {/* Bouton partager / état */}
-          {autoChallenge ? (
+          {/* Bouton partager / état — caché si défi lancé depuis ami (opponentId existe) */}
+          {autoChallenge && opponentId ? (
+            <div style={{
+              color: '#22C55E', fontSize: S(14), textAlign: 'center', padding: '12px 16px',
+              background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
+              borderRadius: 12, maxWidth: 340, fontWeight: 700,
+            }}>
+              ✅ Défi envoyé à ton ami !
+            </div>
+          ) : autoChallenge ? (
             <>
               <div style={{
                 fontSize: S(13), fontWeight: 700, color: 'white',
@@ -312,7 +321,7 @@ export default function BlitzResultsScreen({
           >
             ⚡ Rejouer en Blitz
           </button>
-          {user && !challengeCreated && !isFromChallenge && (
+          {user && !challengeCreated && !isFromChallenge && !opponentId && (
             <button
               onClick={handleCreateChallenge}
               disabled={isCreating}

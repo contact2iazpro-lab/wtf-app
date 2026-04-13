@@ -239,6 +239,7 @@ export default function ScreenRenderer({
           isChallengeMode={isChallengeMode}
           onHome={handleHome}
           onReplay={handleBlitzReplay}
+          opponentId={duelContext?.pendingDuel?.opponentId}
         />
       )}
 

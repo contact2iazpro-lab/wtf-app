@@ -129,6 +129,7 @@ function computeRoundState(round, meId, isMe1) {
 /**
  * Calcule l'état de TOUS les défis d'un duel (pas juste le dernier).
  * Retourne une liste de { label, action, disabled, code, created_at, ...state }
+ * Filtre les défis refusés (declined_rematches en localStorage)
  */
 export function computeAllDuelStates(duel, allRounds, meId) {
   if (!duel) return []
@@ -136,8 +137,16 @@ export function computeAllDuelStates(duel, allRounds, meId) {
   const isMe1 = duel.player1_id === meId
   const states = []
 
+  // Lire les défis refusés depuis localStorage
+  const declinedArray = JSON.parse(localStorage.getItem('wtf_declined_rematches') || '[]')
+  const declined = new Set(declinedArray)
+
   // Traiter tous les rounds, du plus récent au plus ancien
   for (const round of allRounds) {
+    // Passer les défis refusés
+    const roundIdStr = String(round.id)
+    if (declined.has(round.id) || declined.has(roundIdStr)) continue
+
     const roundState = computeRoundState(round, meId, isMe1)
     if (roundState) {
       states.push({

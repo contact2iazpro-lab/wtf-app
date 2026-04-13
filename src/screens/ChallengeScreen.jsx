@@ -42,8 +42,11 @@ export default function ChallengeScreen() {
   const playerFacts = (() => {
     if (!challenge) return []
     const allBlitz = getBlitzFacts()
+    console.log('[ChallengeScreen] Debug:', { challengeId: challenge.id, categoryId: challenge.category_id, allBlitzCount: allBlitz.length, allBlitzIds: allBlitz.map(f => f.id) })
     if (challenge.category_id === 'all') return allBlitz
-    return allBlitz.filter(f => f.category === challenge.category_id)
+    const filtered = allBlitz.filter(f => f.category === challenge.category_id)
+    console.log('[ChallengeScreen] After filter:', { filteredCount: filtered.length })
+    return filtered
   })()
 
   const hasEnoughFacts = playerFacts.length >= (challenge?.question_count || 0)

@@ -3,6 +3,7 @@
  */
 
 import { useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS } from '../constants/gameConfig'
 import { getBlitzFacts, getCategoryById } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
@@ -21,6 +22,7 @@ export function useBlitzHandlers({
   // DuelContext — pendingDuel lu en mémoire React
   pendingDuel, clearPendingDuel,
 }) {
+  const navigate = useNavigate()
 
   const handleBlitzStart = useCallback((categoryId, questionCount) => {
     audio.play('click')
@@ -113,9 +115,10 @@ export function useBlitzHandlers({
             playerName: user.user_metadata?.name || 'Joueur WTF!',
           })
           // Redirection auto vers ChallengeScreen pour voir la comparaison
-          if (code) window.location.href = `/challenge/${code}`
+          if (code) navigate(`/challenge/${code}`)
         } catch (e) {
-          console.warn('Duel round complete error:', e?.message || e)
+          console.error('Duel round complete error:', e?.message || e)
+          setGameAlert({ emoji: '⚠️', title: 'Erreur', message: 'Impossible de finaliser le défi : ' + (e?.message || 'erreur serveur') })
         }
       })
       return

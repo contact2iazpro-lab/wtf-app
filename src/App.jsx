@@ -43,6 +43,22 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  // Android hardware back button — navigate to previous page instead of exiting app
+  useEffect(() => {
+    const handleBackButton = () => {
+      navigate(-1)
+    }
+    // Cordova/Capacitor event for hardware back button
+    if (window.document.addEventListener) {
+      document.addEventListener('backbutton', handleBackButton, false)
+    }
+    return () => {
+      if (window.document.removeEventListener) {
+        document.removeEventListener('backbutton', handleBackButton, false)
+      }
+    }
+  }, [navigate])
+
   // Dev mode URL param: ?devmode=wtf2026 to enable, ?devmode=off to disable
   // Challenge Blitz: ?startChallengeBlitz=true to start a challenge Blitz
   useState(() => {

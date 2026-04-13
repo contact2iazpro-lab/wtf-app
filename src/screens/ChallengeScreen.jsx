@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useScale } from '../hooks/useScale'
 import { useAuth } from '../context/AuthContext'
-import { supabase } from '../lib/supabase'
 import { getChallenge } from '../data/challengeService'
-import { getBlitzFacts, getValidFacts } from '../data/factsService'
+import { getBlitzFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
@@ -28,7 +27,6 @@ export default function ChallengeScreen() {
   const { startAcceptDefi } = useDuelContext()
 
   const [challenge, setChallenge] = useState(null)
-  const [playerFacts, setPlayerFacts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -40,44 +38,13 @@ export default function ChallengeScreen() {
       .catch(() => { setError('Défi introuvable ou expiré'); setLoading(false) })
   }, [code])
 
-  // Load player's unlocked facts from Supabase (not localStorage)
-  useEffect(() => {
-    if (!user?.id || !challenge) return
-
-    const loadPlayerFacts = async () => {
-      try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, unlockedFacts')
-          .eq('id', user.id)
-          .single()
-
-        if (!profile) {
-          setPlayerFacts([])
-          return
-        }
-
-        const unlockedIds = new Set(profile.unlockedFacts || [])
-        if (unlockedIds.size === 0) {
-          setPlayerFacts([])
-          return
-        }
-
-        let allValid = getValidFacts().filter(f => unlockedIds.has(f.id))
-
-        if (challenge.category_id === 'all') {
-          setPlayerFacts(allValid)
-        } else {
-          setPlayerFacts(allValid.filter(f => f.category === challenge.category_id))
-        }
-      } catch (e) {
-        console.warn('[ChallengeScreen] Error loading player facts:', e)
-        setPlayerFacts([])
-      }
-    }
-
-    loadPlayerFacts()
-  }, [user?.id, challenge?.id, challenge?.category_id])
+  // Check if player has enough facts
+  const playerFacts = (() => {
+    if (!challenge) return []
+    const allBlitz = getBlitzFacts()
+    if (challenge.category_id === 'all') return allBlitz
+    return allBlitz.filter(f => f.category === challenge.category_id)
+  })()
 
   const hasEnoughFacts = playerFacts.length >= (challenge?.question_count || 0)
   const isExpired = challenge?.status === 'expired' || (challenge?.expires_at && new Date(challenge.expires_at) < new Date())

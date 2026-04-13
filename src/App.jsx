@@ -154,6 +154,11 @@ export default function App() {
     }
   }, [])
 
+  // ── Charger tous les facts depuis Supabase au démarrage ──
+  useEffect(() => {
+    initFacts().catch(e => console.error('[App] initFacts failed:', e))
+  }, [])
+
   const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const [showSplash, setShowSplash] = useState(false)
   const handleSplashComplete = async () => {

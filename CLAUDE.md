@@ -5,9 +5,33 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 ## Projet
 - App mobile trivia basée sur un jeu physique validé (350 cartes)
 - URL prod : https://wtf-app-production.up.railway.app/
-- Admin Tool : ⚠️ À déployer séparément (ne plus mélanger au build principal — faille RLS)
 - Stack : React + Vite + Supabase + Tailwind + Nunito
 - Deploy : Railway auto sur push master
+
+## 🛠️ Déploiements & Environnements
+
+### ⚠️ Admin-Tool ≠ Game
+L'**admin-tool** (gestion Supabase, création facts, audit) est un **système complètement séparé** du jeu principal.
+
+| Aspect | Game (wtf-app) | Admin-Tool |
+|--------|-------|---------|
+| **Codebase** | Ce repo (src/) | Repo séparé (ne pas mélanger) |
+| **Clé Supabase** | `VITE_SUPABASE_ANON_KEY` (RLS) | `VITE_SUPABASE_SERVICE_KEY` (bypass RLS) |
+| **Deploy** | Railway auto (push master) | Déploiement manuel, sous-domaine privé |
+| **Visibility** | Public (production.up.railway.app) | Privée (accès dev/admin uniquement) |
+| **Bundle** | Jamais exposer service_key | Jamais inclure dans client principal |
+
+**Règle d'or** : Ne JAMAIS mélanger les clés ou les déploiements. Admin-tool = séparation totale d'infra.
+
+**En cas de doute** : Vérifier que `.env.local` contient UNIQUEMENT `VITE_SUPABASE_ANON_KEY`, jamais `SERVICE_KEY`.
+
+### Phase A — Architecture Data (2026-04-12)
+
+**État actuel** : Partiellement implémentée
+- ✅ Realtime subscriptions (friendships, challenges, duels)
+- ✅ RLS policies simplifiées (4 policies au lieu de 12)
+- ✅ Console warnings fixés (React setState, Supabase 406, favicon)
+- ⏳ **unlockedFacts migration** : Colonne ajoutée à Supabase, migration hook créée, intégration en cours (voir Architecture Data)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client
 Toute variable préfixée `VITE_` est inlinée dans le JS public et lisible via DevTools.
@@ -254,19 +278,20 @@ séparé, sous-domaine privé, ou en local uniquement).
 ### Répartition des entités
 
 **Supabase (canonique)** — toute mutation passe par RPC ou Edge Function, jamais d'écriture localStorage directe :
-- coins, tickets, indices, énergie
-- unlockedFacts (set d'IDs)
-- streak (jour courant + historique)
-- badges / trophées
-- blitzRecords (meilleurs temps par catégorie/palier)
-- Route WTF! progress (level, stars)
-- coffres réclamés (dimanche WTF + daily)
-- stats par mode (gamesPlayed, totalCorrect, bestStreak…)
-- duels / challenges / friendships (déjà fait)
+- coins, tickets, indices, énergie ✅
+- **unlockedFacts (set d'IDs)** ⏳ *Colonne `unlocked_facts INTEGER[]` ajoutée, migration hook créé, intégration en cours*
+- streak (jour courant + historique) ⏳
+- badges / trophées ⏳
+- blitzRecords (meilleurs temps par catégorie/palier) ⏳
+- Route WTF! progress (level, stars) ⏳
+- coffres réclamés (dimanche WTF + daily) ⏳
+- stats par mode (gamesPlayed, totalCorrect, bestStreak…) ⏳
+- duels / challenges / friendships ✅ (Realtime subscriptions opérationnelles)
 
 **localStorage (UI state, non syncé)** :
 - onboardingCompleted, tutoStep, skip_launch_*
 - son on/off, thème, mode dev/test
+- **unlockedFacts** ⏳ *Actuellement source de vérité, à remplacer par Supabase une fois migration complète*
 - wtf_cached_friends (pur cache de l'entité Supabase)
 
 **React state (éphémère)** :

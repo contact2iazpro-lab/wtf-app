@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useScale } from '../hooks/useScale'
 import { useAuth } from '../context/AuthContext'
 import { getChallenge } from '../data/challengeService'
-import { getBlitzFacts } from '../data/factsService'
+import { getBlitzFacts, initFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
@@ -29,18 +29,22 @@ export default function ChallengeScreen() {
   const [challenge, setChallenge] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [factsReady, setFactsReady] = useState(false)
 
-  // Load challenge on mount
+  // Initialize facts and load challenge on mount
   useEffect(() => {
+    // Ensure facts are loaded before calculating playerFacts
+    initFacts().finally(() => setFactsReady(true))
+
     if (!code) { setError('Code manquant'); setLoading(false); return }
     getChallenge(code)
       .then(data => { setChallenge(data); setLoading(false) })
       .catch(() => { setError('Défi introuvable ou expiré'); setLoading(false) })
   }, [code])
 
-  // Check if player has enough facts
+  // Check if player has enough facts (only calculate after facts are ready)
   const playerFacts = (() => {
-    if (!challenge) return []
+    if (!challenge || !factsReady) return []
     const allBlitz = getBlitzFacts()
     console.log('[ChallengeScreen] Debug:', { challengeId: challenge.id, categoryId: challenge.category_id, allBlitzCount: allBlitz.length, allBlitzIds: allBlitz.map(f => f.id) })
     if (challenge.category_id === 'all') return allBlitz
@@ -163,7 +167,11 @@ export default function ChallengeScreen() {
       </div>
 
       {/* Actions */}
-      {!isConnected ? (
+      {!factsReady ? (
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>
+          ⏳ Chargement de tes f*cts en cours...
+        </div>
+      ) : !isConnected ? (
         <button
           onClick={signInWithGoogle}
           style={{ width: '100%', maxWidth: 340, padding: '14px 0', borderRadius: 14, background: '#fff', color: '#374151', border: 'none', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'Nunito, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}

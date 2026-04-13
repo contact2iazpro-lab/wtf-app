@@ -71,6 +71,7 @@ export default function SocialPage() {
     getDuelStateFor,
     myCode,
     startCreateDefi,
+    refreshDuels,
   } = useDuelContext()
 
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
@@ -121,7 +122,11 @@ export default function SocialPage() {
     }
     if (state.action === 'accept' || state.action === 'view') {
       if (state.roundId && state.action === 'view') {
-        try { await markRoundSeen(state.roundId, user.id) } catch {}
+        try {
+          await markRoundSeen(state.roundId, user.id)
+          // Refetch immédiatement pour afficher "Revanche" au lieu de "Résultat"
+          await refreshDuels()
+        } catch {}
       }
       const entry = byFriendId.get(friend.userId)
       const code = entry?.lastRound?.code

@@ -420,3 +420,24 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## Preview local
 - Preview : npm run dev → localhost:5176
 - Ne jamais pusher uniquement pour tester — tester en local d'abord
+
+## 🎨 Inventaire Émojis — Audit 13/04/2026
+
+**Total : 85+ émojis regroupés par contexte** (voir page Notion pour l'inventaire complet)
+
+### Catégories principales
+1. **Boutons & Contrôle** (8) : ⚔️ ← > ✕ ⚙️ ➕ ✓ ▼
+2. **Modes de jeu** (7) : ⚡ 🎯 🔥 ❄️ 🧭 🎲 🎮
+3. **Récompenses & Devises** (8) : 🪙 🎟️ 💰 👑 ✨ 🔋 💎
+4. **Statuts & Résultats** (11) : 😵 🐣 🤔 😅 🧐 🙂 😎 🧠 💪 🌟 👑
+5. **Trophées & Achievements** (45+) : Regroupés par section (Global, Type, Catégories, Streak, Blitz, Parties, Social, Perfect)
+6. **Catégories & Collections** (4) : 📚 📂 🌍 🎪
+7. **Social & Multijoueur** (4) : 🤝 👥 👋 👤
+8. **Autres** (10) : 📡 🎭 😂 🤣 👏 🔰 🥉 🥈 🥇 💡
+
+### À retravailler avec Recraft.ai (Priorité)
+1. **P1** - Modes de jeu : ⚡ 🎯 🔥 (très utilisés)
+2. **P2** - Trophées : 👑 🏆 💎 (symbolique fort)
+3. **P3** - Social : ⚔️ 👥 🤝 (engagement multiplayer)
+
+**Page Notion** : https://www.notion.so/341b94ed8cb18186a910f6bd719b247f

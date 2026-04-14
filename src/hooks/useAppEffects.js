@@ -10,7 +10,6 @@ import { SCREENS } from '../constants/gameConfig'
 import { initFacts, getDailyFact, getValidFacts } from '../data/factsService'
 import { pushToServer, syncAfterAction } from '../services/playerSyncService'
 import { loadStorage, saveStorage, updateTrophyData } from '../utils/storageHelper'
-import { updateCollection } from '../services/collectionService'
 import { supabase } from '../lib/supabase'
 
 export function useAppEffects({
@@ -19,6 +18,7 @@ export function useAppEffects({
   setStreakRewardToast, setScreen, setGameMode,
   setSocialNotifCount, setPendingChallengesCount,
   handleHome, completeOnboardingIfNeeded,
+  unlockFact,
 }) {
 
   // Load facts on mount
@@ -64,7 +64,11 @@ export function useAppEffects({
                 const allFacts = getValidFacts()
                 for (const id of tempIds) {
                   const fact = allFacts.find(f => f.id === id)
-                  if (fact) updateCollection(currentUser.id, fact.category, fact.id)
+                  if (fact) {
+                    unlockFact?.(fact.id, fact.category, 'onboarding_temp_facts').catch(e =>
+                      console.warn('[useAppEffects] unlockFact RPC failed:', e?.message || e)
+                    )
+                  }
                 }
                 syncAfterAction(currentUser.id)
               }

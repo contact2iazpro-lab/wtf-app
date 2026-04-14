@@ -75,7 +75,7 @@ export function usePlayerProfile() {
   /**
    * unlockFact — marque un fact comme débloqué côté Supabase (RPC idempotente).
    * Anti-replay via nonce. Retourne { category, facts_completed, was_new }.
-   * Appelée en parallèle du legacy updateCollection, coexistence Phase A.
+   * Source de vérité unique pour unlockedFacts (Phase A 4.1).
    */
   const unlockFact = useCallback(async (factId, category, reason = 'session_correct', sessionId = null) => {
     if (!factId || !category) return null

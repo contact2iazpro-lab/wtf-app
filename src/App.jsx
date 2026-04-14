@@ -374,6 +374,7 @@ export default function App() {
     setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
     setStorage,
     clearPendingDuel,
+    unlockFact,
   })
 
 
@@ -390,6 +391,7 @@ export default function App() {
     setTrophyQueue,
     applyCurrencyDelta, // Phase A.6 — miroir Supabase
     mergeFlags,         // Phase A.9 — stats + totaux
+    unlockFact,         // Phase A — unlock_fact RPC atomique
   })
 
   // ─── Dev actions → extraits dans useDevActions hook ─────────────────────────
@@ -414,6 +416,7 @@ export default function App() {
     setStreakRewardToast, setScreen, setGameMode,
     setSocialNotifCount, setPendingChallengesCount,
     handleHome, completeOnboardingIfNeeded,
+    unlockFact,
   })
 
 

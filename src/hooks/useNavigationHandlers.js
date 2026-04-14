@@ -14,7 +14,6 @@ import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
 import { getFlashEnergy, consumeFlashEnergy } from '../services/energyService'
 import { saveStorage, loadStorage } from '../utils/storageHelper'
-import { updateCollection } from '../services/collectionService'
 import { syncAfterAction } from '../services/playerSyncService'
 
 export function useNavigationHandlers({
@@ -35,6 +34,8 @@ export function useNavigationHandlers({
   setStorage,
   // DuelContext cleanup
   clearPendingDuel,
+  // Phase A — unlock_fact RPC atomique
+  unlockFact,
 }) {
   const navigate = useNavigate()
   const canPlayFlashCheck = () => getFlashEnergy().remaining > 0
@@ -147,7 +148,11 @@ export function useNavigationHandlers({
       const next = { ...prev, unlockedFacts: newUnlocked }
       saveStorage(next)
       if (user) {
-        for (const fact of toSync) updateCollection(user.id, fact.category, fact.id)
+        for (const fact of toSync) {
+          unlockFact?.(fact.id, fact.category, 'save_temp_facts').catch(e =>
+            console.warn('[useNavigationHandlers] unlockFact RPC failed:', e?.message || e)
+          )
+        }
         syncAfterAction(user.id)
       }
       return next

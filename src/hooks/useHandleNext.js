@@ -10,7 +10,6 @@ import { SCREENS, getStreakReward } from '../constants/gameConfig'
 import { getCategoryLevelFactIds } from '../data/factsService'
 import { loadStorage, saveStorage, updateTrophyData, TODAY } from '../utils/storageHelper'
 import { updateCoins, updateTickets, updateHints, getBalances } from '../services/currencyService'
-import { updateCollection } from '../services/collectionService'
 import { syncAfterAction } from '../services/playerSyncService'
 import { checkBadges } from '../utils/badgeManager'
 
@@ -32,6 +31,8 @@ export function useHandleNext({
   applyCurrencyDelta,
   // Phase A.9 — flags persistés
   mergeFlags,
+  // Phase A — unlockedFacts via RPC atomique
+  unlockFact,
 }) {
 
   const handleNext = useCallback(() => {
@@ -195,7 +196,11 @@ export function useHandleNext({
         }
         saveStorage(newStorage)
         if (user) {
-          for (const fact of toSync) updateCollection(user.id, fact.category, fact.id)
+          for (const fact of toSync) {
+            unlockFact?.(fact.id, fact.category, `${sessionType}_unlock`).catch(e =>
+              console.warn('[useHandleNext] unlockFact RPC failed:', e?.message || e)
+            )
+          }
           syncAfterAction(user.id)
         }
         return newStorage
@@ -209,7 +214,11 @@ export function useHandleNext({
           saveStorage(updated)
           return updated
         })
-        if (user) updateCollection(user.id, effectiveDailyFact.category, effectiveDailyFact.id)
+        if (user) {
+          unlockFact?.(effectiveDailyFact.id, effectiveDailyFact.category, 'wtf_du_jour_unlock').catch(e =>
+            console.warn('[useHandleNext] unlockFact RPC failed:', e?.message || e)
+          )
+        }
       }
     }
 

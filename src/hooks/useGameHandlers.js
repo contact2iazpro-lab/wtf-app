@@ -110,10 +110,6 @@ export function useGameHandlers({
             }
 
             if (user) {
-              import('../services/collectionService').then(({ updateCollection }) => {
-                updateCollection(user.id, currentFact.category, currentFact.id)
-              })
-              // Phase A.7 : miroir RPC unlock_fact (idempotent, anti-replay)
               unlockFact?.(currentFact.id, currentFact.category, `${sessionType}_unlock`).catch(e =>
                 console.warn('[useGameHandlers] unlockFact RPC failed:', e?.message || e)
               )

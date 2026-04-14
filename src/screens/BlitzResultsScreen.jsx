@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useScale } from '../hooks/useScale'
 import { createChallenge } from '../data/challengeService'
+import { audio } from '../utils/audio'
 
 export default function BlitzResultsScreen({
   finalTime = 0,
@@ -36,6 +37,11 @@ export default function BlitzResultsScreen({
   useEffect(() => {
     return () => { onClearAutoChallenge?.() }
   }, [onClearAutoChallenge])
+
+  // Bloc 3.6 — Vibration aux résultats Blitz : pattern long si record, court sinon
+  useEffect(() => {
+    audio.vibrate(isNewRecord ? [80, 50, 80, 50, 150] : [50])
+  }, [isNewRecord])
 
   useEffect(() => {
     if (finalTime <= 0) return
@@ -207,13 +213,14 @@ export default function BlitzResultsScreen({
 
   return (
     <div
-      className="absolute inset-0 flex flex-col overflow-auto"
+      className="absolute inset-0 flex flex-col overflow-hidden"
       style={{ '--scale': scale, background: 'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)', fontFamily: 'Nunito, sans-serif' }}
     >
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8" style={{ gap: S(16) }}>
+      {/* Bloc 3.4 — fullscreen sans scroll : header centré + actions pinées en bas */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pt-4 pb-2 min-h-0" style={{ gap: S(10) }}>
 
-        <div style={{ fontSize: S(56) }}>{rank.emoji}</div>
-        <h1 style={{ fontSize: S(26), fontWeight: 900, color: 'white', textAlign: 'center' }}>{rank.label}</h1>
+        <div style={{ fontSize: S(48) }}>{rank.emoji}</div>
+        <h1 style={{ fontSize: S(22), fontWeight: 900, color: 'white', textAlign: 'center' }}>{rank.label}</h1>
 
         {isNewRecord && (
           <div className="rounded-2xl w-full py-3 text-center" style={{
@@ -294,37 +301,38 @@ export default function BlitzResultsScreen({
           </div>
         ) : null}
 
-        {/* Action buttons */}
-        <div className="w-full flex flex-col gap-3 mt-2">
+      </div>
+
+      {/* Bloc 3.4 — Action buttons pinés en bas (toujours visibles) */}
+      <div className="shrink-0 w-full px-6 pb-4 pt-2 flex flex-col gap-2">
+        <button
+          onClick={onReplay}
+          className="w-full py-3 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
+          style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16) }}
+        >
+          ⚡ Rejouer en Blitz
+        </button>
+        {user && !challengeCreated && !opponentId && (
           <button
-            onClick={onReplay}
-            className="w-full py-4 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
-            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16) }}
+            onClick={handleCreateChallenge}
+            disabled={isCreating}
+            className="w-full py-2.5 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
+            style={{
+              background: 'transparent', color: 'white',
+              border: '2px solid rgba(255,255,255,0.4)', borderRadius: S(14),
+              fontSize: S(14), opacity: isCreating ? 0.5 : 1,
+            }}
           >
-            ⚡ Rejouer en Blitz
+            {isCreating ? '⏳ Création...' : '🎯 Défier un ami'}
           </button>
-          {user && !challengeCreated && !opponentId && (
-            <button
-              onClick={handleCreateChallenge}
-              disabled={isCreating}
-              className="w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
-              style={{
-                background: 'transparent', color: 'white',
-                border: '2px solid rgba(255,255,255,0.4)', borderRadius: S(14),
-                fontSize: S(14), opacity: isCreating ? 0.5 : 1,
-              }}
-            >
-              {isCreating ? '⏳ Création...' : '🎯 Défier un ami'}
-            </button>
-          )}
-          <button
-            onClick={onHome}
-            className="w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
-            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', fontSize: S(14) }}
-          >
-            Accueil
-          </button>
-        </div>
+        )}
+        <button
+          onClick={onHome}
+          className="w-full py-2.5 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
+          style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', fontSize: S(14) }}
+        >
+          🏠 Accueil
+        </button>
       </div>
 
       <style>{`

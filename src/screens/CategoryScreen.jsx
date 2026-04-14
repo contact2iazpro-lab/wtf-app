@@ -47,15 +47,17 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
     return counts
   }, [factsPool])
 
+  // Bloc 3.1 — En Explorer/Flash, ne compter que les Funny débloqués
+  // (sinon le ratio peut dépasser 100% car total = Funny only)
   const unlockedPerCategory = useMemo(() => {
     const counts = {}
-    for (const f of getValidFacts()) {
+    for (const f of factsPool) {
       if (unlockedFacts.has(f.id)) {
         counts[f.category] = (counts[f.category] || 0) + 1
       }
     }
     return counts
-  }, [unlockedFacts])
+  }, [unlockedFacts, factsPool])
 
   // Catégories débloquées (5 de base + celles avec au moins 1 fact débloqué en Quest)
   const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']

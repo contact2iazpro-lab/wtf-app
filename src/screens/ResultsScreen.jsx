@@ -201,6 +201,11 @@ export default function ResultsScreen({
     }
   }, [isPerfect])
 
+  // Bloc 3.6 — Vibration aux résultats : pattern long si perfect, court sinon
+  useEffect(() => {
+    audio.vibrate(isPerfect ? [60, 40, 60, 40, 120] : [40])
+  }, [isPerfect])
+
   // MOD 6 — Sequential animations on mount
   useEffect(() => {
     const t1 = setTimeout(() => setRankVisible(true), 250)

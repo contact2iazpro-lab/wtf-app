@@ -69,9 +69,10 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
     ? Math.min(poolSize, opponentPool)
     : poolSize
 
-  const questionOptions = [5, 10, 20, 30, 40, 50]
+  // Bloc 3.3 — paliers Blitz : retiré 40, ajouté 100
+  const questionOptions = [5, 10, 20, 30, 50, 100]
   const poolForCount = effectivePool
-  const effectiveCount = questionCount || (poolForCount >= 50 ? 50 : poolForCount >= 40 ? 40 : poolForCount >= 30 ? 30 : poolForCount >= 20 ? 20 : poolForCount >= 10 ? 10 : poolForCount >= 5 ? 5 : poolForCount)
+  const effectiveCount = questionCount || (poolForCount >= 100 ? 100 : poolForCount >= 50 ? 50 : poolForCount >= 30 ? 30 : poolForCount >= 20 ? 20 : poolForCount >= 10 ? 10 : poolForCount >= 5 ? 5 : poolForCount)
   const hasSelection = selectedCatId !== null && poolForCount >= 5
 
   const handleGo = () => {

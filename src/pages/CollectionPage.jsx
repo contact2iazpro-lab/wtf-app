@@ -293,7 +293,7 @@ export default function CollectionPage() {
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-xs" style={{ color: '#6B7280' }}>
                           {isCompleted
-                            ? <span style={{ color: '#FFD700', fontWeight: 700 }}>Complété !</span>
+                            ? <span style={{ color: '#FFD700', fontWeight: 700 }}>Complété ! {total}/{total} f*cts</span>
                             : percentage >= 80
                               ? <span style={{ color: '#FF8C00', fontWeight: 700 }}>Plus que {remaining} !</span>
                               : `${unlocked}/${total} F*cts`

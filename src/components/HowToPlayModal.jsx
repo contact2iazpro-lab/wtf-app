@@ -93,7 +93,7 @@ const CHAPTERS = [
     content: [
       { icon: '🆓', text: '**Gratuit et illimité** — joue autant que tu veux !' },
       { icon: '⏱️', text: 'Chrono de **60 secondes** qui descend — réponds le plus vite possible.' },
-      { icon: '📊', text: 'Choisis ton palier : **5 / 10 / 20 / 30 / 40 / 50 questions**.' },
+      { icon: '📊', text: 'Choisis ton palier : **5 / 10 / 20 / 30 / 50 / 100 questions**.' },
       { icon: '✅', text: 'Bonne réponse = **+2s** au chrono · Mauvaise = **-3s** de pénalité.' },
       { icon: '🚫', text: '**Pas d\'indices** — c\'est la mémoire pure !' },
       { icon: '🧠', text: 'Joue uniquement avec tes **f*cts déjà débloqués**.' },

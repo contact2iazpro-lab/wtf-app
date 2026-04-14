@@ -10,14 +10,16 @@ const S = (px) => `calc(${px}px * var(--scale))`
 // ── Configuration des segments ──────────────────────────────────────────────
 // Le `weight` définit à la fois la taille du segment sur la roue ET la probabilité.
 // Total des weights = 100 pour lire les % directement.
+// Bloc 3.5 — ajustement T95 : avg coins/spin descendu de ~7,1 à ~5,4
+//   5×26 + 8×18 + 15×10 + 30×4 = 130 + 144 + 150 + 120 = 544 / 100 = 5,44 coins/spin
 const SEGMENTS = [
   { label: '5',     emoji: '🪙', reward: { type: 'coins',   amount: 5  }, color: '#FF6B1A', weight: 26 },
   { label: '1',     emoji: '💡', reward: { type: 'hints',   amount: 1  }, color: '#3B82F6', weight: 21 },
-  { label: '10',    emoji: '🪙', reward: { type: 'coins',   amount: 10 }, color: '#F59E0B', weight: 18 },
+  { label: '8',     emoji: '🪙', reward: { type: 'coins',   amount: 8  }, color: '#F59E0B', weight: 18 },
   { label: '2',     emoji: '💡', reward: { type: 'hints',   amount: 2  }, color: '#8B5CF6', weight: 12 },
-  { label: '20',    emoji: '🪙', reward: { type: 'coins',   amount: 20 }, color: '#EF4444', weight: 10 },
+  { label: '15',    emoji: '🪙', reward: { type: 'coins',   amount: 15 }, color: '#EF4444', weight: 10 },
   { label: '1',     emoji: '🎟️', reward: { type: 'tickets', amount: 1  }, color: '#10B981', weight: 7  },
-  { label: '50',    emoji: '🪙', reward: { type: 'coins',   amount: 50 }, color: '#EC4899', weight: 4  },
+  { label: '30',    emoji: '🪙', reward: { type: 'coins',   amount: 30 }, color: '#EC4899', weight: 4  },
   { label: '🛡️',   emoji: '🛡️', reward: { type: 'freeze',  amount: 1  }, color: '#6366F1', weight: 1  },
   { label: 'VIP',   emoji: '⭐', reward: { type: 'vipFact', amount: 1  }, color: '#FFD700', weight: 1  },
 ]

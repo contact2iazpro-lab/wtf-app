@@ -91,7 +91,7 @@ export const MODE_CONFIGS = {
       { icon: '🚫', text: 'Pas d\'indices — c\'est la mémoire pure' },
       { icon: '🏆', text: 'Bats ton record de vitesse' },
       { icon: '🆓', text: 'Gratuit et illimité' },
-      { icon: '🎯', text: 'Choisis entre 5, 10, 20, 30, 40 ou 50 questions' },
+      { icon: '🎯', text: 'Choisis entre 5, 10, 20, 30, 50 ou 100 questions' },
     ],
   },
   flash: {

@@ -59,6 +59,15 @@ export default function ChallengeScreen() {
   const isPending = challenge?.status === 'pending' && !isExpired
   const isSelf = user && challenge?.player1_id === user.id
 
+  // Bloc 3.6 — Vibration à la révélation du résultat (pattern long si victoire)
+  useEffect(() => {
+    if (!isCompleted || !user || !challenge) return
+    const p1Won = challenge.player1_time <= challenge.player2_time
+    const meIsP1 = challenge.player1_id === user.id
+    const meWon = (meIsP1 && p1Won) || (!meIsP1 && !p1Won)
+    audio.vibrate(meWon ? [80, 50, 80, 50, 150] : [40])
+  }, [isCompleted, user, challenge])
+
   const handleAcceptChallenge = () => {
     if (!user || !challenge || !hasEnoughFacts) return
     audio.play('click')

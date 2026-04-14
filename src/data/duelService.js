@@ -235,46 +235,6 @@ export async function createDuelChallenge({
 }
 
 /**
- * @deprecated Palier 3 — remplacé par createDuelChallenge (RPC atomique).
- * Conservé temporairement pour compat descendante / legacy callers éventuels.
- */
-export async function createDuelRound({
-  duelId, categoryId, categoryLabel, questionCount,
-  player1Time, player1Id, player1Name,
-  opponentId,
-}) {
-  // 48h expiration
-  const expiresAt = new Date(Date.now() + 48 * 3600 * 1000).toISOString()
-  // Génère un code unique partageable
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let code = ''
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
-
-  const { data, error } = await supabase
-    .from('challenges')
-    .insert({
-      duel_id: duelId,
-      code,
-      category_id: categoryId,
-      category_label: categoryLabel,
-      question_count: questionCount,
-      player1_id: player1Id,
-      player1_name: player1Name,
-      player1_time: player1Time,
-      player2_id: opponentId || null, // pré-assigné si on connaît l'adversaire
-      status: 'pending',
-      expires_at: expiresAt,
-    })
-    .select()
-    .single()
-  if (error) {
-    console.error('[duelService] createDuelRound error:', error.message)
-    throw error
-  }
-  return data
-}
-
-/**
  * Complète un round (appelé quand player2 joue son Blitz en relevant le défi).
  * Le trigger SQL auto-calcule winner + met à jour duels stats.
  */

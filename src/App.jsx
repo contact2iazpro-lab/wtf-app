@@ -128,7 +128,7 @@ export default function App() {
     if (!pendingDuel) return
 
     if (pendingDuel.mode === 'create') {
-      // Vérifier tickets mais on débite après createDuelRound() en handleBlitzFinish
+      // Vérifier tickets mais on débite côté RPC create_duel_challenge (Palier 3)
       if ((profileTickets ?? 0) < 1) {
         setGameAlert({ emoji: '🎫', title: 'Pas de ticket', message: 'Tu n\'as pas de ticket pour lancer un défi !' })
         clearPendingDuel()
@@ -145,7 +145,7 @@ export default function App() {
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
       setSelectedCategory(pendingDuel.categoryId || 'all')
       setScreen(SCREENS.BLITZ_LOBBY)
-      // NOTE: Ticket débité dans handleBlitzFinish APRÈS createDuelRound() réussit
+      // NOTE: Ticket débité atomiquement par le RPC create_duel_challenge (Palier 3).
       // On laisse pendingDuel en place pour que handleBlitzFinish puisse
       // lire opponentId + categoryId. Sera cleared par handleHome ou après création du round.
     } else if (pendingDuel.mode === 'accept' && pendingDuel.facts) {

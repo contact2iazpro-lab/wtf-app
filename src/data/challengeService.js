@@ -1,6 +1,16 @@
+/**
+ * challengeService — lecture et création "simple" de challenges.
+ *
+ * Pour le flow complet (défi entre amis avec debit ticket atomique + upsert duel),
+ * voir `duelService.createDuelChallenge` (RPC Palier 3).
+ * Ce service est conservé pour :
+ *   - `getChallenge` → lecture d'un code partagé (ChallengeScreen)
+ *   - `createChallenge` → flow solo post-Blitz "Défier un ami" (BlitzResultsScreen)
+ *     qui crée un challenge sans duel_id ni debit ticket (sharing score).
+ */
+
 import { supabase } from '../lib/supabase'
 
-// Générer un code unique de 6 caractères (pas de I, O, 0, 1 pour éviter la confusion)
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   let code = ''
@@ -10,7 +20,7 @@ function generateCode() {
   return code
 }
 
-// Créer un défi
+// Créer un défi "share score" (solo post-Blitz, pas de duel associé, pas de ticket débité)
 export async function createChallenge({ categoryId, categoryLabel, questionCount, playerTime, playerId, playerName }) {
   const code = generateCode()
 
@@ -36,47 +46,13 @@ export async function createChallenge({ categoryId, categoryLabel, questionCount
 // Récupérer un défi par code
 export async function getChallenge(code) {
   if (!code) throw new Error('missing code')
-  console.log('[challengeService] getChallenge start', code)
   const { data, error } = await supabase
     .from('challenges')
     .select('*')
     .eq('code', code.toUpperCase())
     .maybeSingle()
 
-  console.log('[challengeService] getChallenge result', { data, error })
   if (error) throw error
   if (!data) throw new Error('Défi introuvable')
   return data
-}
-
-// Compléter un défi (joueur 2)
-export async function completeChallenge({ challengeId, playerTime, playerId, playerName }) {
-  const { data, error } = await supabase
-    .from('challenges')
-    .update({
-      player2_id: playerId,
-      player2_name: playerName,
-      player2_time: playerTime,
-      status: 'completed',
-      completed_at: new Date().toISOString(),
-    })
-    .eq('id', challengeId)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data
-}
-
-// Récupérer les défis d'un joueur
-export async function getPlayerChallenges(playerId) {
-  const { data, error } = await supabase
-    .from('challenges')
-    .select('*')
-    .or(`player1_id.eq.${playerId},player2_id.eq.${playerId}`)
-    .order('created_at', { ascending: false })
-    .limit(20)
-
-  if (error) throw error
-  return data || []
 }

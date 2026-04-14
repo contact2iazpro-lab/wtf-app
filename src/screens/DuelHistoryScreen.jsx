@@ -180,9 +180,22 @@ export default function DuelHistoryScreen() {
                     <span style={{ fontSize: 16 }}>
                       {r.status === 'pending' ? '⏳' : r.status === 'expired' ? '💀' : iWon ? '🏆' : theyWon ? '💔' : '🤝'}
                     </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e' }}>{r.category_label} · {r.question_count} Q</div>
-                      <div style={{ fontSize: 10, color: '#6B7280' }}>{new Date(r.created_at).toLocaleDateString('fr-FR')}</div>
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {r.category_id && r.category_id !== 'all' ? (
+                        <img
+                          src={`/assets/categories/${r.category_id}.png`}
+                          alt={r.category_label || r.category_id}
+                          title={r.category_label || r.category_id}
+                          style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }}
+                          onError={e => { e.currentTarget.style.display = 'none' }}
+                        />
+                      ) : (
+                        <span style={{ fontSize: 18, flexShrink: 0 }} title="Aléatoire">🎲</span>
+                      )}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e' }}>{r.question_count} Q</div>
+                        <div style={{ fontSize: 10, color: '#6B7280' }}>{new Date(r.created_at).toLocaleDateString('fr-FR')}</div>
+                      </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontSize: 11, fontWeight: 800, color: iWon ? '#22C55E' : '#1a1a2e' }}>{formatTime(myTime)}</div>

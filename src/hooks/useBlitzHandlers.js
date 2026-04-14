@@ -173,9 +173,19 @@ export function useBlitzHandlers({
               let duelId = null
               if (opponentId) {
                 console.log('[useBlitzHandlers] getOrCreateDuel…', user.id, opponentId)
-                const duel = await getOrCreateDuel(user.id, opponentId)
-                duelId = duel?.id || null
-                console.log('[useBlitzHandlers] duel resolved:', duelId)
+                // Race contre un timeout 5s : si la table `duels` hang (RLS, lock),
+                // on continue avec duelId=null — challenges.duel_id est nullable.
+                // Le lien duel ↔ challenges pourra être rattaché plus tard.
+                const duelPromise = getOrCreateDuel(user.id, opponentId)
+                const duelTimeout = new Promise((resolve) => setTimeout(() => resolve('__TIMEOUT__'), 5000))
+                const duel = await Promise.race([duelPromise, duelTimeout])
+                if (duel === '__TIMEOUT__') {
+                  console.warn('[useBlitzHandlers] getOrCreateDuel timeout 5s — fallback duelId=null')
+                  duelId = null
+                } else {
+                  duelId = duel?.id || null
+                  console.log('[useBlitzHandlers] duel resolved:', duelId)
+                }
               }
               console.log('[useBlitzHandlers] createDuelRound…')
               const round = await createDuelRound({

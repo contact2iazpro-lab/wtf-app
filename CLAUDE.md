@@ -36,6 +36,18 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - ✅ Catégorie choisie avant créer défi
   - ✅ Ticket débité APRÈS createDuelRound() (pas avant jeu)
   - ✅ TRIGGER SQL pour calculer winner_id
+- ✅ **Bloc 1 — Mode Défi finalisé (2026-04-14)** : 5 bugs fermés
+  - ✅ Auto-relever sur son propre défi : bug `isMe1` corrigé (dérivé du round, plus du duel normalisé alphabétiquement)
+  - ✅ Refus revanche persistant Supabase : colonne `challenges.declined_by uuid[]` + RPC `decline_round` (migration `add_declined_by_to_challenges.sql`)
+  - ✅ Revanche mêmes conditions : `startCreateDefi(friendId, categoryId, questionCount)` skip BlitzLobby et relance directement
+  - ✅ Pénalité erreur défi : +5s (aligné mode Blitz solo, décision C9)
+  - ✅ Pré-check créateur : amitié `accepted` + opposant ≥5 facts dans la catégorie avant création (BlitzLobbyScreen filtre cross-collections)
+- ✅ **Bloc 2 — Fix logique critiques (2026-04-14)** : 5 bugs fermés
+  - ✅ **2.6** Énergie cap 5/5 : `INITIAL_STOCK 3→5`, label HomeScreen `/3→/5`, 5 barres d'énergie au lieu de 3
+  - ✅ **2.7** Pulse "NEW" persistant Supabase : `flags.seenModes` push via `mergeFlags()` + dépoté au `pullFromServer()` (cross-device)
+  - ✅ **2.8** Trophées replay corrigé : `flags.badgesEarned` push via `mergeFlags()` après `checkBadges()` (Blitz + Quest), dépoté au pull
+  - ✅ **2.9** Nouveau joueur 50 coins (C10) : aligné trigger DB + AuthContext.createProfile + storageHelper fallback + ProfilPage reset + App init/resetOnboarding
+  - ✅ **2.10** Modal ami SocialPage : croix ✕ remplacée par bouton ⋯ ouvrant bottom-sheet 4 actions (Lancer défi · Historique · Records · Supprimer)
 - 🔧 **unlockedFacts infra** : Colonne Supabase préparée, code reste en localStorage (migration non-commencée, voir Architecture Data)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client

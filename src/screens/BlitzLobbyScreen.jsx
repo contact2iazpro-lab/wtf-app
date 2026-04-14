@@ -1,9 +1,8 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useScale } from '../hooks/useScale'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { audio } from '../utils/audio'
 import { useDuelContext } from '../features/duels/context/DuelContext'
-import { loadFriendCategoryCounts } from '../services/collectionService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -21,57 +20,27 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
   const allFacts = getValidFacts()
   const totalUnlocked = allFacts.filter(f => effectiveUnlocked.has(f.id)).length
 
-  // En mode défi : on charge les collections de l'adversaire pour ne proposer
-  // que les catégories où LES DEUX joueurs ont ≥5 facts.
-  const [opponentCountsByCat, setOpponentCountsByCat] = useState(null)
-  const [opponentLoading, setOpponentLoading] = useState(isChallenge)
-  useEffect(() => {
-    if (!isChallenge) return
-    let cancelled = false
-    setOpponentLoading(true)
-    loadFriendCategoryCounts(opponentId)
-      .then(counts => {
-        if (cancelled) return
-        setOpponentCountsByCat(counts || {})
-      })
-      .finally(() => { if (!cancelled) setOpponentLoading(false) })
-    return () => { cancelled = true }
-  }, [isChallenge, opponentId])
-
-  // Categories with >= 5 unlocked facts (seuil minimum pour Blitz).
-  // En défi : exiger aussi ≥5 facts côté adversaire.
+  // Categories with >= 5 unlocked facts côté créateur (seuil minimum pour Blitz).
+  // En défi : on ne contraint PAS sur l'adversaire — le créateur propose librement
+  // dans ses propres catégories. Si l'opposant n'a pas ≥5 f*cts dans la catégorie,
+  // c'est à lui de le gérer à l'acceptation (fallback côté ChallengeScreen).
   const categories = useMemo(() => {
     const cats = getPlayableCategories()
     return cats
       .map(cat => {
         const count = allFacts.filter(f => f.category === cat.id && effectiveUnlocked.has(f.id)).length
-        const opponentCount = opponentCountsByCat ? (opponentCountsByCat[cat.id] || 0) : null
-        return { ...cat, count, opponentCount }
+        return { ...cat, count }
       })
-      .filter(c => c.count >= 5 && (!isChallenge || (c.opponentCount ?? 0) >= 5))
+      .filter(c => c.count >= 5)
       .sort((a, b) => b.count - a.count)
-  }, [allFacts, effectiveUnlocked, isChallenge, opponentCountsByCat])
+  }, [allFacts, effectiveUnlocked])
 
-  // Total opponent facts (somme des catégories) pour mode Aléatoire en défi
-  const opponentTotal = useMemo(() => {
-    if (!opponentCountsByCat) return 0
-    return Object.values(opponentCountsByCat).reduce((a, b) => a + (b || 0), 0)
-  }, [opponentCountsByCat])
-
-  // Pool size for selected category
+  // Pool size for selected category (basé uniquement sur le créateur)
   const poolSize = selectedCatId === 'all'
     ? totalUnlocked
     : (categories.find(c => c.id === selectedCatId)?.count || 0)
 
-  // En défi : pool effectif = min(moi, adversaire) sur la catégorie choisie
-  const opponentPool = isChallenge && selectedCatId === 'all'
-    ? opponentTotal
-    : isChallenge && selectedCatId
-    ? (opponentCountsByCat?.[selectedCatId] || 0)
-    : null
-  const effectivePool = isChallenge && opponentPool != null
-    ? Math.min(poolSize, opponentPool)
-    : poolSize
+  const effectivePool = poolSize
 
   // Bloc 3.3 — paliers Blitz : retiré 40, ajouté 100
   const questionOptions = [5, 10, 20, 30, 50, 100]
@@ -208,18 +177,6 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
             </div>
           )}
 
-          {isChallenge && opponentLoading && (
-            <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.5)', fontSize: S(12) }}>
-              ⏳ Vérification des f*cts de ton adversaire...
-            </div>
-          )}
-
-          {isChallenge && !opponentLoading && categories.length === 0 && (
-            <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.5)', fontSize: S(12), lineHeight: 1.5 }}>
-              😕 Aucune catégorie commune avec ton adversaire (5 f*cts mini chacun).
-              <br />Jouez tous les deux pour en débloquer !
-            </div>
-          )}
         </div>
       </div>
 

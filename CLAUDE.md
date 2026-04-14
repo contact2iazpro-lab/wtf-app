@@ -41,7 +41,7 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - ✅ Refus revanche persistant Supabase : colonne `challenges.declined_by uuid[]` + RPC `decline_round` (migration `add_declined_by_to_challenges.sql`)
   - ✅ Revanche mêmes conditions : `startCreateDefi(friendId, categoryId, questionCount)` skip BlitzLobby et relance directement
   - ✅ Pénalité erreur défi : +5s (aligné mode Blitz solo, décision C9)
-  - ✅ Pré-check créateur : amitié `accepted` + opposant ≥5 facts dans la catégorie avant création (BlitzLobbyScreen filtre cross-collections)
+  - ✅ Pré-check créateur : amitié `accepted` uniquement. Le créateur propose librement dans SES catégories ≥5 f*cts — l'accepteur gère le fallback si sa propre collection est insuffisante (décision 2026-04-14, revert du filtre cross-collections). BlitzLobbyScreen ne charge plus `loadFriendCategoryCounts`.
   - ✅ **1.1** Fin défi : bouton "Accueil" → "Historique", navigate `/duels/{opponentId}` (dérivé du challenge) au lieu de `/`
   - ✅ **1.2** BlitzLobby : tuile "Aléatoire" affichée aussi en mode défi (retrait gate `!isChallenge`), `opponentTotal` = somme des catégories pour pool adverse
   - ✅ **1.3** BlitzResultsScreen : bouton "partager le défi" masqué en défi entre amis. Fix root cause : `clearPendingDuel` était appelé prématurément → `opponentId` disparaissait → share button réapparaissait. Déplacé au unmount via `onClearAutoChallenge` (ScreenRenderer)

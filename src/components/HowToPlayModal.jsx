@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 
+const EMOJI_IMG = {
+  '🎰': '/assets/ui/emoji-roulette.png',
+}
+function renderIcon(value) {
+  const src = EMOJI_IMG[value]
+  if (!src) return value
+  return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
+}
+
 // ── Couleurs par chapitre (partagées entre carousel et bandeau) ────────────
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6', quest: '#EF4444',
@@ -339,7 +348,7 @@ function getChapterIcon(chapterId) {
 
   // For non-mode chapters, use emoji
   const chapter = CHAPTERS.find(c => c.id === chapterId)
-  return <span style={{ fontSize: 20 }}>{chapter?.emoji || ''}</span>
+  return <span style={{ fontSize: 20 }}>{renderIcon(chapter?.emoji || '')}</span>
 }
 
 // ── Main component ──────────────────────────────────────────────────────────
@@ -471,7 +480,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               >
                 {modeIcons[ch.id]
                   ? <img src={modeIcons[ch.id]} style={{ width: 28, height: 28, objectFit: 'contain', filter: isActive ? 'brightness(10)' : 'none' }} />
-                  : <span style={{ fontSize: 24 }}>{ch.emoji}</span>
+                  : <span style={{ fontSize: 24 }}>{renderIcon(ch.emoji)}</span>
                 }
                 <span style={{
                   fontSize: 10, fontWeight: 800, lineHeight: 1.2, textAlign: 'center',
@@ -499,7 +508,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               borderBottom: `2px solid ${chapterColor}`,
               boxShadow: `0 2px 8px ${chapterColor}33`,
             }}>
-              <span style={{ fontSize: 22 }}>{chapter.emoji}</span>
+              <span style={{ fontSize: 22 }}>{renderIcon(chapter.emoji)}</span>
               <h2 className="font-black" style={{
                 color: '#ffffff',
                 lineHeight: 1.2,
@@ -529,7 +538,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   className="flex items-start gap-2 p-2 rounded-2xl"
                   style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}
                 >
-                  <span style={{ fontSize: 18, flexShrink: 0, lineHeight: '1.6' }}>{item.icon}</span>
+                  <span style={{ fontSize: 18, flexShrink: 0, lineHeight: '1.6' }}>{renderIcon(item.icon)}</span>
                   <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.6', fontSize: '14px' }}>
                     {renderText(item.text)}
                   </p>

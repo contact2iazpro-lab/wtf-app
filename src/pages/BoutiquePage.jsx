@@ -497,7 +497,7 @@ export default function BoutiquePage() {
             cursor: 'pointer', textAlign: 'left',
           }}
         >
-          <span style={{ fontSize: 28 }}>🎰</span>
+          <img src="/assets/ui/emoji-roulette.png" alt="roulette" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 28 }} />
           <div className="flex-1">
             <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Roulette du jour</span>
             <span className="text-xs" style={{ color: '#6B7280' }}>Tente ta chance pour des récompenses !</span>

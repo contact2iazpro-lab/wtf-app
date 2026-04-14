@@ -225,7 +225,7 @@ export default function RouletteModal({ onClose, scale }) {
         onClick={e => e.stopPropagation()}
       >
         <h2 style={{ fontSize: 22, fontWeight: 900, color: '#1a1a2e', margin: '0 0 4px' }}>
-          🎰 Roulette du jour
+          <img src="/assets/ui/emoji-roulette.png" alt="roulette" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Roulette du jour
         </h2>
         <p style={{ fontSize: 12, color: '#9CA3AF', margin: '0 0 16px' }}>
           {isFree ? '1 spin gratuit disponible !' : `Spin supplémentaire : ${EXTRA_SPIN_COST} coins`}

@@ -4,6 +4,7 @@ import { getAnswerOptions } from '../utils/answers'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
+import GainsBreakdown from '../components/results/GainsBreakdown'
 
 const STORAGE_KEY_PREFIX = 'wtf_puzzle_'
 
@@ -168,19 +169,35 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
       {done && (
         <div style={{
           marginTop: 10,
-          background: 'rgba(255,255,255,0.08)', padding: 16, borderRadius: 12,
-          textAlign: 'center',
-          border: '1.5px solid rgba(255,255,255,0.15)',
+          display: 'flex', flexDirection: 'column', gap: 10,
+          '--scale': 1,
         }}>
-          <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 6 }}>
-            {won ? `🎉 Bravo ! +${coinsEarned} coins` : '😢 Raté — reviens demain !'}
+          <div style={{
+            fontSize: 18, fontWeight: 900, textAlign: 'center',
+            color: won ? '#FFD700' : 'rgba(255,255,255,0.7)',
+          }}>
+            {won ? '🎉 Bravo !' : '😢 Raté — reviens demain !'}
           </div>
+          {won && (
+            <GainsBreakdown
+              items={[
+                {
+                  label: `🧩 Résolu en ${4 - attemptsLeft} tentative${attemptsLeft < 3 ? 's' : ''}`,
+                  value: `+${coinsEarned}`,
+                },
+              ]}
+              total={coinsEarned}
+              totalColor="#FFD700"
+              textColor="#ffffff"
+            />
+          )}
           {fact.explication && (
-            <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12, lineHeight: 1.4 }}>{fact.explication}</div>
+            <div style={{ fontSize: 12, opacity: 0.85, lineHeight: 1.4, textAlign: 'center' }}>{fact.explication}</div>
           )}
           <button onClick={handleShare} style={{
             background: '#FF6B1A', border: 'none', borderRadius: 10, padding: '10px 20px',
             color: '#fff', fontWeight: 800, fontFamily: 'Nunito, sans-serif', cursor: 'pointer', fontSize: 14,
+            alignSelf: 'center',
           }}>
             📤 Partager
           </button>

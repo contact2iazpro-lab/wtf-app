@@ -4,6 +4,7 @@ import { getAnswerOptions } from '../utils/answers'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
+import GainsBreakdown from '../components/results/GainsBreakdown'
 
 function readRouteState() {
   try {
@@ -183,19 +184,36 @@ export default function RouteScreen({ onHome, setStorage }) {
   // ── Vue résultat ──────────────────────────────────────────────────────
   if (showResult) {
     const perfect = correctCount === session.facts.length
+    const coinsGained = perfect ? (session.boss ? 15 : 4) : 0
     return (
       <div style={{
         position: 'relative', width: '100%', height: '100%',
         background: 'linear-gradient(160deg, #1a0f2e 0%, #2E1A47 100%)',
         color: '#fff', fontFamily: 'Nunito, sans-serif',
         display: 'flex', flexDirection: 'column', padding: 20,
-        justifyContent: 'center', alignItems: 'center', gap: 20,
+        justifyContent: 'center', alignItems: 'center', gap: 16,
+        '--scale': 1,
       }}>
         <h1 style={{ fontSize: 30, fontWeight: 900, margin: 0, textAlign: 'center' }}>
           {perfect ? (session.boss ? '👑 BOSS vaincu !' : '🎉 Niveau réussi !') : '😢 Raté'}
         </h1>
         <div style={{ fontSize: 20 }}>{correctCount} / {session.facts.length}</div>
-        {perfect && <div style={{ fontSize: 16, opacity: 0.9, color: '#FFD700' }}>+{session.boss ? 15 : 4} coins</div>}
+        {perfect && (
+          <div style={{ width: '100%', maxWidth: 300 }}>
+            <GainsBreakdown
+              items={[
+                {
+                  label: session.boss ? '👑 Boss vaincu' : '✅ Niveau parfait',
+                  value: `+${coinsGained}`,
+                  color: '#FFD700',
+                },
+              ]}
+              total={coinsGained}
+              totalColor="#FFD700"
+              textColor="#ffffff"
+            />
+          </div>
+        )}
         {!perfect && <div style={{ fontSize: 13, opacity: 0.7, textAlign: 'center', maxWidth: 260 }}>Réessaie pour débloquer le niveau suivant.</div>}
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
           <button onClick={() => { setSession(null) }} style={{

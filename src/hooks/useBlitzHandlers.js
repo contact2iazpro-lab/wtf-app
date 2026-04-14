@@ -183,7 +183,9 @@ export function useBlitzHandlers({
                   duelId = duel?.id || null
                 }
               }
-              const round = await createDuelRound({
+              // Race 8s sur createDuelRound aussi — Supabase peut hang
+              // (websocket wedge, token expiré). Si timeout, on throw explicite.
+              const roundPromise = createDuelRound({
                 duelId,
                 categoryId: selectedCategory || 'all',
                 categoryLabel: challengeData.categoryLabel,
@@ -193,6 +195,8 @@ export function useBlitzHandlers({
                 player1Name: user.user_metadata?.name || 'Joueur WTF!',
                 opponentId,
               })
+              const roundTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('createDuelRound timeout 8s')), 8000))
+              const round = await Promise.race([roundPromise, roundTimeout])
               // Publier IMMÉDIATEMENT le round (UX : "Défi créé !" affiché direct).
               // Le débit du ticket passe en fire-and-forget derrière — s'il fail,
               // on le log mais l'affichage du code n'est jamais bloqué.

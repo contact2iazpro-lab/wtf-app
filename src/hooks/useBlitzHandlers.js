@@ -141,6 +141,7 @@ export function useBlitzHandlers({
 
       if (user) {
         const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
+        console.log('[useBlitzHandlers] calling create_duel_challenge RPC', { opponentId, cat: selectedCategory, q: totalAnswered })
         // Palier 3 — RPC atomique : 1 seul round-trip serveur, debit ticket + upsert
         // duel + insert challenge en 1 txn. Plus besoin de timeout/race/fire-forget.
         import('../data/duelService')
@@ -153,6 +154,7 @@ export function useBlitzHandlers({
             player1Name: user.user_metadata?.name || 'Joueur WTF!',
           }))
           .then((result) => {
+            console.log('[useBlitzHandlers] RPC result', result)
             // Le RPC renvoie { challenge_id, code, duel_id, tickets_remaining }.
             // On synthétise un "round" compatible avec l'ancien format pour BlitzResultsScreen.
             const round = {

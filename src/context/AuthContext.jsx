@@ -251,13 +251,16 @@ export function AuthProvider({ children }) {
       keysToRemove.forEach(k => localStorage.removeItem(k))
     } catch { /* ignore */ }
 
-    // 3. Nettoyer les données du joueur précédent (garder settings uniquement)
+    // 3. Nettoyer les données du joueur précédent. On ne garde que les
+    // entités "device-level" qui n'appartiennent à aucun joueur (paramètres
+    // offre de coffre notamment). Tout ce qui est lié à la progression
+    // (badges, seenModes, stats) doit repartir à zéro pour le nouveau user
+    // sinon on hérite d'un état incohérent du précédent compte.
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       const cleanData = {
         coffreClaimedDays: wtfData.coffreClaimedDays,
         coffreWeekStart: wtfData.coffreWeekStart,
-        seenModes: wtfData.seenModes,
       }
       localStorage.setItem('wtf_data', JSON.stringify(cleanData))
       localStorage.removeItem('wtf_hints_available') // legacy, plus utilisé

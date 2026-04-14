@@ -87,28 +87,24 @@ export function useBlitzHandlers({
       wtfData.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(wtfData))
 
-      // A.9.3/A.9.6 — miroir Supabase : blitzRecords + stats + total
-      mergeFlags?.({
-        blitzRecords: wtfData.blitzRecords,
-        bestBlitzTime: wtfData.bestBlitzTime,
-        statsByMode: wtfData.statsByMode,
-        gamesPlayed: wtfData.gamesPlayed,
-        totalCorrect: wtfData.totalCorrect,
-        totalAnswered: wtfData.totalAnswered,
-        blitzPerfects: wtfData.blitzPerfects,
-      }).catch(e => console.warn('[useBlitzHandlers] mergeFlags failed:', e?.message || e))
-    } catch {}
+      // Trophées calculés AVANT le push pour que badgesEarned soit dans la même RPC
+      updateTrophyData()
+      const newBadges = checkBadges()
+      if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
+      const refreshed = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
-    updateTrophyData()
-    const newBadges = checkBadges()
-    if (newBadges.length > 0) {
-      setNewlyEarnedBadges(newBadges)
-      // Bloc 2.8 — persistance Supabase pour éviter le replay des notifs cross-device
-      try {
-        const refreshed = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        mergeFlags?.({ badgesEarned: refreshed.badgesEarned || [] }).catch(() => {})
-      } catch {}
-    }
+      // A.9.3/A.9.6 — 1 seule RPC atomique : blitzRecords + stats + totaux + badges
+      mergeFlags?.({
+        blitzRecords: refreshed.blitzRecords,
+        bestBlitzTime: refreshed.bestBlitzTime,
+        statsByMode: refreshed.statsByMode,
+        gamesPlayed: refreshed.gamesPlayed,
+        totalCorrect: refreshed.totalCorrect,
+        totalAnswered: refreshed.totalAnswered,
+        blitzPerfects: refreshed.blitzPerfects,
+        badgesEarned: refreshed.badgesEarned || [],
+      }).catch(e => console.warn('[useBlitzHandlers] session end mergeFlags failed:', e?.message || e))
+    } catch {}
 
     // Complete duel round si l'user vient d'accepter un défi (mode accept)
     if (pendingDuel?.mode === 'accept' && pendingDuel.roundId && user) {

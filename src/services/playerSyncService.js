@@ -61,13 +61,30 @@ export async function pullFromServer(userId) {
         if (remote.flags.coffreWeekStart) saved.coffreWeekStart = remote.flags.coffreWeekStart
         if (remote.flags.streakFreezeCount !== undefined) saved.streakFreezeCount = remote.flags.streakFreezeCount
         if (remote.flags.bestBlitzTime) saved.bestBlitzTime = remote.flags.bestBlitzTime
-        // A.9.6 — stats et totaux
-        if (remote.flags.statsByMode) saved.statsByMode = remote.flags.statsByMode
-        if (remote.flags.gamesPlayed !== undefined) saved.gamesPlayed = remote.flags.gamesPlayed
-        if (remote.flags.questsPlayed !== undefined) saved.questsPlayed = remote.flags.questsPlayed
-        if (remote.flags.totalCorrect !== undefined) saved.totalCorrect = remote.flags.totalCorrect
-        if (remote.flags.totalAnswered !== undefined) saved.totalAnswered = remote.flags.totalAnswered
-        if (remote.flags.blitzPerfects !== undefined) saved.blitzPerfects = remote.flags.blitzPerfects
+        // A.9.6 — stats et totaux : MAX par champ (compteurs monotones, jamais
+        // décroissants). Évite qu'un pull d'un device moins à jour n'écrase les
+        // stats locales plus avancées. Fonctionne pour même-device comme cross-device.
+        if (remote.flags.statsByMode && typeof remote.flags.statsByMode === 'object') {
+          const localStats = saved.statsByMode || {}
+          const remoteStats = remote.flags.statsByMode
+          const mergedStats = { ...localStats }
+          for (const modeKey of Object.keys(remoteStats)) {
+            const l = localStats[modeKey] || {}
+            const r = remoteStats[modeKey] || {}
+            mergedStats[modeKey] = {
+              gamesPlayed: Math.max(l.gamesPlayed || 0, r.gamesPlayed || 0),
+              totalCorrect: Math.max(l.totalCorrect || 0, r.totalCorrect || 0),
+              totalAnswered: Math.max(l.totalAnswered || 0, r.totalAnswered || 0),
+              bestStreak: Math.max(l.bestStreak || 0, r.bestStreak || 0),
+            }
+          }
+          saved.statsByMode = mergedStats
+        }
+        if (remote.flags.gamesPlayed !== undefined) saved.gamesPlayed = Math.max(saved.gamesPlayed || 0, remote.flags.gamesPlayed)
+        if (remote.flags.questsPlayed !== undefined) saved.questsPlayed = Math.max(saved.questsPlayed || 0, remote.flags.questsPlayed)
+        if (remote.flags.totalCorrect !== undefined) saved.totalCorrect = Math.max(saved.totalCorrect || 0, remote.flags.totalCorrect)
+        if (remote.flags.totalAnswered !== undefined) saved.totalAnswered = Math.max(saved.totalAnswered || 0, remote.flags.totalAnswered)
+        if (remote.flags.blitzPerfects !== undefined) saved.blitzPerfects = Math.max(saved.blitzPerfects || 0, remote.flags.blitzPerfects)
         // Bloc 2.7 — pulse NEW persistant cross-device
         if (Array.isArray(remote.flags.seenModes)) {
           saved.seenModes = [...new Set([...(saved.seenModes || []), ...remote.flags.seenModes])]

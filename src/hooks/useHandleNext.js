@@ -213,7 +213,7 @@ export function useHandleNext({
       }
     }
 
-    // Stats par mode
+    // Stats par mode + trophées + push Supabase atomique (1 seule RPC)
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       if (!wtfData.statsByMode) wtfData.statsByMode = {}
@@ -234,26 +234,22 @@ export function useHandleNext({
       localStorage.setItem('wtf_data', JSON.stringify(wtfData))
       window.dispatchEvent(new Event('wtf_storage_sync'))
 
-      // A.9.6 — miroir Supabase : stats + totaux
-      mergeFlags?.({
-        statsByMode: wtfData.statsByMode,
-        gamesPlayed: wtfData.gamesPlayed,
-        questsPlayed: wtfData.questsPlayed,
-        totalCorrect: wtfData.totalCorrect,
-        totalAnswered: wtfData.totalAnswered,
-      }).catch(e => console.warn('[useHandleNext] stats mergeFlags failed:', e?.message || e))
-    } catch {}
+      // Trophées calculés AVANT le push pour que badgesEarned soit dans la même RPC
+      updateTrophyData()
+      const newBadges = checkBadges()
+      if (newBadges.length > 0) setTrophyQueue(newBadges)
+      const refreshed = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
-    updateTrophyData()
-    const newBadges = checkBadges()
-    if (newBadges.length > 0) {
-      setTrophyQueue(newBadges)
-      // Bloc 2.8 — persistance Supabase pour éviter le replay des notifs cross-device
-      try {
-        const refreshed = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        mergeFlags?.({ badgesEarned: refreshed.badgesEarned || [] }).catch(() => {})
-      } catch {}
-    }
+      // A.9.6 — 1 seule RPC atomique : stats + totaux + badges
+      mergeFlags?.({
+        statsByMode: refreshed.statsByMode,
+        gamesPlayed: refreshed.gamesPlayed,
+        questsPlayed: refreshed.questsPlayed,
+        totalCorrect: refreshed.totalCorrect,
+        totalAnswered: refreshed.totalAnswered,
+        badgesEarned: refreshed.badgesEarned || [],
+      }).catch(e => console.warn('[useHandleNext] session end mergeFlags failed:', e?.message || e))
+    } catch {}
 
     // Route to end screen
     if (sessionType === 'wtf_du_jour') {

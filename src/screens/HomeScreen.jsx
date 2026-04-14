@@ -254,7 +254,7 @@ export default function HomeScreen({
   // Logique de pulse basée sur statsByMode (nb de fois joué en mode spécifique = 0)
   const questsPlayedInMode = wtfData.statsByMode?.parcours?.gamesPlayed || 0
   const blitzPlayedInMode = wtfData.statsByMode?.blitz?.gamesPlayed || 0
-  const explorerPlayedInMode = wtfData.statsByMode?.flash_solo?.gamesPlayed || 0
+  const explorerPlayedInMode = wtfData.statsByMode?.explorer?.gamesPlayed || 0
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)

@@ -47,12 +47,10 @@ export default function ChallengeScreen() {
       setLoading(false)
     }, 10000)
 
-    console.log('[ChallengeScreen] fetching challenge', code)
     getChallenge(code)
       .then(data => {
         if (cancelled) return
         clearTimeout(timeoutId)
-        console.log('[ChallengeScreen] challenge loaded', data)
         setChallenge(data)
         setLoading(false)
       })
@@ -70,11 +68,8 @@ export default function ChallengeScreen() {
   const playerFacts = (() => {
     if (!challenge || !factsReady) return []
     const allBlitz = getBlitzFacts()
-    console.log('[ChallengeScreen] Debug:', { challengeId: challenge.id, categoryId: challenge.category_id, allBlitzCount: allBlitz.length, allBlitzIds: allBlitz.map(f => f.id) })
     if (challenge.category_id === 'all') return allBlitz
-    const filtered = allBlitz.filter(f => f.category === challenge.category_id)
-    console.log('[ChallengeScreen] After filter:', { filteredCount: filtered.length })
-    return filtered
+    return allBlitz.filter(f => f.category === challenge.category_id)
   })()
 
   const hasEnoughFacts = playerFacts.length >= (challenge?.question_count || 0)

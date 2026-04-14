@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useScale } from '../hooks/useScale'
 import { createChallenge } from '../data/challengeService'
 import { audio } from '../utils/audio'
@@ -33,15 +33,10 @@ export default function BlitzResultsScreen({
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // Cleanup du résultat créé UNIQUEMENT au unmount réel de l'écran.
-  // ⚠️ onClearAutoChallenge est une fresh closure à chaque render dans ScreenRenderer ;
-  // si on le mettait en deps, le cleanup firerait à chaque re-render et wiperait
-  // lastCreatedDuel immédiatement après qu'il soit set → spinner infini.
-  const clearRef = useRef(onClearAutoChallenge)
-  useEffect(() => { clearRef.current = onClearAutoChallenge }, [onClearAutoChallenge])
+  // Cleanup du résultat créé au unmount (handler stable via useCallback dans ScreenRenderer).
   useEffect(() => {
-    return () => { clearRef.current?.() }
-  }, [])
+    return () => { onClearAutoChallenge?.() }
+  }, [onClearAutoChallenge])
 
   // Bloc 3.6 — Vibration aux résultats Blitz : pattern long si record, court sinon
   useEffect(() => {

@@ -143,14 +143,14 @@ export function useBlitzHandlers({
 
       if (user) {
         const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
-        console.log('[useBlitzHandlers] create challenge — opponentId:', opponentId, 'pendingDuel:', pendingDuel)
 
         // Timeout de sécurité : si rien n'a répondu en 15s, on sort de "Création en cours…"
+        // TODO Palier 3 — retirer ce safety net quand la RPC atomique create_duel_challenge sera en place.
         let settled = false
         const safetyTimeout = setTimeout(() => {
           if (settled) return
           settled = true
-          console.error('[useBlitzHandlers] Auto duel round creation TIMEOUT 15s')
+          console.error('[useBlitzHandlers] create challenge timeout 15s')
           setLastCreatedDuelError?.('Création du défi trop longue — réessaie.')
         }, 15000)
 
@@ -172,22 +172,17 @@ export function useBlitzHandlers({
             try {
               let duelId = null
               if (opponentId) {
-                console.log('[useBlitzHandlers] getOrCreateDuel…', user.id, opponentId)
                 // Race contre un timeout 5s : si la table `duels` hang (RLS, lock),
                 // on continue avec duelId=null — challenges.duel_id est nullable.
-                // Le lien duel ↔ challenges pourra être rattaché plus tard.
                 const duelPromise = getOrCreateDuel(user.id, opponentId)
                 const duelTimeout = new Promise((resolve) => setTimeout(() => resolve('__TIMEOUT__'), 5000))
                 const duel = await Promise.race([duelPromise, duelTimeout])
                 if (duel === '__TIMEOUT__') {
                   console.warn('[useBlitzHandlers] getOrCreateDuel timeout 5s — fallback duelId=null')
-                  duelId = null
                 } else {
                   duelId = duel?.id || null
-                  console.log('[useBlitzHandlers] duel resolved:', duelId)
                 }
               }
-              console.log('[useBlitzHandlers] createDuelRound…')
               const round = await createDuelRound({
                 duelId,
                 categoryId: selectedCategory || 'all',
@@ -198,21 +193,14 @@ export function useBlitzHandlers({
                 player1Name: user.user_metadata?.name || 'Joueur WTF!',
                 opponentId,
               })
-              console.log('[useBlitzHandlers] round created:', round?.code)
-              // On publie IMMÉDIATEMENT le round (UX : "Défi créé !" affiché direct).
-              // Le débit du ticket est fire-and-forget derrière — s'il fail, on le log
-              // mais ça ne doit JAMAIS bloquer l'affichage du code.
+              // Publier IMMÉDIATEMENT le round (UX : "Défi créé !" affiché direct).
+              // Le débit du ticket passe en fire-and-forget derrière — s'il fail,
+              // on le log mais l'affichage du code n'est jamais bloqué.
               safeResolve(round)
-              // Débiter le ticket en fire-and-forget (B4.2)
-              try {
-                Promise.resolve(applyCurrencyDelta?.({ tickets: -1 }, 'challenge_create'))
-                  .then(() => console.log('[useBlitzHandlers] ticket débité OK'))
-                  .catch((e) => console.warn('[useBlitzHandlers] debit ticket failed:', e?.message || e))
-              } catch (e) {
-                console.warn('[useBlitzHandlers] debit ticket threw sync:', e?.message || e)
-              }
+              Promise.resolve(applyCurrencyDelta?.({ tickets: -1 }, 'challenge_create'))
+                .catch((e) => console.warn('[useBlitzHandlers] debit ticket failed:', e?.message || e))
             } catch (e) {
-              console.error('[useBlitzHandlers] Auto duel round creation failed:', e)
+              console.error('[useBlitzHandlers] create duel round failed:', e)
               safeReject(e?.message || 'Erreur inconnue')
             }
           })

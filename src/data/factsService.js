@@ -335,15 +335,9 @@ export function getBlitzFacts() {
   try {
     const wtfData = readWtfData()
     const unlockedIds = new Set(wtfData.unlockedFacts || [])
-    if (unlockedIds.size === 0) {
-      console.log('[getBlitzFacts] No unlocked facts')
-      return []
-    }
+    if (unlockedIds.size === 0) return []
     const validFacts = getValidFacts()
-    console.log('[getBlitzFacts] unlockedIds:', Array.from(unlockedIds), 'validFactsCount:', validFacts.length, 'firstValidId:', validFacts[0]?.id)
-    const result = validFacts.filter(f => unlockedIds.has(f.id))
-    console.log('[getBlitzFacts] filtered result:', result.length)
-    return result
+    return validFacts.filter(f => unlockedIds.has(f.id))
   } catch (e) {
     console.error('[getBlitzFacts] Error:', e)
     return []

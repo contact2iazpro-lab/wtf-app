@@ -4,6 +4,7 @@
  * Aucune logique ici, juste du mapping screen → composant.
  */
 
+import { useCallback } from 'react'
 import { SCREENS } from '../constants/gameConfig'
 import HomeScreen from '../screens/HomeScreen'
 import WTFWeeklyTeaserScreen from '../screens/WTFWeeklyTeaserScreen'
@@ -46,6 +47,13 @@ export default function ScreenRenderer({
   onBadgeSeen, onResetSocialNotif,
   socialNotifCount, pendingChallengesCount, navigate,
 }) {
+  // Handler stable pour BlitzResultsScreen — évite que son useEffect cleanup
+  // ne wipe lastCreatedDuel sur chaque re-render (fresh closure trap).
+  const handleClearAutoChallenge = useCallback(() => {
+    clearLastCreatedDuel?.()
+    clearPendingDuel?.()
+  }, [clearLastCreatedDuel, clearPendingDuel])
+
   return (
     <>
       {screen === SCREENS.HOME && (
@@ -243,7 +251,7 @@ export default function ScreenRenderer({
           opponentId={pendingDuel?.opponentId}
           autoChallenge={lastCreatedDuel}
           challengeError={lastCreatedDuelError}
-          onClearAutoChallenge={() => { clearLastCreatedDuel?.(); clearPendingDuel?.() }}
+          onClearAutoChallenge={handleClearAutoChallenge}
         />
       )}
 

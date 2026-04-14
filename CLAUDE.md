@@ -66,12 +66,14 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - ✅ **3.5** RouletteModal T95 : avg coins/spin 7,1→5,44 (segments 10→8, 20→15, 50→30, weights ajustés)
   - ✅ **3.6** Vibreur moments clés : `audio.vibrate()` sur ResultsScreen (perfect long), BlitzResultsScreen (record long), ChallengeScreen (victoire défi long)
   - ✅ **3.7** Déblocage catégorie payante : tuile lockée Flash/Explorer/CollectionPage ouvre modal confirm 100 coins → débloque uniquement l'accès à la catégorie (aucun f*ct offert, c'est au joueur de les découvrir en jouant). Persisté via `flags.unlockedCategories` (mergeFlags). Composant partagé `UnlockCategoryModal`.
-- ✅ **Bloc 4 — Infra & économie (2026-04-14)** : 2 items fermés
+- ✅ **Bloc 4 — Infra & économie (2026-04-14)** : 4 items fermés, 1 reporté
   - ✅ **4.8** Cron cleanup anonymes activé (2026-04-14) : fonction `cleanup_anonymous_users` déployée, FK CASCADE ajoutées sur profiles/challenges/friend_codes/friendships (collections CASCADE via profiles), pg_cron schedule `0 3 * * *` actif.
   - ✅ **4.11** Réduction gains coins (heavy 84→~60/j, casual 52→~42/j) : Flash/Quest/Explorer perfect 10→5, Route niveau 6→4, Route boss 20→15, Coffre dimanche 15→10, Puzzle 6/4/2 → 5/3/1
+  - ✅ **4.1** Migration unlockedFacts → Supabase via RPC `unlock_fact` (14/04/2026) : 4 callers legacy migrés (useGameHandlers, useHandleNext, useNavigationHandlers, useAppEffects), `updateCollection` supprimé de collectionService (loadUserCollections/mergeCollections/loadFriendCategoryCounts conservés), `unlockFact` wiring propagé depuis usePlayerProfile via props. Le RPC `unlock_fact` upsert atomiquement dans `collections.facts_completed` avec anti-replay par nonce. localStorage unlockedFacts conservé comme cache stale-while-revalidate (règle Phase A). Build prod OK.
+  - ✅ **4.3** Sync Notion ↔ CLAUDE.md passe finale (14/04/2026) : 4 divergences corrigées. **CLAUDE.md** : paliers Blitz stale "5,10,20,30,40,50" → "5,10,20,30,50,100" (B3.3) ; ligne "Pas de bonus perfect" FAUSSE supprimée, remplacée par la règle réelle (Quest perfect = +5 coins + 1 ticket, Flash/Explorer perfect = +5 coins, WTF du Jour = +10 coins, B4.11). **Notion Paramètres Officiels** : timer défi "10s/affirmation" → "chrono montant global +5s/erreur" (aligné code BlitzScreen) ; unlock catégorie "100 coins → 1 funny fact random + accès" → "100 coins → accès uniquement (aucun fact offert)" (aligné code UnlockCategoryModal).
+  - ⏸️ **4.2** Suppression legacy `currencyService` **reportée** à session dédiée : audit approfondi 14/04/2026 révèle que c'est un chantier de consolidation currency (~20-25 fichiers, 2 sources de state parallèles : `CurrencyContext.useCurrency()` alimenté par `currencyService.updateCoins/etc` ET `usePlayerProfile.applyCurrencyDelta` RPC). Le dual-path `updateCoins(points) + applyCurrencyDelta(...)` existe pour garder les 2 stores sync. Supprimer le service impose d'abord de choisir UNE source de vérité (brancher CurrencyContext sur profile cache OU migrer tous les `useCurrency()` vers `usePlayerProfile`). Risque élevé sur boutique/roulette/streak rewards/unlock catégorie/achat hint — à planifier avec tests manuels, post auth anonyme Phase A.
 - ✅ **Bloc 6 — Petits T+ (2026-04-14)** : 4 items audités → tous déjà résolus dans le code (T+29 BlitzResultsScreen:315, T+30, T+33, T+34 SettingsModal:324)
-- ✅ **Phase A slice A — Audit RPC unlockFact (2026-04-14)** : Audit des 7 sites suspects → 6/7 ont déjà le miroir RPC. Seul gap restant patché : `AppModals.jsx` bouton streak J30 "10 f*cts débloqués" appelle maintenant `unlockFact?.()` pour chacun des 10 picks. Slices B/C/D/E (consolidation, seed, currencyService legacy) à faire en sessions dédiées.
-- 🔧 **unlockedFacts infra** : Colonne Supabase préparée, code reste en localStorage (migration non-commencée, voir Architecture Data)
+- ✅ **Phase A slice A — Audit RPC unlockFact (2026-04-14)** : Audit des 7 sites suspects → 6/7 ont déjà le miroir RPC. Seul gap restant patché : `AppModals.jsx` bouton streak J30 "10 f*cts débloqués" appelle maintenant `unlockFact?.()` pour chacun des 10 picks.
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client
 Toute variable préfixée `VITE_` est inlinée dans le JS public et lisible via DevTools.
@@ -143,7 +145,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 | QCM | 4 choix |
 | Indices | Aucun |
 | Coins | 0 (prestige uniquement) |
-| Paliers | 5, 10, 20, 30, 40, 50 questions |
+| Paliers | 5, 10, 20, 30, 50, 100 questions |
 | Contenu | **Tous** les f*cts débloqués du joueur (VIP + Funny) |
 
 ### Mode Hunt (WTF de la Semaine)
@@ -289,7 +291,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Indices = chaque utilisation débite 1 du stock (pas d'indices gratuits)
 - Indice non disponible si stock vide : bouton grisé, JAMAIS de pause du timer
 - Questions par Quête : 5 (valeur officielle)
-- Pas de bonus perfect (ni Quest ni Jouer)
+- Bonus session parfaite : Quest perfect = +5 coins + 1 ticket. Flash/Explorer perfect = +5 coins. WTF du Jour perfect = +10 coins (B4.11 — 14/04/2026)
 
 ## Modes de jeu — Résumé
 
@@ -320,7 +322,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 **Supabase (canonique)** — toute mutation passe par RPC ou Edge Function, jamais d'écriture localStorage directe :
 - coins, tickets, indices, énergie ✅
-- **unlockedFacts (set d'IDs)** 🔧 *Colonne infra préparée, code reste en localStorage — migration non-commencée*
+- **unlockedFacts (set d'IDs)** ✅ Source de vérité = `collections.facts_completed` via RPC `unlock_fact` (Bloc 4.1 — 14/04/2026). localStorage conservé comme cache stale-while-revalidate.
 - streak (jour courant + historique) ⏳
 - badges / trophées ⏳
 - blitzRecords (meilleurs temps par catégorie/palier) ⏳
@@ -332,7 +334,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 **localStorage (source de vérité jusqu'à Phase A complet)** :
 - onboardingCompleted, tutoStep, skip_launch_*
 - son on/off, thème, mode dev/test
-- **unlockedFacts** ✅ *Source actuelle de vérité pour les f*cts débloqués. Sera migrée vers Supabase quand Phase A unlockedFacts sera complète*
+- **unlockedFacts** (cache) : Set d'IDs synchronisé stale-while-revalidate depuis `collections.facts_completed` (source de vérité Supabase depuis Bloc 4.1 — 14/04/2026)
 - wtf_cached_friends (pur cache de l'entité Supabase)
 
 **React state (éphémère)** :

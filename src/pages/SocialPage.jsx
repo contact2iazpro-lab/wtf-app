@@ -79,6 +79,7 @@ export default function SocialPage() {
   const [toast, setToast] = useState(null)
   const [confirmRemove, setConfirmRemove] = useState(null)
   const [expandedFriend, setExpandedFriend] = useState(null) // friendId du ami dont on voit les défis
+  const [friendsListCollapsed, setFriendsListCollapsed] = useState(false) // accordéon "Mes amis"
   const [friendModal, setFriendModal] = useState(null) // { friendshipId, userId, displayName }
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
@@ -333,12 +334,24 @@ export default function SocialPage() {
               <p style={{ fontSize: S(10), color: '#9CA3AF', margin: '8px 0 0', textAlign: 'center' }}>Envoie ton lien par WhatsApp, SMS ou autre</p>
             </div>
 
-            {/* B) Mes amis */}
+            {/* B) Mes amis — accordéon */}
             <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 10px' }}>
+              <button
+                onClick={() => { audio.play('click'); setFriendsListCollapsed(c => !c) }}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  margin: '0 0 10px', padding: 0, background: 'transparent', border: 'none',
+                  cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                }}
+              >
                 <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0 }}>Mes amis ({friends.length})</h2>
-              </div>
-              {friendsLoading && friends.length === 0 ? (
+                <span style={{
+                  fontSize: 16, color: '#9CA3AF',
+                  transition: 'transform 0.2s',
+                  transform: friendsListCollapsed ? 'rotate(-90deg)' : 'rotate(0)',
+                }}>▼</span>
+              </button>
+              {friendsListCollapsed ? null : friendsLoading && friends.length === 0 ? (
                 <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Chargement...</p>
               ) : friends.length === 0 ? (
                 <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0' }}>Pas encore d'amis. Invite quelqu'un !</p>

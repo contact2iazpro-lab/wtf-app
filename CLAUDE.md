@@ -84,12 +84,10 @@ L'admin-tool (clé service_role) doit être déployé **en isolation** (service 
 séparé, sous-domaine privé, ou en local uniquement).
 
 ## Règles absolues
-1. Ne JAMAIS pusher automatiquement — commit local uniquement
-2. Attendre confirmation explicite avant tout git push
-3. Un prompt = un fichier cible = une modification
-4. Toujours travailler sur master directement
-5. Si une branche de preview est créée → merger sur master immédiatement
-6. Branche unique : ne jamais créer de nouvelle branche. Si Claude Code crée une branche automatiquement → merger immédiatement sur master et supprimer la branche.
+1. Un prompt = un fichier cible = une modification
+2. Toujours travailler sur master directement
+3. Si une branche de preview est créée → merger sur master immédiatement
+4. Branche unique : ne jamais créer de nouvelle branche. Si Claude Code crée une branche automatiquement → merger immédiatement sur master et supprimer la branche.
 
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts
@@ -436,8 +434,6 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Paramètres : https://www.notion.so/332b94ed8cb181869176fd6266e78915
 - **Tâches restantes (base de travail LIVE)** : https://www.notion.so/342b94ed8cb181a58710f3899cb4fb42 — source unique de vérité de ce qu'il reste à faire. À actualiser à chaque tâche fermée (retirer + renuméroter), concordance avec § Phase A ci-dessus. *(Ancienne page archivée : 342b94ed8cb181b7a03cc4c6c4d49ab6)*
 
-⚠️ RAILWAY : Ne jamais pusher automatiquement. Commit local uniquement.
-
 ## Choix du modèle — Règle officielle
 
 ### Utiliser SONNET pour :
@@ -458,7 +454,6 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 ## Preview local
 - Preview : npm run dev → localhost:5176
-- Ne jamais pusher uniquement pour tester — tester en local d'abord
 
 ## 🎨 Inventaire Émojis — Audit 13/04/2026
 

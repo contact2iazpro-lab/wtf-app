@@ -37,9 +37,33 @@ export default function ChallengeScreen() {
     initFacts().finally(() => setFactsReady(true))
 
     if (!code) { setError('Code manquant'); setLoading(false); return }
+
+    let cancelled = false
+    // Timeout 10s au cas où la requête Supabase ne résout jamais (RLS, lock, etc.)
+    const timeoutId = setTimeout(() => {
+      if (cancelled) return
+      console.warn('[ChallengeScreen] getChallenge timeout after 10s')
+      setError('Le défi met trop de temps à charger — réessaie.')
+      setLoading(false)
+    }, 10000)
+
+    console.log('[ChallengeScreen] fetching challenge', code)
     getChallenge(code)
-      .then(data => { setChallenge(data); setLoading(false) })
-      .catch(() => { setError('Défi introuvable ou expiré'); setLoading(false) })
+      .then(data => {
+        if (cancelled) return
+        clearTimeout(timeoutId)
+        console.log('[ChallengeScreen] challenge loaded', data)
+        setChallenge(data)
+        setLoading(false)
+      })
+      .catch(err => {
+        if (cancelled) return
+        clearTimeout(timeoutId)
+        console.error('[ChallengeScreen] getChallenge error:', err?.message || err)
+        setError('Défi introuvable ou expiré')
+        setLoading(false)
+      })
+    return () => { cancelled = true; clearTimeout(timeoutId) }
   }, [code])
 
   // Check if player has enough facts (only calculate after facts are ready)

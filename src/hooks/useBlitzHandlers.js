@@ -19,6 +19,8 @@ export function useBlitzHandlers({
   setNewlyEarnedBadges, setIsChallengeMode,
   // A.9.3 — persistance flags via RPC merge_player_flags
   mergeFlags,
+  // B4.2 — source de vérité unique pour devises (tickets/coins/hints)
+  applyCurrencyDelta,
   // DuelContext — pendingDuel lu en mémoire React
   pendingDuel, clearPendingDuel,
   // DuelContext — résultat création async (remplace localStorage wtf_auto_challenge)
@@ -159,9 +161,12 @@ export function useBlitzHandlers({
               opponentId,
             })
             // Débiter le ticket APRÈS que le défi est créé (succès garanti)
-            mergeFlags?.({ tickets: -1 }, 'challenge_create').catch(e =>
-              console.warn('[useBlitzHandlers] debit ticket RPC failed:', e?.message || e)
-            )
+            // B4.2 — passe par applyCurrencyDelta (source de vérité unique)
+            try {
+              await applyCurrencyDelta?.({ tickets: -1 }, 'challenge_create')
+            } catch (e) {
+              console.warn('[useBlitzHandlers] debit ticket failed:', e?.message || e)
+            }
             // Ne PAS clearPendingDuel ici — on garde opponentId vivant pour que
             // BlitzResultsScreen puisse masquer le bouton "partager le défi".
             // Le clear se fait au unmount via onClearAutoChallenge.

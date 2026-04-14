@@ -35,13 +35,17 @@ export async function createChallenge({ categoryId, categoryLabel, questionCount
 
 // Récupérer un défi par code
 export async function getChallenge(code) {
+  if (!code) throw new Error('missing code')
+  console.log('[challengeService] getChallenge start', code)
   const { data, error } = await supabase
     .from('challenges')
     .select('*')
     .eq('code', code.toUpperCase())
-    .single()
+    .maybeSingle()
 
+  console.log('[challengeService] getChallenge result', { data, error })
   if (error) throw error
+  if (!data) throw new Error('Défi introuvable')
   return data
 }
 

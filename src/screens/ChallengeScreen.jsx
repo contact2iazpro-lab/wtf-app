@@ -88,7 +88,11 @@ export default function ChallengeScreen() {
   }, [isCompleted, user, challenge])
 
   const handleAcceptChallenge = () => {
-    if (!user || !challenge || !hasEnoughFacts) return
+    // Gate minimum : il faut au moins 4 f*cts pour qu'un Blitz ait du sens.
+    // Si playerFacts.length < question_count mais >= 4, on joue en mode
+    // "adapté" (le défi tourne sur le nb de f*cts dispo). La gate ancienne
+    // `!hasEnoughFacts` bloquait ce cas et laissait le bouton sans effet.
+    if (!user || !challenge || playerFacts.length < 4) return
     audio.play('click')
 
     // Prepare facts for the Blitz

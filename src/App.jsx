@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS } from './constants/gameConfig'
@@ -362,6 +362,13 @@ export default function App() {
   // pas assez de f*cts pour relever le défi et veut explorer la catégorie.
   // ChallengeScreen dépose `wtf_pending_explorer_cat` puis navigate('/'). Ici
   // on consomme le flag et on route vers l'Explorer de la catégorie cible.
+  //
+  // Ref pattern : handleSelectCategory est re-mémoizé quand gameMode change.
+  // On garde une ref toujours à jour pour éviter tout risque de closure stale
+  // entre setGameMode('explorer') et l'appel effectif du handler.
+  const handleSelectCategoryRef = useRef(handleSelectCategory)
+  useEffect(() => { handleSelectCategoryRef.current = handleSelectCategory }, [handleSelectCategory])
+
   const [pendingExplorerCat, setPendingExplorerCat] = useState(null)
   useEffect(() => {
     const cat = sessionStorage.getItem('wtf_pending_explorer_cat')
@@ -375,9 +382,10 @@ export default function App() {
     if (!pendingExplorerCat || gameMode !== 'explorer') return
     const cat = pendingExplorerCat
     setPendingExplorerCat(null)
-    // Au tick suivant pour laisser le state gameMode se propager aux closures.
-    setTimeout(() => handleSelectCategory(cat), 0)
-  }, [pendingExplorerCat, gameMode, handleSelectCategory])
+    // Attendre un tick que React ait propagé gameMode='explorer' dans le closure
+    // de handleSelectCategory (via la ref, on prend toujours la dernière version).
+    setTimeout(() => handleSelectCategoryRef.current?.(cat), 0)
+  }, [pendingExplorerCat, gameMode])
 
   // ─── Navigation, Duel, Replay, Share ──────────────────────────────────────
   const {

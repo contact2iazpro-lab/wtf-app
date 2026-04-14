@@ -174,8 +174,35 @@ export default function ChallengeScreen() {
   }
 
   // Pending — accept challenge
+  const goExplorerCategory = () => {
+    if (!challenge?.category_id || challenge.category_id === 'all') {
+      navigate('/')
+      return
+    }
+    sessionStorage.setItem('wtf_pending_explorer_cat', challenge.category_id)
+    navigate('/')
+  }
+
   return (
-    <div style={{ '--scale': scale, height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: S(16), background: 'linear-gradient(160deg, #1a0a2e, #0a0a3e)', fontFamily: 'Nunito, sans-serif', padding: 20 }}>
+    <div style={{ '--scale': scale, height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(16), background: 'linear-gradient(160deg, #1a0a2e, #0a0a3e)', fontFamily: 'Nunito, sans-serif', padding: 20, paddingTop: 16 }}>
+      {/* Header nav : retour SocialPage + home accueil */}
+      <div style={{ width: '100%', maxWidth: 420, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <button
+          onClick={() => navigate(-1)}
+          aria-label="Retour"
+          style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', fontSize: 18, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+        >
+          ←
+        </button>
+        <button
+          onClick={() => navigate('/')}
+          aria-label="Accueil"
+          style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', fontSize: 16, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+        >
+          🏠
+        </button>
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: S(16), width: '100%' }}>
       <span style={{ fontSize: S(40) }}>🎯</span>
       <h1 style={{ color: 'white', fontSize: S(24), fontWeight: 900, margin: 0 }}>DÉFI WTF!</h1>
 
@@ -224,14 +251,24 @@ export default function ChallengeScreen() {
           </p>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: '0 0 16px', lineHeight: 1.4 }}>
             Tu as {playerFacts.length} f*ct{playerFacts.length !== 1 ? 's' : ''} débloqué{playerFacts.length !== 1 ? 's' : ''} (minimum 4 requis).
-            Joue en Flash ou Explorer pour en débloquer !
           </p>
-          <button
-            onClick={() => navigate('/')}
-            style={{ padding: '12px 28px', borderRadius: 12, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
-          >
-            🎮 Aller jouer
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {challenge.category_id && challenge.category_id !== 'all' && (
+              <button
+                onClick={goExplorerCategory}
+                style={{ padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #6BCB77, #4CAF50)', color: 'white', border: 'none', fontWeight: 900, fontSize: 13, cursor: 'pointer', fontFamily: 'Nunito, sans-serif', lineHeight: 1.3 }}
+              >
+                🧭 Explorer {challenge.category_label}
+                <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, marginTop: 2 }}>Coûte 1 énergie</div>
+              </button>
+            )}
+            <button
+              onClick={() => navigate('/')}
+              style={{ padding: '12px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.08)', color: 'white', border: '1px solid rgba(255,255,255,0.15)', fontWeight: 800, fontSize: 13, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+            >
+              🏠 Retour à l'accueil
+            </button>
+          </div>
         </div>
       ) : playerFacts.length < (challenge?.question_count || 0) ? (
         <div style={{ width: '100%', maxWidth: 340 }}>
@@ -262,6 +299,7 @@ export default function ChallengeScreen() {
           Ce défi a expiré.
         </div>
       )}
+      </div>
     </div>
   )
 }

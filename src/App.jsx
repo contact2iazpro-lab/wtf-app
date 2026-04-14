@@ -352,6 +352,27 @@ export default function App() {
     applyCurrencyDelta, // Phase A.6
   })
 
+  // ── Deep-link Explorer : déclenché par ChallengeScreen quand le joueur n'a
+  // pas assez de f*cts pour relever le défi et veut explorer la catégorie.
+  // ChallengeScreen dépose `wtf_pending_explorer_cat` puis navigate('/'). Ici
+  // on consomme le flag et on route vers l'Explorer de la catégorie cible.
+  const [pendingExplorerCat, setPendingExplorerCat] = useState(null)
+  useEffect(() => {
+    const cat = sessionStorage.getItem('wtf_pending_explorer_cat')
+    if (!cat) return
+    sessionStorage.removeItem('wtf_pending_explorer_cat')
+    setGameMode('explorer')
+    setSessionType('explorer')
+    setPendingExplorerCat(cat)
+  }, [])
+  useEffect(() => {
+    if (!pendingExplorerCat || gameMode !== 'explorer') return
+    const cat = pendingExplorerCat
+    setPendingExplorerCat(null)
+    // Au tick suivant pour laisser le state gameMode se propager aux closures.
+    setTimeout(() => handleSelectCategory(cat), 0)
+  }, [pendingExplorerCat, gameMode, handleSelectCategory])
+
   // ─── Navigation, Duel, Replay, Share ──────────────────────────────────────
   const {
     launchModeDestination, handleLaunchStart, showOrSkipLaunch,

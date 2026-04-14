@@ -564,7 +564,7 @@ export default function HomeScreen({
           borderRadius: 8, padding: '4px 10px',
           ...(currentStreak >= 7 ? { boxShadow: '0 0 8px rgba(255,107,26,0.4)' } : {}),
         }}>
-          <span style={{ fontSize: 12 }}>🔥</span>
+          <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 12 }} />
           <span style={{
             fontSize: S(11), fontWeight: 900,
             color: currentStreak > 0 ? '#FF6B1A' : 'rgba(255,255,255,0.4)',
@@ -718,7 +718,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <span style={{ fontSize: S(13) }}>🎰</span>
+          <img src="/assets/ui/emoji-roulette.png" alt="roulette" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: S(13) }} />
           <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Roulette</span>
           {!readWtfData().rouletteFreeDate || readWtfData().rouletteFreeDate !== new Date().toISOString().slice(0, 10) ? (
             <span style={{
@@ -737,7 +737,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <span style={{ fontSize: S(13) }}>🧩</span>
+          <img src="/assets/ui/emoji-puzzle.png" alt="puzzle" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: S(13) }} />
           <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Puzzle</span>
           {(() => {
             try {
@@ -762,7 +762,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <span style={{ fontSize: S(13) }}>🗺️</span>
+          <img src="/assets/ui/emoji-route.png" alt="route" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: S(13) }} />
           <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Route</span>
           {(() => {
             try {
@@ -935,7 +935,7 @@ export default function HomeScreen({
             justifyContent: 'center',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 14 }}>🔋</span>
+              <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 14 }} />
               <div style={{ display: 'flex', gap: 4 }}>
                 {[0, 1, 2, 3, 4].map(i => (
                   <div key={i} style={{

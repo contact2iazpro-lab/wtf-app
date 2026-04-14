@@ -59,6 +59,7 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
 - ✅ **Bloc 4 — Infra & économie (2026-04-14)** : 2 items fermés
   - ✅ **4.8** Migration `cron_cleanup_anonymous_users.sql` : fonction `cleanup_anonymous_users(dry_run)` + schedule pg_cron commenté. À appliquer manuellement après validation FKs CASCADE.
   - ✅ **4.11** Réduction gains coins (heavy 84→~60/j, casual 52→~42/j) : Flash/Quest/Explorer perfect 10→5, Route niveau 6→4, Route boss 20→15, Coffre dimanche 15→10, Puzzle 6/4/2 → 5/3/1
+- ✅ **Bloc 6 — Petits T+ (2026-04-14)** : 4 items audités → tous déjà résolus dans le code (T+29 BlitzResultsScreen:315, T+30, T+33, T+34 SettingsModal:324)
 - 🔧 **unlockedFacts infra** : Colonne Supabase préparée, code reste en localStorage (migration non-commencée, voir Architecture Data)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client

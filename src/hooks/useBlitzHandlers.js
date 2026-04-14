@@ -19,8 +19,6 @@ export function useBlitzHandlers({
   setNewlyEarnedBadges,
   // A.9.3 — persistance flags via RPC merge_player_flags
   mergeFlags,
-  // B4.2 — source de vérité unique pour devises (tickets/coins/hints)
-  applyCurrencyDelta,
   // DuelContext — pendingDuel lu en mémoire React
   pendingDuel, clearPendingDuel,
   // DuelContext — résultat création async (remplace localStorage wtf_auto_challenge)
@@ -143,74 +141,47 @@ export function useBlitzHandlers({
 
       if (user) {
         const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
-
-        // Timeout de sécurité : si rien n'a répondu en 15s, on sort de "Création en cours…"
-        // TODO Palier 3 — retirer ce safety net quand la RPC atomique create_duel_challenge sera en place.
-        let settled = false
-        const safetyTimeout = setTimeout(() => {
-          if (settled) return
-          settled = true
-          console.error('[useBlitzHandlers] create challenge timeout 15s')
-          setLastCreatedDuelError?.('Création du défi trop longue — réessaie.')
-        }, 15000)
-
-        const safeResolve = (round) => {
-          if (settled) return
-          settled = true
-          clearTimeout(safetyTimeout)
-          setLastCreatedDuel?.(round)
-        }
-        const safeReject = (msg) => {
-          if (settled) return
-          settled = true
-          clearTimeout(safetyTimeout)
-          setLastCreatedDuelError?.(msg)
-        }
-
+        // Palier 3 — RPC atomique : 1 seul round-trip serveur, debit ticket + upsert
+        // duel + insert challenge en 1 txn. Plus besoin de timeout/race/fire-forget.
         import('../data/duelService')
-          .then(async ({ getOrCreateDuel, createDuelRound }) => {
-            try {
-              let duelId = null
-              if (opponentId) {
-                // Race contre un timeout 5s : si la table `duels` hang (RLS, lock),
-                // on continue avec duelId=null — challenges.duel_id est nullable.
-                const duelPromise = getOrCreateDuel(user.id, opponentId)
-                const duelTimeout = new Promise((resolve) => setTimeout(() => resolve('__TIMEOUT__'), 5000))
-                const duel = await Promise.race([duelPromise, duelTimeout])
-                if (duel === '__TIMEOUT__') {
-                  console.warn('[useBlitzHandlers] getOrCreateDuel timeout 5s — fallback duelId=null')
-                } else {
-                  duelId = duel?.id || null
-                }
-              }
-              // Race 8s sur createDuelRound aussi — Supabase peut hang
-              // (websocket wedge, token expiré). Si timeout, on throw explicite.
-              const roundPromise = createDuelRound({
-                duelId,
-                categoryId: selectedCategory || 'all',
-                categoryLabel: challengeData.categoryLabel,
-                questionCount: totalAnswered,
-                player1Time: finalTime,
-                player1Id: user.id,
-                player1Name: user.user_metadata?.name || 'Joueur WTF!',
-                opponentId,
-              })
-              const roundTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('createDuelRound timeout 8s')), 8000))
-              const round = await Promise.race([roundPromise, roundTimeout])
-              // Publier IMMÉDIATEMENT le round (UX : "Défi créé !" affiché direct).
-              // Le débit du ticket passe en fire-and-forget derrière — s'il fail,
-              // on le log mais l'affichage du code n'est jamais bloqué.
-              safeResolve(round)
-              Promise.resolve(applyCurrencyDelta?.({ tickets: -1 }, 'challenge_create'))
-                .catch((e) => console.warn('[useBlitzHandlers] debit ticket failed:', e?.message || e))
-            } catch (e) {
-              console.error('[useBlitzHandlers] create duel round failed:', e)
-              safeReject(e?.message || 'Erreur inconnue')
+          .then(({ createDuelChallenge }) => createDuelChallenge({
+            opponentId,
+            categoryId: selectedCategory || 'all',
+            categoryLabel: challengeData.categoryLabel,
+            questionCount: totalAnswered,
+            player1Time: finalTime,
+            player1Name: user.user_metadata?.name || 'Joueur WTF!',
+          }))
+          .then((result) => {
+            // Le RPC renvoie { challenge_id, code, duel_id, tickets_remaining }.
+            // On synthétise un "round" compatible avec l'ancien format pour BlitzResultsScreen.
+            const round = {
+              id: result.challenge_id,
+              code: result.code,
+              duel_id: result.duel_id,
+              category_id: selectedCategory || 'all',
+              category_label: challengeData.categoryLabel,
+              question_count: totalAnswered,
+              player1_id: user.id,
+              player1_name: user.user_metadata?.name || 'Joueur WTF!',
+              player1_time: finalTime,
+              player2_id: opponentId || null,
+              status: 'pending',
+            }
+            setLastCreatedDuel?.(round)
+            // Sync local cache des tickets (le RPC est source de vérité, mais on évite un refetch)
+            if (typeof result.tickets_remaining === 'number') {
+              window.dispatchEvent(new CustomEvent('wtf_currency_updated', {
+                detail: { tickets: result.tickets_remaining }
+              }))
             }
           })
           .catch((e) => {
-            console.error('[useBlitzHandlers] duelService import failed:', e)
-            safeReject('Impossible de charger le service défi')
+            console.error('[useBlitzHandlers] create_duel_challenge failed:', e?.message || e)
+            const msg = e?.message?.includes('Insufficient tickets')
+              ? 'Pas assez de tickets.'
+              : e?.message || 'Erreur lors de la création du défi'
+            setLastCreatedDuelError?.(msg)
           })
       }
       // isChallengeMode est dérivé de pendingDuel — on ne le touche pas ici.
@@ -221,7 +192,7 @@ export function useBlitzHandlers({
 
     setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)
-  }, [user, isChallengeMode, selectedCategory, pendingDuel, applyCurrencyDelta, setLastCreatedDuel, setLastCreatedDuelError, clearPendingDuel, mergeFlags])
+  }, [user, isChallengeMode, selectedCategory, pendingDuel, setLastCreatedDuel, setLastCreatedDuelError, clearPendingDuel, mergeFlags])
 
   return { handleBlitzStart, handleBlitzFinish }
 }

@@ -301,7 +301,6 @@ export default function App() {
     setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
     setNewlyEarnedBadges,
     mergeFlags, // A.9.3 persistance records
-    applyCurrencyDelta, // B4.2 débit ticket défi
     pendingDuel, clearPendingDuel, // Duel nav state mémoire
     setLastCreatedDuel, setLastCreatedDuelError, // Résultat création async
   })

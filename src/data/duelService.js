@@ -208,8 +208,35 @@ export function computeDuelState(duel, lastRound, meId) {
 }
 
 /**
- * Crée un nouveau round (challenge) dans un duel existant ou nouveau.
- * Appelé quand le joueur A finit son Blitz et envoie le défi à B.
+ * RPC atomique (Palier 3) — remplace getOrCreateDuel + createDuelRound + debit ticket.
+ * Une seule transaction serveur : debit ticket, upsert duel, insert challenge, génération code.
+ * Cf. supabase/migrations/add_create_duel_challenge_rpc.sql
+ *
+ * Retourne { challenge_id, code, duel_id, tickets_remaining } ou throw en cas d'erreur
+ * (Insufficient tickets, Not authenticated, etc.).
+ */
+export async function createDuelChallenge({
+  opponentId, categoryId, categoryLabel, questionCount,
+  player1Time, player1Name,
+}) {
+  const { data, error } = await supabase.rpc('create_duel_challenge', {
+    p_opponent_id: opponentId || null,
+    p_category_id: categoryId,
+    p_category_label: categoryLabel,
+    p_question_count: questionCount,
+    p_player1_time: player1Time,
+    p_player1_name: player1Name,
+  })
+  if (error) {
+    console.error('[duelService] create_duel_challenge RPC error:', error.message)
+    throw error
+  }
+  return data
+}
+
+/**
+ * @deprecated Palier 3 — remplacé par createDuelChallenge (RPC atomique).
+ * Conservé temporairement pour compat descendante / legacy callers éventuels.
  */
 export async function createDuelRound({
   duelId, categoryId, categoryLabel, questionCount,

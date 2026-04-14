@@ -17,6 +17,7 @@ import { getValidFacts } from '../data/factsService'
 import { buyExtraSession } from '../services/energyService'
 import { audio } from '../utils/audio'
 import { saveStorage } from '../utils/storageHelper'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 
 export default function AppModals({
   // States
@@ -39,6 +40,7 @@ export default function AppModals({
   signInWithGoogle,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
+  const { unlockFact } = usePlayerProfile()
 
   return (
     <>
@@ -90,10 +92,16 @@ export default function AppModals({
                 const raw = JSON.parse(localStorage.getItem('wtf_data') || '{}')
                 const unlocked = new Set(raw.unlockedFacts || [])
                 const locked = getValidFacts().filter(f => !unlocked.has(f.id))
-                const toAdd = [...locked].sort(() => Math.random() - 0.5).slice(0, 10).map(f => f.id)
-                toAdd.forEach(id => unlocked.add(id))
+                const picks = [...locked].sort(() => Math.random() - 0.5).slice(0, 10)
+                picks.forEach(f => unlocked.add(f.id))
                 raw.unlockedFacts = [...unlocked]
                 localStorage.setItem('wtf_data', JSON.stringify(raw))
+                // Phase A — miroir Supabase pour chacun des 10 facts débloqués
+                picks.forEach(f => {
+                  unlockFact?.(f.id, f.category, 'streak_j30_premium_unlock').catch(e =>
+                    console.warn('[AppModals] streak J30 unlockFact RPC failed:', e?.message || e)
+                  )
+                })
                 localStorage.setItem('wtf_badge_streak_30', 'true')
                 setShowStreakSpecialModal(false)
                 setStreakRewardToast({ days: 30, reward: { coins: 0, tickets: 0, hints: 0, badge: false, _label: '10 f*cts débloqués 🎴' } })

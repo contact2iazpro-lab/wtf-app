@@ -60,6 +60,7 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - ✅ **4.8** Migration `cron_cleanup_anonymous_users.sql` : fonction `cleanup_anonymous_users(dry_run)` + schedule pg_cron commenté. À appliquer manuellement après validation FKs CASCADE.
   - ✅ **4.11** Réduction gains coins (heavy 84→~60/j, casual 52→~42/j) : Flash/Quest/Explorer perfect 10→5, Route niveau 6→4, Route boss 20→15, Coffre dimanche 15→10, Puzzle 6/4/2 → 5/3/1
 - ✅ **Bloc 6 — Petits T+ (2026-04-14)** : 4 items audités → tous déjà résolus dans le code (T+29 BlitzResultsScreen:315, T+30, T+33, T+34 SettingsModal:324)
+- ✅ **Phase A slice A — Audit RPC unlockFact (2026-04-14)** : Audit des 7 sites suspects → 6/7 ont déjà le miroir RPC. Seul gap restant patché : `AppModals.jsx` bouton streak J30 "10 f*cts débloqués" appelle maintenant `unlockFact?.()` pour chacun des 10 picks. Slices B/C/D/E (consolidation, seed, currencyService legacy) à faire en sessions dédiées.
 - 🔧 **unlockedFacts infra** : Colonne Supabase préparée, code reste en localStorage (migration non-commencée, voir Architecture Data)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client

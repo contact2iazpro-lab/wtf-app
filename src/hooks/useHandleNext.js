@@ -243,7 +243,14 @@ export function useHandleNext({
 
     updateTrophyData()
     const newBadges = checkBadges()
-    if (newBadges.length > 0) setTrophyQueue(newBadges)
+    if (newBadges.length > 0) {
+      setTrophyQueue(newBadges)
+      // Bloc 2.8 — persistance Supabase pour éviter le replay des notifs cross-device
+      try {
+        const refreshed = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        mergeFlags?.({ badgesEarned: refreshed.badgesEarned || [] }).catch(() => {})
+      } catch {}
+    }
 
     // Route to end screen
     if (sessionType === 'wtf_du_jour') {

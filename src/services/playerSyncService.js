@@ -72,6 +72,10 @@ export async function pullFromServer(userId) {
         if (Array.isArray(remote.flags.seenModes)) {
           saved.seenModes = [...new Set([...(saved.seenModes || []), ...remote.flags.seenModes])]
         }
+        // Bloc 2.8 — badges déjà notifiés (anti-replay des trophées cross-device)
+        if (Array.isArray(remote.flags.badgesEarned)) {
+          saved.badgesEarned = [...new Set([...(saved.badgesEarned || []), ...remote.flags.badgesEarned])]
+        }
       }
       if (remote.stats_by_mode && typeof remote.stats_by_mode === 'object' && !saved.statsByMode) {
         // Fallback : si flags.statsByMode absent, utiliser la colonne stats_by_mode

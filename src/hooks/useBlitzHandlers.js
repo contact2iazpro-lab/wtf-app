@@ -101,7 +101,14 @@ export function useBlitzHandlers({
 
     updateTrophyData()
     const newBadges = checkBadges()
-    if (newBadges.length > 0) setNewlyEarnedBadges(newBadges)
+    if (newBadges.length > 0) {
+      setNewlyEarnedBadges(newBadges)
+      // Bloc 2.8 — persistance Supabase pour éviter le replay des notifs cross-device
+      try {
+        const refreshed = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        mergeFlags?.({ badgesEarned: refreshed.badgesEarned || [] }).catch(() => {})
+      } catch {}
+    }
 
     // Complete duel round si l'user vient d'accepter un défi (mode accept)
     if (pendingDuel?.mode === 'accept' && pendingDuel.roundId && user) {

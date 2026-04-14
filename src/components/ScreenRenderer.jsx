@@ -43,7 +43,7 @@ export default function ScreenRenderer({
   handleSaveTempFacts, handleLaunchStart,
   // Setters
   setScreen, setShowSettings, setShowHowToPlay, setStorage,
-  onBadgeSeen, onModeSeen, onResetSocialNotif,
+  onBadgeSeen, onResetSocialNotif,
   socialNotifCount, pendingChallengesCount, navigate,
 }) {
   return (
@@ -69,7 +69,6 @@ export default function ScreenRenderer({
           unlockedFactsCount={storage.unlockedFacts instanceof Set ? storage.unlockedFacts.size : Array.isArray(storage.unlockedFacts) ? storage.unlockedFacts.length : 0}
           blitzPlayed={(() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').statsByMode?.blitz?.gamesPlayed || 0 } catch { return 0 } })()}
           questsPlayed={(() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').questsPlayed || 0 } catch { return 0 } })()}
-          onModeSeen={onModeSeen}
           socialNotifCount={socialNotifCount}
           onResetSocialNotif={onResetSocialNotif}
           pendingChallengesCount={pendingChallengesCount}

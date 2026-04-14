@@ -528,16 +528,6 @@ export default function App() {
         setScreen={setScreen} setShowSettings={setShowSettings} setShowHowToPlay={setShowHowToPlay}
         setStorage={setStorage}
         onBadgeSeen={() => setNewlyEarnedBadges([])}
-        onModeSeen={(modeId) => {
-          setStorage(prev => {
-            const seenModes = [...new Set([...(prev.seenModes || []), modeId])]
-            const next = { ...prev, seenModes }
-            saveStorage(next)
-            // Bloc 2.7 — persistance Supabase via merge_player_flags (cross-device)
-            mergeFlags({ seenModes }).catch(() => {})
-            return next
-          })
-        }}
         onResetSocialNotif={() => setSocialNotifCount(0)}
         socialNotifCount={socialNotifCount}
         pendingChallengesCount={pendingChallengesCount}

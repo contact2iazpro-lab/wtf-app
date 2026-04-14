@@ -143,11 +143,10 @@ export function loadStorage() {
       sessionsToday: saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0,
       tickets: saved.tickets ?? 0,
       gamesPlayed: saved.gamesPlayed || 0,
-      seenModes: saved.seenModes || [],
     }
   } catch {
     // Fallback sur erreur parse : valeurs F2P officielles CLAUDE.md (50 coins / 1 ticket / 3 indices)
-    return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 50, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 1, hints: 3, gamesPlayed: 0, seenModes: [] }
+    return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 50, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 1, hints: 3, gamesPlayed: 0 }
   }
 }
 

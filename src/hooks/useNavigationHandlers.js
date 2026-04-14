@@ -85,7 +85,7 @@ export function useNavigationHandlers({
         if (!isDevOrTest2 && !canPlayFlashCheck()) { setNoEnergyOrigin('explorer'); setShowNoEnergyModal(true); break }
         setGameMode('explorer'); setSessionType('explorer')
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        const explorerPlayedInMode = wd.statsByMode?.flash_solo?.gamesPlayed || 0
+        const explorerPlayedInMode = wd.statsByMode?.explorer?.gamesPlayed || 0
         if (explorerPlayedInMode === 0) launchModeDestination('explorer')
         else showOrSkipLaunch('explorer')
         break

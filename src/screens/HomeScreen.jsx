@@ -198,7 +198,6 @@ export default function HomeScreen({
   unlockedFactsCount = 0,
   blitzPlayed = 0,
   questsPlayed = 0,
-  onModeSeen,
   socialNotifCount = 0,
   onResetSocialNotif,
   pendingChallengesCount = 0,
@@ -210,17 +209,7 @@ export default function HomeScreen({
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
   const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
 
-  const markSeen = (key) => {
-    try {
-      const d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      d[key] = true
-      d.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(d))
-    } catch {}
-  }
-
   // UnlockContext désactivé — tout est déverrouillé (onboarding sera réimplémenté plus tard)
-  const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const isDevOrTest = isDevMode || isTestMode
 
   // Tous les modes et pages sont déverrouillés (onboarding gérera le verrouillage plus tard)
@@ -245,16 +234,6 @@ export default function HomeScreen({
   const activeSpotlight = null
   const setActiveSpotlight = () => {}
 
-  const seenModes = (() => {
-    try { return readWtfData().seenModes || [] } catch { return [] }
-  })()
-
-  const modeIsNew = (modeId) => !seenModes.includes(modeId)
-
-  // Logique de pulse basée sur statsByMode (nb de fois joué en mode spécifique = 0)
-  const questsPlayedInMode = wtfData.statsByMode?.parcours?.gamesPlayed || 0
-  const blitzPlayedInMode = wtfData.statsByMode?.blitz?.gamesPlayed || 0
-  const explorerPlayedInMode = wtfData.statsByMode?.explorer?.gamesPlayed || 0
   const [showSettings, setShowSettings] = useState(false)
   const [showCoffreModal, setShowCoffreModal] = useState(false)
   const [coffreReward, setCoffreReward] = useState(null)
@@ -361,11 +340,6 @@ export default function HomeScreen({
     if (onNavigate) onNavigate(target)
   }
 
-  const handleModeTap = (modeId, navTarget) => {
-    if (modeIsNew(modeId) && onModeSeen) onModeSeen(modeId)
-    nav(navTarget)
-  }
-
   const handleSettings = () => {
     audio.play?.('click')
     if (onOpenSettings) onOpenSettings()
@@ -428,20 +402,6 @@ export default function HomeScreen({
     )
   })
 
-  const NewBadge = () => (
-    <div style={{
-      position: 'absolute', top: -4, right: -4,
-      background: '#EF4444', color: 'white',
-      fontSize: 7, fontWeight: 900, lineHeight: 1,
-      padding: '2px 5px', borderRadius: 6,
-      border: '1.5px solid white',
-      animation: 'newBadgePulse 1.2s ease-in-out infinite',
-      zIndex: 5, letterSpacing: '0.5px',
-      fontFamily: 'Nunito, sans-serif',
-      whiteSpace: 'nowrap',
-    }}>NEW</div>
-  )
-
   return (
     <div
       style={{
@@ -493,14 +453,6 @@ export default function HomeScreen({
         @keyframes homeFingerBounce {
           0%, 100% { transform: translateX(-50%) translateY(0); }
           50% { transform: translateX(-50%) translateY(-6px); }
-        }
-        @keyframes newBadgePulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.15); opacity: 0.85; }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,107,26,0.4); }
-          50% { transform: scale(1.05); box-shadow: 0 0 20px 8px rgba(255,107,26,0.3); }
         }
         @keyframes coffreSlideIn {
           from { opacity: 0; transform: translateY(-10px); }
@@ -674,7 +626,6 @@ export default function HomeScreen({
                 key={i}
                 onClick={() => {
                   audio.play?.('click')
-                  markSeen('hasSeenHunt')
                   // Note : on ne marque PAS le coffre comme claimé ici.
                   // Le mark se fait dans handleStartWTFSession (clic "Jouer" sur le
                   // teaser) = vrai point de non-retour. L'user peut revenir en
@@ -943,21 +894,14 @@ export default function HomeScreen({
             padding: `0 ${S(4)}`,
           }}>
             {/* Row 1: Explorer (left) — Blitz (right) */}
-            <div style={{
-              zIndex: 1,
-              ...(canExplorer && explorerPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
-              position: 'relative',
-            }}>
-              {canExplorer && explorerPlayedInMode === 0 && <NewBadge />}
+            <div style={{ zIndex: 1, position: 'relative' }}>
               <ModeIcon src="/assets/modes/marathon.png" label="Explorer" locked={false} onClick={() => { nav('explorer') }} />
             </div>
             <div style={{
               zIndex: activeSpotlight === 'blitz' ? 101 : 1,
-              ...(canBlitz && blitzPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
               position: 'relative',
             }}>
-              {canBlitz && blitzPlayedInMode === 0 && <NewBadge />}
-              <ModeIcon ref={blitzBtnRef} src="/assets/modes/blitz.png" label="Blitz" locked={false} onClick={() => { markSeen('hasSeenBlitz'); nav('blitz') }} />
+              <ModeIcon ref={blitzBtnRef} src="/assets/modes/blitz.png" label="Blitz" locked={false} onClick={() => { nav('blitz') }} />
             </div>
 
             {/* Row 2: Logo WTF central (spans 2 columns) */}
@@ -978,17 +922,11 @@ export default function HomeScreen({
             {/* Row 3: Quest (left) — Multi (right) */}
             <div style={{
               zIndex: activeSpotlight === 'quest' ? 101 : 1,
-              ...(canQuest && questsPlayedInMode === 0 ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
               position: 'relative',
             }}>
-              {canQuest && questsPlayedInMode === 0 && <NewBadge />}
-              <ModeIcon ref={questBtnRef} src="/assets/modes/quete.png" label="Quest" locked={false} onClick={() => { markSeen('hasSeenQuest'); nav('difficulty') }} />
+              <ModeIcon ref={questBtnRef} src="/assets/modes/quete.png" label="Quest" locked={false} onClick={() => { nav('difficulty') }} />
             </div>
-            <div style={{
-              zIndex: 1,
-              position: 'relative',
-            }}>
-              {canMulti && modeIsNew('multi') && <NewBadge />}
+            <div style={{ zIndex: 1, position: 'relative' }}>
               <ModeIcon src="/assets/modes/multi.png" label="Multi" locked={false} onClick={() => { nav('amis') }} />
             </div>
           </div>

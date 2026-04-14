@@ -254,7 +254,7 @@ export function AuthProvider({ children }) {
     // 3. Nettoyer les données du joueur précédent. On ne garde que les
     // entités "device-level" qui n'appartiennent à aucun joueur (paramètres
     // offre de coffre notamment). Tout ce qui est lié à la progression
-    // (badges, seenModes, stats) doit repartir à zéro pour le nouveau user
+    // (badges, stats) doit repartir à zéro pour le nouveau user
     // sinon on hérite d'un état incohérent du précédent compte.
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')

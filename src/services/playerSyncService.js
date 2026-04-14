@@ -85,10 +85,6 @@ export async function pullFromServer(userId) {
         if (remote.flags.totalCorrect !== undefined) saved.totalCorrect = Math.max(saved.totalCorrect || 0, remote.flags.totalCorrect)
         if (remote.flags.totalAnswered !== undefined) saved.totalAnswered = Math.max(saved.totalAnswered || 0, remote.flags.totalAnswered)
         if (remote.flags.blitzPerfects !== undefined) saved.blitzPerfects = Math.max(saved.blitzPerfects || 0, remote.flags.blitzPerfects)
-        // Bloc 2.7 — pulse NEW persistant cross-device
-        if (Array.isArray(remote.flags.seenModes)) {
-          saved.seenModes = [...new Set([...(saved.seenModes || []), ...remote.flags.seenModes])]
-        }
         // Bloc 2.8 — badges déjà notifiés (anti-replay des trophées cross-device)
         if (Array.isArray(remote.flags.badgesEarned)) {
           saved.badgesEarned = [...new Set([...(saved.badgesEarned || []), ...remote.flags.badgesEarned])]

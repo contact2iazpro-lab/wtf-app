@@ -143,39 +143,72 @@ export function useBlitzHandlers({
 
       if (user) {
         const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
-        import('../data/duelService').then(async ({ getOrCreateDuel, createDuelRound }) => {
-          try {
-            let duelId = null
-            if (opponentId) {
-              const duel = await getOrCreateDuel(user.id, opponentId)
-              duelId = duel?.id || null
-            }
-            const round = await createDuelRound({
-              duelId,
-              categoryId: selectedCategory || 'all',
-              categoryLabel: challengeData.categoryLabel,
-              questionCount: totalAnswered,
-              player1Time: finalTime,
-              player1Id: user.id,
-              player1Name: user.user_metadata?.name || 'Joueur WTF!',
-              opponentId,
-            })
-            // Débiter le ticket APRÈS que le défi est créé (succès garanti)
-            // B4.2 — passe par applyCurrencyDelta (source de vérité unique)
+        console.log('[useBlitzHandlers] create challenge — opponentId:', opponentId, 'pendingDuel:', pendingDuel)
+
+        // Timeout de sécurité : si rien n'a répondu en 15s, on sort de "Création en cours…"
+        let settled = false
+        const safetyTimeout = setTimeout(() => {
+          if (settled) return
+          settled = true
+          console.error('[useBlitzHandlers] Auto duel round creation TIMEOUT 15s')
+          setLastCreatedDuelError?.('Création du défi trop longue — réessaie.')
+        }, 15000)
+
+        const safeResolve = (round) => {
+          if (settled) return
+          settled = true
+          clearTimeout(safetyTimeout)
+          setLastCreatedDuel?.(round)
+        }
+        const safeReject = (msg) => {
+          if (settled) return
+          settled = true
+          clearTimeout(safetyTimeout)
+          setLastCreatedDuelError?.(msg)
+        }
+
+        import('../data/duelService')
+          .then(async ({ getOrCreateDuel, createDuelRound }) => {
             try {
-              await applyCurrencyDelta?.({ tickets: -1 }, 'challenge_create')
+              let duelId = null
+              if (opponentId) {
+                console.log('[useBlitzHandlers] getOrCreateDuel…', user.id, opponentId)
+                const duel = await getOrCreateDuel(user.id, opponentId)
+                duelId = duel?.id || null
+                console.log('[useBlitzHandlers] duel resolved:', duelId)
+              }
+              console.log('[useBlitzHandlers] createDuelRound…')
+              const round = await createDuelRound({
+                duelId,
+                categoryId: selectedCategory || 'all',
+                categoryLabel: challengeData.categoryLabel,
+                questionCount: totalAnswered,
+                player1Time: finalTime,
+                player1Id: user.id,
+                player1Name: user.user_metadata?.name || 'Joueur WTF!',
+                opponentId,
+              })
+              console.log('[useBlitzHandlers] round created:', round?.code)
+              // Débiter le ticket APRÈS que le défi est créé (succès garanti)
+              // B4.2 — passe par applyCurrencyDelta (source de vérité unique)
+              try {
+                await applyCurrencyDelta?.({ tickets: -1 }, 'challenge_create')
+              } catch (e) {
+                console.warn('[useBlitzHandlers] debit ticket failed:', e?.message || e)
+              }
+              // Ne PAS clearPendingDuel ici — on garde opponentId vivant pour que
+              // BlitzResultsScreen puisse masquer le bouton "partager le défi".
+              // Le clear se fait au unmount via onClearAutoChallenge.
+              safeResolve(round)
             } catch (e) {
-              console.warn('[useBlitzHandlers] debit ticket failed:', e?.message || e)
+              console.error('[useBlitzHandlers] Auto duel round creation failed:', e)
+              safeReject(e?.message || 'Erreur inconnue')
             }
-            // Ne PAS clearPendingDuel ici — on garde opponentId vivant pour que
-            // BlitzResultsScreen puisse masquer le bouton "partager le défi".
-            // Le clear se fait au unmount via onClearAutoChallenge.
-            setLastCreatedDuel?.(round)
-          } catch (e) {
-            console.error('[useBlitzHandlers] Auto duel round creation failed:', e)
-            setLastCreatedDuelError?.(e?.message || 'Erreur inconnue')
-          }
-        })
+          })
+          .catch((e) => {
+            console.error('[useBlitzHandlers] duelService import failed:', e)
+            safeReject('Impossible de charger le service défi')
+          })
       }
       // Ne PAS reset isChallengeMode ici — on garde le flag true pour que
       // BlitzResultsScreen affiche la vue "Création du défi..." / "Défi créé!".
@@ -185,7 +218,7 @@ export function useBlitzHandlers({
 
     setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)
-  }, [user, isChallengeMode, selectedCategory])
+  }, [user, isChallengeMode, selectedCategory, pendingDuel, applyCurrencyDelta, setLastCreatedDuel, setLastCreatedDuelError, clearPendingDuel, mergeFlags])
 
   return { handleBlitzStart, handleBlitzFinish }
 }

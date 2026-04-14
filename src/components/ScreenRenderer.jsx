@@ -66,17 +66,12 @@ export default function ScreenRenderer({
             return false
           })()}
           currentStreak={streak}
-          dailyQuestsRemaining={Math.max(0, 3 - (sessionsToday || 0))}
           newlyEarnedBadges={newlyEarnedBadges}
           onBadgeSeen={onBadgeSeen}
           flashEnergyRemaining={flashEnergy.remaining}
           onNavigate={handleHomeNavigate}
           onOpenSettings={() => setShowSettings(true)}
           playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}
-          gamesPlayed={storage.gamesPlayed || 0}
-          unlockedFactsCount={storage.unlockedFacts instanceof Set ? storage.unlockedFacts.size : Array.isArray(storage.unlockedFacts) ? storage.unlockedFacts.length : 0}
-          blitzPlayed={(() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').statsByMode?.blitz?.gamesPlayed || 0 } catch { return 0 } })()}
-          questsPlayed={(() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').questsPlayed || 0 } catch { return 0 } })()}
           socialNotifCount={socialNotifCount}
           onResetSocialNotif={onResetSocialNotif}
           pendingChallengesCount={pendingChallengesCount}

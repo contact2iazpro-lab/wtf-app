@@ -134,7 +134,7 @@ export const QUESTIONS_PER_GAME = 5
 // Un joueur qui dépasse le cap (via achat au-dessus) ne régénère plus jusqu'à
 // redescendre sous le cap.
 export const FLASH_ENERGY = {
-  INITIAL_STOCK: 3,           // nouveau joueur à la création
+  INITIAL_STOCK: 5,           // nouveau joueur à la création (C10 — 14/04/2026, plein cap)
   MAX_STOCK: 5,               // cap soft pour régén
   REGEN_HOURS: 8,             // 1 énergie régénérée toutes les 8h
   REGEN_MS: 8 * 60 * 60 * 1000,

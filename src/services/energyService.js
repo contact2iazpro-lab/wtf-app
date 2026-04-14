@@ -9,7 +9,7 @@ import { getBalances, updateCoins } from './currencyService'
 // Legacy (ancien modèle compteur journalier) :
 //   - flashEnergyUsed / flashEnergyDate : ignorés et nettoyés à la 1re lecture
 //
-// À la migration : nouveau stock = INITIAL_STOCK (3) si aucune trace.
+// À la migration : nouveau stock = INITIAL_STOCK (5) si aucune trace.
 
 function readWtfData() {
   try { return JSON.parse(localStorage.getItem('wtf_data') || '{}') }

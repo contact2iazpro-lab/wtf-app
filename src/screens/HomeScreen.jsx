@@ -1004,9 +1004,9 @@ export default function HomeScreen({
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 14 }}>🔋</span>
               <div style={{ display: 'flex', gap: 4 }}>
-                {[0, 1, 2].map(i => (
+                {[0, 1, 2, 3, 4].map(i => (
                   <div key={i} style={{
-                    width: 28, height: 8, borderRadius: 4,
+                    width: 16, height: 8, borderRadius: 4,
                     background: i < flashEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
                     transition: 'background 0.3s',
                     boxShadow: i < flashEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
@@ -1014,7 +1014,7 @@ export default function HomeScreen({
                 ))}
               </div>
               <span style={{ fontSize: 11, fontWeight: 800, color: flashEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
-                {flashEnergyRemaining}/3
+                {flashEnergyRemaining}/5
               </span>
             </div>
           </div>

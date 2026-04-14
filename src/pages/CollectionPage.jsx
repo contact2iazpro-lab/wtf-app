@@ -7,6 +7,7 @@ import FactDetailView from '../components/FactDetailView'
 import CategoryFactsView from '../components/CategoryFactsView'
 import UnlockCategoryModal from '../components/UnlockCategoryModal'
 import { useGoBack } from '../hooks/useGoBack'
+import { useNavigate } from 'react-router-dom'
 
 const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
 
@@ -42,6 +43,7 @@ export default function CollectionPage() {
   const [unlockTarget, setUnlockTarget] = useState(null)
 
   const goBack = useGoBack()
+  const navigate = useNavigate()
   const [openedFromExternal, setOpenedFromExternal] = useState(false)
 
   // Auto-open fact detail si venant de ResultsScreen

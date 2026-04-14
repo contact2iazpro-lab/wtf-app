@@ -3,6 +3,9 @@ import { audio } from '../utils/audio'
 
 const EMOJI_IMG = {
   '🎰': '/assets/ui/emoji-roulette.png',
+  '🔋': '/assets/ui/emoji-energy.png',
+  '🗺️': '/assets/ui/emoji-route.png',
+  '🧩': '/assets/ui/emoji-puzzle.png',
 }
 function renderIcon(value) {
   const src = EMOJI_IMG[value]

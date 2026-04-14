@@ -143,7 +143,7 @@ export default function WTFWeeklyTeaserScreen({ fact, titrePartiel, streak, onSt
               padding: `${S(8)} ${S(12)}`, borderRadius: S(14), flexShrink: 0,
               background: 'rgba(255,107,26,0.12)', border: '1px solid rgba(255,107,26,0.25)',
             }}>
-            <span style={{ fontSize: S(18) }}>{streak >= 7 ? '💙🔥' : '🔥'}</span>
+            <span style={{ fontSize: S(18) }}>{streak >= 7 && '💙'}<img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></span>
             <div>
               <div style={{ color: 'white', fontWeight: 900, fontSize: S(11) }}>Série en cours : {streak} jours</div>
               <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(10) }}>Maintiens ta flamme en jouant aujourd'hui !</div>

@@ -60,7 +60,7 @@ export default function AppModals({
           textAlign: 'center', boxShadow: '0 4px 24px rgba(255,107,26,0.55)',
           whiteSpace: 'nowrap', animation: 'streakToastSlide 0.35s ease', pointerEvents: 'none',
         }}>
-          {`🔥 Série de ${streakRewardToast.days} jours !  `}
+          <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{` Série de ${streakRewardToast.days} jours !  `}
           {streakRewardToast.reward._label
             ? streakRewardToast.reward._label
             : <>
@@ -77,7 +77,7 @@ export default function AppModals({
       {showStreakSpecialModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1001, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ background: 'linear-gradient(160deg, #1a0a35, #0A0F1E)', border: '2px solid #FF6B1A', borderRadius: 24, padding: 28, width: '100%', maxWidth: 360, textAlign: 'center' }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>🔥</div>
+            <div style={{ fontSize: 48, marginBottom: 8 }}><img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></div>
             <h2 style={{ color: 'white', fontSize: 22, fontWeight: 900, marginBottom: 6 }}>30 jours de série !</h2>
             <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 24 }}>Incroyable ! Choisis ta récompense ultime :</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -143,7 +143,7 @@ export default function AppModals({
 
       {/* No energy modal */}
       {showNoEnergyModal && (
-        <GameModal emoji="🔋" title="Plus de sessions !"
+        <GameModal emoji={<img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />} title="Plus de sessions !"
           message={`Tes ${FLASH_ENERGY.FREE_SESSIONS_PER_DAY} sessions gratuites du jour sont utilisées. Achète une session pour ${FLASH_ENERGY.EXTRA_SESSION_COST} coins ou reviens demain !`}
           confirmLabel={`Acheter (${FLASH_ENERGY.EXTRA_SESSION_COST} coins)`} cancelLabel="Attendre"
           onConfirm={() => {

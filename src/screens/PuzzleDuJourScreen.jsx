@@ -115,7 +115,7 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
         textAlign: 'left', cursor: 'pointer', padding: 0, alignSelf: 'flex-start',
       }}>← Retour</button>
 
-      <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, textAlign: 'center' }}>🧩 Puzzle du Jour</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, textAlign: 'center' }}><img src="/assets/ui/emoji-puzzle.png" alt="puzzle" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Puzzle du Jour</h1>
       <div style={{ textAlign: 'center', opacity: 0.7, fontSize: 12 }}>{dateStr}</div>
 
       <div style={{

@@ -125,7 +125,7 @@ export default function RouteScreen({ onHome, setStorage }) {
             background: 'none', border: 'none', color: '#fff', fontSize: 20,
             cursor: 'pointer', padding: 0,
           }}>←</button>
-          <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center' }}>🗺️ Route WTF!</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center' }}><img src="/assets/ui/emoji-route.png" alt="route" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Route WTF!</h1>
           <div style={{ width: 20 }} />
         </div>
         <div style={{ textAlign: 'center', opacity: 0.7, fontSize: 12, marginBottom: 10 }}>

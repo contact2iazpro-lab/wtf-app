@@ -4,6 +4,18 @@ import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
+const EMOJI_IMG = {
+  '🎰': '/assets/ui/emoji-roulette.png',
+  '🔋': '/assets/ui/emoji-energy.png',
+  '🗺️': '/assets/ui/emoji-route.png',
+  '🧩': '/assets/ui/emoji-puzzle.png',
+}
+function renderIcon(value) {
+  const src = EMOJI_IMG[value]
+  if (!src) return value
+  return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
+}
+
 export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, rules, color, onStart, onBack }) {
   const scale = useScale()
   const [skipNext, setSkipNext] = useState(false)
@@ -48,7 +60,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
         textAlign: 'center', flexShrink: 0,
         padding: `${S(8)} ${S(20)} ${S(8)}`,
       }}>
-        <div style={{ fontSize: S(40), marginBottom: S(2), lineHeight: 1 }}>{emoji}</div>
+        <div style={{ fontSize: S(40), marginBottom: S(2), lineHeight: 1 }}>{renderIcon(emoji)}</div>
         <h1 style={{
           fontSize: S(22), fontWeight: 900, margin: 0,
           letterSpacing: '0.02em',
@@ -78,7 +90,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
             backdropFilter: 'blur(8px)',
             borderRadius: S(12), padding: `${S(8)} ${S(12)}`,
           }}>
-            <span style={{ fontSize: S(20), flexShrink: 0, lineHeight: 1 }}>{rule.icon}</span>
+            <span style={{ fontSize: S(20), flexShrink: 0, lineHeight: 1 }}>{renderIcon(rule.icon)}</span>
             <span style={{ fontSize: S(13), fontWeight: 600, lineHeight: 1.35 }}>
               {rule.text}
             </span>

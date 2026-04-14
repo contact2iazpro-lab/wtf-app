@@ -15,7 +15,7 @@ const S = (px) => `calc(${px}px * var(--scale))`
 const MODE_LABELS = {
   flash_solo: { icon: '⚡', name: 'Flash' },
   parcours: { icon: '⭐', name: 'Quest' },
-  explorer: { icon: '🗺️', name: 'Explorer' },
+  explorer: { icon: <img src="/assets/ui/emoji-route.png" alt="route" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, name: 'Explorer' },
   blitz: { icon: '⏱️', name: 'Blitz' },
   wtf_du_jour: { icon: '🔥', name: 'Hunt' },
 }
@@ -163,7 +163,7 @@ export default function ProfilPage() {
   const statsByMode = playerData.statsByMode || {}
 
   const STATS = [
-    { label: 'Meilleure série', value: `${bestStreak} j`, emoji: '🔥' },
+    { label: 'Meilleure série', value: `${bestStreak} j`, emoji: <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
     { label: 'Taux de réussite', value: `${successRate}%`, emoji: '🎯' },
     { label: 'Parties jouées', value: gamesPlayed, emoji: '🎮' },
     { label: 'Badges', value: `${badgesEarned}/${badges.length}`, emoji: '🏆' },

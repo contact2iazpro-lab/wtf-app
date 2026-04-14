@@ -754,8 +754,9 @@ export default function ResultsScreen({
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
             }}>
             {sessionType === 'parcours' ? `🎫 Rejouer en ${DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}` :
-             sessionType === 'flash_solo' ? '🔋 Rejouer' :
-             sessionType === 'explorer' ? '🔋 Rejouer' :
+             (sessionType === 'flash_solo' || sessionType === 'explorer') ? (
+               <><img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer</>
+             ) :
              '🔄 Rejouer'}
           </button>
           {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && (

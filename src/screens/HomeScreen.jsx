@@ -429,11 +429,9 @@ export default function HomeScreen({
         })}
       </div>
 
-      {/* ═══ ZONE 3B — ROULETTE + PUZZLE + ROUTE ═══════════════════════ */}
-      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', gap: 6, padding: '4px 10px 0', flexWrap: 'wrap' }}>
+      {/* ═══ ZONE 3B — ROULETTE (solo, Puzzle/Route désormais dans la grille) ═══ */}
+      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: '4px 10px 0' }}>
         <MiniBtn icon="/assets/ui/emoji-roulette.png" label="Roulette" badge={rouletteBadge} onClick={() => { audio.play('click'); setShowRoulette(true) }} />
-        <MiniBtn icon="/assets/ui/emoji-puzzle.png" label="Puzzle" badge={puzzleBadge} onClick={() => nav('puzzle')} />
-        <MiniBtn icon="/assets/ui/emoji-route.png" label="Route" badge={routeBadge} onClick={() => nav('route')} />
       </div>
 
       {/* ═══ ZONE 4 — CORPS PRINCIPAL (flex: 1) ════════════════════════════ */}
@@ -472,27 +470,30 @@ export default function HomeScreen({
             />
           </div>
 
-          {/* Grille modes 2×3 + logo WTF central */}
+          {/* Grille modes 3 cols : 3 icônes à gauche / logo WTF central / 3 icônes à droite.
+              Multi retiré (déjà dans la navbar). Ajout Puzzle, Route, Hunt en plus de Quest/Explorer/Blitz. */}
           <div style={{
             flex: 3, width: '100%',
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gridTemplateRows: '1fr auto 1fr',
+            gridTemplateColumns: '1fr auto 1fr',
+            gridTemplateRows: '1fr 1fr 1fr',
             alignItems: 'center',
             justifyItems: 'center',
             padding: `0 ${S(4)}`,
+            columnGap: S(8),
           }}>
-            {/* Row 1 : Explorer / Blitz */}
-            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" onClick={() => nav('explorer')} />
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
-
-            {/* Row 2 : logo WTF central */}
-            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: `${S(8)} 0` }}>
+            {/* Colonne gauche : Quest, Blitz, Puzzle */}
+            <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => nav('difficulty')} />
+            {/* Logo WTF central (span 3 rows) */}
+            <div style={{
+              gridColumn: '2 / 3', gridRow: '1 / -1',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
               <img
                 src={ASSETS.ui.wtfLogo}
                 alt="WTF!"
                 style={{
-                  width: 'clamp(80px, 55%, 130px)', height: 'auto',
+                  width: 'clamp(80px, 100%, 130px)', height: 'auto',
                   objectFit: 'contain', display: 'block',
                   filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
                   WebkitUserSelect: 'none', userSelect: 'none',
@@ -500,10 +501,19 @@ export default function HomeScreen({
                 }}
               />
             </div>
+            {/* Colonne droite row 1 : Explorer */}
+            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" onClick={() => nav('explorer')} />
 
-            {/* Row 3 : Quest / Multi */}
-            <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => nav('difficulty')} />
-            <ModeIcon src="/assets/modes/multi.png" label="Multi" onClick={() => nav('amis')} />
+            {/* Colonne gauche row 2 : Blitz */}
+            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
+            {/* (middle col already spanned by logo) */}
+            {/* Colonne droite row 2 : Hunt (WTF de la semaine) */}
+            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" onClick={() => nav('wtfWeekly')} />
+
+            {/* Colonne gauche row 3 : Puzzle (placeholder — icône à créer dans /assets/modes/puzzle.png) */}
+            <ModeIcon src="/assets/ui/emoji-puzzle.png" label="Puzzle" onClick={() => nav('puzzle')} />
+            {/* Colonne droite row 3 : Route (placeholder — icône à créer dans /assets/modes/route.png) */}
+            <ModeIcon src="/assets/ui/emoji-route.png" label="Route" onClick={() => nav('route')} />
           </div>
 
           {/* Énergie Flash (barre 5 segments) */}

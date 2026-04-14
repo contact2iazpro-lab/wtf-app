@@ -191,7 +191,14 @@ export default function App() {
     setScreen(SCREENS.HOME)
   }
 
-  const [screen, setScreen] = useState(SCREENS.HOME)
+  // Si on arrive sur App.jsx avec un pendingDuel déjà en mémoire (navigation
+  // ChallengeScreen → /), on initialise directement sur BLITZ pour éviter un
+  // flash HomeScreen entre le click "Relever" et le useEffect qui bascule l'écran.
+  const [screen, setScreen] = useState(() => {
+    if (pendingDuel?.mode === 'accept' && pendingDuel?.facts) return SCREENS.BLITZ
+    if (pendingDuel?.mode === 'create') return SCREENS.BLITZ_LOBBY
+    return SCREENS.HOME
+  })
   const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.HOT)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [sessionFacts, setSessionFacts] = useState([])

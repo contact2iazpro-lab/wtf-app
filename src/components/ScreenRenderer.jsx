@@ -31,7 +31,7 @@ export default function ScreenRenderer({
   sessionCorrectFacts, sessionFacts, sessionsToday, sessionIsPerfect,
   completedLevels, effectiveDailyFact, launchMode, blitzFacts, blitzResults,
   duelPlayers, duelCurrentPlayerIndex, duelContext, isChallengeMode,
-  pendingDuel, lastCreatedDuel, lastCreatedDuelError, clearLastCreatedDuel,
+  pendingDuel, lastCreatedDuel, lastCreatedDuelError, clearLastCreatedDuel, clearPendingDuel,
   user, storage, streak, newlyEarnedBadges, flashEnergy,
   showHowToPlay, modeConfigs,
   // Handlers
@@ -243,7 +243,7 @@ export default function ScreenRenderer({
           opponentId={pendingDuel?.opponentId}
           autoChallenge={lastCreatedDuel}
           challengeError={lastCreatedDuelError}
-          onClearAutoChallenge={clearLastCreatedDuel}
+          onClearAutoChallenge={() => { clearLastCreatedDuel?.(); clearPendingDuel?.() }}
         />
       )}
 

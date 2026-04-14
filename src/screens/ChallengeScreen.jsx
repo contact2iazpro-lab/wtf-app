@@ -141,8 +141,14 @@ export default function ChallengeScreen() {
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
           {challenge.category_label} · {challenge.question_count} questions
         </div>
-        <button onClick={() => navigate('/')} style={{ marginTop: 8, padding: '14px 40px', borderRadius: 14, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 16, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>
-          Accueil
+        <button
+          onClick={() => {
+            const opponentId = user && challenge.player1_id === user.id ? challenge.player2_id : challenge.player1_id
+            navigate(opponentId ? `/duels/${opponentId}` : '/')
+          }}
+          style={{ marginTop: 8, padding: '14px 40px', borderRadius: 14, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 16, cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+        >
+          Historique
         </button>
       </div>
     )

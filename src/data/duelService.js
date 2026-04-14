@@ -137,6 +137,7 @@ export function computeAllDuelStates(duel, allRounds, meId) {
   if (!duel) return []
 
   const states = []
+  let rematchAlreadyShown = false
 
   // Traiter tous les rounds, du plus récent au plus ancien
   for (const round of allRounds) {
@@ -145,8 +146,19 @@ export function computeAllDuelStates(duel, allRounds, meId) {
 
     const roundState = computeRoundState(round, meId)
     if (roundState) {
+      // Revanche unique : seul le round complété le plus récent garde l'action
+      // 'rematch'. Pour les plus anciens, on dégrade en 'view' (juste voir le
+      // résultat, plus de bouton revanche).
+      let finalState = roundState
+      if (roundState.action === 'rematch') {
+        if (rematchAlreadyShown) {
+          finalState = { label: '🏆 Résultat', action: 'view', disabled: false }
+        } else {
+          rematchAlreadyShown = true
+        }
+      }
       states.push({
-        ...roundState,
+        ...finalState,
         roundId: round.id,
         code: round.code,
         categoryId: round.category_id,
@@ -318,4 +330,22 @@ export function computeDuelStatsByCategory(rounds, meId, opponentId) {
     else stats[cat].ties += 1
   }
   return Object.values(stats).sort((a, b) => b.total - a.total)
+}
+
+/**
+ * Stats par parcours (nb de questions) d'un duel.
+ * Permet de voir les matchs gagnés regroupés par format (5Q, 10Q, 20Q, …).
+ */
+export function computeDuelStatsByQuestionCount(rounds, meId, opponentId) {
+  const stats = {}
+  for (const r of rounds) {
+    if (r.status !== 'completed') continue
+    const qc = r.question_count || 0
+    if (!stats[qc]) stats[qc] = { questionCount: qc, meWins: 0, opponentWins: 0, ties: 0, total: 0 }
+    stats[qc].total += 1
+    if (r.winner_id === meId) stats[qc].meWins += 1
+    else if (r.winner_id === opponentId) stats[qc].opponentWins += 1
+    else stats[qc].ties += 1
+  }
+  return Object.values(stats).sort((a, b) => a.questionCount - b.questionCount)
 }

@@ -52,13 +52,21 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
       .sort((a, b) => b.count - a.count)
   }, [allFacts, effectiveUnlocked, isChallenge, opponentCountsByCat])
 
+  // Total opponent facts (somme des catégories) pour mode Aléatoire en défi
+  const opponentTotal = useMemo(() => {
+    if (!opponentCountsByCat) return 0
+    return Object.values(opponentCountsByCat).reduce((a, b) => a + (b || 0), 0)
+  }, [opponentCountsByCat])
+
   // Pool size for selected category
   const poolSize = selectedCatId === 'all'
     ? totalUnlocked
     : (categories.find(c => c.id === selectedCatId)?.count || 0)
 
   // En défi : pool effectif = min(moi, adversaire) sur la catégorie choisie
-  const opponentPool = isChallenge && selectedCatId && selectedCatId !== 'all'
+  const opponentPool = isChallenge && selectedCatId === 'all'
+    ? opponentTotal
+    : isChallenge && selectedCatId
     ? (opponentCountsByCat?.[selectedCatId] || 0)
     : null
   const effectivePool = isChallenge && opponentPool != null
@@ -131,8 +139,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
       <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(12)} ${S(8)}`, WebkitOverflowScrolling: 'touch' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
 
-          {/* Toutes mes f*cts — masqué en mode défi (catégorie obligatoire) */}
-          {!isChallenge && (
+          {/* Toutes mes f*cts — Aléatoire (dispo en solo ET en défi) */}
           <button
             onClick={() => { audio.play('click'); setSelectedCatId('all') }}
             style={{
@@ -158,7 +165,6 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
               </div>
             </div>
           </button>
-          )}
 
           {/* Categories */}
           {categories.map(cat => {

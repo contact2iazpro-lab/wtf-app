@@ -11,10 +11,10 @@ import { useDuelContext } from '../features/duels/context/DuelContext'
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const formatBlitzTime = (seconds) => {
-  if (seconds < 60) return seconds.toFixed(1) + 's'
+  if (seconds < 60) return seconds.toFixed(2) + 's'
   const min = Math.floor(seconds / 60)
-  const sec = (seconds % 60).toFixed(0)
-  return min + ':' + sec.toString().padStart(2, '0')
+  const sec = (seconds % 60).toFixed(2)
+  return min + ':' + sec.padStart(5, '0')
 }
 
 function Initial({ name, size = 32 }) {

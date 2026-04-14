@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useScale } from '../hooks/useScale'
-import { getDuelHistory, computeDuelStatsByCategory } from '../data/duelService'
+import { getDuelHistory, computeDuelStatsByCategory, computeDuelStatsByQuestionCount } from '../data/duelService'
 import { supabase } from '../lib/supabase'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -25,6 +25,7 @@ export default function DuelHistoryScreen() {
   const [duel, setDuel] = useState(null)
   const [rounds, setRounds] = useState([])
   const [opponentName, setOpponentName] = useState('Adversaire')
+  const [statsTab, setStatsTab] = useState('category') // 'category' | 'parcours'
 
   useEffect(() => {
     let cancelled = false
@@ -70,6 +71,7 @@ export default function DuelHistoryScreen() {
   const oppWins = completed.filter(r => r.winner_id === opponentId).length
   const ties = completed.length - meWins - oppWins
   const perCat = computeDuelStatsByCategory(completed, user.id, opponentId)
+  const perParcours = computeDuelStatsByQuestionCount(completed, user.id, opponentId)
 
   return (
     <div style={{ '--scale': scale, height: '100dvh', display: 'flex', flexDirection: 'column', background: '#FAFAF8', fontFamily: 'Nunito, sans-serif', paddingBottom: S(20) }}>
@@ -102,20 +104,53 @@ export default function DuelHistoryScreen() {
           )}
         </div>
 
-        {/* Stats par catégorie */}
-        {perCat.length > 0 && (
+        {/* Stats — 2 onglets : par catégorie / par parcours */}
+        {completed.length > 0 && (
           <div style={{ marginBottom: 16, padding: 16, borderRadius: 16, background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <h2 style={{ fontSize: 13, fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>Par catégorie</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {perCat.map(c => (
-                <div key={c.category} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                  <div style={{ flex: 1, fontWeight: 800, color: '#1a1a2e' }}>{c.categoryLabel || c.category}</div>
-                  <div style={{ fontWeight: 900, color: c.meWins > c.opponentWins ? '#22C55E' : c.meWins < c.opponentWins ? '#EF4444' : '#9CA3AF' }}>
-                    {c.meWins} – {c.opponentWins}
-                  </div>
-                </div>
-              ))}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+              <button
+                onClick={() => setStatsTab('category')}
+                style={{
+                  flex: 1, padding: '8px 10px', borderRadius: 10, border: 'none',
+                  fontSize: 12, fontWeight: 900, cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                  background: statsTab === 'category' ? '#FF6B1A' : '#F3F4F6',
+                  color: statsTab === 'category' ? 'white' : '#6B7280',
+                }}
+              >Par catégorie</button>
+              <button
+                onClick={() => setStatsTab('parcours')}
+                style={{
+                  flex: 1, padding: '8px 10px', borderRadius: 10, border: 'none',
+                  fontSize: 12, fontWeight: 900, cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                  background: statsTab === 'parcours' ? '#FF6B1A' : '#F3F4F6',
+                  color: statsTab === 'parcours' ? 'white' : '#6B7280',
+                }}
+              >Par parcours</button>
             </div>
+
+            {statsTab === 'category' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {perCat.map(c => (
+                  <div key={c.category} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                    <div style={{ flex: 1, fontWeight: 800, color: '#1a1a2e' }}>{c.categoryLabel || c.category}</div>
+                    <div style={{ fontWeight: 900, color: c.meWins > c.opponentWins ? '#22C55E' : c.meWins < c.opponentWins ? '#EF4444' : '#9CA3AF' }}>
+                      {c.meWins} – {c.opponentWins}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {perParcours.map(p => (
+                  <div key={p.questionCount} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                    <div style={{ flex: 1, fontWeight: 800, color: '#1a1a2e' }}>Parcours {p.questionCount} Q</div>
+                    <div style={{ fontWeight: 900, color: p.meWins > p.opponentWins ? '#22C55E' : p.meWins < p.opponentWins ? '#EF4444' : '#9CA3AF' }}>
+                      {p.meWins} – {p.opponentWins}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -146,8 +181,8 @@ export default function DuelHistoryScreen() {
                       {r.status === 'pending' ? '⏳' : r.status === 'expired' ? '💀' : iWon ? '🏆' : theyWon ? '💔' : '🤝'}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e' }}>{r.category_label}</div>
-                      <div style={{ fontSize: 10, color: '#6B7280' }}>{r.question_count} Q · {new Date(r.created_at).toLocaleDateString('fr-FR')}</div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e' }}>{r.category_label} · {r.question_count} Q</div>
+                      <div style={{ fontSize: 10, color: '#6B7280' }}>{new Date(r.created_at).toLocaleDateString('fr-FR')}</div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontSize: 11, fontWeight: 800, color: iWon ? '#22C55E' : '#1a1a2e' }}>{formatTime(myTime)}</div>

@@ -162,7 +162,9 @@ export function useBlitzHandlers({
             mergeFlags?.({ tickets: -1 }, 'challenge_create').catch(e =>
               console.warn('[useBlitzHandlers] debit ticket RPC failed:', e?.message || e)
             )
-            clearPendingDuel?.()
+            // Ne PAS clearPendingDuel ici — on garde opponentId vivant pour que
+            // BlitzResultsScreen puisse masquer le bouton "partager le défi".
+            // Le clear se fait au unmount via onClearAutoChallenge.
             setLastCreatedDuel?.(round)
           } catch (e) {
             console.error('[useBlitzHandlers] Auto duel round creation failed:', e)

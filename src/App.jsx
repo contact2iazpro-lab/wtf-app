@@ -510,6 +510,7 @@ export default function App() {
         lastCreatedDuel={lastCreatedDuel}
         lastCreatedDuelError={lastCreatedDuelError}
         clearLastCreatedDuel={clearLastCreatedDuel}
+        clearPendingDuel={clearPendingDuel}
         user={user} storage={storage} streak={streak}
         newlyEarnedBadges={newlyEarnedBadges} showHowToPlay={showHowToPlay}
         flashEnergy={flashEnergy}

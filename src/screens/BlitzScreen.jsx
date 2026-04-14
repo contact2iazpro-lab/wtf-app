@@ -26,6 +26,8 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
 
   // Refs
   const elapsedRef = useRef(0)
+  const startTimeRef = useRef(null)
+  const penaltiesRef = useRef(0)
   const intervalRef = useRef(null)
   const gameOverRef = useRef(false)
   const flashTimeoutRef = useRef(null)
@@ -33,13 +35,15 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
 
   const currentFact = currentIndex < totalQuestions ? facts[currentIndex] : null
 
-  // ── Chrono montant (100ms precision) ──────────────────────────────────────
+  // ── Chrono montant (centième precision via Date.now) ─────────────────────
   useEffect(() => {
+    startTimeRef.current = Date.now()
     intervalRef.current = setInterval(() => {
       if (gameOverRef.current) return
-      elapsedRef.current += 0.1
-      setElapsed(elapsedRef.current)
-    }, 100)
+      const raw = (Date.now() - startTimeRef.current) / 1000 + penaltiesRef.current
+      elapsedRef.current = raw
+      setElapsed(raw)
+    }, 50)
 
     return () => {
       clearInterval(intervalRef.current)
@@ -49,10 +53,10 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
 
   // ── Format time ────────────────────────────────────────────────────────────
   const formatTime = (t) => {
-    if (t < 60) return t.toFixed(1) + 's'
+    if (t < 60) return t.toFixed(2) + 's'
     const m = Math.floor(t / 60)
-    const s = (t % 60).toFixed(1)
-    return `${m}:${s.padStart(4, '0')}`
+    const s = (t % 60).toFixed(2)
+    return `${m}:${s.padStart(5, '0')}`
   }
 
   // ── Answer handler ────────────────────────────────────────────────────────
@@ -70,7 +74,8 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
       audio.play('correct')
     } else {
       // Pénalité +5s
-      elapsedRef.current += WRONG_PENALTY
+      penaltiesRef.current += WRONG_PENALTY
+      elapsedRef.current = (Date.now() - startTimeRef.current) / 1000 + penaltiesRef.current
       setElapsed(elapsedRef.current)
       setPenalties(p => p + WRONG_PENALTY)
       setAnsweredResults(prev => [...prev, 'wrong'])

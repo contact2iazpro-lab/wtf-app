@@ -39,9 +39,9 @@ export default function QuestionScreen({
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [coinFlash, setCoinFlash] = useState(null)
-  const prevCoinsRef = useRef(_cCoins)
   // Phase A.6 — miroir Supabase pour achat indice en session
   const { coins: _cCoins, hints: _cHints, applyCurrencyDelta } = usePlayerProfile()
+  const prevCoinsRef = useRef(_cCoins)
 
   useEffect(() => {
     const diff = _cCoins - prevCoinsRef.current

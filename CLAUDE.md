@@ -48,6 +48,14 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - ✅ **2.8** Trophées replay corrigé : `flags.badgesEarned` push via `mergeFlags()` après `checkBadges()` (Blitz + Quest), dépoté au pull
   - ✅ **2.9** Nouveau joueur 50 coins (C10) : aligné trigger DB + AuthContext.createProfile + storageHelper fallback + ProfilPage reset + App init/resetOnboarding
   - ✅ **2.10** Modal ami SocialPage : croix ✕ remplacée par bouton ⋯ ouvrant bottom-sheet 4 actions (Lancer défi · Historique · Records · Supprimer)
+- ✅ **Bloc 3 — Économie & UX (2026-04-14)** : 7 items fermés
+  - ✅ **3.1** CategoryScreen Explorer/Flash : `unlockedPerCategory` itère `factsPool` (Funny only) — ratio plafonné à 100%
+  - ✅ **3.2** CollectionPage : `Complété !` → `Complété ! X/X f*cts`
+  - ✅ **3.3** Paliers Blitz : 5/10/20/30/**50/100** (40 retiré) — gameConfig + HowToPlayModal alignés
+  - ✅ **3.4** BlitzResultsScreen : layout fullscreen flex (content + footer pinned, plus de scroll)
+  - ✅ **3.5** RouletteModal T95 : avg coins/spin 7,1→5,44 (segments 10→8, 20→15, 50→30, weights ajustés)
+  - ✅ **3.6** Vibreur moments clés : `audio.vibrate()` sur ResultsScreen (perfect long), BlitzResultsScreen (record long), ChallengeScreen (victoire défi long)
+  - ✅ **3.7** Déblocage catégorie payante : tuile lockée Flash/Explorer ouvre modal confirm 100 coins → unlock 1 funny random + applyCurrencyDelta + sélection auto
 - 🔧 **unlockedFacts infra** : Colonne Supabase préparée, code reste en localStorage (migration non-commencée, voir Architecture Data)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client

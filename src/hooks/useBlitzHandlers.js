@@ -189,17 +189,18 @@ export function useBlitzHandlers({
                 opponentId,
               })
               console.log('[useBlitzHandlers] round created:', round?.code)
-              // Débiter le ticket APRÈS que le défi est créé (succès garanti)
-              // B4.2 — passe par applyCurrencyDelta (source de vérité unique)
-              try {
-                await applyCurrencyDelta?.({ tickets: -1 }, 'challenge_create')
-              } catch (e) {
-                console.warn('[useBlitzHandlers] debit ticket failed:', e?.message || e)
-              }
-              // Ne PAS clearPendingDuel ici — on garde opponentId vivant pour que
-              // BlitzResultsScreen puisse masquer le bouton "partager le défi".
-              // Le clear se fait au unmount via onClearAutoChallenge.
+              // On publie IMMÉDIATEMENT le round (UX : "Défi créé !" affiché direct).
+              // Le débit du ticket est fire-and-forget derrière — s'il fail, on le log
+              // mais ça ne doit JAMAIS bloquer l'affichage du code.
               safeResolve(round)
+              // Débiter le ticket en fire-and-forget (B4.2)
+              try {
+                Promise.resolve(applyCurrencyDelta?.({ tickets: -1 }, 'challenge_create'))
+                  .then(() => console.log('[useBlitzHandlers] ticket débité OK'))
+                  .catch((e) => console.warn('[useBlitzHandlers] debit ticket failed:', e?.message || e))
+              } catch (e) {
+                console.warn('[useBlitzHandlers] debit ticket threw sync:', e?.message || e)
+              }
             } catch (e) {
               console.error('[useBlitzHandlers] Auto duel round creation failed:', e)
               safeReject(e?.message || 'Erreur inconnue')

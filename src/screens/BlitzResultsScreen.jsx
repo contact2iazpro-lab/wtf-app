@@ -17,6 +17,10 @@ export default function BlitzResultsScreen({
   onHome,
   onReplay,
   opponentId = null,
+  // DuelContext — résultat création async (remplace localStorage wtf_auto_challenge)
+  autoChallenge = null,
+  challengeError = null,
+  onClearAutoChallenge,
 }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
@@ -25,12 +29,13 @@ export default function BlitzResultsScreen({
 
   const [displayTime, setDisplayTime] = useState(0)
   const [challengeCreated, setChallengeCreated] = useState(null)
-  const [autoChallenge, setAutoChallenge] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // T+29 : Masquer "Défier un ami" si on vient d'un défi reçu
-  const isFromChallenge = !!localStorage.getItem('wtf_active_challenge') || !!localStorage.getItem('wtf_auto_challenge')
+  // Cleanup du résultat créé quand on quitte l'écran
+  useEffect(() => {
+    return () => { onClearAutoChallenge?.() }
+  }, [onClearAutoChallenge])
 
   useEffect(() => {
     if (finalTime <= 0) return
@@ -50,29 +55,6 @@ export default function BlitzResultsScreen({
     const s = (t % 60).toFixed(2)
     return `${m}:${s.padStart(5, '0')}`
   }
-
-  const [challengeError, setChallengeError] = useState(null)
-  useEffect(() => {
-    if (!isChallengeMode) return
-    const handleCreated = () => {
-      try {
-        const challenge = JSON.parse(localStorage.getItem('wtf_auto_challenge') || 'null')
-        if (challenge) {
-          setAutoChallenge(challenge)
-          localStorage.removeItem('wtf_auto_challenge')
-        }
-        const err = localStorage.getItem('wtf_auto_challenge_error')
-        if (err) {
-          setChallengeError(err)
-          localStorage.removeItem('wtf_auto_challenge_error')
-        }
-      } catch { /* ignore */ }
-    }
-    // Vérifier immédiatement (si déjà créé avant le mount)
-    handleCreated()
-    window.addEventListener('wtf_challenge_created', handleCreated)
-    return () => window.removeEventListener('wtf_challenge_created', handleCreated)
-  }, [isChallengeMode])
 
   const handleShareChallenge = () => {
     if (!autoChallenge) return
@@ -321,7 +303,7 @@ export default function BlitzResultsScreen({
           >
             ⚡ Rejouer en Blitz
           </button>
-          {user && !challengeCreated && !isFromChallenge && !opponentId && (
+          {user && !challengeCreated && !opponentId && (
             <button
               onClick={handleCreateChallenge}
               disabled={isCreating}

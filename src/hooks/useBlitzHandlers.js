@@ -21,6 +21,8 @@ export function useBlitzHandlers({
   mergeFlags,
   // DuelContext — pendingDuel lu en mémoire React
   pendingDuel, clearPendingDuel,
+  // DuelContext — résultat création async (remplace localStorage wtf_auto_challenge)
+  setLastCreatedDuel, setLastCreatedDuelError,
 }) {
   const navigate = useNavigate()
 
@@ -158,12 +160,10 @@ export function useBlitzHandlers({
               console.warn('[useBlitzHandlers] debit ticket RPC failed:', e?.message || e)
             )
             clearPendingDuel?.()
-            localStorage.setItem('wtf_auto_challenge', JSON.stringify(round))
-            window.dispatchEvent(new Event('wtf_challenge_created'))
+            setLastCreatedDuel?.(round)
           } catch (e) {
             console.error('[useBlitzHandlers] Auto duel round creation failed:', e)
-            localStorage.setItem('wtf_auto_challenge_error', e?.message || 'Erreur inconnue')
-            window.dispatchEvent(new Event('wtf_challenge_created'))
+            setLastCreatedDuelError?.(e?.message || 'Erreur inconnue')
           }
         })
       }

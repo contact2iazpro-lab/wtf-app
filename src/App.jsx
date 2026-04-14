@@ -33,7 +33,11 @@ export default function App() {
   // Phase A — profil Supabase (source de vérité pour devises/unlocks/flags)
   const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
   // DuelContext — pending nav state en mémoire (remplace localStorage pour Défi)
-  const { pendingDuel, clearPendingDuel } = useDuelContext()
+  const {
+    pendingDuel, clearPendingDuel,
+    setLastCreatedDuel, setLastCreatedDuelError,
+    lastCreatedDuel, lastCreatedDuelError, clearLastCreatedDuel,
+  } = useDuelContext()
 
   // Desktop ≥768px → active le décor fullscreen (dégradé animé + particules)
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
@@ -292,6 +296,7 @@ export default function App() {
     setNewlyEarnedBadges, setIsChallengeMode,
     mergeFlags, // A.9.3 persistance records
     pendingDuel, clearPendingDuel, // Duel nav state mémoire
+    setLastCreatedDuel, setLastCreatedDuelError, // Résultat création async
   })
 
   // ─── Mode starters → extraits dans useModeStarters hook ──────────────────
@@ -494,6 +499,10 @@ export default function App() {
         launchMode={launchMode} blitzFacts={blitzFacts} blitzResults={blitzResults}
         duelPlayers={duelPlayers} duelCurrentPlayerIndex={duelCurrentPlayerIndex}
         duelContext={duelContext} isChallengeMode={isChallengeMode}
+        pendingDuel={pendingDuel}
+        lastCreatedDuel={lastCreatedDuel}
+        lastCreatedDuelError={lastCreatedDuelError}
+        clearLastCreatedDuel={clearLastCreatedDuel}
         user={user} storage={storage} streak={streak}
         newlyEarnedBadges={newlyEarnedBadges} showHowToPlay={showHowToPlay}
         flashEnergy={flashEnergy}

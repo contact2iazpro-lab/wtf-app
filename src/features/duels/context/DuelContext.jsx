@@ -5,8 +5,9 @@
  * Permet à des composants profondément imbriqués (BottomNav, modals) d'accéder
  * au state sans redéclencher les hooks.
  *
- * Également : état de navigation Défi en mémoire (remplace les clés
- * localStorage wtf_pending_action / wtf_challenge_opponent / wtf_active_challenge).
+ * Également : état de navigation Défi en mémoire (pendingDuel) +
+ * résultat de la création async (lastCreatedDuel / lastCreatedDuelError),
+ * lus par BlitzResultsScreen pour afficher le code à partager.
  */
 
 import { createContext, useContext, useState, useCallback, useMemo } from 'react'
@@ -26,6 +27,14 @@ export function DuelProvider({ children }) {
   // Navigation Défi en mémoire (pas localStorage → pas de race entre routes)
   // { mode: 'create' | 'accept', opponentId?, roundId?, code?, facts? }
   const [pendingDuel, setPendingDuel] = useState(null)
+
+  // Résultat de la création async d'un défi (lu par BlitzResultsScreen)
+  const [lastCreatedDuel, setLastCreatedDuel] = useState(null)
+  const [lastCreatedDuelError, setLastCreatedDuelError] = useState(null)
+  const clearLastCreatedDuel = useCallback(() => {
+    setLastCreatedDuel(null)
+    setLastCreatedDuelError(null)
+  }, [])
 
   const startCreateDefi = useCallback((friendId, categoryId) => {
     setPendingDuel({ mode: 'create', opponentId: friendId, categoryId })
@@ -71,6 +80,12 @@ export function DuelProvider({ children }) {
     startCreateDefi,
     startAcceptDefi,
     clearPendingDuel,
+    // Résultat création async
+    lastCreatedDuel,
+    lastCreatedDuelError,
+    setLastCreatedDuel,
+    setLastCreatedDuelError,
+    clearLastCreatedDuel,
   }), [
     friendsState.friends, friendsState.pendingReceived, friendsState.pendingSent,
     friendsState.loading, friendsState.refresh,
@@ -79,6 +94,7 @@ export function DuelProvider({ children }) {
     unlockedState.unlocked, unlockedState.loading, unlockedState.refresh,
     myCodeState.code,
     pendingDuel, startCreateDefi, startAcceptDefi, clearPendingDuel,
+    lastCreatedDuel, lastCreatedDuelError, clearLastCreatedDuel,
   ])
 
   return <DuelContext.Provider value={value}>{children}</DuelContext.Provider>

@@ -409,6 +409,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## URLs Notion
 - QG : https://www.notion.so/332b94ed8cb180298efadff6b66d54af
 - Paramètres : https://www.notion.so/332b94ed8cb181869176fd6266e78915
+- **Tâches restantes (base de travail LIVE)** : https://www.notion.so/342b94ed8cb181b7a03cc4c6c4d49ab6 — source unique de vérité de ce qu'il reste à faire. À actualiser à chaque tâche fermée (retirer + renuméroter), concordance avec § Phase A ci-dessus.
 
 ⚠️ RAILWAY : Ne jamais pusher automatiquement. Commit local uniquement.
 

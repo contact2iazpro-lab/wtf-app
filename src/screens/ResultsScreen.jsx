@@ -7,6 +7,11 @@ import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { useAuth } from '../context/AuthContext'
 import ConnectBanner from '../components/ConnectBanner'
 import FactDetailView from '../components/FactDetailView'
+// Phase 5.2 A — composants results extraits
+import ResultsRankHeader from '../components/results/ResultsRankHeader'
+import GainsBreakdown from '../components/results/GainsBreakdown'
+import FeaturedFactCard from '../components/results/FeaturedFactCard'
+import ResultsActionButtons from '../components/results/ResultsActionButtons'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -444,187 +449,47 @@ export default function ResultsScreen({
           </div>
         )}
 
-        {/* Rang + Étoiles — ligne horizontale compact */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(10), flexShrink: 0 }}>
-          <div
-            style={{
-              fontSize: S(38), lineHeight: 1,
-              transform: rankVisible ? 'scale(1)' : 'scale(0)',
-              transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            }}>
-            {currentRank.emoji}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: S(2) }}>
-            <div
-              style={{
-                fontSize: S(13), fontWeight: 900, color: textOnBg, lineHeight: 1,
-                transform: rankVisible ? 'scale(1)' : 'scale(0)',
-                transformOrigin: 'left center',
-                transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
-              }}>
-              {currentRank.label}
-            </div>
-            <div style={{ display: 'flex', gap: S(4) }}>
-              {[1, 2, 3].map((s) => (
-                <span
-                  key={s}
-                  style={{
-                    fontSize: S(18), lineHeight: 1,
-                    transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
-                    transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                    filter: s <= stars ? `drop-shadow(0 0 10px ${catColor})` : 'none',
-                    opacity: s <= stars ? 1 : 0.2,
-                  }}>
-                  ⭐
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Rang + Étoiles + Badge Perfect — composant extrait (Phase 5.2 A) */}
+        <ResultsRankHeader
+          emoji={currentRank.emoji}
+          label={currentRank.label}
+          stars={stars}
+          visibleStars={visibleStars}
+          rankVisible={rankVisible}
+          catColor={catColor}
+          textOnBg={textOnBg}
+          isPerfect={isPerfect}
+          ticketEarned={ticketEarned}
+        />
 
-        {/* Badge Perfect — compact, fontSize 12 */}
-        {isPerfect && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
-            background: 'linear-gradient(135deg, rgba(253,224,71,0.22), rgba(245,158,11,0.35))',
-            border: '1.5px solid rgba(253,224,71,0.6)',
-            borderRadius: S(14), padding: `${S(6)} ${S(16)}`, flexShrink: 0,
-          }}>
-            <span style={{ fontSize: S(16) }}>⭐</span>
-            <span style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: S(12), color: '#FDE047', letterSpacing: '0.05em' }}>PERFECT !</span>
-            {ticketEarned && <span style={{ fontSize: S(12) }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> +1</span>}
-            <span style={{ fontSize: S(16) }}>⭐</span>
-          </div>
-        )}
+        {/* Récap gains structuré — composant extrait (Phase 5.2 A) */}
+        <GainsBreakdown
+          correctCount={correctCount}
+          coinsPerCorrect={coinsPerCorrect}
+          baseCoins={baseCoins}
+          bonusCoins={bonusCoins}
+          ticketEarned={ticketEarned}
+          isPerfect={isPerfect}
+          total={animatedScore}
+          totalColor={catColor}
+          textColor={textOnBg}
+          footerStats={[
+            { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
+            { label: `${precision}% précision`, color: catColor },
+          ]}
+        />
 
-        {/* Score card — récap gains structuré */}
-        <div style={{
-          background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.15)',
-          borderRadius: S(12), padding: `${S(8)} ${S(12)}`, flexShrink: 0,
-          textShadow: '0 1px 4px rgba(0,0,0,0.7)',
-          display: 'flex', flexDirection: 'column', gap: S(4),
-        }}>
-          {/* Ligne 1 : Base */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: S(10), fontWeight: 700, color: textOnBg, opacity: 0.85 }}>
-              ✅ {correctCount} bonne{correctCount > 1 ? 's' : ''} × {coinsPerCorrect}
-            </span>
-            <span style={{ fontSize: S(11), fontWeight: 900, color: textOnBg }}>
-              +{baseCoins} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
-            </span>
-          </div>
-          {/* Ligne 2 : Bonus (si > 0) */}
-          {bonusCoins > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: S(10), fontWeight: 700, color: '#FDE047', opacity: 0.95 }}>
-                ⭐ Bonus {isPerfect ? 'Perfect' : ''}
-              </span>
-              <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
-                +{bonusCoins} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
-              </span>
-            </div>
-          )}
-          {/* Ligne 3 : Ticket (si gagné) */}
-          {ticketEarned && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: S(10), fontWeight: 700, color: '#FDE047', opacity: 0.95 }}>
-                <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Ticket bonus
-              </span>
-              <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
-                +1
-              </span>
-            </div>
-          )}
-          {/* Séparateur */}
-          <div style={{ height: 1, background: 'rgba(255,255,255,0.18)', margin: `${S(2)} 0` }} />
-          {/* Ligne total */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: S(11), fontWeight: 900, color: textOnBg, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Total
-            </span>
-            <span style={{ fontSize: S(16), fontWeight: 900, color: catColor }}>
-              +{animatedScore} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
-            </span>
-          </div>
-          {/* Mini stats secondaires */}
-          <div style={{ display: 'flex', gap: S(12), justifyContent: 'center', marginTop: S(2), opacity: 0.6 }}>
-            <span style={{ fontSize: S(9), fontWeight: 700, color: textOnBg }}>
-              {correctCount}/{totalFacts} trouvés
-            </span>
-            <span style={{ fontSize: S(9), fontWeight: 700, color: catColor }}>
-              {precision}% précision
-            </span>
-          </div>
-        </div>
-
-        {/* Fact le plus WTF en avant */}
-        {featuredFact && (() => {
-          const fCat = CATEGORIES.find(c => c.id === featuredFact.category)
-          const fColor = fCat?.color || catColor
-          return (
-            <div
-              onClick={() => {
-                audio.play?.('click')
-                setViewingFact(featuredFact)
-              }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: S(10),
-                background: `linear-gradient(135deg, ${fColor}33, ${fColor}11)`,
-                border: `1.5px solid ${fColor}`,
-                borderRadius: S(12), padding: S(8), flexShrink: 0,
-                cursor: 'pointer',
-                boxShadow: `0 0 20px ${fColor}44`,
-                animation: 'wtf-featured-glow 2.4s ease-in-out infinite',
-                position: 'relative', overflow: 'hidden',
-              }}
-            >
-              <style>{`@keyframes wtf-featured-glow {
-                0%, 100% { box-shadow: 0 0 14px ${fColor}33; }
-                50%      { box-shadow: 0 0 26px ${fColor}77; }
-              }`}</style>
-              {/* Image carrée */}
-              <div style={{
-                width: S(52), height: S(52), borderRadius: S(8),
-                background: `linear-gradient(135deg, ${fColor}66, ${fColor})`,
-                flexShrink: 0, overflow: 'hidden', display: 'flex',
-                alignItems: 'center', justifyContent: 'center',
-                border: `1.5px solid ${fColor}`,
-              }}>
-                {featuredFact.imageUrl ? (
-                  <img
-                    src={featuredFact.imageUrl}
-                    alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={e => { e.target.style.display = 'none' }}
-                  />
-                ) : (
-                  <span style={{ fontSize: S(22) }}>{fCat?.emoji || '⭐'}</span>
-                )}
-              </div>
-              {/* Texte */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: S(8), fontWeight: 900, color: fColor,
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
-                  marginBottom: S(2), display: 'flex', alignItems: 'center', gap: S(4),
-                }}>
-                  ✨ {featuredFact.isVip ? 'Le plus WTF (VIP)' : 'Le plus WTF'}
-                </div>
-                <div style={{
-                  fontSize: S(11), fontWeight: 800, color: textOnBg, lineHeight: 1.25,
-                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}>
-                  {featuredFact.question || featuredFact.shortAnswer || fCat?.label || '—'}
-                </div>
-              </div>
-              {/* Chevron */}
-              <span style={{
-                fontSize: S(16), color: fColor, flexShrink: 0, fontWeight: 900,
-              }}>›</span>
-            </div>
-          )
-        })()}
+        {/* Fact le plus WTF — composant extrait (Phase 5.2 A) */}
+        <FeaturedFactCard
+          fact={featuredFact}
+          fallbackColor={catColor}
+          textColor={textOnBg}
+          onClick={() => {
+            if (!featuredFact) return
+            audio.play?.('click')
+            setViewingFact(featuredFact)
+          }}
+        />
 
         {/* Carrousel facts — max 80px height */}
         {allSessionFacts.length > 0 && (() => {
@@ -733,77 +598,17 @@ export default function ResultsScreen({
 
       </div>{/* end content central */}
 
-      {/* ═══ FOOTER FIXE ═══ */}
-      <div style={{
-        display: 'flex', flexDirection: 'column', gap: S(8),
-        padding: `${S(12)} ${S(16)} ${S(16)}`, flexShrink: 0,
-        position: 'relative', zIndex: 2,
-        borderTop: '1px solid rgba(255,255,255,0.1)',
-      }}>
-
-        {/* Ligne 1 : Rejouer + Monter en difficulté */}
-        <div style={{ display: 'flex', gap: S(8) }}>
-          <button
-            onClick={onReplay}
-            className="active:scale-95 transition-all"
-            style={{
-              flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
-              background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-              border: 'none', color: '#1a1a2e', fontWeight: 900, fontSize: S(11),
-              cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-            }}>
-            {sessionType === 'parcours' ? (
-              <><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer en {DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}</>
-            ) : (sessionType === 'flash_solo' || sessionType === 'explorer') ? (
-               <><img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer</>
-             ) :
-             '🔄 Rejouer'}
-          </button>
-          {sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] && (
-            <button
-              onClick={onReplayHarder || onReplay}
-              className="active:scale-95 transition-all"
-              style={{
-                flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
-                background: 'linear-gradient(135deg, #FF6B1A, #D94A10)',
-                border: 'none', color: 'white', fontWeight: 900, fontSize: S(11),
-                cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,107,26,0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-              {CHALLENGE_LABELS[difficulty.id]}
-            </button>
-          )}
-        </div>
-
-        {/* Ligne 2 : Partager + Accueil */}
-        <div style={{ display: 'flex', gap: S(8) }}>
-          <button
-            onClick={handleShare}
-            className="active:scale-95 transition-all"
-            style={{
-              flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-              background: 'rgba(255,255,255,0.25)', border: '2px solid rgba(255,255,255,0.4)',
-              color: '#fff', fontWeight: 800, fontSize: S(11),
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-            }}>
-            {sharedCopied ? '✅ Copié !' : '📤 Partager'}
-          </button>
-          <button
-            onClick={handleGoHome}
-            className="active:scale-95 transition-all"
-            style={{
-              flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-              background: 'rgba(255,255,255,0.25)', border: '2px solid rgba(255,255,255,0.4)',
-              color: '#fff', fontWeight: 800, fontSize: S(11),
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-            }}>
-            ← Accueil
-          </button>
-        </div>
-      </div>
+      {/* Footer — composant extrait (Phase 5.2 A) */}
+      <ResultsActionButtons
+        sessionType={sessionType}
+        difficulty={difficulty}
+        challengeLabel={sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] ? CHALLENGE_LABELS[difficulty.id] : null}
+        onReplay={onReplay}
+        onReplayHarder={onReplayHarder}
+        onShare={handleShare}
+        onHome={handleGoHome}
+        sharedCopied={sharedCopied}
+      />
 
 
 

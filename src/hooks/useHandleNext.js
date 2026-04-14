@@ -248,6 +248,7 @@ export function useHandleNext({
         totalCorrect: refreshed.totalCorrect,
         totalAnswered: refreshed.totalAnswered,
         badgesEarned: refreshed.badgesEarned || [],
+        unlockedCategories: refreshed.unlockedCategories || [],
       }).catch(e => console.warn('[useHandleNext] session end mergeFlags failed:', e?.message || e))
     } catch {}
 

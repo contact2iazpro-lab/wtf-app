@@ -89,6 +89,10 @@ export async function pullFromServer(userId) {
         if (Array.isArray(remote.flags.badgesEarned)) {
           saved.badgesEarned = [...new Set([...(saved.badgesEarned || []), ...remote.flags.badgesEarned])]
         }
+        // Bloc 3 — catégories débloquées (Quest progression + achat 100 coins)
+        if (Array.isArray(remote.flags.unlockedCategories)) {
+          saved.unlockedCategories = [...new Set([...(saved.unlockedCategories || []), ...remote.flags.unlockedCategories])]
+        }
       }
       if (remote.stats_by_mode && typeof remote.stats_by_mode === 'object' && !saved.statsByMode) {
         // Fallback : si flags.statsByMode absent, utiliser la colonne stats_by_mode

@@ -5,6 +5,7 @@ import { audio } from '../utils/audio'
 import { readWtfData } from '../utils/storageHelper'
 import FactDetailView from '../components/FactDetailView'
 import CategoryFactsView from '../components/CategoryFactsView'
+import UnlockCategoryModal from '../components/UnlockCategoryModal'
 import { useGoBack } from '../hooks/useGoBack'
 
 const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
@@ -38,6 +39,7 @@ export default function CollectionPage() {
   const [activeTab, setActiveTab] = useState('vip')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
+  const [unlockTarget, setUnlockTarget] = useState(null)
 
   const goBack = useGoBack()
   const [openedFromExternal, setOpenedFromExternal] = useState(false)
@@ -84,15 +86,21 @@ export default function CollectionPage() {
     return ids
   }, [localUnlocked, unlockedByCategory])
 
-  // Which categories are unlocked (base 5 + any with >= 1 fact)
+  // Which categories are unlocked : 5 de base + persistées (Quest progression
+  // ou achat 100 coins) + celles avec ≥1 fact débloqué (compat ascendante).
   const unlockedCatIds = useMemo(() => {
     const allFacts = getValidFacts()
     const cats = new Set(GUEST_CATEGORIES)
+    try {
+      const wd = readWtfData()
+      for (const id of (wd.unlockedCategories || [])) cats.add(id)
+    } catch { /* ignore */ }
     for (const f of allFacts) {
       if (allUnlockedIds.has(f.id) && f.category) cats.add(f.category)
     }
     return cats
-  }, [allUnlockedIds])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allUnlockedIds, unlockedTick])
 
   // Index facts by type + category
   const factsIndex = useMemo(() => {
@@ -171,6 +179,11 @@ export default function CollectionPage() {
   // Main view
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80) }}>
+      <UnlockCategoryModal
+        target={unlockTarget}
+        onClose={() => setUnlockTarget(null)}
+        onConfirmed={() => setUnlockedTick(t => t + 1)}
+      />
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3 mb-3">
@@ -245,7 +258,7 @@ export default function CollectionPage() {
                 key={cat.id}
                 onClick={() => {
                   audio.play('click')
-                  if (isLocked) return
+                  if (isLocked) { setUnlockTarget(cat); return }
                   setSelectedCatId(cat.id)
                 }}
                 className="rounded-2xl p-3 flex items-center gap-3 text-left w-full active:scale-98 transition-all"

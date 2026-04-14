@@ -55,7 +55,7 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - ✅ **3.4** BlitzResultsScreen : layout fullscreen flex (content + footer pinned, plus de scroll)
   - ✅ **3.5** RouletteModal T95 : avg coins/spin 7,1→5,44 (segments 10→8, 20→15, 50→30, weights ajustés)
   - ✅ **3.6** Vibreur moments clés : `audio.vibrate()` sur ResultsScreen (perfect long), BlitzResultsScreen (record long), ChallengeScreen (victoire défi long)
-  - ✅ **3.7** Déblocage catégorie payante : tuile lockée Flash/Explorer ouvre modal confirm 100 coins → unlock 1 funny random + applyCurrencyDelta + sélection auto
+  - ✅ **3.7** Déblocage catégorie payante : tuile lockée Flash/Explorer/CollectionPage ouvre modal confirm 100 coins → débloque uniquement l'accès à la catégorie (aucun f*ct offert, c'est au joueur de les découvrir en jouant). Persisté via `flags.unlockedCategories` (mergeFlags). Composant partagé `UnlockCategoryModal`.
 - ✅ **Bloc 4 — Infra & économie (2026-04-14)** : 2 items fermés
   - ✅ **4.8** Cron cleanup anonymes activé (2026-04-14) : fonction `cleanup_anonymous_users` déployée, FK CASCADE ajoutées sur profiles/challenges/friend_codes/friendships (collections CASCADE via profiles), pg_cron schedule `0 3 * * *` actif.
   - ✅ **4.11** Réduction gains coins (heavy 84→~60/j, casual 52→~42/j) : Flash/Quest/Explorer perfect 10→5, Route niveau 6→4, Route boss 20→15, Coffre dimanche 15→10, Puzzle 6/4/2 → 5/3/1

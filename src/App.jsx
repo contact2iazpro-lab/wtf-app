@@ -533,6 +533,8 @@ export default function App() {
             const seenModes = [...new Set([...(prev.seenModes || []), modeId])]
             const next = { ...prev, seenModes }
             saveStorage(next)
+            // Bloc 2.7 — persistance Supabase via merge_player_flags (cross-device)
+            mergeFlags({ seenModes }).catch(() => {})
             return next
           })
         }}

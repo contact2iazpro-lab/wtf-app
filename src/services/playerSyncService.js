@@ -68,6 +68,10 @@ export async function pullFromServer(userId) {
         if (remote.flags.totalCorrect !== undefined) saved.totalCorrect = remote.flags.totalCorrect
         if (remote.flags.totalAnswered !== undefined) saved.totalAnswered = remote.flags.totalAnswered
         if (remote.flags.blitzPerfects !== undefined) saved.blitzPerfects = remote.flags.blitzPerfects
+        // Bloc 2.7 — pulse NEW persistant cross-device
+        if (Array.isArray(remote.flags.seenModes)) {
+          saved.seenModes = [...new Set([...(saved.seenModes || []), ...remote.flags.seenModes])]
+        }
       }
       if (remote.stats_by_mode && typeof remote.stats_by_mode === 'object' && !saved.statsByMode) {
         // Fallback : si flags.statsByMode absent, utiliser la colonne stats_by_mode

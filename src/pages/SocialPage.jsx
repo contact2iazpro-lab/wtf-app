@@ -344,7 +344,26 @@ export default function SocialPage() {
                   cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
                 }}
               >
-                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0 }}>Mes amis ({friends.length})</h2>
+                {(() => {
+                  // Compte les défis à relever (action='accept') sur tous les amis.
+                  // Affiché dans le titre quand l'accordéon est fermé pour signaler qu'il y en a.
+                  const pendingToAccept = friends.reduce((n, f) =>
+                    n + getDuelStatesFor(f.userId).filter(s => s.action === 'accept').length, 0)
+                  return (
+                    <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      Mes amis ({friends.length})
+                      {friendsListCollapsed && pendingToAccept > 0 && (
+                        <span style={{
+                          fontSize: 11, fontWeight: 900, color: 'white',
+                          background: '#FF6B1A', borderRadius: 10, padding: '2px 8px',
+                          lineHeight: 1.2,
+                        }}>
+                          {pendingToAccept} défi{pendingToAccept > 1 ? 's' : ''} à relever
+                        </span>
+                      )}
+                    </h2>
+                  )
+                })()}
                 <span style={{
                   fontSize: 16, color: '#9CA3AF',
                   transition: 'transform 0.2s',

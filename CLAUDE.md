@@ -36,12 +36,22 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - ✅ Catégorie choisie avant créer défi
   - ✅ Ticket débité APRÈS createDuelRound() (pas avant jeu)
   - ✅ TRIGGER SQL pour calculer winner_id
-- ✅ **Bloc 1 — Mode Défi finalisé (2026-04-14)** : 5 bugs fermés
+- ✅ **Bloc 1 — Mode Défi finalisé (2026-04-14)** : 5 bugs + 10 items UX/logique fermés
   - ✅ Auto-relever sur son propre défi : bug `isMe1` corrigé (dérivé du round, plus du duel normalisé alphabétiquement)
   - ✅ Refus revanche persistant Supabase : colonne `challenges.declined_by uuid[]` + RPC `decline_round` (migration `add_declined_by_to_challenges.sql`)
   - ✅ Revanche mêmes conditions : `startCreateDefi(friendId, categoryId, questionCount)` skip BlitzLobby et relance directement
   - ✅ Pénalité erreur défi : +5s (aligné mode Blitz solo, décision C9)
   - ✅ Pré-check créateur : amitié `accepted` + opposant ≥5 facts dans la catégorie avant création (BlitzLobbyScreen filtre cross-collections)
+  - ✅ **1.1** Fin défi : bouton "Accueil" → "Historique", navigate `/duels/{opponentId}` (dérivé du challenge) au lieu de `/`
+  - ✅ **1.2** BlitzLobby : tuile "Aléatoire" affichée aussi en mode défi (retrait gate `!isChallenge`), `opponentTotal` = somme des catégories pour pool adverse
+  - ✅ **1.3** BlitzResultsScreen : bouton "partager le défi" masqué en défi entre amis. Fix root cause : `clearPendingDuel` était appelé prématurément → `opponentId` disparaissait → share button réapparaissait. Déplacé au unmount via `onClearAutoChallenge` (ScreenRenderer)
+  - ✅ **1.4** BlitzResultsScreen : bouton partager conservé en Blitz solo (gate `!opponentId`)
+  - ✅ **1.5** DuelHistoryScreen : section "records blitz" déjà absente (doublon SocialPage) — vérifié
+  - ✅ **1.6** Historique défis : catégorie + nb questions inline (`Cat · X Q`) au lieu de sur 2 lignes
+  - ✅ **1.7** Historique : 2 onglets toggle "Par catégorie" / "Par parcours"
+  - ✅ **1.8** Matchs gagnés recalculés par parcours : nouvelle fonction `computeDuelStatsByQuestionCount(rounds, meId, opponentId)` dans duelService
+  - ✅ **1.9** Chronos défis en centième de seconde : `BlitzScreen` migre vers `Date.now()` (précision 10ms, interval 50ms), `formatTime` → `toFixed(2)` dans BlitzScreen/SocialPage/ChallengeScreen, pénalités via `penaltiesRef` pour préserver précision
+  - ✅ **1.10** Revanche unique : `computeAllDuelStates` ne garde l'action `rematch` QUE sur le round complété le plus récent. Les rounds complétés antérieurs sont dégradés en `'view'` (voir résultat uniquement)
 - ✅ **Bloc 2 — Fix logique critiques (2026-04-14)** : 5 bugs fermés
   - ✅ **2.6** Énergie cap 5/5 : `INITIAL_STOCK 3→5`, label HomeScreen `/3→/5`, 5 barres d'énergie au lieu de 3
   - ✅ **2.7** Pulse "NEW" persistant Supabase : `flags.seenModes` push via `mergeFlags()` + dépoté au `pullFromServer()` (cross-device)

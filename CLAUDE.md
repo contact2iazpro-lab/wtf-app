@@ -56,6 +56,9 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - ✅ **3.5** RouletteModal T95 : avg coins/spin 7,1→5,44 (segments 10→8, 20→15, 50→30, weights ajustés)
   - ✅ **3.6** Vibreur moments clés : `audio.vibrate()` sur ResultsScreen (perfect long), BlitzResultsScreen (record long), ChallengeScreen (victoire défi long)
   - ✅ **3.7** Déblocage catégorie payante : tuile lockée Flash/Explorer ouvre modal confirm 100 coins → unlock 1 funny random + applyCurrencyDelta + sélection auto
+- ✅ **Bloc 4 — Infra & économie (2026-04-14)** : 2 items fermés
+  - ✅ **4.8** Migration `cron_cleanup_anonymous_users.sql` : fonction `cleanup_anonymous_users(dry_run)` + schedule pg_cron commenté. À appliquer manuellement après validation FKs CASCADE.
+  - ✅ **4.11** Réduction gains coins (heavy 84→~60/j, casual 52→~42/j) : Flash/Quest/Explorer perfect 10→5, Route niveau 6→4, Route boss 20→15, Coffre dimanche 15→10, Puzzle 6/4/2 → 5/3/1
 - 🔧 **unlockedFacts infra** : Colonne Supabase préparée, code reste en localStorage (migration non-commencée, voir Architecture Data)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client
@@ -150,7 +153,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Coût | Gratuit, 1×/jour |
 | Questions | 1 funny fact (4 QCM) |
 | Tentatives | 3 (erreur = élimine une option) |
-| Coins | 6 / 4 / 2 selon tentatives restantes |
+| Coins | 5 / 3 / 1 selon tentatives restantes |
 | Contenu | Funny fact seed sur la date |
 | Partage | Format Wordle (🟩🟥) |
 
@@ -161,7 +164,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Coût | Gratuit illimité |
 | Structure | Niveaux infinis (3 Q funny) |
 | Boss | Tous les 10 niveaux (1 Q VIP HOT) |
-| Coins | 6 / niveau · 20 / boss |
+| Coins | 4 / niveau · 15 / boss |
 | Persistance | wtf_data.route = { level, stars } |
 | Avancement | Niveau parfait requis |
 
@@ -286,7 +289,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Blitz | F*cts débloqués | Gratuit | Prestige (records) | Actif |
 | Hunt | WTF VIP | Gratuit 1×/semaine | 1 f*ct VIP | Actif |
 | Puzzle du Jour | F*ct funny daily | Gratuit 1×/jour | 6/4/2 coins | Actif |
-| Route WTF! | F*cts funny + VIP boss | Gratuit illimité | 6/niveau + 20/boss | Actif |
+| Route WTF! | F*cts funny + VIP boss | Gratuit illimité | 4/niveau + 15/boss | Actif |
 | Série | F*cts générés | Gratuit | Multiplicateur coins | V2 |
 | Multi | À définir | À définir | À définir | V2 |
 

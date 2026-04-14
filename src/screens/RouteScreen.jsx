@@ -76,7 +76,8 @@ export default function RouteScreen({ onHome, setStorage }) {
         const finalCorrect = correctCount + (isCorrect ? 1 : 0)
         const perfect = finalCorrect === session.facts.length
         if (perfect) {
-          const coins = session.boss ? 20 : 6
+          // B4.11 — Route normal 6→4, boss 20→15 (cible F2P 30-50/j)
+          const coins = session.boss ? 15 : 4
           updateCoins(coins)
           applyCurrencyDelta?.({ coins }, session.boss ? 'route_boss_cleared' : 'route_level_cleared').catch(e =>
             console.warn('[RouteScreen] reward RPC failed:', e?.message || e)
@@ -196,7 +197,7 @@ export default function RouteScreen({ onHome, setStorage }) {
           {perfect ? (session.boss ? '👑 BOSS vaincu !' : '🎉 Niveau réussi !') : '😢 Raté'}
         </h1>
         <div style={{ fontSize: 20 }}>{correctCount} / {session.facts.length}</div>
-        {perfect && <div style={{ fontSize: 16, opacity: 0.9, color: '#FFD700' }}>+{session.boss ? 20 : 6} coins</div>}
+        {perfect && <div style={{ fontSize: 16, opacity: 0.9, color: '#FFD700' }}>+{session.boss ? 15 : 4} coins</div>}
         {!perfect && <div style={{ fontSize: 13, opacity: 0.7, textAlign: 'center', maxWidth: 260 }}>Réessaie pour débloquer le niveau suivant.</div>}
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
           <button onClick={() => { setSession(null) }} style={{

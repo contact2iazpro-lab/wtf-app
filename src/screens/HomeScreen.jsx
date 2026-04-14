@@ -51,7 +51,8 @@ const COFFRE_REWARDS = [
   { day: 'J', reward: { type: 'hints', amount: 1 } },
   { day: 'V', reward: { type: 'coins', amount: 10 } },
   { day: 'S', reward: { type: 'hints', amount: 1 } },
-  { day: 'D', reward: { type: 'coins', amount: 15, bonus: { type: 'tickets', amount: 1 } } },
+  // B4.11 — Coffre dimanche 15→10 coins (ticket bonus conservé)
+  { day: 'D', reward: { type: 'coins', amount: 10, bonus: { type: 'tickets', amount: 1 } } },
 ]
 
 function getWeekStart() {

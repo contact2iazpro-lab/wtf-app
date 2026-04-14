@@ -137,12 +137,15 @@ export function useHandleNext({
         bonusCoins = 10
       } else if (sessionType === 'flash_solo') {
         const isPerfectFlash = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
-        bonusCoins = isPerfectFlash ? 10 : 0
+        // B4.11 — bonus perfect réduit 10→5 (cible F2P 30-50/j)
+        bonusCoins = isPerfectFlash ? 5 : 0
       } else if (sessionType === 'parcours') {
-        bonusCoins = isPerfectSession ? 10 : 0
+        // B4.11 — bonus perfect Quest réduit 10→5
+        bonusCoins = isPerfectSession ? 5 : 0
       } else if (sessionType === 'explorer') {
         const isPerfectExplorer = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length
-        bonusCoins = isPerfectExplorer ? 10 : 0
+        // B4.11 — bonus perfect Explorer réduit 10→5
+        bonusCoins = isPerfectExplorer ? 5 : 0
       }
       setCoinsEarnedLastSession(sessionScore + bonusCoins)
 

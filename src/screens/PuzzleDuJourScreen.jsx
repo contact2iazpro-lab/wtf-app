@@ -52,7 +52,8 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
     if (done || eliminated.has(idx)) return
     audio.play('click')
     if (idx === correctIndex) {
-      const gain = attemptsLeft === 3 ? 6 : attemptsLeft === 2 ? 4 : 2
+      // B4.11 — Puzzle 6/4/2 → 5/3/1 (cible F2P 30-50/j)
+      const gain = attemptsLeft === 3 ? 5 : attemptsLeft === 2 ? 3 : 1
       updateCoins(gain)
       applyCurrencyDelta?.({ coins: gain }, `puzzle_du_jour_attempt_${attemptsLeft}`).catch(e =>
         console.warn('[PuzzleDuJour] reward RPC failed:', e?.message || e)

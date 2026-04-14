@@ -79,6 +79,7 @@ export default function SocialPage() {
   const [toast, setToast] = useState(null)
   const [confirmRemove, setConfirmRemove] = useState(null)
   const [expandedFriend, setExpandedFriend] = useState(null) // friendId du ami dont on voit les défis
+  const [friendModal, setFriendModal] = useState(null) // { friendshipId, userId, displayName }
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 
@@ -142,6 +143,66 @@ export default function SocialPage() {
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
+      {/* Friend modal — Bloc 2.10 */}
+      {friendModal && (
+        <div
+          onClick={() => setFriendModal(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 999,
+            background: 'rgba(0,0,0,0.5)', display: 'flex',
+            alignItems: 'flex-end', justifyContent: 'center',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 420, background: 'white',
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              padding: '20px 16px 24px', display: 'flex', flexDirection: 'column', gap: 8,
+              fontFamily: 'Nunito, sans-serif',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 12, borderBottom: '1px solid #F3F4F6' }}>
+              <Initial name={friendModal.displayName} size={42} />
+              <div style={{ flex: 1, fontSize: 16, fontWeight: 900, color: '#1a1a2e' }}>{friendModal.displayName}</div>
+            </div>
+            {[
+              { icon: '⚔️', label: 'Lancer un défi', onClick: () => { startCreateDefi(friendModal.userId, 'all'); setFriendModal(null); navigate('/') } },
+              { icon: '📜', label: 'Historique des défis', onClick: () => { setFriendModal(null); navigate(`/duels/${friendModal.userId}`) } },
+              { icon: '⚡', label: 'Records Blitz', onClick: () => { setFriendModal(null); navigate(`/duels/${friendModal.userId}?tab=records`) } },
+              { icon: '🗑️', label: 'Supprimer cet ami', danger: true, onClick: () => { const id = friendModal.friendshipId; setFriendModal(null); handleRemove(id) } },
+            ].map((opt, i) => (
+              <button
+                key={i}
+                onClick={() => { audio.play('click'); opt.onClick() }}
+                className="active:scale-95"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '14px 12px', borderRadius: 12, border: 'none',
+                  background: opt.danger ? 'rgba(239,68,68,0.08)' : '#F9FAFB',
+                  color: opt.danger ? '#EF4444' : '#1a1a2e',
+                  fontWeight: 800, fontSize: 14, cursor: 'pointer', textAlign: 'left',
+                  fontFamily: 'Nunito, sans-serif',
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{opt.icon}</span>
+                <span>{opt.label}</span>
+              </button>
+            ))}
+            <button
+              onClick={() => setFriendModal(null)}
+              style={{
+                marginTop: 8, padding: '12px', borderRadius: 12, border: 'none',
+                background: 'transparent', color: '#9CA3AF', fontWeight: 800, fontSize: 13,
+                cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+              }}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Toast */}
       {confirmRemove && (
         <GameModal
@@ -316,29 +377,16 @@ export default function SocialPage() {
                             onClick={(e) => {
                               e.stopPropagation()
                               audio.play('click')
-                              navigate(`/duels/${friend.userId}`)
-                            }}
-                            style={{
-                              padding: '4px 8px', borderRadius: 6, background: 'transparent',
-                              border: '1px solid rgba(0,0,0,0.1)', color: '#6B7280', fontSize: 10,
-                              fontWeight: 800, cursor: 'pointer', flexShrink: 0
-                            }}
-                          >
-                            Histo
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              audio.play('click')
-                              handleRemove(friend.friendshipId)
+                              setFriendModal({ friendshipId: friend.friendshipId, userId: friend.userId, displayName: friend.displayName })
                             }}
                             className="active:scale-90"
                             style={{
-                              padding: '4px 8px', borderRadius: 6, background: 'transparent',
-                              border: 'none', color: '#D1D5DB', fontSize: 14, cursor: 'pointer', flexShrink: 0
+                              padding: '4px 10px', borderRadius: 6, background: 'transparent',
+                              border: '1px solid rgba(0,0,0,0.1)', color: '#6B7280', fontSize: 16,
+                              fontWeight: 900, cursor: 'pointer', flexShrink: 0, lineHeight: 1
                             }}
                           >
-                            ✕
+                            ⋯
                           </button>
                         </button>
 

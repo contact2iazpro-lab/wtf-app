@@ -88,11 +88,11 @@ export default function ChallengeScreen() {
   }, [isCompleted, user, challenge])
 
   const handleAcceptChallenge = () => {
-    // Gate minimum : il faut au moins 4 f*cts pour qu'un Blitz ait du sens.
-    // Si playerFacts.length < question_count mais >= 4, on joue en mode
+    // Gate minimum : il faut au moins 5 f*cts (palier Blitz minimum, CLAUDE.md).
+    // Si playerFacts.length < question_count mais >= 5, on joue en mode
     // "adapté" (le défi tourne sur le nb de f*cts dispo). La gate ancienne
     // `!hasEnoughFacts` bloquait ce cas et laissait le bouton sans effet.
-    if (!user || !challenge || playerFacts.length < 4) return
+    if (!user || !challenge || playerFacts.length < 5) return
     audio.play('click')
 
     // Prepare facts for the Blitz
@@ -247,14 +247,14 @@ export default function ChallengeScreen() {
         <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
           C'est ton propre défi ! Partage le code à un ami.
         </div>
-      ) : playerFacts.length < 4 ? (
+      ) : playerFacts.length < 5 ? (
         <div style={{ width: '100%', maxWidth: 340, borderRadius: 16, padding: '20px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', textAlign: 'center' }}>
           <span style={{ fontSize: 32, display: 'block', marginBottom: 8 }}>😕</span>
           <p style={{ color: 'white', fontSize: 14, fontWeight: 800, margin: '0 0 8px', lineHeight: 1.4 }}>
             Tu n'as pas encore assez de f*cts {challenge.category_label} pour relever ce défi
           </p>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: '0 0 16px', lineHeight: 1.4 }}>
-            Tu as {playerFacts.length} f*ct{playerFacts.length !== 1 ? 's' : ''} débloqué{playerFacts.length !== 1 ? 's' : ''} (minimum 4 requis).
+            Tu as {playerFacts.length} f*ct{playerFacts.length !== 1 ? 's' : ''} débloqué{playerFacts.length !== 1 ? 's' : ''} (minimum 5 requis).
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {challenge.category_id && challenge.category_id !== 'all' && (

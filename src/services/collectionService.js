@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { getValidFacts } from '../data/factsService'
 
 /**
  * Compteurs de facts débloqués par catégorie pour un AMI.

@@ -179,8 +179,8 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Coût B | Gratuit pour relever |
 | Questions | Même nombre, **affirmations différentes** (seed aléatoire) |
 | Catégorie | Choisie par A, B doit en avoir min 5 facts |
-| Timer | 10s par affirmation |
-| Pénalité erreur | **+5 secondes** (décision C9 — 2026-04-14, aligné avec mode Blitz solo) |
+| Timer | **Chrono global** (même principe que Blitz solo, pas de timer par question) |
+| Pénalité erreur | **+5 secondes** ajoutées au chrono (décision C9 — 2026-04-14, aligné avec mode Blitz solo) |
 | Gagnant | Meilleur temps (le plus bas) |
 | Expiration | 48h (expires_at vérifié client-side) |
 | Notifications | Realtime Supabase sur `friendships`, `challenges`, `duels` |
@@ -422,7 +422,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## URLs Notion
 - QG : https://www.notion.so/332b94ed8cb180298efadff6b66d54af
 - Paramètres : https://www.notion.so/332b94ed8cb181869176fd6266e78915
-- **Tâches restantes (base de travail LIVE)** : https://www.notion.so/342b94ed8cb181b7a03cc4c6c4d49ab6 — source unique de vérité de ce qu'il reste à faire. À actualiser à chaque tâche fermée (retirer + renuméroter), concordance avec § Phase A ci-dessus.
+- **Tâches restantes (base de travail LIVE)** : https://www.notion.so/342b94ed8cb181a58710f3899cb4fb42 — source unique de vérité de ce qu'il reste à faire. À actualiser à chaque tâche fermée (retirer + renuméroter), concordance avec § Phase A ci-dessus. *(Ancienne page archivée : 342b94ed8cb181b7a03cc4c6c4d49ab6)*
 
 ⚠️ RAILWAY : Ne jamais pusher automatiquement. Commit local uniquement.
 

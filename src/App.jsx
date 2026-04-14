@@ -97,12 +97,12 @@ export default function App() {
     } catch { /* ignore */ }
   }
 
-  // Initialiser les devises pour les nouveaux joueurs — valeurs officielles Notion F2P
-  // Nouveau joueur : 0 coins / 1 ticket / 3 indices (juste de quoi faire 1 Quest découverte)
+  // Initialiser les devises pour les nouveaux joueurs — valeurs officielles CLAUDE.md F2P
+  // Nouveau joueur : 50 coins / 1 ticket / 3 indices / 5 énergies (profil F2P équilibré)
   if (localStorage.getItem('wtf_data')) {
     const _initData = JSON.parse(localStorage.getItem('wtf_data'))
     if (_initData.tickets === undefined) {
-      _initData.tickets = 1; _initData.wtfCoins = 0; _initData.hints = 3
+      _initData.tickets = 1; _initData.wtfCoins = 50; _initData.hints = 3
       _initData.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(_initData))
     }
@@ -322,11 +322,11 @@ export default function App() {
 
   // ─── Mode starters + initSessionState → extraits dans useModeStarters hook ─
 
-  // Reset complet onboarding — valeurs F2P officielles CLAUDE.md : 0/1/3/3
+  // Reset complet onboarding — valeurs F2P officielles CLAUDE.md : 50/1/3/5
   const resetOnboarding = () => {
     const freshData = {
       gamesPlayed: 0, totalScore: 0, streak: 0,
-      wtfCoins: 0, tickets: 1, hints: 3,
+      wtfCoins: 50, tickets: 1, hints: 3,
       unlockedFacts: [], sessionsToday: 0, statsByMode: {}, lastModified: Date.now(),
     }
     localStorage.setItem('wtf_data', JSON.stringify(freshData))

@@ -146,8 +146,8 @@ export function loadStorage() {
       seenModes: saved.seenModes || [],
     }
   } catch {
-    // Fallback sur erreur parse : valeurs F2P officielles CLAUDE.md (0 coins / 1 ticket / 3 hints)
-    return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 0, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 1, hints: 3, gamesPlayed: 0, seenModes: [] }
+    // Fallback sur erreur parse : valeurs F2P officielles CLAUDE.md (50 coins / 1 ticket / 3 indices)
+    return { totalScore: 0, streak: 0, unlockedFacts: new Set(), wtfCoins: 50, wtfDuJourDate: null, wtfDuJourFait: false, sessionsToday: 0, tickets: 1, hints: 3, gamesPlayed: 0, seenModes: [] }
   }
 }
 

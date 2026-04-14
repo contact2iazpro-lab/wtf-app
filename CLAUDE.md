@@ -155,7 +155,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Questions | Même nombre, **affirmations différentes** (seed aléatoire) |
 | Catégorie | Choisie par A, B doit en avoir min 5 facts |
 | Timer | 10s par affirmation |
-| Pénalité erreur | +3 secondes |
+| Pénalité erreur | **+5 secondes** (décision C9 — 2026-04-14, aligné avec mode Blitz solo) |
 | Gagnant | Meilleur temps (le plus bas) |
 | Expiration | 48h (expires_at vérifié client-side) |
 | Notifications | Realtime Supabase sur `friendships`, `challenges`, `duels` |
@@ -221,7 +221,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 | Paramètre | Valeur |
 |-----------|--------|
-| **Nouveau joueur** | **0 coins / 1 ticket / 3 indices / 3 énergies** (Notion officiel) |
+| **Nouveau joueur** | **50 coins / 1 ticket / 3 indices / 5 énergies** (décision C10 — 2026-04-14) |
 | Énergie max (stock) | 5 (achat boutique peut dépasser, pas de régén au-dessus) |
 | Régénération énergie | +1 toutes les 8h jusqu'au cap de 5 (modèle stock persistant) |
 | 1 ticket (boutique) | 25 coins |
@@ -243,12 +243,12 @@ séparé, sous-domaine privé, ou en local uniquement).
 | **Profil F2P choisi** | **Équilibré** — 1 achat stratégique/semaine (pack facts ou tickets), casual mobile (décidé 2026-04-12) |
 
 **Cette table est la SEULE source de vérité.** Toute divergence (trigger DB, code client, defaults de colonne, fallbacks, resets) doit être alignée ici. Points de convergence actuels :
-- Trigger DB `handle_new_user` : 0/1/3/3 ✅
-- `AuthContext.createProfile` : 0/1/3/3 ✅
-- `App.jsx` init `wtf_data` : 0/1/3/— (energy géré séparément) ✅
-- `App.jsx resetOnboarding` : 0/1/3/— ✅
-- `storageHelper.js` fallback : 0/1/3/— ✅
-- `ProfilPage.jsx executeReset` : 0/1/3/3 ✅
+- Trigger DB `handle_new_user` : 50/1/3/5 ✅ (migration `update_handle_new_user_F2P.sql`)
+- `AuthContext.createProfile` : 50/1/3/5 ✅
+- `App.jsx` init `wtf_data` : 50/1/3/— (energy géré séparément) ✅
+- `App.jsx resetOnboarding` : 50/1/3/— ✅
+- `storageHelper.js` fallback : 50/1/3/— ✅
+- `ProfilPage.jsx executeReset` : 50/1/3/5 ✅
 
 ### Règles communes
 - Indices = chaque utilisation débite 1 du stock (pas d'indices gratuits)
@@ -271,8 +271,9 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Multi | À définir | À définir | À définir | V2 |
 
 ## Architecture contenu
-- **WTF VIP** (350) : f*cts originaux du jeu physique → Quête (source unique de déblocage VIP) + **Blitz** (une fois débloqués)
-- **F*cts générés** (1000+) : générés par IA → Jouer, Explorer, Hunt, Puzzle, Route + **Blitz** (une fois débloqués)
+- **WTF VIP** (~483) : f*cts originaux du jeu physique → Quête (source unique de déblocage VIP) + **Blitz** (une fois débloqués)
+- **F*cts générés** (~676 et croissant) : générés par IA → Jouer, Explorer, Hunt, Puzzle, Route + **Blitz** (une fois débloqués)
+- *Comptes au 2026-04-14 (décision C12). Évoluent au fil de la génération admin-tool — chiffres indicatifs, pas une source de vérité.*
 - **Blitz** pioche dans TOUS les f*cts déjà débloqués (VIP + Funny confondus)
 - Collection : 2 onglets (WTF! + Funny F*cts)
 

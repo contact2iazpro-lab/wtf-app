@@ -173,11 +173,12 @@ CREATE POLICY "Anyone can read facts" ON facts FOR SELECT USING (true);
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, username, coins)
+  -- Valeurs F2P officielles CLAUDE.md : 50 coins / 1 ticket / 3 indices / 5 énergies
+  INSERT INTO public.profiles (id, username, coins, tickets, hints, energy)
   VALUES (
     NEW.id,
     split_part(NEW.email, '@', 1),
-    50
+    50, 1, 3, 5
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;

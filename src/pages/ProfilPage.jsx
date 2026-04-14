@@ -122,10 +122,10 @@ export default function ProfilPage() {
     setResetStep(0)
     if (isConnected && user) {
       try {
-        // Valeurs F2P officielles CLAUDE.md : 0 coins / 1 ticket / 3 hints / 3 energy
+        // Valeurs F2P officielles CLAUDE.md : 50 coins / 1 ticket / 3 indices / 5 énergies
         await supabase.from('profiles').update({
-          coins: 0, total_score: 0, streak_current: 0, streak_max: 0,
-          tickets: 1, hints: 3, energy: 3, updated_at: new Date().toISOString(),
+          coins: 50, total_score: 0, streak_current: 0, streak_max: 0,
+          tickets: 1, hints: 3, energy: 5, updated_at: new Date().toISOString(),
         }).eq('id', user.id)
       } catch { /* ignore */ }
     }

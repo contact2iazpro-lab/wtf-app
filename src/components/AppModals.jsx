@@ -40,7 +40,8 @@ export default function AppModals({
   signInWithGoogle,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { unlockFact } = usePlayerProfile()
+  const { unlockFact, coins: profileCoins, applyCurrencyDelta } = usePlayerProfile()
+  const coinsForGate = profileCoins ?? wtfCoins ?? 0
 
   return (
     <>
@@ -146,7 +147,7 @@ export default function AppModals({
           message={`Tes ${FLASH_ENERGY.FREE_SESSIONS_PER_DAY} sessions gratuites du jour sont utilisées. Achète une session pour ${FLASH_ENERGY.EXTRA_SESSION_COST} coins ou reviens demain !`}
           confirmLabel={`Acheter (${FLASH_ENERGY.EXTRA_SESSION_COST} coins)`} cancelLabel="Attendre"
           onConfirm={() => {
-            if (buyExtraSession()) {
+            if (buyExtraSession({ coins: coinsForGate, applyCurrencyDelta })) {
               setShowNoEnergyModal(false)
               if (noEnergyOrigin === 'explorer') { setGameMode('explorer'); setSessionType('explorer'); showOrSkipLaunch('explorer') }
               else { setGameMode('solo'); setSessionType('flash_solo'); setSelectedCategory(null); showOrSkipLaunch('flash') }
@@ -192,15 +193,18 @@ export default function AppModals({
             <p style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', margin: '0 0 16px' }}>{miniParcours.price} 🪙</p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setMiniParcours(null)} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280', cursor: 'pointer' }}>Plus tard</button>
-              <button disabled={wtfCoins < miniParcours.price} onClick={() => {
-                if (wtfCoins < miniParcours.price) return
+              <button disabled={coinsForGate < miniParcours.price} onClick={() => {
+                if (coinsForGate < miniParcours.price) return
                 setStorage(prev => { const next = { ...prev, wtfCoins: prev.wtfCoins - miniParcours.price }; saveStorage(next); return next })
+                applyCurrencyDelta?.({ coins: -miniParcours.price }, 'mini_parcours_buy').catch(e =>
+                  console.warn('[AppModals] miniParcours applyCurrencyDelta failed:', e?.message || e)
+                )
                 const { pool, mode, categoryId, difficulty } = miniParcours
                 if (mode === 'flash') { setSessionType('flash_solo'); setGameMode('solo'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(null) }
                 else if (mode === 'explorer') { setSessionType('explorer'); setGameMode('explorer'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId); setExplorerPool([]) }
                 else if (mode === 'quest') { setSessionType('parcours'); setGameMode('solo'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId) }
                 initSessionState(pool); setMiniParcours(null); setScreen(SCREENS.QUESTION)
-              }} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: wtfCoins >= miniParcours.price ? '#FF6B1A' : '#E5E7EB', border: 'none', color: wtfCoins >= miniParcours.price ? 'white' : '#9CA3AF', cursor: wtfCoins >= miniParcours.price ? 'pointer' : 'not-allowed' }}>
+              }} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: coinsForGate >= miniParcours.price ? '#FF6B1A' : '#E5E7EB', border: 'none', color: coinsForGate >= miniParcours.price ? 'white' : '#9CA3AF', cursor: coinsForGate >= miniParcours.price ? 'pointer' : 'not-allowed' }}>
                 Lancer ! 🚀
               </button>
             </div>

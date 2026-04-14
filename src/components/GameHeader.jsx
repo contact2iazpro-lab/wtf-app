@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import SettingsModal from './SettingsModal'
 import { audio } from '../utils/audio'
-import { useCurrency } from '../context/CurrencyContext'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -28,8 +28,8 @@ export default function GameHeader({
 }) {
   const [showSettings, setShowSettings] = useState(false)
 
-  // Source unique de vérité pour les devises
-  const { coins, tickets, hints } = useCurrency()
+  // Source unique de vérité pour les devises (Supabase si session, sinon localStorage)
+  const { coins, tickets, hints } = usePlayerProfile()
 
   return (
     <>

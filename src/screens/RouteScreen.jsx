@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { getGeneratedFacts, getVipFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
-import { updateCoins } from '../services/currencyService'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 
@@ -78,8 +77,7 @@ export default function RouteScreen({ onHome, setStorage }) {
         if (perfect) {
           // B4.11 — Route normal 6→4, boss 20→15 (cible F2P 30-50/j)
           const coins = session.boss ? 15 : 4
-          updateCoins(coins)
-          applyCurrencyDelta?.({ coins }, session.boss ? 'route_boss_cleared' : 'route_level_cleared').catch(e =>
+          applyCurrencyDelta?.({ coins }, session.boss ? 'route_boss_cleared' : 'route_level_cleared')?.catch?.(e =>
             console.warn('[RouteScreen] reward RPC failed:', e?.message || e)
           )
           if (setStorage) {

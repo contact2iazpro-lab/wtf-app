@@ -6,8 +6,7 @@ import { supabase } from '../lib/supabase'
 import { getValidFacts } from '../data/factsService'
 import SettingsModal from '../components/SettingsModal'
 import { getAllBadges } from '../utils/badgeManager'
-import { getBalances } from '../services/currencyService'
-import { useCurrency } from '../context/CurrencyContext'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { AVATAR_FRAMES, getFrameById, readFrameState, setEquippedFrame } from '../data/avatarFrames'
 
@@ -153,7 +152,7 @@ export default function ProfilPage() {
   const totalAnswered = playerData.totalAnswered || 0
   const successRate = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0
 
-  const { coins, tickets, hints } = useCurrency()
+  const { coins, tickets, hints } = usePlayerProfile()
   const balances = { coins, tickets, hints }
   const unlockedWtf = allFacts.filter(f => unlockedIds.has(f.id) && f.isVip).length
   const unlockedFunny = allFacts.filter(f => unlockedIds.has(f.id) && !f.isVip).length

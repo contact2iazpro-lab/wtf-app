@@ -1,5 +1,4 @@
 import { FLASH_ENERGY } from '../constants/gameConfig'
-import { getBalances, updateCoins } from './currencyService'
 
 // ─── Modèle T91 : stock persistant + régén 8h, max 5 ─────────────────────────
 // localStorage keys (wtf_data) :
@@ -164,13 +163,14 @@ export function addFlashEnergy(n = 1) {
 }
 
 /**
- * Acheter 1 session supplémentaire avec des coins (legacy, utilisé par l'UI
- * "plus d'énergie" via achat direct)
+ * Acheter 1 session supplémentaire avec des coins.
+ * Signature fonctionnelle : prend les deps currency en argument (hooks-agnostic).
+ * @param {Object} deps - { coins, applyCurrencyDelta }
  */
-export function buyExtraSession() {
-  const { coins } = getBalances()
-  if (coins < FLASH_ENERGY.EXTRA_SESSION_COST) return false
-  updateCoins(-FLASH_ENERGY.EXTRA_SESSION_COST)
+export function buyExtraSession({ coins, applyCurrencyDelta } = {}) {
+  if ((coins ?? 0) < FLASH_ENERGY.EXTRA_SESSION_COST) return false
+  applyCurrencyDelta?.({ coins: -FLASH_ENERGY.EXTRA_SESSION_COST }, 'buy_extra_energy')
+    ?.catch?.(e => console.warn('[buyExtraSession] applyCurrencyDelta failed:', e?.message || e))
   addFlashEnergy(1)
   return true
 }

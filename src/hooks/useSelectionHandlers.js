@@ -14,7 +14,6 @@ import {
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
 import { loadStorage } from '../utils/storageHelper'
-import { updateTickets } from '../services/currencyService'
 import { consumeFlashEnergy } from '../services/energyService'
 
 export function useSelectionHandlers({
@@ -69,8 +68,7 @@ export function useSelectionHandlers({
     const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     if (!isDevModeQuest) {
       if ((tickets || 0) < 1) { setShowNoTicketModal(true); return }
-      updateTickets(-1)
-      applyCurrencyDelta?.({ tickets: -1 }, 'quest_start').catch(e =>
+      applyCurrencyDelta?.({ tickets: -1 }, 'quest_start')?.catch?.(e =>
         console.warn('[useSelectionHandlers] quest start RPC failed:', e?.message || e)
       )
       setStorage(loadStorage())

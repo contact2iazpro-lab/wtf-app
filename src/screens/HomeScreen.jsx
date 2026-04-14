@@ -9,13 +9,11 @@ import SettingsModal from '../components/SettingsModal'
 import BottomNav from '../components/BottomNav'
 import { useAuth } from '../context/AuthContext'
 import { useUnlock } from '../context/UnlockContext'
-import { useCurrency } from '../context/CurrencyContext'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import { getNextBadge } from '../utils/badgeManager'
-import { updateCoins, updateTickets, updateHints } from '../services/currencyService'
-import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { ZONE_HEIGHTS, GRID_CONFIG, ICON_SIZES, ASSETS, UNLOCK_MESSAGES, SPOTLIGHT_MESSAGES, THEME } from '../constants/layoutConfig'
 import RouletteModal from '../components/RouletteModal'
 
@@ -142,12 +140,8 @@ function useDailyCoffre(applyCurrencyDelta, mergeFlags) {
 
 function applyCofreReward(reward, applyCurrencyDelta = null) {
   try {
-    if (reward.type === 'coins') updateCoins(reward.amount)
-    else if (reward.type === 'hints') updateHints(reward.amount)
-    else if (reward.type === 'tickets') updateTickets(reward.amount)
-    // Phase A : miroir Supabase (si dispo)
     if (applyCurrencyDelta && ['coins', 'hints', 'tickets'].includes(reward.type)) {
-      applyCurrencyDelta({ [reward.type]: reward.amount }, 'daily_coffre_claim').catch(e =>
+      applyCurrencyDelta({ [reward.type]: reward.amount }, 'daily_coffre_claim')?.catch?.(e =>
         console.warn('[HomeScreen] coffre RPC failed:', e?.message || e)
       )
     }
@@ -205,7 +199,7 @@ export default function HomeScreen({
   dailyFactUnlocked = false,
 }) {
   const { isConnected } = useAuth()
-  const { coins: _cCoins, tickets: _cTickets, hints: _cHints } = useCurrency()
+  const { coins: _cCoins, tickets: _cTickets, hints: _cHints } = usePlayerProfile()
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
   const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
 
@@ -1129,8 +1123,7 @@ export default function HomeScreen({
                   disabled={!canAfford}
                   onClick={() => {
                     if (!canAfford) return
-                    updateCoins(-ACCELERATE_COST)
-                    applyCurrencyDelta?.({ coins: -ACCELERATE_COST }, 'coffre_accelerate').catch(e =>
+                    applyCurrencyDelta?.({ coins: -ACCELERATE_COST }, 'coffre_accelerate')?.catch?.(e =>
                       console.warn('[HomeScreen] accelerate RPC failed:', e?.message || e)
                     )
                     const reward = openEarly(earlyCoffreTarget)

@@ -3,8 +3,6 @@ import SettingsModal from '../components/SettingsModal'
 import CoinsIcon from '../components/CoinsIcon'
 import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
-import { useCurrency } from '../context/CurrencyContext'
-import { updateCoins } from '../services/currencyService'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { useAuth } from '../context/AuthContext'
 import ConnectBanner from '../components/ConnectBanner'
@@ -74,10 +72,8 @@ export default function ResultsScreen({
   onCollection = null,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _cCoins, tickets: _cTickets, hints: _cHints } = useCurrency()
   const { isConnected, signInWithGoogle } = useAuth()
-  // Phase A.6/A.7 — miroir Supabase pour achat fact post-session
-  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
+  const { coins: _cCoins, tickets: _cTickets, hints: _cHints, applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const googleDismissed = (() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').googlePromptDismissed || 0 } catch { return 0 } })()
   const [showGoogleBanner, setShowGoogleBanner] = useState(!isConnected && googleDismissed < 2)
   const dismissGoogle = () => {
@@ -851,8 +847,7 @@ export default function ResultsScreen({
                   <button
                     onClick={() => {
                       if (!canUnlock) return
-                      updateCoins(-unlockCost)
-                      applyCurrencyDelta?.({ coins: -unlockCost }, 'unlock_fact_post_session').catch(e =>
+                      applyCurrencyDelta?.({ coins: -unlockCost }, 'unlock_fact_post_session')?.catch?.(e =>
                         console.warn('[ResultsScreen] unlock fact RPC failed:', e?.message || e)
                       )
                       unlockFact?.(selectedFact.id, selectedFact.category, 'unlock_fact_post_session').catch(e =>

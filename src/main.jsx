@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
-import { CurrencyProvider } from './context/CurrencyContext'
 import AppRouter from './AppRouter.jsx'
 import InvitePage from './pages/InvitePage.jsx'
 import './index.css'
@@ -36,12 +35,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <CurrencyProvider>
-          <Routes>
-            <Route path="/invite/:code" element={<InvitePage />} />
-            <Route path="/*" element={<AppRouter />} />
-          </Routes>
-        </CurrencyProvider>
+        <Routes>
+          <Route path="/invite/:code" element={<InvitePage />} />
+          <Route path="/*" element={<AppRouter />} />
+        </Routes>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

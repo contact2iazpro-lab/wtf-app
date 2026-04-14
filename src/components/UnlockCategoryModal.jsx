@@ -1,6 +1,4 @@
-import { useCurrency } from '../context/CurrencyContext'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
-import { updateCoins } from '../services/currencyService'
 import { audio } from '../utils/audio'
 
 export const UNLOCK_CATEGORY_PRICE = 100
@@ -14,8 +12,7 @@ export function unlockCategoryNow(catId, { applyCurrencyDelta, mergeFlags, curre
   if (!catId) return false
   if (currentCoins < UNLOCK_CATEGORY_PRICE) return false
 
-  updateCoins(-UNLOCK_CATEGORY_PRICE)
-  applyCurrencyDelta?.({ coins: -UNLOCK_CATEGORY_PRICE }, 'unlock_category').catch(e =>
+  applyCurrencyDelta?.({ coins: -UNLOCK_CATEGORY_PRICE }, 'unlock_category')?.catch?.(e =>
     console.warn('[UnlockCategory] applyCurrencyDelta failed:', e?.message || e)
   )
 
@@ -42,8 +39,7 @@ export function unlockCategoryNow(catId, { applyCurrencyDelta, mergeFlags, curre
 }
 
 export default function UnlockCategoryModal({ target, onClose, onConfirmed }) {
-  const { coins } = useCurrency()
-  const { applyCurrencyDelta, mergeFlags } = usePlayerProfile()
+  const { coins, applyCurrencyDelta, mergeFlags } = usePlayerProfile()
 
   if (!target) return null
 

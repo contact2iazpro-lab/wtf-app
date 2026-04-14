@@ -9,7 +9,6 @@
  */
 
 import { useCallback } from 'react'
-import { updateCoins, updateHints, getBalances } from '../services/currencyService'
 import { saveStorage, loadStorage } from '../utils/storageHelper'
 import { SCREENS } from '../constants/gameConfig'
 
@@ -38,9 +37,10 @@ export function useGameHandlers({
   setStorage,
   setNewlyUnlockedCategories,
   setScreen,
-  // Phase A — Supabase source of truth (coexistence avec legacy currencyService)
+  // Phase A — Supabase source of truth via usePlayerProfile
   applyCurrencyDelta,
   unlockFact,
+  hints,
 }) {
 
   // ── Calcul des points ──────────────────────────────────────────────────
@@ -76,13 +76,9 @@ export function useGameHandlers({
       setSessionScore(s => s + points)
       if (isAnswerCorrect) setCorrectCount(c => c + 1)
       if (points > 0) {
-        updateCoins(points) // legacy (localStorage)
-        // Phase A : miroir côté Supabase via RPC (optimistic + anti-replay)
-        if (applyCurrencyDelta) {
-          applyCurrencyDelta({ coins: points }, `${sessionType}_correct`).catch(e => {
-            console.warn('[Phase A] applyCurrencyDelta failed:', e?.message || e)
-          })
-        }
+        applyCurrencyDelta?.({ coins: points }, `${sessionType}_correct`)?.catch?.(e => {
+          console.warn('[Phase A] applyCurrencyDelta failed:', e?.message || e)
+        })
       }
 
       // Explorer/Marathon : débloquer le f*ct immédiatement
@@ -142,12 +138,9 @@ export function useGameHandlers({
       setSessionScore(s => s + points)
       if (isCorrect) setCorrectCount(c => c + 1)
       if (points > 0) {
-        updateCoins(points)
-        if (applyCurrencyDelta) {
-          applyCurrencyDelta({ coins: points }, `${sessionType}_validate`).catch(e => {
-            console.warn('[Phase A] applyCurrencyDelta failed:', e?.message || e)
-          })
-        }
+        applyCurrencyDelta?.({ coins: points }, `${sessionType}_validate`)?.catch?.(e => {
+          console.warn('[Phase A] applyCurrencyDelta failed:', e?.message || e)
+        })
       }
     }
 
@@ -168,15 +161,14 @@ export function useGameHandlers({
     const freeHints = selectedDifficulty?.freeHints || 0
     const isPaidHint = hintNum > freeHints
     if (isPaidHint) {
-      if (getBalances().hints < 1) return
-      updateHints(-1)
-      applyCurrencyDelta?.({ hints: -1 }, 'hint_used_in_session').catch(e =>
+      if ((hints ?? 0) < 1) return
+      applyCurrencyDelta?.({ hints: -1 }, 'hint_used_in_session')?.catch?.(e =>
         console.warn('[useGameHandlers] hint RPC failed:', e?.message || e)
       )
     }
     setHintsUsed(hintNum)
     setSessionAnyHintUsed(true)
-  }, [selectedDifficulty, applyCurrencyDelta])
+  }, [selectedDifficulty, applyCurrencyDelta, hints])
 
   return {
     handleSelectAnswer,

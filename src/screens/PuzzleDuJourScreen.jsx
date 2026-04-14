@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { getGeneratedFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
-import { updateCoins } from '../services/currencyService'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 
@@ -54,8 +53,7 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
     if (idx === correctIndex) {
       // B4.11 — Puzzle 6/4/2 → 5/3/1 (cible F2P 30-50/j)
       const gain = attemptsLeft === 3 ? 5 : attemptsLeft === 2 ? 3 : 1
-      updateCoins(gain)
-      applyCurrencyDelta?.({ coins: gain }, `puzzle_du_jour_attempt_${attemptsLeft}`).catch(e =>
+      applyCurrencyDelta?.({ coins: gain }, `puzzle_du_jour_attempt_${attemptsLeft}`)?.catch?.(e =>
         console.warn('[PuzzleDuJour] reward RPC failed:', e?.message || e)
       )
       if (setStorage && fact) {

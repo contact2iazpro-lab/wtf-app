@@ -4,19 +4,66 @@
  * Utilise useSupabaseResource pour cache stale-while-revalidate.
  * Expose applyCurrencyDelta() qui appelle la RPC Supabase avec nonce anti-replay.
  *
+ * Joueurs anonymes (pas de session Supabase) : applyCurrencyDelta écrit directement
+ * dans localStorage wtf_data + dispatch `wtf_currency_updated` pour re-render.
+ * Les accesseurs coins/tickets/hints fallback vers localStorage quand profile est null.
+ *
  * Usage :
  *   const { profile, loading, applyCurrencyDelta } = usePlayerProfile()
  *   await applyCurrencyDelta({ coins: 2 }, 'flash_correct')
  */
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useSupabaseResource, generateNonce } from './useSupabaseResource'
 
+function readLocalBalances() {
+  try {
+    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    return {
+      coins: data.wtfCoins || 0,
+      tickets: data.tickets || 0,
+      hints: parseInt(data.hints || 0, 10) || 0,
+    }
+  } catch {
+    return { coins: 0, tickets: 0, hints: 0 }
+  }
+}
+
+function writeLocalDelta(delta) {
+  try {
+    const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    if (delta.coins)   data.wtfCoins = Math.max(0, (data.wtfCoins || 0) + delta.coins)
+    if (delta.tickets) data.tickets  = Math.max(0, (data.tickets  || 0) + delta.tickets)
+    if (delta.hints)   data.hints    = Math.max(0, (parseInt(data.hints || 0, 10) || 0) + delta.hints)
+    data.lastModified = Date.now()
+    localStorage.setItem('wtf_data', JSON.stringify(data))
+    window.dispatchEvent(new Event('wtf_currency_updated'))
+    window.dispatchEvent(new Event('wtf_storage_sync'))
+    return { coins: data.wtfCoins || 0, tickets: data.tickets || 0, hints: parseInt(data.hints || 0, 10) || 0 }
+  } catch {
+    return null
+  }
+}
+
 export function usePlayerProfile() {
   const { user, hasSession } = useAuth()
   const userId = user?.id
+
+  // Fallback localStorage pour les joueurs anonymes (pas de profile Supabase).
+  // Re-render sur les events de mutation locale déclenchés par applyCurrencyDelta.
+  const [localBalances, setLocalBalances] = useState(() => readLocalBalances())
+  useEffect(() => {
+    if (hasSession) return
+    const refresh = () => setLocalBalances(readLocalBalances())
+    window.addEventListener('wtf_currency_updated', refresh)
+    window.addEventListener('wtf_storage_sync', refresh)
+    return () => {
+      window.removeEventListener('wtf_currency_updated', refresh)
+      window.removeEventListener('wtf_storage_sync', refresh)
+    }
+  }, [hasSession])
 
   const fetcher = useCallback(async () => {
     if (!userId) return null
@@ -47,6 +94,12 @@ export function usePlayerProfile() {
    * @param {string} [sessionId] - optionnel, groupe les mutations d'une session
    */
   const applyCurrencyDelta = useCallback(async (delta, reason, sessionId = null) => {
+    // Joueurs anonymes : pas de session → écriture localStorage directe.
+    if (!hasSession) {
+      const result = writeLocalDelta(delta)
+      if (result) setLocalBalances(result)
+      return result
+    }
     // Pas de guard sur profile : le RPC serveur est la source de vérité, pas
     // besoin d'attendre que le cache local soit hydraté pour envoyer le delta.
     // L'optimistic update est null-safe (si prev null, on le laisse tel quel).
@@ -70,7 +123,7 @@ export function usePlayerProfile() {
         return { ...(prev || {}), ...data }
       },
     })
-  }, [mutate])
+  }, [mutate, hasSession])
 
   /**
    * unlockFact — marque un fact comme débloqué côté Supabase (RPC idempotente).
@@ -128,10 +181,10 @@ export function usePlayerProfile() {
     mergeFlags,
     refetch,
     setData,
-    // Raccourcis pratiques
-    coins:   profile?.coins   ?? null,
-    tickets: profile?.tickets ?? null,
-    hints:   profile?.hints   ?? null,
+    // Raccourcis pratiques — fallback localBalances pour joueurs anonymes
+    coins:   profile?.coins   ?? localBalances.coins,
+    tickets: profile?.tickets ?? localBalances.tickets,
+    hints:   profile?.hints   ?? localBalances.hints,
     energy:  profile?.energy  ?? null,
     flags:   profile?.flags   ?? {},
   }

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS } from './constants/gameConfig'
 import { getDailyFact, initFacts, resetFacts } from './data/factsService'
 import { loadStorage, saveStorage } from './utils/storageHelper'
-import { updateTickets, getBalances } from './services/currencyService'
 import { getFlashEnergy } from './services/energyService'
 import { useAuth } from './context/AuthContext'
 import AppModals from './components/AppModals'
@@ -31,7 +30,7 @@ export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
   // Phase A — profil Supabase (source de vérité pour devises/unlocks/flags)
-  const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact, mergeFlags, coins: profileCoins, tickets: profileTickets, hints: profileHints } = usePlayerProfile()
   // DuelContext — pending nav state en mémoire (remplace localStorage pour Défi)
   const {
     pendingDuel, clearPendingDuel,
@@ -130,8 +129,7 @@ export default function App() {
 
     if (pendingDuel.mode === 'create') {
       // Vérifier tickets mais on débite après createDuelRound() en handleBlitzFinish
-      const balances = getBalances()
-      if (balances.tickets < 1) {
+      if ((profileTickets ?? 0) < 1) {
         setGameAlert({ emoji: '🎫', title: 'Pas de ticket', message: 'Tu n\'as pas de ticket pour lancer un défi !' })
         clearPendingDuel()
         return
@@ -291,8 +289,9 @@ export default function App() {
     setSelectedAnswer, setIsCorrect, setPointsEarned, setSessionScore,
     setCorrectCount, setSessionCorrectFacts, setDuelPlayers, setHintsUsed,
     setSessionAnyHintUsed, setStorage, setNewlyUnlockedCategories, setScreen,
-    applyCurrencyDelta, // Phase A : doublement des mutations coins
+    applyCurrencyDelta, // Phase A : source unique RPC
     unlockFact,         // Phase A.7 : miroir unlock_fact RPC
+    hints: profileHints,
   })
 
   // ─── Blitz handlers → extraits dans useBlitzHandlers hook ──────────────────

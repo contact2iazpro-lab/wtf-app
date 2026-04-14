@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CoinsIcon from '../components/CoinsIcon'
-import { updateCoins, updateHints, updateTickets } from '../services/currencyService'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { getValidFacts, getVipFacts, getFunnyFacts, getCategoryById, getPlayableCategories } from '../data/factsService'
 import { getFlashEnergy, addFlashEnergy } from '../services/energyService'
 import { FLASH_ENERGY } from '../constants/gameConfig'
-import { useCurrency } from '../context/CurrencyContext'
 import { useScale } from '../hooks/useScale'
 import RouletteModal from '../components/RouletteModal'
 import { AVATAR_FRAMES, readFrameState, addOwnedFrame } from '../data/avatarFrames'
@@ -73,9 +71,7 @@ function PackButton({ emoji, label, price, discount, canBuy, onClick, onCannotBu
 export default function BoutiquePage() {
   const navigate = useNavigate()
 
-  const { coins, tickets, hints } = useCurrency()
-  // Phase A.6/A.7/A.9 — RPC Supabase en parallèle du legacy
-  const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
+  const { coins, tickets, hints, applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
   const [streakFreezeCount, setStreakFreezeCount] = useState(() => readWtfData().streakFreezeCount || 0)
@@ -130,9 +126,7 @@ export default function BoutiquePage() {
       return
     }
 
-    updateCoins(-packDef.price)
-    // Phase A : miroir Supabase
-    applyCurrencyDelta?.({ coins: -packDef.price }, `shop_mystery_pack_${packId}`).catch(e =>
+    applyCurrencyDelta?.({ coins: -packDef.price }, `shop_mystery_pack_${packId}`)?.catch?.(e =>
       console.warn('[BoutiquePage] mystery pack RPC failed:', e?.message || e)
     )
 
@@ -198,15 +192,11 @@ export default function BoutiquePage() {
 
   const buyPack = (type, quantity, price) => {
     if (coins < price) return
-    updateCoins(-price)
-    if (type === 'hint') updateHints(quantity)
-    else if (type === 'ticket') updateTickets(quantity)
-    // Phase A : miroir Supabase — fusion coins-=price + contrepartie en une RPC atomique
     const rpcDelta = { coins: -price }
     if (type === 'hint')    rpcDelta.hints   = quantity
     if (type === 'ticket')  rpcDelta.tickets = quantity
     if (type === 'energy')  rpcDelta.energy  = quantity
-    applyCurrencyDelta?.(rpcDelta, `shop_buy_${type}`).catch(e =>
+    applyCurrencyDelta?.(rpcDelta, `shop_buy_${type}`)?.catch?.(e =>
       console.warn('[BoutiquePage] buyPack RPC failed:', e?.message || e)
     )
     if (type === 'energy') {
@@ -790,8 +780,7 @@ export default function BoutiquePage() {
                   key={frame.id}
                   onClick={() => {
                     if (!canBuy) return
-                    updateCoins(-frame.cost)
-                    applyCurrencyDelta?.({ coins: -frame.cost }, `shop_buy_frame_${frame.id}`).catch(e =>
+                    applyCurrencyDelta?.({ coins: -frame.cost }, `shop_buy_frame_${frame.id}`)?.catch?.(e =>
                       console.warn('[BoutiquePage] frame RPC failed:', e?.message || e)
                     )
                     addOwnedFrame(frame.id)

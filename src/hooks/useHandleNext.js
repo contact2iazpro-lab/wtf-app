@@ -9,7 +9,6 @@ import { useCallback } from 'react'
 import { SCREENS, getStreakReward } from '../constants/gameConfig'
 import { getCategoryLevelFactIds } from '../data/factsService'
 import { loadStorage, saveStorage, updateTrophyData, TODAY } from '../utils/storageHelper'
-import { updateCoins, updateTickets, updateHints, getBalances } from '../services/currencyService'
 import { syncAfterAction } from '../services/playerSyncService'
 import { checkBadges } from '../utils/badgeManager'
 
@@ -153,7 +152,6 @@ export function useHandleNext({
       // Streak rewards
       const streakReward = isFirstSessionToday ? getStreakReward(newStreak) : null
       if (streakReward) {
-        if (streakReward.hints > 0) updateHints(streakReward.hints)
         if (streakReward.badge) localStorage.setItem(`wtf_badge_streak_${newStreak}`, 'true')
         if (streakReward.special === 'wtf_premium') {
           setShowStreakSpecialModal(true)
@@ -169,9 +167,7 @@ export function useHandleNext({
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
       const totalBonusTickets = (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0)
-      if (totalBonusCoins > 0) updateCoins(totalBonusCoins)
-      if (totalBonusTickets > 0) updateTickets(totalBonusTickets)
-      // Phase A : miroir Supabase — delta fusionné coins+tickets+hints en une RPC atomique
+      // Phase A : 1 seule RPC atomique coins+tickets+hints via usePlayerProfile
       const sessionEndDelta = {}
       if (totalBonusCoins > 0)                sessionEndDelta.coins   = totalBonusCoins
       if (totalBonusTickets > 0)              sessionEndDelta.tickets = totalBonusTickets
@@ -184,14 +180,15 @@ export function useHandleNext({
 
       // Save storage
       setStorage(prev => {
+        const localWd = (() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}') } catch { return {} } })()
         const newStorage = {
           totalScore: totalScore + sessionScore,
           streak: newStreak,
           unlockedFacts: newUnlocked,
-          wtfCoins: getBalances().coins,
+          wtfCoins: localWd.wtfCoins || 0,
           wtfDuJourDate: newWtfDuJourDate,
           sessionsToday: explorerSessionsToday,
-          tickets: getBalances().tickets,
+          tickets: localWd.tickets || 0,
           wtfDuJourFait: newWtfDuJourDate === TODAY(),
         }
         saveStorage(newStorage)

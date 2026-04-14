@@ -4,7 +4,7 @@ import CoinsIcon from '../components/CoinsIcon'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
-import { useCurrency } from '../context/CurrencyContext'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -154,7 +154,7 @@ export default function RevelationScreen({
   correctAnswer,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _currencyCoins, tickets: _currencyTickets, hints: _currencyHints } = useCurrency()
+  const { coins: _currencyCoins, tickets: _currencyTickets, hints: _currencyHints } = usePlayerProfile()
 
   const [flipped, setFlipped] = useState(true)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)

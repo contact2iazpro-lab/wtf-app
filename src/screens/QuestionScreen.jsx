@@ -5,9 +5,7 @@ import CoinsIcon from '../components/CoinsIcon'
 import HintFlipButton from '../components/HintFlipButton'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
-import { updateCoins, updateTickets, updateHints, setAbsolute, getBalances } from '../services/currencyService'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
-import { useCurrency } from '../context/CurrencyContext'
 import renderFormattedText from '../utils/renderFormattedText'
 
 // ── Main QuestionScreen ──────────────────────────────────────────────────────
@@ -33,7 +31,6 @@ export default function QuestionScreen({
   sessionType = 'parcours',
 }) {
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
-  const { coins: _cCoins, hints: _cHints } = useCurrency()
 
   // Solo et explorer → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
@@ -44,7 +41,7 @@ export default function QuestionScreen({
   const [coinFlash, setCoinFlash] = useState(null)
   const prevCoinsRef = useRef(_cCoins)
   // Phase A.6 — miroir Supabase pour achat indice en session
-  const { applyCurrencyDelta } = usePlayerProfile()
+  const { coins: _cCoins, hints: _cHints, applyCurrencyDelta } = usePlayerProfile()
 
   useEffect(() => {
     const diff = _cCoins - prevCoinsRef.current
@@ -278,9 +275,7 @@ export default function QuestionScreen({
             canUse={canUseHint}
             onReveal={() => { onUseHint(hintNum); audio.play('click') }}
             onBuyHint={!isFree && cost > 0 ? () => {
-              updateCoins(-cost)
-              updateHints(1)
-              applyCurrencyDelta?.({ coins: -cost, hints: 1 }, 'buy_hint_in_session').catch(e =>
+              applyCurrencyDelta?.({ coins: -cost, hints: 1 }, 'buy_hint_in_session')?.catch?.(e =>
                 console.warn('[QuestionScreen] buy hint RPC failed:', e?.message || e)
               )
             } : null}

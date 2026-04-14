@@ -1,3 +1,5 @@
+import { renderEmoji } from '../utils/renderEmoji'
+
 /**
  * GameModal — Modal in-game réutilisable (remplace window.alert et window.confirm)
  *
@@ -44,7 +46,7 @@ export default function GameModal({
         }}
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ fontSize: 40, marginBottom: 8 }}>{emoji}</div>
+        <div style={{ fontSize: 40, marginBottom: 8 }}>{renderEmoji(emoji)}</div>
         <h3 style={{ fontSize: 17, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>
           {title}
         </h3>

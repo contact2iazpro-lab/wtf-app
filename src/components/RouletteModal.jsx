@@ -3,6 +3,7 @@ import CoinsIcon from './CoinsIcon'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { getVipFacts } from '../data/factsService'
+import { renderEmoji } from '../utils/renderEmoji'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -259,7 +260,7 @@ export default function RouletteModal({ onClose, scale }) {
             animation: 'roulettePop 0.3s ease',
             boxShadow: result.reward.type === 'vipFact' ? '0 0 20px rgba(255,215,0,0.4)' : 'none',
           }}>
-            <span style={{ fontSize: 28 }}>{result.emoji}</span>
+            <span style={{ fontSize: 28 }}>{renderEmoji(result.emoji)}</span>
             <div style={{ fontSize: 16, fontWeight: 900, color: result.reward.type === 'vipFact' ? '#B8860B' : '#FF6B1A', marginTop: 4 }}>
               {rewardLabel}
             </div>
@@ -320,7 +321,7 @@ export default function RouletteModal({ onClose, scale }) {
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
                     <span style={{ width: 10, height: 10, borderRadius: 3, background: seg.color, flexShrink: 0 }} />
-                    <span style={{ flex: 1, color: '#374151', fontWeight: 700 }}>{seg.emoji} {label}</span>
+                    <span style={{ flex: 1, color: '#374151', fontWeight: 700 }}>{renderEmoji(seg.emoji)} {label}</span>
                     <span style={{
                       fontWeight: 900,
                       color: seg.reward.type === 'vipFact' ? '#B8860B' : '#6B7280',

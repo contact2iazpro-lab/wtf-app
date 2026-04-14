@@ -56,9 +56,9 @@ export default function RevelationTemplate({
         </div>
 
         <div style={{ display: 'flex', gap: S(6) }}>
-          <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}>🪙 {totalCoins}</span>
-          <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}>🎫 {tickets}</span>
-          <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}>💡 {hintsCount}</span>
+          <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {totalCoins}</span>
+          <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {tickets}</span>
+          <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {hintsCount}</span>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export default function RevelationTemplate({
         {isCorrect && (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: S(18), fontWeight: 900, color: 'white' }}>{message}</div>
-            {coinsEarned > 0 && <div style={{ fontSize: S(16), fontWeight: 900, color: '#FFD700', marginTop: S(4) }}>+{coinsEarned} 🪙</div>}
+            {coinsEarned > 0 && <div style={{ fontSize: S(16), fontWeight: 900, color: '#FFD700', marginTop: S(4) }}>+{coinsEarned} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></div>}
           </div>
         )}
 

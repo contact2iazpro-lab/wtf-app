@@ -215,7 +215,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
             <Btn color="#3B82F6" onClick={() => act('Série → 30j', () => devActions.setStreak(30))}>→ 30j</Btn>
           </StateRow>
 
-          <StateRow label="🪙 WTF! Coins" value={wtfCoins.toString()}>
+          <StateRow label={<><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> WTF! Coins</>} value={wtfCoins.toString()}>
             <Btn danger onClick={() => act('Coins → 0', () => devActions.setCoins(0))}>Reset</Btn>
             <Btn color="#22C55E" onClick={() => act('+100 coins', () => devActions.addCoins(100))}>+100</Btn>
           </StateRow>

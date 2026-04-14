@@ -334,9 +334,9 @@ export default function ProfilPage() {
         {/* Ressources */}
         <div className="rounded-2xl mb-3" style={{ background: 'rgba(0,0,0,0.04)', padding: 8, display: 'flex', gap: 6 }}>
           {[
-            { emoji: '🪙', value: balances.coins, label: 'coins' },
-            { emoji: '🎟️', value: balances.tickets, label: 'tickets' },
-            { emoji: '💡', value: balances.hints, label: 'indices' },
+            { emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.coins, label: 'coins' },
+            { emoji: <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.tickets, label: 'tickets' },
+            { emoji: <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.hints, label: 'indices' },
           ].map(r => (
             <div key={r.label} style={{ flex: 1, textAlign: 'center' }}>
               <span style={{ fontSize: 18, display: 'block' }}>{r.emoji}</span>
@@ -483,7 +483,7 @@ export default function ProfilPage() {
                     ) : isOwned ? (
                       <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF' }}>Équiper</span>
                     ) : (
-                      <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF' }}>🔒 {frame.cost} 🪙</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF' }}>🔒 {frame.cost} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></span>
                     )}
                   </button>
                 )

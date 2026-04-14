@@ -393,9 +393,9 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           marginTop: S_val(24), marginBottom: S_val(32),
           fontSize: S_val(16), fontWeight: 700, fontFamily: 'Nunito, sans-serif',
         }}>
-          <div>🪙 {sessionScore}</div>
-          <div>🎫 0</div>
-          <div>💡 0</div>
+          <div><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {sessionScore}</div>
+          <div><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
+          <div><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
         </div>
 
         {/* Message */}
@@ -642,7 +642,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           </div>
 
           {/* Ticket emoji */}
-          <div style={{ fontSize: S_val(48) }}>🎫</div>
+          <div style={{ fontSize: S_val(48) }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></div>
 
           {/* Continue button */}
           <button
@@ -704,9 +704,9 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           marginTop: S_val(24), marginBottom: S_val(32),
           fontSize: S_val(16), fontWeight: 700, fontFamily: 'Nunito, sans-serif',
         }}>
-          <div>🪙 {sessionScore}</div>
-          <div>🎫 1</div>
-          <div>💡 0</div>
+          <div><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {sessionScore}</div>
+          <div><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 1</div>
+          <div><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
         </div>
 
         {/* Message */}

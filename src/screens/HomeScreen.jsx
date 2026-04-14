@@ -1104,7 +1104,7 @@ export default function HomeScreen({
               </div>
               {!canAfford && (
                 <div style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, marginBottom: 10 }}>
-                  Pas assez de coins ({_cCoins} 🪙)
+                  Pas assez de coins ({_cCoins} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />)
                 </div>
               )}
               <div style={{ display: 'flex', gap: 10 }}>

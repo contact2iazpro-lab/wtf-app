@@ -450,7 +450,7 @@ export default function BoutiquePage() {
       <div className="px-4 pt-2 pb-3 shrink-0" style={{ display: 'flex', gap: 6 }}>
         {[
           { id: 'packs', label: 'Packs', emoji: '🎁' },
-          { id: 'essentials', label: 'Essentiels', emoji: '🎟️' },
+          { id: 'essentials', label: 'Essentiels', emoji: <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
           { id: 'subscription', label: 'Abonnement', emoji: '👑' },
         ].map(t => {
           const isActive = activeTab === t.id
@@ -520,7 +520,7 @@ export default function BoutiquePage() {
         {/* Section Indices */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
-            <span style={{ fontSize: 20 }}>💡</span>
+            <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: 20, height: 20, verticalAlign: 'middle', display: 'inline' }} />
             <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Indices</h2>
             <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(255,107,26,0.1)', color: '#FF6B1A' }}>
               Stock : {balances.hints}
@@ -531,7 +531,7 @@ export default function BoutiquePage() {
             {HINT_PACKS.map(pack => (
               <PackButton
                 key={pack.quantity}
-                emoji="💡"
+                emoji={<img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />}
                 label={pack.label}
                 price={pack.price}
                 discount={pack.discount}
@@ -546,7 +546,7 @@ export default function BoutiquePage() {
         {/* Section Tickets */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
-            <span style={{ fontSize: 20 }}>🎟️</span>
+            <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: 20, height: 20, verticalAlign: 'middle', display: 'inline' }} />
             <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Tickets de Quest</h2>
             <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(139,92,246,0.1)', color: '#7C3AED' }}>
               Stock : {balances.tickets}
@@ -557,7 +557,7 @@ export default function BoutiquePage() {
             {TICKET_PACKS.map(pack => (
               <PackButton
                 key={pack.quantity}
-                emoji="🎟️"
+                emoji={<img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />}
                 label={pack.label}
                 price={pack.price}
                 discount={pack.discount}
@@ -827,8 +827,8 @@ export default function BoutiquePage() {
         <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Packs de Coins</h2>
         <div className="flex flex-col gap-2 mb-4">
           {[
-            { label: '50 Coins', price: '0,99 €', emoji: '🪙' },
-            { label: '200 Coins', price: '2,99 €', emoji: '💰' },
+            { label: '50 Coins', price: '0,99 €', emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
+            { label: '200 Coins', price: '2,99 €', emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
             { label: '500 Coins', price: '5,99 €', emoji: '🏆' },
           ].map(pack => (
             <div key={pack.label} className="flex items-center gap-3 rounded-2xl p-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', opacity: 0.5 }}>

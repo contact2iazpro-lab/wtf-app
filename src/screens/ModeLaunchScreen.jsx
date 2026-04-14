@@ -4,11 +4,14 @@ import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
+import { CURRENCY_EMOJI_MAP } from '../utils/renderEmoji'
+
 const EMOJI_IMG = {
   '🎰': '/assets/ui/emoji-roulette.png',
   '🔋': '/assets/ui/emoji-energy.png',
   '🗺️': '/assets/ui/emoji-route.png',
   '🧩': '/assets/ui/emoji-puzzle.png',
+  ...CURRENCY_EMOJI_MAP,
 }
 function renderIcon(value) {
   const src = EMOJI_IMG[value]

@@ -369,7 +369,7 @@ export default function ResultsScreen({
                   fontSize: 32, lineHeight: 1, userSelect: 'none',
                   animation: `coinFlyUp ${durMs}ms cubic-bezier(0.4, 0, 0.2, 1) ${delayMs}ms both`,
                   willChange: 'transform, opacity', zIndex: 300 + i,
-                }}>🪙</span>
+                }}><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></span>
               )
             })}
           </div>
@@ -492,7 +492,7 @@ export default function ResultsScreen({
           }}>
             <span style={{ fontSize: S(16) }}>⭐</span>
             <span style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: S(12), color: '#FDE047', letterSpacing: '0.05em' }}>PERFECT !</span>
-            {ticketEarned && <span style={{ fontSize: S(12) }}>🎟️ +1</span>}
+            {ticketEarned && <span style={{ fontSize: S(12) }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> +1</span>}
             <span style={{ fontSize: S(16) }}>⭐</span>
           </div>
         )}
@@ -510,7 +510,7 @@ export default function ResultsScreen({
               ✅ {correctCount} bonne{correctCount > 1 ? 's' : ''} × {coinsPerCorrect}
             </span>
             <span style={{ fontSize: S(11), fontWeight: 900, color: textOnBg }}>
-              +{baseCoins} 🪙
+              +{baseCoins} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
             </span>
           </div>
           {/* Ligne 2 : Bonus (si > 0) */}
@@ -520,7 +520,7 @@ export default function ResultsScreen({
                 ⭐ Bonus {isPerfect ? 'Perfect' : ''}
               </span>
               <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
-                +{bonusCoins} 🪙
+                +{bonusCoins} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
               </span>
             </div>
           )}
@@ -528,7 +528,7 @@ export default function ResultsScreen({
           {ticketEarned && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: S(10), fontWeight: 700, color: '#FDE047', opacity: 0.95 }}>
-                🎟️ Ticket bonus
+                <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Ticket bonus
               </span>
               <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
                 +1
@@ -543,7 +543,7 @@ export default function ResultsScreen({
               Total
             </span>
             <span style={{ fontSize: S(16), fontWeight: 900, color: catColor }}>
-              +{animatedScore} 🪙
+              +{animatedScore} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
             </span>
           </div>
           {/* Mini stats secondaires */}
@@ -753,8 +753,9 @@ export default function ResultsScreen({
               cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
             }}>
-            {sessionType === 'parcours' ? `🎫 Rejouer en ${DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}` :
-             (sessionType === 'flash_solo' || sessionType === 'explorer') ? (
+            {sessionType === 'parcours' ? (
+              <><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer en {DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}</>
+            ) : (sessionType === 'flash_solo' || sessionType === 'explorer') ? (
                <><img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer</>
              ) :
              '🔄 Rejouer'}
@@ -879,11 +880,11 @@ export default function ResultsScreen({
                       cursor: canUnlock ? 'pointer' : 'not-allowed',
                       boxShadow: canUnlock ? '0 4px 16px rgba(255,215,0,0.4)' : 'none',
                     }}>
-                    🪙 Débloquer ({unlockCost} coins)
+                    <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Débloquer ({unlockCost} coins)
                   </button>
                   {!canUnlock && (
                     <div style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, marginTop: 8 }}>
-                      Pas assez de coins ({_cCoins} 🪙)
+                      Pas assez de coins ({_cCoins} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />)
                     </div>
                   )}
                 </>

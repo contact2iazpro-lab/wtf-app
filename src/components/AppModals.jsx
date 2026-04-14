@@ -64,9 +64,9 @@ export default function AppModals({
           {streakRewardToast.reward._label
             ? streakRewardToast.reward._label
             : <>
-                {streakRewardToast.reward.coins > 0 && `+${streakRewardToast.reward.coins} 🪙  `}
-                {streakRewardToast.reward.tickets > 0 && `+${streakRewardToast.reward.tickets} 🎟️  `}
-                {streakRewardToast.reward.hints > 0 && `+${streakRewardToast.reward.hints} 💡  `}
+                {streakRewardToast.reward.coins > 0 && <>{`+${streakRewardToast.reward.coins} `}<img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
+                {streakRewardToast.reward.tickets > 0 && <>{`+${streakRewardToast.reward.tickets} `}<img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
+                {streakRewardToast.reward.hints > 0 && <>{`+${streakRewardToast.reward.hints} `}<img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
                 {streakRewardToast.reward.badge && '🏅 Badge !'}
               </>
           }
@@ -161,7 +161,7 @@ export default function AppModals({
       {showNoTicketModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'Nunito, sans-serif' }}>
           <div style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)', border: '2px solid #FF6B1A', borderRadius: 24, padding: '32px 24px', maxWidth: 320, width: '100%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🎫</div>
+            <div style={{ fontSize: 48, marginBottom: 12 }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></div>
             <div style={{ fontSize: 18, fontWeight: 900, color: '#FFD700', marginBottom: 10 }}>Il te faut un ticket !</div>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.8)', marginBottom: 24, lineHeight: 1.5 }}>Gagne des coins en jouant et achete un ticket en Boutique.</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -190,7 +190,7 @@ export default function AppModals({
             onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
             <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>Plus que {miniParcours.pool.length} f*ct{miniParcours.pool.length > 1 ? 's' : ''} !</h3>
-            <p style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', margin: '0 0 16px' }}>{miniParcours.price} 🪙</p>
+            <p style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', margin: '0 0 16px' }}>{miniParcours.price} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setMiniParcours(null)} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280', cursor: 'pointer' }}>Plus tard</button>
               <button disabled={coinsForGate < miniParcours.price} onClick={() => {

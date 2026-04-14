@@ -227,7 +227,7 @@ export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, 
                 </span>
               </div>
               <p style={{ fontSize: 11, color: canAfford ? '#9CA3AF' : '#EF4444', margin: '0 0 16px', fontWeight: canAfford ? 400 : 700 }}>
-                {canAfford ? `Solde restant : ${coins - cost} 🪙` : `Pas assez de coins (${coins} 🪙)`}
+                {canAfford ? <>Solde restant : {coins - cost} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></> : <>Pas assez de coins ({coins} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />)</>}
               </p>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button

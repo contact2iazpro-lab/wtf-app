@@ -87,7 +87,9 @@ export async function getUserDuels(userId) {
  * Calcule l'état d'un seul round (challenge).
  * Helper interne pour computeAllDuelStates.
  */
-function computeRoundState(round, meId, isMe1) {
+function computeRoundState(round, meId) {
+  // isMe1 dérivé du round (le créateur), PAS du duel (normalisé alphabétiquement)
+  const isMe1 = round.player1_id === meId
   const myField = isMe1 ? 'player1_time' : 'player2_time'
   const theirField = isMe1 ? 'player2_time' : 'player1_time'
   const mySeenField = isMe1 ? 'seen_by_p1' : 'seen_by_p2'
@@ -134,7 +136,6 @@ function computeRoundState(round, meId, isMe1) {
 export function computeAllDuelStates(duel, allRounds, meId) {
   if (!duel) return []
 
-  const isMe1 = duel.player1_id === meId
   const states = []
 
   // Lire les défis refusés depuis localStorage
@@ -147,7 +148,7 @@ export function computeAllDuelStates(duel, allRounds, meId) {
     const roundIdStr = String(round.id)
     if (declined.has(round.id) || declined.has(roundIdStr)) continue
 
-    const roundState = computeRoundState(round, meId, isMe1)
+    const roundState = computeRoundState(round, meId)
     if (roundState) {
       states.push({
         ...roundState,
@@ -173,8 +174,7 @@ export function computeDuelState(duel, lastRound, meId) {
     return { label: '⚔️ Défier', action: 'create', disabled: false }
   }
 
-  const isMe1 = duel.player1_id === meId
-  const state = computeRoundState(lastRound, meId, isMe1)
+  const state = computeRoundState(lastRound, meId)
 
   // Si le dernier round n'est pas affichable, revenir à "Défier"
   if (!state) {

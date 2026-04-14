@@ -5,7 +5,7 @@ import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
 import GameHeader from '../components/GameHeader'
 
-const WRONG_PENALTY = 3
+const WRONG_PENALTY = 5
 const FLASH_DURATION = 300
 
 export default function BlitzScreen({ facts, category, onFinish, onQuit, playerCoins }) {
@@ -69,7 +69,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
       setAnsweredResults(prev => [...prev, 'correct'])
       audio.play('correct')
     } else {
-      // Pénalité +3s
+      // Pénalité +5s
       elapsedRef.current += WRONG_PENALTY
       setElapsed(elapsedRef.current)
       setPenalties(p => p + WRONG_PENALTY)

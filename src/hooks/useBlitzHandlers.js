@@ -16,7 +16,7 @@ export function useBlitzHandlers({
   user, selectedCategory, isChallengeMode,
   setGameAlert, setSessionType, setGameMode, setSelectedCategory,
   setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
-  setNewlyEarnedBadges, setIsChallengeMode,
+  setNewlyEarnedBadges,
   // A.9.3 — persistance flags via RPC merge_player_flags
   mergeFlags,
   // B4.2 — source de vérité unique pour devises (tickets/coins/hints)
@@ -213,9 +213,9 @@ export function useBlitzHandlers({
             safeReject('Impossible de charger le service défi')
           })
       }
-      // Ne PAS reset isChallengeMode ici — on garde le flag true pour que
-      // BlitzResultsScreen affiche la vue "Création du défi..." / "Défi créé!".
-      // Le reset se fait quand l'user clique "Accueil" via handleHome.
+      // isChallengeMode est dérivé de pendingDuel — on ne le touche pas ici.
+      // Tant que pendingDuel reste en place, BlitzResultsScreen affiche la vue
+      // "Création du défi..." / "Défi créé !". Le clear se fait à l'unmount.
       return
     }
 

@@ -28,7 +28,7 @@ export function useNavigationHandlers({
   setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
   setSelectedCategory, setSessionFacts, setCurrentIndex, setSessionScore,
   setCorrectCount, setDuelPlayers, setDuelCurrentPlayerIndex, setIsQuickPlay,
-  setBlitzFacts, setBlitzResults, setIsChallengeMode, setExplorerPool,
+  setBlitzFacts, setBlitzResults, setExplorerPool,
   setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
   setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
   setStorage,
@@ -167,7 +167,7 @@ export function useNavigationHandlers({
     setSessionFacts([]); setCurrentIndex(0); setSessionScore(0); setCorrectCount(0)
     setDuelPlayers([]); setDuelCurrentPlayerIndex(0); setIsQuickPlay(false)
     setSessionType('parcours'); setBlitzFacts([]); setBlitzResults(null)
-    setIsChallengeMode(false); setLaunchMode(null); setExplorerPool([])
+    setLaunchMode(null); setExplorerPool([])
     // Cleanup pending duel si l'user abandonne le flow
     clearPendingDuel?.()
   }, [clearPendingDuel])

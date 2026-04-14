@@ -134,7 +134,6 @@ export default function App() {
         clearPendingDuel()
         return
       }
-      setIsChallengeMode(true)
       // Revanche dans mêmes conditions → skip le BlitzLobby et lance directement.
       if (pendingDuel.questionCount && pendingDuel.categoryId && pendingDuel.categoryId !== 'all') {
         handleBlitzStart(pendingDuel.categoryId, pendingDuel.questionCount)
@@ -218,7 +217,8 @@ export default function App() {
     return () => window.removeEventListener('wtf_energy_updated', updateFlashEnergy)
   }, [])
 
-  const [isChallengeMode, setIsChallengeMode] = useState(false)
+  // isChallengeMode dérivé de pendingDuel — une seule source de vérité (Palier 2).
+  const isChallengeMode = pendingDuel?.mode === 'create'
   const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'explorer' | 'duel'
   const [coinsEarnedLastSession, setCoinsEarnedLastSession] = useState(0)
   const [dailyFact, setDailyFact] = useState(null)
@@ -299,7 +299,7 @@ export default function App() {
     user, selectedCategory, isChallengeMode,
     setGameAlert, setSessionType, setGameMode, setSelectedCategory,
     setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
-    setNewlyEarnedBadges, setIsChallengeMode,
+    setNewlyEarnedBadges,
     mergeFlags, // A.9.3 persistance records
     applyCurrencyDelta, // B4.2 débit ticket défi
     pendingDuel, clearPendingDuel, // Duel nav state mémoire
@@ -369,7 +369,7 @@ export default function App() {
     setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
     setSelectedCategory, setSessionFacts, setCurrentIndex, setSessionScore,
     setCorrectCount, setDuelPlayers, setDuelCurrentPlayerIndex, setIsQuickPlay,
-    setBlitzFacts, setBlitzResults, setIsChallengeMode, setExplorerPool,
+    setBlitzFacts, setBlitzResults, setExplorerPool,
     setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
     setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
     setStorage,

@@ -359,7 +359,9 @@ export default function SocialPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {friends.map(friend => {
                     const isExpanded = expandedFriend === friend.userId
-                    const allStates = getDuelStatesFor(friend.userId)
+                    // Masquer les boutons "Résultat" (action='view') — les résultats
+                    // sont consultables dans l'historique entre amis (DuelHistoryScreen).
+                    const allStates = getDuelStatesFor(friend.userId).filter(s => s.action !== 'view')
                     const hasDefis = allStates.length > 0
                     return (
                       <div key={friend.friendshipId}>

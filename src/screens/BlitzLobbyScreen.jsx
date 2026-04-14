@@ -3,7 +3,7 @@ import { useScale } from '../hooks/useScale'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { audio } from '../utils/audio'
 import { useDuelContext } from '../features/duels/context/DuelContext'
-import { loadUserCollections } from '../services/collectionService'
+import { loadFriendCategoryCounts } from '../services/collectionService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -29,14 +29,10 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
     if (!isChallenge) return
     let cancelled = false
     setOpponentLoading(true)
-    loadUserCollections(opponentId)
-      .then(map => {
+    loadFriendCategoryCounts(opponentId)
+      .then(counts => {
         if (cancelled) return
-        const counts = {}
-        for (const [cat, data] of Object.entries(map || {})) {
-          counts[cat] = data.factsCompleted instanceof Set ? data.factsCompleted.size : 0
-        }
-        setOpponentCountsByCat(counts)
+        setOpponentCountsByCat(counts || {})
       })
       .finally(() => { if (!cancelled) setOpponentLoading(false) })
     return () => { cancelled = true }

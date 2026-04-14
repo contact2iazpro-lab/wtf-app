@@ -51,6 +51,28 @@ export async function updateCollection(userId, category, factId) {
 }
 
 /**
+ * Compteurs de facts débloqués par catégorie pour un AMI.
+ * Passe par la RPC SECURITY DEFINER `get_friend_category_counts` qui valide
+ * l'amitié côté serveur — RLS sur `collections` empêche un read direct.
+ * Retour : { [category]: number }
+ */
+export async function loadFriendCategoryCounts(friendUserId) {
+  if (!isSupabaseConfigured || !friendUserId) return {}
+  try {
+    const { data, error } = await supabase.rpc('get_friend_category_counts', {
+      target_user_id: friendUserId,
+    })
+    if (error) throw error
+    const counts = {}
+    for (const row of data || []) counts[row.category] = row.count || 0
+    return counts
+  } catch (err) {
+    console.warn('[Collection] loadFriendCategoryCounts failed:', err.message)
+    return {}
+  }
+}
+
+/**
  * Load all collections for a user.
  * Returns a map: { [category]: { facts_completed: number[], percentage: number, is_completed: boolean } }
  */

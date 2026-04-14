@@ -212,6 +212,7 @@ export default function ScreenRenderer({
           onSelectCategory={handleBlitzStart}
           onBack={handleHome}
           bestBlitzTime={JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzTime || null}
+          opponentId={isChallengeMode ? pendingDuel?.opponentId : null}
         />
       )}
 

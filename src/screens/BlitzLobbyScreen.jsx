@@ -1,16 +1,18 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useScale } from '../hooks/useScale'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { audio } from '../utils/audio'
 import { useDuelContext } from '../features/duels/context/DuelContext'
+import { loadUserCollections } from '../services/collectionService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 
-export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTime = null }) {
+export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTime = null, opponentId = null }) {
   const scale = useScale()
-  const [selectedCatId, setSelectedCatId] = useState('all')
+  const isChallenge = !!opponentId
+  const [selectedCatId, setSelectedCatId] = useState(isChallenge ? null : 'all')
   const [questionCount, setQuestionCount] = useState(null)
 
   // Source de vérité : DuelContext → lit collections Supabase direct.
@@ -19,26 +21,58 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
   const allFacts = getValidFacts()
   const totalUnlocked = allFacts.filter(f => effectiveUnlocked.has(f.id)).length
 
-  // Categories with >= 5 unlocked facts (seuil minimum pour Blitz)
+  // En mode défi : on charge les collections de l'adversaire pour ne proposer
+  // que les catégories où LES DEUX joueurs ont ≥5 facts.
+  const [opponentCountsByCat, setOpponentCountsByCat] = useState(null)
+  const [opponentLoading, setOpponentLoading] = useState(isChallenge)
+  useEffect(() => {
+    if (!isChallenge) return
+    let cancelled = false
+    setOpponentLoading(true)
+    loadUserCollections(opponentId)
+      .then(map => {
+        if (cancelled) return
+        const counts = {}
+        for (const [cat, data] of Object.entries(map || {})) {
+          counts[cat] = data.factsCompleted instanceof Set ? data.factsCompleted.size : 0
+        }
+        setOpponentCountsByCat(counts)
+      })
+      .finally(() => { if (!cancelled) setOpponentLoading(false) })
+    return () => { cancelled = true }
+  }, [isChallenge, opponentId])
+
+  // Categories with >= 5 unlocked facts (seuil minimum pour Blitz).
+  // En défi : exiger aussi ≥5 facts côté adversaire.
   const categories = useMemo(() => {
     const cats = getPlayableCategories()
     return cats
       .map(cat => {
         const count = allFacts.filter(f => f.category === cat.id && effectiveUnlocked.has(f.id)).length
-        return { ...cat, count }
+        const opponentCount = opponentCountsByCat ? (opponentCountsByCat[cat.id] || 0) : null
+        return { ...cat, count, opponentCount }
       })
-      .filter(c => c.count >= 5)
+      .filter(c => c.count >= 5 && (!isChallenge || (c.opponentCount ?? 0) >= 5))
       .sort((a, b) => b.count - a.count)
-  }, [allFacts, effectiveUnlocked])
+  }, [allFacts, effectiveUnlocked, isChallenge, opponentCountsByCat])
 
   // Pool size for selected category
   const poolSize = selectedCatId === 'all'
     ? totalUnlocked
     : (categories.find(c => c.id === selectedCatId)?.count || 0)
 
+  // En défi : pool effectif = min(moi, adversaire) sur la catégorie choisie
+  const opponentPool = isChallenge && selectedCatId && selectedCatId !== 'all'
+    ? (opponentCountsByCat?.[selectedCatId] || 0)
+    : null
+  const effectivePool = isChallenge && opponentPool != null
+    ? Math.min(poolSize, opponentPool)
+    : poolSize
+
   const questionOptions = [5, 10, 20, 30, 40, 50]
-  const effectiveCount = questionCount || (poolSize >= 50 ? 50 : poolSize >= 40 ? 40 : poolSize >= 30 ? 30 : poolSize >= 20 ? 20 : poolSize >= 10 ? 10 : poolSize >= 5 ? 5 : poolSize)
-  const hasSelection = selectedCatId !== null && poolSize >= 5
+  const poolForCount = effectivePool
+  const effectiveCount = questionCount || (poolForCount >= 50 ? 50 : poolForCount >= 40 ? 40 : poolForCount >= 30 ? 30 : poolForCount >= 20 ? 20 : poolForCount >= 10 ? 10 : poolForCount >= 5 ? 5 : poolForCount)
+  const hasSelection = selectedCatId !== null && poolForCount >= 5
 
   const handleGo = () => {
     if (!hasSelection) return
@@ -100,7 +134,8 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
       <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(12)} ${S(8)}`, WebkitOverflowScrolling: 'touch' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
 
-          {/* Toutes mes f*cts */}
+          {/* Toutes mes f*cts — masqué en mode défi (catégorie obligatoire) */}
+          {!isChallenge && (
           <button
             onClick={() => { audio.play('click'); setSelectedCatId('all') }}
             style={{
@@ -126,6 +161,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
               </div>
             </div>
           </button>
+          )}
 
           {/* Categories */}
           {categories.map(cat => {
@@ -166,6 +202,19 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
           {totalUnlocked < 5 && (
             <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.4)', fontSize: S(12) }}>
               Débloque au moins 5 f*cts pour jouer en Blitz ! 🔓
+            </div>
+          )}
+
+          {isChallenge && opponentLoading && (
+            <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.5)', fontSize: S(12) }}>
+              ⏳ Vérification des f*cts de ton adversaire...
+            </div>
+          )}
+
+          {isChallenge && !opponentLoading && categories.length === 0 && (
+            <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.5)', fontSize: S(12), lineHeight: 1.5 }}>
+              😕 Aucune catégorie commune avec ton adversaire (5 f*cts mini chacun).
+              <br />Jouez tous les deux pour en débloquer !
             </div>
           )}
         </div>

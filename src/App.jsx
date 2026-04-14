@@ -137,6 +137,12 @@ export default function App() {
         return
       }
       setIsChallengeMode(true)
+      // Revanche dans mêmes conditions → skip le BlitzLobby et lance directement.
+      if (pendingDuel.questionCount && pendingDuel.categoryId && pendingDuel.categoryId !== 'all') {
+        handleBlitzStart(pendingDuel.categoryId, pendingDuel.questionCount)
+        // pendingDuel reste en place pour handleBlitzFinish (opponentId + categoryId)
+        return
+      }
       setGameMode('blitz')
       setSessionType('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
@@ -155,6 +161,7 @@ export default function App() {
       setScreen(SCREENS.BLITZ)
       // pendingDuel.roundId sera consommé par handleBlitzFinish pour completeDuelRound
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingDuel, applyCurrencyDelta, clearPendingDuel])
 
   // ── Cache busting : force reload si nouvelle version déployée ──

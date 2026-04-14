@@ -131,22 +131,17 @@ function computeRoundState(round, meId) {
 /**
  * Calcule l'état de TOUS les défis d'un duel (pas juste le dernier).
  * Retourne une liste de { label, action, disabled, code, created_at, ...state }
- * Filtre les défis refusés (declined_rematches en localStorage)
+ * Filtre les défis refusés (challenges.declined_by côté Supabase, multi-device)
  */
 export function computeAllDuelStates(duel, allRounds, meId) {
   if (!duel) return []
 
   const states = []
 
-  // Lire les défis refusés depuis localStorage
-  const declinedArray = JSON.parse(localStorage.getItem('wtf_declined_rematches') || '[]')
-  const declined = new Set(declinedArray)
-
   // Traiter tous les rounds, du plus récent au plus ancien
   for (const round of allRounds) {
-    // Passer les défis refusés
-    const roundIdStr = String(round.id)
-    if (declined.has(round.id) || declined.has(roundIdStr)) continue
+    // Passer les défis refusés par moi (persisté Supabase)
+    if (Array.isArray(round.declined_by) && round.declined_by.includes(meId)) continue
 
     const roundState = computeRoundState(round, meId)
     if (roundState) {
@@ -154,13 +149,29 @@ export function computeAllDuelStates(duel, allRounds, meId) {
         ...roundState,
         roundId: round.id,
         code: round.code,
+        categoryId: round.category_id,
         categoryLabel: round.category_label,
+        questionCount: round.question_count,
         created_at: round.created_at,
       })
     }
   }
 
   return states
+}
+
+/**
+ * Marque un round comme refusé par le user courant (revanche déclinée).
+ * Persisté côté Supabase via RPC decline_round → multi-device.
+ */
+export async function declineRound(roundId) {
+  if (!roundId) return { error: 'missing roundId' }
+  const { error } = await supabase.rpc('decline_round', { p_round_id: roundId })
+  if (error) {
+    console.warn('[duelService] declineRound error:', error.message)
+    return { error: error.message }
+  }
+  return { ok: true }
 }
 
 /**

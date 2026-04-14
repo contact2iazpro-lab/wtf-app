@@ -36,8 +36,9 @@ export function DuelProvider({ children }) {
     setLastCreatedDuelError(null)
   }, [])
 
-  const startCreateDefi = useCallback((friendId, categoryId) => {
-    setPendingDuel({ mode: 'create', opponentId: friendId, categoryId })
+  const startCreateDefi = useCallback((friendId, categoryId, questionCount = null) => {
+    // questionCount défini → revanche dans mêmes conditions, on skip le lobby.
+    setPendingDuel({ mode: 'create', opponentId: friendId, categoryId, questionCount })
   }, [])
 
   const startAcceptDefi = useCallback((round, preparedFacts) => {

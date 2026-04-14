@@ -4,7 +4,7 @@ import GameModal from '../components/GameModal'
 import { useAuth } from '../context/AuthContext'
 import { acceptFriendRequest, rejectFriendRequest, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
-import { markRoundSeen } from '../data/duelService'
+import { markRoundSeen, declineRound } from '../data/duelService'
 import { getCategoryById } from '../data/factsService'
 import { useDuelContext } from '../features/duels/context/DuelContext'
 
@@ -113,10 +113,15 @@ export default function SocialPage() {
   const handleDuelAction = async (friend, duelState) => {
     audio.play('click')
     if (!duelState?.action) return
-    if (duelState.action === 'create' || duelState.action === 'rematch') {
-      // Skip le modal : aller directement à BlitzScreen avec le friendId
-      // BlitzScreen affichera les catégories disponibles
+    if (duelState.action === 'create') {
       startCreateDefi(friend.userId, 'all')
+      navigate('/')
+      return
+    }
+    if (duelState.action === 'rematch') {
+      // Revanche dans les mêmes conditions : même catégorie, même nb de questions.
+      // Skip le BlitzLobby (questionCount défini → bypass dans App.jsx).
+      startCreateDefi(friend.userId, duelState.categoryId || 'all', duelState.questionCount || null)
       navigate('/')
       return
     }
@@ -392,13 +397,9 @@ export default function SocialPage() {
                                           onClick={async () => {
                                             audio.play('click')
                                             try {
-                                              // Archiver le défi refusé en localStorage
-                                              const declined = JSON.parse(localStorage.getItem('wtf_declined_rematches') || '[]')
-                                              if (!declined.includes(duelState.roundId)) {
-                                                declined.push(duelState.roundId)
-                                                localStorage.setItem('wtf_declined_rematches', JSON.stringify(declined))
-                                              }
-                                              // Refetch pour mettre à jour la liste (awaiter pour que le state se mette à jour)
+                                              // Persisté Supabase (multi-device) via RPC decline_round
+                                              const res = await declineRound(duelState.roundId)
+                                              if (res?.error) throw new Error(res.error)
                                               await refreshDuels()
                                               showToast('Revanche refusée')
                                             } catch (e) {

@@ -150,6 +150,31 @@ class AudioManager {
         this._tone(247, 0.3, 'sine', 0.26, 0.22)
         break
       }
+      case 'roulette_spin':
+        // Impulsion brève au lancement de la roue
+        this._tone(660, 0.08, 'square', 0.22)
+        this._tone(880, 0.10, 'square', 0.22, 0.05)
+        break
+      case 'roulette_tick':
+        // Clic court de cran de roue
+        this._tone(1500, 0.03, 'square', 0.18)
+        break
+      case 'roulette_win':
+        // Petit jingle ascendant joyeux (coins / hints)
+        this._tone(523.25, 0.10, 'sine', 0.30)
+        this._tone(659.25, 0.10, 'sine', 0.32, 0.09)
+        this._tone(783.99, 0.14, 'sine', 0.34, 0.18)
+        this._tone(1046.5, 0.28, 'sine', 0.36, 0.28)
+        break
+      case 'roulette_jackpot':
+        // Jingle triomphal pour VIP / freeze
+        this._tone(523.25, 0.10, 'sine', 0.32)
+        this._tone(659.25, 0.10, 'sine', 0.34, 0.08)
+        this._tone(783.99, 0.10, 'sine', 0.36, 0.16)
+        this._tone(1046.5, 0.12, 'sine', 0.38, 0.24)
+        this._tone(1318.5, 0.14, 'sine', 0.40, 0.34)
+        this._tone(1567.98, 0.40, 'sine', 0.42, 0.46)
+        break
       case 'boss_intro':
         // Intro dramatique boss Quest : descente grave puis montée triomphale
         this._tone(110, 0.25, 'sawtooth', 0.32)

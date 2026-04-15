@@ -4,36 +4,35 @@ import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { getVipFacts } from '../data/factsService'
 import { renderEmoji } from '../utils/renderEmoji'
+import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
 // ── Configuration des segments ──────────────────────────────────────────────
-// Le `weight` définit à la fois la taille du segment sur la roue ET la probabilité.
-// Total des weights = 100 pour lire les % directement.
-// Bloc 3.5 — ajustement T95 : avg coins/spin descendu de ~7,1 à ~5,4
-//   5×26 + 8×18 + 15×10 + 30×4 = 130 + 144 + 150 + 120 = 544 / 100 = 5,44 coins/spin
+// Affichage : tous les segments ont la même taille visuelle (équité perçue).
+// Probabilités : définies séparément via `weight` (indépendant de la taille).
+// Bloc 3.5 — T95 : avg coins/spin ~5,44
 const SEGMENTS = [
-  { label: '5',     emoji: '🪙', reward: { type: 'coins',   amount: 5  }, color: '#FF6B1A', weight: 26 },
-  { label: '1',     emoji: '💡', reward: { type: 'hints',   amount: 1  }, color: '#3B82F6', weight: 21 },
-  { label: '8',     emoji: '🪙', reward: { type: 'coins',   amount: 8  }, color: '#F59E0B', weight: 18 },
-  { label: '2',     emoji: '💡', reward: { type: 'hints',   amount: 2  }, color: '#8B5CF6', weight: 12 },
-  { label: '15',    emoji: '🪙', reward: { type: 'coins',   amount: 15 }, color: '#EF4444', weight: 10 },
-  { label: '20',    emoji: '🪙', reward: { type: 'coins',   amount: 20 }, color: '#10B981', weight: 7  },
-  { label: '30',    emoji: '🪙', reward: { type: 'coins',   amount: 30 }, color: '#EC4899', weight: 4  },
-  { label: '🛡️',   emoji: '🛡️', reward: { type: 'freeze',  amount: 1  }, color: '#6366F1', weight: 1  },
-  { label: 'VIP',   emoji: '⭐', reward: { type: 'vipFact', amount: 1  }, color: '#FFD700', weight: 1  },
+  { label: '5',   icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 5  }, color: '#FF6B1A', weight: 26 },
+  { label: '1',   icon: '/assets/ui/icon-hint.png',     reward: { type: 'hints',   amount: 1  }, color: '#3B82F6', weight: 21 },
+  { label: '8',   icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 8  }, color: '#F59E0B', weight: 18 },
+  { label: '2',   icon: '/assets/ui/icon-hint.png',     reward: { type: 'hints',   amount: 2  }, color: '#8B5CF6', weight: 12 },
+  { label: '15',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 15 }, color: '#EF4444', weight: 10 },
+  { label: '20',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 20 }, color: '#10B981', weight: 7  },
+  { label: '30',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 30 }, color: '#EC4899', weight: 4  },
+  { label: '',    icon: '/assets/ui/emoji-streak.png',  reward: { type: 'freeze',  amount: 1  }, color: '#6366F1', weight: 1  },
+  { label: 'VIP', icon: '/assets/ui/level-wtf.png',     reward: { type: 'vipFact', amount: 1  }, color: '#FFD700', weight: 1  },
 ]
 
 const TOTAL_WEIGHT = SEGMENTS.reduce((sum, s) => sum + s.weight, 0)
+const SEG_ANGLE = 360 / SEGMENTS.length
 
-// Précalcul des bornes angulaires de chaque segment (en degrés depuis 0 = haut)
+// Tous les segments ont la même taille visuelle — seul le poids change la probabilité.
 function computeSegmentBounds() {
-  let acc = 0
-  return SEGMENTS.map(seg => {
-    const start = (acc / TOTAL_WEIGHT) * 360
-    acc += seg.weight
-    const end = (acc / TOTAL_WEIGHT) * 360
-    return { ...seg, startDeg: start, endDeg: end, midDeg: (start + end) / 2 }
+  return SEGMENTS.map((seg, i) => {
+    const start = i * SEG_ANGLE
+    const end = start + SEG_ANGLE
+    return { ...seg, startDeg: start, endDeg: end, midDeg: start + SEG_ANGLE / 2 }
   })
 }
 
@@ -65,12 +64,14 @@ export default function RouletteModal({ onClose, scale }) {
   const [spinData, setSpinData] = useState(getSpinData)
   const [showProbas, setShowProbas] = useState(false)
   const canvasRef = useRef(null)
+  const tickIntervalRef = useRef(null)
+  const imagesRef = useRef({})
   // Phase A.6/A.7 — miroir Supabase
   const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
 
   const isFree = !spinData.freeUsed
 
-  // Dessiner la roue avec des segments proportionnels aux weights
+  // Dessiner la roue (segments égaux + icônes PNG préchargées)
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -79,56 +80,91 @@ export default function RouletteModal({ onClose, scale }) {
     const center = size / 2
     const radius = center - 4
 
-    ctx.clearRect(0, 0, size, size)
+    const drawWheel = () => {
+      ctx.clearRect(0, 0, size, size)
 
-    SEGMENT_BOUNDS.forEach(seg => {
-      const startAngle = (seg.startDeg - 90) * Math.PI / 180
-      const endAngle = (seg.endDeg - 90) * Math.PI / 180
+      SEGMENT_BOUNDS.forEach(seg => {
+        const startAngle = (seg.startDeg - 90) * Math.PI / 180
+        const endAngle = (seg.endDeg - 90) * Math.PI / 180
 
+        ctx.beginPath()
+        ctx.moveTo(center, center)
+        ctx.arc(center, center, radius, startAngle, endAngle)
+        ctx.closePath()
+        ctx.fillStyle = seg.color
+        ctx.fill()
+        ctx.strokeStyle = 'rgba(255,255,255,0.45)'
+        ctx.lineWidth = 2
+        ctx.stroke()
+
+        const midAngle = (startAngle + endAngle) / 2
+        ctx.save()
+        ctx.translate(center, center)
+        ctx.rotate(midAngle)
+
+        // Icône PNG si chargée, sinon fallback texte
+        const img = imagesRef.current[seg.icon]
+        const iconSize = 28
+        const iconX = radius * 0.58
+        if (img && img.complete && img.naturalWidth > 0) {
+          ctx.save()
+          ctx.translate(iconX, 0)
+          ctx.rotate(-midAngle) // garder l'icône droite
+          ctx.drawImage(img, -iconSize / 2, -iconSize / 2, iconSize, iconSize)
+          ctx.restore()
+        }
+
+        // Label (nombre) sous l'icône
+        if (seg.label) {
+          ctx.textAlign = 'center'
+          ctx.fillStyle = 'white'
+          ctx.strokeStyle = 'rgba(0,0,0,0.4)'
+          ctx.lineWidth = 3
+          ctx.font = 'bold 13px Nunito, sans-serif'
+          const labelX = radius * 0.82
+          ctx.save()
+          ctx.translate(labelX, 0)
+          ctx.rotate(-midAngle)
+          ctx.strokeText(seg.label, 0, 4)
+          ctx.fillText(seg.label, 0, 4)
+          ctx.restore()
+        }
+        ctx.restore()
+      })
+
+      // Centre
       ctx.beginPath()
-      ctx.moveTo(center, center)
-      ctx.arc(center, center, radius, startAngle, endAngle)
-      ctx.closePath()
-      ctx.fillStyle = seg.color
+      ctx.arc(center, center, 20, 0, Math.PI * 2)
+      ctx.fillStyle = 'white'
       ctx.fill()
-      ctx.strokeStyle = 'rgba(255,255,255,0.35)'
+      ctx.strokeStyle = '#E5E7EB'
       ctx.lineWidth = 2
       ctx.stroke()
+    }
 
-      // Texte : angle mid du segment
-      const midAngle = (startAngle + endAngle) / 2
-      const segSpan = seg.endDeg - seg.startDeg
-      ctx.save()
-      ctx.translate(center, center)
-      ctx.rotate(midAngle)
-      ctx.textAlign = 'center'
-      ctx.fillStyle = 'white'
-      // Si le segment est très petit (<= 6°), on réduit la police
-      if (segSpan <= 6) {
-        ctx.font = 'bold 10px Nunito, sans-serif'
-        ctx.fillText(seg.emoji, radius * 0.70, 2)
-      } else if (segSpan <= 15) {
-        ctx.font = 'bold 14px Nunito, sans-serif'
-        ctx.fillText(seg.emoji, radius * 0.60, -4)
-        ctx.font = 'bold 10px Nunito, sans-serif'
-        ctx.fillText(seg.label, radius * 0.76, 10)
-      } else {
-        ctx.font = 'bold 16px Nunito, sans-serif'
-        ctx.fillText(seg.emoji, radius * 0.55, 2)
-        ctx.font = 'bold 12px Nunito, sans-serif'
-        ctx.fillText(seg.label, radius * 0.76, 2)
+    // Précharger toutes les icônes uniques
+    const uniqueIcons = [...new Set(SEGMENTS.map(s => s.icon))]
+    let loadedCount = 0
+    uniqueIcons.forEach(src => {
+      if (imagesRef.current[src]) { loadedCount++; if (loadedCount === uniqueIcons.length) drawWheel(); return }
+      const img = new Image()
+      img.onload = () => {
+        imagesRef.current[src] = img
+        loadedCount++
+        if (loadedCount === uniqueIcons.length) drawWheel()
       }
-      ctx.restore()
+      img.onerror = () => {
+        loadedCount++
+        if (loadedCount === uniqueIcons.length) drawWheel()
+      }
+      img.src = src
     })
+    drawWheel() // premier paint immédiat (couleurs au moins)
+  }, [])
 
-    // Centre
-    ctx.beginPath()
-    ctx.arc(center, center, 18, 0, Math.PI * 2)
-    ctx.fillStyle = 'white'
-    ctx.fill()
-    ctx.strokeStyle = '#E5E7EB'
-    ctx.lineWidth = 2
-    ctx.stroke()
+  // Cleanup tick interval
+  useEffect(() => () => {
+    if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
   }, [])
 
   const handleSpin = () => {
@@ -145,6 +181,7 @@ export default function RouletteModal({ onClose, scale }) {
 
     setSpinning(true)
     setResult(null)
+    audio.play('roulette_spin')
 
     const winIndex = pickSegment()
     const targetSeg = SEGMENT_BOUNDS[winIndex]
@@ -156,10 +193,27 @@ export default function RouletteModal({ onClose, scale }) {
 
     setRotation(finalRotation)
 
+    // Ticks de la roue qui ralentit : intervalles croissants
+    if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+    const tickTimes = [80, 90, 100, 115, 135, 160, 190, 230, 280, 340, 420, 520]
+    let tickI = 0
+    const scheduleTick = () => {
+      audio.play('roulette_tick')
+      tickI++
+      const next = tickTimes[Math.min(tickI, tickTimes.length - 1)]
+      if (tickI < 25) tickIntervalRef.current = setTimeout(scheduleTick, next)
+    }
+    scheduleTick()
+
     setTimeout(() => {
       setSpinning(false)
+      if (tickIntervalRef.current) { clearTimeout(tickIntervalRef.current); tickIntervalRef.current = null }
       const seg = SEGMENTS[winIndex]
       setResult(seg)
+
+      // Son de gain selon la rareté du reward
+      const isRare = seg.reward.type === 'vipFact' || seg.reward.type === 'freeze'
+      audio.play(isRare ? 'roulette_jackpot' : 'roulette_win')
 
       // Appliquer la récompense via RPC (anonyme = localStorage, connecté = Supabase)
       if (['coins', 'hints'].includes(seg.reward.type)) {

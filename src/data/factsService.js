@@ -78,8 +78,9 @@ function fromRow(row) {
     plausibleWrong1: row.plausible_wrong_1 || null,
     plausibleWrong2: row.plausible_wrong_2 || null,
     plausibleWrong3: row.plausible_wrong_3 || null,
-    statement:       row.statement       || null,
-    statementIsTrue: typeof row.statement_is_true === 'boolean' ? row.statement_is_true : null,
+    statementTrue:           row.statement_true            || null,
+    statementFalseFunny:     row.statement_false_funny     || null,
+    statementFalsePlausible: row.statement_false_plausible || null,
   }
 }
 
@@ -164,7 +165,7 @@ function buildAll(rawFacts) {
 // ─── Cache localStorage ─────────────────────────────────────────────────────
 const CACHE_KEY = 'wtf_facts_cache'
 const CACHE_VERSION_KEY = 'wtf_facts_cache_version'
-const CACHE_VERSION = '3' // bump 15/04/2026 — ajout champs statement / statement_is_true
+const CACHE_VERSION = '4' // bump 15/04/2026 — refonte statements : 3 variantes par fact
 
 function saveCacheToLocal(rawRows) {
   try {
@@ -190,7 +191,7 @@ const MAX_RETRIES = 3
 const RETRY_DELAY = 1500 // ms
 
 async function fetchFromSupabase() {
-  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement, statement_is_true'
+  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement_true, statement_false_funny, statement_false_plausible'
   const all = []
   let from = 0
   const PAGE = 1000
@@ -316,9 +317,30 @@ export function getQuestFacts() {
   return getVipFacts()
 }
 
-/** Mode Vrai ou Fou : Funny facts avec champs statement NOT NULL */
+/** Mode Vrai ou Fou : Funny facts dont les 3 variantes d'affirmation sont remplies */
 export function getFunnyFactsWithStatement() {
-  return getFunnyFacts().filter(f => f.statement && typeof f.statementIsTrue === 'boolean')
+  return getFunnyFacts().filter(f =>
+    f.statementTrue && f.statementFalseFunny && f.statementFalsePlausible
+  )
+}
+
+/**
+ * Construit un "draw" pour le mode Vrai ou Fou à partir d'un fact.
+ * Tire au hasard une affirmation vraie ou fausse (50/50), et pour les fausses
+ * choisit aléatoirement entre la variante drôle et la variante plausible.
+ *
+ * @param {object} fact — doit avoir statementTrue, statementFalseFunny, statementFalsePlausible
+ * @returns {{ text: string, isTrue: boolean, variant: 'true'|'false_funny'|'false_plausible', fact }}
+ */
+export function buildVraiOuFouDraw(fact) {
+  const showTrue = Math.random() < 0.5
+  if (showTrue) {
+    return { text: fact.statementTrue, isTrue: true, variant: 'true', fact }
+  }
+  const useFunny = Math.random() < 0.5
+  return useFunny
+    ? { text: fact.statementFalseFunny,     isTrue: false, variant: 'false_funny',     fact }
+    : { text: fact.statementFalsePlausible, isTrue: false, variant: 'false_plausible', fact }
 }
 
 /** Mode Marathon : Funny + VIP déjà débloqués, mélangés */

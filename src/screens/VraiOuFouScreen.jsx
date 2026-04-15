@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { getFunnyFactsWithStatement } from '../data/factsService'
+import { getFunnyFactsWithStatement, buildVraiOuFouDraw } from '../data/factsService'
 import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
@@ -20,8 +20,12 @@ export default function VraiOuFouScreen({ onHome }) {
   const { unlockFact } = usePlayerProfile()
 
   const [seed, setSeed] = useState(0) // bump to replay
+  // Pool = draws (affirmations tirées aléatoirement parmi les 3 variantes par fact)
+  // Chaque draw : { text, isTrue, variant, fact }
   const pool = useMemo(
-    () => shuffle(getFunnyFactsWithStatement()).slice(0, SESSION_SIZE),
+    () => shuffle(getFunnyFactsWithStatement())
+      .slice(0, SESSION_SIZE)
+      .map(buildVraiOuFouDraw),
     [seed] // eslint-disable-line react-hooks/exhaustive-deps
   )
   const [index, setIndex] = useState(0)
@@ -36,12 +40,13 @@ export default function VraiOuFouScreen({ onHome }) {
 
   useEffect(() => () => clearTimeout(feedbackTimer.current), [])
 
-  const fact = pool[index]
+  const draw = pool[index]
+  const fact = draw?.fact
 
   const handleAnswer = (userSaysTrue) => {
-    if (feedback || !fact) return
-    const isCorrect = userSaysTrue === fact.statementIsTrue
-    setFeedback({ correct: isCorrect, dir: userSaysTrue ? 'right' : 'left', fact })
+    if (feedback || !draw) return
+    const isCorrect = userSaysTrue === draw.isTrue
+    setFeedback({ correct: isCorrect, dir: userSaysTrue ? 'right' : 'left', draw })
     audio.play(isCorrect ? 'correct' : 'wrong')
 
     if (isCorrect) {
@@ -107,7 +112,7 @@ export default function VraiOuFouScreen({ onHome }) {
   }
 
   // Pool vide
-  if (!fact && !done) {
+  if (!draw && !done) {
     return (
       <div className="absolute inset-0 flex items-center justify-center" style={{ background: '#1a0a2e', color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
         <div style={{ textAlign: 'center', maxWidth: 320 }}>
@@ -253,7 +258,7 @@ export default function VraiOuFouScreen({ onHome }) {
         >
           {!feedback && (
             <p style={{ color: '#1a1a2e', fontSize: S(18), fontWeight: 800, textAlign: 'center', lineHeight: 1.4 }}>
-              {fact.statement}
+              {draw.text}
             </p>
           )}
 
@@ -268,15 +273,15 @@ export default function VraiOuFouScreen({ onHome }) {
                 {feedback.correct ? '✓ BIEN VU !' : '✗ RATÉ !'}
               </div>
               <p style={{ color: '#1a1a2e', fontSize: S(14), fontWeight: 800, lineHeight: 1.35 }}>
-                {feedback.fact.statement}
+                {feedback.draw.text}
               </p>
               <div style={{ height: 1, background: 'rgba(0,0,0,0.1)', margin: `${S(2)} 0` }} />
-              <p style={{ color: feedback.fact.statementIsTrue ? '#059669' : '#DC2626', fontSize: S(12), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {feedback.fact.statementIsTrue ? 'C\'était VRAI' : 'C\'était FAUX'}
+              <p style={{ color: feedback.draw.isTrue ? '#059669' : '#DC2626', fontSize: S(12), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {feedback.draw.isTrue ? 'C\'était VRAI' : 'C\'était FAUX'}
               </p>
-              {(feedback.fact.explanation || feedback.fact.answer) && (
+              {(feedback.draw.fact.explanation || feedback.draw.fact.answer) && (
                 <p style={{ color: '#374151', fontSize: S(12), fontWeight: 600, lineHeight: 1.4 }}>
-                  {renderFormattedText(feedback.fact.explanation || feedback.fact.answer)}
+                  {renderFormattedText(feedback.draw.fact.explanation || feedback.draw.fact.answer)}
                 </p>
               )}
             </div>

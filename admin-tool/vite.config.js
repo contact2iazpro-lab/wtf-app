@@ -11,9 +11,13 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const SUPABASE_URL = env.VITE_SUPABASE_URL
   const SUPABASE_SECRET_KEY = env.SUPABASE_SECRET_KEY
+  const ANTHROPIC_API_KEY = env.ANTHROPIC_API_KEY
 
   if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     console.warn('[admin-tool] VITE_SUPABASE_URL ou SUPABASE_SECRET_KEY manquant dans .env.local — le proxy Supabase ne fonctionnera pas.')
+  }
+  if (!ANTHROPIC_API_KEY) {
+    console.warn('[admin-tool] ANTHROPIC_API_KEY manquant dans .env.local — le bouton "Générer affirmations" ne fonctionnera pas.')
   }
 
   return {
@@ -120,6 +124,29 @@ export default defineConfig(({ mode }) => {
           })
           proxy.on('error', (err) => {
             console.error('[supabase-proxy] error:', err.message)
+          })
+        },
+      },
+
+      // ── Proxy Anthropic local ─────────────────────────────────────────
+      // Même principe : le bouton "Générer affirmations" appelle /anthropic-proxy
+      // et ce middleware injecte la clé ANTHROPIC_API_KEY côté Node avant
+      // de forwarder vers api.anthropic.com. La clé n'est jamais dans le bundle.
+      '/anthropic-proxy': {
+        target: 'https://api.anthropic.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (p) => p.replace(/^\/anthropic-proxy/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('x-api-key', ANTHROPIC_API_KEY || '')
+            proxyReq.setHeader('anthropic-version', '2023-06-01')
+            proxyReq.removeHeader('origin')
+            proxyReq.removeHeader('referer')
+            proxyReq.setHeader('user-agent', 'wtf-admin-tool-local-proxy/1.0')
+          })
+          proxy.on('error', (err) => {
+            console.error('[anthropic-proxy] error:', err.message)
           })
         },
       },

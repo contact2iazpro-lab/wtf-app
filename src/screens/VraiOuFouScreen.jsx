@@ -31,7 +31,7 @@ export default function VraiOuFouScreen({ onHome }) {
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [drag, setDrag] = useState({ x: 0, active: false })
-  // feedback: { correct: bool, picked: 'true'|'false', shownIsTrue: bool }
+  // feedback: { correct: bool, pickedSide: 'left'|'right', trueSide: 'left'|'right' }
   const [feedback, setFeedback] = useState(null)
   const [done, setDone] = useState(false)
   const [showQuit, setShowQuit] = useState(false)
@@ -45,9 +45,10 @@ export default function VraiOuFouScreen({ onHome }) {
   const draw = pool[index]
   const fact = draw?.fact
 
-  // Une seule affirmation affichée, tirée 50/50 via le bit existant draw.trueSide
-  const shownIsTrue = draw ? draw.trueSide === 'left' : false
-  const shownText = draw ? (shownIsTrue ? draw.trueStatement : draw.falseStatement) : ''
+  // Deux affirmations côte à côte. trueSide désigne la carte (left/right) qui
+  // contient l'affirmation VRAIE. Le joueur swipe vers la carte qu'il croit vraie.
+  const leftText  = draw && (draw.trueSide === 'left'  ? draw.trueStatement : draw.falseStatement)
+  const rightText = draw && (draw.trueSide === 'right' ? draw.trueStatement : draw.falseStatement)
 
   useEffect(() => {
     setImgFailed(false)
@@ -58,11 +59,11 @@ export default function VraiOuFouScreen({ onHome }) {
     [fact]
   )
 
-  // picked: 'true' (VRAI = droite) | 'false' (FAUX = gauche)
-  const handleAnswer = (picked) => {
+  // pickedSide : 'left' | 'right' — la carte que le joueur pense vraie
+  const handlePick = (pickedSide) => {
     if (feedback || !draw) return
-    const isCorrect = (picked === 'true') === shownIsTrue
-    setFeedback({ correct: isCorrect, picked, shownIsTrue })
+    const isCorrect = pickedSide === draw.trueSide
+    setFeedback({ correct: isCorrect, pickedSide, trueSide: draw.trueSide })
     audio.play(isCorrect ? 'correct' : 'wrong_vof')
 
     if (isCorrect) setCorrect(c => c + 1)
@@ -90,9 +91,9 @@ export default function VraiOuFouScreen({ onHome }) {
   }
   const onPointerUp = () => {
     if (!drag.active || feedback) return
-    // Droite = VRAI, Gauche = FAUX
-    if (drag.x > SWIPE_THRESHOLD) handleAnswer('true')
-    else if (drag.x < -SWIPE_THRESHOLD) handleAnswer('false')
+    // Swipe vers la carte que le joueur pense vraie
+    if (drag.x < -SWIPE_THRESHOLD) handlePick('left')
+    else if (drag.x > SWIPE_THRESHOLD) handlePick('right')
     else setDrag({ x: 0, active: false })
   }
 
@@ -217,30 +218,12 @@ export default function VraiOuFouScreen({ onHome }) {
     )
   }
 
-  // ── Phase de jeu : 1 seule carte, swipe gauche=FAUX / droite=VRAI ──────
+  // ── Phase de jeu : 2 cartes côte à côte, swipe vers la carte qu'on croit vraie ──
   const dragIntensity = Math.min(Math.abs(drag.x) / SWIPE_THRESHOLD, 1)
-  const leftHighlight  = !feedback && drag.x < -10  // FAUX
-  const rightHighlight = !feedback && drag.x >  10  // VRAI
-
-  // Feedback styles carte
-  let cardBorder = 'rgba(255,255,255,0.12)'
-  let cardBorderW = 2
-  let cardTransform = `translateX(${drag.x * 0.35}px) rotate(${drag.x * 0.04}deg)`
-  let cardBadge = null
-  if (feedback) {
-    const rightAnswer = feedback.shownIsTrue ? 'VRAI' : 'FAUX'
-    const badgeColor = feedback.correct ? '#22C55E' : '#EF4444'
-    cardBorder = badgeColor
-    cardBorderW = 3
-    cardTransform = 'translateX(0) rotate(0deg) scale(1.02)'
-    cardBadge = {
-      text: feedback.correct ? `✓ ${rightAnswer}` : `✗ C'était ${rightAnswer}`,
-      color: badgeColor,
-    }
-  } else if (leftHighlight || rightHighlight) {
-    cardBorder = leftHighlight ? '#EF4444' : '#22C55E'
-    cardBorderW = 3
-  }
+  const leftHighlight  = !feedback && drag.x < -10
+  const rightHighlight = !feedback && drag.x >  10
+  const leftIsTrue  = draw && draw.trueSide === 'left'
+  const rightIsTrue = draw && draw.trueSide === 'right'
 
   return (
     <div
@@ -279,36 +262,7 @@ export default function VraiOuFouScreen({ onHome }) {
         </div>
       </div>
 
-      {/* Indicateurs FAUX ← / → VRAI au-dessus de la carte */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        gap: S(10), padding: `${S(4)} ${S(16)} ${S(6)}`, flexShrink: 0,
-      }}>
-        <div style={{
-          flex: 1, textAlign: 'center',
-          padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-          background: leftHighlight ? 'rgba(239,68,68,0.85)' : 'rgba(239,68,68,0.45)',
-          border: `3px solid ${leftHighlight ? '#EF4444' : 'rgba(239,68,68,0.7)'}`,
-          color: '#FFFFFF', fontWeight: 900, fontSize: S(15), letterSpacing: '0.1em',
-          boxShadow: leftHighlight ? '0 6px 20px rgba(239,68,68,0.5)' : 'none',
-          transition: 'all 0.2s ease',
-        }}>
-          ← FAUX
-        </div>
-        <div style={{
-          flex: 1, textAlign: 'center',
-          padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-          background: rightHighlight ? 'rgba(34,197,94,0.85)' : 'rgba(34,197,94,0.45)',
-          border: `3px solid ${rightHighlight ? '#22C55E' : 'rgba(34,197,94,0.7)'}`,
-          color: '#FFFFFF', fontWeight: 900, fontSize: S(15), letterSpacing: '0.1em',
-          boxShadow: rightHighlight ? '0 6px 20px rgba(34,197,94,0.5)' : 'none',
-          transition: 'all 0.2s ease',
-        }}>
-          VRAI →
-        </div>
-      </div>
-
-      {/* Carte swipable unique */}
+      {/* Zone des 2 cartes côte à côte — swipable */}
       <div
         onMouseDown={onPointerDown}
         onMouseMove={onPointerMove}
@@ -318,81 +272,13 @@ export default function VraiOuFouScreen({ onHome }) {
         onTouchMove={onPointerMove}
         onTouchEnd={onPointerUp}
         style={{
-          display: 'flex', padding: `0 ${S(14)}`, flex: 1, minHeight: 0,
+          display: 'flex', flexDirection: 'row', gap: S(8),
+          padding: `${S(4)} ${S(14)} ${S(6)}`, flex: 1, minHeight: 0,
           userSelect: 'none', cursor: feedback ? 'default' : 'grab',
         }}
       >
-        <div
-          style={{
-            flex: 1,
-            background: '#FAFAF8',
-            borderRadius: S(18),
-            border: `${cardBorderW}px solid ${cardBorder}`,
-            padding: `${S(16)} ${S(18)}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            textAlign: 'center', position: 'relative',
-            transform: cardTransform,
-            transition: feedback ? 'transform 0.25s ease, border-color 0.25s ease' : (drag.active ? 'none' : 'transform 0.2s ease, border-color 0.2s ease'),
-            boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
-            minHeight: 0,
-          }}
-        >
-          <p style={{ color: '#1a1a2e', fontSize: S(18), fontWeight: 800, lineHeight: 1.35 }}>
-            {shownText}
-          </p>
-
-          {cardBadge && (
-            <div style={{
-              position: 'absolute', top: S(-12), left: '50%', transform: 'translateX(-50%)',
-              background: cardBadge.color, color: '#fff',
-              padding: `${S(5)} ${S(14)}`, borderRadius: S(20),
-              fontSize: S(11), fontWeight: 900, letterSpacing: '0.05em',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-              whiteSpace: 'nowrap',
-            }}>
-              {cardBadge.text}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Boutons cliquables FAUX / VRAI (alternative au swipe) */}
-      <div style={{
-        display: 'flex', gap: S(10),
-        padding: `${S(10)} ${S(14)} ${S(6)}`, flexShrink: 0,
-      }}>
-        <button
-          onClick={() => handleAnswer('false')}
-          disabled={!!feedback}
-          className="active:scale-95 transition-transform"
-          style={{
-            flex: 1, padding: `${S(14)} 0`, borderRadius: S(16),
-            background: '#EF4444', color: '#fff', border: 'none',
-            fontWeight: 900, fontSize: S(16), letterSpacing: '0.08em',
-            cursor: feedback ? 'default' : 'pointer',
-            opacity: feedback ? 0.5 : 1,
-            fontFamily: 'Nunito, sans-serif',
-            boxShadow: '0 6px 18px rgba(239,68,68,0.4)',
-          }}
-        >
-          FAUX
-        </button>
-        <button
-          onClick={() => handleAnswer('true')}
-          disabled={!!feedback}
-          className="active:scale-95 transition-transform"
-          style={{
-            flex: 1, padding: `${S(14)} 0`, borderRadius: S(16),
-            background: '#22C55E', color: '#fff', border: 'none',
-            fontWeight: 900, fontSize: S(16), letterSpacing: '0.08em',
-            cursor: feedback ? 'default' : 'pointer',
-            opacity: feedback ? 0.5 : 1,
-            fontFamily: 'Nunito, sans-serif',
-            boxShadow: '0 6px 18px rgba(34,197,94,0.4)',
-          }}
-        >
-          VRAI
-        </button>
+        <StatementCard S={S} text={leftText}  side="left"  highlight={leftHighlight}  intensity={dragIntensity} feedback={feedback} isTrue={leftIsTrue} />
+        <StatementCard S={S} text={rightText} side="right" highlight={rightHighlight} intensity={dragIntensity} feedback={feedback} isTrue={rightIsTrue} />
       </div>
 
       {/* Image floutée (preview locked) */}
@@ -431,6 +317,83 @@ export default function VraiOuFouScreen({ onHome }) {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Carte d'affirmation — partagée gauche/droite
+// ─────────────────────────────────────────────────────────────────────────
+function StatementCard({ S, text, side, highlight, intensity, feedback, isTrue }) {
+  const showingFeedback = !!feedback
+  const wasPicked = showingFeedback && feedback.pickedSide === side
+
+  let borderColor = 'rgba(255,255,255,0.2)'
+  let borderWidth = 2
+  let opacity = 1
+  let transform = 'translateY(0) scale(1)'
+  let badge = null
+
+  if (showingFeedback) {
+    if (isTrue) {
+      borderColor = '#22C55E'
+      borderWidth = 3
+      badge = { text: '✓ VRAI', color: '#22C55E' }
+    } else {
+      opacity = wasPicked ? 0.9 : 0.45
+      borderColor = wasPicked ? '#EF4444' : 'rgba(255,255,255,0.1)'
+      borderWidth = wasPicked ? 3 : 2
+      if (wasPicked) badge = { text: '✗ FAUX', color: '#EF4444' }
+    }
+    if (wasPicked) transform = 'translateY(0) scale(1.02)'
+    else if (!isTrue) transform = 'translateY(0) scale(0.97)'
+  } else if (highlight) {
+    borderColor = 'rgba(255,255,255,0.95)'
+    borderWidth = 3
+    transform = `translateY(0) scale(${1 + 0.03 * intensity})`
+  }
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        background: '#FAFAF8',
+        borderRadius: S(18),
+        border: `${borderWidth}px solid ${borderColor}`,
+        padding: `${S(14)} ${S(12)}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        position: 'relative',
+        opacity,
+        transform,
+        transition: 'transform 0.25s ease, opacity 0.25s ease, border-color 0.25s ease',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+        minWidth: 0,
+        minHeight: 0,
+      }}
+    >
+      <p style={{
+        color: '#1a1a2e', fontSize: S(15), fontWeight: 800, lineHeight: 1.35,
+        overflow: 'hidden', display: '-webkit-box',
+        WebkitLineClamp: 8, WebkitBoxOrient: 'vertical',
+      }}>
+        {text}
+      </p>
+
+      {badge && (
+        <div style={{
+          position: 'absolute', top: S(-10), left: '50%', transform: 'translateX(-50%)',
+          background: badge.color, color: '#fff',
+          padding: `${S(4)} ${S(12)}`, borderRadius: S(20),
+          fontSize: S(11), fontWeight: 900, letterSpacing: '0.05em',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          whiteSpace: 'nowrap',
+        }}>
+          {badge.text}
+        </div>
+      )}
     </div>
   )
 }

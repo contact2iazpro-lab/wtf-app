@@ -93,12 +93,10 @@ const CHAPTERS = [
     title: 'Mode Vrai ou Fou',
     content: [
       { icon: '🆓', text: '**Coût :** Gratuit et illimité.' },
-      { icon: '📋', text: '**Set :** 20 manches/set.' },
-      { icon: '👉', text: '**Format :** 2 affirmations affichées, swipe vers celle que tu crois vraie.' },
+      { icon: '📋', text: '**Set :** 20 manches.' },
+      { icon: '👯', text: '**Format :** 2 affirmations.' },
+      { icon: '👉', text: '**Swipe du bon côté.**' },
       { icon: '⏱️', text: '**Timer :** aucun.' },
-      { icon: '💡', text: '**Indices :** aucun.' },
-      { icon: '🪙', text: '**Gains :** 0 WTFCoins.' },
-      { icon: '🔒', text: '**Débloque :** rien — joue Snack ou Quest pour collectionner les f*cts.' },
     ],
   },
   {

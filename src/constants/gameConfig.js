@@ -81,15 +81,13 @@ export const MODE_CONFIGS = {
     ],
   },
   vrai_ou_fou: {
-    modeId: 'vrai_ou_fou', modeName: 'Vrai ou Fou', subtitle: 'Swipe si t\'oses', emoji: '🤔', color: '#9B59B6',
+    modeId: 'vrai_ou_fou', modeName: 'Vrai ou Fou', subtitle: 'Swipe ou pas Swipe ?', emoji: '🤔', color: '#9B59B6',
     rules: [
       { icon: '🆓', text: 'Coût : Gratuit et illimité' },
-      { icon: '📋', text: 'Set : 20 manches/set' },
-      { icon: '👉', text: 'Format : 2 affirmations, swipe vers celle que tu crois vraie' },
+      { icon: '📋', text: 'Set : 20 manches' },
+      { icon: '👯', text: 'Format : 2 affirmations' },
+      { icon: '👉', text: 'Swipe du bon côté' },
       { icon: '⏱️', text: 'Timer : aucun' },
-      { icon: '💡', text: 'Indices : aucun' },
-      { icon: '🪙', text: 'Gains : 0 WTFCoins' },
-      { icon: '🔒', text: 'Débloque : rien — joue Snack ou Quest pour collectionner' },
     ],
   },
   quest: {

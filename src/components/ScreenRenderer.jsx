@@ -23,6 +23,7 @@ import DuelResultsScreen from '../screens/DuelResultsScreen'
 import FlashScreen from '../screens/FlashScreen'
 import QuestScreen from '../screens/QuestScreen'
 import MarathonScreen from '../screens/MarathonScreen'
+import VraiOuFouScreen from '../screens/VraiOuFouScreen'
 import { getCategoryById, getTitrePartiel } from '../data/factsService'
 
 export default function ScreenRenderer({
@@ -279,6 +280,10 @@ export default function ScreenRenderer({
 
       {screen === SCREENS.MARATHON && (
         <MarathonScreen onHome={handleHome} />
+      )}
+
+      {screen === SCREENS.VRAI_OU_FOU && (
+        <VraiOuFouScreen onHome={handleHome} />
       )}
     </>
   )

@@ -1,7 +1,7 @@
 /**
  * HomeScreen v8 — Cleanup (tâche 5.1 Option 1).
  *
- * Zones : Header · Streak · Coffres · Mini-modes (Roulette/Puzzle/Route) · Corps · Bouton Jouer · BottomNav
+ * Zones : Header · Streak · Coffres · Mini-modes (Roulette/Puzzle/Quest) · Corps · Bouton Jouer · BottomNav
  *
  * Nettoyage par rapport à v7 :
  *  - `useDailyCoffre` → hook externe (`hooks/useDailyCoffre`)
@@ -169,7 +169,7 @@ export default function HomeScreen({
     </button>
   ))
 
-  // ── Mini-bouton (Roulette / Puzzle / Route) ──────────────────────────────
+  // ── Mini-bouton (Roulette / Puzzle / Quest) ──────────────────────────────
   const MiniBtn = ({ icon, label, badge, onClick }) => (
     <button
       onClick={onClick}
@@ -204,10 +204,11 @@ export default function HomeScreen({
       return localStorage.getItem('wtf_puzzle_' + today) ? null : 'DAILY'
     } catch { return null }
   })()
-  const routeBadge = (() => {
+  const questBadge = (() => {
     try {
-      const r = readWtfData().route
-      return `N${r?.level || 1}`
+      const d = readWtfData()
+      const q = d.quest || d.route
+      return `N${q?.level || 1}`
     } catch { return 'N1' }
   })()
 
@@ -428,7 +429,7 @@ export default function HomeScreen({
         })}
       </div>
 
-      {/* ═══ ZONE 3B — ROULETTE (solo, Puzzle/Route désormais dans la grille) ═══ */}
+      {/* ═══ ZONE 3B — ROULETTE (solo, Puzzle/Quest désormais dans la grille) ═══ */}
       <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: '4px 10px 0' }}>
         <MiniBtn icon="/assets/ui/emoji-roulette.png" label="Roulette" badge={rouletteBadge} onClick={() => { audio.play('click'); setShowRoulette(true) }} />
       </div>
@@ -470,7 +471,7 @@ export default function HomeScreen({
           </div>
 
           {/* Grille modes 3 cols : 3 icônes à gauche / logo WTF central / 3 icônes à droite.
-              Puzzle, Route, Hunt en plus de Quest/Explorer/Blitz. */}
+              Quest (ex-Route), Puzzle, Hunt en plus de Flash/Explorer/Blitz. */}
           <div style={{
             flex: 3, width: '100%',
             display: 'grid',
@@ -481,8 +482,8 @@ export default function HomeScreen({
             padding: `0 ${S(4)}`,
             columnGap: S(8),
           }}>
-            {/* Colonne gauche row 1 : (ancien Quest retiré sub-step 1a — sera Route renommé en 1d) */}
-            <div />
+            {/* Colonne gauche row 1 : Quest (ex-Route WTF!) — progression linéaire, boss VIP /10 */}
+            <ModeIcon src="/assets/ui/emoji-route.png" label="Quest" onClick={() => nav('quest')} />
 
             {/* Logo WTF central (span 3 rows) */}
             <div style={{
@@ -512,8 +513,8 @@ export default function HomeScreen({
 
             {/* Colonne gauche row 3 : Puzzle (placeholder — icône à créer dans /assets/modes/puzzle.png) */}
             <ModeIcon src="/assets/ui/emoji-puzzle.png" label="Puzzle" onClick={() => nav('puzzle')} />
-            {/* Colonne droite row 3 : Route (placeholder — icône à créer dans /assets/modes/route.png) */}
-            <ModeIcon src="/assets/ui/emoji-route.png" label="Route" onClick={() => nav('route')} />
+            {/* Colonne droite row 3 : (libre, Quest est désormais row 1 gauche) */}
+            <div />
           </div>
 
           {/* Énergie Flash (barre 5 segments) */}

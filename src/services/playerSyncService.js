@@ -49,14 +49,16 @@ export async function pullFromServer(userId) {
       saved.streak = remote.streak_current || 0
       saved.bestStreak = Math.max(saved.bestStreak || 0, remote.streak_max || 0)
       saved.lastModified = remoteTimestamp
-      // A.9 : rapatrier aussi flags (blitzRecords, route, coffre, badges, etc.)
+      // A.9 : rapatrier aussi flags (blitzRecords, quest, coffre, badges, etc.)
       // et stats_by_mode depuis Supabase
       if (remote.flags && typeof remote.flags === 'object') {
         saved.flags = { ...(saved.flags || {}), ...remote.flags }
         // Dépoter certains flags bien connus dans leur emplacement legacy
         // pour que le code existant continue à marcher sans modification
         if (remote.flags.blitzRecords) saved.blitzRecords = remote.flags.blitzRecords
-        if (remote.flags.route) saved.route = remote.flags.route
+        // 1d — quest progress (ex-route). Support legacy remote.flags.route
+        if (remote.flags.quest) saved.quest = remote.flags.quest
+        else if (remote.flags.route) saved.quest = remote.flags.route
         if (remote.flags.coffreClaimedDays) saved.coffreClaimedDays = remote.flags.coffreClaimedDays
         if (remote.flags.coffreWeekStart) saved.coffreWeekStart = remote.flags.coffreWeekStart
         if (remote.flags.streakFreezeCount !== undefined) saved.streakFreezeCount = remote.flags.streakFreezeCount

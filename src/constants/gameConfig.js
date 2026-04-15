@@ -48,7 +48,7 @@ export const SCREENS = {
   BLITZ_LOBBY: 'blitz_lobby',
   MODE_LAUNCH: 'mode_launch',
   PUZZLE_DU_JOUR: 'puzzle_du_jour',
-  ROUTE: 'route',
+  QUEST: 'quest',
 }
 
 // ── Mode launch configs (rules displayed before each mode)

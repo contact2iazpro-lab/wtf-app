@@ -1,22 +1,26 @@
 import { useState, useRef, useEffect } from 'react'
 import { getGeneratedFacts, getVipFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
-import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 import GainsBreakdown from '../components/results/GainsBreakdown'
 
-function readRouteState() {
+// 1d — Quest state (ex-Route WTF!). Migration legacy `wtf_data.route` → `wtf_data.quest`
+// gérée dans storageHelper.loadStorage(). Ici on lit/écrit uniquement la nouvelle clé,
+// avec une fallback défensive si on croise une install pas encore migrée.
+function readQuestState() {
   try {
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    return wd.route || { level: 1, stars: {} }
+    if (!wd.quest && wd.route) return wd.route
+    return wd.quest || { level: 1, stars: {} }
   } catch { return { level: 1, stars: {} } }
 }
 
-function writeRouteState(state) {
+function writeQuestState(state) {
   try {
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    wd.route = state
+    wd.quest = state
+    if (wd.route) delete wd.route
     wd.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(wd))
   } catch { /* ignore */ }
@@ -24,25 +28,28 @@ function writeRouteState(state) {
 
 const isBossLevel = (n) => n % 10 === 0
 
+// Config Quest inline (1d) : 4 QCM · 20s · VIP pour boss · Funny pour niveau normal
+const QUEST_BOSS_CONFIG = { choices: 4, duration: 20, id: 'quest_boss' }
+const QUEST_LEVEL_CONFIG = { choices: 4, duration: 20, id: 'quest_level' }
+
 function buildLevelSession(level) {
   if (isBossLevel(level)) {
     const vip = getVipFacts()
     if (!vip.length) return null
     const fact = vip[Math.floor(Math.random() * vip.length)]
-    // TODO sub-step 1d : inlined HOT-equivalent config après suppression niveau Hot (1a)
-    const prepped = { ...fact, ...getAnswerOptions(fact, { choices: 4, duration: 20, id: 'boss' }) }
+    const prepped = { ...fact, ...getAnswerOptions(fact, QUEST_BOSS_CONFIG) }
     return { facts: [prepped], boss: true }
   }
   const funny = getGeneratedFacts()
   if (funny.length < 3) return null
   const shuffled = [...funny].sort(() => Math.random() - 0.5).slice(0, 3)
-  const prepped = shuffled.map(f => ({ ...f, ...getAnswerOptions(f, DIFFICULTY_LEVELS.FLASH) }))
+  const prepped = shuffled.map(f => ({ ...f, ...getAnswerOptions(f, QUEST_LEVEL_CONFIG) }))
   return { facts: prepped, boss: false }
 }
 
-export default function RouteScreen({ onHome, setStorage }) {
+export default function QuestScreen({ onHome, setStorage }) {
   const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
-  const [state, setState] = useState(readRouteState)
+  const [state, setState] = useState(readQuestState)
   const [session, setSession] = useState(null)
   const [qIndex, setQIndex] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
@@ -77,10 +84,10 @@ export default function RouteScreen({ onHome, setStorage }) {
         const finalCorrect = correctCount + (isCorrect ? 1 : 0)
         const perfect = finalCorrect === session.facts.length
         if (perfect) {
-          // B4.11 — Route normal 6→4, boss 20→15 (cible F2P 30-50/j)
+          // 1d — Quest (ex-Route) : niveau 4 coins, boss 15 coins (cible F2P 30-50/j)
           const coins = session.boss ? 15 : 4
-          applyCurrencyDelta?.({ coins }, session.boss ? 'route_boss_cleared' : 'route_level_cleared')?.catch?.(e =>
-            console.warn('[RouteScreen] reward RPC failed:', e?.message || e)
+          applyCurrencyDelta?.({ coins }, session.boss ? 'quest_boss_cleared' : 'quest_level_cleared')?.catch?.(e =>
+            console.warn('[QuestScreen] reward RPC failed:', e?.message || e)
           )
           if (setStorage) {
             setStorage(prev => {
@@ -91,18 +98,18 @@ export default function RouteScreen({ onHome, setStorage }) {
           }
           // Phase A.7 : miroir unlock_fact pour chaque fact du niveau
           session.facts.forEach(f => {
-            unlockFact?.(f.id, f.category, session.boss ? 'route_boss_unlock' : 'route_level_unlock').catch(e =>
-              console.warn('[RouteScreen] unlockFact RPC failed:', e?.message || e)
+            unlockFact?.(f.id, f.category, session.boss ? 'quest_boss_unlock' : 'quest_level_unlock').catch(e =>
+              console.warn('[QuestScreen] unlockFact RPC failed:', e?.message || e)
             )
           })
           const nextState = {
             level: state.level + 1,
             stars: { ...state.stars, [state.level]: 3 },
           }
-          writeRouteState(nextState); setState(nextState)
-          // A.9.4 — miroir Supabase pour route progress
-          mergeFlags?.({ route: nextState }).catch(e =>
-            console.warn('[RouteScreen] route mergeFlags failed:', e?.message || e)
+          writeQuestState(nextState); setState(nextState)
+          // A.9.4 — miroir Supabase pour quest progress
+          mergeFlags?.({ quest: nextState }).catch(e =>
+            console.warn('[QuestScreen] quest mergeFlags failed:', e?.message || e)
           )
         }
         setShowResult(true)
@@ -127,7 +134,7 @@ export default function RouteScreen({ onHome, setStorage }) {
             background: 'none', border: 'none', color: '#fff', fontSize: 20,
             cursor: 'pointer', padding: 0,
           }}>←</button>
-          <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center' }}><img src="/assets/ui/emoji-route.png" alt="route" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Route WTF!</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center' }}><img src="/assets/ui/emoji-route.png" alt="quest" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Quest</h1>
           <div style={{ width: 20 }} />
         </div>
         <div style={{ textAlign: 'center', opacity: 0.7, fontSize: 12, marginBottom: 10 }}>

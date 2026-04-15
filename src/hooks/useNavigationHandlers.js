@@ -98,8 +98,8 @@ export function useNavigationHandlers({
       case 'puzzle':
         setScreen(SCREENS.PUZZLE_DU_JOUR)
         break
-      case 'route':
-        setScreen(SCREENS.ROUTE)
+      case 'quest':
+        setScreen(SCREENS.QUEST)
         break
       default: break
     }

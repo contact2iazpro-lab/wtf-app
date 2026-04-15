@@ -144,13 +144,13 @@ export function usePlayerProfile() {
 
   /**
    * mergeFlags — merge atomique d'un patch JSONB dans profiles.flags.
-   * Utilisé pour persister blitzRecords, route progress, coffreClaimedDays,
+   * Utilisé pour persister blitzRecords, quest progress, coffreClaimedDays,
    * streakFreezeCount, statsByMode, badges, etc.
    *
    * @param {Object} patch - Objet à merger (top-level keys écrasent)
    * @example
    *   await mergeFlags({ blitzRecords: { 'sport_10': 23.5 } })
-   *   await mergeFlags({ route: { level: 12, stars: {...} } })
+   *   await mergeFlags({ quest: { level: 12, stars: {...} } })
    */
   const mergeFlags = useCallback(async (patch) => {
     if (!patch || typeof patch !== 'object') return null

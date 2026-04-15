@@ -21,7 +21,7 @@ import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from '../screens/DuelSe
 import DuelPassScreen from '../screens/DuelPassScreen'
 import DuelResultsScreen from '../screens/DuelResultsScreen'
 import PuzzleDuJourScreen from '../screens/PuzzleDuJourScreen'
-import RouteScreen from '../screens/RouteScreen'
+import QuestScreen from '../screens/QuestScreen'
 import { getCategoryById, getTitrePartiel } from '../data/factsService'
 
 export default function ScreenRenderer({
@@ -288,8 +288,8 @@ export default function ScreenRenderer({
         <PuzzleDuJourScreen onHome={handleHome} setStorage={setStorage} />
       )}
 
-      {screen === SCREENS.ROUTE && (
-        <RouteScreen onHome={handleHome} setStorage={setStorage} />
+      {screen === SCREENS.QUEST && (
+        <QuestScreen onHome={handleHome} setStorage={setStorage} />
       )}
     </>
   )

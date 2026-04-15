@@ -60,16 +60,16 @@ const CHAPTERS = [
   // ═══ MODES DE JEU ═══
   {
     id: 'quest',
-    emoji: '⭐',
+    emoji: '🗺️',
     shortTitle: 'Quest',
-    title: 'Quête WTF!',
+    title: 'Quest',
     content: [
-      { icon: '⚡', text: '**Gratuit** (limité par l\'énergie).' },
-      { icon: '🎯', text: 'Choisis un **niveau de difficulté** : Cool ou Hot.' },
-      { icon: '❄️', text: '**Cool** — 2 QCM · 20s · 2 indices dispo · **2 coins**/bonne réponse' },
-      { icon: '🔥', text: '**Hot** — 4 QCM · 30s · 2 indices dispo · **2 coins**/bonne réponse' },
-      { icon: '📚', text: '**5 questions** par session. Les f*cts trouvés rejoignent ta **Collection**.' },
-      { icon: '💎', text: 'Contenu exclusif : les **f*cts WTF! VIP** ne sont disponibles qu\'en Quest !' },
+      { icon: '🆓', text: '**Gratuit et illimité** — progression linéaire niveau par niveau.' },
+      { icon: '🎯', text: '**3 f*cts funny** par niveau · 4 QCM · 20s.' },
+      { icon: '👑', text: 'Tous les **10 niveaux** : un **boss VIP** avec un f*ct WTF! exclusif.' },
+      { icon: '⭐', text: 'Niveau réussi à 100% = niveau suivant débloqué.' },
+      { icon: '🪙', text: '**+4 coins** par niveau parfait · **+15 coins** par boss vaincu.' },
+      { icon: '💎', text: 'Les boss VIP sont la seule façon de débloquer les **f*cts WTF!** en Quest.' },
     ],
   },
   {
@@ -157,7 +157,7 @@ const CHAPTERS = [
     content: [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
-      { icon: '❄️', text: '**Cool / Hot / Flash / Explorer / Hunt** : jusqu\'à **2 indices** par question.' },
+      { icon: '❄️', text: '**Quest / Flash / Explorer / Hunt** : jusqu\'à **2 indices** par question.' },
       { icon: '🚫', text: '**Blitz** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : 1 pour 10 coins, 3 pour 30, 5 pour 45.' },
@@ -173,7 +173,7 @@ const CHAPTERS = [
     title: 'WTF! Coins',
     content: [
       { icon: '🪙', text: 'Les **WTF! Coins** sont la monnaie du jeu — tu en gagnes en jouant.' },
-      { icon: '⭐', text: '**Quest** : 2 coins/réponse (Cool/Hot) · 1 coin/réponse (WTF!).' },
+      { icon: '⭐', text: '**Quest** : 4 coins/niveau parfait · 15 coins/boss vaincu.' },
       { icon: '🎯', text: '**Flash** : **2 coins** par bonne réponse.' },
       { icon: '🗺️', text: '**Explorer** : **1 coin** par bonne réponse.' },
       { icon: '🔥', text: '**Hunt** : **2 coins** par bonne réponse.' },

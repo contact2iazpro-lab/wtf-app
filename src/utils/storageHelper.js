@@ -78,6 +78,14 @@ export function loadStorage() {
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
 
+    // 1d — Migration wtf_data.route → wtf_data.quest (rename Route WTF! → Quest)
+    if (saved.route && !saved.quest) {
+      saved.quest = saved.route
+      delete saved.route
+      saved.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(saved))
+    }
+
     // Initialiser le pseudo par défaut si absent
     if (!saved.playerName) {
       saved.playerName = 'Joueur WTF!'

@@ -7,6 +7,7 @@ import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import renderFormattedText from '../utils/renderFormattedText'
+import FallbackImage from '../components/FallbackImage'
 
 // ── Main QuestionScreen ──────────────────────────────────────────────────────
 export default function QuestionScreen({
@@ -38,6 +39,8 @@ export default function QuestionScreen({
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [coinFlash, setCoinFlash] = useState(null)
+  const [imgFailed, setImgFailed] = useState(false)
+  useEffect(() => { setImgFailed(false) }, [fact.id])
   // Phase A.6 — miroir Supabase pour achat indice en session
   const { coins: _cCoins, hints: _cHints, applyCurrencyDelta } = usePlayerProfile()
   const prevCoinsRef = useRef(_cCoins)
@@ -209,30 +212,36 @@ export default function QuestionScreen({
         boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
       }}
     >
-      {isSnackMode && fact.imageUrl && (
+      {isSnackMode && (
         <div style={{
           position: 'relative',
           width: '100%',
-          aspectRatio: '16 / 9',
+          aspectRatio: '1 / 1',
           borderRadius: S(12),
           overflow: 'hidden',
           marginBottom: S(10),
           background: 'rgba(0,0,0,0.3)',
         }}>
-          <img
-            src={fact.imageUrl}
-            alt=""
-            style={{
-              width: '100%', height: '100%', objectFit: 'cover',
-              filter: 'blur(18px) brightness(0.7)',
-              transform: 'scale(1.1)',
-            }}
-            onError={(e) => { e.target.style.display = 'none' }}
-          />
+          {fact.imageUrl && !imgFailed ? (
+            <img
+              src={fact.imageUrl}
+              alt=""
+              style={{
+                width: '100%', height: '100%', objectFit: 'cover',
+                filter: 'blur(18px) brightness(0.6)',
+                transform: 'scale(1.15)',
+              }}
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <div style={{ width: '100%', height: '100%', filter: 'blur(14px) brightness(0.6)' }}>
+              <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
+            </div>
+          )}
           <div style={{
             position: 'absolute', inset: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: S(42),
+            fontSize: S(56),
             filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
           }}>🔒</div>
         </div>
@@ -254,8 +263,8 @@ export default function QuestionScreen({
   const freeHints  = difficulty?.freeHints  ?? 0
   const paidHints  = difficulty?.paidHints  ?? 0
   const totalHints = Math.min(freeHints + paidHints, selectedHints.length)
-  // Stock restant = hints du context - indices déjà utilisés dans cette question
-  const stockRemaining = Math.max(0, _cHints - hintsUsed)
+  // Stock restant = hints du context (applyCurrencyDelta a déjà débité à chaque clic)
+  const stockRemaining = Math.max(0, _cHints)
 
   // Dev mode: 4 indices pré-révélés
   const devHintButtons = isDevMode && (

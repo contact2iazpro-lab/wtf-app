@@ -10,6 +10,7 @@ const EDITABLE_FIELDS = [
   'is_vip', 'type', 'status', 'pack_id', 'vip_usage',
   'funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2',
   'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
+  'statement', 'statement_is_true',
 ]
 
 const STATUSES = [
@@ -930,6 +931,68 @@ export default function FactEditorPage({ toast }) {
                 </a>
               )}
             </div>
+          </Field>
+        </Section>
+
+        {/* 🤔 VRAI OU FOU — affirmation swipe */}
+        <Section title="🤔 Vrai ou Fou">
+          <Field
+            label="Affirmation (swipe Vrai/Faux)"
+            hint={<CharCounter value={fact.statement} max={140} />}
+          >
+            <textarea
+              value={fact.statement || ''}
+              onChange={e => set('statement', e.target.value)}
+              rows={3}
+              className={(fact.statement || '').length > 140 ? inputClsOver : inputCls}
+              placeholder="Ex : « Les pieuvres ont trois cœurs. »"
+              maxLength={200}
+            />
+          </Field>
+
+          <Field label="Valeur de vérité">
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => set('statement_is_true', true)}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-all"
+                style={{
+                  background: fact.statement_is_true === true ? '#22C55E' : '#1f2937',
+                  color: fact.statement_is_true === true ? '#fff' : '#9CA3AF',
+                  border: `2px solid ${fact.statement_is_true === true ? '#22C55E' : '#374151'}`,
+                }}
+              >
+                ✓ VRAI
+              </button>
+              <button
+                type="button"
+                onClick={() => set('statement_is_true', false)}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-all"
+                style={{
+                  background: fact.statement_is_true === false ? '#EF4444' : '#1f2937',
+                  color: fact.statement_is_true === false ? '#fff' : '#9CA3AF',
+                  border: `2px solid ${fact.statement_is_true === false ? '#EF4444' : '#374151'}`,
+                }}
+              >
+                ✗ FAUX
+              </button>
+              <button
+                type="button"
+                onClick={() => set('statement_is_true', null)}
+                className="px-3 py-3 rounded-xl font-bold text-xs transition-all"
+                style={{
+                  background: fact.statement_is_true == null ? '#374151' : '#1f2937',
+                  color: '#9CA3AF',
+                  border: '2px solid #374151',
+                }}
+                title="Effacer"
+              >
+                —
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              Les deux champs doivent être renseignés pour que l'affirmation soit jouable en mode Vrai ou Fou.
+            </p>
           </Field>
         </Section>
 

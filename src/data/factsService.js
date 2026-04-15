@@ -78,6 +78,8 @@ function fromRow(row) {
     plausibleWrong1: row.plausible_wrong_1 || null,
     plausibleWrong2: row.plausible_wrong_2 || null,
     plausibleWrong3: row.plausible_wrong_3 || null,
+    statement:       row.statement       || null,
+    statementIsTrue: typeof row.statement_is_true === 'boolean' ? row.statement_is_true : null,
   }
 }
 
@@ -162,7 +164,7 @@ function buildAll(rawFacts) {
 // ─── Cache localStorage ─────────────────────────────────────────────────────
 const CACHE_KEY = 'wtf_facts_cache'
 const CACHE_VERSION_KEY = 'wtf_facts_cache_version'
-const CACHE_VERSION = '2'
+const CACHE_VERSION = '3' // bump 15/04/2026 — ajout champs statement / statement_is_true
 
 function saveCacheToLocal(rawRows) {
   try {
@@ -188,7 +190,7 @@ const MAX_RETRIES = 3
 const RETRY_DELAY = 1500 // ms
 
 async function fetchFromSupabase() {
-  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3'
+  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement, statement_is_true'
   const all = []
   let from = 0
   const PAGE = 1000
@@ -307,12 +309,29 @@ export function getGeneratedFactsByCategory(categoryId) {
   return getFunnyFactsByCategory(categoryId)
 }
 
-// ─── Getters par mode de jeu ────────────────────────────────────────────────
-// Chaque mode a son getter dédié pour garantir le bon pool de facts.
+// ─── Getters par mode de jeu (CLAUDE.md 15/04/2026 — 6 modes officiels) ────
 
-/** Mode Quête : VIP uniquement, toutes catégories */
+/** Mode Quest : Funny + boss VIP tous les 10 (contenu global, sélection par bloc gérée côté QuestScreen) */
 export function getQuestFacts() {
   return getVipFacts()
+}
+
+/** Mode Vrai ou Fou : Funny facts avec champs statement NOT NULL */
+export function getFunnyFactsWithStatement() {
+  return getFunnyFacts().filter(f => f.statement && typeof f.statementIsTrue === 'boolean')
+}
+
+/** Mode Marathon : Funny + VIP déjà débloqués, mélangés */
+export function getMixedUnlockedFacts() {
+  try {
+    const wtfData = readWtfData()
+    const unlockedIds = new Set(wtfData.unlockedFacts || [])
+    if (unlockedIds.size === 0) return []
+    return getValidFacts().filter(f => unlockedIds.has(f.id))
+  } catch (e) {
+    console.error('[getMixedUnlockedFacts] Error:', e)
+    return []
+  }
 }
 
 /** Mode Snack : Funny facts, toutes catégories */

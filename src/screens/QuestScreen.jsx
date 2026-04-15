@@ -84,8 +84,8 @@ export default function QuestScreen({ onHome, setStorage }) {
         const finalCorrect = correctCount + (isCorrect ? 1 : 0)
         const perfect = finalCorrect === session.facts.length
         if (perfect) {
-          // 1d — Quest (ex-Route) : niveau 4 coins, boss 15 coins (cible F2P 30-50/j)
-          const coins = session.boss ? 15 : 4
+          // CLAUDE.md 15/04/2026 — économie ×10 : 20 coins/bonne réponse en niveau, 100 coins flat boss VIP réussi
+          const coins = session.boss ? 100 : finalCorrect * 20
           applyCurrencyDelta?.({ coins }, session.boss ? 'quest_boss_cleared' : 'quest_level_cleared')?.catch?.(e =>
             console.warn('[QuestScreen] reward RPC failed:', e?.message || e)
           )
@@ -192,7 +192,7 @@ export default function QuestScreen({ onHome, setStorage }) {
   // ── Vue résultat ──────────────────────────────────────────────────────
   if (showResult) {
     const perfect = correctCount === session.facts.length
-    const coinsGained = perfect ? (session.boss ? 15 : 4) : 0
+    const coinsGained = perfect ? (session.boss ? 100 : correctCount * 20) : 0
     return (
       <div style={{
         position: 'relative', width: '100%', height: '100%',

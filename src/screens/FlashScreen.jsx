@@ -1,5 +1,6 @@
-// TODO étape 2 : fusion Hunt dimanche + Puzzle jours ouvrés en une expérience unifiée
-// (Sunday = VIP Hunt de la semaine, weekday = Funny daily theme)
+// TODO : refonte complète en "5 questions · 2 QCM · 15s" (CLAUDE.md 15/04/2026)
+// Pour l'instant, puzzle-style legacy conservé mais récompense alignée : 30 coins flat
+// lun-sam (plus de dégressif 5/3/1), dimanche = 1 VIP débloqué (déjà géré via unlockFact).
 import { useState, useMemo } from 'react'
 import { getGeneratedFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
@@ -54,9 +55,9 @@ export default function FlashScreen({ onHome, setStorage }) {
     if (done || eliminated.has(idx)) return
     audio.play('click')
     if (idx === correctIndex) {
-      // B4.11 — Flash 6/4/2 → 5/3/1 (cible F2P 30-50/j)
-      const gain = attemptsLeft === 3 ? 5 : attemptsLeft === 2 ? 3 : 1
-      applyCurrencyDelta?.({ coins: gain }, `puzzle_du_jour_attempt_${attemptsLeft}`)?.catch?.(e =>
+      // CLAUDE.md 15/04/2026 — économie ×10 : Flash lun-sam = 30 coins fixe (plus de dégressif)
+      const gain = 30
+      applyCurrencyDelta?.({ coins: gain }, `flash_daily_won`)?.catch?.(e =>
         console.warn('[Flash] reward RPC failed:', e?.message || e)
       )
       if (setStorage && fact) {

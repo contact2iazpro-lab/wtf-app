@@ -111,6 +111,12 @@ export default defineConfig(({ mode }) => {
             // Remplace toute clé fantôme envoyée par le client par la vraie secret key
             proxyReq.setHeader('apikey', SUPABASE_SECRET_KEY)
             proxyReq.setHeader('Authorization', `Bearer ${SUPABASE_SECRET_KEY}`)
+            // Supabase rejette les secret keys si la requête porte un header Origin/Referer
+            // (détection "ça vient d'un navigateur"). On les retire pour que la requête
+            // ressemble à un appel server-to-server légitime.
+            proxyReq.removeHeader('origin')
+            proxyReq.removeHeader('referer')
+            proxyReq.setHeader('user-agent', 'wtf-admin-tool-local-proxy/1.0')
           })
           proxy.on('error', (err) => {
             console.error('[supabase-proxy] error:', err.message)

@@ -7,8 +7,8 @@ import { useState } from 'react'
 // canUse: player can use this hint right now
 // onBuyHint: callback when buying with coins (null if free)
 // onReveal: callback when revealing the hint
-export default function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, canUse, onReveal, onBuyHint }) {
-  const [phase, setPhase] = useState('front') // 'front' | 'flip' | 'back'
+export default function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, canUse, onReveal, onBuyHint, initialRevealed = false }) {
+  const [phase, setPhase] = useState(initialRevealed ? 'back' : 'front') // 'front' | 'flip' | 'back'
 
   const canBuyNow = !canUse && canAfford && !isFree && onBuyHint
   const disabled = !canAfford && !canUse

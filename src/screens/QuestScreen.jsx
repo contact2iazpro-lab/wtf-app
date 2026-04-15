@@ -181,6 +181,7 @@ export default function QuestScreen({ onHome, setStorage }) {
   const [imgFailed, setImgFailed] = useState(false)
   const [energyState, setEnergyState] = useState(() => getSnackEnergy())
   const [showEnergyModal, setShowEnergyModal] = useState(false)
+  const [timedOut, setTimedOut] = useState(false)
   const mapRef = useRef(null)
 
   useEffect(() => {
@@ -196,10 +197,12 @@ export default function QuestScreen({ onHome, setStorage }) {
     }
   }, [session, state.level])
 
-  // Reset hints/image quand on change de question
+  // Reset image/selected/timeout quand on change de question.
+  // NOTE : hintsUsed NE se reset PAS entre questions d'un même bloc (le flip indice
+  // reste actif pour les questions suivantes). Reset uniquement à nouvelle session.
   useEffect(() => {
-    setHintsUsed(0); setImgFailed(false); setSelected(null)
-  }, [qIndex, phase])
+    setImgFailed(false); setSelected(null); setTimedOut(false)
+  }, [qIndex])
 
   // Intro dramatique quand on arrive sur le boss
   useEffect(() => {
@@ -233,7 +236,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     if (!s) return
     setSession(s); setQIndex(0); setPhase('question')
     setSelected(null); setCorrectFactIds([]); setFunnyCorrectCount(0)
-    setBossCorrect(false); setBossUnlocked(false); setHintsUsed(0)
+    setBossCorrect(false); setBossUnlocked(false); setHintsUsed(0); setTimedOut(false)
   }
 
   // ── Lance la boss retry (gratuit, bloc déjà gagné à ≥5/10) ───────────────
@@ -261,15 +264,7 @@ export default function QuestScreen({ onHome, setStorage }) {
   const finalizeSession = (sessionArg, funnyCorrectIds, didBossCorrect, didBossUnlocked) => {
     const blockIdx = sessionArg.blockIdx
     const bossFact = sessionArg.bossFact || sessionArg.facts.find(f => f._isBoss)
-    const funnyCount = funnyCorrectIds.length
-    const coinsFunny = funnyCount * COINS_PER_CORRECT
-    const coinsBoss = didBossCorrect ? BOSS_BONUS : 0
-    const coinsTotal = coinsFunny + coinsBoss
-
-    if (coinsTotal > 0) {
-      applyCurrencyDelta?.({ coins: coinsTotal }, didBossCorrect ? 'quest_block_cleared_boss' : 'quest_block_cleared')
-        ?.catch?.(e => console.warn('[QuestScreen] reward RPC failed:', e?.message || e))
-    }
+    // NOTE : coins déjà crédités immédiatement à chaque bonne réponse (handleAnswer)
 
     // Unlock funny correctes toujours ; VIP seulement si boss réussi
     const toUnlock = new Set(funnyCorrectIds)
@@ -326,9 +321,11 @@ export default function QuestScreen({ onHome, setStorage }) {
 
   // ── Sélection d'une réponse ────────────────────────────────────────────────
   const handleAnswer = (idx) => {
-    if (selected !== null || phase !== 'question') return
+    if (selected !== null || phase !== 'question' || timedOut) return
     const fact = currentFact()
     if (!fact) return
+    // Blur le bouton focus pour éviter le scroll auto du navigateur
+    try { document.activeElement?.blur?.() } catch (_) {}
     setSelected(idx)
     const isCorrect = idx === fact.correctIndex
     audio.play(isCorrect ? 'correct' : 'wrong_quest')
@@ -342,6 +339,13 @@ export default function QuestScreen({ onHome, setStorage }) {
     if (isCorrect && !wasBoss) setFunnyCorrectCount(nextFunnyCount)
     if (wasBoss) setBossCorrect(nextBossCorrect)
 
+    // Crédite les coins IMMÉDIATEMENT au compteur header à chaque bonne réponse
+    if (isCorrect) {
+      const gain = wasBoss ? BOSS_BONUS : COINS_PER_CORRECT
+      applyCurrencyDelta?.({ coins: gain }, wasBoss ? 'quest_boss_correct' : 'quest_correct')
+        ?.catch?.(e => console.warn('[QuestScreen] coins credit failed:', e?.message || e))
+    }
+
     // Enchaînement : si bonne réponse → révélation, sinon saut direct
     setTimeout(() => {
       if (isCorrect) {
@@ -350,6 +354,20 @@ export default function QuestScreen({ onHome, setStorage }) {
         advance(nextCorrectIds, nextFunnyCount, nextBossCorrect)
       }
     }, 650)
+  }
+
+  // ── Timeout : avertissement bref puis saut comme mauvaise réponse ─────────
+  const handleTimeout = () => {
+    if (selected !== null || phase !== 'question' || timedOut) return
+    const fact = currentFact()
+    if (!fact) return
+    setTimedOut(true)
+    audio.play('timeout')
+    audio.vibrate([120])
+    const wasBoss = !!fact._isBoss
+    setTimeout(() => {
+      advance(correctFactIds, funnyCorrectCount, wasBoss ? false : bossCorrect)
+    }, 1200)
   }
 
   // ── Passe à la question suivante ou aux résultats ─────────────────────────
@@ -415,7 +433,7 @@ export default function QuestScreen({ onHome, setStorage }) {
   const availableHints = shuffledHints.slice(0, 2)
 
   const useHint = (hintNum) => {
-    // Débit stock ou achat
+    // Débit stock immédiatement (optimistic via applyCurrencyDelta)
     audio.play('click')
     setHintsUsed(h => Math.max(h, hintNum))
     applyCurrencyDelta?.({ hints: -1 }, 'quest_use_hint')
@@ -493,7 +511,7 @@ export default function QuestScreen({ onHome, setStorage }) {
   if (phase === 'revelation' && fact) {
     const cat = getCategoryById(fact.category)
     const catColor = cat?.color || '#FF6B1A'
-    const coinsGained = isBoss ? BOSS_BONUS : COINS_PER_CORRECT
+    const correctAnswerText = fact.options?.[fact.correctIndex] || fact.shortAnswer || ''
     return (
       <div style={{
         position: 'relative', width: '100%', height: '100%', overflow: 'hidden',
@@ -502,7 +520,7 @@ export default function QuestScreen({ onHome, setStorage }) {
         display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
         '--scale': 1,
       }}>
-        <div style={{ padding: `${S(16)} ${S(16)} 0` }}>
+        <div style={{ padding: `${S(16)} ${S(16)} 0`, flexShrink: 0 }}>
           <GameHeader
             categoryLabel={cat?.label || 'Quest'}
             categoryColor={catColor}
@@ -510,52 +528,64 @@ export default function QuestScreen({ onHome, setStorage }) {
             onQuit={() => setSession(null)}
           />
         </div>
-        <div style={{
-          flex: 1, minHeight: 0, overflowY: 'auto',
-          display: 'flex', flexDirection: 'column', gap: 14, padding: '14px 20px 20px',
-        }}>
-          <div style={{ textAlign: 'center', fontWeight: 900, fontSize: 20 }}>
-            {isBoss ? '👑 BOSS VAINCU !' : '✨ F*ct débloqué !'}
-          </div>
+
+        {/* Image pleine largeur — max 42vh */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `${S(8)} ${S(16)} 0`, maxHeight: '42vh' }}>
           <div style={{
-            position: 'relative', width: '100%', aspectRatio: '1 / 1',
-            borderRadius: 16, overflow: 'hidden', background: 'rgba(0,0,0,0.3)',
+            background: `linear-gradient(135deg, ${catColor}55, ${catColor}88)`,
+            width: '100%', maxHeight: '42vh',
+            borderRadius: S(16), padding: 4,
+            border: isBoss ? `2px solid ${catColor}AA` : `3px solid ${catColor}`,
+            overflow: 'hidden', position: 'relative',
           }}>
             {fact.imageUrl && !imgFailed ? (
               <img
                 src={fact.imageUrl} alt=""
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)', display: 'block', borderRadius: S(12) }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
-              <FallbackImage categoryColor={catColor} />
+              <div style={{ width: '100%', height: 'calc(42vh - 14px)', borderRadius: S(12), overflow: 'hidden' }}>
+                <FallbackImage categoryColor={catColor} />
+              </div>
             )}
           </div>
+        </div>
+
+        {/* Zone info — bonne réponse + explication */}
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(10)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(8) }}>
           <div style={{
-            background: 'rgba(0,0,0,0.28)', borderRadius: 14, padding: 14,
-            border: '1.5px solid rgba(255,255,255,0.15)',
-            fontSize: 14, lineHeight: 1.5, textAlign: 'center',
+            background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: S(14), padding: `${S(8)} ${S(10)}`,
+            flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
           }}>
-            {renderFormattedText(fact.titre || fact.fact || fact.question)}
-          </div>
-          <div style={{
-            background: 'rgba(255,215,0,0.15)', borderRadius: 12, padding: 10,
-            border: '1.5px solid rgba(255,215,0,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            fontSize: 15, fontWeight: 900, color: '#FFD700',
-          }}>
-            <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 18, height: 18 }} />
-            +{coinsGained} WTFCoins
+            <div style={{
+              background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
+              borderRadius: S(10), padding: `${S(6)} ${S(10)}`, marginBottom: S(6), flexShrink: 0,
+            }}>
+              <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
+              <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{correctAnswerText}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
+              <span style={{ fontSize: S(12) }}>🧠</span>
+              <span style={{ color: 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>
+              {fact.explanation || fact.titre || fact.fact || ''}
+            </p>
           </div>
         </div>
-        <div style={{ padding: 20, flexShrink: 0 }}>
-          <button onClick={handleRevelationNext} style={{
-            width: '100%', padding: '14px 0', borderRadius: 14,
-            background: 'linear-gradient(135deg, #FF6B1A, #D94A10)',
-            border: 'none', color: '#fff', fontWeight: 900, fontSize: 16,
+
+        {/* Bouton Suivant */}
+        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(10)}` }}>
+          <button onClick={handleRevelationNext} className="btn-press active:scale-95 transition-all" style={{
+            width: '100%', height: S(44), borderRadius: S(14),
+            background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
+            border: '2px solid rgba(255,255,255,0.4)',
+            color: '#fff', fontWeight: 900, fontSize: S(12), letterSpacing: '0.05em', textTransform: 'uppercase',
             fontFamily: 'Nunito, sans-serif', cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(255,107,26,0.35)',
-          }}>Suivant →</button>
+          }}>SUIVANT →</button>
         </div>
       </div>
     )
@@ -772,7 +802,7 @@ export default function QuestScreen({ onHome, setStorage }) {
 
       {/* Zone question + hints + QCM */}
       <div style={{
-        flex: 1, minHeight: 0, overflowY: 'auto',
+        flex: 1, minHeight: 0, overflow: 'hidden',
         display: 'flex', flexDirection: 'column', gap: S(10),
         padding: `${S(10)} ${S(16)} 0`,
       }}>
@@ -829,7 +859,7 @@ export default function QuestScreen({ onHome, setStorage }) {
               const canUse = hasStock
               return (
                 <HintFlipButton
-                  key={hintNum}
+                  key={`${fact.id}-${hintNum}`}
                   num={hintNum}
                   hint={h}
                   catColor={catColor}
@@ -837,6 +867,7 @@ export default function QuestScreen({ onHome, setStorage }) {
                   cost={HINT_COST}
                   canAfford={canAfford}
                   canUse={canUse}
+                  initialRevealed={hintsUsed >= hintNum}
                   onReveal={() => useHint(hintNum)}
                   onBuyHint={!canUse && canAfford ? buyHint : null}
                 />
@@ -892,6 +923,29 @@ export default function QuestScreen({ onHome, setStorage }) {
         </div>
       </div>
 
+      {/* Overlay timeout */}
+      {timedOut && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 40,
+          background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          animation: 'fadeIn 0.2s ease',
+        }}>
+          <div style={{
+            background: 'rgba(232,69,53,0.95)', borderRadius: 18,
+            padding: '20px 32px', textAlign: 'center',
+            border: '2px solid rgba(255,255,255,0.4)',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+          }}>
+            <div style={{ fontSize: 42, marginBottom: 6 }}>⏱️</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '0.05em' }}>
+              TEMPS ÉCOULÉ !
+            </div>
+          </div>
+          <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }`}</style>
+        </div>
+      )}
+
       {/* Timer en bas */}
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `${S(8)} 0 ${S(14)}` }}>
         <div style={{ width: S(72), height: S(72), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -899,7 +953,7 @@ export default function QuestScreen({ onHome, setStorage }) {
             key={`${fact.id}-${phase}`}
             size={72}
             duration={QUEST_DURATION}
-            onTimeout={() => { if (selected === null) handleAnswer(-1) }}
+            onTimeout={handleTimeout}
           />
         </div>
       </div>

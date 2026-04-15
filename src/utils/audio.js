@@ -150,6 +150,13 @@ class AudioManager {
         this._tone(247, 0.3, 'sine', 0.26, 0.22)
         break
       }
+      case 'wrong_quest': {
+        // Grave dramatique "donjon raté" pour Quest : sawtooth bas + square dissonant
+        this._tone(165, 0.18, 'sawtooth', 0.28)
+        this._tone(155, 0.22, 'sawtooth', 0.28, 0.10)
+        this._tone(110, 0.40, 'square', 0.22, 0.24)
+        break
+      }
       case 'roulette_spin':
         // Impulsion brève au lancement de la roue
         this._tone(660, 0.08, 'square', 0.22)

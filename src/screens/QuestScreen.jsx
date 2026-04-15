@@ -331,7 +331,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     if (!fact) return
     setSelected(idx)
     const isCorrect = idx === fact.correctIndex
-    audio.play(isCorrect ? 'correct' : 'wrong')
+    audio.play(isCorrect ? 'correct' : 'wrong_quest')
     audio.vibrate(isCorrect ? [40, 20, 40] : [120])
 
     const wasBoss = !!fact._isBoss

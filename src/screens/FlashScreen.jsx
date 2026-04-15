@@ -1,9 +1,9 @@
-// FlashScreen — Rendez-vous quotidien (CLAUDE.md 15/04/2026)
-// Lun-sam : 5 questions Funny thème du jour · 2 QCM · 15s · 30 coins fixe
-// Dimanche : 5 questions VIP Hunt de la semaine · 0 coins · déblocage VIPs
+// FlashScreen — Rendez-vous quotidien (spec docs/FLASH_MODE_SPECS.md 15/04/2026)
+// Lun-sam : 5 questions Funny thème du jour fixe · 2 QCM · 15s · 30 coins fixe · 0 indice
+// Dimanche : 1 VIP cible + 4 Funny distracteurs · débloque UNIQUEMENT le VIP si sa question est juste
 // Phases : intro → playing → done · Gratuit 1×/jour
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
-import { getFunnyFactsByCategory, getVipFacts, getPlayableCategories } from '../data/factsService'
+import { getFunnyFactsByCategory, getVipFacts, getFunnyFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
@@ -60,16 +60,29 @@ function seededPick(pool, seed, count) {
   return picked
 }
 
-// Rotation thématique : pick une catégorie du jour avec ≥5 funny facts
-function pickThemeOfDay(dateStr) {
-  const cats = getPlayableCategories()
-  const eligible = cats.filter(c => {
-    const pool = getFunnyFactsByCategory(c.id)
-    return pool.length >= 5
-  })
-  if (!eligible.length) return null
-  const h = hashString(dateStr)
-  return eligible[h % eligible.length]
+// Rotation thématique V1 (spec FLASH_MODE_SPECS.md) : mapping fixe jour → catégorie,
+// avec un nom fun (pas le nom de la catégorie). V2 : vrais thèmes transversaux.
+// Index JS getDay() : 0=dim, 1=lun, 2=mar, 3=mer, 4=jeu, 5=ven, 6=sam
+const WEEKDAY_THEMES = {
+  1: { categoryId: 'records',      emoji: '🏆', funName: 'Records absurdes',      color: '#E8B84B' },
+  2: { categoryId: 'corps_humain', emoji: '🫀', funName: 'Le corps est bizarre',  color: '#F07070' },
+  3: { categoryId: 'animaux',      emoji: '🦥', funName: 'Animaux fous',          color: '#6BCB77' },
+  4: { categoryId: 'lois',         emoji: '⚖️', funName: 'Lois WTF!',             color: '#6366B8' },
+  5: { categoryId: 'sciences',     emoji: '🔬', funName: 'Science fiction réelle',color: '#80C8E8' },
+  6: { categoryId: 'gastronomie',  emoji: '🍔', funName: 'Food WTF!',             color: '#FFA500' },
+}
+
+function pickThemeOfDay(dayOfWeek) {
+  const theme = WEEKDAY_THEMES[dayOfWeek]
+  if (!theme) return null
+  const pool = getFunnyFactsByCategory(theme.categoryId)
+  if (pool.length < 5) {
+    // Fallback : première catégorie avec ≥5 Funny
+    const fallbackPool = getFunnyFacts()
+    if (fallbackPool.length < 5) return null
+    return { ...theme, categoryId: null, poolSize: fallbackPool.length }
+  }
+  return { ...theme, poolSize: pool.length }
 }
 
 export default function FlashScreen({ onHome, setStorage }) {
@@ -85,36 +98,59 @@ export default function FlashScreen({ onHome, setStorage }) {
     try { return JSON.parse(localStorage.getItem(storageKey) || 'null') } catch { return null }
   }, [storageKey])
 
-  // Thème du jour — catégorie Funny ou VIP Hunt le dimanche
+  // Thème du jour — lun-sam rotation fixe · dim = VIP Hunt (1 VIP cible + 4 Funny)
+  const dayOfWeek = new Date().getDay()
   const theme = useMemo(() => {
     if (sunday) {
       return {
         id: 'vip-hunt',
-        label: 'VIP Hunt de la semaine',
-        shortLabel: 'VIP Hunt',
+        label: 'WTF! de la Semaine',
+        shortLabel: 'Hunt VIP',
         emoji: '👑',
         color: SUNDAY_GOLD,
-        tagline: 'Chasse au WTF! légendaire',
+        tagline: 'Débloque le WTF! légendaire de la semaine',
       }
     }
-    const cat = pickThemeOfDay(dateStr)
-    if (!cat) return null
+    const td = pickThemeOfDay(dayOfWeek)
+    if (!td) return null
     return {
-      id: cat.id,
-      label: cat.label,
-      shortLabel: cat.label,
-      emoji: cat.emoji || '🔥',
-      color: cat.color || '#E91E63',
-      tagline: `Thème du jour : ${cat.label}`,
+      id: td.categoryId || 'fallback',
+      categoryId: td.categoryId,
+      label: td.funName,
+      shortLabel: td.funName,
+      emoji: td.emoji,
+      color: td.color,
+      tagline: `Thème du jour : ${td.funName}`,
     }
-  }, [sunday, dateStr])
+  }, [sunday, dayOfWeek])
 
-  const preparedFacts = useMemo(() => {
-    const pool = sunday ? getVipFacts() : (theme ? getFunnyFactsByCategory(theme.id) : [])
-    if (!pool.length) return []
-    const seed = sunday ? weekKey() : `${dateStr}-${theme?.id || ''}`
-    const picked = seededPick(pool, seed, diff.questionsCount || 5)
-    return picked.map(f => ({ ...f, ...getAnswerOptions(f, diff) }))
+  // Dim : 1 VIP cible (seed ISO-week) + 4 Funny distracteurs (seed week+'-distractors')
+  // Lun-sam : 5 Funny de la catégorie du jour (seed = dateStr)
+  const { preparedFacts, vipTargetId } = useMemo(() => {
+    if (sunday) {
+      const vipPool = getVipFacts()
+      if (!vipPool.length) return { preparedFacts: [], vipTargetId: null }
+      const vipTarget = seededPick(vipPool, weekKey(), 1)[0]
+      const funnyPool = getFunnyFacts().filter(f => f.id !== vipTarget.id)
+      const distractors = seededPick(funnyPool, `${weekKey()}-distractors`, 4)
+      // Ordre : insérer le VIP à une position seedée parmi les 5 (anti-déduction simple)
+      const hashPos = hashString(weekKey()) % 5
+      const ordered = [...distractors]
+      ordered.splice(hashPos, 0, vipTarget)
+      const final = ordered.slice(0, 5)
+      return {
+        preparedFacts: final.map(f => ({ ...f, ...getAnswerOptions(f, diff) })),
+        vipTargetId: vipTarget.id,
+      }
+    }
+    // Lun-sam
+    const pool = theme?.categoryId ? getFunnyFactsByCategory(theme.categoryId) : getFunnyFacts()
+    if (!pool.length) return { preparedFacts: [], vipTargetId: null }
+    const picked = seededPick(pool, `${dateStr}-${theme?.id || ''}`, diff.questionsCount || 5)
+    return {
+      preparedFacts: picked.map(f => ({ ...f, ...getAnswerOptions(f, diff) })),
+      vipTargetId: null,
+    }
   }, [dateStr, diff, sunday, theme])
 
   // Phase : intro (si pas encore joué) → playing → done
@@ -123,6 +159,7 @@ export default function FlashScreen({ onHome, setStorage }) {
   const [correct, setCorrect] = useState(0)
   const [flash, setFlash] = useState(null)
   const [coinsEarned, setCoinsEarned] = useState(initial?.coinsEarned ?? 0)
+  const [vipUnlocked, setVipUnlocked] = useState(initial?.vipUnlocked ?? false)
   const [showQuit, setShowQuit] = useState(false)
   const flashTimer = useRef(null)
 
@@ -136,16 +173,26 @@ export default function FlashScreen({ onHome, setStorage }) {
 
   const advance = useCallback((isCorrect) => {
     if (isCorrect) setCorrect(c => c + 1)
-    if (fact && isCorrect && setStorage) {
+
+    // Déblocage :
+    // - Lun-sam : aucun déblocage (le joueur découvre mais ne collecte pas — spec)
+    // - Dim : UNIQUEMENT si la question du VIP cible est correcte
+    const isVipTargetQuestion = sunday && fact && fact.id === vipTargetId
+    const shouldUnlock = isCorrect && isVipTargetQuestion
+    let justUnlockedVip = false
+    if (shouldUnlock && fact && setStorage) {
+      justUnlockedVip = true
+      setVipUnlocked(true)
       setStorage(prev => {
         const u = new Set(prev.unlockedFacts || [])
         u.add(fact.id)
         return { ...prev, unlockedFacts: u }
       })
-      unlockFact?.(fact.id, fact.category, 'flash_daily').catch(e =>
+      unlockFact?.(fact.id, fact.category, 'flash_hunt').catch(e =>
         console.warn('[Flash] unlockFact RPC failed:', e?.message || e)
       )
     }
+
     if (index + 1 >= preparedFacts.length) {
       const reward = sunday ? 0 : FLASH_REWARD
       if (reward > 0) {
@@ -154,7 +201,14 @@ export default function FlashScreen({ onHome, setStorage }) {
         )
       }
       const finalCorrect = correct + (isCorrect ? 1 : 0)
-      const state = { done: true, correctCount: finalCorrect, coinsEarned: reward, themeId: theme?.id }
+      const state = {
+        done: true,
+        correctCount: finalCorrect,
+        coinsEarned: reward,
+        themeId: theme?.id,
+        vipUnlocked: vipUnlocked || justUnlockedVip,
+        vipTargetId: vipTargetId || null,
+      }
       try { localStorage.setItem(storageKey, JSON.stringify(state)) } catch { /* ignore */ }
       setCoinsEarned(reward)
       setPhase('done')
@@ -162,7 +216,7 @@ export default function FlashScreen({ onHome, setStorage }) {
       setIndex(i => i + 1)
       setFlash(null)
     }
-  }, [fact, index, preparedFacts.length, correct, setStorage, unlockFact, applyCurrencyDelta, storageKey, sunday, theme])
+  }, [fact, index, preparedFacts.length, correct, setStorage, unlockFact, applyCurrencyDelta, storageKey, sunday, theme, vipTargetId, vipUnlocked])
 
   const handleAnswer = useCallback((answerIdx) => {
     if (flash !== null || !fact || phase !== 'playing') return
@@ -259,41 +313,91 @@ export default function FlashScreen({ onHome, setStorage }) {
   // ─── Phase DONE ────────────────────────────────────────────────────────────
   if (phase === 'done') {
     const alreadyPlayed = initial?.done
+    const targetId = initial?.vipTargetId || vipTargetId
+    const wasVipUnlocked = initial?.vipUnlocked || vipUnlocked
+    // Révélation VIP : retrouver la fact cible pour l'afficher (image + explication)
+    const vipTargetFact = sunday && targetId
+      ? getVipFacts().find(f => f.id === targetId)
+      : null
+
     return (
-      <div className="absolute inset-0 flex items-center justify-center" style={{ background: bg, color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
-        <div style={{ textAlign: 'center', maxWidth: 340 }}>
-          <div style={{ fontSize: 84, marginBottom: 8, filter: `drop-shadow(0 4px 20px ${themeColor}aa)` }}>
-            {theme?.emoji || '🔥'}
-          </div>
-          <p style={{ fontSize: 13, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 800, color: themeColor }}>
-            {theme?.label || 'Flash du jour'}
-          </p>
-          <div style={{ fontSize: 72, fontWeight: 900, lineHeight: 1, margin: '14px 0 20px' }}>
-            {initial?.correctCount ?? correct}<span style={{ fontSize: 36, opacity: 0.5 }}>/{preparedFacts.length || 5}</span>
-          </div>
-          {!alreadyPlayed && coinsEarned > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              <GainsBreakdown
-                items={[{ label: '🔥 Flash quotidien', value: `+${coinsEarned}` }]}
-                total={coinsEarned}
-                totalColor={themeColor}
-                textColor="#ffffff"
-              />
+      <div className="absolute inset-0 overflow-y-auto" style={{ background: bg, color: '#fff', fontFamily: 'Nunito, sans-serif' }}>
+        <div style={{ padding: 24, minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', maxWidth: 360, width: '100%' }}>
+            <div style={{ fontSize: 72, marginBottom: 8, filter: `drop-shadow(0 4px 20px ${themeColor}aa)` }}>
+              {theme?.emoji || '🔥'}
             </div>
-          )}
-          {!alreadyPlayed && sunday && (
-            <p style={{ fontSize: 13, opacity: 0.9, marginBottom: 20, color: SUNDAY_GOLD, fontWeight: 800 }}>
-              👑 VIPs de la semaine débloqués dans ta collection !
+            <p style={{ fontSize: 13, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 800, color: themeColor }}>
+              {theme?.label || 'Flash du jour'}
             </p>
-          )}
-          <p style={{ fontSize: 14, opacity: 0.75, marginBottom: 28 }}>
-            {alreadyPlayed
-              ? (sunday ? 'Tu as déjà chassé ton VIP cette semaine.' : 'Tu as déjà joué ton Flash aujourd\'hui. Reviens demain !')
-              : (sunday ? 'Reviens lundi pour un nouveau Flash quotidien !' : 'Rendez-vous demain pour un nouveau thème !')}
-          </p>
-          <button onClick={onHome} style={{ padding: '14px 40px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
-            Retour
-          </button>
+            <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 1, margin: '14px 0 16px' }}>
+              {initial?.correctCount ?? correct}<span style={{ fontSize: 32, opacity: 0.5 }}>/{preparedFacts.length || 5}</span>
+            </div>
+
+            {!alreadyPlayed && coinsEarned > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <GainsBreakdown
+                  items={[{ label: '🔥 Flash quotidien', value: `+${coinsEarned}` }]}
+                  total={coinsEarned}
+                  totalColor={themeColor}
+                  textColor="#ffffff"
+                />
+              </div>
+            )}
+
+            {/* Révélation VIP (dimanche uniquement) — affichée qu'il soit débloqué ou non */}
+            {sunday && vipTargetFact && (
+              <div style={{
+                marginTop: 8, marginBottom: 16,
+                background: 'rgba(0,0,0,0.35)',
+                border: `2px solid ${wasVipUnlocked ? SUNDAY_GOLD : 'rgba(255,255,255,0.15)'}`,
+                borderRadius: 16, padding: 16, textAlign: 'left',
+                boxShadow: wasVipUnlocked ? `0 0 32px ${SUNDAY_GOLD}44` : 'none',
+              }}>
+                <div style={{ textAlign: 'center', marginBottom: 10 }}>
+                  <span style={{
+                    fontSize: 11, letterSpacing: 2, textTransform: 'uppercase',
+                    fontWeight: 900, color: wasVipUnlocked ? SUNDAY_GOLD : 'rgba(255,255,255,0.5)',
+                  }}>
+                    {wasVipUnlocked ? '👑 VIP DÉBLOQUÉ' : '🔒 VIP raté cette semaine'}
+                  </span>
+                </div>
+                {vipTargetFact.imageUrl && (
+                  <div style={{
+                    width: '100%', aspectRatio: '16 / 10',
+                    borderRadius: 12, overflow: 'hidden', marginBottom: 10,
+                    filter: wasVipUnlocked ? 'none' : 'blur(8px) brightness(0.6)',
+                    background: '#0a0a1a',
+                  }}>
+                    <img
+                      src={vipTargetFact.imageUrl}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  </div>
+                )}
+                {wasVipUnlocked && vipTargetFact.explanation && (
+                  <p style={{ fontSize: 13, lineHeight: 1.5, opacity: 0.9, margin: 0 }}>
+                    {vipTargetFact.explanation}
+                  </p>
+                )}
+                {!wasVipUnlocked && (
+                  <p style={{ fontSize: 12, lineHeight: 1.5, opacity: 0.6, margin: 0, textAlign: 'center', fontStyle: 'italic' }}>
+                    Le VIP reste verrouillé. Reviens dimanche prochain pour un nouveau WTF! de la semaine.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <p style={{ fontSize: 14, opacity: 0.75, marginBottom: 24 }}>
+              {alreadyPlayed
+                ? (sunday ? 'Tu as déjà chassé ton VIP cette semaine.' : 'Tu as déjà joué ton Flash aujourd\'hui. Reviens demain !')
+                : (sunday ? 'Reviens lundi pour un nouveau Flash quotidien !' : 'Rendez-vous demain pour un nouveau thème !')}
+            </p>
+            <button onClick={onHome} style={{ padding: '14px 40px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
+              Retour
+            </button>
+          </div>
         </div>
       </div>
     )

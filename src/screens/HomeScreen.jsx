@@ -159,11 +159,9 @@ export default function HomeScreen({
         alt={label}
         style={{
           width: S(ICON_SIZES.modeIcon), height: S(ICON_SIZES.modeIcon),
-          borderRadius: '50%',
-          overflow: 'hidden',
-          objectFit: 'cover',
+          objectFit: 'contain',
           flexShrink: 0,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
         }}
       />
     </button>

@@ -958,28 +958,11 @@ export default function FactsListPage({ toast }) {
         </div>
         <div className="flex gap-2 flex-wrap">
           <button
-            onClick={() => { setShowGenerateModal(true) }}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all hover:opacity-90 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
-          >
-            ⚡<span className="hidden sm:inline"> Générer des facts</span><span className="sm:hidden"> Générer</span>
-          </button>
-          <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all hover:opacity-90 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
           >
             ➕<span className="hidden sm:inline"> Ajouter un fact</span><span className="sm:hidden"> Ajouter</span>
-          </button>
-          <button
-            onClick={enriching ? () => { enrichCancelRef.current = true } : enrichAllIncomplete}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white transition-all hover:opacity-90 active:scale-95"
-            style={{ background: enriching ? '#EF4444' : 'linear-gradient(135deg, #F59E0B, #D97706)' }}
-          >
-            {enriching
-              ? `⏹ ${enrichProgress.current}/${enrichProgress.total}`
-              : <>✨<span className="hidden sm:inline"> Enrichir les incomplets</span><span className="sm:hidden"> Enrichir</span></>
-            }
           </button>
         </div>
       </div>

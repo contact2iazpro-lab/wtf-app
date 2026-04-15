@@ -390,7 +390,7 @@ export default function App() {
   const {
     launchModeDestination, handleLaunchStart, showOrSkipLaunch,
     handleHomeNavigate,
-    handleDuelNextPlayer, handleDuelMode, handleDuelStart, handleDuelPassReady, handleDuelReplay,
+    handleDuelNextPlayer, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
     handleHome, handleBlitzReplay, handleSnackContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,

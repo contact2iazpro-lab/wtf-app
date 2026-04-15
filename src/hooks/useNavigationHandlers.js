@@ -109,10 +109,9 @@ export function useNavigationHandlers({
     setScreen(SCREENS.DUEL_PASS)
   }, [])
 
-  const handleDuelMode = useCallback(() => {
-    setGameMode('duel'); setSessionType('duel'); setScreen(SCREENS.DUEL_SETUP)
-  }, [])
-
+  // CLAUDE.md 15/04/2026 — "Multi → SUPPRIMÉ (non prévu V1)"
+  // Le flow local pass-the-phone (gameMode='duel' + DUEL_SETUP/PASS/RESULTS)
+  // est dead code : aucun entry-point UI. À ripper lors d'un passage dédié.
   const handleDuelStart = useCallback((playerNames) => {
     const n = playerNames.length
     const allFacts = getFactsByCategory(null)
@@ -205,7 +204,7 @@ export function useNavigationHandlers({
   return {
     launchModeDestination, handleLaunchStart, showOrSkipLaunch,
     handleHomeNavigate,
-    handleDuelNextPlayer, handleDuelMode, handleDuelStart, handleDuelPassReady, handleDuelReplay,
+    handleDuelNextPlayer, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
     handleHome, handleBlitzReplay, handleSnackContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,

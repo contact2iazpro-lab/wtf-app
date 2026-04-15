@@ -6,29 +6,51 @@ import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
 import { useScale } from '../hooks/useScale'
+import { readWtfData, updateWtfData } from '../utils/storageHelper'
 import GameHeader from '../components/GameHeader'
 
-const FLASH_DURATION = 400
-const COLORS = [
-  'linear-gradient(160deg, #1a0a2e 0%, #3a0a4e 100%)',
-  'linear-gradient(160deg, #0a2e1a 0%, #0a4e3a 100%)',
-  'linear-gradient(160deg, #2e1a0a 0%, #4e3a0a 100%)',
-  'linear-gradient(160deg, #2e0a1a 0%, #4e0a3a 100%)',
-  'linear-gradient(160deg, #0a1a2e 0%, #0a3a4e 100%)',
+const FLASH_DURATION = 380
+const MIN_UNLOCKED_TO_PLAY = 20
+
+// Paliers visuels (spec 15/04/2026) : plus la série monte, plus le fond chauffe.
+const TIERS = [
+  { min: 0,  bg: 'linear-gradient(160deg, #0f3d22 0%, #1a6b3a 100%)' }, // vert — tranquille
+  { min: 6,  bg: 'linear-gradient(160deg, #4a3a0a 0%, #8a6a1a 100%)' }, // jaune — ça commence
+  { min: 11, bg: 'linear-gradient(160deg, #5a2a0a 0%, #b04a15 100%)' }, // orange — tension
+  { min: 21, bg: 'linear-gradient(160deg, #5a0a0a 0%, #b01515 100%)' }, // rouge — danger
+  { min: 31, bg: 'linear-gradient(160deg, #1a0000 0%, #4a0000 100%)' }, // rouge foncé — extrême
 ]
+const tierForStreak = (s) => {
+  let cur = TIERS[0]
+  for (const t of TIERS) if (s >= t.min) cur = t
+  return cur
+}
 
 export default function MarathonScreen({ onHome }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
   const diff = DIFFICULTY_LEVELS.MARATHON
 
-  const shuffledPool = useMemo(() => shuffle(getMixedUnlockedFacts()), [])
+  const unlockedPool = useMemo(() => getMixedUnlockedFacts(), [])
+  const hasEnough = unlockedPool.length >= MIN_UNLOCKED_TO_PLAY
+  const missing = Math.max(0, MIN_UNLOCKED_TO_PLAY - unlockedPool.length)
+
+  const initialBest = useMemo(() => readWtfData().marathonBestScore || 0, [])
+  const [bestScore, setBestScore] = useState(initialBest)
+
+  const [runKey, setRunKey] = useState(0)
+  const shuffledPool = useMemo(() => shuffle(unlockedPool), [unlockedPool, runKey])
+
   const [index, setIndex] = useState(0)
   const [streak, setStreak] = useState(0)
   const [flash, setFlash] = useState(null)
   const [gameOver, setGameOver] = useState(false)
   const [showQuit, setShowQuit] = useState(false)
+  const [pulse, setPulse] = useState(false)
+  const [shake, setShake] = useState(false)
+  const [newRecord, setNewRecord] = useState(false)
   const flashTimer = useRef(null)
+  const pulseTimer = useRef(null)
 
   const preparedFact = useMemo(() => {
     const raw = shuffledPool[index]
@@ -36,7 +58,23 @@ export default function MarathonScreen({ onHome }) {
     return { ...raw, ...getAnswerOptions(raw, diff) }
   }, [shuffledPool, index, diff])
 
-  useEffect(() => () => clearTimeout(flashTimer.current), [])
+  useEffect(() => () => {
+    clearTimeout(flashTimer.current)
+    clearTimeout(pulseTimer.current)
+  }, [])
+
+  const finalizeGameOver = useCallback((finalStreak) => {
+    setShake(true)
+    setTimeout(() => setShake(false), 520)
+    try { audio.play('timeout') } catch {}
+    const prev = readWtfData().marathonBestScore || 0
+    if (finalStreak > prev) {
+      updateWtfData(wd => { wd.marathonBestScore = finalStreak })
+      setBestScore(finalStreak)
+      setNewRecord(true)
+    }
+    setGameOver(true)
+  }, [])
 
   const handleAnswer = useCallback((answerIdx) => {
     if (flash !== null || !preparedFact || gameOver) return
@@ -46,33 +84,61 @@ export default function MarathonScreen({ onHome }) {
 
     flashTimer.current = setTimeout(() => {
       if (!isCorrect) {
-        setGameOver(true)
+        finalizeGameOver(streak)
         return
       }
       const newStreak = streak + 1
       setStreak(newStreak)
+      setPulse(true)
+      clearTimeout(pulseTimer.current)
+      pulseTimer.current = setTimeout(() => setPulse(false), 260)
       if (index + 1 >= shuffledPool.length) {
-        setGameOver(true)
+        finalizeGameOver(newStreak)
         return
       }
       setIndex(i => i + 1)
       setFlash(null)
     }, FLASH_DURATION)
-  }, [flash, preparedFact, streak, index, shuffledPool.length, gameOver])
+  }, [flash, preparedFact, streak, index, shuffledPool.length, gameOver, finalizeGameOver])
 
-  const bg = COLORS[streak % COLORS.length]
+  const replay = useCallback(() => {
+    setIndex(0)
+    setStreak(0)
+    setFlash(null)
+    setGameOver(false)
+    setNewRecord(false)
+    setPulse(false)
+    setRunKey(k => k + 1)
+  }, [])
 
-  // Pool vide
-  if (!preparedFact && !gameOver) {
+  const handleShare = useCallback(() => {
+    const text = `🏃 J'ai fait une série de ${streak} au Marathon WTF! Et toi ?`
+    const url = window.location.origin
+    if (navigator.share) {
+      navigator.share({ title: 'Marathon WTF!', text, url }).catch(() => {})
+    } else {
+      navigator.clipboard?.writeText(`${text}\n${url}`)
+    }
+  }, [streak])
+
+  const currentTier = tierForStreak(streak)
+  const bg = currentTier.bg
+  const isExtreme = streak >= 31
+
+  // ─── Gate : pas assez de f*cts débloqués ───
+  if (!hasEnough) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center" style={{ background: '#1a0a2e', color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
+      <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #1a0a2e 0%, #2e1a4e 100%)', color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
         <div style={{ textAlign: 'center', maxWidth: 320 }}>
-          <div style={{ fontSize: 56, marginBottom: 16 }}>🏃</div>
-          <p style={{ fontSize: 18, fontWeight: 900 }}>Marathon indisponible</p>
-          <p style={{ fontSize: 13, opacity: 0.7, marginTop: 10, lineHeight: 1.5 }}>
-            Tu dois d'abord débloquer des f*cts (Snack, Quest, Flash) pour alimenter le Marathon.
+          <div style={{ fontSize: 72, marginBottom: 12 }}>🏃</div>
+          <p style={{ fontSize: 20, fontWeight: 900, marginBottom: 10 }}>Marathon verrouillé</p>
+          <p style={{ fontSize: 14, opacity: 0.85, lineHeight: 1.5, marginBottom: 8 }}>
+            Débloque encore <strong style={{ color: '#FF6B1A' }}>{missing} f*ct{missing > 1 ? 's' : ''}</strong> pour jouer.
           </p>
-          <button onClick={onHome} style={{ marginTop: 28, padding: '14px 36px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
+          <p style={{ fontSize: 12, opacity: 0.6, lineHeight: 1.5, marginBottom: 28 }}>
+            Le Marathon pioche dans les f*cts que tu connais déjà. Joue à Snack, Quest ou Flash pour agrandir ton pool.
+          </p>
+          <button onClick={onHome} style={{ padding: '14px 36px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
             Retour
           </button>
         </div>
@@ -80,32 +146,103 @@ export default function MarathonScreen({ onHome }) {
     )
   }
 
-  // Game over
+  // ─── Game over ───
   if (gameOver) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center" style={{ background: bg, color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
-        <div style={{ textAlign: 'center' }}>
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{
+          '--scale': scale,
+          background: bg,
+          color: '#fff',
+          fontFamily: 'Nunito, sans-serif',
+          padding: 24,
+          animation: shake ? 'marathonShake 0.52s ease' : 'none',
+        }}
+      >
+        <style>{`
+          @keyframes marathonShake {
+            0%, 100% { transform: translate(0, 0) }
+            10% { transform: translate(-8px, 4px) }
+            20% { transform: translate(7px, -6px) }
+            30% { transform: translate(-6px, -5px) }
+            40% { transform: translate(8px, 5px) }
+            50% { transform: translate(-5px, 4px) }
+            60% { transform: translate(6px, -4px) }
+            70% { transform: translate(-4px, 3px) }
+            80% { transform: translate(4px, -2px) }
+            90% { transform: translate(-2px, 1px) }
+          }
+          @keyframes marathonGoldPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(255,215,0,0.6)) }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 24px rgba(255,215,0,0.9)) }
+          }
+        `}</style>
+        <div style={{ textAlign: 'center', maxWidth: 340 }}>
           <div style={{ fontSize: 72, marginBottom: 8 }}>💥</div>
-          <p style={{ fontSize: 14, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700 }}>Série finale</p>
-          <div style={{ fontSize: 96, fontWeight: 900, lineHeight: 1, margin: '12px 0 20px', textShadow: '0 6px 24px rgba(0,0,0,0.4)' }}>
+          {newRecord && (
+            <div style={{
+              display: 'inline-block',
+              padding: '6px 16px',
+              borderRadius: 999,
+              background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+              color: '#1a1a2e',
+              fontWeight: 900,
+              fontSize: 13,
+              letterSpacing: 1,
+              marginBottom: 14,
+              animation: 'marathonGoldPulse 1.4s ease-in-out infinite',
+            }}>
+              ⭐ NOUVEAU RECORD !
+            </div>
+          )}
+          <p style={{ fontSize: 13, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700 }}>Ta série</p>
+          <div style={{ fontSize: 110, fontWeight: 900, lineHeight: 1, margin: '6px 0 14px', textShadow: '0 6px 24px rgba(0,0,0,0.4)' }}>
             {streak}
           </div>
-          <p style={{ fontSize: 15, opacity: 0.85, marginBottom: 32 }}>
-            {streak === 0 ? 'La prochaine sera la bonne !' : streak < 10 ? 'Pas mal — tu peux mieux faire.' : streak < 25 ? 'Belle série !' : 'Impressionnant 🔥'}
+          <p style={{ fontSize: 14, opacity: 0.85, marginBottom: 24 }}>
+            Record personnel : <strong>{bestScore}</strong>
           </p>
-          <button onClick={onHome} style={{ padding: '14px 40px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
-            Retour
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button onClick={replay} style={{ padding: '14px 28px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
+              Rejouer
+            </button>
+            <button onClick={handleShare} style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '2px solid rgba(255,255,255,0.35)', borderRadius: 16, fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>
+              Partager
+            </button>
+            <button onClick={onHome} style={{ padding: '12px 28px', background: 'transparent', color: 'rgba(255,255,255,0.7)', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              Accueil
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
+  // ─── En jeu ───
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-hidden"
-      style={{ '--scale': scale, background: bg, fontFamily: 'Nunito, sans-serif', transition: 'background 0.8s ease' }}
+      style={{
+        '--scale': scale,
+        background: bg,
+        fontFamily: 'Nunito, sans-serif',
+        transition: 'background 0.8s ease',
+        animation: isExtreme ? 'marathonExtremePulse 1.4s ease-in-out infinite' : 'none',
+      }}
     >
+      <style>{`
+        @keyframes marathonExtremePulse {
+          0%, 100% { filter: brightness(1) }
+          50% { filter: brightness(1.25) }
+        }
+        @keyframes marathonCounterPop {
+          0% { transform: scale(1) }
+          40% { transform: scale(1.18) }
+          100% { transform: scale(1) }
+        }
+      `}</style>
+
       {showQuit && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
           <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', maxWidth: 360 }}>
@@ -122,12 +259,23 @@ export default function MarathonScreen({ onHome }) {
 
       <GameHeader categoryLabel="Marathon" categoryColor="#E84535" onQuit={() => setShowQuit(true)} />
 
-      <div style={{ textAlign: 'center', padding: `${S(12)} 0 ${S(4)}`, flexShrink: 0 }}>
-        <div style={{ fontSize: S(64), fontWeight: 900, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums', textShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+      <div style={{ textAlign: 'center', padding: `${S(10)} 0 ${S(2)}`, flexShrink: 0 }}>
+        <div
+          style={{
+            fontSize: S(72),
+            fontWeight: 900,
+            color: '#fff',
+            lineHeight: 1,
+            fontVariantNumeric: 'tabular-nums',
+            textShadow: '0 4px 20px rgba(0,0,0,0.4)',
+            animation: pulse ? 'marathonCounterPop 0.26s ease' : 'none',
+            display: 'inline-block',
+          }}
+        >
           {streak}
         </div>
-        <div style={{ fontSize: S(11), fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: 2, textTransform: 'uppercase', marginTop: S(4) }}>
-          Série en cours
+        <div style={{ fontSize: S(11), fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: 2, textTransform: 'uppercase', marginTop: S(2) }}>
+          Série · Record {bestScore}
         </div>
       </div>
 

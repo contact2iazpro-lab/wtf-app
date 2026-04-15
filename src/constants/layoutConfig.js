@@ -35,45 +35,6 @@ export const GRID_CONFIG = {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// MODE CONFIGURATION
-// ────────────────────────────────────────────────────────────────────────────
-
-export const MODES = {
-  quest: {
-    id: 'quest',
-    label: 'Quest',
-    icon: '/assets/modes/quete.png',
-    position: 'left',
-    unlockKey: 'canQuest',
-    unlockMessage: 'Joue ta première partie pour débloquer ! 🎮',
-  },
-  blitz: {
-    id: 'blitz',
-    label: 'Blitz',
-    icon: '/assets/modes/blitz.png',
-    position: 'left',
-    unlockKey: 'canBlitz',
-    unlockMessage: 'Débloque 5 f*cts pour jouer en Blitz ! ⚡',
-  },
-  snack: {
-    id: 'snack',
-    label: 'Snack',
-    icon: '/assets/modes/marathon.png',
-    position: 'right',
-    unlockKey: 'canSnack',
-    unlockMessage: 'Termine une Quest pour explorer librement ! 🧭',
-  },
-  hunt: {
-    id: 'flash',
-    label: 'Flash',
-    icon: '/assets/modes/wtf-semaine.png',
-    position: 'right',
-    unlockKey: 'canHunt',
-    unlockMessage: 'Joue 10 parties pour débloquer la Flash ! 🔥',
-  },
-}
-
-// ────────────────────────────────────────────────────────────────────────────
 // UNLOCK THRESHOLDS — Conditions pour débloquer chaque mode/feature
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -149,12 +110,6 @@ export const ASSETS = {
     chestOpen: '/assets/ui/chest-open.png',
     chestLocked: '/assets/ui/chest-locked.png',
     chestTrophy: '/assets/ui/chest-trophy.png?v=2',
-  },
-  modes: {
-    quest: '/assets/modes/quete.png',
-    blitz: '/assets/modes/blitz.png',
-    snack: '/assets/modes/marathon.png',
-    hunt: '/assets/modes/wtf-semaine.png',
   },
 }
 

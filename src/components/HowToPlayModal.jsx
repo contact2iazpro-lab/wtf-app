@@ -326,10 +326,9 @@ function renderText(text) {
 function getChapterIcon(chapterId) {
   const modeIcons = {
     quest: '/assets/modes/quete.png',
-    flash: '/assets/modes/marathon.png',
-    explorer: '/assets/modes/marathon.png',
+    flash: '/assets/modes/wtf-semaine.png',
     blitz: '/assets/modes/blitz.png',
-    streak: '/assets/modes/serie.png',
+    marathon: '/assets/modes/marathon.png',
   }
 
   if (modeIcons[chapterId]) {

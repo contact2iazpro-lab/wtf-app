@@ -112,14 +112,21 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Déblocage f*cts : Oui (Funny)
 
 ### 3. QUEST — "Le chemin des WTF!" (ex-Route WTF!)
-- QCM **4 choix**, blocs de 10 (9 Funny + 1 boss VIP)
-- Timer : **20s** · Indices : 2 (stock perso)
-- Coût : 1 énergie par bloc de 10
-- Gains : 20 coins/bonne (niveau) · 100 coins/boss VIP réussi
-- Déblocage f*cts : Oui (Funny + VIP boss)
-- Anti-déduction boss : fausses réponses tirées parmi 7 à chaque tentative, indices tirés 2/4
-- UX : Map de progression visible (Niveau X/850), boss = mise en scène spéciale
-- ~850 niveaux total (770 Funny ÷ 9 par bloc = ~85 blocs × 10)
+- QCM **4 choix**, blocs de **10 Funny + 1 boss VIP conditionnel**
+- Timer : **20s** · Indices : 2/question (stock perso, achat 50 coins si vide)
+- Coût : 1 énergie par tentative de bloc (extra = 75 coins)
+- **Seuil boss : ≥5/10 bonnes réponses** sur les Funny pour affronter le boss VIP
+- `<5/10` → bloc raté, pas de boss, joueur bloqué au même niveau (refaire)
+- `≥5/10 + boss réussi` → passe au niveau suivant, VIP débloqué
+- `≥5/10 + boss raté` → reste bloqué, VIP verrouillé, retry boss depuis la carte
+- Gains : 20 coins/bonne Funny · +100 coins/boss vaincu (coins versés même si bloc raté)
+- Déblocage f*cts : Funny correctes (toujours) + VIP (si boss réussi)
+- Anti-déduction boss : fausses tirées parmi 7 à chaque retry, 2 indices parmi 4 (seed par retry)
+- Diversité : 10 Funny tirées avec catégories variées, exclut les facts déjà débloqués
+- UX : Header complet (retour/cat/coins/indices/paramètres), image floutée + 🔒, barre progression, timer visible, révélation inline après bonne réponse, modal achat énergie/indice
+- Map de progression : Niveau X/850, Bloc X/~77
+- ~770 niveaux (770 Funny ÷ 10 par bloc = ~77 blocs × 11)
+- Spec source : `docs/QUEST_MODE_UPDATE.md`
 
 ### 4. MARATHON — "Zéro droit à l'erreur"
 - QCM **4 choix**, questions illimitées jusqu'à la première erreur
@@ -152,9 +159,13 @@ séparé, sous-domaine privé, ou en local uniquement).
 - UX : Bannière thème du jour. Dimanche = mise en scène Hunt.
 
 ### Roulette WTF!
-- 1 spin gratuit/jour + spins payants 100 coins
-- 8 segments : 25c(30%) / 50c(25%) / 1indice(15%) / 100c(12%) / 150c(8%) / 2indices(5%) / 300c(3%) / 500c(2%)
-- Valeur espérée ~76 coins. Sink net ~24 coins/spin.
+- 1 spin gratuit/jour + spins payants **100 coins** (économie ×10)
+- 8 segments (tailles visuelles égales) : 20c(28%) / 50c(24%) / 1indice(18%) / 100c(12%) / 150c(8%) / 2indices(5%) / 300c(3%) / 750c jackpot(2%)
+- Valeur espérée ~79,6 coins. Sink net ~20,4 coins/spin (20%)
+- 52% de perdre (<100), 12% remboursé (=100), 36% gagner (>100), 2% jackpot
+- Sons : `roulette_spin` au lancement, `roulette_tick` pendant le ralentissement, `roulette_win` (gains courants) ou `roulette_jackpot` (300c/750c)
+- Icônes PNG (icon-coins, icon-hint) — plus de Streak Freeze ni VIP
+- Spec source : `docs/ROULETTE_WTF_SPECS.md`
 
 ### Règles communes
 - QCM facile (2 choix) : Snack, Blitz, Flash

@@ -325,22 +325,40 @@ export function getFunnyFactsWithStatement() {
 }
 
 /**
- * Construit un "draw" pour le mode Vrai ou Fou à partir d'un fact.
- * Tire au hasard une affirmation vraie ou fausse (50/50), et pour les fausses
- * choisit aléatoirement entre la variante drôle et la variante plausible.
+ * Construit un "draw" pour le mode Vrai ou Fou : 2 affirmations sur le même fact
+ * (une vraie + une fausse), avec la position vraie/fausse randomisée.
  *
  * @param {object} fact — doit avoir statementTrue, statementFalseFunny, statementFalsePlausible
- * @returns {{ text: string, isTrue: boolean, variant: 'true'|'false_funny'|'false_plausible', fact }}
+ * @param {'funny'|'plausible'} falseVariant — quelle fausse affirmation utiliser
+ * @returns {{ fact, trueStatement, falseStatement, trueSide: 'left'|'right', falseVariant }}
  */
-export function buildVraiOuFouDraw(fact) {
-  const showTrue = Math.random() < 0.5
-  if (showTrue) {
-    return { text: fact.statementTrue, isTrue: true, variant: 'true', fact }
+export function buildVraiOuFouDraw(fact, falseVariant) {
+  const falseStatement = falseVariant === 'funny'
+    ? fact.statementFalseFunny
+    : fact.statementFalsePlausible
+  const trueSide = Math.random() < 0.5 ? 'left' : 'right'
+  return {
+    fact,
+    trueStatement: fact.statementTrue,
+    falseStatement,
+    trueSide,
+    falseVariant,
   }
-  const useFunny = Math.random() < 0.5
-  return useFunny
-    ? { text: fact.statementFalseFunny,     isTrue: false, variant: 'false_funny',     fact }
-    : { text: fact.statementFalsePlausible, isTrue: false, variant: 'false_plausible', fact }
+}
+
+/**
+ * Construit un pool de N draws à partir d'une liste de facts, avec alternance
+ * exacte 50/50 entre fausses drôles et fausses plausibles (pattern mélangé).
+ */
+export function buildVraiOuFouSessionPool(facts, size) {
+  const pool = facts.slice(0, size)
+  const half = Math.ceil(pool.length / 2)
+  // Tableau [funny, plausible, funny, plausible, …] mélangé pour éviter les streaks
+  const variants = [
+    ...Array(half).fill('funny'),
+    ...Array(pool.length - half).fill('plausible'),
+  ].sort(() => Math.random() - 0.5)
+  return pool.map((fact, i) => buildVraiOuFouDraw(fact, variants[i]))
 }
 
 /** Mode Marathon : Funny + VIP déjà débloqués, mélangés */

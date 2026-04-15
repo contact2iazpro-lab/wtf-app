@@ -1,15 +1,19 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { getFunnyFactsWithStatement, buildVraiOuFouDraw } from '../data/factsService'
+import {
+  getFunnyFactsWithStatement,
+  buildVraiOuFouSessionPool,
+} from '../data/factsService'
 import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
-import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import GameHeader from '../components/GameHeader'
+import FallbackImage from '../components/FallbackImage'
 import renderFormattedText from '../utils/renderFormattedText'
+import { CATEGORIES } from '../data/facts'
 
 const SESSION_SIZE = 20
-const SWIPE_THRESHOLD = 80
-const FEEDBACK_MS = 1600
+const SWIPE_THRESHOLD = 60
+const FEEDBACK_MS = 1800
 const MODE_COLOR = '#9B59B6'
 const MODE_BG = 'linear-gradient(160deg, #2d0a4e 0%, #6a1a9a 100%)'
 const SHARE_URL = 'https://wtf-app-production.up.railway.app/'
@@ -17,24 +21,23 @@ const SHARE_URL = 'https://wtf-app-production.up.railway.app/'
 export default function VraiOuFouScreen({ onHome }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { unlockFact } = usePlayerProfile()
 
-  const [seed, setSeed] = useState(0) // bump to replay
-  // Pool = draws (affirmations tirées aléatoirement parmi les 3 variantes par fact)
-  // Chaque draw : { text, isTrue, variant, fact }
+  const [seed, setSeed] = useState(0)
+  // Pool = 20 draws avec alternance exacte 50/50 funny/plausible.
+  // Chaque draw : { fact, trueStatement, falseStatement, trueSide, falseVariant }
   const pool = useMemo(
-    () => shuffle(getFunnyFactsWithStatement())
-      .slice(0, SESSION_SIZE)
-      .map(buildVraiOuFouDraw),
+    () => buildVraiOuFouSessionPool(shuffle(getFunnyFactsWithStatement()), SESSION_SIZE),
     [seed] // eslint-disable-line react-hooks/exhaustive-deps
   )
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [drag, setDrag] = useState({ x: 0, active: false })
-  const [feedback, setFeedback] = useState(null) // { correct, dir, fact }
+  // feedback: { correct: bool, pickedSide: 'left'|'right', draw }
+  const [feedback, setFeedback] = useState(null)
   const [done, setDone] = useState(false)
   const [showQuit, setShowQuit] = useState(false)
   const [shareMsg, setShareMsg] = useState(null)
+  const [imgFailed, setImgFailed] = useState(false)
   const startX = useRef(0)
   const feedbackTimer = useRef(null)
 
@@ -43,18 +46,28 @@ export default function VraiOuFouScreen({ onHome }) {
   const draw = pool[index]
   const fact = draw?.fact
 
-  const handleAnswer = (userSaysTrue) => {
+  // Reset image failed state on draw change
+  useEffect(() => {
+    setImgFailed(false)
+  }, [fact?.id])
+
+  // Catégorie pour couleur du fallback image
+  const cat = useMemo(
+    () => (fact ? CATEGORIES.find(c => c.id === fact.category) : null),
+    [fact]
+  )
+
+  // Textes gauche et droite en fonction de trueSide
+  const leftText  = draw && (draw.trueSide === 'left'  ? draw.trueStatement : draw.falseStatement)
+  const rightText = draw && (draw.trueSide === 'right' ? draw.trueStatement : draw.falseStatement)
+
+  const handlePick = (pickedSide) => {
     if (feedback || !draw) return
-    const isCorrect = userSaysTrue === draw.isTrue
-    setFeedback({ correct: isCorrect, dir: userSaysTrue ? 'right' : 'left', draw })
+    const isCorrect = pickedSide === draw.trueSide
+    setFeedback({ correct: isCorrect, pickedSide, draw })
     audio.play(isCorrect ? 'correct' : 'wrong')
 
-    if (isCorrect) {
-      setCorrect(c => c + 1)
-      unlockFact?.(fact.id, fact.category, 'vrai_ou_fou_unlock')?.catch?.(e =>
-        console.warn('[VraiOuFou] unlockFact failed:', e?.message || e)
-      )
-    }
+    if (isCorrect) setCorrect(c => c + 1)
 
     feedbackTimer.current = setTimeout(() => {
       if (index + 1 >= pool.length) {
@@ -79,8 +92,8 @@ export default function VraiOuFouScreen({ onHome }) {
   }
   const onPointerUp = () => {
     if (!drag.active || feedback) return
-    if (drag.x > SWIPE_THRESHOLD) handleAnswer(true)
-    else if (drag.x < -SWIPE_THRESHOLD) handleAnswer(false)
+    if (drag.x > SWIPE_THRESHOLD) handlePick('right')
+    else if (drag.x < -SWIPE_THRESHOLD) handlePick('left')
     else setDrag({ x: 0, active: false })
   }
 
@@ -106,9 +119,7 @@ export default function VraiOuFouScreen({ onHome }) {
       await navigator.clipboard.writeText(`${text} ${url}`)
       setShareMsg('Lien copié !')
       setTimeout(() => setShareMsg(null), 1800)
-    } catch {
-      /* user canceled or no clipboard */
-    }
+    } catch { /* user canceled or no clipboard */ }
   }
 
   // Pool vide
@@ -152,6 +163,9 @@ export default function VraiOuFouScreen({ onHome }) {
           </div>
           <p style={{ fontSize: S(14), opacity: 0.85, marginBottom: S(8) }}>{pct}% de bonnes réponses</p>
           <p style={{ fontSize: S(15), fontWeight: 700, opacity: 0.9 }}>{verdict.line}</p>
+          <p style={{ fontSize: S(11), opacity: 0.6, marginTop: S(12), fontStyle: 'italic' }}>
+            🔒 Joue Snack ou Quest pour débloquer vraiment ces f*cts
+          </p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: S(10), flexShrink: 0, position: 'relative' }}>
@@ -206,9 +220,15 @@ export default function VraiOuFouScreen({ onHome }) {
     )
   }
 
-  const rotate = drag.x * 0.08
-  const dragOpacity = Math.min(Math.abs(drag.x) / SWIPE_THRESHOLD, 1)
-  const cardX = feedback ? (feedback.dir === 'right' ? 500 : -500) : drag.x
+  // ── Phase de jeu : 2 cartes côte à côte ───────────────────────────────
+  // Intensité visuelle du swipe (0 → 1)
+  const dragIntensity = Math.min(Math.abs(drag.x) / SWIPE_THRESHOLD, 1)
+  const leftHighlight  = !feedback && drag.x < -10
+  const rightHighlight = !feedback && drag.x >  10
+
+  // Pendant le feedback, on sait quel côté a été choisi, et quel côté est vrai
+  const leftIsTrue  = draw && draw.trueSide === 'left'
+  const rightIsTrue = draw && draw.trueSide === 'right'
 
   return (
     <div
@@ -231,91 +251,198 @@ export default function VraiOuFouScreen({ onHome }) {
 
       <GameHeader categoryLabel="Vrai ou Fou" categoryColor={MODE_COLOR} onQuit={() => setShowQuit(true)} />
 
-      <div style={{ textAlign: 'center', padding: `${S(12)} 0 ${S(4)}`, flexShrink: 0 }}>
-        <div style={{ fontSize: S(14), fontWeight: 800, color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }}>
+      {/* Compteur de progression */}
+      <div style={{ textAlign: 'center', padding: `${S(10)} 0 ${S(4)}`, flexShrink: 0 }}>
+        <div style={{ fontSize: S(13), fontWeight: 800, color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }}>
           {index + 1} / {pool.length}
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 min-h-0">
-        <div
-          onMouseDown={onPointerDown}
-          onMouseMove={onPointerMove}
-          onMouseUp={onPointerUp}
-          onMouseLeave={onPointerUp}
-          onTouchStart={onPointerDown}
-          onTouchMove={onPointerMove}
-          onTouchEnd={onPointerUp}
-          style={{
-            width: '100%', maxWidth: S(340), minHeight: S(340),
-            background: '#FAFAF8', borderRadius: S(24),
-            padding: S(24), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            transform: `translateX(${cardX}px) rotate(${feedback ? 0 : rotate}deg)`,
-            transition: feedback || !drag.active ? 'transform 0.35s ease' : 'none',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-            position: 'relative', userSelect: 'none', cursor: 'grab',
-          }}
-        >
-          {!feedback && (
-            <p style={{ color: '#1a1a2e', fontSize: S(18), fontWeight: 800, textAlign: 'center', lineHeight: 1.4 }}>
-              {draw.text}
-            </p>
-          )}
-
-          {feedback && (
-            <div style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: S(10) }}>
-              <div style={{
-                display: 'inline-block', alignSelf: 'center',
-                padding: `${S(6)} ${S(16)}`, borderRadius: S(12),
-                background: feedback.correct ? '#22C55E' : '#EF4444',
-                color: '#fff', fontWeight: 900, fontSize: S(14), letterSpacing: '0.05em',
-              }}>
-                {feedback.correct ? '✓ BIEN VU !' : '✗ RATÉ !'}
-              </div>
-              <p style={{ color: '#1a1a2e', fontSize: S(14), fontWeight: 800, lineHeight: 1.35 }}>
-                {feedback.draw.text}
-              </p>
-              <div style={{ height: 1, background: 'rgba(0,0,0,0.1)', margin: `${S(2)} 0` }} />
-              <p style={{ color: feedback.draw.isTrue ? '#059669' : '#DC2626', fontSize: S(12), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {feedback.draw.isTrue ? 'C\'était VRAI' : 'C\'était FAUX'}
-              </p>
-              {(feedback.draw.fact.explanation || feedback.draw.fact.answer) && (
-                <p style={{ color: '#374151', fontSize: S(12), fontWeight: 600, lineHeight: 1.4 }}>
-                  {renderFormattedText(feedback.draw.fact.explanation || feedback.draw.fact.answer)}
-                </p>
-              )}
+      {/* Image floutée (preview locked) */}
+      <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0, padding: `${S(8)} 0 ${S(6)}` }}>
+        <div style={{
+          position: 'relative',
+          width: S(110),
+          height: S(110),
+          borderRadius: S(14),
+          overflow: 'hidden',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.35)',
+        }}>
+          {fact?.imageUrl && !imgFailed ? (
+            <img
+              src={fact.imageUrl}
+              alt=""
+              onError={() => setImgFailed(true)}
+              style={{
+                width: '100%', height: '100%', objectFit: 'cover',
+                filter: 'blur(14px) brightness(0.65)',
+                transform: 'scale(1.15)', // éviter bords flous
+              }}
+            />
+          ) : (
+            <div style={{ width: '100%', height: '100%', filter: 'blur(10px) brightness(0.7)', transform: 'scale(1.1)' }}>
+              <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
-
-          {!feedback && drag.x > 20 && (
-            <div style={{ position: 'absolute', top: S(20), right: S(20), padding: `${S(6)} ${S(14)}`, border: `3px solid #22C55E`, borderRadius: S(10), color: '#22C55E', fontWeight: 900, fontSize: S(18), opacity: dragOpacity, transform: 'rotate(12deg)' }}>
-              VRAI
-            </div>
-          )}
-          {!feedback && drag.x < -20 && (
-            <div style={{ position: 'absolute', top: S(20), left: S(20), padding: `${S(6)} ${S(14)}`, border: `3px solid #EF4444`, borderRadius: S(10), color: '#EF4444', fontWeight: 900, fontSize: S(18), opacity: dragOpacity, transform: 'rotate(-12deg)' }}>
-              FAUX
-            </div>
-          )}
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: S(34),
+            textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+          }}>
+            🔒
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-3 px-6 pb-6" style={{ flexShrink: 0 }}>
-        <button
-          onClick={() => handleAnswer(false)}
-          disabled={!!feedback}
-          style={{ flex: 1, padding: `${S(16)} 0`, borderRadius: S(16), border: '2px solid #EF4444', background: 'rgba(239,68,68,0.2)', color: '#fff', fontWeight: 900, fontSize: S(15), cursor: feedback ? 'default' : 'pointer' }}
-        >
-          ← FAUX
-        </button>
-        <button
-          onClick={() => handleAnswer(true)}
-          disabled={!!feedback}
-          style={{ flex: 1, padding: `${S(16)} 0`, borderRadius: S(16), border: '2px solid #22C55E', background: 'rgba(34,197,94,0.2)', color: '#fff', fontWeight: 900, fontSize: S(15), cursor: feedback ? 'default' : 'pointer' }}
-        >
-          VRAI →
-        </button>
+      {/* Instruction */}
+      <div style={{ textAlign: 'center', padding: `${S(6)} ${S(16)} ${S(8)}`, flexShrink: 0 }}>
+        <p style={{ fontSize: S(14), fontWeight: 900, color: '#fff', letterSpacing: '0.02em' }}>
+          Laquelle est vraie ?
+        </p>
       </div>
+
+      {/* Zone des 2 cartes — swipe gauche/droite */}
+      <div
+        className="flex-1 min-h-0 px-3"
+        onMouseDown={onPointerDown}
+        onMouseMove={onPointerMove}
+        onMouseUp={onPointerUp}
+        onMouseLeave={onPointerUp}
+        onTouchStart={onPointerDown}
+        onTouchMove={onPointerMove}
+        onTouchEnd={onPointerUp}
+        style={{ display: 'flex', gap: S(10), alignItems: 'stretch', userSelect: 'none', cursor: feedback ? 'default' : 'grab' }}
+      >
+        {/* Carte GAUCHE */}
+        <StatementCard
+          S={S}
+          text={leftText}
+          side="left"
+          highlight={leftHighlight}
+          intensity={dragIntensity}
+          feedback={feedback}
+          isTrue={leftIsTrue}
+        />
+        {/* Carte DROITE */}
+        <StatementCard
+          S={S}
+          text={rightText}
+          side="right"
+          highlight={rightHighlight}
+          intensity={dragIntensity}
+          feedback={feedback}
+          isTrue={rightIsTrue}
+        />
+      </div>
+
+      {/* Bandeau feedback bas (explication + "C'était…") */}
+      {feedback ? (
+        <div style={{ padding: `${S(10)} ${S(16)} ${S(16)}`, flexShrink: 0 }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.95)', borderRadius: S(14),
+            padding: `${S(12)} ${S(14)}`,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          }}>
+            <p style={{
+              color: feedback.correct ? '#059669' : '#DC2626',
+              fontSize: S(12), fontWeight: 900,
+              textTransform: 'uppercase', letterSpacing: '0.05em',
+              textAlign: 'center', marginBottom: S(6),
+            }}>
+              {feedback.correct ? '✓ Bien vu !' : '✗ Raté !'}
+            </p>
+            {(feedback.draw.fact.explanation || feedback.draw.fact.answer) && (
+              <p style={{ color: '#374151', fontSize: S(12), fontWeight: 600, lineHeight: 1.4, textAlign: 'center' }}>
+                {renderFormattedText(feedback.draw.fact.explanation || feedback.draw.fact.answer)}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div style={{ padding: `${S(8)} 0 ${S(16)}`, textAlign: 'center', flexShrink: 0 }}>
+          <p style={{ fontSize: S(11), color: 'rgba(255,255,255,0.55)', fontWeight: 700, letterSpacing: '0.05em' }}>
+            ← swipe pour choisir →
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Carte d'affirmation — partagée gauche/droite
+// ─────────────────────────────────────────────────────────────────────────
+function StatementCard({ S, text, side, highlight, intensity, feedback, isTrue }) {
+  // Pendant le feedback : on révèle vrai/faux
+  const showingFeedback = !!feedback
+  const wasPicked = showingFeedback && feedback.pickedSide === side
+
+  // Styles de base
+  let bg = '#FAFAF8'
+  let borderColor = 'rgba(255,255,255,0.12)'
+  let borderWidth = 2
+  let opacity = 1
+  let transform = 'translateY(0) scale(1)'
+  let badge = null
+
+  if (showingFeedback) {
+    if (isTrue) {
+      // La bonne carte : toujours soulignée en vert
+      borderColor = '#22C55E'
+      borderWidth = 3
+      badge = { text: '✓ VRAI', color: '#22C55E' }
+    } else {
+      // La mauvaise carte : estompée
+      opacity = wasPicked ? 0.85 : 0.4
+      borderColor = wasPicked ? '#EF4444' : 'rgba(255,255,255,0.08)'
+      borderWidth = wasPicked ? 3 : 2
+      if (wasPicked) badge = { text: '✗ FAUX', color: '#EF4444' }
+    }
+    if (wasPicked) transform = 'translateY(0) scale(1.02)'
+    else if (!isTrue) transform = 'translateY(0) scale(0.97)'
+  } else if (highlight) {
+    borderColor = 'rgba(255,255,255,0.9)'
+    borderWidth = 3
+    transform = `translateY(0) scale(${1 + 0.03 * intensity})`
+  }
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        background: bg,
+        borderRadius: S(18),
+        border: `${borderWidth}px solid ${borderColor}`,
+        padding: S(16),
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        position: 'relative',
+        opacity,
+        transform,
+        transition: 'transform 0.25s ease, opacity 0.25s ease, border-color 0.25s ease',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+        minHeight: 0,
+      }}
+    >
+      <p style={{ color: '#1a1a2e', fontSize: S(15), fontWeight: 800, lineHeight: 1.35 }}>
+        {text}
+      </p>
+
+      {badge && (
+        <div style={{
+          position: 'absolute', top: S(-10), left: '50%', transform: 'translateX(-50%)',
+          background: badge.color, color: '#fff',
+          padding: `${S(4)} ${S(12)}`, borderRadius: S(20),
+          fontSize: S(11), fontWeight: 900, letterSpacing: '0.05em',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          whiteSpace: 'nowrap',
+        }}>
+          {badge.text}
+        </div>
+      )}
     </div>
   )
 }

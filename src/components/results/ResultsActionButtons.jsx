@@ -4,7 +4,7 @@
  * Ligne 1 : Rejouer + (optionnel) Monter en difficulté / Challenge
  * Ligne 2 : Partager + Accueil
  *
- * Les labels du bouton Rejouer s'adaptent au sessionType (icône ticket/énergie).
+ * Les labels du bouton Rejouer s'adaptent au sessionType (icône énergie).
  */
 
 const S = (px) => `calc(${px}px * var(--scale))`

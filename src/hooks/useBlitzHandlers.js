@@ -23,7 +23,7 @@ export function useBlitzHandlers({
   setNewlyEarnedBadges,
   // A.9.3 — persistance flags via RPC merge_player_flags
   mergeFlags,
-  // 1b — débit 200 coins pour créer un défi Blitz (ex-ticket)
+  // Débit 200 coins pour créer un défi Blitz
   applyCurrencyDelta,
   // DuelContext — pendingDuel lu en mémoire React
   pendingDuel, clearPendingDuel,
@@ -183,9 +183,8 @@ export function useBlitzHandlers({
 
       if (user) {
         const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
-        // Palier 3 — RPC atomique : 1 seul round-trip serveur, debit ticket + upsert
+        // RPC atomique : 1 seul round-trip serveur, debit 200 coins + upsert
         // duel + insert challenge en 1 txn. Plus besoin de timeout/race/fire-forget.
-        // 1b — débit 200 coins pour créer le défi (ex-1 ticket)
         applyCurrencyDelta?.({ coins: -200 }, 'challenge_create')?.catch?.(e =>
           console.warn('[useBlitzHandlers] challenge cost RPC failed:', e?.message || e)
         )
@@ -215,7 +214,7 @@ export function useBlitzHandlers({
               status: 'pending',
             }
             setLastCreatedDuel?.(round)
-            // 1b — Défi Blitz coûte 200 coins (plus de ticket). Débit client.
+            // Notifier l'UI du débit des 200 coins
             window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
           })
           .catch((e) => {

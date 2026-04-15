@@ -43,7 +43,7 @@ export const DIFFICULTY_LEVELS = {
     // - defi : chrono MONTANT, +5s pénalité erreur, score = temps final (le plus bas gagne)
     soloDuration: 60,
     defiWrongPenalty: 5,
-    defiCost: 200, // coins pour créer un défi (ex-1 ticket)
+    defiCost: 200, // coins pour créer un défi
     soloMinUnlocked: 20,
   },
   FLASH: {

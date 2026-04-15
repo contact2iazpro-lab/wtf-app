@@ -56,7 +56,7 @@ export function useSelectionHandlers({
       return
     }
 
-    // Ancien mode Quest (tickets + Cool/Hot) supprimé (sub-step 1a — 2026-04-15).
+    // Ancien mode Quest (Cool/Hot) supprimé (sub-step 1a — 2026-04-15).
     // Cette fonction ne gère plus que le flow Snack.
     console.warn('[useSelectionHandlers] handleSelectDifficulty called outside explorer mode — no-op')
   }, [unlockedFacts, gameMode, selectedCategory, initSessionState, handleBlitzStart])

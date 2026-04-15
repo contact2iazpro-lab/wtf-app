@@ -97,7 +97,7 @@ export default function App() {
   }
 
   // Initialiser les devises pour les nouveaux joueurs — valeurs officielles CLAUDE.md F2P
-  // Nouveau joueur : 500 coins / 3 indices / 5 énergies (tickets supprimés 1b)
+  // Nouveau joueur : 500 coins / 3 indices / 5 énergies
   if (localStorage.getItem('wtf_data')) {
     const _initData = JSON.parse(localStorage.getItem('wtf_data'))
     if (_initData.wtfCoins === undefined) {
@@ -129,7 +129,7 @@ export default function App() {
     if (!pendingDuel) return
 
     if (pendingDuel.mode === 'create') {
-      // 1b — Défi Blitz coûte 200 coins (tickets supprimés)
+      // Défi Blitz coûte 200 coins
       if ((profileCoins ?? 0) < 200) {
         setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: 'Il te faut 200 coins pour lancer un défi !' })
         clearPendingDuel()
@@ -146,7 +146,7 @@ export default function App() {
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
       setSelectedCategory(pendingDuel.categoryId || 'all')
       setScreen(SCREENS.BLITZ_LOBBY)
-      // NOTE: Ticket débité atomiquement par le RPC create_duel_challenge (Palier 3).
+      // NOTE: Les 200 coins sont débités atomiquement par le RPC create_duel_challenge.
       // On laisse pendingDuel en place pour que handleBlitzFinish puisse
       // lire opponentId + categoryId. Sera cleared par handleHome ou après création du round.
     } else if (pendingDuel.mode === 'accept' && pendingDuel.facts) {

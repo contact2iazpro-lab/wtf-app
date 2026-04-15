@@ -14,7 +14,7 @@ import { useState, useEffect } from 'react'
 import { readWtfData } from '../utils/storageHelper'
 
 // Récompenses par jour (lundi=0 → dimanche=6)
-// Dimanche : VIP coins (ticket retiré — 1b). Cf. CLAUDE.md B4.11.
+// Dimanche : VIP coins.
 export const COFFRE_REWARDS = [
   { day: 'L', reward: { type: 'coins', amount: 5 } },
   { day: 'M', reward: { type: 'coins', amount: 5 } },

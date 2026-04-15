@@ -6,7 +6,7 @@
  *
  * Props :
  * - items: array [{label, value, color?, icon?}] — lignes détaillées optionnelles.
- *          Si omis, tu peux utiliser les raccourcis baseCoins/bonusCoins/ticketEarned.
+ *          Si omis, tu peux utiliser les raccourcis baseCoins/bonusCoins.
  * - total: number (animé ou non, le parent contrôle)
  * - totalColor: string (couleur catégorie, par défaut orange WTF)
  * - footerStats: array [{label, color?}] (ex: "8/10 trouvés", "80% précision")

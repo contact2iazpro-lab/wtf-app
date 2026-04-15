@@ -12,7 +12,10 @@ import { useScale } from '../hooks/useScale'
 import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import GainsBreakdown from '../components/results/GainsBreakdown'
+import HintFlipButton from '../components/HintFlipButton'
 import renderFormattedText from '../utils/renderFormattedText'
+
+const HINT_COST = 50
 
 const STORAGE_KEY_PREFIX = 'wtf_flash_'
 const FLASH_REWARD = 30
@@ -88,7 +91,7 @@ function pickThemeOfDay(dayOfWeek) {
 export default function FlashScreen({ onHome, setStorage }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact, hints: profileHints, coins: profileCoins } = usePlayerProfile()
   const diff = DIFFICULTY_LEVELS.FLASH
   const dateStr = todayKey()
   const sunday = isSunday()
@@ -160,7 +163,23 @@ export default function FlashScreen({ onHome, setStorage }) {
   const [flash, setFlash] = useState(null)
   const [coinsEarned, setCoinsEarned] = useState(initial?.coinsEarned ?? 0)
   const [vipUnlocked, setVipUnlocked] = useState(initial?.vipUnlocked ?? false)
+  const [hintsUsed, setHintsUsed] = useState(0)
   const [showQuit, setShowQuit] = useState(false)
+
+  // Reset indices révélés à chaque nouvelle question
+  useEffect(() => { setHintsUsed(0) }, [index])
+
+  const useHint = useCallback((hintNum) => {
+    if (profileHints <= 0) return
+    setHintsUsed(h => Math.max(h, hintNum))
+    applyCurrencyDelta?.({ hints: -1 }, 'flash_sunday_use_hint')
+      ?.catch?.(e => console.warn('[Flash] hint debit failed:', e?.message || e))
+  }, [profileHints, applyCurrencyDelta])
+
+  const buyHint = useCallback(() => {
+    applyCurrencyDelta?.({ coins: -HINT_COST, hints: 1 }, 'buy_hint_in_session')
+      ?.catch?.(e => console.warn('[Flash] buy hint RPC failed:', e?.message || e))
+  }, [applyCurrencyDelta])
   const flashTimer = useRef(null)
 
   useEffect(() => () => clearTimeout(flashTimer.current), [])
@@ -452,6 +471,32 @@ export default function FlashScreen({ onHome, setStorage }) {
             {renderFormattedText(fact.question)}
           </p>
         </div>
+
+        {/* Indices — dimanche uniquement · 2 max · stock perso (achat 50c si vide) */}
+        {sunday && (fact.hint1 || fact.hint2) && (
+          <div style={{ display: 'flex', gap: S(8), justifyContent: 'center', flexShrink: 0 }}>
+            {[fact.hint1, fact.hint2].filter(Boolean).slice(0, 2).map((h, i) => {
+              const n = i + 1
+              const canUse = profileHints > 0 || hintsUsed >= n
+              const canAfford = canUse || ((profileCoins ?? 0) >= HINT_COST)
+              return (
+                <HintFlipButton
+                  key={`${fact.id}-h${n}`}
+                  num={n}
+                  hint={h}
+                  catColor={themeColor}
+                  isFree={false}
+                  cost={HINT_COST}
+                  canAfford={canAfford}
+                  canUse={canUse}
+                  initialRevealed={hintsUsed >= n}
+                  onReveal={() => useHint(n)}
+                  onBuyHint={buyHint}
+                />
+              )
+            })}
+          </div>
+        )}
 
         <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ width: S(56), height: S(56) }}>

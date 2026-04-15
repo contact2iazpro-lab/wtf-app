@@ -1,7 +1,7 @@
 /**
  * AppModals — Toutes les modals globales de App.jsx.
  *
- * Streak toast, Streak J30 choice, No ticket, No energy, Mini parcours,
+ * Streak toast, Streak J30 choice, No energy, Mini parcours,
  * Trophy queue, New categories, Settings, GameAlert, ConnectBanner, DevPanel.
  */
 

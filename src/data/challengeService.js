@@ -1,12 +1,12 @@
 /**
  * challengeService — lecture et création "simple" de challenges.
  *
- * Pour le flow complet (défi entre amis avec debit ticket atomique + upsert duel),
+ * Pour le flow complet (défi entre amis avec debit 200 coins atomique + upsert duel),
  * voir `duelService.createDuelChallenge` (RPC Palier 3).
  * Ce service est conservé pour :
  *   - `getChallenge` → lecture d'un code partagé (ChallengeScreen)
  *   - `createChallenge` → flow solo post-Blitz "Défier un ami" (BlitzResultsScreen)
- *     qui crée un challenge sans duel_id ni debit ticket (sharing score).
+ *     qui crée un challenge sans duel_id ni débit (sharing score).
  */
 
 import { supabase } from '../lib/supabase'
@@ -20,7 +20,7 @@ function generateCode() {
   return code
 }
 
-// Créer un défi "share score" (solo post-Blitz, pas de duel associé, pas de ticket débité)
+// Créer un défi "share score" (solo post-Blitz, pas de duel associé, pas de débit)
 export async function createChallenge({ categoryId, categoryLabel, questionCount, playerTime, playerId, playerName }) {
   const code = generateCode()
 

@@ -113,8 +113,6 @@ export function useHandleNext({
       }
       setSessionIsPerfect(isPerfectSession)
 
-      // Ticket bonus onboarding supprimé — sera réimplémenté avec le tuto
-
       // Bonus coins — CLAUDE.md 15/04/2026 économie ×10
       // Snack : perfect 5/5 = +50c · Flash lun-sam = 30c fixe (dim = VIP, géré ailleurs)
       // Quest/Marathon/VraiOuFou/Blitz : pas de bonus perfect (0)
@@ -147,7 +145,7 @@ export function useHandleNext({
       const explorerSessionsToday = sessionType === 'snack' ? sessionsToday : newSessionsToday
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
-      // Phase A : 1 seule RPC atomique coins+hints via usePlayerProfile (tickets supprimés 1b)
+      // Phase A : 1 seule RPC atomique coins+hints via usePlayerProfile
       const sessionEndDelta = {}
       if (totalBonusCoins > 0)                sessionEndDelta.coins   = totalBonusCoins
       if ((streakReward?.hints ?? 0) > 0)     sessionEndDelta.hints   = streakReward.hints

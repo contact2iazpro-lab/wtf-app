@@ -31,6 +31,32 @@ TU RENVOIES STRICTEMENT ce JSON, sans texte autour :
 
 const stripEndPunct = (s) => (s || '').trim().replace(/[.!?。]+$/u, '').trim()
 
+// Extrait le premier objet JSON équilibré du texte (ignore texte avant/après,
+// et ignore les accolades à l'intérieur de strings).
+function extractFirstJsonObject(text) {
+  const start = text.indexOf('{')
+  if (start === -1) return null
+  let depth = 0
+  let inStr = false
+  let escape = false
+  for (let i = start; i < text.length; i++) {
+    const c = text[i]
+    if (inStr) {
+      if (escape) escape = false
+      else if (c === '\\') escape = true
+      else if (c === '"') inStr = false
+    } else {
+      if (c === '"') inStr = true
+      else if (c === '{') depth++
+      else if (c === '}') {
+        depth--
+        if (depth === 0) return text.slice(start, i + 1)
+      }
+    }
+  }
+  return null
+}
+
 /**
  * Génère les 3 affirmations pour un fact. Throw en cas d'erreur.
  * @param {object} fact { question, short_answer, funny_wrong_1/2, plausible_wrong_1/2/3 }
@@ -72,10 +98,15 @@ plausible_answer: ${plausible}`
 
   const data = await resp.json()
   const raw = data?.content?.[0]?.text?.trim() || ''
-  const jsonMatch = raw.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('JSON introuvable : ' + raw.slice(0, 200))
+  const jsonStr = extractFirstJsonObject(raw)
+  if (!jsonStr) throw new Error('JSON introuvable : ' + raw.slice(0, 200))
 
-  const parsed = JSON.parse(jsonMatch[0])
+  let parsed
+  try {
+    parsed = JSON.parse(jsonStr)
+  } catch (e) {
+    throw new Error(`JSON invalide (${e.message}) : ` + jsonStr.slice(0, 300))
+  }
   if (!parsed.statement_true || !parsed.statement_false_funny || !parsed.statement_false_plausible) {
     throw new Error('JSON incomplet : ' + JSON.stringify(parsed))
   }

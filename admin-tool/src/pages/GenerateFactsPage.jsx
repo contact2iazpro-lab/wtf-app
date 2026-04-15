@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES } from '../constants/categories'
 import { callEdgeFunction } from '../utils/helpers'
@@ -66,7 +66,31 @@ export default function GenerateFactsPage({ toast }) {
   const [vofRunState, setVofRunState] = useState(null)        // null | 'running' | 'done' | 'error'
   const [vofProgress, setVofProgress] = useState({ current: 0, total: 0, ok: 0, ko: 0 })
   const [vofMessage, setVofMessage] = useState('')
+  const [vofEligible, setVofEligible] = useState({ loading: false, count: null, error: null })
   const vofCancelRef = useRef(false)
+
+  // ── Recompute eligible count when filters change (VoF tab) ─────────────
+  useEffect(() => {
+    if (tab !== 'vof') return
+    let cancelled = false
+    setVofEligible(prev => ({ ...prev, loading: true, error: null }))
+    ;(async () => {
+      try {
+        let q = supabase.from('facts').select('id', { count: 'exact', head: true })
+        if (vofSelectedCats.length > 0) q = q.in('category', vofSelectedCats)
+        if (vofStatus === 'vip') q = q.eq('is_vip', true)
+        else if (vofStatus === 'funny') q = q.eq('is_vip', false)
+        if (!vofForce) q = q.or('statement_true.is.null,statement_true.eq.')
+        const { count, error } = await q
+        if (cancelled) return
+        if (error) throw error
+        setVofEligible({ loading: false, count: count ?? 0, error: null })
+      } catch (err) {
+        if (!cancelled) setVofEligible({ loading: false, count: null, error: err.message })
+      }
+    })()
+    return () => { cancelled = true }
+  }, [tab, vofSelectedCats, vofStatus, vofForce])
 
   // ── Enrich state ─────────────────────────────────────────────────────────
   const [enrichRunState, setEnrichRunState] = useState(null)
@@ -800,6 +824,34 @@ export default function GenerateFactsPage({ toast }) {
                 />
                 {vofCount > 100 && (
                   <p className="text-[10px] text-amber-400 mt-1">⚠️ Au-delà de 100 : ~{Math.ceil(vofCount / 60)} min, onglet à garder ouvert</p>
+                )}
+              </div>
+            </div>
+
+            {/* Éligibles selon filtres */}
+            <div className="mb-4 px-4 py-3 rounded-xl border flex items-center justify-between gap-3"
+              style={{
+                background: 'rgba(167,139,250,0.08)',
+                borderColor: 'rgba(167,139,250,0.25)',
+              }}>
+              <div className="text-xs font-semibold text-slate-300">
+                F*cts concernés par ces filtres
+                <span className="text-[10px] text-slate-500 ml-1">
+                  ({vofSelectedCats.length === 0 ? 'toutes catégories' : `${vofSelectedCats.length} cat.`} · {vofStatus} · {vofForce ? 'force' : 'skip existants'})
+                </span>
+              </div>
+              <div className="text-right">
+                {vofEligible.loading ? (
+                  <span className="text-sm font-black text-slate-400"><span className="inline-block animate-spin mr-1">⟳</span>…</span>
+                ) : vofEligible.error ? (
+                  <span className="text-xs font-bold text-red-400">Erreur</span>
+                ) : (
+                  <>
+                    <span className="text-lg font-black" style={{ color: '#A78BFA' }}>{vofEligible.count ?? 0}</span>
+                    <span className="text-xs text-slate-400 ml-1">
+                      · traités : <span className="font-bold text-slate-200">{Math.min(vofCount, vofEligible.count ?? 0)}</span>
+                    </span>
+                  </>
                 )}
               </div>
             </div>

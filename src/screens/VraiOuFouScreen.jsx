@@ -30,7 +30,7 @@ export default function VraiOuFouScreen({ onHome }) {
   )
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
-  const [drag, setDrag] = useState({ y: 0, active: false })
+  const [drag, setDrag] = useState({ x: 0, active: false })
   // feedback: { correct: bool, pickedSide: 'left'|'right', draw }
   // Note : 'left' = carte du haut, 'right' = carte du bas (split horizontal)
   const [feedback, setFeedback] = useState(null)
@@ -38,7 +38,7 @@ export default function VraiOuFouScreen({ onHome }) {
   const [showQuit, setShowQuit] = useState(false)
   const [shareMsg, setShareMsg] = useState(null)
   const [imgFailed, setImgFailed] = useState(false)
-  const startY = useRef(0)
+  const startX = useRef(0)
   const feedbackTimer = useRef(null)
 
   useEffect(() => () => clearTimeout(feedbackTimer.current), [])
@@ -75,27 +75,26 @@ export default function VraiOuFouScreen({ onHome }) {
       } else {
         setIndex(i => i + 1)
         setFeedback(null)
-        setDrag({ y: 0, active: false })
+        setDrag({ x: 0, active: false })
       }
     }, FEEDBACK_MS)
   }
 
   const onPointerDown = (e) => {
     if (feedback) return
-    startY.current = e.clientY ?? e.touches?.[0]?.clientY ?? 0
-    setDrag({ y: 0, active: true })
+    startX.current = e.clientX ?? e.touches?.[0]?.clientX ?? 0
+    setDrag({ x: 0, active: true })
   }
   const onPointerMove = (e) => {
     if (!drag.active || feedback) return
-    const y = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) - startY.current
-    setDrag({ y, active: true })
+    const x = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) - startX.current
+    setDrag({ x, active: true })
   }
   const onPointerUp = () => {
     if (!drag.active || feedback) return
-    // Swipe vers le HAUT = carte du haut (left) ; vers le BAS = carte du bas (right)
-    if (drag.y < -SWIPE_THRESHOLD) handlePick('left')
-    else if (drag.y > SWIPE_THRESHOLD) handlePick('right')
-    else setDrag({ y: 0, active: false })
+    if (drag.x < -SWIPE_THRESHOLD) handlePick('left')
+    else if (drag.x > SWIPE_THRESHOLD) handlePick('right')
+    else setDrag({ x: 0, active: false })
   }
 
   const handleReplay = () => {
@@ -103,7 +102,7 @@ export default function VraiOuFouScreen({ onHome }) {
     setIndex(0)
     setCorrect(0)
     setFeedback(null)
-    setDrag({ y: 0, active: false })
+    setDrag({ x: 0, active: false })
     setDone(false)
     setSeed(s => s + 1)
   }
@@ -223,10 +222,9 @@ export default function VraiOuFouScreen({ onHome }) {
 
   // ── Phase de jeu : 2 cartes stackées verticalement ────────────────────
   // Intensité visuelle du swipe (0 → 1)
-  const dragIntensity = Math.min(Math.abs(drag.y) / SWIPE_THRESHOLD, 1)
-  // left = carte haut, right = carte bas (on garde ces noms pour trueSide)
-  const leftHighlight  = !feedback && drag.y < -10 // swipe haut
-  const rightHighlight = !feedback && drag.y >  10 // swipe bas
+  const dragIntensity = Math.min(Math.abs(drag.x) / SWIPE_THRESHOLD, 1)
+  const leftHighlight  = !feedback && drag.x < -10
+  const rightHighlight = !feedback && drag.x >  10
 
   // Pendant le feedback, on sait quel côté a été choisi, et quel côté est vrai
   const leftIsTrue  = draw && draw.trueSide === 'left'
@@ -290,29 +288,31 @@ export default function VraiOuFouScreen({ onHome }) {
         {/* Indicateurs VRAI / FOU — milieu de page, entre les 2 cartes */}
         <div style={{
           display: 'flex', justifyContent: 'center', alignItems: 'center',
-          gap: S(10), padding: `${S(4)} 0`, flexShrink: 0,
+          gap: S(10), padding: `${S(6)} 0`, flexShrink: 0,
         }}>
           <div style={{
             flex: 1, textAlign: 'center',
-            padding: `${S(6)} ${S(10)}`, borderRadius: S(12),
-            background: leftHighlight ? 'rgba(34,197,94,0.4)' : 'rgba(34,197,94,0.15)',
-            border: `2px solid ${leftHighlight ? '#22C55E' : 'rgba(34,197,94,0.5)'}`,
-            color: leftHighlight ? '#FFFFFF' : '#BBF7D0',
-            fontWeight: 900, fontSize: S(12), letterSpacing: '0.1em',
+            padding: `${S(12)} ${S(14)}`, borderRadius: S(14),
+            background: leftHighlight ? 'rgba(34,197,94,0.85)' : 'rgba(34,197,94,0.65)',
+            border: `3px solid ${leftHighlight ? '#22C55E' : 'rgba(34,197,94,0.9)'}`,
+            color: '#FFFFFF',
+            fontWeight: 900, fontSize: S(16), letterSpacing: '0.12em',
+            boxShadow: leftHighlight ? '0 6px 20px rgba(34,197,94,0.5)' : '0 4px 14px rgba(34,197,94,0.25)',
             transition: 'all 0.2s ease',
           }}>
-            ↑ VRAI
+            ← VRAI
           </div>
           <div style={{
             flex: 1, textAlign: 'center',
-            padding: `${S(6)} ${S(10)}`, borderRadius: S(12),
-            background: rightHighlight ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.15)',
-            border: `2px solid ${rightHighlight ? '#EF4444' : 'rgba(239,68,68,0.5)'}`,
-            color: rightHighlight ? '#FFFFFF' : '#FECACA',
-            fontWeight: 900, fontSize: S(12), letterSpacing: '0.1em',
+            padding: `${S(12)} ${S(14)}`, borderRadius: S(14),
+            background: rightHighlight ? 'rgba(239,68,68,0.85)' : 'rgba(239,68,68,0.65)',
+            border: `3px solid ${rightHighlight ? '#EF4444' : 'rgba(239,68,68,0.9)'}`,
+            color: '#FFFFFF',
+            fontWeight: 900, fontSize: S(16), letterSpacing: '0.12em',
+            boxShadow: rightHighlight ? '0 6px 20px rgba(239,68,68,0.5)' : '0 4px 14px rgba(239,68,68,0.25)',
             transition: 'all 0.2s ease',
           }}>
-            FOU ↓
+            FOU →
           </div>
         </div>
 
@@ -404,7 +404,7 @@ function StatementCard({ S, text, side, highlight, intensity, feedback, isTrue }
         background: bg,
         borderRadius: S(18),
         border: `${borderWidth}px solid ${borderColor}`,
-        padding: `${S(10)} ${S(8)}`,
+        padding: `${S(6)} ${S(8)}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

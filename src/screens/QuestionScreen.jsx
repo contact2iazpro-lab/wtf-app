@@ -198,6 +198,7 @@ export default function QuestionScreen({
   )
 
   // ── Question card ──────────────────────────────────────────────────────────
+  const isSnackMode = sessionType === 'snack' || gameMode === 'snack'
   const questionCard = (
     <div
       className="rounded-2xl p-3 border shrink-0"
@@ -208,6 +209,34 @@ export default function QuestionScreen({
         boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
       }}
     >
+      {isSnackMode && fact.imageUrl && (
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '16 / 9',
+          borderRadius: S(12),
+          overflow: 'hidden',
+          marginBottom: S(10),
+          background: 'rgba(0,0,0,0.3)',
+        }}>
+          <img
+            src={fact.imageUrl}
+            alt=""
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+              filter: 'blur(18px) brightness(0.7)',
+              transform: 'scale(1.1)',
+            }}
+            onError={(e) => { e.target.style.display = 'none' }}
+          />
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: S(42),
+            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
+          }}>🔒</div>
+        </div>
+      )}
       <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))' }}>{renderFormattedText(fact.question)}</h2>
     </div>
   )

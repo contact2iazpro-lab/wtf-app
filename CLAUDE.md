@@ -2,6 +2,12 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 
 LANGUE: Toujours répondre en français.
 
+RÈGLES DES MODES (homogénéité) :
+- Devise écrite **WTFCoins** (C majuscule) — jamais "WTFcoins" ni "coins".
+- Format slash compact sans espace : `2/question`, `15s/question`, `5 questions/set`.
+- Structure des lignes : `Label : valeur` (deux-points entouré d'espaces).
+- Appliquer ces règles sur toutes les pages de règles (livret HowToPlayModal + ModeLaunchScreen).
+
 # WTF! — What The F*ct
 
 ## Projet

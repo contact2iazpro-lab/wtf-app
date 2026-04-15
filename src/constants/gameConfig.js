@@ -74,10 +74,10 @@ export const MODE_CONFIGS = {
     rules: [
       { icon: '🔋', text: 'Coût : 1 Capsule d\'énergie' },
       { icon: '📋', text: 'Set : 5 questions/set' },
-      { icon: '🔢', text: 'QCM : 2 /question' },
+      { icon: '🔢', text: 'QCM : 2/question' },
       { icon: '⏱️', text: 'Timer : 15s/question' },
       { icon: '🪙', text: 'Récompense : 10 WTFCoins/bonne réponse' },
-      { icon: '🎁', text: 'Perfect : 5 bonnes réponses = +50 WTFcoins' },
+      { icon: '🎁', text: 'Perfect : +50 WTFCoins' },
     ],
   },
   vrai_ou_fou: {

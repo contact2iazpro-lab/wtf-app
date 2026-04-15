@@ -14,7 +14,7 @@ import { checkBadges } from '../utils/badgeManager'
 
 export function useHandleNext({
   // State lectures
-  gameMode, currentIndex, sessionFacts, sessionScore, numPlayers,
+  currentIndex, sessionFacts, sessionScore,
   isQuickPlay, sessionCorrectFacts, sessionType, effectiveDailyFact,
   correctCount, isCorrect, sessionAnyHintUsed, selectedAnswer,
   selectedDifficulty, selectedCategory, user,
@@ -22,7 +22,7 @@ export function useHandleNext({
   totalScore, streak, unlockedFacts, wtfDuJourDate, sessionsToday, wtfCoins,
   // Setters
   setScreen, setCurrentIndex, setHintsUsed, setSelectedAnswer, setIsCorrect,
-  setPointsEarned, setDuelCurrentPlayerIndex, setStorage, setCoinsEarnedLastSession,
+  setPointsEarned, setStorage, setCoinsEarnedLastSession,
   setSessionIsPerfect, setCompletedLevels, setNewlyUnlockedCategories,
   setShowNewCategoriesModal, setShowStreakSpecialModal, setStreakRewardToast,
   setTrophyQueue,
@@ -37,22 +37,6 @@ export function useHandleNext({
   const handleNext = useCallback(() => {
     try {
     const nextIndex = currentIndex + 1
-
-    // ── DUEL ──────────────────────────────────────────────────────────
-    if (gameMode === 'duel') {
-      if (nextIndex >= Math.floor(sessionFacts.length / numPlayers)) {
-        setScreen(SCREENS.DUEL_RESULTS)
-      } else {
-        setCurrentIndex(nextIndex)
-        setDuelCurrentPlayerIndex(0)
-        setHintsUsed(0)
-        setSelectedAnswer(null)
-        setIsCorrect(null)
-        setPointsEarned(0)
-        setScreen(SCREENS.DUEL_PASS)
-      }
-      return
-    }
 
     // ── SOLO — Question suivante ──────────────────────────────────────
     if (nextIndex < sessionFacts.length) {
@@ -261,10 +245,10 @@ export function useHandleNext({
       setScreen(SCREENS.RESULTS)
     }
     } catch (err) { console.error('[handleNext] CRASH:', err); setScreen(SCREENS.RESULTS) }
-  }, [gameMode, currentIndex, sessionFacts.length, sessionScore, totalScore, streak, sessionsToday,
+  }, [currentIndex, sessionFacts.length, sessionScore, totalScore, streak, sessionsToday,
       isQuickPlay, sessionCorrectFacts, unlockedFacts, user, sessionType, wtfCoins, wtfDuJourDate,
       effectiveDailyFact, correctCount, isCorrect, sessionAnyHintUsed, selectedAnswer,
-      numPlayers, selectedDifficulty, selectedCategory])
+      selectedDifficulty, selectedCategory])
 
   return handleNext
 }

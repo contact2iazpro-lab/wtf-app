@@ -17,9 +17,6 @@ import ResultsScreen from '../screens/ResultsScreen'
 import BlitzScreen from '../screens/BlitzScreen'
 import BlitzLobbyScreen from '../screens/BlitzLobbyScreen'
 import BlitzResultsScreen from '../screens/BlitzResultsScreen'
-import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from '../screens/DuelSetupScreen'
-import DuelPassScreen from '../screens/DuelPassScreen'
-import DuelResultsScreen from '../screens/DuelResultsScreen'
 import FlashScreen from '../screens/FlashScreen'
 import QuestScreen from '../screens/QuestScreen'
 import MarathonScreen from '../screens/MarathonScreen'
@@ -32,15 +29,14 @@ export default function ScreenRenderer({
   selectedAnswer, isCorrect, pointsEarned, coinsEarnedLastSession,
   sessionCorrectFacts, sessionFacts, sessionsToday, sessionIsPerfect,
   completedLevels, effectiveDailyFact, launchMode, blitzFacts, blitzResults,
-  duelPlayers, duelCurrentPlayerIndex, duelContext, isChallengeMode,
+  isChallengeMode,
   pendingDuel, lastCreatedDuel, lastCreatedDuelError, clearLastCreatedDuel, clearPendingDuel,
   user, storage, streak, newlyEarnedBadges, snackEnergy,
   showHowToPlay, modeConfigs,
   // Handlers
   handleHomeNavigate, handleHome, handleSelectDifficulty, handleSelectCategory,
   handleSelectAnswer, handleOpenValidate, handleUseHint, handleTimeout,
-  handleNext, handleDuelNextPlayer, handleDuelStart, handleDuelPassReady,
-  handleDuelReplay, handleReplay, handleBlitzReplay, handleBlitzStart,
+  handleNext, handleReplay, handleBlitzReplay, handleBlitzStart,
   handleBlitzFinish, handleStartFlashSession, handleShare, handleShareDailyFact,
   handleSaveTempFacts, handleLaunchStart,
   // Setters
@@ -123,7 +119,7 @@ export default function ScreenRenderer({
 
       {screen === SCREENS.QUESTION && currentFact && (
         <QuestionScreen
-          key={`${gameMode}-${duelCurrentPlayerIndex}-${currentFact.id}`}
+          key={`${gameMode}-${currentFact.id}`}
           fact={currentFact}
           factIndex={currentIndex}
           totalFacts={totalRounds}
@@ -136,9 +132,6 @@ export default function ScreenRenderer({
           category={selectedCategory}
           gameMode={gameMode}
           difficulty={(gameMode === 'solo' || gameMode === 'snack') ? selectedDifficulty : null}
-          playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
-          playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
-          playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
           sessionType={sessionType}
         />
       )}
@@ -150,14 +143,13 @@ export default function ScreenRenderer({
           selectedAnswer={selectedAnswer}
           pointsEarned={pointsEarned}
           hintsUsed={hintsUsed}
-          onNext={gameMode === 'duel' && !duelContext?.isLastPlayer ? handleDuelNextPlayer : handleNext}
+          onNext={handleNext}
           onShare={handleShare}
           onQuit={handleHome}
           factIndex={currentIndex}
           totalFacts={totalRounds}
-          duelContext={duelContext}
           gameMode={gameMode}
-          sessionScore={gameMode === 'duel' ? 0 : sessionScore}
+          sessionScore={sessionScore}
           sessionType={sessionType}
         />
       )}
@@ -222,51 +214,6 @@ export default function ScreenRenderer({
           autoChallenge={lastCreatedDuel}
           challengeError={lastCreatedDuelError}
           onClearAutoChallenge={handleClearAutoChallenge}
-        />
-      )}
-
-      {screen === SCREENS.DUEL_SETUP && (
-        <>
-          {showHowToPlay && gameMode === 'duel' && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
-              <div className="w-full rounded-3xl p-6 border" style={{ background: '#fff', borderColor: 'rgba(0,0,0,0.1)', maxWidth: '420px', maxHeight: '85vh', overflowY: 'auto' }}>
-                <div className="text-4xl text-center mb-4">🎮</div>
-                <h2 className="text-xl font-black text-center mb-3" style={{ color: '#1a1a2e' }}>Multijoueur</h2>
-                <div className="text-sm mb-5" style={{ color: '#333', lineHeight: '1.6' }}>
-                  <p className="mb-3"><strong>👥 Tour par tour :</strong> Chaque joueur répond à ses questions à son tour.</p>
-                  <p className="mb-3"><strong>🏆 Scoring :</strong> <strong>5 pts</strong> sans indice • <strong>3 pts</strong> avec 1 indice • <strong>2 pts</strong> avec 2 indices.</p>
-                  <p><strong>🎯 Gagnant :</strong> Le joueur avec le plus de points à la fin !</p>
-                </div>
-                <div className="flex items-center gap-2 mb-4 p-3 rounded-lg" style={{ background: 'rgba(0,0,0,0.03)' }}>
-                  <input type="checkbox" id="hideHowToPlayDuel" onChange={(e) => { if (e.target.checked) localStorage.setItem('wtf_hide_howtoplay', 'true') }} className="w-4 h-4 cursor-pointer" />
-                  <label htmlFor="hideHowToPlayDuel" className="text-xs cursor-pointer" style={{ color: '#666' }}>Ne plus afficher</label>
-                </div>
-                <button onClick={() => setShowHowToPlay(false)} className="w-full py-3 rounded-2xl font-black text-sm active:scale-95 transition-all" style={{ background: '#FF6B1A', color: 'white' }}>
-                  C'est parti !
-                </button>
-              </div>
-            </div>
-          )}
-          <DuelSetupScreen onStart={handleDuelStart} onBack={handleHome} />
-        </>
-      )}
-
-      {screen === SCREENS.DUEL_PASS && (
-        <DuelPassScreen
-          playerName={duelPlayers[duelCurrentPlayerIndex]?.name ?? ''}
-          playerColor={PLAYER_COLORS[duelCurrentPlayerIndex]}
-          playerEmoji={PLAYER_EMOJIS[duelCurrentPlayerIndex]}
-          questionIndex={currentIndex}
-          totalQuestions={totalRounds}
-          onReady={handleDuelPassReady}
-        />
-      )}
-
-      {screen === SCREENS.DUEL_RESULTS && (
-        <DuelResultsScreen
-          players={duelPlayers}
-          onReplay={handleDuelReplay}
-          onHome={handleHome}
         />
       )}
 

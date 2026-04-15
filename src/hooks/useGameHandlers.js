@@ -15,13 +15,11 @@ import { SCREENS } from '../constants/gameConfig'
 export function useGameHandlers({
   // Lecture
   currentFact,
-  gameMode,
   sessionType,
   selectedDifficulty,
   selectedCategory,
   hintsUsed,
   selectedAnswer,
-  duelCurrentPlayerIndex,
   user,
   unlockedFacts,
   // Setters
@@ -31,7 +29,6 @@ export function useGameHandlers({
   setSessionScore,
   setCorrectCount,
   setSessionCorrectFacts,
-  setDuelPlayers,
   setHintsUsed,
   setSessionAnyHintUsed,
   setStorage,
@@ -70,9 +67,7 @@ export function useGameHandlers({
       setSessionCorrectFacts(prev => [...prev, currentFact])
     }
 
-    if (gameMode === 'duel') {
-      setDuelPlayers(ps => ps.map((p, i) => i === duelCurrentPlayerIndex ? { ...p, score: p.score + points } : p))
-    } else {
+    {
       setSessionScore(s => s + points)
       if (isAnswerCorrect) setCorrectCount(c => c + 1)
       if (points > 0) {
@@ -81,7 +76,6 @@ export function useGameHandlers({
         })
       }
 
-      // Snack/Marathon : débloquer le f*ct immédiatement
       // Débloquer le fact immédiatement pour TOUS les modes (pas attendre la fin de session)
       if (isAnswerCorrect && currentFact) {
         setStorage(prev => {
@@ -118,7 +112,7 @@ export function useGameHandlers({
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [currentFact, gameMode, duelCurrentPlayerIndex, calcPoints, sessionType, user, selectedCategory, applyCurrencyDelta])
+  }, [currentFact, calcPoints, sessionType, user, selectedCategory, applyCurrencyDelta])
 
   // ── handleOpenValidate ─────────────────────────────────────────────────
   const handleOpenValidate = useCallback((isCorrect) => {
@@ -132,20 +126,16 @@ export function useGameHandlers({
       setSessionCorrectFacts(prev => [...prev, currentFact])
     }
 
-    if (gameMode === 'duel') {
-      setDuelPlayers(ps => ps.map((p, i) => i === duelCurrentPlayerIndex ? { ...p, score: p.score + points } : p))
-    } else {
-      setSessionScore(s => s + points)
-      if (isCorrect) setCorrectCount(c => c + 1)
-      if (points > 0) {
-        applyCurrencyDelta?.({ coins: points }, `${sessionType}_validate`)?.catch?.(e => {
-          console.warn('[Phase A] applyCurrencyDelta failed:', e?.message || e)
-        })
-      }
+    setSessionScore(s => s + points)
+    if (isCorrect) setCorrectCount(c => c + 1)
+    if (points > 0) {
+      applyCurrencyDelta?.({ coins: points }, `${sessionType}_validate`)?.catch?.(e => {
+        console.warn('[Phase A] applyCurrencyDelta failed:', e?.message || e)
+      })
     }
 
     setScreen(SCREENS.REVELATION)
-  }, [calcPoints, gameMode, duelCurrentPlayerIndex, currentFact, sessionType, applyCurrencyDelta])
+  }, [calcPoints, currentFact, sessionType, applyCurrencyDelta])
 
   // ── handleTimeout ──────────────────────────────────────────────────────
   const handleTimeout = useCallback(() => {

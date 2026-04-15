@@ -185,12 +185,8 @@ export function useAppEffects({
           setScreen(SCREENS.HOME)
           setGameMode('solo')
           break
-        case SCREENS.DUEL_SETUP:
-          setScreen(SCREENS.HOME)
-          break
         case SCREENS.RESULTS:
         case SCREENS.WTF_REVEAL:
-        case SCREENS.DUEL_RESULTS:
         case SCREENS.BLITZ_RESULTS:
           handleHome()
           break

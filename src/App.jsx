@@ -238,10 +238,7 @@ export default function App() {
   // Dev panel
   const [showDevPanel, setShowDevPanel] = useState(false)
 
-  // Multiplayer state
-  const [duelPlayers, setDuelPlayers] = useState([])
-  const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
-  const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'snack'
+  const [gameMode, setGameMode] = useState('solo') // 'solo' | 'snack'
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [gameAlert, setGameAlert] = useState(null) // { emoji, title, message }
@@ -273,15 +270,11 @@ export default function App() {
     if (user && showConnectBanner) setShowConnectBanner(false)
   }, [user, showConnectBanner])
 
-  const numPlayers = duelPlayers.length || 1
+  const numPlayers = 1
 
-  const currentFact = gameMode === 'duel'
-    ? sessionFacts[currentIndex * numPlayers + duelCurrentPlayerIndex] || null
-    : sessionFacts[currentIndex] || null
+  const currentFact = sessionFacts[currentIndex] || null
 
-  const totalRounds = gameMode === 'duel'
-    ? Math.floor(sessionFacts.length / numPlayers)
-    : sessionFacts.length
+  const totalRounds = sessionFacts.length
 
   // ─── Game handlers (extrait pour réduire App.jsx) ────────────────────────
   const {
@@ -290,10 +283,10 @@ export default function App() {
     handleTimeout,
     handleUseHint,
   } = useGameHandlers({
-    currentFact, gameMode, sessionType, selectedDifficulty, selectedCategory,
-    hintsUsed, selectedAnswer, duelCurrentPlayerIndex, user, unlockedFacts,
+    currentFact, sessionType, selectedDifficulty, selectedCategory,
+    hintsUsed, selectedAnswer, user, unlockedFacts,
     setSelectedAnswer, setIsCorrect, setPointsEarned, setSessionScore,
-    setCorrectCount, setSessionCorrectFacts, setDuelPlayers, setHintsUsed,
+    setCorrectCount, setSessionCorrectFacts, setHintsUsed,
     setSessionAnyHintUsed, setStorage, setNewlyUnlockedCategories, setScreen,
     applyCurrencyDelta, // Phase A : source unique RPC
     unlockFact,         // Phase A.7 : miroir unlock_fact RPC
@@ -386,23 +379,22 @@ export default function App() {
     setTimeout(() => handleSelectCategoryRef.current?.(cat), 0)
   }, [pendingSnackCat, gameMode])
 
-  // ─── Navigation, Duel, Replay, Share ──────────────────────────────────────
+  // ─── Navigation, Replay, Share ────────────────────────────────────────────
   const {
     launchModeDestination, handleLaunchStart, showOrSkipLaunch,
     handleHomeNavigate,
-    handleDuelNextPlayer, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
     handleHome, handleBlitzReplay, handleSnackContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,
   } = useNavigationHandlers({
     launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
     selectedDifficulty,
-    snackPool, unlockedFacts, duelPlayers, user, sessionCorrectFacts,
+    snackPool, unlockedFacts, user, sessionCorrectFacts,
     handleStartFlashSession, handleSnack, handleSelectDifficulty,
     handleSelectCategory, handleBlitzStart, initSessionState,
     setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
     setSelectedCategory, setSessionFacts, setCurrentIndex, setSessionScore,
-    setCorrectCount, setDuelPlayers, setDuelCurrentPlayerIndex, setIsQuickPlay,
+    setCorrectCount, setIsQuickPlay,
     setBlitzFacts, setBlitzResults, setSnackPool,
     setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
     setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
@@ -413,13 +405,13 @@ export default function App() {
 
 
   const handleNext = useHandleNext({
-    gameMode, currentIndex, sessionFacts, sessionScore, numPlayers,
+    currentIndex, sessionFacts, sessionScore,
     isQuickPlay, sessionCorrectFacts, sessionType, effectiveDailyFact,
     correctCount, isCorrect, sessionAnyHintUsed, selectedAnswer,
     selectedDifficulty, selectedCategory, user,
     totalScore, streak, unlockedFacts, wtfDuJourDate, sessionsToday, wtfCoins,
     setScreen, setCurrentIndex, setHintsUsed, setSelectedAnswer, setIsCorrect,
-    setPointsEarned, setDuelCurrentPlayerIndex, setStorage, setCoinsEarnedLastSession,
+    setPointsEarned, setStorage, setCoinsEarnedLastSession,
     setSessionIsPerfect, setCompletedLevels, setNewlyUnlockedCategories,
     setShowNewCategoriesModal, setShowStreakSpecialModal, setStreakRewardToast,
     setTrophyQueue,
@@ -434,14 +426,6 @@ export default function App() {
     setSessionType, setCoinsEarnedLastSession, setSessionScore,
     setCorrectCount, setSessionFacts, setScreen,
   })
-
-  // Multiplayer context
-  const duelContext = gameMode === 'duel' ? {
-    currentPlayerIndex: duelCurrentPlayerIndex,
-    playerName: duelPlayers[duelCurrentPlayerIndex]?.name ?? '',
-    players: duelPlayers,
-    isLastPlayer: duelCurrentPlayerIndex === duelPlayers.length - 1,
-  } : null
 
   // ─── App effects → extraits dans useAppEffects hook ─────────────────────────
   useAppEffects({
@@ -541,8 +525,7 @@ export default function App() {
         sessionsToday={sessionsToday} sessionIsPerfect={sessionIsPerfect}
         completedLevels={completedLevels} effectiveDailyFact={effectiveDailyFact}
         launchMode={launchMode} blitzFacts={blitzFacts} blitzResults={blitzResults}
-        duelPlayers={duelPlayers} duelCurrentPlayerIndex={duelCurrentPlayerIndex}
-        duelContext={duelContext} isChallengeMode={isChallengeMode}
+        isChallengeMode={isChallengeMode}
         pendingDuel={pendingDuel}
         lastCreatedDuel={lastCreatedDuel}
         lastCreatedDuelError={lastCreatedDuelError}
@@ -556,9 +539,7 @@ export default function App() {
         handleSelectDifficulty={handleSelectDifficulty} handleSelectCategory={handleSelectCategory}
         handleSelectAnswer={handleSelectAnswer} handleOpenValidate={handleOpenValidate}
         handleUseHint={handleUseHint} handleTimeout={handleTimeout}
-        handleNext={handleNext} handleDuelNextPlayer={handleDuelNextPlayer}
-        handleDuelStart={handleDuelStart} handleDuelPassReady={handleDuelPassReady}
-        handleDuelReplay={handleDuelReplay} handleReplay={handleReplay}
+        handleNext={handleNext} handleReplay={handleReplay}
         handleBlitzReplay={handleBlitzReplay} handleBlitzStart={handleBlitzStart}
         handleBlitzFinish={handleBlitzFinish} handleStartFlashSession={handleStartFlashSession}
         handleShare={handleShare} handleShareDailyFact={handleShareDailyFact}

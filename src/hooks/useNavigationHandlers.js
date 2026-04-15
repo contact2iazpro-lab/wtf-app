@@ -8,11 +8,9 @@
 
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DIFFICULTY_LEVELS, SCREENS, QUESTIONS_PER_GAME } from '../constants/gameConfig'
-import { getFactsByCategory } from '../data/factsService'
+import { DIFFICULTY_LEVELS, SCREENS } from '../constants/gameConfig'
 import { getAnswerOptions } from '../utils/answers'
-import { shuffle } from '../utils/shuffle'
-import { getSnackEnergy, consumeSnackEnergy } from '../services/energyService'
+import { getSnackEnergy } from '../services/energyService'
 import { saveStorage, loadStorage } from '../utils/storageHelper'
 import { syncAfterAction } from '../services/playerSyncService'
 
@@ -20,14 +18,14 @@ export function useNavigationHandlers({
   // State
   launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
   selectedDifficulty,
-  snackPool, unlockedFacts, duelPlayers, user, sessionCorrectFacts,
+  snackPool, unlockedFacts, user, sessionCorrectFacts,
   // Hooks extraits
   handleStartFlashSession, handleSnack, handleSelectDifficulty,
   handleSelectCategory, handleBlitzStart, initSessionState,
   // Setters
   setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
   setSelectedCategory, setSessionFacts, setCurrentIndex, setSessionScore,
-  setCorrectCount, setDuelPlayers, setDuelCurrentPlayerIndex, setIsQuickPlay,
+  setCorrectCount, setIsQuickPlay,
   setBlitzFacts, setBlitzResults, setSnackPool,
   setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
   setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
@@ -102,30 +100,6 @@ export function useNavigationHandlers({
     }
   }, [handleSnack, handleStartFlashSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])
 
-  // ── Duel ───────────────────────────────────────────────────────────────
-  const handleDuelNextPlayer = useCallback(() => {
-    setDuelCurrentPlayerIndex(i => i + 1)
-    setHintsUsed(0); setSelectedAnswer(null); setIsCorrect(null); setPointsEarned(0)
-    setScreen(SCREENS.DUEL_PASS)
-  }, [])
-
-  // CLAUDE.md 15/04/2026 — "Multi → SUPPRIMÉ (non prévu V1)"
-  // Le flow local pass-the-phone (gameMode='duel' + DUEL_SETUP/PASS/RESULTS)
-  // est dead code : aucun entry-point UI. À ripper lors d'un passage dédié.
-  const handleDuelStart = useCallback((playerNames) => {
-    const n = playerNames.length
-    const allFacts = getFactsByCategory(null)
-    const shuffled = shuffle(allFacts).slice(0, QUESTIONS_PER_GAME * n)
-    setDuelPlayers(playerNames.map(name => ({ name, score: 0 })))
-    setDuelCurrentPlayerIndex(0)
-    setGameMode('duel')
-    initSessionState(shuffled)
-    setScreen(SCREENS.DUEL_PASS)
-  }, [initSessionState])
-
-  const handleDuelPassReady = useCallback(() => setScreen(SCREENS.QUESTION), [])
-  const handleDuelReplay = useCallback(() => handleDuelStart(duelPlayers.map(p => p.name)), [duelPlayers, handleDuelStart])
-
   // ── Home / Replay / Share ──────────────────────────────────────────────
   const handleSaveTempFacts = useCallback(() => {
     if (!user || sessionCorrectFacts.length === 0) return
@@ -155,7 +129,7 @@ export function useNavigationHandlers({
   const handleHome = useCallback(() => {
     setScreen(SCREENS.HOME); setGameMode('solo'); setSelectedCategory(null)
     setSessionFacts([]); setCurrentIndex(0); setSessionScore(0); setCorrectCount(0)
-    setDuelPlayers([]); setDuelCurrentPlayerIndex(0); setIsQuickPlay(false)
+    setIsQuickPlay(false)
     setSessionType('parcours'); setBlitzFacts([]); setBlitzResults(null)
     setLaunchMode(null); setSnackPool([])
     // Cleanup pending duel si l'user abandonne le flow
@@ -204,7 +178,6 @@ export function useNavigationHandlers({
   return {
     launchModeDestination, handleLaunchStart, showOrSkipLaunch,
     handleHomeNavigate,
-    handleDuelNextPlayer, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
     handleHome, handleBlitzReplay, handleSnackContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,

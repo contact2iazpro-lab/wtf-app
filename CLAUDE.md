@@ -8,6 +8,25 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 - Stack : React + Vite + Supabase + Tailwind + Nunito
 - Deploy : Railway auto sur push master
 
+## ⚠️ MAPPING DE RENOMMAGE (15/04/2026) — CRITIQUE
+> Session stratégique 15/04/2026. Refonte complète des modes et de l'économie.
+> Tout l'ancien vocabulaire doit être nettoyé dans le code, les commentaires, les variables.
+
+| Ancien (code actuel) | Nouveau officiel | Notes |
+|---|---|---|
+| Flash + Explorer ("Jouer") | **Snack** | QCM 2 choix, farming quotidien |
+| Route WTF! | **Quest** | Progression linéaire, boss VIP /10 |
+| Blitz chrono 60s | **Blitz Solo** | Sous-mode de Blitz |
+| Défi Blitz async | **Blitz Défi** | Sous-mode de Blitz |
+| Hunt + Puzzle du Jour | **Flash** | Événement quotidien + Hunt dimanche |
+| *(nouveau)* | **Vrai ou Fou** | Swipe Vrai/Faux, 20 affirmations |
+| *(nouveau)* | **Marathon** | Survie jusqu'à erreur, 4 QCM, pas de timer |
+| Quest ancien (ticket+Cool/Hot) | **SUPPRIMÉ** | Remplacé par Quest (Route) |
+| Mode Série | **SUPPRIMÉ** | Absorbé dans le streak |
+| Multi | **SUPPRIMÉ** | Non prévu V1 |
+| Cool / Hot / WTF! (niveaux) | **SUPPRIMÉS** | Difficulté = nb QCM par mode |
+| Tickets (devise) | **SUPPRIMÉS** | Coût coins direct |
+
 ## 🛠️ Déploiements & Environnements
 
 ### ⚠️ Admin-Tool ≠ Game
@@ -33,67 +52,15 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
 - ✅ Console warnings fixés (React setState, Supabase 406, favicon)
 - ✅ Race condition fix (ChallengeScreen waits for facts init)
 - ✅ **Mode Défi Blitz** : 3 bloquants fermés (2026-04-13)
-  - ✅ Catégorie choisie avant créer défi
-  - ✅ Ticket débité APRÈS createDuelRound() (pas avant jeu)
-  - ✅ TRIGGER SQL pour calculer winner_id
 - ✅ **Bloc 1 — Mode Défi finalisé (2026-04-14)** : 5 bugs + 10 items UX/logique fermés
-  - ✅ Auto-relever sur son propre défi : bug `isMe1` corrigé (dérivé du round, plus du duel normalisé alphabétiquement)
-  - ✅ Refus revanche persistant Supabase : colonne `challenges.declined_by uuid[]` + RPC `decline_round` (migration `add_declined_by_to_challenges.sql`)
-  - ✅ Revanche mêmes conditions : `startCreateDefi(friendId, categoryId, questionCount)` skip BlitzLobby et relance directement
-  - ✅ Pénalité erreur défi : +5s (aligné mode Blitz solo, décision C9)
-  - ✅ Pré-check créateur : amitié `accepted` uniquement. Le créateur propose librement dans SES catégories ≥5 f*cts — l'accepteur gère le fallback si sa propre collection est insuffisante (décision 2026-04-14, revert du filtre cross-collections). BlitzLobbyScreen ne charge plus `loadFriendCategoryCounts`.
-  - ✅ **1.1** Fin défi : bouton "Accueil" → "Historique", navigate `/duels/{opponentId}` (dérivé du challenge) au lieu de `/`
-  - ✅ **1.2** BlitzLobby : tuile "Aléatoire" affichée aussi en mode défi (retrait gate `!isChallenge`), `opponentTotal` = somme des catégories pour pool adverse
-  - ✅ **1.3** BlitzResultsScreen : bouton "partager le défi" masqué en défi entre amis. Fix root cause : `clearPendingDuel` était appelé prématurément → `opponentId` disparaissait → share button réapparaissait. Déplacé au unmount via `onClearAutoChallenge` (ScreenRenderer)
-  - ✅ **1.4** BlitzResultsScreen : bouton partager conservé en Blitz solo (gate `!opponentId`)
-  - ✅ **1.5** DuelHistoryScreen : section "records blitz" déjà absente (doublon SocialPage) — vérifié
-  - ✅ **1.6** Historique défis : catégorie + nb questions inline (`Cat · X Q`) au lieu de sur 2 lignes
-  - ✅ **1.7** Historique : 2 onglets toggle "Par catégorie" / "Par parcours"
-  - ✅ **1.8** Matchs gagnés recalculés par parcours : nouvelle fonction `computeDuelStatsByQuestionCount(rounds, meId, opponentId)` dans duelService
-  - ✅ **1.9** Chronos défis en centième de seconde : `BlitzScreen` migre vers `Date.now()` (précision 10ms, interval 50ms), `formatTime` → `toFixed(2)` dans BlitzScreen/SocialPage/ChallengeScreen, pénalités via `penaltiesRef` pour préserver précision
-  - ✅ **1.10** Revanche unique : `computeAllDuelStates` ne garde l'action `rematch` QUE sur le round complété le plus récent. Les rounds complétés antérieurs sont dégradés en `'view'` (voir résultat uniquement)
 - ✅ **Bloc 2 — Fix logique critiques (2026-04-14)** : 5 bugs fermés
-  - ✅ **2.6** Énergie cap 5/5 : `INITIAL_STOCK 3→5`, label HomeScreen `/3→/5`, 5 barres d'énergie au lieu de 3
-  - ✅ **2.7** Pulse "NEW" persistant Supabase : `flags.seenModes` push via `mergeFlags()` + dépoté au `pullFromServer()` (cross-device)
-  - ✅ **2.8** Trophées replay corrigé : `flags.badgesEarned` push via `mergeFlags()` après `checkBadges()` (Blitz + Quest), dépoté au pull
-  - ✅ **2.9** Nouveau joueur 50 coins (C10) : aligné trigger DB + AuthContext.createProfile + storageHelper fallback + ProfilPage reset + App init/resetOnboarding
-  - ✅ **2.10** Modal ami SocialPage : croix ✕ remplacée par bouton ⋯ ouvrant bottom-sheet 4 actions (Lancer défi · Historique · Records · Supprimer)
 - ✅ **Bloc 3 — Économie & UX (2026-04-14)** : 7 items fermés
-  - ✅ **3.1** CategoryScreen Explorer/Flash : `unlockedPerCategory` itère `factsPool` (Funny only) — ratio plafonné à 100%
-  - ✅ **3.2** CollectionPage : `Complété !` → `Complété ! X/X f*cts`
-  - ✅ **3.3** Paliers Blitz : 5/10/20/30/**50/100** (40 retiré) — gameConfig + HowToPlayModal alignés
-  - ✅ **3.4** BlitzResultsScreen : layout fullscreen flex (content + footer pinned, plus de scroll)
-  - ✅ **3.5** RouletteModal T95 : avg coins/spin 7,1→5,44 (segments 10→8, 20→15, 50→30, weights ajustés)
-  - ✅ **3.6** Vibreur moments clés : `audio.vibrate()` sur ResultsScreen (perfect long), BlitzResultsScreen (record long), ChallengeScreen (victoire défi long)
-  - ✅ **3.7** Déblocage catégorie payante : tuile lockée Flash/Explorer/CollectionPage ouvre modal confirm 100 coins → débloque uniquement l'accès à la catégorie (aucun f*ct offert, c'est au joueur de les découvrir en jouant). Persisté via `flags.unlockedCategories` (mergeFlags). Composant partagé `UnlockCategoryModal`.
-- ✅ **Bloc 4 — Infra & économie (2026-04-14)** : 4 items fermés, 1 reporté
-  - ✅ **4.8** Cron cleanup anonymes activé (2026-04-14) : fonction `cleanup_anonymous_users` déployée, FK CASCADE ajoutées sur profiles/challenges/friend_codes/friendships (collections CASCADE via profiles), pg_cron schedule `0 3 * * *` actif.
-  - ✅ **4.11** Réduction gains coins (heavy 84→~60/j, casual 52→~42/j) : Flash/Quest/Explorer perfect 10→5, Route niveau 6→4, Route boss 20→15, Coffre dimanche 15→10, Puzzle 6/4/2 → 5/3/1
-  - ✅ **4.1** Migration unlockedFacts → Supabase via RPC `unlock_fact` (14/04/2026) : 4 callers legacy migrés (useGameHandlers, useHandleNext, useNavigationHandlers, useAppEffects), `updateCollection` supprimé de collectionService (loadUserCollections/mergeCollections/loadFriendCategoryCounts conservés), `unlockFact` wiring propagé depuis usePlayerProfile via props. Le RPC `unlock_fact` upsert atomiquement dans `collections.facts_completed` avec anti-replay par nonce. localStorage unlockedFacts conservé comme cache stale-while-revalidate (règle Phase A). Build prod OK.
-  - ✅ **4.3** Sync Notion ↔ CLAUDE.md passe finale (14/04/2026) : 4 divergences corrigées. **CLAUDE.md** : paliers Blitz stale "5,10,20,30,40,50" → "5,10,20,30,50,100" (B3.3) ; ligne "Pas de bonus perfect" FAUSSE supprimée, remplacée par la règle réelle (Quest perfect = +5 coins + 1 ticket, Flash/Explorer perfect = +5 coins, WTF du Jour = +10 coins, B4.11). **Notion Paramètres Officiels** : timer défi "10s/affirmation" → "chrono montant global +5s/erreur" (aligné code BlitzScreen) ; unlock catégorie "100 coins → 1 funny fact random + accès" → "100 coins → accès uniquement (aucun fact offert)" (aligné code UnlockCategoryModal).
-  - ✅ **4.2** Suppression legacy `currencyService` + `CurrencyContext` (14/04/2026) : source de vérité unique = `usePlayerProfile.applyCurrencyDelta` (RPC Supabase pour connectés, localStorage direct + events `wtf_currency_updated`/`wtf_storage_sync` pour anonymes). 18 fichiers migrés (App, GameHeader, Home/Question/Results/Revelation/Route/PuzzleDuJour Screens, Boutique/Profil Pages, AppModals, UnlockCategoryModal, CategoryFactsView, RouletteModal, useGameHandlers, useHandleNext, useSelectionHandlers, energyService). `buyExtraSession()` signature hooks-agnostic `({coins, applyCurrencyDelta})`. `useGameHandlers` reçoit `hints` en prop (ex-`getBalances().hints` gate). `usePlayerProfile` retourne `coins/tickets/hints` avec fallback `localBalances` pour joueurs sans session. Build prod vert. Tests manuels requis : boutique, roulette, unlock catégorie, achat hint in-session, mini-parcours, puzzle/route/coffres, onboarding nouveau joueur.
-- ✅ **Bloc 6 — Petits T+ (2026-04-14)** : 4 items audités → tous déjà résolus dans le code (T+29 BlitzResultsScreen:315, T+30, T+33, T+34 SettingsModal:324)
-- ✅ **Phase A slice A — Audit RPC unlockFact (2026-04-14)** : Audit des 7 sites suspects → 6/7 ont déjà le miroir RPC. Seul gap restant patché : `AppModals.jsx` bouton streak J30 "10 f*cts débloqués" appelle maintenant `unlockFact?.()` pour chacun des 10 picks.
-- ✅ **Hotfix Défi post-Bloc 4.2 (2026-04-14 soir)** : 3 bugs fermés, régressions cachées par les refactors Phase A / Bloc 4.
-  - **Chargement du défi qui plante** (`ChallengeScreen` bloqué sur "Chargement du défi...") : `getChallenge` utilisait `.single()` qui throw un PGRST116 mal propagé par le client Supabase → hang silencieux. Fix : `.maybeSingle()` + logs + timeout défensif 10s dans `ChallengeScreen`.
-  - **Relever le défi ne lançait pas le Blitz** : résolu en même temps que le fix `maybeSingle` (le flow `startAcceptDefi` → `pendingDuel` → `App.jsx useEffect` fonctionnait déjà, mais était masqué par le hang amont).
-  - **Refuser une revanche sans effet** : corrigé par ricochet, confirmé en prod (RPC `decline_round` + column `declined_by` étaient bien en DB, flow fonctionnel une fois le hang levé).
-  - **Bonus** : `useBlitzHandlers.js:162` débitait le ticket défi via `mergeFlags({tickets:-1})` (legacy pré-B4.2) → migré vers `applyCurrencyDelta({tickets:-1}, 'challenge_create')`. Sans ce fix, le ticket créateur n'était jamais débité.
-  - Accordéon SocialPage : section "Mes amis (N)" devient repliable (chevron ▼) pour simplifier l'affichage quand la liste grossit.
-- ✅ **Refactor Défi 3 Paliers (2026-04-14 nuit)** : consolidation du flow création défi après 10 hotfixes successifs. Rapport audit dans conversation Claude Code.
-  - **Palier 1 — Quick wins (zéro risque)** : `ScreenRenderer` mémoize `handleClearAutoChallenge` via `useCallback` (fix root cause du wipe `lastCreatedDuel` sur chaque re-render) → ref pattern retiré de `BlitzResultsScreen`. Retrait de ~15 console.log orphelins accumulés par les hotfixes (`ChallengeScreen` Debug, `factsService.getBlitzFacts`, `useBlitzHandlers` traces d'étape).
-  - **Palier 2 — Déduplication d'état** : `isChallengeMode` n'est plus un `useState` séparé — dérivé de `pendingDuel?.mode === 'create'` dans `App.jsx`. 1 source de vérité au lieu de 2. Retrait de `setIsChallengeMode` des props `useBlitzHandlers`, `useNavigationHandlers`, et du reset redondant dans `handleHome` (`clearPendingDuel` suffit).
-  - **Palier 3 — RPC atomique `create_duel_challenge`** : nouvelle migration `supabase/migrations/add_create_duel_challenge_rpc.sql`. La cascade client `getOrCreateDuel` → `createDuelRound` → `applyCurrencyDelta` (3 round-trips + fire-and-forget ticket + timeouts 15s/8s/5s) est remplacée par **1 seul `supabase.rpc('create_duel_challenge')`** qui fait debit ticket + upsert duel + insert challenge + génération code unique dans **1 transaction serveur**. Garanties : atomicité (tout ou rien), plus de ticket débité sans défi créé, plus de défi orphelin sans duel. Le client : `createDuelChallenge()` exporté depuis `duelService.js`, `createDuelRound` marqué `@deprecated`. `useBlitzHandlers` passe de ~80 lignes de logique fallback à ~40 lignes de `.then/.catch`. Build prod vert, testé en prod avec succès (code `HWUG9G` créé en <1s).
-  - **Bonus UX** : `ChallengeScreen` branche "pas assez de f*cts" gagne header ← + 🏠 et un bouton "🧭 Explorer {catégorie}" qui dépose `wtf_pending_explorer_cat` en sessionStorage et déclenche le flow Explorer sur la catégorie cible côté App.jsx (2 `useEffect` en cascade). `SocialPage` accordéon "Mes amis" affiche un badge "N défi(s) à relever" dans le titre quand replié + les boutons "🏆 Résultat" (`action='view'`) sont filtrés — résultats désormais consultables uniquement via l'historique.
-  - **Dette restante** : `createDuelRound` legacy conservé pour compat. Les deux `useEffect` sessionStorage-based pour Explorer deep-link pourraient passer par un context dédié si d'autres deep-links sont ajoutés.
-- ✅ **Session 15/04/2026 — Bloc 5 partiel + Cleanup + Étude stratégique F2P** :
-  - **5.1 Option 1 HomeScreen cleanup** : 1209→593 lignes. 6 extractions dans `src/hooks/` (useDailyCoffre, useCountdownToMidnight) et `src/components/home/` (StarburstBackground, CoffreRewardModal, CoffreAccelerateModal, NewBadgeModal). Suppression code mort (spotlight entier ~80 l, lockToast, nextBadgeInfo, get24hProgress, hardcodes `canQuest=true`, 6 props mortes). Zéro diff visuelle. Base saine pour Option 2.
-  - **5.1 Option 2 HomeScreen refonte visuelle** : grille 3 colonnes `1fr auto 1fr` × 3 rows. Logo WTF centré span 3 rows. Colonne gauche = Quest/Blitz/Puzzle, colonne droite = Explorer/Hunt/Route. Icône `multi` retirée (déjà dans la navbar via Amis). Hunt ajouté (6ᵉ mode via `/assets/modes/wtf-semaine.png` qui existait). Puzzle et Route en placeholders via `/assets/ui/emoji-puzzle.png` + `/assets/ui/emoji-route.png` en attendant les icônes finales à créer dans `/assets/modes/puzzle.png` + `/assets/modes/route.png`. Zone 3B (bandeau Roulette/Puzzle/Route) simplifiée en Roulette seule.
-  - **5.2 ResultsScreen Phase A+B** : 4 composants extraits dans `src/components/results/` (ResultsRankHeader, GainsBreakdown, FeaturedFactCard, ResultsActionButtons). ResultsScreen 907→712 lignes. `GainsBreakdown` propagé à `PuzzleDuJourScreen` (ligne "🧩 Résolu en X tentative(s)") et `RouteScreen` ("👑 Boss vaincu" +15 / "✅ Niveau parfait" +4). Phase C reportée à V2.5 Blitz V2.
-  - **Hotfixes ChallengeScreen** : `handleAcceptChallenge` gate `< 5` (seuil Blitz minimum aligné CLAUDE.md) remplaçant `!hasEnoughFacts` qui bloquait la branche "adapté". Deep-link Explorer : ref pattern `handleSelectCategoryRef` pour éviter closure stale sur `gameMode` transition.
-  - **Cleanup dette Palier 3** : suppression `duelService.createDuelRound` legacy (zéro caller post-RPC), `challengeService.completeChallenge` + `getPlayerChallenges` (dead), 2 console.log debug dans `getChallenge`. Documentation en tête de `challengeService.js` : flow solo post-Blitz gratuit (pas de ticket, pas de duel_id) vs flow défi ami atomique via RPC (1 ticket, duel tracking).
-  - **Règle économie confirmée** : **Blitz solo reste gratuit**. Le bouton "🎯 Défier un ami" post-Blitz solo crée un challenge sans débit ticket (sharing score). Seul le défi depuis SocialPage avec opponentId connu coûte 1 ticket via RPC atomique. Sauvegardé en mémoire projet (`project_blitz_solo_gratuit.md`).
-  - **Étude stratégique F2P Modèle D** : audit complet de la monétisation + benchmarking concurrence (Trivia Crack, Clash Royale, Duolingo, Kingdom Rush) + 4 modèles comparés (A préservation, B refonte gacha, C hybride, D hybride+saisons). **Modèle D recommandé** : Modèle C (Duolingo retention + Clash Royale gacha VIP) + Battle Pass saisonnier avec 20-40 VIP exclusifs par saison de 8 semaines. Prérequis validés par le producteur : pas de joueurs actifs à protéger + production VIP scalable via pipeline éditorial. LTV cible 50-200 €/payant. Roadmap en 6 phases (26-36 semaines total, soft launch possible à Phase 3). Document canonique : `docs/strategie_f2p_modele_D_2026-04-15.md` à valider avant démarrage V3+.
+- ✅ **Bloc 4 — Infra & économie (2026-04-14)** : 4 items fermés
+- ✅ **Bloc 6 — Petits T+ (2026-04-14)** : 4 items audités
+- ✅ **Phase A slice A — Audit RPC unlockFact (2026-04-14)**
+- ✅ **Hotfix Défi post-Bloc 4.2 (2026-04-14 soir)** : 3 bugs fermés
+- ✅ **Refactor Défi 3 Paliers (2026-04-14 nuit)** : RPC atomique `create_duel_challenge`
+- ✅ **Session 15/04/2026** : HomeScreen cleanup + refonte visuelle + ResultsScreen Phase A+B + **Modèle D étudié puis abandonné au profit du Modèle A+ (décision 15/04/2026)**
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client
 Toute variable préfixée `VITE_` est inlinée dans le JS public et lisible via DevTools.
@@ -112,117 +79,106 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts
 - WTF toujours avec ! (sauf "What The F*ct")
-- Niveaux : Cool | Hot | WTF!
-- Streak → Série | Mode Parcours → Quête WTF!
-- Ratées → À découvrir
-- Ratées → À découvrir
+- Les 6 modes : **Snack · Vrai ou Fou · Quest · Marathon · Blitz · Flash**
+- Cool/Hot/WTF! → **SUPPRIMÉS** (difficulté = nb QCM par mode)
+- Tickets → **SUPPRIMÉS** (coût en coins direct)
+- Streak → Série
 
-## Règles de jeu — Source de vérité (11/04/2026)
+## Règles de jeu — Source de vérité (15/04/2026)
 
-### Niveaux Quest (2 niveaux — WTF! retiré le 12/04/2026)
+### 1. SNACK — "Le quotidien sans prise de tête"
+- QCM **2 choix**, 5 questions, timer **15s**
+- Indices : 1 max (stock perso, coût 50 coins en boutique)
+- Contenu : Funny facts uniquement
+- Coût : 1 énergie (cap 5, régén +1/8h, extra = 75 coins)
+- Gains : 10 coins/bonne réponse · Perfect (5/5) : +50 coins
+- Déblocage f*cts : Oui (Funny)
+- Catégories : 5 gratuites (sport, records, animaux, kids, définition) + débloquables 1 500 coins
 
-| Niveau | QCM | Timer | Indices gratuits | Indice payant | Coins/bonne réponse |
-|--------|-----|-------|------------------|---------------|---------------------|
-| Cool   | 2   | 20s   | 2                | +1 (8 coins)  | 2                   |
-| Hot    | 4   | 30s   | 2                | +1 (8 coins)  | 2                   |
+### 2. VRAI OU FOU — "Swipe si t'oses"
+- **Swipe cards Vrai/Faux** (PAS de QCM), 20 affirmations par session
+- Timer : Aucun · Indices : Aucun
+- Contenu : Funny facts (champ `statement` + `statement_is_true` en base)
+- Coût : Gratuit illimité
+- Gains : **0 coins** (mode viralité/acquisition, pas farming)
+- Déblocage f*cts : Oui (Funny)
 
-**Note** : Cool a 20s (court) car 2 QCM uniquement, Hot a 30s (plus long) car 4 QCM à lire.
+### 3. QUEST — "Le chemin des WTF!" (ex-Route WTF!)
+- QCM **4 choix**, blocs de 10 (9 Funny + 1 boss VIP)
+- Timer : **20s** · Indices : 2 (stock perso)
+- Coût : 1 énergie par bloc de 10
+- Gains : 20 coins/bonne (niveau) · 100 coins/boss VIP réussi
+- Déblocage f*cts : Oui (Funny + VIP boss)
+- Anti-déduction boss : fausses réponses tirées parmi 7 à chaque tentative, indices tirés 2/4
+- UX : Map de progression visible (Niveau X/850), boss = mise en scène spéciale
+- ~850 niveaux total (770 Funny ÷ 9 par bloc = ~85 blocs × 10)
 
-### Mode Flash (Jouer)
+### 4. MARATHON — "Zéro droit à l'erreur"
+- QCM **4 choix**, questions illimitées jusqu'à la première erreur
+- Timer : **Aucun** · Indices : **Aucun**
+- Contenu : Funny + VIP facts déjà débloqués (mélangés)
+- Coût : Gratuit illimité
+- Gains : **0 coins** (prestige/record uniquement)
+- Déblocage f*cts : Non (facts déjà connus)
+- UX : Compteur de série en gros, fond qui change de couleur, 1ère erreur = game over dramatique
 
-| Paramètre | Valeur |
-|-----------|--------|
-| Coût | 1 énergie (3 gratuites/jour, +10 coins/extra) |
-| Questions | 5 |
-| QCM | 4 choix |
-| Timer | 20s |
-| Catégorie | **Aléatoire uniquement** (pas de CategoryScreen) |
-| Coins | 2 coins/bonne réponse |
-| Contenu | Funny facts uniquement (catégories débloquées) |
-| Sauvegarde | F*cts débloqués immédiatement |
+### 5. BLITZ — "Défie tes potes" (2 sous-modes)
 
-### Mode Explorer
+#### 5a. Blitz Solo
+- QCM **2 choix**, chrono global **60s** descendant
+- Indices : Aucun · Contenu : Funny + VIP débloqués
+- Gains : 0 coins · Paliers : 5/10/20/30/50/100
 
-| Paramètre | Valeur |
-|-----------|--------|
-| Coût | 1 énergie (3 gratuites/jour, +10 coins/extra) |
-| Questions | 5 |
-| QCM | 4 choix |
-| Timer | 20s |
-| Catégorie | **Choix obligatoire** (pas d'aléatoire) |
-| Coins | 1 coin/bonne réponse (catégorie choisie) |
-| Contenu | Funny facts uniquement (catégories débloquées) |
-| Sauvegarde | F*cts débloqués immédiatement |
+#### 5b. Blitz Défi
+- QCM **2 choix**, même set 5-10 questions pour les 2 joueurs
+- Chrono montant global (+5s par erreur)
+- Contenu : Funny facts (catégorie choisie par créateur)
+- Coût : **200 coins** pour créer · Gratuit pour relever · 48h expiration
+- Gains : 0 coins · Partage résultat WhatsApp
 
-### Mode Blitz
+### 6. FLASH — "Le rendez-vous quotidien" (ex-Hunt + Puzzle du Jour)
+- QCM **2 choix**, 5 questions, timer **15s**
+- Lun-Sam : Funny thème du jour, 0 indices, **30 coins fixe**
+- Dimanche : VIP Hunt de la semaine, 2 indices, **1 VIP débloqué**
+- Coût : Gratuit 1×/jour
+- UX : Bannière thème du jour. Dimanche = mise en scène Hunt.
 
-| Paramètre | Valeur |
-|-----------|--------|
-| Coût | Gratuit illimité |
-| Timer | 60s chrono descendant |
-| QCM | 4 choix |
-| Indices | Aucun |
-| Coins | 0 (prestige uniquement) |
-| Paliers | 5, 10, 20, 30, 50, 100 questions |
-| Contenu | **Tous** les f*cts débloqués du joueur (VIP + Funny) |
+### Roulette WTF!
+- 1 spin gratuit/jour + spins payants 100 coins
+- 8 segments : 25c(30%) / 50c(25%) / 1indice(15%) / 100c(12%) / 150c(8%) / 2indices(5%) / 300c(3%) / 500c(2%)
+- Valeur espérée ~76 coins. Sink net ~24 coins/spin.
 
-### Mode Hunt (WTF de la Semaine)
+### Règles communes
+- QCM facile (2 choix) : Snack, Blitz, Flash
+- QCM difficile (4 choix) : Quest, Marathon
+- Swipe (0 QCM) : Vrai ou Fou
+- Indices = stock perso, coût 50 coins boutique. Bouton grisé si stock vide, JAMAIS de pause timer.
+- Énergie : cap 5, régén +1/8h, extra = 75 coins
 
-| Paramètre | Valeur |
-|-----------|--------|
-| Coût | Gratuit, 1×/semaine (dimanche) |
-| Questions | 5 |
-| QCM | 4 choix |
-| Timer | 20s |
-| Indices | 2 (stock gratuit) |
-| Sélection fact | Seed ISO-week : fact stable lundi→dimanche |
-| Objectif | Débloquer le WTF! VIP de la semaine |
+## Modes de jeu — Résumé (15/04/2026)
 
-### Mode Puzzle du Jour
+| Mode | Contenu | QCM | Coût | Gains | Statut |
+|------|---------|-----|------|-------|--------|
+| Snack | Funny | 2 | 1 énergie | 10c/bonne, +50 perfect | À implémenter |
+| Vrai ou Fou | Funny (statements) | Swipe | Gratuit | 0 coins | NOUVEAU |
+| Quest | Funny + VIP boss | 4 | 1 énergie/bloc | 20c/niv + 100c/boss | Renommé (ex-Route) |
+| Marathon | Funny+VIP débloqués | 4 | Gratuit | 0 coins (record) | NOUVEAU |
+| Blitz Solo | Funny+VIP débloqués | 2 | Gratuit | 0 coins (paliers) | Modifié (QCM 4→2) |
+| Blitz Défi | Funny (catég ami) | 2 | 200 coins (créer) | 0 coins | Modifié (QCM 4→2, tickets→coins) |
+| Flash (lun-sam) | Funny thème | 2 | Gratuit 1×/j | 30 coins fixe | Renommé (ex-Hunt+Puzzle) |
+| Flash (dimanche) | VIP Hunt | 2 | Gratuit 1×/j | 1 VIP | Renommé |
 
-| Paramètre | Valeur |
-|-----------|--------|
-| Coût | Gratuit, 1×/jour |
-| Questions | 1 funny fact (4 QCM) |
-| Tentatives | 3 (erreur = élimine une option) |
-| Coins | 5 / 3 / 1 selon tentatives restantes |
-| Contenu | Funny fact seed sur la date |
-| Partage | Format Wordle (🟩🟥) |
+**Modes SUPPRIMÉS :** Quest ancien (tickets+Cool/Hot), Série, Multi, Puzzle du Jour séparé, Hunt séparé, Explorer séparé
 
-### Mode Route WTF!
-
-| Paramètre | Valeur |
-|-----------|--------|
-| Coût | Gratuit illimité |
-| Structure | Niveaux infinis (3 Q funny) |
-| Boss | Tous les 10 niveaux (1 Q VIP HOT) |
-| Coins | 4 / niveau · 15 / boss |
-| Persistance | wtf_data.route = { level, stars } |
-| Avancement | Niveau parfait requis |
-
-### Mode Amis & Défis Blitz (Option A — Asynchrone)
-
-| Paramètre | Valeur |
-|-----------|--------|
-| **Concept** | Joueur A lance un Blitz, défie un ami B. B joue à son rythme, meilleur temps gagne. |
-| Coût A | 1 ticket pour créer le défi |
-| Coût B | Gratuit pour relever |
-| Questions | Même nombre, **affirmations différentes** (seed aléatoire) |
-| Catégorie | Choisie par A, B doit en avoir min 5 facts |
-| Timer | **Chrono global** (même principe que Blitz solo, pas de timer par question) |
-| Pénalité erreur | **+5 secondes** ajoutées au chrono (décision C9 — 2026-04-14, aligné avec mode Blitz solo) |
-| Gagnant | Meilleur temps (le plus bas) |
-| Expiration | 48h (expires_at vérifié client-side) |
-| Notifications | Realtime Supabase sur `friendships`, `challenges`, `duels` |
+### Mode Amis & Défis Blitz (architecture inchangée)
 
 **Flow exact :**
-1. A joue Blitz classique (catégorie choisie) → `handleBlitzFinish` → `createDuelRound()`
-2. DB : `challenges` INSERT (status='pending', code='ABC123', player1_time=X)
-3. A reçoit lien : `/challenge/ABC123` → share via SMS/WhatsApp
-4. B ouvre lien → ChallengeScreen : "A t'a défié ! Temps : Xs" → clique "Relever"
-5. B joue même catégorie, même nb questions → `handleBlitzFinish` avec mode='accept'
-6. DB : `challenges` UPDATE (player2_time=Y, status='completed') + TRIGGER winner_id
-7. ChallengeScreen : affichage résultats côte à côte (temps + gagnant)
+1. A ouvre Blitz → choisit Solo ou Défi
+2. Si Défi : A choisit catégorie + ami → 200 coins débités → `create_duel_challenge` RPC
+3. B reçoit notification → ChallengeScreen → "Relever"
+4. B joue même catégorie, même nb questions → chrono montant (+5s/erreur)
+5. DB : `challenges` UPDATE (player2_time=Y, status='completed') + TRIGGER winner_id
+6. Résultats côte à côte
 
 ### Système Amis — Règles Complètes
 
@@ -230,23 +186,10 @@ séparé, sous-domaine privé, ou en local uniquement).
 - `friend_codes` : { user_id, code (8 chars unique), display_name, avatar_url }
 - `friendships` : { id, user1_id, user2_id, status ('pending'|'accepted'|'blocked'), created_at, accepted_at }
 
-**Flow d'ajout d'ami (Michael → 2iaz) :**
-1. Michael ouvre SocialPage → voit son Friend Code (ex: `A2B3C4D5`)
-2. Michael clique "Inviter un ami" → partage lien `/invite/A2B3C4D5`
-3. Michael envoie lien à 2iaz
-4. 2iaz clique lien → InvitePage traite : lookup friend_codes, crée friendship(status='accepted')
-5. ✅ Ils sont amis (Realtime update sur les deux clients)
-
-**Statuts d'amitié :**
-- `pending` : invitation en attente (2iaz doit accepter)
-- `accepted` : amis confirmés, peuvent se défier
-- `blocked` : impossible de défier
-
 **Vérifications avant défi :**
 - Statut amitié = `accepted`
 - Player 2 a min 5 facts dans la catégorie
-- Player 1 a 1 ticket
-- Défi pas expiré (expires_at < now)
+- Player 1 a 200 coins (plus de tickets)
 
 ### Architecture DuelContext & Realtime
 
@@ -254,83 +197,54 @@ séparé, sous-domaine privé, ou en local uniquement).
 - `src/features/duels/context/DuelContext.jsx` : provider, pendingDuel state
 - `src/features/duels/hooks/useFriends.js` : friends + pendingRequests + Realtime
 - `src/features/duels/hooks/useDuels.js` : duels/challenges + Realtime
-- `src/data/friendService.js` : CRUD amis (sendFriendRequest, acceptFriendRequest, etc.)
-- `src/data/duelService.js` : CRUD défis (createDuelRound, completeDuelRound, etc.)
-
-**pendingDuel mémoire :**
-```javascript
-{
-  mode: 'create' | 'accept',        // Créateur ou accepteur
-  opponentId: uuid,                 // Ami défié/défiant
-  roundId: uuid,                    // challenges.id
-  code: '6char',                    // Code défi partageé
-  facts: [...]                      // Facts prépréparés (mode='accept' only)
-}
-```
+- `src/data/friendService.js` : CRUD amis
+- `src/data/duelService.js` : CRUD défis (createDuelChallenge RPC atomique)
 
 **Realtime subscriptions (auto via hooks) :**
 - `friendships` → change → refresh useFriends
 - `challenges` → change → refresh useDuels → refresh UI
 
-### Économie F2P — Source de vérité unique
+### Économie F2P — Source de vérité (15/04/2026) — VALEURS ×10
+
+> Toutes les valeurs coins sont ×10 vs l'ancien système (10 nouveau = 1 ancien).
+> Permet les remises (-20%, -30%) et donne une sensation d'abondance.
 
 | Paramètre | Valeur |
 |-----------|--------|
-| **Nouveau joueur** | **50 coins / 1 ticket / 3 indices / 5 énergies** (décision C10 — 2026-04-14) |
-| Énergie max (stock) | 5 (achat boutique peut dépasser, pas de régén au-dessus) |
-| Régénération énergie | +1 toutes les 8h jusqu'au cap de 5 (modèle stock persistant) |
-| 1 ticket (boutique) | 25 coins |
-| 1 indice (boutique) | 10 coins |
-| 3 indices (boutique) | 30 coins |
-| 5 indices (boutique) | 45 coins (-10%) |
-| Pack Découverte (mystery) | 15 coins → 2 funny f*cts |
-| Pack Standard (mystery) | 35 coins → 5 funny f*cts |
-| Pack Catégorie (mystery) | 40 coins → 4 funny d'une catégorie au choix |
-| Pack Premium (mystery) | 80 coins → 7 f*cts avec 5% chance VIP chacun |
-| Pack Mega (mystery) | 150 coins → 12 f*cts + 1 VIP garanti |
-| Streak J1 | 2 coins |
-| Streak J3 | 2 indices |
-| Streak J7 | 10 coins + 1 ticket + badge |
-| Streak J14 | 1 ticket + 3 indices |
-| Streak J30 | Pack WTF Premium (unlock 10 f*cts random) |
-| Gains journaliers cible | 30-50 coins/jour |
-| TTF (sessions avant achat) | ~3 sessions Flash |
-| **Profil F2P choisi** | **Équilibré** — 1 achat stratégique/semaine (pack facts ou tickets), casual mobile (décidé 2026-04-12) |
+| **Nouveau joueur** | **500 coins / 3 indices / 5 énergies** (plus de tickets) |
+| Énergie max (stock) | 5 (régén +1/8h) |
+| Énergie extra | 75 coins |
+| Indice (boutique) | 50 coins |
+| Débloquer catégorie | 1 500 coins |
+| Cosmétique profil (moyen) | 500 coins |
+| Ticket Blitz Défi (créer) | 200 coins |
+| Spin roulette (payant) | 100 coins |
+| Gains journaliers cible | 250-400 coins/jour |
+| Sinks journaliers cible | ~125 coins/jour |
+| Surplus net cible | 80-250 coins/jour |
+| TTF (pression achat) | 5-10 jours |
+| **Devises** | **Coins + Gems uniquement** (plus de tickets) |
+| **Modèle F2P** | **Modèle A+** — Starter Pack 2,99€ + Packs Gems + Abo optionnel |
 
-**Cette table est la SEULE source de vérité.** Toute divergence (trigger DB, code client, defaults de colonne, fallbacks, resets) doit être alignée ici. Points de convergence actuels :
-- Trigger DB `handle_new_user` : 50/1/3/5 ✅ (migration `update_handle_new_user_F2P.sql`)
-- `AuthContext.createProfile` : 50/1/3/5 ✅
-- `App.jsx` init `wtf_data` : 50/1/3/— (energy géré séparément) ✅
-- `App.jsx resetOnboarding` : 50/1/3/— ✅
-- `storageHelper.js` fallback : 50/1/3/— ✅
-- `ProfilPage.jsx executeReset` : 50/1/3/5 ✅
+**Points de convergence à migrer (×10) :**
+- Trigger DB `handle_new_user` : 500/0/3/5 (à mettre à jour — actuellement 50/1/3/5)
+- `AuthContext.createProfile` : 500/0/3/5 (à mettre à jour)
+- `App.jsx` init `wtf_data` : 500/0/3/— (à mettre à jour)
+- `storageHelper.js` fallback : 500/0/3/— (à mettre à jour)
+- **Supprimer toute référence aux tickets** dans le code
 
-### Règles communes
-- Indices = chaque utilisation débite 1 du stock (pas d'indices gratuits)
+### Règles communes économie
+- Indices = chaque utilisation débite 1 du stock (coût 50 coins en boutique)
 - Indice non disponible si stock vide : bouton grisé, JAMAIS de pause du timer
-- Questions par Quête : 5 (valeur officielle)
-- Bonus session parfaite : Quest perfect = +5 coins + 1 ticket. Flash/Explorer perfect = +5 coins. WTF du Jour perfect = +10 coins (B4.11 — 14/04/2026)
+- Bonus session parfaite : Snack perfect = +50 coins. Quest pas de perfect bonus (les gains par niveau suffisent).
 
-## Modes de jeu — Résumé
-
-| Mode | Contenu | Coût | Gains | Statut |
-|------|---------|------|-------|--------|
-| Quête WTF! | WTF VIP | 1 ticket | Coins + f*cts VIP | Actif |
-| Jouer (Flash) | F*cts générés | Gratuit (3/j partagé Explorer) | Coins + f*cts générés | Actif |
-| Explorer | F*cts générés | Gratuit (3/j partagé Flash) | Coins + f*cts générés | Actif |
-| Blitz | F*cts débloqués | Gratuit | Prestige (records) | Actif |
-| Hunt | WTF VIP | Gratuit 1×/semaine | 1 f*ct VIP | Actif |
-| Puzzle du Jour | F*ct funny daily | Gratuit 1×/jour | 6/4/2 coins | Actif |
-| Route WTF! | F*cts funny + VIP boss | Gratuit illimité | 4/niveau + 15/boss | Actif |
-| Série | F*cts générés | Gratuit | Multiplicateur coins | V2 |
-| Multi | À définir | À définir | À définir | V2 |
-
-## Architecture contenu
-- **WTF VIP** (~483) : f*cts originaux du jeu physique → Quête (source unique de déblocage VIP) + **Blitz** (une fois débloqués)
-- **F*cts générés** (~676 et croissant) : générés par IA → Jouer, Explorer, Hunt, Puzzle, Route + **Blitz** (une fois débloqués)
-- *Comptes au 2026-04-14 (décision C12). Évoluent au fil de la génération admin-tool — chiffres indicatifs, pas une source de vérité.*
-- **Blitz** pioche dans TOUS les f*cts déjà débloqués (VIP + Funny confondus)
+## Architecture contenu (15/04/2026)
+- **WTF VIP** (~483) : Quest boss /10, Flash dimanche, Marathon/Blitz (une fois débloqués)
+- **Funny F*cts** (~770+ et croissant) : Snack, Vrai ou Fou, Quest niveaux, Flash lun-sam
+- **Blitz** pioche dans TOUS les f*cts débloqués (VIP + Funny confondus)
 - Collection : 2 onglets (WTF! + Funny F*cts)
+- **Nouveau champ DB requis** : `statement` (text) + `statement_is_true` (boolean) sur table facts
+- Quest = ~850 niveaux (770 Funny ÷ 9 par bloc = ~85 blocs × 10 niveaux)
 
 ## Architecture Data — Règle d'or (décidée 2026-04-12)
 
@@ -338,75 +252,55 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 ### Répartition des entités
 
-**Supabase (canonique)** — toute mutation passe par RPC ou Edge Function, jamais d'écriture localStorage directe :
-- coins, tickets, indices, énergie ✅
-- **unlockedFacts (set d'IDs)** ✅ Source de vérité = `collections.facts_completed` via RPC `unlock_fact` (Bloc 4.1 — 14/04/2026). localStorage conservé comme cache stale-while-revalidate.
+**Supabase (canonique)** — toute mutation passe par RPC ou Edge Function :
+- coins, indices, énergie ✅ (plus de tickets)
+- **unlockedFacts (set d'IDs)** ✅ via RPC `unlock_fact`
 - streak (jour courant + historique) ⏳
 - badges / trophées ⏳
 - blitzRecords (meilleurs temps par catégorie/palier) ⏳
-- Route WTF! progress (level, stars) ⏳
-- coffres réclamés (dimanche WTF + daily) ⏳
-- stats par mode (gamesPlayed, totalCorrect, bestStreak…) ⏳
-- duels / challenges / friendships ✅ (Realtime subscriptions opérationnelles)
+- Quest progress (level, stars) ⏳ (ex-Route)
+- coffres réclamés ⏳
+- stats par mode ⏳
+- duels / challenges / friendships ✅
 
-**localStorage (source de vérité jusqu'à Phase A complet)** :
+**localStorage (cache)** :
 - onboardingCompleted, tutoStep, skip_launch_*
 - son on/off, thème, mode dev/test
-- **unlockedFacts** (cache) : Set d'IDs synchronisé stale-while-revalidate depuis `collections.facts_completed` (source de vérité Supabase depuis Bloc 4.1 — 14/04/2026)
-- wtf_cached_friends (pur cache de l'entité Supabase)
+- **unlockedFacts** (cache stale-while-revalidate)
+- wtf_cached_friends
 
 **React state (éphémère)** :
 - écran courant, modals ouverts
-- session de jeu en cours (questions, score)
-
-### Règles de lecture (cache stale-while-revalidate)
-
-- Tout hook `useSupabaseResource` lit le cache localStorage en premier (affichage immédiat, pas de flash)
-- Fetch silencieux en arrière-plan sur mount + reconnexion réseau
-- Mise à jour du cache + re-render quand le serveur répond
-- Si pas de cache (nouveau device) → skeleton `—` sur la valeur, pas de blocage global de la page
+- session de jeu en cours
 
 ### Règles de mutation
-
-- **Aucune écriture directe** à `players.coins`, `wtf_data.unlockedFacts`, etc. depuis le client
-- Toutes les mutations passent par :
-  - **RPC Supabase** pour les mutations triviales (markSeen, setTutoStep)
-  - **Edge Function** pour les mutations à valeur (apply_currency_delta, unlock_fact) avec validation anti-triche
+- **Aucune écriture directe** depuis le client
+- Toutes les mutations passent par RPC Supabase ou Edge Function
 - Optimistic update local immédiat, réconciliation au retour serveur
-- En cas d'erreur : retry automatique 3× avec backoff exponentiel, puis toast + rollback
-- Si erreur = validation refusée (triche détectée) : rollback immédiat, pas de retry, log serveur
+- En cas d'erreur : retry 3× avec backoff, puis toast + rollback
 
 ### Résolution des conflits multi-device
-
-- **Entités additives** (coins, tickets, unlockedFacts) : deltas envoyés au serveur, addition atomique côté SQL. Aucune perte possible.
-- **Entités scalaires** (préférences UI) : last-write-wins, stockées uniquement en localStorage de toute façon.
-- **Jamais** de version vector ou CRDT — trop complexe pour le gain.
+- **Entités additives** (coins, unlockedFacts) : deltas atomiques SQL
+- **Entités scalaires** (préférences UI) : last-write-wins localStorage
 
 ### Offline
-
-- Modes solo (Flash, Quest, Blitz, Explorer, Puzzle, Route) : jouables offline. Les mutations sont **mises en queue** (`wtf_mutation_queue` localStorage) et rejouées au retour en ligne.
-- Edge Function valide les deltas avec timestamp — un burst de 10 mutations "gagner 2 coins" dans la même seconde est refusé (anti-triche offline).
-- Modes nécessitant réseau (Défi, Hunt si fact non pré-fetché) : écran "connexion requise".
+- Modes solo jouables offline, mutations en queue (`wtf_mutation_queue`)
+- Modes réseau (Défi, Hunt) : écran "connexion requise"
 
 ### Auth anonyme
-
-- Premier mount : création automatique d'un user anonyme via `supabase.auth.signInAnonymously()`.
-- Toutes les features (économie, collection, records) fonctionnent dès la première seconde, attachées à ce user_id anonyme.
-- Upgrade vers Google/Apple : `supabase.auth.linkIdentity()` — préserve user_id et toutes les données.
-- Plus jamais de "non connecté = 100% local, sync ignoré".
+- Premier mount : `supabase.auth.signInAnonymously()`
+- Upgrade vers Google/Apple : `supabase.auth.linkIdentity()`
+- Plus jamais de "non connecté = local only"
 
 ### Mode dev / test
-
-- Mode dev = **local-only bypass** : ne sync rien vers Supabase, permet de tester l'UI sans polluer la base.
-- Mode test = **compte dédié** pour QA (même flow que joueur normal, données persistées, user réservé).
-- Jamais de header "dev" qui bypasse l'Edge Function en prod — porte ouverte trop dangereuse.
+- Mode dev = local-only bypass, ne sync rien vers Supabase
+- Mode test = compte dédié QA
+- Jamais de header dev qui bypasse l'Edge Function en prod
 
 ### Migration des joueurs existants
-
-- Au premier mount après déploiement Phase B : RPC `seed_from_local(payload)` one-shot.
-- Edge Function plafonne : coins ≤ 500, unlockedFacts ≤ 50 (max réaliste early-game).
-- Flag `wtf_data.seeded = true` pour ne jamais reseeder.
-- Après seed : localStorage écomomie devient pur cache, plus source.
+- RPC `seed_from_local(payload)` one-shot au premier mount post-déploiement
+- Plafonds : coins ≤ 5000 (×10), unlockedFacts ≤ 50
+- Flag `wtf_data.seeded = true`
 
 ## Design system
 - Police : Nunito (400/700/900) via Google Fonts
@@ -440,7 +334,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## Toggle Mode Dev
 - Clé localStorage : wtf_dev_mode
 - Visible uniquement en import.meta.env.DEV (localhost)
-- Mode Dev : coins = 9999, tickets = 99, indices = 99
+- Mode Dev : coins = 9999, indices = 99 (plus de tickets)
 - Jamais visible en production (Railway)
 
 ## Workflow
@@ -452,7 +346,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## URLs Notion
 - QG : https://www.notion.so/332b94ed8cb180298efadff6b66d54af
 - Paramètres : https://www.notion.so/332b94ed8cb181869176fd6266e78915
-- **Tâches restantes (base de travail LIVE)** : https://www.notion.so/342b94ed8cb181a58710f3899cb4fb42 — source unique de vérité de ce qu'il reste à faire. À actualiser à chaque tâche fermée (retirer + renuméroter), concordance avec § Phase A ci-dessus. *(Ancienne page archivée : 342b94ed8cb181b7a03cc4c6c4d49ab6)*
+- **Tâches restantes (base de travail LIVE)** : https://www.notion.so/342b94ed8cb181a58710f3899cb4fb42
 
 ## Choix du modèle — Règle officielle
 
@@ -472,25 +366,22 @@ séparé, sous-domaine privé, ou en local uniquement).
 > Sonnet = je sais exactement quoi changer et où
 > Opus = je dois comprendre la structure pour décider
 
-## Preview local
-- Preview : npm run dev → localhost:5176
+## Fichiers clés
+- `src/App.jsx` — machine à états centrale
+- `src/services/currencyService.js` — SUPPRIMÉ (remplacé par usePlayerProfile.applyCurrencyDelta)
+- `src/utils/storageHelper.js` — centralise lectures localStorage
+- `src/services/playerSyncService.js` — sync Supabase push/pull
+- `src/constants/gameConfig.js` — config modes de jeu (À REFAIRE avec les 6 modes)
+- `src/data/factsService.js` — chargement facts Supabase
+- `src/utils/answers.js` — tirage réponses QCM
+- `src/hooks/usePlayerProfile.js` — source de vérité devises (applyCurrencyDelta)
 
 ## 🎨 Inventaire Émojis — Audit 13/04/2026
 
 **Total : 85+ émojis regroupés par contexte** (voir page Notion pour l'inventaire complet)
 
-### Catégories principales
-1. **Boutons & Contrôle** (8) : ⚔️ ← > ✕ ⚙️ ➕ ✓ ▼
-2. **Modes de jeu** (7) : ⚡ 🎯 🔥 ❄️ 🧭 🎲 🎮
-3. **Récompenses & Devises** (8) : 🪙 🎟️ 💰 👑 ✨ 🔋 💎
-4. **Statuts & Résultats** (11) : 😵 🐣 🤔 😅 🧐 🙂 😎 🧠 💪 🌟 👑
-5. **Trophées & Achievements** (45+) : Regroupés par section (Global, Type, Catégories, Streak, Blitz, Parties, Social, Perfect)
-6. **Catégories & Collections** (4) : 📚 📂 🌍 🎪
-7. **Social & Multijoueur** (4) : 🤝 👥 👋 👤
-8. **Autres** (10) : 📡 🎭 😂 🤣 👏 🔰 🥉 🥈 🥇 💡
-
 ### À retravailler avec Recraft.ai (Priorité)
-1. **P1** - Modes de jeu : ⚡ 🎯 🔥 (très utilisés)
+1. **P1** - Modes de jeu : icônes pour les 6 nouveaux modes
 2. **P2** - Trophées : 👑 🏆 💎 (symbolique fort)
 3. **P3** - Social : ⚔️ 👥 🤝 (engagement multiplayer)
 

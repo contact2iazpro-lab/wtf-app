@@ -1,25 +1,50 @@
-// ── Difficulty Levels Configuration
-// Centralized configuration for all difficulty modes.
-// 1e — Snack fusionne ex-Flash + ex-Explorer ; Flash = ex-Flash+Flash (1/jour).
+// ── Difficulty Levels Configuration — 6 modes officiels (CLAUDE.md 15/04/2026)
+// Snack · Vrai ou Fou · Quest · Marathon · Blitz · Flash
+// Économie ×10 appliquée.
 
 export const DIFFICULTY_LEVELS = {
   SNACK: {
     id: 'snack', label: 'Snack', emoji: '🎯',
-    choices: 2, duration: 15,
-    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
-    coinsPerCorrect: 10, scoring: { correct: 10, wrong: 0 },
+    choices: 2, duration: 15, questionsCount: 5,
+    hintsAllowed: true, freeHints: 1, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 10, perfectBonus: 50,
+    scoring: { correct: 10, wrong: 0 },
   },
-  FLASH: {
-    id: 'flash', label: 'Flash', emoji: '🔥',
-    choices: 2, duration: 15,
-    hintsAllowed: true, freeHints: 0, paidHints: 0, hintCost: 0,
-    coinsPerCorrect: 6, scoring: { correct: 6, wrong: 0 },
+  VRAI_OU_FOU: {
+    id: 'vrai_ou_fou', label: 'Vrai ou Fou', emoji: '🤔',
+    choices: 0, duration: 0, questionsCount: 20,
+    hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 0, perfectBonus: 0,
+    scoring: { correct: 0, wrong: 0 },
+    swipe: true,
+  },
+  QUEST: {
+    id: 'quest', label: 'Quest', emoji: '🗺️',
+    choices: 4, duration: 20, questionsCount: 10,
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 20, bossBonus: 100, perfectBonus: 0,
+    scoring: { correct: 20, wrong: 0 },
+  },
+  MARATHON: {
+    id: 'marathon', label: 'Marathon', emoji: '🏃',
+    choices: 4, duration: 0, questionsCount: Infinity,
+    hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 0, perfectBonus: 0,
+    scoring: { correct: 0, wrong: 0 },
   },
   BLITZ: {
     id: 'blitz', label: 'Blitz', emoji: '⚡',
     choices: 2, duration: 60,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
-    coinsPerCorrect: 0, scoring: { correct: 0, wrong: 0 },
+    coinsPerCorrect: 0, perfectBonus: 0,
+    scoring: { correct: 0, wrong: 0 },
+  },
+  FLASH: {
+    id: 'flash', label: 'Flash', emoji: '🔥',
+    choices: 2, duration: 15, questionsCount: 5,
+    hintsAllowed: true, freeHints: 0, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 0, flashDailyCoins: 30, perfectBonus: 0,
+    scoring: { correct: 0, wrong: 0 },
   },
 }
 
@@ -41,37 +66,64 @@ export const SCREENS = {
   MODE_LAUNCH: 'mode_launch',
   FLASH: 'flash',
   QUEST: 'quest',
+  VRAI_OU_FOU: 'vrai_ou_fou',
+  MARATHON: 'marathon',
 }
 
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
-  blitz: {
-    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Bats ton record de vitesse !', emoji: '⚡', color: '#FF4444',
+  snack: {
+    modeId: 'snack', modeName: 'Snack', subtitle: 'Le quotidien sans prise de tête', emoji: '🎯', color: '#FFD700',
     rules: [
-      { icon: '⏱️', text: 'Réponds le plus vite possible à tes f*cts débloqués' },
-      { icon: '❌', text: 'Mauvaise réponse = +5 secondes de pénalité' },
-      { icon: '🚫', text: 'Pas d\'indices — c\'est la mémoire pure' },
-      { icon: '🏆', text: 'Bats ton record de vitesse' },
+      { icon: '🔋', text: '1 énergie par session (cap 5, régén +1/8h)' },
+      { icon: '⚡', text: '5 questions · 2 QCM · 15s' },
+      { icon: '🪙', text: '10 coins par bonne réponse · Perfect = +50 coins' },
+      { icon: '📂', text: 'Catégorie au choix (5 gratuites + 1 500 coins pour en débloquer)' },
+    ],
+  },
+  vrai_ou_fou: {
+    modeId: 'vrai_ou_fou', modeName: 'Vrai ou Fou', subtitle: 'Swipe si t\'oses', emoji: '🤔', color: '#9B59B6',
+    rules: [
+      { icon: '👉', text: '20 affirmations · Swipe Vrai ou Faux' },
+      { icon: '⏱️', text: 'Pas de timer · Pas d\'indices' },
       { icon: '🆓', text: 'Gratuit et illimité' },
+      { icon: '🎁', text: 'Débloque des f*cts Funny (0 coins — mode découverte)' },
+    ],
+  },
+  quest: {
+    modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', color: '#FF6B1A',
+    rules: [
+      { icon: '🔋', text: '1 énergie par bloc de 10 niveaux' },
+      { icon: '🧠', text: '4 QCM · 20s · 2 indices' },
+      { icon: '👑', text: 'Boss VIP tous les 10 niveaux' },
+      { icon: '🪙', text: '20 coins par niveau · 100 coins par boss VIP réussi' },
+    ],
+  },
+  marathon: {
+    modeId: 'marathon', modeName: 'Marathon', subtitle: 'Zéro droit à l\'erreur', emoji: '🏃', color: '#E84535',
+    rules: [
+      { icon: '∞', text: 'Questions illimitées jusqu\'à la 1ʳᵉ erreur' },
+      { icon: '🧠', text: '4 QCM · Pas de timer · Pas d\'indices' },
+      { icon: '🆓', text: 'Gratuit et illimité' },
+      { icon: '🏆', text: 'Mode prestige · 0 coins · Bats ton record de série' },
+    ],
+  },
+  blitz: {
+    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défie tes potes', emoji: '⚡', color: '#FF4444',
+    rules: [
+      { icon: '⏱️', text: 'Chrono 60s · 2 QCM · Pas d\'indices' },
+      { icon: '❌', text: 'Mauvaise réponse = +5 secondes de pénalité' },
+      { icon: '🪙', text: 'Blitz Solo gratuit · Blitz Défi 200 coins pour créer' },
       { icon: '🎯', text: 'Choisis entre 5, 10, 20, 30, 50 ou 100 questions' },
     ],
   },
-  snack: {
-    modeId: 'snack', modeName: 'Snack', subtitle: 'Partie rapide, gratuite', emoji: '🎯', color: '#FFD700',
-    rules: [
-      { icon: '🔋', text: '1 énergie par session (régén 8h, cap 5)' },
-      { icon: '⚡', text: '5 questions · 2 QCM · 15s' },
-      { icon: '🪙', text: '10 coins par bonne réponse · Perfect = +50 coins' },
-      { icon: '📂', text: 'Catégorie au choix (5 gratuites + déblocables)' },
-    ],
-  },
   flash: {
-    modeId: 'flash', modeName: 'Flash', subtitle: 'Le défi du jour !', emoji: '🔥', color: '#E91E63',
+    modeId: 'flash', modeName: 'Flash', subtitle: 'Le rendez-vous quotidien', emoji: '🔥', color: '#E91E63',
     rules: [
       { icon: '🆓', text: 'Gratuit — 1 fois par jour' },
       { icon: '⚡', text: '5 questions · 2 QCM · 15s' },
-      { icon: '🎯', text: 'Lun-Sam : thème du jour · Dim : WTF! VIP de la semaine' },
-      { icon: '🪙', text: '30 coins en semaine · 1 VIP débloqué le dimanche' },
+      { icon: '🎯', text: 'Lun-Sam : thème du jour · Dim : VIP Hunt de la semaine' },
+      { icon: '🪙', text: '30 coins fixe en semaine · 1 VIP débloqué le dimanche' },
     ],
   },
 }

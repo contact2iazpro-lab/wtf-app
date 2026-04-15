@@ -42,8 +42,8 @@ const HOME_BG_COLOR = [
   'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(90,25,90,0.50) 0%, transparent 65%)',
   // Vignette sombre sur les bords
   'radial-gradient(ellipse 135% 115% at 50% 50%, transparent 38%, rgba(0,0,0,0.65) 100%)',
-  // Base navy profond
-  '#0B1A35',
+  // Base bleu roi
+  '#1A3A8A',
 ].join(', ')
 const S = (px) => `calc(${px}px * var(--scale))`
 

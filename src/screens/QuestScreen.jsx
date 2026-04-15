@@ -1,17 +1,32 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { getFunnyFacts, getVipFacts } from '../data/factsService'
+import { getFunnyFacts, getVipFacts, getCategoryById } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
-import { getSnackEnergy, consumeSnackEnergy } from '../services/energyService'
+import {
+  getSnackEnergy,
+  consumeSnackEnergy,
+  buyExtraSession,
+} from '../services/energyService'
+import { SNACK_ENERGY } from '../constants/gameConfig'
+import GameHeader from '../components/GameHeader'
+import CircularTimer from '../components/CircularTimer'
+import HintFlipButton from '../components/HintFlipButton'
+import FallbackImage from '../components/FallbackImage'
+import renderFormattedText from '../utils/renderFormattedText'
 import GainsBreakdown from '../components/results/GainsBreakdown'
 
-// ── Constantes Quest (spec 15/04/2026) ──────────────────────────────────────
-const QUEST_MAX_LEVEL = 850           // 85 blocs × 10 niveaux
-const QUEST_BLOCK_SIZE = 10
+// ── Constantes Quest (spec QUEST_MODE_UPDATE 15/04/2026) ────────────────────
+const QUEST_BLOCK_SIZE = 10                 // 10 Funny par bloc
+const BOSS_THRESHOLD = 5                    // boss débloqué à ≥5/10
 const COINS_PER_CORRECT = 20
 const BOSS_BONUS = 100
-const QUEST_QCM = { choices: 4, duration: 20, id: 'quest' }
+const HINT_COST = 50
+const QUEST_DURATION = 20
+const QUEST_QCM = { choices: 4, duration: QUEST_DURATION, id: 'quest' }
+const QUEST_MAX_LEVEL = 850
+
+const S = (px) => `calc(${px}px * var(--scale))`
 
 // ── Helpers blocs ────────────────────────────────────────────────────────────
 const blockIdxOf = (level) => Math.floor((level - 1) / QUEST_BLOCK_SIZE) + 1
@@ -27,8 +42,8 @@ function readQuestState() {
     return {
       level: base.level || 1,
       stars: base.stars || {},
-      bossFailed: base.bossFailed || {},   // { [blockIdx]: true } — VIP verrouillé
-      bossWrongs: base.bossWrongs || {},   // { [blockIdx]: [prevWrong1, prevWrong2, ...] }
+      bossFailed: base.bossFailed || {},
+      bossWrongs: base.bossWrongs || {},
     }
   } catch {
     return { level: 1, stars: {}, bossFailed: {}, bossWrongs: {} }
@@ -53,22 +68,17 @@ function readUnlockedSet() {
   } catch { return new Set() }
 }
 
-// ── Pick 9 Funny facts de catégories variées, exclus ceux déjà débloqués ────
+// ── Pick 10 Funny diversifiées (catégories variées, hors déjà débloquées) ──
 function pickDiverseFunny(pool, n, unlockedSet) {
   const available = pool.filter(f => !unlockedSet.has(f.id))
-  const source = available.length >= n ? available : pool // fallback si pool déjà vidé
+  const source = available.length >= n ? available : pool
   const shuffled = [...source].sort(() => Math.random() - 0.5)
   const picked = []
   const usedCats = new Set()
-  // Pass 1 : maximiser la diversité de catégories
   for (const f of shuffled) {
     if (picked.length >= n) break
-    if (!usedCats.has(f.category)) {
-      picked.push(f)
-      usedCats.add(f.category)
-    }
+    if (!usedCats.has(f.category)) { picked.push(f); usedCats.add(f.category) }
   }
-  // Pass 2 : remplir si pas assez de catégories distinctes
   for (const f of shuffled) {
     if (picked.length >= n) break
     if (!picked.includes(f)) picked.push(f)
@@ -76,8 +86,7 @@ function pickDiverseFunny(pool, n, unlockedSet) {
   return picked
 }
 
-// ── Boss : tirage 1 fact VIP déterministe par blocIdx ───────────────────────
-// Même blocIdx → même boss. Garantit que le « Rejouer » retombe sur le bon VIP.
+// ── Boss : tirage VIP déterministe par blockIdx ─────────────────────────────
 function pickBossForBlock(blockIdx) {
   const vipPool = getVipFacts()
   if (!vipPool.length) return null
@@ -85,7 +94,7 @@ function pickBossForBlock(blockIdx) {
   return sorted[(blockIdx - 1) % sorted.length]
 }
 
-// ── Boss anti-déduction : 4 choix en excluant les anciennes fausses réponses ─
+// ── Boss anti-déduction : 4 choix en excluant anciennes fausses réponses ──
 function buildBossOptions(fact, excludeWrongs = []) {
   const correct = fact.shortAnswer || fact.options?.[fact.correctIndex]
   if (!correct) return getAnswerOptions(fact, QUEST_QCM)
@@ -106,31 +115,23 @@ function buildBossOptions(fact, excludeWrongs = []) {
   const c = pickFromType(close, picked);     if (c) picked.push(c)
   const p = pickFromType(plausible, picked); if (p) picked.push(p)
 
-  // Remplissage si pool filtré trop maigre (relâcher exclude puis allAvailable)
   if (picked.length < 3) {
     const all = [...funny, ...close, ...plausible]
     const fallback = all.filter(w => !picked.includes(w) && !excludeSet.has(w))
     const extra = [...fallback].sort(() => Math.random() - 0.5)
-    for (const w of extra) {
-      if (picked.length >= 3) break
-      picked.push(w)
-    }
+    for (const w of extra) { if (picked.length >= 3) break; picked.push(w) }
   }
   if (picked.length < 3) {
-    // Exclude épuisé → on relâche, mais on garde au moins un nouveau
     const all = [...funny, ...close, ...plausible].filter(w => !picked.includes(w))
     const extra = [...all].sort(() => Math.random() - 0.5)
-    for (const w of extra) {
-      if (picked.length >= 3) break
-      picked.push(w)
-    }
+    for (const w of extra) { if (picked.length >= 3) break; picked.push(w) }
   }
 
   const all = [correct, ...picked.slice(0, 3)].sort(() => Math.random() - 0.5)
   return { options: all, correctIndex: all.indexOf(correct) }
 }
 
-// ── Construit une session de bloc : 9 funny + 1 boss (ou boss seul pour retry) ─
+// ── Construit une session de bloc : 10 funny + 1 boss préparé (conditionnel) ─
 function buildBlockSession({ blockIdx, unlockedSet, bossOnly = false, bossExcludeWrongs = [] }) {
   const bossFact = pickBossForBlock(blockIdx)
   if (!bossFact) return null
@@ -139,14 +140,11 @@ function buildBlockSession({ blockIdx, unlockedSet, bossOnly = false, bossExclud
     ...buildBossOptions(bossFact, bossExcludeWrongs),
     _isBoss: true,
   }
-
-  if (bossOnly) {
-    return { facts: [bossPrepped], blockIdx, bossOnly: true }
-  }
+  if (bossOnly) return { facts: [bossPrepped], blockIdx, bossOnly: true }
 
   const funnyPool = getFunnyFacts()
-  if (funnyPool.length < 9) return null
-  const diverse = pickDiverseFunny(funnyPool, 9, unlockedSet)
+  if (funnyPool.length < QUEST_BLOCK_SIZE) return null
+  const diverse = pickDiverseFunny(funnyPool, QUEST_BLOCK_SIZE, unlockedSet)
   const funnyPrepped = diverse.map(f => ({
     ...f,
     ...getAnswerOptions(f, QUEST_QCM),
@@ -154,7 +152,8 @@ function buildBlockSession({ blockIdx, unlockedSet, bossOnly = false, bossExclud
   }))
 
   return {
-    facts: [...funnyPrepped, bossPrepped],
+    facts: funnyPrepped,      // 10 funny
+    bossFact: bossPrepped,    // boss tenu de côté (conditionnel)
     blockIdx,
     bossOnly: false,
   }
@@ -162,16 +161,26 @@ function buildBlockSession({ blockIdx, unlockedSet, bossOnly = false, bossExclud
 
 // ═════════════════════════════════════════════════════════════════════════════
 export default function QuestScreen({ onHome, setStorage }) {
-  const { applyCurrencyDelta, unlockFact, mergeFlags, hints: profileHints } = usePlayerProfile()
+  const {
+    applyCurrencyDelta,
+    unlockFact,
+    mergeFlags,
+    coins: profileCoins,
+    hints: profileHints,
+  } = usePlayerProfile()
   const [state, setState] = useState(readQuestState)
   const [session, setSession] = useState(null)
   const [qIndex, setQIndex] = useState(0)
+  const [phase, setPhase] = useState('question')        // 'question' | 'revelation' | 'results'
   const [selected, setSelected] = useState(null)
-  const [correctFactIds, setCorrectFactIds] = useState([])      // facts répondus correctement dans la session
+  const [correctFactIds, setCorrectFactIds] = useState([])
+  const [funnyCorrectCount, setFunnyCorrectCount] = useState(0)
   const [bossCorrect, setBossCorrect] = useState(false)
+  const [bossUnlocked, setBossUnlocked] = useState(false) // ≥5/10 atteint
+  const [hintsUsed, setHintsUsed] = useState(0)
+  const [imgFailed, setImgFailed] = useState(false)
   const [energyState, setEnergyState] = useState(() => getSnackEnergy())
-  const [noEnergyMsg, setNoEnergyMsg] = useState(false)
-  const [hintsRevealed, setHintsRevealed] = useState(0)         // 0, 1 ou 2 indices affichés pour la question courante
+  const [showEnergyModal, setShowEnergyModal] = useState(false)
   const mapRef = useRef(null)
 
   useEffect(() => {
@@ -187,63 +196,84 @@ export default function QuestScreen({ onHome, setStorage }) {
     }
   }, [session, state.level])
 
-  // Intro dramatique au passage sur la question boss d'un bloc complet
+  // Reset hints/image quand on change de question
   useEffect(() => {
-    if (!session || session.bossOnly) return
-    const fact = session.facts[qIndex]
+    setHintsUsed(0); setImgFailed(false); setSelected(null)
+  }, [qIndex, phase])
+
+  // Intro dramatique quand on arrive sur le boss
+  useEffect(() => {
+    if (!session || phase !== 'question') return
+    const fact = currentFact()
     if (fact?._isBoss) audio.play('boss_intro')
-  }, [session, qIndex])
+
+  }, [phase, session, qIndex])
 
   const currentBlockIdx = blockIdxOf(state.level)
+
+  const currentFact = () => {
+    if (!session) return null
+    if (session.bossOnly) return session.facts[0]
+    // Phase funny : facts[qIndex] ; phase boss : session.bossFact
+    if (qIndex < session.facts.length) return session.facts[qIndex]
+    return session.bossFact
+  }
 
   // ── Lance le bloc courant (consomme 1 énergie) ────────────────────────────
   const launchBlock = () => {
     audio.play('click')
-    setNoEnergyMsg(false)
     const energy = getSnackEnergy()
-    if ((energy.remaining ?? 0) < 1) {
-      setNoEnergyMsg(true)
-      return
-    }
+    if ((energy.remaining ?? 0) < 1) { setShowEnergyModal(true); return }
     const ok = consumeSnackEnergy()
-    if (!ok) { setNoEnergyMsg(true); return }
+    if (!ok) { setShowEnergyModal(true); return }
     setEnergyState(getSnackEnergy())
 
     const unlockedSet = readUnlockedSet()
     const s = buildBlockSession({ blockIdx: currentBlockIdx, unlockedSet })
     if (!s) return
-    setSession(s); setQIndex(0); setSelected(null); setCorrectFactIds([]); setBossCorrect(false); setHintsRevealed(0)
+    setSession(s); setQIndex(0); setPhase('question')
+    setSelected(null); setCorrectFactIds([]); setFunnyCorrectCount(0)
+    setBossCorrect(false); setBossUnlocked(false); setHintsUsed(0)
   }
 
-  // ── Lance la boss retry (gratuit) ────────────────────────────────────────
+  // ── Lance la boss retry (gratuit, bloc déjà gagné à ≥5/10) ───────────────
   const launchBossRetry = (blockIdx) => {
     audio.play('click')
     const prevWrongs = state.bossWrongs?.[blockIdx] || []
     const s = buildBlockSession({ blockIdx, unlockedSet: readUnlockedSet(), bossOnly: true, bossExcludeWrongs: prevWrongs })
     if (!s) return
-    setSession(s); setQIndex(0); setSelected(null); setCorrectFactIds([]); setBossCorrect(false); setHintsRevealed(0)
-    // Intro dramatique quand on relance le boss directement
-    setTimeout(() => audio.play('boss_intro'), 120)
+    setSession(s); setQIndex(0); setPhase('question')
+    setSelected(null); setCorrectFactIds([]); setFunnyCorrectCount(0)
+    setBossCorrect(false); setBossUnlocked(true); setHintsUsed(0)
   }
 
-  // ── Fin de session : applique les gains, progression, unlocks ─────────────
-  const finalizeSession = (finalCorrectIds, finalBossCorrect, currentSession) => {
-    const blockIdx = currentSession.blockIdx
-    const bossFact = currentSession.facts.find(f => f._isBoss)
-    const funnyCorrectCount = finalCorrectIds.filter(id => id !== bossFact?.id).length
+  // ── Achat énergie (75 coins) ─────────────────────────────────────────────
+  const handleBuyEnergy = () => {
+    const ok = buyExtraSession({ coins: profileCoins ?? 0, applyCurrencyDelta })
+    if (!ok) return
+    setShowEnergyModal(false)
+    setEnergyState(getSnackEnergy())
+    // Relance automatique
+    setTimeout(() => launchBlock(), 80)
+  }
 
-    // Coins : 20/bonne funny + 100 si boss réussi
-    const coinsFunny = funnyCorrectCount * COINS_PER_CORRECT
-    const coinsBoss = finalBossCorrect ? BOSS_BONUS : 0
+  // ── Fin de session : gains + progression + unlocks ─────────────────────────
+  const finalizeSession = (sessionArg, funnyCorrectIds, didBossCorrect, didBossUnlocked) => {
+    const blockIdx = sessionArg.blockIdx
+    const bossFact = sessionArg.bossFact || sessionArg.facts.find(f => f._isBoss)
+    const funnyCount = funnyCorrectIds.length
+    const coinsFunny = funnyCount * COINS_PER_CORRECT
+    const coinsBoss = didBossCorrect ? BOSS_BONUS : 0
     const coinsTotal = coinsFunny + coinsBoss
+
     if (coinsTotal > 0) {
-      applyCurrencyDelta?.({ coins: coinsTotal }, finalBossCorrect ? 'quest_block_cleared_boss' : 'quest_block_cleared')
+      applyCurrencyDelta?.({ coins: coinsTotal }, didBossCorrect ? 'quest_block_cleared_boss' : 'quest_block_cleared')
         ?.catch?.(e => console.warn('[QuestScreen] reward RPC failed:', e?.message || e))
     }
 
-    // Unlock facts : funny correctes + VIP SEULEMENT si boss réussi
-    const toUnlock = new Set(finalCorrectIds.filter(id => id !== bossFact?.id))
-    if (finalBossCorrect && bossFact) toUnlock.add(bossFact.id)
+    // Unlock funny correctes toujours ; VIP seulement si boss réussi
+    const toUnlock = new Set(funnyCorrectIds)
+    if (didBossCorrect && bossFact) toUnlock.add(bossFact.id)
 
     if (setStorage && toUnlock.size > 0) {
       setStorage(prev => {
@@ -252,33 +282,30 @@ export default function QuestScreen({ onHome, setStorage }) {
         return { ...prev, unlockedFacts: u }
       })
     }
-    // Miroir Supabase unlock_fact
     toUnlock.forEach(id => {
-      const fact = currentSession.facts.find(f => f.id === id)
-      unlockFact?.(id, fact?.category, fact?._isBoss ? 'quest_boss_unlock' : 'quest_level_unlock')
+      const isBoss = bossFact && id === bossFact.id
+      const fact = isBoss ? bossFact : sessionArg.facts.find(f => f.id === id)
+      unlockFact?.(id, fact?.category, isBoss ? 'quest_boss_unlock' : 'quest_level_unlock')
         ?.catch?.(e => console.warn('[QuestScreen] unlockFact RPC failed:', e?.message || e))
     })
 
-    // État Quest : avance de bloc même si boss raté, marque bossFailed, historise wrongs
     const nextBossFailed = { ...state.bossFailed }
     const nextBossWrongs = { ...state.bossWrongs }
-    if (bossFact) {
-      if (finalBossCorrect) {
+    if (bossFact && didBossUnlocked) {
+      if (didBossCorrect) {
         delete nextBossFailed[blockIdx]
         delete nextBossWrongs[blockIdx]
       } else {
         nextBossFailed[blockIdx] = true
-        // historise les 3 fausses réponses montrées (pour anti-déduction au prochain retry)
         const shownWrongs = (bossFact.options || []).filter((_, i) => i !== bossFact.correctIndex)
         const prev = state.bossWrongs?.[blockIdx] || []
-        // cap la liste à 12 pour éviter de tout vider
         nextBossWrongs[blockIdx] = [...new Set([...prev, ...shownWrongs])].slice(-12)
       }
     }
 
+    // Avance : SEULEMENT si boss réussi
     let nextLevel = state.level
-    if (!currentSession.bossOnly) {
-      // Bloc complet joué → avance toujours au début du bloc suivant (règle « le joueur avance quand même »)
+    if (didBossCorrect && !sessionArg.bossOnly) {
       nextLevel = Math.min(QUEST_MAX_LEVEL, blockStartOf(blockIdx + 1))
     }
 
@@ -286,7 +313,7 @@ export default function QuestScreen({ onHome, setStorage }) {
       level: nextLevel,
       stars: {
         ...state.stars,
-        [blockBossLevelOf(blockIdx)]: finalBossCorrect ? 3 : 1,
+        [blockBossLevelOf(blockIdx)]: didBossCorrect ? 3 : (didBossUnlocked ? 1 : 0),
       },
       bossFailed: nextBossFailed,
       bossWrongs: nextBossWrongs,
@@ -297,37 +324,130 @@ export default function QuestScreen({ onHome, setStorage }) {
       ?.catch?.(e => console.warn('[QuestScreen] quest mergeFlags failed:', e?.message || e))
   }
 
+  // ── Sélection d'une réponse ────────────────────────────────────────────────
   const handleAnswer = (idx) => {
-    if (selected !== null) return
+    if (selected !== null || phase !== 'question') return
+    const fact = currentFact()
+    if (!fact) return
     setSelected(idx)
-    const fact = session.facts[qIndex]
     const isCorrect = idx === fact.correctIndex
     audio.play(isCorrect ? 'correct' : 'wrong')
+    audio.vibrate(isCorrect ? [40, 20, 40] : [120])
 
-    const nextCorrectIds = isCorrect ? [...correctFactIds, fact.id] : correctFactIds
-    const nextBossCorrect = fact._isBoss ? isCorrect : bossCorrect
-    if (isCorrect) setCorrectFactIds(nextCorrectIds)
-    if (fact._isBoss) setBossCorrect(nextBossCorrect)
+    const wasBoss = !!fact._isBoss
+    const nextCorrectIds = isCorrect && !wasBoss ? [...correctFactIds, fact.id] : correctFactIds
+    const nextFunnyCount = isCorrect && !wasBoss ? funnyCorrectCount + 1 : funnyCorrectCount
+    const nextBossCorrect = wasBoss ? isCorrect : bossCorrect
+    if (isCorrect && !wasBoss) setCorrectFactIds(nextCorrectIds)
+    if (isCorrect && !wasBoss) setFunnyCorrectCount(nextFunnyCount)
+    if (wasBoss) setBossCorrect(nextBossCorrect)
 
+    // Enchaînement : si bonne réponse → révélation, sinon saut direct
     setTimeout(() => {
-      if (qIndex + 1 < session.facts.length) {
-        setQIndex(q => q + 1); setSelected(null); setHintsRevealed(0)
+      if (isCorrect) {
+        setPhase('revelation')
       } else {
-        finalizeSession(nextCorrectIds, nextBossCorrect, session)
-        setQIndex(session.facts.length) // trigger résultat
+        advance(nextCorrectIds, nextFunnyCount, nextBossCorrect)
       }
-    }, 900)
+    }, 650)
   }
 
-  // ── Vue résultat ──────────────────────────────────────────────────────────
-  const inResults = session && qIndex >= session.facts.length
-  if (inResults) {
-    const bossFact = session.facts.find(f => f._isBoss)
-    const funnyCount = session.facts.filter(f => !f._isBoss).length
-    const funnyCorrect = correctFactIds.filter(id => id !== bossFact?.id).length
-    const coinsFunny = funnyCorrect * COINS_PER_CORRECT
+  // ── Passe à la question suivante ou aux résultats ─────────────────────────
+  const advance = (correctIds, funnyCount, didBossCorrect) => {
+    const sess = session
+    if (!sess) return
+    // Retry boss seul
+    if (sess.bossOnly) {
+      finalizeSession(sess, [], didBossCorrect, true)
+      setPhase('results')
+      return
+    }
+    // On vient de répondre au boss (qIndex === sess.facts.length)
+    if (qIndex >= sess.facts.length) {
+      finalizeSession(sess, correctIds, didBossCorrect, true)
+      setPhase('results')
+      return
+    }
+    // Encore des funnies à jouer
+    if (qIndex + 1 < sess.facts.length) {
+      setQIndex(q => q + 1)
+      setSelected(null)
+      setPhase('question')
+      return
+    }
+    // 10e funny terminée → seuil boss ?
+    const unlocked = funnyCount >= BOSS_THRESHOLD
+    if (unlocked) {
+      setBossUnlocked(true)
+      setQIndex(sess.facts.length) // → currentFact() renvoie bossFact
+      setSelected(null)
+      setPhase('question')
+      return
+    }
+    // <5/10 : bloc raté, pas de boss
+    finalizeSession(sess, correctIds, didBossCorrect, false)
+    setPhase('results')
+  }
+
+  // ── Révélation → next ─────────────────────────────────────────────────────
+  const handleRevelationNext = () => {
+    audio.play('click')
+    advance(correctFactIds, funnyCorrectCount, bossCorrect)
+  }
+
+  // ── Indices : tirage 2 parmi 4 (stable par fact + retry boss) ──────────────
+  const fact = currentFact()
+  const isBoss = !!fact?._isBoss
+  const retryCount = isBoss ? (state.bossWrongs?.[session?.blockIdx]?.length || 0) : 0
+  const hintPool = useMemo(() => {
+    if (!fact) return []
+    return [fact.hint1, fact.hint2, fact.hint3, fact.hint4].filter(h => h && h.trim() !== '')
+  }, [fact])
+  const shuffledHints = useMemo(() => {
+    if (!fact) return []
+    const seed = (fact.id * 31 + retryCount * 7) >>> 0
+    return [...hintPool].sort((a, b) => {
+      const ha = (a.charCodeAt(0) + seed) % 100
+      const hb = (b.charCodeAt(0) + seed * 3) % 100
+      return ha - hb
+    })
+  }, [fact, hintPool, retryCount])
+  const availableHints = shuffledHints.slice(0, 2)
+
+  const useHint = (hintNum) => {
+    // Débit stock ou achat
+    audio.play('click')
+    setHintsUsed(h => Math.max(h, hintNum))
+    applyCurrencyDelta?.({ hints: -1 }, 'quest_use_hint')
+      ?.catch?.(e => console.warn('[QuestScreen] hint debit failed:', e?.message || e))
+  }
+  const buyHint = () => {
+    if ((profileCoins ?? 0) < HINT_COST) return
+    applyCurrencyDelta?.({ coins: -HINT_COST, hints: 1 }, 'buy_hint_in_session')
+      ?.catch?.(e => console.warn('[QuestScreen] buy hint RPC failed:', e?.message || e))
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // VUE RÉSULTATS
+  // ═════════════════════════════════════════════════════════════════════════
+  if (phase === 'results' && session) {
+    const unlocked = bossUnlocked
+    const coinsFunny = funnyCorrectCount * COINS_PER_CORRECT
     const coinsBoss = bossCorrect ? BOSS_BONUS : 0
     const coinsTotal = coinsFunny + coinsBoss
+
+    const title = session.bossOnly
+      ? (bossCorrect ? '👑 Boss vaincu !' : '💀 Boss raté')
+      : !unlocked
+        ? '🔒 Bloc raté'
+        : bossCorrect ? '👑 Bloc réussi !' : '💀 Boss raté'
+    const subtitle = session.bossOnly
+      ? ''
+      : !unlocked
+        ? `${funnyCorrectCount}/10 · il faut au moins 5 bonnes réponses pour affronter le boss`
+        : bossCorrect
+          ? `${funnyCorrectCount}/10 Funny · Boss vaincu → niveau suivant débloqué`
+          : `${funnyCorrectCount}/10 Funny · Boss raté → refais le bloc`
 
     return (
       <div style={{
@@ -338,20 +458,14 @@ export default function QuestScreen({ onHome, setStorage }) {
         justifyContent: 'center', alignItems: 'center', gap: 16,
         '--scale': 1,
       }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0, textAlign: 'center' }}>
-          {session.bossOnly
-            ? (bossCorrect ? '👑 BOSS vaincu !' : '💀 Boss raté')
-            : (bossCorrect ? '👑 Bloc parfait !' : '🎯 Bloc terminé')}
-        </h1>
-        {!session.bossOnly && (
-          <div style={{ fontSize: 16, opacity: 0.85 }}>
-            Funny : {funnyCorrect}/{funnyCount} · Boss : {bossCorrect ? '✅' : '❌'}
-          </div>
+        <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0, textAlign: 'center' }}>{title}</h1>
+        {subtitle && (
+          <div style={{ fontSize: 14, opacity: 0.85, textAlign: 'center', maxWidth: 300 }}>{subtitle}</div>
         )}
         <div style={{ width: '100%', maxWidth: 320 }}>
           <GainsBreakdown
             items={[
-              !session.bossOnly && { label: `✅ ${funnyCorrect} bonnes réponses`, value: `+${coinsFunny}`, color: '#FFD700' },
+              !session.bossOnly && { label: `✅ ${funnyCorrectCount} bonnes réponses`, value: `+${coinsFunny}`, color: '#FFD700' },
               bossCorrect && { label: '👑 Boss vaincu', value: `+${coinsBoss}`, color: '#FFD700' },
             ].filter(Boolean)}
             total={coinsTotal}
@@ -359,13 +473,8 @@ export default function QuestScreen({ onHome, setStorage }) {
             textColor="#ffffff"
           />
         </div>
-        {!bossCorrect && bossFact && (
-          <div style={{ fontSize: 12, opacity: 0.7, textAlign: 'center', maxWidth: 280 }}>
-            🔒 VIP non débloqué. Rejoue le boss depuis la carte pour le débloquer.
-          </div>
-        )}
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-          <button onClick={() => { setSession(null) }} style={{
+          <button onClick={() => { setSession(null); setPhase('question') }} style={{
             background: '#FF6B1A', border: 'none', borderRadius: 10, padding: '12px 22px',
             color: '#fff', fontWeight: 800, fontFamily: 'Nunito, sans-serif', cursor: 'pointer', fontSize: 14,
           }}>Carte</button>
@@ -378,7 +487,83 @@ export default function QuestScreen({ onHome, setStorage }) {
     )
   }
 
-  // ── Vue carte ─────────────────────────────────────────────────────────────
+  // ═════════════════════════════════════════════════════════════════════════
+  // VUE RÉVÉLATION (après bonne réponse → déblocage fact)
+  // ═════════════════════════════════════════════════════════════════════════
+  if (phase === 'revelation' && fact) {
+    const cat = getCategoryById(fact.category)
+    const catColor = cat?.color || '#FF6B1A'
+    const coinsGained = isBoss ? BOSS_BONUS : COINS_PER_CORRECT
+    return (
+      <div style={{
+        position: 'relative', width: '100%', height: '100%', overflow: 'hidden',
+        background: `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`,
+        color: '#fff', fontFamily: 'Nunito, sans-serif',
+        display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
+        '--scale': 1,
+      }}>
+        <div style={{ padding: `${S(16)} ${S(16)} 0` }}>
+          <GameHeader
+            categoryLabel={cat?.label || 'Quest'}
+            categoryColor={catColor}
+            categoryIcon={fact.category ? `/assets/categories/${fact.category}.png` : null}
+            onQuit={() => setSession(null)}
+          />
+        </div>
+        <div style={{
+          flex: 1, minHeight: 0, overflowY: 'auto',
+          display: 'flex', flexDirection: 'column', gap: 14, padding: '14px 20px 20px',
+        }}>
+          <div style={{ textAlign: 'center', fontWeight: 900, fontSize: 20 }}>
+            {isBoss ? '👑 BOSS VAINCU !' : '✨ F*ct débloqué !'}
+          </div>
+          <div style={{
+            position: 'relative', width: '100%', aspectRatio: '1 / 1',
+            borderRadius: 16, overflow: 'hidden', background: 'rgba(0,0,0,0.3)',
+          }}>
+            {fact.imageUrl && !imgFailed ? (
+              <img
+                src={fact.imageUrl} alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              <FallbackImage categoryColor={catColor} />
+            )}
+          </div>
+          <div style={{
+            background: 'rgba(0,0,0,0.28)', borderRadius: 14, padding: 14,
+            border: '1.5px solid rgba(255,255,255,0.15)',
+            fontSize: 14, lineHeight: 1.5, textAlign: 'center',
+          }}>
+            {renderFormattedText(fact.titre || fact.fact || fact.question)}
+          </div>
+          <div style={{
+            background: 'rgba(255,215,0,0.15)', borderRadius: 12, padding: 10,
+            border: '1.5px solid rgba(255,215,0,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            fontSize: 15, fontWeight: 900, color: '#FFD700',
+          }}>
+            <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 18, height: 18 }} />
+            +{coinsGained} WTFCoins
+          </div>
+        </div>
+        <div style={{ padding: 20, flexShrink: 0 }}>
+          <button onClick={handleRevelationNext} style={{
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: 'linear-gradient(135deg, #FF6B1A, #D94A10)',
+            border: 'none', color: '#fff', fontWeight: 900, fontSize: 16,
+            fontFamily: 'Nunito, sans-serif', cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(255,107,26,0.35)',
+          }}>Suivant →</button>
+        </div>
+      </div>
+    )
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // VUE CARTE (hub)
+  // ═════════════════════════════════════════════════════════════════════════
   if (!session) {
     const TOTAL_BLOCKS = Math.ceil(QUEST_MAX_LEVEL / QUEST_BLOCK_SIZE)
     const start = Math.max(1, currentBlockIdx - 3)
@@ -392,6 +577,7 @@ export default function QuestScreen({ onHome, setStorage }) {
         background: 'linear-gradient(160deg, #1a0f2e 0%, #2E1A47 100%)',
         color: '#fff', fontFamily: 'Nunito, sans-serif',
         display: 'flex', flexDirection: 'column', padding: '20px 20px 10px',
+        '--scale': 1,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
           <button onClick={onHome} style={{
@@ -409,16 +595,8 @@ export default function QuestScreen({ onHome, setStorage }) {
         </div>
         <div style={{ textAlign: 'center', fontSize: 12, opacity: 0.7, marginBottom: 10 }}>
           <img src="/assets/ui/emoji-energy.png" alt="⚡" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', marginRight: 4 }} />
-          {energyState.remaining}/{energyState.max} · 1 énergie par bloc de 10
+          {energyState.remaining}/{energyState.max} · 1 énergie par bloc
         </div>
-        {noEnergyMsg && (
-          <div style={{
-            background: 'rgba(232,69,53,0.15)', border: '1.5px solid rgba(232,69,53,0.5)',
-            borderRadius: 10, padding: '10px 14px', fontSize: 12, marginBottom: 10, textAlign: 'center',
-          }}>
-            Plus d'énergie. Attends la régénération ou joue un autre mode.
-          </div>
-        )}
 
         <div ref={mapRef} style={{
           flex: 1, overflowY: 'auto',
@@ -444,9 +622,7 @@ export default function QuestScreen({ onHome, setStorage }) {
                     width: '72%',
                     background: isCurrent
                       ? 'linear-gradient(135deg, #FF6B1A 0%, #E84535 100%)'
-                      : isDone
-                        ? 'rgba(107,203,119,0.2)'
-                        : 'rgba(255,255,255,0.06)',
+                      : isDone ? 'rgba(107,203,119,0.2)' : 'rgba(255,255,255,0.06)',
                     border: `2px solid ${isCurrent ? '#fff' : isDone ? '#6BCB77' : 'rgba(255,255,255,0.12)'}`,
                     borderRadius: 16, padding: '14px 16px',
                     color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 14,
@@ -458,8 +634,7 @@ export default function QuestScreen({ onHome, setStorage }) {
                     WebkitTapHighlightColor: 'transparent',
                   }}
                 >
-                  Bloc {b} — Niv. {startLv}-{bossLv} ⭐
-                  {isDone ? ' ✓' : ''}
+                  Bloc {b} — Niv. {startLv}-{bossLv} ⭐{isDone ? ' ✓' : ''}
                 </button>
                 {isDone && failedBoss && (
                   <button
@@ -480,126 +655,253 @@ export default function QuestScreen({ onHome, setStorage }) {
             )
           })}
         </div>
+
+        {/* Modal énergie insuffisante */}
+        {showEnergyModal && (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 50,
+            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+          }}>
+            <div style={{
+              background: '#FAFAF8', borderRadius: 20, padding: 22, width: '100%', maxWidth: 320,
+              color: '#1a1a2e', textAlign: 'center',
+            }}>
+              <img src="/assets/ui/emoji-energy.png" alt="" style={{ width: 42, height: 42, marginBottom: 4 }} />
+              <h2 style={{ fontSize: 18, fontWeight: 900, margin: '4px 0 6px' }}>Plus d'énergie !</h2>
+              <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', lineHeight: 1.5 }}>
+                Achète 1 énergie pour {SNACK_ENERGY.EXTRA_SESSION_COST} coins et lance ce bloc, ou attends la régénération.
+              </p>
+              <button
+                onClick={handleBuyEnergy}
+                disabled={(profileCoins ?? 0) < SNACK_ENERGY.EXTRA_SESSION_COST}
+                style={{
+                  width: '100%', padding: '12px 0', borderRadius: 12,
+                  background: (profileCoins ?? 0) >= SNACK_ENERGY.EXTRA_SESSION_COST
+                    ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : '#E5E7EB',
+                  border: 'none',
+                  color: (profileCoins ?? 0) >= SNACK_ENERGY.EXTRA_SESSION_COST ? '#fff' : '#9CA3AF',
+                  fontWeight: 900, fontSize: 14, fontFamily: 'Nunito, sans-serif',
+                  cursor: (profileCoins ?? 0) >= SNACK_ENERGY.EXTRA_SESSION_COST ? 'pointer' : 'not-allowed',
+                }}
+              >
+                Acheter ({SNACK_ENERGY.EXTRA_SESSION_COST} coins)
+              </button>
+              <button onClick={() => setShowEnergyModal(false)} style={{
+                width: '100%', padding: '10px 0', marginTop: 8,
+                background: 'transparent', border: 'none', color: '#6B7280',
+                fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+              }}>
+                Fermer
+              </button>
+            </div>
+          </div>
+        )}
+
         <style>{`@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }`}</style>
       </div>
     )
   }
 
-  // ── Vue session (question) ───────────────────────────────────────────────
-  const fact = session.facts[qIndex]
-  const isBoss = fact._isBoss
+  // ═════════════════════════════════════════════════════════════════════════
+  // VUE QUESTION
+  // ═════════════════════════════════════════════════════════════════════════
+  const cat = getCategoryById(fact.category)
+  const catColor = cat?.color || '#FF6B1A'
+  const screenBg = isBoss
+    ? 'linear-gradient(160deg, #4a0e1a 0%, #2E1A47 100%)'
+    : `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
+  const totalFunny = session.bossOnly ? 0 : session.facts.length
+  const displayIndex = isBoss ? totalFunny : qIndex
+  const displayTotal = totalFunny + (bossUnlocked || isBoss ? 1 : 0) || 1
 
-  // Tirage 2 indices parmi 4 (hint1-hint4), stable par fact + retry
-  // Le retryCount fait varier le tirage à chaque retry boss
-  const retryCount = isBoss ? (state.bossWrongs?.[session.blockIdx]?.length || 0) : 0
-  const hintPool = [fact.hint1, fact.hint2, fact.hint3, fact.hint4].filter(h => h && h.trim() !== '')
-  // Shuffle déterministe via seed simple (factId + retryCount)
-  const seed = (fact.id * 31 + retryCount * 7) >>> 0
-  const shuffledHints = [...hintPool].sort((a, b) => {
-    const ha = (a.charCodeAt(0) + seed) % 100
-    const hb = (b.charCodeAt(0) + seed * 3) % 100
-    return ha - hb
-  })
-  const availableHints = shuffledHints.slice(0, 2)
-
-  const canUseHint = selected === null && hintsRevealed < availableHints.length && (profileHints ?? 0) > 0
-  const useHint = () => {
-    if (!canUseHint) return
-    audio.play('click')
-    setHintsRevealed(n => n + 1)
-    applyCurrencyDelta?.({ hints: -1 }, 'quest_use_hint')
-      ?.catch?.(e => console.warn('[QuestScreen] hint debit failed:', e?.message || e))
-  }
   return (
     <div style={{
-      position: 'relative', width: '100%', height: '100%',
-      background: isBoss
-        ? 'linear-gradient(160deg, #4a0e1a 0%, #2E1A47 100%)'
-        : 'linear-gradient(160deg, #1a0f2e 0%, #2E1A47 100%)',
-      color: '#fff', fontFamily: 'Nunito, sans-serif',
-      display: 'flex', flexDirection: 'column', padding: 20, gap: 14,
+      position: 'relative', width: '100%', height: '100%', overflow: 'hidden',
+      background: screenBg, color: '#fff', fontFamily: 'Nunito, sans-serif',
+      display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
+      '--scale': 1,
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button onClick={() => setSession(null)} style={{
-          background: 'none', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer', padding: 0,
-        }}>←</button>
-        <div style={{ fontSize: 12, opacity: 0.85, fontWeight: 700 }}>
-          {session.bossOnly
-            ? '👑 BOSS (retry)'
-            : `Bloc ${session.blockIdx} · ${isBoss ? '👑 BOSS' : `Q${qIndex + 1}/${session.facts.length - 1}`}`}
-        </div>
-        <div style={{ width: 20 }} />
+      <div style={{ padding: `${S(16)} ${S(16)} 0`, flexShrink: 0 }}>
+        <GameHeader
+          categoryLabel={cat?.label || 'Quest'}
+          categoryColor={catColor}
+          categoryIcon={fact.category ? `/assets/categories/${fact.category}.png` : null}
+          onQuit={() => setSession(null)}
+        />
       </div>
 
+      {/* Label mode */}
+      <div style={{ textAlign: 'center', flexShrink: 0, padding: `${S(4)} 0 ${S(2)}` }}>
+        <span style={{
+          fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+          color: 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+        }}>
+          {isBoss ? '👑 BOSS VIP' : `MODE QUEST · BLOC ${session.blockIdx}`}
+        </span>
+      </div>
+
+      {/* Barre de progression */}
+      <div style={{ padding: `0 ${S(16)}`, flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
+          {Array.from({ length: displayTotal }).map((_, i) => {
+            const isActive = i === displayIndex
+            return (
+              <div key={i} style={{
+                flex: 1,
+                height: isActive ? S(20) : S(10),
+                borderRadius: S(5),
+                background: isActive ? 'white' : 'rgba(255,255,255,0.3)',
+                position: isActive ? 'relative' : 'static',
+                transition: 'all 0.3s ease',
+              }}>
+                {isActive && (
+                  <span style={{
+                    position: 'absolute', top: '50%', left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    fontSize: S(12), fontWeight: 900, color: catColor, whiteSpace: 'nowrap',
+                  }}>
+                    {displayIndex + 1}/{displayTotal}
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Zone question + hints + QCM */}
       <div style={{
-        background: 'rgba(255,255,255,0.08)', padding: 18, borderRadius: 14,
-        fontSize: 16, lineHeight: 1.45, textAlign: 'center', minHeight: 110,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: `1.5px solid ${isBoss ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.15)'}`,
+        flex: 1, minHeight: 0, overflowY: 'auto',
+        display: 'flex', flexDirection: 'column', gap: S(10),
+        padding: `${S(10)} ${S(16)} 0`,
       }}>
-        {fact.fact || fact.titre || fact.question || 'Question'}
+        {/* Card question avec image floutée + 🔒 */}
+        <div style={{
+          background: 'rgba(0,0,0,0.28)', border: `1.5px solid ${catColor}70`,
+          borderRadius: S(16), padding: S(12), backdropFilter: 'blur(12px)',
+          boxShadow: `0 4px 32px ${catColor}30`,
+          flexShrink: 0,
+        }}>
+          <div style={{
+            position: 'relative', width: '100%', aspectRatio: '1 / 1',
+            borderRadius: S(12), overflow: 'hidden', marginBottom: S(10),
+            background: 'rgba(0,0,0,0.3)',
+          }}>
+            {fact.imageUrl && !imgFailed ? (
+              <img
+                src={fact.imageUrl} alt=""
+                style={{
+                  width: '100%', height: '100%', objectFit: 'cover',
+                  filter: 'blur(18px) brightness(0.6)', transform: 'scale(1.15)',
+                }}
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              <div style={{ width: '100%', height: '100%', filter: 'blur(14px) brightness(0.6)' }}>
+                <FallbackImage categoryColor={catColor} />
+              </div>
+            )}
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: S(56), filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
+            }}>🔒</div>
+          </div>
+          <h2 style={{
+            fontSize: 'calc(1.05rem * var(--scale))', fontWeight: 800, lineHeight: 1.35,
+            color: '#fff', margin: 0, textAlign: 'center',
+          }}>
+            {renderFormattedText(fact.question || fact.fact || '')}
+          </h2>
+        </div>
+
+        {/* Deux boutons indices visibles d'un coup */}
+        {availableHints.length > 0 && (
+          <div style={{
+            display: 'grid', gridTemplateColumns: availableHints.length === 1 ? '1fr' : '1fr 1fr',
+            gap: 8, flexShrink: 0,
+          }}>
+            {availableHints.map((h, i) => {
+              const hintNum = i + 1
+              const hasStock = (profileHints ?? 0) > 0
+              const canAfford = hasStock || (profileCoins ?? 0) >= HINT_COST
+              const canUse = hasStock
+              return (
+                <HintFlipButton
+                  key={hintNum}
+                  num={hintNum}
+                  hint={h}
+                  catColor={catColor}
+                  isFree={false}
+                  cost={HINT_COST}
+                  canAfford={canAfford}
+                  canUse={canUse}
+                  onReveal={() => useHint(hintNum)}
+                  onBuyHint={!canUse && canAfford ? buyHint : null}
+                />
+              )
+            })}
+          </div>
+        )}
+
+        {/* QCM : pas de vert sur bonne réponse si mal répondu */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5),
+          flexShrink: 0, position: 'relative', zIndex: 5,
+        }}>
+          {fact.options.map((opt, i) => {
+            const isSel = selected === i
+            const isWrongPick = isSel && i !== fact.correctIndex
+            const isRightPick = isSel && i === fact.correctIndex
+            const bg = isWrongPick
+              ? 'rgba(232,69,53,0.55)'
+              : isRightPick
+                ? 'rgba(107,203,119,0.55)'
+                : 'rgba(255,255,255,0.15)'
+            const border = isWrongPick
+              ? '2px solid #E84535'
+              : isRightPick
+                ? '2px solid #6BCB77'
+                : '1.5px solid rgba(255,255,255,0.4)'
+            return (
+              <button
+                key={i}
+                onClick={() => handleAnswer(i)}
+                disabled={selected !== null}
+                style={{
+                  background: bg, border, borderRadius: S(12),
+                  color: '#fff', fontWeight: 700, fontSize: S(13), lineHeight: 1.2,
+                  padding: `${S(4)} ${S(6)}`, height: S(64), width: '100%',
+                  overflow: 'hidden', wordBreak: 'break-word',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  textAlign: 'center', cursor: selected === null ? 'pointer' : 'default',
+                  WebkitTapHighlightColor: 'transparent',
+                  transition: 'background 0.15s, border-color 0.15s',
+                }}
+              >
+                <span style={{
+                  overflow: 'hidden', textOverflow: 'ellipsis',
+                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
+                }}>
+                  {renderFormattedText(opt)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Indices révélés + bouton indice */}
-      {availableHints.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {availableHints.slice(0, hintsRevealed).map((h, i) => (
-            <div key={i} style={{
-              background: 'rgba(255,215,0,0.12)', border: '1.5px solid rgba(255,215,0,0.4)',
-              borderRadius: 10, padding: '8px 12px', fontSize: 12, fontWeight: 700,
-              color: '#FFD700', display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              <span>💡</span><span>{h}</span>
-            </div>
-          ))}
-          {hintsRevealed < availableHints.length && (
-            <button
-              onClick={useHint}
-              disabled={!canUseHint}
-              style={{
-                background: canUseHint ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.05)',
-                border: `1.5px solid ${canUseHint ? 'rgba(255,215,0,0.5)' : 'rgba(255,255,255,0.15)'}`,
-                borderRadius: 10, padding: '8px 12px', fontSize: 12, fontWeight: 800,
-                color: canUseHint ? '#FFD700' : 'rgba(255,255,255,0.3)',
-                cursor: canUseHint ? 'pointer' : 'not-allowed',
-                fontFamily: 'Nunito, sans-serif',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              }}
-            >
-              💡 Indice {hintsRevealed + 1}/{availableHints.length}
-              <span style={{ opacity: 0.7, fontSize: 10 }}>
-                · stock : {profileHints ?? 0}
-              </span>
-            </button>
-          )}
+      {/* Timer en bas */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `${S(8)} 0 ${S(14)}` }}>
+        <div style={{ width: S(72), height: S(72), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <CircularTimer
+            key={`${fact.id}-${phase}`}
+            size={72}
+            duration={QUEST_DURATION}
+            onTimeout={() => { if (selected === null) handleAnswer(-1) }}
+          />
         </div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-        {fact.options.map((opt, i) => {
-          const isSel = selected === i
-          const revealed = selected !== null
-          const isTheCorrect = revealed && i === fact.correctIndex
-          const isWrong = isSel && !isTheCorrect
-          return (
-            <button
-              key={i}
-              onClick={() => handleAnswer(i)}
-              disabled={revealed}
-              style={{
-                background: isTheCorrect ? '#6BCB77' : isWrong ? '#E84535' : 'rgba(255,255,255,0.12)',
-                border: `1.5px solid ${isTheCorrect ? '#6BCB77' : isWrong ? '#E84535' : 'rgba(255,255,255,0.25)'}`,
-                borderRadius: 12, padding: '14px 16px',
-                color: '#fff', fontSize: 15, fontWeight: 700, fontFamily: 'Nunito, sans-serif',
-                cursor: revealed ? 'default' : 'pointer', textAlign: 'left',
-                WebkitTapHighlightColor: 'transparent',
-                transition: 'background 0.2s, border-color 0.2s',
-              }}
-            >
-              {opt}
-            </button>
-          )
-        })}
       </div>
     </div>
   )

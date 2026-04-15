@@ -93,10 +93,13 @@ export const MODE_CONFIGS = {
   quest: {
     modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', color: '#FF6B1A',
     rules: [
-      { icon: '🔋', text: '1 énergie par bloc de 10 niveaux' },
-      { icon: '🧠', text: '4 QCM · 20s · 2 indices' },
-      { icon: '👑', text: 'Boss VIP tous les 10 niveaux' },
-      { icon: '🪙', text: '20 coins par niveau · 100 coins par boss VIP réussi' },
+      { icon: '🔋', text: 'Coût : 1 énergie par bloc' },
+      { icon: '📋', text: 'Bloc : 10 Funny + 1 boss VIP' },
+      { icon: '🔢', text: 'QCM : 4/question' },
+      { icon: '⏱️', text: 'Timer : 20s/question' },
+      { icon: '💡', text: 'Indices : 2/question' },
+      { icon: '👑', text: 'Boss débloqué : 5/10 bonnes réponses' },
+      { icon: '🪙', text: 'Gains : 20 WTFCoins/bonne · +100 WTFCoins/boss' },
     ],
   },
   marathon: {

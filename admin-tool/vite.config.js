@@ -1,11 +1,22 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
 // Absolute path to the game's src directory (sibling of admin-tool/)
 const gameRoot = path.resolve(__dirname, '../src')
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Load ALL env vars (including non-VITE_) — the third arg '' disables the prefix filter.
+  // SUPABASE_SECRET_KEY is kept server-side (Node context only) and injected by the proxy below.
+  const env = loadEnv(mode, process.cwd(), '')
+  const SUPABASE_URL = env.VITE_SUPABASE_URL
+  const SUPABASE_SECRET_KEY = env.SUPABASE_SECRET_KEY
+
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
+    console.warn('[admin-tool] VITE_SUPABASE_URL ou SUPABASE_SECRET_KEY manquant dans .env.local — le proxy Supabase ne fonctionnera pas.')
+  }
+
+  return {
   base: '/admin/',
   plugins: [
     react(),
@@ -81,5 +92,32 @@ export default defineConfig({
     },
   },
 
-  server: { port: 5174 },
+  server: {
+    port: 5174,
+    host: true, // écoute sur toutes les interfaces (utile si un jour tu veux accéder depuis un autre device sur le LAN)
+    proxy: {
+      // ── Proxy Supabase local ──────────────────────────────────────────
+      // Le client supabase-js pointe vers /supabase-proxy (URL locale).
+      // Ce middleware Node réécrit chaque requête vers le vrai Supabase
+      // et injecte la secret key server-side. Résultat : la secret key
+      // n'est JAMAIS envoyée au navigateur.
+      '/supabase-proxy': {
+        target: SUPABASE_URL,
+        changeOrigin: true,
+        secure: true,
+        rewrite: (p) => p.replace(/^\/supabase-proxy/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            // Remplace toute clé fantôme envoyée par le client par la vraie secret key
+            proxyReq.setHeader('apikey', SUPABASE_SECRET_KEY)
+            proxyReq.setHeader('Authorization', `Bearer ${SUPABASE_SECRET_KEY}`)
+          })
+          proxy.on('error', (err) => {
+            console.error('[supabase-proxy] error:', err.message)
+          })
+        },
+      },
+    },
+  },
+  }
 })

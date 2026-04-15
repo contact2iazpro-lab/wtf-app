@@ -1,13 +1,20 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES } from '../constants/categories'
 import { callEdgeFunction } from '../utils/helpers'
+import { generateStatementsForFact } from '../lib/generateStatements'
 
 // ── Tab definitions ──────────────────────────────────────────────────────────
 const TABS = [
-  { id: 'standard', label: 'Standard', icon: '⚡', desc: 'Volume rapide' },
-  { id: 'vip',      label: 'VIP',      icon: '⭐', desc: 'Qualité WTF!' },
+  { id: 'standard', label: 'Standard',    icon: '⚡', desc: 'Volume rapide' },
+  { id: 'vip',      label: 'VIP',         icon: '⭐', desc: 'Qualité WTF!' },
+  { id: 'vof',      label: 'Vrai ou Fou', icon: '🎴', desc: 'Affirmations' },
+  { id: 'enrich',   label: 'Enrichir',    icon: '🧠', desc: 'Facts incomplets' },
+  { id: 'urls',     label: 'URLs sources',icon: '🔗', desc: 'Sources auto' },
 ]
+
+const VOF_MAX = 300
+const VOF_RATE_LIMIT_MS = 1000
 
 // ── Archetype labels ─────────────────────────────────────────────────────────
 const ARCHETYPES = [
@@ -50,6 +57,28 @@ export default function GenerateFactsPage({ toast }) {
   const [vipResults, setVipResults] = useState([]) // array of { raw_fact, explanation, source_url, formulations: [...] }
   const [vipMessage, setVipMessage] = useState('')
   const [selectedFormulations, setSelectedFormulations] = useState({}) // { factIndex: formulationIndex }
+
+  // ── Vrai ou Fou bulk state ───────────────────────────────────────────────
+  const [vofSelectedCats, setVofSelectedCats] = useState([]) // [] = toutes
+  const [vofStatus, setVofStatus] = useState('all')           // 'all' | 'vip' | 'funny'
+  const [vofCount, setVofCount] = useState(50)
+  const [vofForce, setVofForce] = useState(false)
+  const [vofRunState, setVofRunState] = useState(null)        // null | 'running' | 'done' | 'error'
+  const [vofProgress, setVofProgress] = useState({ current: 0, total: 0, ok: 0, ko: 0 })
+  const [vofMessage, setVofMessage] = useState('')
+  const vofCancelRef = useRef(false)
+
+  // ── Enrich state ─────────────────────────────────────────────────────────
+  const [enrichRunState, setEnrichRunState] = useState(null)
+  const [enrichMessage, setEnrichMessage] = useState('')
+  const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
+  const [enrichErrorCount, setEnrichErrorCount] = useState(0)
+  const enrichCancelRef = useRef(false)
+
+  // ── Fill URLs state ──────────────────────────────────────────────────────
+  const [fillUrlsStatus, setFillUrlsStatus] = useState(null)
+  const [fillUrlsResult, setFillUrlsResult] = useState(null)
+  const [fillUrlsError, setFillUrlsError] = useState('')
 
   // ── Standard generation ────────────────────────────────────────────────
   async function generateStandard() {
@@ -189,6 +218,246 @@ export default function GenerateFactsPage({ toast }) {
     }
   }
 
+  // ── Vrai ou Fou bulk ───────────────────────────────────────────────────
+  function toggleVofCat(id) {
+    setVofSelectedCats(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+  }
+  function stopVof() { vofCancelRef.current = true }
+
+  async function runBulkVof() {
+    if (vofRunState === 'running') return
+    vofCancelRef.current = false
+    setVofRunState('running')
+    setVofMessage('⏳ Récupération des facts…')
+    setVofProgress({ current: 0, total: 0, ok: 0, ko: 0 })
+
+    try {
+      let query = supabase
+        .from('facts')
+        .select('id, question, short_answer, funny_wrong_1, funny_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement_true, statement_false_funny, statement_false_plausible')
+        .limit(vofCount)
+
+      if (vofSelectedCats.length > 0) query = query.in('category', vofSelectedCats)
+      if (vofStatus === 'vip') query = query.eq('is_vip', true)
+      else if (vofStatus === 'funny') query = query.eq('is_vip', false)
+      if (!vofForce) query = query.or('statement_true.is.null,statement_true.eq.')
+
+      const { data: facts, error } = await query
+      if (error) throw error
+      if (!facts || facts.length === 0) {
+        setVofRunState('done')
+        setVofMessage('✅ Aucun fact à traiter — tout est déjà généré.')
+        return
+      }
+
+      setVofProgress({ current: 0, total: facts.length, ok: 0, ko: 0 })
+      let ok = 0, ko = 0
+
+      for (let i = 0; i < facts.length; i++) {
+        if (vofCancelRef.current) {
+          setVofRunState('done')
+          setVofMessage(`⏹ Arrêté — ${ok}/${facts.length} générés (${ko} erreurs)`)
+          return
+        }
+        const fact = facts[i]
+        setVofMessage(`🎴 Génération ${i + 1}/${facts.length} — fact #${fact.id}...`)
+
+        try {
+          const result = await generateStatementsForFact(fact)
+          const { error: updErr } = await supabase
+            .from('facts')
+            .update({
+              statement_true: result.statement_true,
+              statement_false_funny: result.statement_false_funny,
+              statement_false_plausible: result.statement_false_plausible,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', fact.id)
+          if (updErr) throw updErr
+          ok++
+        } catch (err) {
+          console.error(`VoF fact #${fact.id}:`, err)
+          ko++
+        }
+        setVofProgress({ current: i + 1, total: facts.length, ok, ko })
+        if (i < facts.length - 1) await new Promise(r => setTimeout(r, VOF_RATE_LIMIT_MS))
+      }
+
+      setVofRunState('done')
+      setVofMessage(`✅ Terminé — ${ok}/${facts.length} générés (${ko} erreurs)`)
+    } catch (err) {
+      setVofRunState('error')
+      setVofMessage(`❌ Erreur : ${err.message}`)
+    }
+  }
+
+  // ── Enrich (incomplets + short hints) ──────────────────────────────────
+  function stopEnrich() { enrichCancelRef.current = true }
+
+  async function enrichLoop(facts, label) {
+    if (!facts || facts.length === 0) {
+      setEnrichRunState('done')
+      setEnrichMessage('✅ Aucun fact à traiter.')
+      return
+    }
+    setEnrichProgress({ current: 0, total: facts.length })
+    let okCount = 0, koCount = 0
+
+    for (let i = 0; i < facts.length; i++) {
+      if (enrichCancelRef.current) {
+        setEnrichRunState('done')
+        setEnrichMessage(`⏹ Arrêté — ${okCount}/${facts.length}`)
+        return
+      }
+      const fact = facts[i]
+      setEnrichMessage(`🧠 ${label} ${i + 1}/${facts.length} — fact #${fact.id}...`)
+      setEnrichProgress({ current: i + 1, total: facts.length })
+
+      try {
+        const resp = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-fact`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              question: fact.question,
+              short_answer: fact.short_answer,
+              explanation: fact.explanation,
+              category: fact.category,
+              hint1: fact.hint1,
+              hint2: fact.hint2,
+            }),
+          }
+        )
+        if (!resp.ok) throw new Error(await resp.text() || 'Erreur API')
+        const enrichResult = await resp.json()
+
+        const { error: updErr } = await supabase
+          .from('facts')
+          .update({
+            hint1: enrichResult.hint1,
+            hint2: enrichResult.hint2,
+            hint3: enrichResult.hint3 || '',
+            hint4: enrichResult.hint4 || '',
+            funny_wrong_1: enrichResult.funny_wrong_1,
+            funny_wrong_2: enrichResult.funny_wrong_2,
+            close_wrong_1: enrichResult.close_wrong_1,
+            close_wrong_2: enrichResult.close_wrong_2,
+            plausible_wrong_1: enrichResult.plausible_wrong_1,
+            plausible_wrong_2: enrichResult.plausible_wrong_2,
+            plausible_wrong_3: enrichResult.plausible_wrong_3,
+            ...(enrichResult.explanation ? { explanation: enrichResult.explanation } : {}),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', fact.id)
+        if (updErr) throw updErr
+        okCount++
+      } catch (err) {
+        console.error(`Enrich #${fact.id}:`, err)
+        koCount++
+        setEnrichErrorCount(prev => prev + 1)
+      }
+    }
+
+    setEnrichRunState('done')
+    setEnrichMessage(`✅ ${label} terminé — ${okCount}/${facts.length} (${koCount} erreurs)`)
+  }
+
+  async function runEnrichAll() {
+    if (enrichRunState === 'running') return
+    enrichCancelRef.current = false
+    setEnrichRunState('running')
+    setEnrichErrorCount(0)
+    setEnrichMessage('⏳ Récupération des facts incomplets...')
+    try {
+      const all = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, question, short_answer, explanation, category, hint1, hint2')
+          .or('funny_wrong_1.is.null,funny_wrong_1.eq.,hint1.is.null,hint1.eq.,hint2.is.null,hint2.eq.')
+          .range(from, from + PAGE - 1)
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+      await enrichLoop(all, 'Enrichissement')
+    } catch (err) {
+      setEnrichRunState('error')
+      setEnrichMessage(`❌ Erreur : ${err.message}`)
+    }
+  }
+
+  async function runEnrichShortHints() {
+    if (enrichRunState === 'running') return
+    enrichCancelRef.current = false
+    setEnrichRunState('running')
+    setEnrichErrorCount(0)
+    setEnrichMessage('⏳ Récupération des indices courts...')
+    try {
+      const all = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, question, short_answer, explanation, category, hint1, hint2')
+          .not('hint1', 'is', null)
+          .neq('hint1', '')
+          .range(from, from + PAGE - 1)
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+      const shortHints = all.filter(f => {
+        const h1Short = f.hint1 && !f.hint1.includes(' ')
+        const h2Short = f.hint2 && !f.hint2.includes(' ')
+        return h1Short || h2Short
+      })
+      await enrichLoop(shortHints, 'Reformulation')
+    } catch (err) {
+      setEnrichRunState('error')
+      setEnrichMessage(`❌ Erreur : ${err.message}`)
+    }
+  }
+
+  // ── Fill URLs ──────────────────────────────────────────────────────────
+  async function runFillUrls() {
+    if (fillUrlsStatus === 'running') return
+    setFillUrlsStatus('running')
+    setFillUrlsResult(null)
+    setFillUrlsError('')
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fill-missing-urls`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      const data = await resp.json()
+      if (!resp.ok) {
+        setFillUrlsStatus('error')
+        setFillUrlsError(data.error || resp.statusText)
+      } else {
+        setFillUrlsStatus('done')
+        setFillUrlsResult(data)
+      }
+    } catch (err) {
+      setFillUrlsStatus('error')
+      setFillUrlsError(err.message || 'Erreur réseau')
+    }
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────
   const selectCls = "w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none"
   const inputCls = "w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none placeholder-slate-500"
@@ -202,25 +471,34 @@ export default function GenerateFactsPage({ toast }) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-black transition-all"
-            style={{
-              background: tab === t.id ? (t.id === 'vip' ? 'rgba(255,215,0,0.15)' : 'rgba(255,107,26,0.15)') : 'rgba(30,41,59,1)',
-              color: tab === t.id ? (t.id === 'vip' ? '#FFD700' : '#FF6B1A') : '#64748B',
-              border: `1px solid ${tab === t.id ? (t.id === 'vip' ? '#FFD70040' : '#FF6B1A40') : '#334155'}`,
-            }}
-          >
-            <span className="text-lg">{t.icon}</span>
-            <div className="text-left">
-              <div>{t.label}</div>
-              <div className="text-[10px] font-semibold opacity-60">{t.desc}</div>
-            </div>
-          </button>
-        ))}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {TABS.map(t => {
+          const active = tab === t.id
+          const color =
+            t.id === 'vip'    ? '#FFD700' :
+            t.id === 'vof'    ? '#A78BFA' :
+            t.id === 'enrich' ? '#8B5CF6' :
+            t.id === 'urls'   ? '#38BDF8' :
+            '#FF6B1A'
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-black transition-all"
+              style={{
+                background: active ? `${color}26` : 'rgba(30,41,59,1)',
+                color: active ? color : '#64748B',
+                border: `1px solid ${active ? `${color}66` : '#334155'}`,
+              }}
+            >
+              <span className="text-lg">{t.icon}</span>
+              <div className="text-left">
+                <div>{t.label}</div>
+                <div className="text-[10px] font-semibold opacity-60">{t.desc}</div>
+              </div>
+            </button>
+          )
+        })}
       </div>
 
       {/* ══════════ STANDARD MODE ══════════ */}
@@ -433,6 +711,314 @@ export default function GenerateFactsPage({ toast }) {
               })}
             </>
           )}
+        </div>
+      )}
+
+      {/* ══════════ VRAI OU FOU BULK ══════════ */}
+      {tab === 'vof' && (
+        <div className="space-y-6">
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#A78BFA30' }}>
+            <h2 className="text-base font-black mb-1" style={{ color: '#A78BFA' }}>🎴 Générer les affirmations Vrai ou Fou</h2>
+            <p className="text-slate-400 text-xs mb-4">
+              Génère les 3 affirmations (<code>statement_true</code>, <code>_false_funny</code>, <code>_false_plausible</code>)
+              pour un lot de facts. 1 req/s — max {VOF_MAX}. Garde l'onglet ouvert pendant l'exécution.
+            </p>
+
+            {/* Catégories */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-400 uppercase">Catégories ({vofSelectedCats.length === 0 ? 'toutes' : vofSelectedCats.length})</label>
+                <div className="flex gap-2">
+                  <button onClick={() => setVofSelectedCats([])} className="text-[10px] font-bold text-slate-400 hover:text-white">Tout</button>
+                  <button onClick={() => setVofSelectedCats(CATEGORIES.map(c => c.id))} className="text-[10px] font-bold text-slate-400 hover:text-white">Inverser</button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto p-2 bg-slate-900 rounded-xl border border-slate-700">
+                {CATEGORIES.map(c => {
+                  const active = vofSelectedCats.includes(c.id)
+                  return (
+                    <button
+                      key={c.id}
+                      disabled={vofRunState === 'running'}
+                      onClick={() => toggleVofCat(c.id)}
+                      className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all text-left disabled:opacity-40"
+                      style={{
+                        background: active ? `${c.color}26` : 'rgba(30,41,59,1)',
+                        color: active ? c.color : '#94A3B8',
+                        border: `1px solid ${active ? `${c.color}66` : '#334155'}`,
+                      }}
+                    >
+                      <span>{c.emoji}</span>
+                      <span className="truncate">{c.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Statut + nombre */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Statut</label>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'all',   label: 'Tous' },
+                    { id: 'vip',   label: 'VIP' },
+                    { id: 'funny', label: 'Funny' },
+                  ].map(s => (
+                    <button
+                      key={s.id}
+                      disabled={vofRunState === 'running'}
+                      onClick={() => setVofStatus(s.id)}
+                      className="flex-1 px-3 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40"
+                      style={{
+                        background: vofStatus === s.id ? '#A78BFA26' : 'rgba(15,23,42,1)',
+                        color: vofStatus === s.id ? '#A78BFA' : '#94A3B8',
+                        border: `1px solid ${vofStatus === s.id ? '#A78BFA66' : '#334155'}`,
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">
+                  Nombre ({vofCount}) — max {VOF_MAX}
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={VOF_MAX}
+                  value={vofCount}
+                  disabled={vofRunState === 'running'}
+                  onChange={e => {
+                    const n = Math.max(1, Math.min(VOF_MAX, Number(e.target.value) || 1))
+                    setVofCount(n)
+                  }}
+                  className={inputCls}
+                />
+                {vofCount > 100 && (
+                  <p className="text-[10px] text-amber-400 mt-1">⚠️ Au-delà de 100 : ~{Math.ceil(vofCount / 60)} min, onglet à garder ouvert</p>
+                )}
+              </div>
+            </div>
+
+            {/* Force regen */}
+            <label className="flex items-center gap-2 mb-4 cursor-pointer text-xs text-slate-300">
+              <input
+                type="checkbox"
+                checked={vofForce}
+                disabled={vofRunState === 'running'}
+                onChange={e => setVofForce(e.target.checked)}
+                className="accent-purple-500"
+              />
+              Régénérer même si <code>statement_true</code> existe déjà (sinon : skip)
+            </label>
+
+            {/* Progress */}
+            {vofRunState === 'running' && vofProgress.total > 0 && (
+              <div className="mb-4">
+                <div className="flex justify-between text-xs text-slate-400 mb-1">
+                  <span>{vofProgress.current}/{vofProgress.total} · ✓ {vofProgress.ok} · ✗ {vofProgress.ko}</span>
+                  <span>{Math.round((vofProgress.current / vofProgress.total) * 100)}%</span>
+                </div>
+                <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${(vofProgress.current / vofProgress.total) * 100}%`,
+                      background: 'linear-gradient(135deg, #A78BFA, #7C3AED)',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {vofMessage && (
+              <div
+                className="mb-4 px-4 py-3 rounded-xl text-sm font-semibold border"
+                style={{
+                  background: vofRunState === 'error' ? 'rgba(239,68,68,0.1)' : vofRunState === 'done' ? 'rgba(34,197,94,0.1)' : 'rgba(167,139,250,0.1)',
+                  borderColor: vofRunState === 'error' ? 'rgba(239,68,68,0.3)' : vofRunState === 'done' ? 'rgba(34,197,94,0.3)' : 'rgba(167,139,250,0.3)',
+                  color: vofRunState === 'error' ? '#EF4444' : vofRunState === 'done' ? '#22C55E' : '#A78BFA',
+                }}
+              >
+                {vofRunState === 'running' && <span className="inline-block animate-spin mr-2">⟳</span>}
+                {vofMessage}
+              </div>
+            )}
+
+            <div className="flex gap-3 flex-wrap">
+              <button
+                disabled={vofRunState === 'running'}
+                onClick={runBulkVof}
+                className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg, #A78BFA, #7C3AED)' }}
+              >
+                {vofRunState === 'running' ? 'Génération…' : '🎴 Lancer la génération'}
+              </button>
+              {vofRunState === 'running' && (
+                <button onClick={stopVof} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">
+                  ⏹ Arrêter
+                </button>
+              )}
+              {vofRunState === 'error' && (
+                <button onClick={runBulkVof} className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all">
+                  ↺ Réessayer
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════ ENRICHIR ══════════ */}
+      {tab === 'enrich' && (
+        <div className="space-y-6">
+          {/* Progress partagé */}
+          {enrichRunState === 'running' && enrichProgress.total > 0 && (
+            <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+              <div className="flex justify-between text-xs text-slate-400 mb-1">
+                <span>{enrichProgress.current}/{enrichProgress.total} traités · {enrichErrorCount} erreurs</span>
+                <span>{Math.round((enrichProgress.current / enrichProgress.total) * 100)}%</span>
+              </div>
+              <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${(enrichProgress.current / enrichProgress.total) * 100}%`,
+                    background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)',
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {enrichMessage && (
+            <div
+              className="px-4 py-3 rounded-xl text-sm font-semibold border"
+              style={{
+                background: enrichRunState === 'error' ? 'rgba(239,68,68,0.1)' : enrichRunState === 'done' ? 'rgba(34,197,94,0.1)' : 'rgba(139,92,246,0.1)',
+                borderColor: enrichRunState === 'error' ? 'rgba(239,68,68,0.3)' : enrichRunState === 'done' ? 'rgba(34,197,94,0.3)' : 'rgba(139,92,246,0.3)',
+                color: enrichRunState === 'error' ? '#EF4444' : enrichRunState === 'done' ? '#22C55E' : '#8B5CF6',
+              }}
+            >
+              {enrichRunState === 'running' && <span className="inline-block animate-spin mr-2">⟳</span>}
+              {enrichMessage}
+            </div>
+          )}
+
+          {/* Card 1 — enrich incomplets */}
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+            <h2 className="text-base font-black text-white mb-2">🧠 Enrichir les incomplets</h2>
+            <p className="text-slate-400 text-sm mb-4">
+              Enrichit tous les facts sans fausses réponses ou sans indices via Claude Opus.
+              Chaque fact est sauvegardé immédiatement après enrichissement.
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <button
+                disabled={enrichRunState === 'running'}
+                onClick={runEnrichAll}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 hover:opacity-90 active:scale-95"
+                style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
+              >
+                {enrichRunState === 'running' ? 'Enrichissement…' : '🧠 Enrichir les incomplets'}
+              </button>
+              {enrichRunState === 'running' && (
+                <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">
+                  ⏹ Arrêter
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Card 2 — reformuler indices courts */}
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+            <h2 className="text-base font-black text-white mb-2">📝 Reformuler les indices courts</h2>
+            <p className="text-slate-400 text-sm mb-4">
+              Reformule les indices d'un seul mot (ancien format) en phrases courtes via Claude.
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <button
+                disabled={enrichRunState === 'running'}
+                onClick={runEnrichShortHints}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 hover:opacity-90 active:scale-95"
+                style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
+              >
+                {enrichRunState === 'running' ? 'Reformulation…' : '📝 Reformuler les indices'}
+              </button>
+              {enrichRunState === 'running' && (
+                <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">
+                  ⏹ Arrêter
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════ URLS SOURCES ══════════ */}
+      {tab === 'urls' && (
+        <div className="space-y-6">
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#38BDF830' }}>
+            <h2 className="text-base font-black mb-1" style={{ color: '#38BDF8' }}>🔗 Remplir les URLs sources manquantes</h2>
+            <p className="text-slate-400 text-sm mb-4">
+              Recherche automatique de sources via Claude Opus pour tous les facts sans URL.
+              Peut prendre 2-3 min selon le volume.
+            </p>
+
+            <button
+              onClick={runFillUrls}
+              disabled={fillUrlsStatus === 'running'}
+              className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-50"
+              style={{ background: '#38BDF8' }}
+            >
+              {fillUrlsStatus === 'running'
+                ? <><span className="inline-block animate-spin mr-2">⟳</span>Recherche en cours…</>
+                : '🔍 Remplir les URLs manquantes (Opus)'}
+            </button>
+
+            {fillUrlsStatus === 'error' && fillUrlsError && (
+              <div className="mt-3 px-4 py-2.5 rounded-xl border border-red-700 text-sm font-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>
+                ❌ Erreur : {fillUrlsError}
+              </div>
+            )}
+
+            {fillUrlsStatus === 'done' && fillUrlsResult && (
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="px-3 py-1 rounded-full text-xs font-black" style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
+                    ✅ {fillUrlsResult.updated} URLs ajoutées
+                  </span>
+                  {fillUrlsResult.not_found > 0 && (
+                    <span className="px-3 py-1 rounded-full text-xs font-black" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }}>
+                      ⚠️ {fillUrlsResult.not_found} sans source trouvée
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-500">{fillUrlsResult.processed} traités au total</span>
+                </div>
+                {fillUrlsResult.details?.length > 0 && (
+                  <div className="border border-slate-700 rounded-xl overflow-hidden mt-2">
+                    <div className="divide-y divide-slate-700 max-h-60 overflow-y-auto">
+                      {fillUrlsResult.details.map(d => (
+                        <div key={d.id} className="flex items-center gap-3 px-4 py-2 text-xs hover:bg-slate-700/50 transition-colors">
+                          <span className="font-black shrink-0" style={{ color: '#FF6B1A' }}>#{d.id}</span>
+                          {d.url === 'INTROUVABLE' ? (
+                            <span className="text-amber-400 font-semibold">INTROUVABLE</span>
+                          ) : (
+                            <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white truncate flex-1 min-w-0">
+                              {d.url}
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

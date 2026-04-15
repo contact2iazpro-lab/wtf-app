@@ -31,9 +31,20 @@ import CoffreRewardModal from '../components/home/CoffreRewardModal'
 import CoffreAccelerateModal from '../components/home/CoffreAccelerateModal'
 import NewBadgeModal from '../components/home/NewBadgeModal'
 
-// ── Fond Option A : image question-default recolorée navy via hue-rotate ─────
-const HOME_BG_COLOR = '#0B1A35'
-const HOME_BG_IMAGE = '/assets/backgrounds/question-default.webp'
+// ── Fond Option A : repro CSS pure de question-default, base navy ────────────
+// Empilement de radial-gradients, rayons + particules via StarburstBackground.
+const HOME_BG_COLOR = [
+  // Halo doré central — cœur chaud au-dessus du centre
+  'radial-gradient(circle 200px at 50% 45%, rgba(255,225,100,0.55) 0%, rgba(255,200,60,0.28) 35%, rgba(255,170,40,0.10) 65%, transparent 85%)',
+  // Halo secondaire large (diffusion ambiante chaude)
+  'radial-gradient(ellipse 75% 55% at 50% 45%, rgba(255,190,50,0.14) 0%, transparent 70%)',
+  // Tint violet/magenta en bas (chaleur cinématique)
+  'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(90,25,90,0.50) 0%, transparent 65%)',
+  // Vignette sombre sur les bords
+  'radial-gradient(ellipse 135% 115% at 50% 50%, transparent 38%, rgba(0,0,0,0.65) 100%)',
+  // Base navy profond
+  '#0B1A35',
+].join(', ')
 const S = (px) => `calc(${px}px * var(--scale))`
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -213,18 +224,7 @@ export default function HomeScreen({
         }
       `}</style>
 
-      {/* Fond image : question-default recolorée navy via hue-rotate */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: `url('${HOME_BG_IMAGE}')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center 45%',
-        filter: 'hue-rotate(200deg) saturate(0.85) brightness(0.75)',
-        pointerEvents: 'none',
-        zIndex: 0,
-      }} />
-
-      {/* Starburst doré centré sur le halo (50% / 45%) */}
+      {/* Starburst doré + particules, centré sur le halo (50% / 45%) */}
       <div style={{
         position: 'absolute',
         top: '45%', left: '50%',

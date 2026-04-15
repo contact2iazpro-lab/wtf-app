@@ -1,5 +1,7 @@
 AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jamais créer de worktree ni de branche. Travailler directement sur master.
 
+LANGUE: Toujours répondre en français.
+
 # WTF! — What The F*ct
 
 ## Projet

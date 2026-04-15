@@ -225,15 +225,7 @@ export default function HomeScreen({
       `}</style>
 
       {/* Starburst doré + particules, centré sur le halo (50% / 45%) */}
-      <div style={{
-        position: 'absolute',
-        top: '45%', left: '50%',
-        transform: 'translate(-50%, -50%)',
-        pointerEvents: 'none',
-        zIndex: 0,
-      }}>
-        <StarburstBackground />
-      </div>
+      <StarburstBackground />
 
       {/* Overlay bas — profondeur */}
       <div style={{

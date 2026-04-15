@@ -68,9 +68,10 @@ export default function StarburstBackground() {
     <div style={{
       position: 'absolute',
       width: 560, height: 560,
-      top: '50%', left: '50%',
+      top: '45%', left: '50%',
       transform: 'translate(-50%, -50%)',
       pointerEvents: 'none',
+      zIndex: 0,
     }}>
       {/* Arcs courbés latéraux — simulent des light streaks */}
       {ARCS.map((a, i) => (

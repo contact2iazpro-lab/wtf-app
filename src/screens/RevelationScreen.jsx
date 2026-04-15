@@ -146,7 +146,6 @@ export default function RevelationScreen({
   onQuit,
   factIndex,
   totalFacts,
-  duelContext,
   gameMode,
   sessionScore,
   sessionType = 'parcours',
@@ -177,7 +176,6 @@ export default function RevelationScreen({
   const gamesPlayed = wtfData.gamesPlayed || 0
 
   const cat = getCategoryById(fact.category)
-  const isDuel = !!duelContext
   const isLast = factIndex + 1 >= totalFacts
   const successRate = 15 + (fact.id % 40)
   const catTextColor = cat?.color ? (isLightColor(cat.color) ? '#1a1a1a' : '#ffffff') : 'rgba(255,255,255,0.8)'
@@ -189,7 +187,7 @@ export default function RevelationScreen({
 
   // ── Coins animation (replaces floating +5 pts badge) ──────────────────────
   useEffect(() => {
-    if (!isDuel && isCorrect) {
+    if (isCorrect) {
       setTimeout(() => audio.playFile('What the fact.mp3'), 350)
       setTimeout(() => audio.playFile('Coins points.mp3'), 600)
       // Trigger coins animation after a short delay
@@ -202,7 +200,7 @@ export default function RevelationScreen({
       }, 1800)
       return () => clearTimeout(scoreTimer)
     }
-  }, [isCorrect, isDuel])
+  }, [isCorrect])
 
   const handleNativeShare = () => {
     const shareMessages = [
@@ -222,29 +220,14 @@ export default function RevelationScreen({
     onNext()
   }
 
-  const isLastPlayer = isDuel && duelContext.isLastPlayer
-  const playerColor = isDuel ? (['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][duelContext.currentPlayerIndex] ?? '#FF5C1A') : null
   const isOpenMode = selectedAnswer === 100 || selectedAnswer === -2
   const isTimeout = selectedAnswer === -1
 
   const selectedAnswerText = selectedAnswer >= 0 ? fact.options[selectedAnswer] : 'Pas de réponse'
   const correctAnswerText = fact.options[fact.correctIndex]
 
-  const nextLabel = isDuel
-    ? !isLastPlayer
-      ? `▶ Au tour de ${duelContext.players[duelContext.currentPlayerIndex + 1]?.name}`
-      : isLast ? '🏆 Résultats' : '⚡ Question suivante'
-    : isLast ? '🏁 Mes résultats' : '⚡ Suivant'
-
-  const nextBtnStyle = {
-    background: isDuel
-      ? `linear-gradient(135deg, ${playerColor} 0%, ${playerColor}bb 100%)`
-      : `linear-gradient(135deg, ${cat?.color} 0%, ${cat?.color}dd 100%)`,
-    boxShadow: `0 4px 20px ${isDuel ? playerColor : cat?.color}40`,
-  }
-
   // ── Coins flying animation ────────────────────────────────────────────────
-  const coinsAnimation = showCoins && !isDuel && isCorrect && scoreRefTarget.current && (
+  const coinsAnimation = showCoins && isCorrect && scoreRefTarget.current && (
     (() => {
       const scoreRect = scoreRefTarget.current.getBoundingClientRect()
       const targetX = scoreRect.left + scoreRect.width / 2
@@ -331,7 +314,7 @@ export default function RevelationScreen({
   )
 
   // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
-  if (!isCorrect && !isDuel) {
+  if (!isCorrect) {
     return (
       <div className="relative screen-enter" style={{
         height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
@@ -436,8 +419,8 @@ export default function RevelationScreen({
     )
   }
 
-  // ── CAS BONNE RÉPONSE (et duel) ───────────────────────────────────────────
-  const isVipReveal = !isDuel && isCorrect && fact.isVip
+  // ── CAS BONNE RÉPONSE ─────────────────────────────────────────────────────
+  const isVipReveal = isCorrect && fact.isVip
   const showVipGlow = isVipReveal
   return (
     <div className="relative screen-enter" style={{
@@ -538,7 +521,7 @@ export default function RevelationScreen({
       {/* Zone info — flex: 1, gap 8px uniforme */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `0 ${S(16)}`, display: 'flex', flexDirection: 'column', gap: S(8) }}>
         {/* Social proof */}
-        {flipped && !isDuel && isCorrect && (
+        {flipped && isCorrect && (
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: S(14), fontWeight: 800, color: '#ffffff', opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
               👥 Seulement {successRate}% des joueurs<br />ont trouvé ce f*ct
@@ -546,31 +529,8 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Duel — badges */}
-        {isDuel && (
-          <div style={{ display: 'flex', gap: S(8) }}>
-            <div className="score-pop" style={{
-              flex: 1, textAlign: 'center', padding: S(8), borderRadius: S(12),
-              background: isCorrect ? 'rgba(76,175,80,0.15)' : 'rgba(244,67,54,0.15)',
-              border: `2px solid ${isCorrect ? '#4CAF50' : '#F44336'}`,
-              color: isCorrect ? '#4CAF50' : '#F44336', fontWeight: 900, fontSize: S(13),
-              animationDelay: '0.5s', opacity: 0,
-            }}>
-              {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
-            </div>
-            <div className="score-pop" style={{
-              flex: 1, textAlign: 'center', padding: S(8), borderRadius: S(12),
-              background: `${cat?.color}15`, border: `2px solid ${cat?.color}60`,
-              color: cat?.color, fontWeight: 900, fontSize: S(13),
-              animationDelay: '0.6s', opacity: 0,
-            }}>
-              +{pointsEarned} pts
-            </div>
-          </div>
-        )}
-
         {/* Encadré explication */}
-        {!isDuel && isCorrect && (
+        {isCorrect && (
           <div style={{
             background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255,255,255,0.12)',
@@ -592,27 +552,11 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Duel — scores finaux */}
-        {isDuel && isLastPlayer && (
-          <div style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: S(12), padding: S(10) }}>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(9), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: S(6) }}>Scores</div>
-            {[...duelContext.players]
-              .map((p, i) => ({ ...p, color: ['#3B82F6', '#FF5C1A', '#22C55E', '#A855F7', '#EAB308', '#EC4899'][i] }))
-              .sort((a, b) => b.score - a.score)
-              .map((p, rank) => (
-                <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: S(6), marginBottom: S(3) }}>
-                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: S(10), width: S(14) }}>{rank + 1}.</span>
-                  <span style={{ flex: 1, color: 'white', fontWeight: 700, fontSize: S(11) }}>{p.name}</span>
-                  <span style={{ fontWeight: 900, fontSize: S(12), color: p.color }}>{p.score} pts</span>
-                </div>
-              ))}
-          </div>
-        )}
       </div>
 
       {/* Boutons — compact */}
       <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
-        {!isDuel && isCorrect && (
+        {isCorrect && (
           <>
             <div style={{ display: 'flex', gap: S(8), height: S(44), position: 'relative' }}>
               <button
@@ -663,20 +607,6 @@ export default function RevelationScreen({
           </>
         )}
 
-        {isDuel && (
-          <button
-            onClick={handleNext}
-            className="btn-press active:scale-95 transition-all"
-            style={{
-              width: '100%', padding: `${S(14)} 0`, borderRadius: S(14),
-              color: 'white', fontWeight: 900, fontSize: S(14),
-              textTransform: 'uppercase', letterSpacing: '0.05em', border: 'none',
-              ...nextBtnStyle,
-            }}
-          >
-            {nextLabel}
-          </button>
-        )}
       </div>
 
 

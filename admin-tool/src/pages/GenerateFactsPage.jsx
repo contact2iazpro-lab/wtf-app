@@ -67,6 +67,7 @@ export default function GenerateFactsPage({ toast }) {
   const [vofProgress, setVofProgress] = useState({ current: 0, total: 0, ok: 0, ko: 0 })
   const [vofMessage, setVofMessage] = useState('')
   const [vofEligible, setVofEligible] = useState({ loading: false, count: null, error: null })
+  const [vofRemaining, setVofRemaining] = useState({ loading: false, list: null, error: null })
   const vofCancelRef = useRef(false)
 
   // ── Recompute eligible count when filters change (VoF tab) ─────────────
@@ -91,6 +92,27 @@ export default function GenerateFactsPage({ toast }) {
     })()
     return () => { cancelled = true }
   }, [tab, vofSelectedCats, vofStatus, vofForce])
+
+  // ── Fetch la liste des facts restants (filtres VoF appliqués) ──────────
+  async function loadVofRemaining() {
+    setVofRemaining({ loading: true, list: null, error: null })
+    try {
+      let q = supabase
+        .from('facts')
+        .select('id, category, question, is_vip, statement_true, statement_false_funny, statement_false_plausible')
+        .order('id', { ascending: true })
+        .limit(200)
+      if (vofSelectedCats.length > 0) q = q.in('category', vofSelectedCats)
+      if (vofStatus === 'vip') q = q.eq('is_vip', true)
+      else if (vofStatus === 'funny') q = q.eq('is_vip', false)
+      q = q.or('statement_true.is.null,statement_true.eq.,statement_false_funny.is.null,statement_false_funny.eq.,statement_false_plausible.is.null,statement_false_plausible.eq.')
+      const { data, error } = await q
+      if (error) throw error
+      setVofRemaining({ loading: false, list: data || [], error: null })
+    } catch (err) {
+      setVofRemaining({ loading: false, list: null, error: err.message })
+    }
+  }
 
   // ── Enrich state ─────────────────────────────────────────────────────────
   const [enrichRunState, setEnrichRunState] = useState(null)
@@ -851,10 +873,70 @@ export default function GenerateFactsPage({ toast }) {
                     <span className="text-xs text-slate-400 ml-1">
                       · traités : <span className="font-bold text-slate-200">{Math.min(vofCount, vofEligible.count ?? 0)}</span>
                     </span>
+                    {(vofEligible.count ?? 0) > 0 && (
+                      <button
+                        type="button"
+                        onClick={loadVofRemaining}
+                        disabled={vofRemaining.loading}
+                        className="ml-3 px-2 py-1 text-[10px] font-bold rounded-md border transition-colors"
+                        style={{
+                          borderColor: 'rgba(167,139,250,0.4)',
+                          background: 'rgba(167,139,250,0.12)',
+                          color: '#C4B5FD',
+                        }}
+                      >
+                        {vofRemaining.loading ? '⟳…' : '🔍 Voir les IDs'}
+                      </button>
+                    )}
                   </>
                 )}
               </div>
             </div>
+
+            {/* Liste des facts restants */}
+            {vofRemaining.list && (
+              <div className="mb-4 px-3 py-3 rounded-xl border text-xs"
+                style={{ background: 'rgba(15,23,42,0.55)', borderColor: 'rgba(167,139,250,0.25)' }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-slate-300">
+                    {vofRemaining.list.length === 0
+                      ? '✅ Aucun fact restant (avec le filtre élargi).'
+                      : `${vofRemaining.list.length} fact(s) restant(s)${vofRemaining.list.length === 200 ? ' (200 max affichés)' : ''}`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setVofRemaining({ loading: false, list: null, error: null })}
+                    className="text-slate-400 hover:text-slate-200 text-sm font-bold"
+                  >✕</button>
+                </div>
+                {vofRemaining.list.length > 0 && (
+                  <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
+                    {vofRemaining.list.map(f => {
+                      const missing = []
+                      if (!f.statement_true) missing.push('true')
+                      if (!f.statement_false_funny) missing.push('false_funny')
+                      if (!f.statement_false_plausible) missing.push('false_plausible')
+                      return (
+                        <div key={f.id} className="flex items-start gap-2 px-2 py-1.5 rounded-md"
+                          style={{ background: 'rgba(30,41,59,0.6)' }}>
+                          <span className="font-black text-purple-300 min-w-[40px]">#{f.id}</span>
+                          <span className="text-[10px] uppercase font-bold text-slate-500 min-w-[60px]">{f.category}</span>
+                          {f.is_vip && <span className="text-[9px] font-black text-amber-400">VIP</span>}
+                          <span className="text-slate-300 flex-1 truncate">{f.question}</span>
+                          <span className="text-[9px] font-bold text-rose-400 whitespace-nowrap">manque : {missing.join(', ')}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+            {vofRemaining.error && (
+              <div className="mb-4 px-3 py-2 rounded-xl text-xs font-bold text-red-400 border"
+                style={{ background: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.3)' }}>
+                Erreur : {vofRemaining.error}
+              </div>
+            )}
 
             {/* Force regen */}
             <label className="flex items-center gap-2 mb-4 cursor-pointer text-xs text-slate-300">

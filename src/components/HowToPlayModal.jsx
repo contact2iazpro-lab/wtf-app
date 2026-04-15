@@ -82,7 +82,7 @@ const CHAPTERS = [
       { icon: '📋', text: '**Set :** 5 questions/set.' },
       { icon: '🔢', text: '**QCM :** 2/question.' },
       { icon: '⏱️', text: '**Timer :** 15s/question.' },
-      { icon: '🪙', text: '**Récompense :** 10 WTFCoins/bonne réponse.' },
+      { icon: '🪙', text: '**Gains :** 10 WTFCoins/bonne réponse.' },
       { icon: '🎁', text: '**Perfect :** +50 WTFCoins.' },
     ],
   },

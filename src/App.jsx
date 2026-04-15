@@ -249,6 +249,7 @@ export default function App() {
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
+  const [blitzVariant, setBlitzVariant] = useState('solo') // 'solo' | 'defi'
   const [launchMode, setLaunchMode] = useState(null)
   const [snackPool, setSnackPool] = useState([])
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
@@ -299,6 +300,7 @@ export default function App() {
     user, selectedCategory, isChallengeMode,
     setGameAlert, setSessionType, setGameMode, setSelectedCategory,
     setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
+    setBlitzVariant,
     setNewlyEarnedBadges,
     mergeFlags, // A.9.3 persistance records
     applyCurrencyDelta, // 1b — débit 200 coins défi Blitz
@@ -525,7 +527,7 @@ export default function App() {
         sessionCorrectFacts={sessionCorrectFacts} sessionFacts={sessionFacts}
         sessionsToday={sessionsToday} sessionIsPerfect={sessionIsPerfect}
         completedLevels={completedLevels} effectiveDailyFact={effectiveDailyFact}
-        launchMode={launchMode} blitzFacts={blitzFacts} blitzResults={blitzResults}
+        launchMode={launchMode} blitzFacts={blitzFacts} blitzResults={blitzResults} blitzVariant={blitzVariant}
         isChallengeMode={isChallengeMode}
         pendingDuel={pendingDuel}
         lastCreatedDuel={lastCreatedDuel}

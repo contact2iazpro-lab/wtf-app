@@ -8,9 +8,11 @@ const S = (px) => `calc(${px}px * var(--scale))`
 
 const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 
-export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTime = null, opponentId = null }) {
+export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTime = null, bestSoloScore = 0, opponentId = null, playerCoins = 0 }) {
   const scale = useScale()
   const isChallenge = !!opponentId
+  // En acceptation de défi : forced 'defi'. Sinon : solo par défaut.
+  const [variant, setVariant] = useState(isChallenge ? 'defi' : 'solo')
   const [selectedCatId, setSelectedCatId] = useState(isChallenge ? null : 'all')
   const [questionCount, setQuestionCount] = useState(null)
 
@@ -48,10 +50,16 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
   const effectiveCount = questionCount || (poolForCount >= 100 ? 100 : poolForCount >= 50 ? 50 : poolForCount >= 30 ? 30 : poolForCount >= 20 ? 20 : poolForCount >= 10 ? 10 : poolForCount >= 5 ? 5 : poolForCount)
   const hasSelection = selectedCatId !== null && poolForCount >= 5
 
+  const canPayDefi = variant !== 'defi' || playerCoins >= 200 || isChallenge
   const handleGo = () => {
-    if (!hasSelection) return
     audio.play('click')
-    onSelectCategory(selectedCatId === 'all' ? null : selectedCatId, effectiveCount)
+    if (variant === 'solo') {
+      // Solo : pas de catégorie, pas de nb questions — toujours 60s sur tout le pool
+      onSelectCategory(null, null, 'solo')
+      return
+    }
+    if (!hasSelection || !canPayDefi) return
+    onSelectCategory(selectedCatId === 'all' ? null : selectedCatId, effectiveCount, 'defi')
   }
 
   return (
@@ -84,27 +92,94 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
         </h1>
       </div>
 
-      {/* Record */}
+      {/* Toggle Solo / Défi (masqué en mode acceptation) */}
+      {!isChallenge && (
+        <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(10)}` }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8) }}>
+            <button
+              onClick={() => { audio.play('click'); setVariant('solo') }}
+              style={{
+                padding: `${S(12)} 0`, borderRadius: S(12),
+                background: variant === 'solo' ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : 'rgba(255,255,255,0.08)',
+                border: variant === 'solo' ? '2.5px solid white' : '2.5px solid transparent',
+                color: 'white', fontWeight: 900, fontSize: S(14), cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif', transition: 'all 0.2s ease',
+              }}
+            >
+              Solo
+              <div style={{ fontSize: S(9), fontWeight: 600, opacity: 0.85, marginTop: 2 }}>
+                60s · bats ton record
+              </div>
+            </button>
+            <button
+              onClick={() => { audio.play('click'); setVariant('defi') }}
+              style={{
+                padding: `${S(12)} 0`, borderRadius: S(12),
+                background: variant === 'defi' ? 'linear-gradient(135deg, #7C3AED, #3B82F6)' : 'rgba(255,255,255,0.08)',
+                border: variant === 'defi' ? '2.5px solid white' : '2.5px solid transparent',
+                color: 'white', fontWeight: 900, fontSize: S(14), cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif', transition: 'all 0.2s ease',
+              }}
+            >
+              Défi
+              <div style={{ fontSize: S(9), fontWeight: 600, opacity: 0.85, marginTop: 2 }}>
+                200 WTFCoins · défie un ami
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Record (contextuel au variant) */}
       <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${S(16)} ${S(8)}` }}>
-        {bestBlitzTime ? (
-          <div style={{ fontSize: S(18), fontWeight: 900, color: '#FFD700' }}>
-            🏆 Ton record : {bestBlitzTime < 60 ? bestBlitzTime.toFixed(2) + 's' : Math.floor(bestBlitzTime / 60) + ':' + (bestBlitzTime % 60).toFixed(2).padStart(5, '0')}
-          </div>
+        {variant === 'solo' ? (
+          bestSoloScore > 0 ? (
+            <div style={{ fontSize: S(18), fontWeight: 900, color: '#FFD700' }}>
+              🏆 Ton record : {bestSoloScore} bonne{bestSoloScore > 1 ? 's' : ''}
+            </div>
+          ) : (
+            <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
+              Pas encore de record — lance-toi !
+            </div>
+          )
         ) : (
-          <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
-            Pas encore de record — lance-toi !
-          </div>
+          bestBlitzTime ? (
+            <div style={{ fontSize: S(18), fontWeight: 900, color: '#FFD700' }}>
+              🏆 Meilleur temps : {bestBlitzTime < 60 ? bestBlitzTime.toFixed(2) + 's' : Math.floor(bestBlitzTime / 60) + ':' + (bestBlitzTime % 60).toFixed(2).padStart(5, '0')}
+            </div>
+          ) : (
+            <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
+              Pas encore de défi joué — relève-en un !
+            </div>
+          )
         )}
       </div>
 
       {/* Description */}
       <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${S(20)} ${S(12)}` }}>
         <p style={{ fontSize: S(12), fontWeight: 600, color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.4 }}>
-          Réponds le plus vite possible à tes f*cts débloqués. 60 secondes, pas d'indices !
+          {variant === 'solo'
+            ? 'Réponds au max de questions en 60 secondes. Pas d\'indices, pas de pénalité : enchaîne !'
+            : 'Défi asynchrone : même set de questions, meilleur temps gagne. Pénalité +5s sur erreur.'}
         </p>
       </div>
 
-      {/* Pool selection */}
+      {/* Pool selection (masqué en solo — tout le pool est utilisé) */}
+      {variant === 'solo' ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: S(24), textAlign: 'center' }}>
+          <div>
+            <div style={{ fontSize: S(64), marginBottom: S(12) }}>⚡</div>
+            <div style={{ fontSize: S(16), fontWeight: 900, color: 'white', marginBottom: S(6) }}>
+              {totalUnlocked} f*cts débloqués
+            </div>
+            <div style={{ fontSize: S(12), fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>
+              {totalUnlocked >= 20
+                ? 'Piochés dans toutes tes catégories, VIP et Funny mélangés.'
+                : `Débloque encore ${20 - totalUnlocked} f*ct${20 - totalUnlocked > 1 ? 's' : ''} pour accéder au Blitz Solo.`}
+            </div>
+          </div>
+        </div>
+      ) : (
       <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(12)} ${S(8)}`, WebkitOverflowScrolling: 'touch' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
 
@@ -179,9 +254,10 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
 
         </div>
       </div>
+      )}
 
-      {/* Question count selector */}
-      {poolSize >= 5 && (
+      {/* Question count selector (Défi uniquement) */}
+      {variant === 'defi' && poolSize >= 5 && (
         <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(8)}` }}>
           <div style={{ fontSize: S(14), fontWeight: 900, color: 'white', marginBottom: S(8), textAlign: 'center' }}>Nombre de questions</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
@@ -216,22 +292,32 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
 
       {/* CTA */}
       <div style={{ flexShrink: 0, padding: `${S(8)} ${S(12)} ${S(14)}` }}>
-        <button
-          onClick={hasSelection && totalUnlocked >= 5 ? handleGo : undefined}
-          style={{
-            width: '100%', padding: S(14),
-            borderRadius: S(14), fontSize: S(18), fontWeight: 900,
-            textTransform: 'uppercase', letterSpacing: '0.04em',
-            border: 'none', fontFamily: 'Nunito, sans-serif',
-            cursor: hasSelection && totalUnlocked >= 5 ? 'pointer' : 'default',
-            pointerEvents: hasSelection && totalUnlocked >= 5 ? 'auto' : 'none',
-            background: hasSelection && totalUnlocked >= 5 ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : 'rgba(255,255,255,0.15)',
-            color: hasSelection && totalUnlocked >= 5 ? 'white' : 'rgba(255,255,255,0.4)',
-            boxShadow: hasSelection && totalUnlocked >= 5 ? '0 6px 24px rgba(255,107,26,0.4)' : 'none',
-          }}
-        >
-          GO ! ⚡
-        </button>
+        {(() => {
+          const canGo = variant === 'solo'
+            ? totalUnlocked >= 20
+            : (hasSelection && totalUnlocked >= 5 && canPayDefi)
+          const label = variant === 'solo'
+            ? 'GO ! ⚡'
+            : canPayDefi ? 'LANCER LE DÉFI · 200' : '200 WTFCoins requis'
+          return (
+            <button
+              onClick={canGo ? handleGo : undefined}
+              style={{
+                width: '100%', padding: S(14),
+                borderRadius: S(14), fontSize: S(18), fontWeight: 900,
+                textTransform: 'uppercase', letterSpacing: '0.04em',
+                border: 'none', fontFamily: 'Nunito, sans-serif',
+                cursor: canGo ? 'pointer' : 'default',
+                pointerEvents: canGo ? 'auto' : 'none',
+                background: canGo ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : 'rgba(255,255,255,0.15)',
+                color: canGo ? 'white' : 'rgba(255,255,255,0.4)',
+                boxShadow: canGo ? '0 6px 24px rgba(255,107,26,0.4)' : 'none',
+              }}
+            >
+              {label}
+            </button>
+          )
+        })()}
       </div>
     </div>
   )

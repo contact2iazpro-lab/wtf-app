@@ -9,6 +9,8 @@ export default function BlitzResultsScreen({
   totalAnswered = 0,
   penalties = 0,
   bestTime = null,
+  bestScore = 0,
+  variant = 'defi',
   isNewRecord = false,
   categoryId = null,
   categoryLabel = '',
@@ -127,6 +129,96 @@ export default function BlitzResultsScreen({
     navigator.clipboard?.writeText(challengeCreated.code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // ─── Vue Blitz Solo : score = bonnes réponses en 60s + record ───
+  if (variant === 'solo') {
+    const soloRank = correctCount >= 100 ? { emoji: '👑', label: 'Légende Blitz !' }
+      : correctCount >= 50 ? { emoji: '🏆', label: 'Maître du Blitz' }
+      : correctCount >= 30 ? { emoji: '🔥', label: 'Impressionnant !' }
+      : correctCount >= 20 ? { emoji: '⚡', label: 'Sacré rythme !' }
+      : correctCount >= 10 ? { emoji: '💪', label: 'Bien joué' }
+      : correctCount >= 5  ? { emoji: '🎯', label: 'Bon début' }
+      : { emoji: '🎮', label: 'Continue comme ça' }
+
+    const handleShareSolo = () => {
+      const text = `⚡ J'ai fait ${correctCount} bonnes réponses en 60s au Blitz Solo WTF! Tu fais mieux ?`
+      const url = window.location.origin
+      if (navigator.share) {
+        navigator.share({ title: 'Blitz Solo WTF! ⚡', text, url }).catch(() => {})
+      } else {
+        navigator.clipboard?.writeText(`${text}\n${url}`)
+      }
+    }
+
+    return (
+      <div
+        className="absolute inset-0 flex flex-col overflow-hidden"
+        style={{ '--scale': scale, background: 'linear-gradient(160deg, #1a0a2e 0%, #3a0a4e 100%)', fontFamily: 'Nunito, sans-serif' }}
+      >
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-4 pb-2 min-h-0" style={{ gap: S(14) }}>
+          <div style={{ fontSize: S(56) }}>{soloRank.emoji}</div>
+          <h1 style={{ fontSize: S(22), fontWeight: 900, color: 'white', textAlign: 'center' }}>{soloRank.label}</h1>
+
+          {isNewRecord && (
+            <div className="rounded-2xl w-full py-3 text-center" style={{
+              background: 'linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,165,0,0.3))',
+              border: '2px solid rgba(255,215,0,0.6)', animation: 'blitzRecordPulse 1.5s ease-in-out infinite',
+              maxWidth: 340,
+            }}>
+              <span style={{ fontSize: S(16), fontWeight: 900, color: '#FFD700' }}>🎉 NOUVEAU RECORD !</span>
+            </div>
+          )}
+
+          <div className="rounded-3xl w-full p-6" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
+            <div className="text-center" style={{ marginBottom: S(6) }}>
+              <span style={{ fontSize: S(12), color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Bonnes réponses en 60s</span>
+            </div>
+            <div className="text-center">
+              <span style={{ fontSize: S(96), fontWeight: 900, color: '#FFD700', lineHeight: 1, fontVariantNumeric: 'tabular-nums', textShadow: '0 4px 20px rgba(255,215,0,0.3)' }}>
+                {correctCount}
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-2xl w-full p-4 flex items-center justify-between" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)', maxWidth: 340 }}>
+            <span style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
+            <span style={{ fontSize: S(20), fontWeight: 900, color: '#FFD700' }}>{Math.max(bestScore, correctCount)}</span>
+          </div>
+        </div>
+
+        <div className="shrink-0 w-full px-6 pb-4 pt-2 flex flex-col gap-2">
+          <button
+            onClick={onReplay}
+            className="w-full py-3 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
+            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16) }}
+          >
+            ⚡ Rejouer
+          </button>
+          <button
+            onClick={handleShareSolo}
+            className="w-full py-2.5 rounded-2xl font-bold text-sm"
+            style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '2px solid rgba(255,255,255,0.3)', fontSize: S(14) }}
+          >
+            📤 Partager
+          </button>
+          <button
+            onClick={onHome}
+            className="w-full py-2 rounded-2xl font-bold text-sm"
+            style={{ background: 'transparent', color: 'rgba(255,255,255,0.7)', border: 'none', fontSize: S(13) }}
+          >
+            🏠 Accueil
+          </button>
+        </div>
+
+        <style>{`
+          @keyframes blitzRecordPulse {
+            0%, 100% { transform: scale(1) }
+            50% { transform: scale(1.03) }
+          }
+        `}</style>
+      </div>
+    )
   }
 
   if (isChallengeMode) {

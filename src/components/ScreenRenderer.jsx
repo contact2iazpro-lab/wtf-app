@@ -28,7 +28,7 @@ export default function ScreenRenderer({
   selectedDifficulty, selectedCategory, sessionScore, correctCount, hintsUsed,
   selectedAnswer, isCorrect, pointsEarned, coinsEarnedLastSession,
   sessionCorrectFacts, sessionFacts, sessionsToday, sessionIsPerfect,
-  completedLevels, effectiveDailyFact, launchMode, blitzFacts, blitzResults,
+  completedLevels, effectiveDailyFact, launchMode, blitzFacts, blitzResults, blitzVariant,
   isChallengeMode,
   pendingDuel, lastCreatedDuel, lastCreatedDuelError, clearLastCreatedDuel, clearPendingDuel,
   user, storage, streak, newlyEarnedBadges, snackEnergy,
@@ -176,19 +176,25 @@ export default function ScreenRenderer({
 
       {/* EXPLORER_RESULTS legacy screen removed in 1e */}
 
-      {screen === SCREENS.BLITZ_LOBBY && (
-        <BlitzLobbyScreen
-          onSelectCategory={handleBlitzStart}
-          onBack={handleHome}
-          bestBlitzTime={JSON.parse(localStorage.getItem('wtf_data') || '{}').bestBlitzTime || null}
-          opponentId={isChallengeMode ? pendingDuel?.opponentId : null}
-        />
-      )}
+      {screen === SCREENS.BLITZ_LOBBY && (() => {
+        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        return (
+          <BlitzLobbyScreen
+            onSelectCategory={handleBlitzStart}
+            onBack={handleHome}
+            bestBlitzTime={wd.bestBlitzTime || null}
+            bestSoloScore={wd.blitzSoloBestScore || 0}
+            playerCoins={wd.wtfCoins || 0}
+            opponentId={isChallengeMode ? pendingDuel?.opponentId : null}
+          />
+        )
+      })()}
 
       {screen === SCREENS.BLITZ && blitzFacts.length > 0 && (
         <BlitzScreen
           facts={blitzFacts}
           category={selectedCategory}
+          variant={blitzVariant}
           onFinish={handleBlitzFinish}
           onQuit={handleHome}
           onUseHint={handleUseHint}
@@ -197,11 +203,13 @@ export default function ScreenRenderer({
 
       {screen === SCREENS.BLITZ_RESULTS && blitzResults && (
         <BlitzResultsScreen
+          variant={blitzResults.variant || blitzVariant || 'defi'}
           finalTime={blitzResults.finalTime}
           correctCount={blitzResults.correctCount}
           totalAnswered={blitzResults.totalAnswered}
           penalties={blitzResults.penalties}
           bestTime={blitzResults.bestTime}
+          bestScore={blitzResults.bestScore || 0}
           isNewRecord={blitzResults.isNewRecord}
           categoryId={selectedCategory}
           categoryLabel={getCategoryById(selectedCategory)?.label || ''}

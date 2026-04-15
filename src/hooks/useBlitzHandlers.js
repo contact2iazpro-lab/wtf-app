@@ -8,14 +8,18 @@ import { DIFFICULTY_LEVELS, SCREENS } from '../constants/gameConfig'
 import { getBlitzFacts, getCategoryById } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { updateTrophyData } from '../utils/storageHelper'
+import { updateTrophyData, updateWtfData, readWtfData } from '../utils/storageHelper'
 import { checkBadges } from '../utils/badgeManager'
 import { audio } from '../utils/audio'
+
+const BLITZ_SOLO_MIN_UNLOCKED = 20
+const BLITZ_SOLO_POOL_SIZE = 150 // marge confortable pour 60s
 
 export function useBlitzHandlers({
   user, selectedCategory, isChallengeMode,
   setGameAlert, setSessionType, setGameMode, setSelectedCategory,
   setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
+  setBlitzVariant,
   setNewlyEarnedBadges,
   // A.9.3 — persistance flags via RPC merge_player_flags
   mergeFlags,
@@ -28,32 +32,68 @@ export function useBlitzHandlers({
 }) {
   const navigate = useNavigate()
 
-  const handleBlitzStart = useCallback((categoryId, questionCount) => {
+  const handleBlitzStart = useCallback((categoryId, questionCount, variant = 'defi') => {
     audio.play('click')
-    let pool = getBlitzFacts()
-    if (categoryId) pool = pool.filter(f => f.category === categoryId)
+    const isSolo = variant === 'solo'
 
-    if (pool.length < 5) {
-      setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Snack ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
-      return
+    let pool = getBlitzFacts()
+    if (isSolo) {
+      // Solo : pool = tous les f*cts débloqués (Funny + VIP), min 20
+      if (pool.length < BLITZ_SOLO_MIN_UNLOCKED) {
+        setGameAlert({
+          emoji: '🔓',
+          title: 'Blitz Solo verrouillé',
+          message: `Débloque au moins ${BLITZ_SOLO_MIN_UNLOCKED} f*cts (Snack, Quest, Flash) pour jouer en Blitz Solo.`,
+        })
+        return
+      }
+    } else {
+      if (categoryId) pool = pool.filter(f => f.category === categoryId)
+      if (pool.length < 5) {
+        setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Snack ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
+        return
+      }
     }
 
-    const count = questionCount || pool.length
+    const count = isSolo
+      ? Math.min(BLITZ_SOLO_POOL_SIZE, pool.length)
+      : (questionCount || pool.length)
     const shuffled = shuffle(pool)
       .slice(0, count)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
 
     setSessionType('blitz')
     setGameMode('blitz')
-    setSelectedCategory(categoryId)
+    setSelectedCategory(isSolo ? null : categoryId)
     setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
+    setBlitzVariant?.(variant)
     setBlitzFacts(shuffled)
     setBlitzResults(null)
     setScreen(SCREENS.BLITZ)
-  }, [])
+  }, [setBlitzVariant])
 
   const handleBlitzFinish = useCallback((results) => {
-    const { finalTime, correctCount, totalAnswered, penalties } = results
+    const { finalTime, correctCount, totalAnswered, penalties, variant = 'defi' } = results
+
+    // ─── Branche SOLO : record = nombre de bonnes réponses en 60s ───
+    if (variant === 'solo') {
+      const prevBest = readWtfData().blitzSoloBestScore || 0
+      const isNewRecord = correctCount > prevBest
+      if (isNewRecord) {
+        updateWtfData(wd => { wd.blitzSoloBestScore = correctCount })
+      }
+      const bestScore = Math.max(prevBest, correctCount)
+      setBlitzResults({
+        variant: 'solo',
+        correctCount,
+        totalAnswered: correctCount,
+        finalTime: finalTime || 60,
+        bestScore,
+        isNewRecord,
+      })
+      setScreen(SCREENS.BLITZ_RESULTS)
+      return
+    }
 
     let isNewRecord = false
     let bestTime = null

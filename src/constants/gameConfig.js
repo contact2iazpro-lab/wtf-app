@@ -38,6 +38,13 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
+    // Sous-modes Blitz (spec 15/04/2026) :
+    // - solo : chrono 60s DESCENDANT, pas de pénalité erreur, score = bonnes réponses
+    // - defi : chrono MONTANT, +5s pénalité erreur, score = temps final (le plus bas gagne)
+    soloDuration: 60,
+    defiWrongPenalty: 5,
+    defiCost: 200, // coins pour créer un défi (ex-1 ticket)
+    soloMinUnlocked: 20,
   },
   FLASH: {
     id: 'flash', label: 'Flash', emoji: '🔥',

@@ -138,8 +138,8 @@ export const SNACK_ENERGY = {
   MAX_STOCK: 5,
   REGEN_HOURS: 8,
   REGEN_MS: 8 * 60 * 60 * 1000,
-  EXTRA_SESSION_COST: 10,
-  FREE_SESSIONS_PER_DAY: 3,
+  EXTRA_SESSION_COST: 75,
+  FREE_SESSIONS_PER_DAY: 5,
 }
 
 // ── Paliers de récompenses fidélité Streak

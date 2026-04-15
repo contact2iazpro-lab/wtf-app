@@ -13,6 +13,7 @@ import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import HintFlipButton from '../components/HintFlipButton'
 import FallbackImage from '../components/FallbackImage'
+import RevelationScreen from './RevelationScreen'
 import renderFormattedText from '../utils/renderFormattedText'
 import GainsBreakdown from '../components/results/GainsBreakdown'
 
@@ -509,84 +510,27 @@ export default function QuestScreen({ onHome, setStorage }) {
   // VUE RÉVÉLATION (après bonne réponse → déblocage fact)
   // ═════════════════════════════════════════════════════════════════════════
   if (phase === 'revelation' && fact) {
-    const cat = getCategoryById(fact.category)
-    const catColor = cat?.color || '#FF6B1A'
-    const correctAnswerText = fact.options?.[fact.correctIndex] || fact.shortAnswer || ''
+    const totalFunny = session?.bossOnly ? 1 : (session?.facts?.length || 10)
+    const totalDisplay = session?.bossOnly ? 1 : totalFunny + (bossUnlocked ? 1 : 0)
+    const displayIdx = session?.bossOnly ? 0 : (isBoss ? totalFunny : qIndex)
+    const pointsEarned = isBoss ? BOSS_BONUS : COINS_PER_CORRECT
     return (
-      <div style={{
-        position: 'relative', width: '100%', height: '100%', overflow: 'hidden',
-        background: `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`,
-        color: '#fff', fontFamily: 'Nunito, sans-serif',
-        display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
-        '--scale': 1,
-      }}>
-        <div style={{ padding: `${S(16)} ${S(16)} 0`, flexShrink: 0 }}>
-          <GameHeader
-            categoryLabel={cat?.label || 'Quest'}
-            categoryColor={catColor}
-            categoryIcon={fact.category ? `/assets/categories/${fact.category}.png` : null}
-            onQuit={() => setSession(null)}
-          />
-        </div>
-
-        {/* Image pleine largeur — max 42vh */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `${S(8)} ${S(16)} 0`, maxHeight: '42vh' }}>
-          <div style={{
-            background: `linear-gradient(135deg, ${catColor}55, ${catColor}88)`,
-            width: '100%', maxHeight: '42vh',
-            borderRadius: S(16), padding: 4,
-            border: isBoss ? `2px solid ${catColor}AA` : `3px solid ${catColor}`,
-            overflow: 'hidden', position: 'relative',
-          }}>
-            {fact.imageUrl && !imgFailed ? (
-              <img
-                src={fact.imageUrl} alt=""
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)', display: 'block', borderRadius: S(12) }}
-                onError={() => setImgFailed(true)}
-              />
-            ) : (
-              <div style={{ width: '100%', height: 'calc(42vh - 14px)', borderRadius: S(12), overflow: 'hidden' }}>
-                <FallbackImage categoryColor={catColor} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Zone info — bonne réponse + explication */}
-        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(10)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(8) }}>
-          <div style={{
-            background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: S(14), padding: `${S(8)} ${S(10)}`,
-            flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
-          }}>
-            <div style={{
-              background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)',
-              borderRadius: S(10), padding: `${S(6)} ${S(10)}`, marginBottom: S(6), flexShrink: 0,
-            }}>
-              <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
-              <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{correctAnswerText}</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
-              <span style={{ fontSize: S(12) }}>🧠</span>
-              <span style={{ color: 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
-            </div>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>
-              {fact.explanation || fact.titre || fact.fact || ''}
-            </p>
-          </div>
-        </div>
-
-        {/* Bouton Suivant */}
-        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} ${S(10)}` }}>
-          <button onClick={handleRevelationNext} className="btn-press active:scale-95 transition-all" style={{
-            width: '100%', height: S(44), borderRadius: S(14),
-            background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
-            border: '2px solid rgba(255,255,255,0.4)',
-            color: '#fff', fontWeight: 900, fontSize: S(12), letterSpacing: '0.05em', textTransform: 'uppercase',
-            fontFamily: 'Nunito, sans-serif', cursor: 'pointer',
-          }}>SUIVANT →</button>
-        </div>
+      <div style={{ position: 'relative', width: '100%', height: '100%', '--scale': 1 }}>
+        <RevelationScreen
+          fact={fact}
+          isCorrect={true}
+          selectedAnswer={selected ?? 0}
+          pointsEarned={pointsEarned}
+          hintsUsed={hintsUsed}
+          onNext={handleRevelationNext}
+          onShare={() => {}}
+          onQuit={() => setSession(null)}
+          factIndex={displayIdx}
+          totalFacts={totalDisplay}
+          gameMode="quest"
+          sessionScore={(correctFactIds.length * COINS_PER_CORRECT) + (bossCorrect ? BOSS_BONUS : 0)}
+          sessionType="parcours"
+        />
       </div>
     )
   }

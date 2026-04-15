@@ -7,23 +7,20 @@
 import { useCallback } from 'react'
 import { DIFFICULTY_LEVELS, SCREENS, QUESTIONS_PER_GAME } from '../constants/gameConfig'
 import {
-  getValidFacts, getParcoursFacts, getQuestFacts,
-  getFactsByCategory, getGeneratedFacts, getGeneratedFactsByCategory,
+  getGeneratedFacts, getGeneratedFactsByCategory,
   getPlayableCategories,
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { loadStorage } from '../utils/storageHelper'
 import { consumeFlashEnergy } from '../services/energyService'
 
 export function useSelectionHandlers({
   gameMode, sessionType, selectedDifficulty, selectedCategory,
-  unlockedFacts, tickets,
+  unlockedFacts,
   initSessionState, handleBlitzStart,
   setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
-  setIsQuickPlay, setExplorerPool, setScreen, setStorage,
-  setShowNoTicketModal, setGameAlert, setMiniParcours,
-  applyCurrencyDelta, // Phase A.6
+  setIsQuickPlay, setExplorerPool, setScreen,
+  setGameAlert, setMiniParcours,
 }) {
 
   const handleSelectDifficulty = useCallback((difficulty) => {
@@ -59,43 +56,10 @@ export function useSelectionHandlers({
       return
     }
 
-    // Quest
-    const isDevModeQuest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    if (!isDevModeQuest) {
-      if ((tickets || 0) < 1) { setShowNoTicketModal(true); return }
-      applyCurrencyDelta?.({ tickets: -1 }, 'quest_start')?.catch?.(e =>
-        console.warn('[useSelectionHandlers] quest start RPC failed:', e?.message || e)
-      )
-      setStorage(loadStorage())
-    }
-
-    const skipUnlockD = isDevModeQuest
-    // Filtre anti-redite : ne jamais re-proposer un f*ct VIP déjà débloqué (T89)
-    // Les fallbacks gardent TOUJOURS le filtre unlockedFacts actif
-    let available = getParcoursFacts().filter(f => f.isVip && f.difficulty === difficulty.id && (skipUnlockD || !unlockedFacts.has(f.id)))
-    if (available.length < QUESTIONS_PER_GAME) {
-      // Fallback 1 : toutes difficultés VIP, mais toujours filtré sur unlocked
-      available = getParcoursFacts().filter(f => f.isVip && (skipUnlockD || !unlockedFacts.has(f.id)))
-    }
-    if (available.length < QUESTIONS_PER_GAME) {
-      // Fallback 2 : tous les Quest facts (VIP) encore non débloqués
-      available = getQuestFacts().filter(f => skipUnlockD || !unlockedFacts.has(f.id))
-    }
-    if (available.length < QUESTIONS_PER_GAME) {
-      // Fallback ultime : tous les facts valides non débloqués
-      available = getValidFacts().filter(f => skipUnlockD || !unlockedFacts.has(f.id))
-    }
-
-    // Fisher-Yates shuffle (vrai aléatoire, pas le sort biaisé)
-    const facts = shuffle(available).slice(0, QUESTIONS_PER_GAME)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-    setIsQuickPlay(false)
-    setGameMode('solo')
-    setSelectedCategory(null)
-    setSessionType('parcours')
-    initSessionState(facts)
-    setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts, gameMode, selectedCategory, tickets, initSessionState, handleBlitzStart])
+    // Ancien mode Quest (tickets + Cool/Hot) supprimé (sub-step 1a — 2026-04-15).
+    // Cette fonction ne gère plus que le flow Explorer.
+    console.warn('[useSelectionHandlers] handleSelectDifficulty called outside explorer mode — no-op')
+  }, [unlockedFacts, gameMode, selectedCategory, initSessionState, handleBlitzStart])
 
   const handleSelectCategory = useCallback((categoryId) => {
     if (gameMode === 'blitz') { handleBlitzStart(categoryId); return }

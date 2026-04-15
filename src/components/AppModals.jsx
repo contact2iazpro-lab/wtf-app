@@ -22,13 +22,13 @@ import { usePlayerProfile } from '../hooks/usePlayerProfile'
 export default function AppModals({
   // States
   streakRewardToast, showStreakSpecialModal, showHowToPlay, screen,
-  showSettings, showNoTicketModal, showNoEnergyModal, noEnergyOrigin,
+  showSettings, showNoEnergyModal, noEnergyOrigin,
   gameAlert, showConnectBanner, trophyQueue, miniParcours,
   showNewCategoriesModal, newlyUnlockedCategories, showDevPanel,
   wtfCoins, storage, effectiveDailyFact, gameMode,
   // Setters
   setStreakRewardToast, setShowStreakSpecialModal, setShowHowToPlay,
-  setShowSettings, setShowNoTicketModal, setShowNoEnergyModal,
+  setShowSettings, setShowNoEnergyModal,
   setGameAlert, setShowConnectBanner, setTrophyQueue, setMiniParcours,
   setShowNewCategoriesModal, setShowDevPanel,
   setSessionType, setGameMode, setIsQuickPlay, setSelectedDifficulty,
@@ -155,31 +155,6 @@ export default function AppModals({
           }}
           onCancel={() => setShowNoEnergyModal(false)}
         />
-      )}
-
-      {/* No ticket modal */}
-      {showNoTicketModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 400, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'Nunito, sans-serif' }}>
-          <div style={{ background: 'linear-gradient(160deg, #1a1a2e 0%, #2d1a0e 100%)', border: '2px solid #FF6B1A', borderRadius: 24, padding: '32px 24px', maxWidth: 320, width: '100%', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: '#FFD700', marginBottom: 10 }}>Il te faut un ticket !</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.8)', marginBottom: 24, lineHeight: 1.5 }}>Gagne des coins en jouant et achete un ticket en Boutique.</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button onClick={() => { setShowNoTicketModal(false); audio.play?.('click'); handleFlashSolo() }}
-                style={{ width: '100%', padding: '14px 24px', borderRadius: 14, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
-                🎯 Jouer pour gagner des coins
-              </button>
-              <button onClick={() => { setShowNoTicketModal(false); audio.play?.('click'); handleHomeNavigate('blitz') }}
-                style={{ width: '100%', padding: '14px 24px', borderRadius: 14, background: 'transparent', color: 'white', border: '1.5px solid rgba(255,255,255,0.3)', fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
-                ⚡ Blitz
-              </button>
-              <button onClick={() => setShowNoTicketModal(false)}
-                style={{ width: '100%', padding: '10px', borderRadius: 14, background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-                Retour
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Mini parcours modal */}

@@ -2,7 +2,7 @@
  * useModeStarters — Session starters pour chaque mode de jeu.
  *
  * Extrait de App.jsx : handleWTFWeekly, handleStartWTFSession,
- * handleFlashSolo, handleQuickPlay, handlePlay, initSessionState.
+ * handleFlashSolo, handleQuickPlay, initSessionState.
  */
 
 import { useCallback } from 'react'
@@ -149,7 +149,7 @@ export function useModeStarters({
       getValidFacts().some(f => f.category === cat.id) && (childMode || cat.id !== 'kids')
     )
     const randomCat = validCats[Math.floor(Math.random() * validCats.length)]
-    const difficulty = DIFFICULTY_LEVELS.HOT
+    const difficulty = DIFFICULTY_LEVELS.FLASH
     const facts = shuffle(getValidFacts().filter(f => f.category === randomCat.id))
       .slice(0, QUESTIONS_PER_GAME)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
@@ -163,35 +163,11 @@ export function useModeStarters({
     setScreen(SCREENS.QUESTION)
   }, [initSessionState])
 
-  const handlePlay = useCallback(() => {
-    audio.play('click')
-    const difficulty = DIFFICULTY_LEVELS.HOT
-    let pool = getQuestFacts()
-    const skipUnlockQ = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    if (!skipUnlockQ) {
-      const unplayed = pool.filter(f => !unlockedFacts.has(f.id))
-      if (unplayed.length >= QUESTIONS_PER_GAME) pool = unplayed
-    }
-
-    const facts = shuffle(pool)
-      .slice(0, QUESTIONS_PER_GAME)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-
-    setSessionType('parcours')
-    setGameMode('solo')
-    setIsQuickPlay(false)
-    setSelectedDifficulty(difficulty)
-    setSelectedCategory(null)
-    initSessionState(facts)
-    setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts, initSessionState])
-
   return {
     initSessionState,
     handleWTFWeekly,
     handleStartWTFSession,
     handleFlashSolo,
     handleQuickPlay,
-    handlePlay,
   }
 }

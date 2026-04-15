@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
-import { TUTO_FACT_IDS, TUTO_FLASH_CONFIG, TUTO_QUEST_CONFIG } from '../constants/gameConfig'
+import { TUTO_FACT_IDS, TUTO_FLASH_CONFIG } from '../constants/gameConfig'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
@@ -59,7 +59,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
   useEffect(() => {
     if (!sessionFacts[currentIndex]) return
     const fact = sessionFacts[currentIndex]
-    const config = phase === 'phase1' ? TUTO_FLASH_CONFIG : TUTO_QUEST_CONFIG
+    const config = phase === 'phase1' ? TUTO_FLASH_CONFIG : TUTO_FLASH_CONFIG
     const correctAnswer = fact.short_answer
     const wrongAnswers = (fact.options || []).filter(o => o !== correctAnswer)
     const shuffledWrong = wrongAnswers.sort(() => Math.random() - 0.5).slice(0, config.choices - 1)
@@ -145,7 +145,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
               const first = shuffled[0]
               setFirstFactId(first.id)
               setUsedIds([first.id])
-              const factWithOptions = { ...first, ...getAnswerOptions(first, TUTO_QUEST_CONFIG) }
+              const factWithOptions = { ...first, ...getAnswerOptions(first, TUTO_FLASH_CONFIG) }
               setSessionFacts([factWithOptions])
               setCurrentIndex(0)
               setSessionScore(0)
@@ -203,7 +203,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
 
     if (showRevelation && currentFact) {
       const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
-      const coinsEarned = isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0
+      const coinsEarned = isCorrect ? TUTO_FLASH_CONFIG.coinsPerCorrect : 0
       return (
         <RevelationTemplate
           catColor={catColor}
@@ -749,7 +749,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
               const questFacts = available.slice(0, 5)
               const factsWithOptions = questFacts.map(f => ({
                 ...f,
-                ...getAnswerOptions(f, TUTO_QUEST_CONFIG),
+                ...getAnswerOptions(f, TUTO_FLASH_CONFIG),
               }))
               setUsedIds(prev => [...prev, ...questFacts.map(f => f.id)])
               setSessionFacts(factsWithOptions)
@@ -846,7 +846,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
 
     if (showRevelation) {
       const catColor = CAT_COLORS[currentFact.category] || '#FF6B1A'
-      const coinsEarned = isCorrect ? TUTO_QUEST_CONFIG.coinsPerCorrect : 0
+      const coinsEarned = isCorrect ? TUTO_FLASH_CONFIG.coinsPerCorrect : 0
       const isLast = currentIndex >= sessionFacts.length - 1
       return (
         <RevelationTemplate

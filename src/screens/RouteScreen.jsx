@@ -29,7 +29,8 @@ function buildLevelSession(level) {
     const vip = getVipFacts()
     if (!vip.length) return null
     const fact = vip[Math.floor(Math.random() * vip.length)]
-    const prepped = { ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.HOT) }
+    // TODO sub-step 1d : inlined HOT-equivalent config après suppression niveau Hot (1a)
+    const prepped = { ...fact, ...getAnswerOptions(fact, { choices: 4, duration: 20, id: 'boss' }) }
     return { facts: [prepped], boss: true }
   }
   const funny = getGeneratedFacts()

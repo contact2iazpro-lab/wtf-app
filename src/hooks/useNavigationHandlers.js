@@ -43,7 +43,6 @@ export function useNavigationHandlers({
   // ── Launch mode ────────────────────────────────────────────────────────
   const launchModeDestination = useCallback((mode) => {
     switch (mode) {
-      case 'quest':    setScreen(SCREENS.DIFFICULTY); break
       case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
       case 'explorer': setScreen(SCREENS.CATEGORY); break
       case 'flash':    handleFlashSolo(); break  // Flash = aléatoire direct, pas de CategoryScreen
@@ -66,11 +65,6 @@ export function useNavigationHandlers({
   // ── Home navigate ──────────────────────────────────────────────────────
   const handleHomeNavigate = useCallback((target) => {
     switch (target) {
-      case 'difficulty': {
-        setGameMode('solo'); setSessionType('parcours')
-        showOrSkipLaunch('quest')
-        break
-      }
       case 'wtfWeekly':
         showOrSkipLaunch('hunt')
         break
@@ -197,16 +191,6 @@ export function useNavigationHandlers({
     else handleSelectCategory(selectedCategory)
   }, [sessionType, selectedCategory, handleFlashSolo, handleSelectCategory])
 
-  // Rejoue Quest en montant d'un niveau (Cool → Hot uniquement).
-  // WTF! retiré de Quest le 2026-04-12 — Hot est le niveau max.
-  const handleReplayHarder = useCallback(() => {
-    if (sessionType !== 'parcours') return
-    const current = selectedDifficulty?.id
-    const next = current === 'cool' ? DIFFICULTY_LEVELS.HOT : null
-    if (!next) return
-    handleSelectDifficulty(next)
-  }, [sessionType, selectedDifficulty, handleSelectDifficulty])
-
   const handleShare = useCallback(() => {
     if (!currentFact) return
     const text = `🤯 WTF! "${currentFact.shortAnswer}" — ${currentFact.question}\nJoue sur What The F*ct! #WTF`
@@ -227,7 +211,7 @@ export function useNavigationHandlers({
     handleHomeNavigate,
     handleDuelNextPlayer, handleDuelMode, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
-    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay, handleReplayHarder,
+    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,
   }
 }

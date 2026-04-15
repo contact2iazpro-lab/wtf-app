@@ -482,8 +482,9 @@ export default function HomeScreen({
             padding: `0 ${S(4)}`,
             columnGap: S(8),
           }}>
-            {/* Colonne gauche : Quest, Blitz, Puzzle */}
-            <ModeIcon src="/assets/modes/quete.png" label="Quest" onClick={() => nav('difficulty')} />
+            {/* Colonne gauche row 1 : (ancien Quest retiré sub-step 1a — sera Route renommé en 1d) */}
+            <div />
+
             {/* Logo WTF central (span 3 rows) */}
             <div style={{
               gridColumn: '2 / 3', gridRow: '1 / -1',

@@ -2,26 +2,6 @@
 // Centralized configuration for all difficulty modes
 
 export const DIFFICULTY_LEVELS = {
-  COOL: {
-    id: 'cool', label: 'Cool', emoji: '❄️',
-    choices: 2, duration: 20,
-    hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
-    coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
-  },
-  HOT: {
-    id: 'hot', label: 'Hot', emoji: '🔥',
-    choices: 4, duration: 30,
-    hintsAllowed: true, freeHints: 2, paidHints: 1, hintCost: 8,
-    coinsPerCorrect: 2, scoring: { correct: 2, wrong: 0 },
-  },
-  // WTF! retiré de Quest (2026-04-12) — gardé en legacy pour compat
-  // avec d'éventuels facts difficulty='wtf' en base. Pas affiché en UI.
-  WTF: {
-    id: 'wtf', label: 'WTF!', emoji: '⚡',
-    choices: 6, duration: 20,
-    hintsAllowed: true, freeHints: 1, paidHints: 1, hintCost: 8,
-    coinsPerCorrect: 1, scoring: { correct: 1, wrong: 0 },
-  },
   FLASH: {
     id: 'flash', label: 'Standard', emoji: '🎯',
     choices: 4, duration: 20,
@@ -55,7 +35,6 @@ export const SCREENS = {
   HOME: 'home',
   WTF_TEASER: 'wtf_teaser',
   WTF_REVEAL: 'wtf_reveal',
-  DIFFICULTY: 'difficulty',
   CATEGORY: 'category',
   QUESTION: 'question',
   REVELATION: 'revelation',
@@ -74,15 +53,6 @@ export const SCREENS = {
 
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
-  quest: {
-    modeId: 'quest', modeName: 'Quest', subtitle: 'Débloque les f*cts les plus rares', emoji: '⭐', color: '#FF6B1A',
-    rules: [
-      { icon: '🎫', text: '1 ticket (25 coins) par session' },
-      { icon: '❄️', text: `Cool : ${DIFFICULTY_LEVELS.COOL.choices} choix · ${DIFFICULTY_LEVELS.COOL.freeHints} indices · ${DIFFICULTY_LEVELS.COOL.duration}s · ${DIFFICULTY_LEVELS.COOL.coinsPerCorrect} coins` },
-      { icon: '🔥', text: `Hot : ${DIFFICULTY_LEVELS.HOT.choices} choix · ${DIFFICULTY_LEVELS.HOT.freeHints} indices · ${DIFFICULTY_LEVELS.HOT.duration}s · ${DIFFICULTY_LEVELS.HOT.coinsPerCorrect} coins` },
-      { icon: '📚', text: '5 questions — les f*cts trouvés vont dans ta Collection' },
-    ],
-  },
   blitz: {
     modeId: 'blitz', modeName: 'Blitz', subtitle: 'Bats ton record de vitesse !', emoji: '⚡', color: '#FF4444',
     rules: [
@@ -119,7 +89,7 @@ export const MODE_CONFIGS = {
       { icon: '🔋', text: '3 sessions gratuites par jour (partagé avec Jouer)' },
       { icon: '📂', text: 'Choisis une catégorie — 5 questions dedans' },
       { icon: '⚡', text: '4 QCM · 20s par question' },
-      { icon: '💡', text: `${DIFFICULTY_LEVELS.HOT.freeHints} indices (stock gratuit)` },
+      { icon: '💡', text: `${DIFFICULTY_LEVELS.EXPLORER.freeHints} indices (stock gratuit)` },
       { icon: '🎯', text: '1 coin/bonne réponse' },
     ],
   },
@@ -157,13 +127,6 @@ export function getStreakReward(streakDays) {
 export const TUTO_FLASH_CONFIG = {
   id: 'tuto_flash', label: 'Tutoriel', emoji: '🎯',
   choices: 2, duration: 20,
-  hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
-  coinsPerCorrect: 2, questionsCount: 5, scoring: { correct: 5, wrong: 0 },
-}
-
-export const TUTO_QUEST_CONFIG = {
-  id: 'tuto_quest', label: 'Tutoriel Quest', emoji: '🎯',
-  choices: 2, duration: 30,
   hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
   coinsPerCorrect: 2, questionsCount: 5, scoring: { correct: 5, wrong: 0 },
 }

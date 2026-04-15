@@ -10,7 +10,6 @@ import HomeScreen from '../screens/HomeScreen'
 import WTFWeeklyTeaserScreen from '../screens/WTFWeeklyTeaserScreen'
 import WTFWeeklyRevealScreen from '../screens/WTFWeeklyRevealScreen'
 import ModeLaunchScreen from '../screens/ModeLaunchScreen'
-import DifficultyScreen from '../screens/DifficultyScreen'
 import CategoryScreen from '../screens/CategoryScreen'
 import QuestionScreen from '../screens/QuestionScreen'
 import RevelationScreen from '../screens/RevelationScreen'
@@ -39,7 +38,7 @@ export default function ScreenRenderer({
   handleHomeNavigate, handleHome, handleSelectDifficulty, handleSelectCategory,
   handleSelectAnswer, handleOpenValidate, handleUseHint, handleTimeout,
   handleNext, handleDuelNextPlayer, handleDuelStart, handleDuelPassReady,
-  handleDuelReplay, handleReplay, handleReplayHarder, handleBlitzReplay, handleBlitzStart,
+  handleDuelReplay, handleReplay, handleBlitzReplay, handleBlitzStart,
   handleBlitzFinish, handleStartWTFSession, handleShare, handleShareDailyFact,
   handleSaveTempFacts, handleLaunchStart,
   // Setters
@@ -109,13 +108,6 @@ export default function ScreenRenderer({
         />
       )}
 
-      {screen === SCREENS.DIFFICULTY && (
-        <DifficultyScreen
-          onSelectDifficulty={handleSelectDifficulty}
-          onBack={() => setScreen(SCREENS.HOME)}
-        />
-      )}
-
       {screen === SCREENS.CATEGORY && (
         <CategoryScreen
           onSelectCategory={handleSelectCategory}
@@ -178,7 +170,6 @@ export default function ScreenRenderer({
           difficulty={selectedDifficulty}
           ticketEarned={sessionIsPerfect}
           onReplay={handleReplay}
-          onReplayHarder={handleReplayHarder}
           onHome={handleHome}
           completedCategoryLevels={completedLevels}
           categoryId={selectedCategory}

@@ -199,7 +199,7 @@ export default function App() {
     if (pendingDuel?.mode === 'create') return SCREENS.BLITZ_LOBBY
     return SCREENS.HOME
   })
-  const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.HOT)
+  const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.FLASH)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [sessionFacts, setSessionFacts] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -244,7 +244,6 @@ export default function App() {
   const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'explorer'
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [showNoTicketModal, setShowNoTicketModal] = useState(false)
   const [gameAlert, setGameAlert] = useState(null) // { emoji, title, message }
   const [showNoEnergyModal, setShowNoEnergyModal] = useState(false)
   const [noEnergyOrigin, setNoEnergyOrigin] = useState('flash') // 'flash' | 'explorer'
@@ -315,7 +314,7 @@ export default function App() {
   // ─── Mode starters → extraits dans useModeStarters hook ──────────────────
   const {
     initSessionState, handleWTFWeekly, handleStartWTFSession,
-    handleFlashSolo, handleQuickPlay, handlePlay,
+    handleFlashSolo, handleQuickPlay,
   } = useModeStarters({
     effectiveDailyFact, unlockedFacts, user,
     setSessionFacts, setCurrentIndex, setSessionScore, setCorrectCount,
@@ -350,12 +349,11 @@ export default function App() {
   // ─── Selection handlers (AVANT navigation car handleHomeNavigate en dépend) ──
   const { handleSelectDifficulty, handleSelectCategory, handleExplorerMode } = useSelectionHandlers({
     gameMode, sessionType, selectedDifficulty, selectedCategory,
-    unlockedFacts, tickets,
+    unlockedFacts,
     initSessionState, handleBlitzStart,
     setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
-    setIsQuickPlay, setExplorerPool, setScreen, setStorage,
-    setShowNoTicketModal, setGameAlert, setMiniParcours,
-    applyCurrencyDelta, // Phase A.6
+    setIsQuickPlay, setExplorerPool, setScreen,
+    setGameAlert, setMiniParcours,
   })
 
   // ── Deep-link Explorer : déclenché par ChallengeScreen quand le joueur n'a
@@ -393,7 +391,7 @@ export default function App() {
     handleHomeNavigate,
     handleDuelNextPlayer, handleDuelMode, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
-    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay, handleReplayHarder,
+    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,
   } = useNavigationHandlers({
     launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
@@ -559,7 +557,7 @@ export default function App() {
         handleUseHint={handleUseHint} handleTimeout={handleTimeout}
         handleNext={handleNext} handleDuelNextPlayer={handleDuelNextPlayer}
         handleDuelStart={handleDuelStart} handleDuelPassReady={handleDuelPassReady}
-        handleDuelReplay={handleDuelReplay} handleReplay={handleReplay} handleReplayHarder={handleReplayHarder}
+        handleDuelReplay={handleDuelReplay} handleReplay={handleReplay}
         handleBlitzReplay={handleBlitzReplay} handleBlitzStart={handleBlitzStart}
         handleBlitzFinish={handleBlitzFinish} handleStartWTFSession={handleStartWTFSession}
         handleShare={handleShare} handleShareDailyFact={handleShareDailyFact}
@@ -576,7 +574,7 @@ export default function App() {
       <AppModals
         streakRewardToast={streakRewardToast} showStreakSpecialModal={showStreakSpecialModal}
         showHowToPlay={showHowToPlay} screen={screen} showSettings={showSettings}
-        showNoTicketModal={showNoTicketModal} showNoEnergyModal={showNoEnergyModal}
+        showNoEnergyModal={showNoEnergyModal}
         noEnergyOrigin={noEnergyOrigin} gameAlert={gameAlert}
         showConnectBanner={showConnectBanner} trophyQueue={trophyQueue}
         miniParcours={miniParcours} showNewCategoriesModal={showNewCategoriesModal}
@@ -585,7 +583,7 @@ export default function App() {
         gameMode={gameMode}
         setStreakRewardToast={setStreakRewardToast} setShowStreakSpecialModal={setShowStreakSpecialModal}
         setShowHowToPlay={setShowHowToPlay} setShowSettings={setShowSettings}
-        setShowNoTicketModal={setShowNoTicketModal} setShowNoEnergyModal={setShowNoEnergyModal}
+        setShowNoEnergyModal={setShowNoEnergyModal}
         setGameAlert={setGameAlert} setShowConnectBanner={setShowConnectBanner}
         setTrophyQueue={setTrophyQueue} setMiniParcours={setMiniParcours}
         setShowNewCategoriesModal={setShowNewCategoriesModal} setShowDevPanel={setShowDevPanel}

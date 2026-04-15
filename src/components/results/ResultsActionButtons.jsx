@@ -28,7 +28,7 @@ export default function ResultsActionButtons({
         </>
       )
     }
-    if (sessionType === 'flash_solo' || sessionType === 'explorer') {
+    if (sessionType === 'snack' || sessionType === 'snack') {
       return (
         <>
           <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer

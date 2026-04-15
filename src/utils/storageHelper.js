@@ -70,10 +70,22 @@ export function loadStorage() {
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
 
-    // Migration douce : statsByMode.marathon → statsByMode.explorer
-    if (saved.statsByMode && saved.statsByMode.marathon && !saved.statsByMode.explorer) {
-      saved.statsByMode.explorer = saved.statsByMode.marathon
-      delete saved.statsByMode.marathon
+    // 1e — Migration statsByMode : flash_solo + explorer + marathon → snack ;
+    //              hunt + puzzle + wtf_du_jour → flash
+    if (saved.statsByMode) {
+      const sbm = saved.statsByMode
+      const mergeInto = (targetKey, sourceKeys) => {
+        for (const src of sourceKeys) {
+          if (!sbm[src]) continue
+          if (!sbm[targetKey]) sbm[targetKey] = { gamesPlayed: 0, totalCorrect: 0, totalAnswered: 0 }
+          sbm[targetKey].gamesPlayed = (sbm[targetKey].gamesPlayed || 0) + (sbm[src].gamesPlayed || 0)
+          sbm[targetKey].totalCorrect = (sbm[targetKey].totalCorrect || 0) + (sbm[src].totalCorrect || 0)
+          sbm[targetKey].totalAnswered = (sbm[targetKey].totalAnswered || 0) + (sbm[src].totalAnswered || 0)
+          delete sbm[src]
+        }
+      }
+      mergeInto('snack', ['flash_solo', 'explorer', 'marathon'])
+      mergeInto('flash', ['hunt', 'puzzle', 'wtf_du_jour'])
       saved.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
@@ -145,7 +157,7 @@ export function loadStorage() {
       wtfCoins: saved.wtfCoins || 0,
       // NOTE : clés legacy wtfDuJour* conservées pour compatibilité avec l'état
       // persisté des joueurs existants. Sémantiquement c'est le WTF de la Semaine
-      // (Hunt 1×/semaine dimanche) — voir T92 pour le renommage complet si migration.
+      // (Flash 1×/semaine dimanche) — voir T92 pour le renommage complet si migration.
       wtfDuJourDate: saved.wtfDuJourDate || null,
       wtfDuJourFait: (saved.wtfDuJourDate || null) === today,
       sessionsToday: saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0,

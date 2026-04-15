@@ -1,8 +1,8 @@
 /**
  * useModeStarters — Session starters pour chaque mode de jeu.
  *
- * Extrait de App.jsx : handleWTFWeekly, handleStartWTFSession,
- * handleFlashSolo, handleQuickPlay, initSessionState.
+ * Extrait de App.jsx : handleFlashTeaser, handleStartFlashSession,
+ * handleSnack, handleQuickPlay, initSessionState.
  */
 
 import { useCallback } from 'react'
@@ -13,7 +13,7 @@ import {
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { consumeFlashEnergy } from '../services/energyService'
+import { consumeSnackEnergy } from '../services/energyService'
 import { logDevEvent } from '../utils/devLogger'
 import { audio } from '../utils/audio'
 
@@ -44,12 +44,12 @@ export function useModeStarters({
     setPointsEarned(0)
   }, [])
 
-  const handleWTFWeekly = useCallback(() => {
+  const handleFlashTeaser = useCallback(() => {
     audio.play('click')
     setScreen(SCREENS.WTF_TEASER)
   }, [])
 
-  const handleStartWTFSession = useCallback(() => {
+  const handleStartFlashSession = useCallback(() => {
     audio.play('click')
     let huntFact = effectiveDailyFact
     if (!huntFact) {
@@ -73,7 +73,7 @@ export function useModeStarters({
     }
     const facts = shuffle(pool)
       .slice(0, 5)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.HUNT) }))
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
 
     // Marquer le coffre WTF du dimanche comme "claimé" — point de non-retour.
     // Si l'user quitte après ce point (même en abandonnant la session), il
@@ -92,17 +92,17 @@ export function useModeStarters({
       window.dispatchEvent(new Event('wtf_storage_sync'))
     } catch { /* ignore */ }
 
-    setSessionType('wtf_du_jour')
+    setSessionType('flash')
     setGameMode('solo')
     setIsQuickPlay(false)
-    setSelectedDifficulty(DIFFICULTY_LEVELS.HUNT)
+    setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH)
     setSelectedCategory(category)
     initSessionState(facts)
-    logDevEvent('session_started', { type: 'wtf_du_jour', category, factId: huntFact.id })
+    logDevEvent('session_started', { type: 'flash', category, factId: huntFact.id })
     setScreen(SCREENS.QUESTION)
   }, [effectiveDailyFact, unlockedFacts, initSessionState])
 
-  const handleFlashSolo = useCallback(() => {
+  const handleSnack = useCallback(() => {
     audio.play('click')
     const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
     const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
@@ -123,22 +123,22 @@ export function useModeStarters({
       if (pool.length < 5) {
         const price = pool.length === 1 ? 5 : 10
         const preparedFacts = shuffle(pool)
-          .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'flash', categoryId: null, difficulty: DIFFICULTY_LEVELS.FLASH })
+          .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.SNACK) }))
+        setMiniParcours({ pool: preparedFacts, price, mode: 'snack', categoryId: null, difficulty: DIFFICULTY_LEVELS.SNACK })
         return
       }
     }
 
     const facts = shuffle(pool)
       .slice(0, 5)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.SNACK) }))
 
-    setSessionType('flash_solo')
+    setSessionType('snack')
     setGameMode('solo')
     setIsQuickPlay(false)
-    setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH)
+    setSelectedDifficulty(DIFFICULTY_LEVELS.SNACK)
     setSelectedCategory(null)
-    consumeFlashEnergy()
+    consumeSnackEnergy()
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
   }, [unlockedFacts, initSessionState])
@@ -149,7 +149,7 @@ export function useModeStarters({
       getValidFacts().some(f => f.category === cat.id) && (childMode || cat.id !== 'kids')
     )
     const randomCat = validCats[Math.floor(Math.random() * validCats.length)]
-    const difficulty = DIFFICULTY_LEVELS.FLASH
+    const difficulty = DIFFICULTY_LEVELS.SNACK
     const facts = shuffle(getValidFacts().filter(f => f.category === randomCat.id))
       .slice(0, QUESTIONS_PER_GAME)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
@@ -165,9 +165,9 @@ export function useModeStarters({
 
   return {
     initSessionState,
-    handleWTFWeekly,
-    handleStartWTFSession,
-    handleFlashSolo,
+    handleFlashTeaser,
+    handleStartFlashSession,
+    handleSnack,
     handleQuickPlay,
   }
 }

@@ -315,12 +315,12 @@ export function getQuestFacts() {
   return getVipFacts()
 }
 
-/** Mode Flash : Funny facts, toutes catégories */
+/** Mode Snack : Funny facts, toutes catégories */
 export function getFlashFacts() {
   return getFunnyFacts()
 }
 
-/** Mode Marathon/Explorer : Funny facts, toutes catégories pour CategoryScreen */
+/** Mode Marathon/Snack : Funny facts, toutes catégories pour CategoryScreen */
 export function getExplorerFacts() {
   return getFunnyFacts()
 }

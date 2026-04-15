@@ -12,7 +12,7 @@ export const UnlockContext = createContext({
   canQuest: false,
   canBlitz: false,
   canHunt: false,
-  canExplorer: false,
+  canSnack: false,
 
   // UI feature display conditions
   showStreakDisplay: false,
@@ -48,7 +48,7 @@ export function useUnlock() {
       canQuest: false,
       canBlitz: false,
       canHunt: false,
-      canExplorer: false,
+      canSnack: false,
 
       // UI features
       showStreakDisplay: false,

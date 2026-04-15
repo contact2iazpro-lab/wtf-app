@@ -13,11 +13,10 @@ import { AVATAR_FRAMES, getFrameById, readFrameState, setEquippedFrame } from '.
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const MODE_LABELS = {
-  flash_solo: { icon: '⚡', name: 'Flash' },
+  snack: { icon: '⚡', name: 'Snack' },
   parcours: { icon: '⭐', name: 'Quest' },
-  explorer: { icon: <img src="/assets/ui/emoji-route.png" alt="route" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, name: 'Explorer' },
   blitz: { icon: '⏱️', name: 'Blitz' },
-  wtf_du_jour: { icon: '🔥', name: 'Hunt' },
+  flash: { icon: '🔥', name: 'Flash' },
 }
 
 export default function ProfilPage() {

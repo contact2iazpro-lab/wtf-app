@@ -33,7 +33,7 @@ export default function QuestionScreen({
 
   // Solo et explorer → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
-    (gameMode === 'solo' || gameMode === 'explorer') ? 'qcm' : null
+    (gameMode === 'solo' || gameMode === 'snack') ? 'qcm' : null
   )
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -67,10 +67,10 @@ export default function QuestionScreen({
   const S = (px) => `calc(${px}px * var(--scale))`
 
   // Timer duration — source unique : difficulty.duration (gameConfig.js)
-  const isFlash = difficulty?.id === 'flash'
+  const isFlash = difficulty?.id === 'snack'
   const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
 
-  // Progress display — Flash shows X/10
+  // Progress display — Snack shows X/10
   const displayTotalFacts = totalFacts
 
   // Pause ref — synced to quit modal state (no re-render of CircularTimer)
@@ -411,7 +411,7 @@ export default function QuestionScreen({
   }
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
-  const MODE_LABELS = { flash_solo: 'MODE FLASH', explorer: 'MODE EXPLORER', wtf_du_jour: 'MODE HUNT', parcours: 'MODE QUEST' }
+  const MODE_LABELS = { snack: 'MODE SNACK', flash: 'MODE FLASH', parcours: 'MODE QUEST' }
   const modeLabel = MODE_LABELS[sessionType] || (difficulty ? `Mode ${difficulty.label || difficulty.id}` : '')
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────

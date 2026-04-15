@@ -60,7 +60,7 @@ export function useDevActions({
       if (fact) setDailyFactOverride(fact)
     },
     testVIPReveal: () => {
-      setSessionType('wtf_du_jour')
+      setSessionType('flash')
       setCoinsEarnedLastSession(5)
       setSessionScore(12)
       setCorrectCount(4)

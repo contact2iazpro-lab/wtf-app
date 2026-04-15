@@ -1,8 +1,8 @@
 /**
  * GainsBreakdown — card "récap gains structurés" : base + bonus + total.
  *
- * Réutilisé par ResultsScreen (Quest/Flash/Explorer/Hunt) et peut aussi être branché
- * sur Puzzle / Route / autres modes qui n'avaient que "+N coins" sèchement.
+ * Réutilisé par ResultsScreen (Quest/Snack/Snack/Flash) et peut aussi être branché
+ * sur Flash / Route / autres modes qui n'avaient que "+N coins" sèchement.
  *
  * Props :
  * - items: array [{label, value, color?, icon?}] — lignes détaillées optionnelles.
@@ -31,7 +31,7 @@ export default function GainsBreakdown({
   textColor = '#ffffff',
   // Mini stats en pied
   footerStats = null,
-  // Mode libre (Puzzle/Route) : override des lignes avec un tableau
+  // Mode libre (Flash/Route) : override des lignes avec un tableau
   items = null,
 }) {
   return (

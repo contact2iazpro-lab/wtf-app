@@ -262,7 +262,7 @@ export default function ChallengeScreen() {
                 onClick={goExplorerCategory}
                 style={{ padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #6BCB77, #4CAF50)', color: 'white', border: 'none', fontWeight: 900, fontSize: 13, cursor: 'pointer', fontFamily: 'Nunito, sans-serif', lineHeight: 1.3 }}
               >
-                🧭 Explorer {challenge.category_label}
+                🧭 Snack {challenge.category_label}
                 <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, marginTop: 2 }}>Coûte 1 énergie</div>
               </button>
             )}

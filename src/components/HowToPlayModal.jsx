@@ -73,10 +73,10 @@ const CHAPTERS = [
     ],
   },
   {
-    id: 'flash',
+    id: 'snack',
     emoji: '🎯',
-    shortTitle: 'Flash',
-    title: 'Mode Flash (Jouer)',
+    shortTitle: 'Snack',
+    title: 'Mode Snack (Jouer)',
     content: [
       { icon: '🔋', text: 'Coûte **1 énergie** — 3 gratuites par jour, puis **10 coins** par session.' },
       { icon: '⚡', text: 'Session rapide de **5 questions** · 4 QCM · **20s** par question.' },
@@ -87,10 +87,10 @@ const CHAPTERS = [
     ],
   },
   {
-    id: 'explorer',
+    id: 'snack',
     emoji: '🗺️',
-    shortTitle: 'Explorer',
-    title: 'Mode Explorer',
+    shortTitle: 'Snack',
+    title: 'Mode Snack',
     content: [
       { icon: '🔋', text: 'Coûte **1 énergie** — 3 gratuites par jour, puis **10 coins** par session.' },
       { icon: '📂', text: '**Choisis ta catégorie** — explore le thème qui t\'intéresse !' },
@@ -117,10 +117,10 @@ const CHAPTERS = [
     ],
   },
   {
-    id: 'hunt',
+    id: 'flash',
     emoji: '🔥',
-    shortTitle: 'Hunt',
-    title: 'Hunt (WTF! de la Semaine)',
+    shortTitle: 'Flash',
+    title: 'Flash (WTF! de la Semaine)',
     content: [
       { icon: '🆓', text: '**Gratuit** — disponible **1 fois par semaine** (le dimanche).' },
       { icon: '🎯', text: 'Un **f*ct WTF! spécial** à découvrir chaque semaine !' },
@@ -139,12 +139,12 @@ const CHAPTERS = [
     shortTitle: 'Énergie',
     title: 'Système d\'Énergie',
     content: [
-      { icon: '🔋', text: 'Les modes **Flash** et **Explorer** consomment de l\'**énergie**.' },
+      { icon: '🔋', text: 'Les modes **Snack** et **Snack** consomment de l\'**énergie**.' },
       { icon: '🆓', text: 'Tu as **3 sessions gratuites** par jour (les barres oranges sur l\'accueil).' },
       { icon: '⏰', text: 'L\'énergie se **recharge à minuit** automatiquement.' },
       { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 session pour 10 coins** en boutique.' },
       { icon: '📦', text: 'Tu peux aussi acheter des **packs d\'énergie** avec réduction en boutique.' },
-      { icon: '♾️', text: 'Les modes **Quest**, **Blitz** et **Hunt** ne consomment **pas d\'énergie**.' },
+      { icon: '♾️', text: 'Les modes **Quest**, **Blitz** et **Flash** ne consomment **pas d\'énergie**.' },
     ],
   },
 
@@ -157,7 +157,7 @@ const CHAPTERS = [
     content: [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
-      { icon: '❄️', text: '**Quest / Flash / Explorer / Hunt** : jusqu\'à **2 indices** par question.' },
+      { icon: '❄️', text: '**Quest / Snack / Snack / Flash** : jusqu\'à **2 indices** par question.' },
       { icon: '🚫', text: '**Blitz** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : 1 pour 10 coins, 3 pour 30, 5 pour 45.' },
@@ -174,9 +174,9 @@ const CHAPTERS = [
     content: [
       { icon: '🪙', text: 'Les **WTF! Coins** sont la monnaie du jeu — tu en gagnes en jouant.' },
       { icon: '⭐', text: '**Quest** : 4 coins/niveau parfait · 15 coins/boss vaincu.' },
-      { icon: '🎯', text: '**Flash** : **2 coins** par bonne réponse.' },
-      { icon: '🗺️', text: '**Explorer** : **1 coin** par bonne réponse.' },
-      { icon: '🔥', text: '**Hunt** : **2 coins** par bonne réponse.' },
+      { icon: '🎯', text: '**Snack** : **2 coins** par bonne réponse.' },
+      { icon: '🗺️', text: '**Snack** : **1 coin** par bonne réponse.' },
+      { icon: '🔥', text: '**Flash** : **2 coins** par bonne réponse.' },
       { icon: '⚡', text: '**Blitz** : **0 coin** — prestige uniquement.' },
       { icon: '🎰', text: 'Gagne aussi des coins via la **roulette quotidienne** et ta **série**.' },
       { icon: '🛒', text: 'Dépense-les en **boutique** : indices, énergie, mystery packs, streak freezes.' },
@@ -305,13 +305,13 @@ const CHAPTERS = [
     shortTitle: 'Astuces',
     title: 'Astuces & Conseils',
     content: [
-      { icon: '🎯', text: 'Commence par le mode **Flash** pour gagner des coins et débloquer des f*cts.' },
+      { icon: '🎯', text: 'Commence par le mode **Snack** pour gagner des coins et débloquer des f*cts.' },
       { icon: '💡', text: 'Garde tes **indices** pour les questions difficiles en Quest WTF!.' },
       { icon: '📅', text: 'Joue **chaque jour** : la série + la roulette = **30-50 coins/jour** gratuits !' },
       { icon: '🧠', text: 'Joue en **Blitz** pour réviser tes f*cts débloqués et améliorer tes records.' },
       { icon: '📦', text: 'Les **Packs Catégorie** sont idéaux pour compléter une catégorie spécifique.' },
       { icon: '🛡️', text: 'Achète un **Streak Freeze** avant un week-end chargé pour protéger ta série !' },
-      { icon: '🔥', text: 'Le **Hunt** est 100% gratuit — ne rate jamais le WTF! de la Semaine !' },
+      { icon: '🔥', text: 'Le **Flash** est 100% gratuit — ne rate jamais le WTF! de la Semaine !' },
     ],
   },
 ]
@@ -362,19 +362,16 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
       case 'quest':
         return (wd.statsByMode?.parcours?.gamesPlayed || 0) >= 1
 
-      case 'flash':
-        return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
-
-      case 'explorer':
-        return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
+      case 'snack':
+        return (wd.statsByMode?.snack?.gamesPlayed || 0) >= 1
 
       case 'energy':
-        return (wd.statsByMode?.flash_solo?.gamesPlayed || 0) >= 1
+        return (wd.statsByMode?.snack?.gamesPlayed || 0) >= 1
 
       case 'blitz':
         return (wd.statsByMode?.blitz?.gamesPlayed || 0) >= 1
 
-      case 'hunt':
+      case 'flash':
         return (wd.gamesPlayed || 0) >= 1
 
       case 'streak':
@@ -543,7 +540,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               )}
 
               {/* Checkbox réafficher les règles des modes — bien visible */}
-              {['quest', 'flash', 'explorer', 'blitz', 'hunt', 'energy'].includes(chapter.id) && (
+              {['quest', 'snack', 'snack', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
                 <label style={{
                   display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
                   cursor: 'pointer', marginTop: 12, padding: '8px', background: 'rgba(255,107,26,0.08)',

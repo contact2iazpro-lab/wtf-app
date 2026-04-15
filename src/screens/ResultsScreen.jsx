@@ -100,7 +100,7 @@ export default function ResultsScreen({
 
   // Persister les facts temporaires quand le joueur se connecte depuis ResultsScreen
   useEffect(() => {
-    if (isConnected && !savedAfterConnect && onSaveTempFacts && sessionType === 'flash_solo') {
+    if (isConnected && !savedAfterConnect && onSaveTempFacts && sessionType === 'snack') {
       onSaveTempFacts()
       setSavedAfterConnect(true)
     }
@@ -428,8 +428,8 @@ export default function ResultsScreen({
               <span style={{ fontSize: S(12) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
               <span style={{ fontSize: S(11), fontWeight: 800, color: textOnBg }}>
                 {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` :
-                 sessionType === 'flash_solo' ? 'Mode Flash' :
-                 sessionType === 'explorer' ? 'Mode Explorer' :
+                 sessionType === 'snack' ? 'Mode Snack' :
+                 sessionType === 'snack' ? 'Mode Snack' :
                  'Mode'}
               </span>
             </div>

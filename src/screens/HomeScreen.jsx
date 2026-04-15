@@ -1,7 +1,7 @@
 /**
  * HomeScreen v8 — Cleanup (tâche 5.1 Option 1).
  *
- * Zones : Header · Streak · Coffres · Mini-modes (Roulette/Puzzle/Quest) · Corps · Bouton Jouer · BottomNav
+ * Zones : Header · Streak · Coffres · Mini-modes (Roulette/Flash/Quest) · Corps · Bouton Jouer · BottomNav
  *
  * Nettoyage par rapport à v7 :
  *  - `useDailyCoffre` → hook externe (`hooks/useDailyCoffre`)
@@ -67,7 +67,7 @@ export default function HomeScreen({
   socialNotifCount = 0,
   onResetSocialNotif,
   pendingChallengesCount = 0,
-  flashEnergyRemaining = 3,
+  snackEnergyRemaining = 3,
   dailyFactUnlocked = false,
 }) {
   // Devises : source de vérité = usePlayerProfile (pas les props).
@@ -169,7 +169,7 @@ export default function HomeScreen({
     </button>
   ))
 
-  // ── Mini-bouton (Roulette / Puzzle / Quest) ──────────────────────────────
+  // ── Mini-bouton (Roulette / Flash / Quest) ──────────────────────────────
   const MiniBtn = ({ icon, label, badge, onClick }) => (
     <button
       onClick={onClick}
@@ -429,7 +429,7 @@ export default function HomeScreen({
         })}
       </div>
 
-      {/* ═══ ZONE 3B — ROULETTE (solo, Puzzle/Quest désormais dans la grille) ═══ */}
+      {/* ═══ ZONE 3B — ROULETTE (solo, Flash/Quest désormais dans la grille) ═══ */}
       <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: '4px 10px 0' }}>
         <MiniBtn icon="/assets/ui/emoji-roulette.png" label="Roulette" badge={rouletteBadge} onClick={() => { audio.play('click'); setShowRoulette(true) }} />
       </div>
@@ -471,7 +471,7 @@ export default function HomeScreen({
           </div>
 
           {/* Grille modes 3 cols : 3 icônes à gauche / logo WTF central / 3 icônes à droite.
-              Quest (ex-Route), Puzzle, Hunt en plus de Flash/Explorer/Blitz. */}
+              Quest (ex-Route), Flash, Flash en plus de Snack/Snack/Blitz. */}
           <div style={{
             flex: 3, width: '100%',
             display: 'grid',
@@ -502,22 +502,20 @@ export default function HomeScreen({
                 }}
               />
             </div>
-            {/* Colonne droite row 1 : Explorer */}
-            <ModeIcon src="/assets/modes/marathon.png" label="Explorer" onClick={() => nav('explorer')} />
+            {/* Colonne droite row 1 : Snack (ex-Flash+Explorer fusionnés) */}
+            <ModeIcon src="/assets/modes/marathon.png" label="Snack" onClick={() => nav('snack')} />
 
             {/* Colonne gauche row 2 : Blitz */}
             <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
-            {/* (middle col already spanned by logo) */}
-            {/* Colonne droite row 2 : Hunt (WTF de la semaine) */}
-            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Hunt" onClick={() => nav('wtfWeekly')} />
+            {/* Colonne droite row 2 : Flash (ex-Hunt+Puzzle fusionnés — 1/jour) */}
+            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Flash" onClick={() => nav('flash')} />
 
-            {/* Colonne gauche row 3 : Puzzle (placeholder — icône à créer dans /assets/modes/puzzle.png) */}
-            <ModeIcon src="/assets/ui/emoji-puzzle.png" label="Puzzle" onClick={() => nav('puzzle')} />
-            {/* Colonne droite row 3 : (libre, Quest est désormais row 1 gauche) */}
+            {/* Row 3 : libre pour mode à venir */}
+            <div />
             <div />
           </div>
 
-          {/* Énergie Flash (barre 5 segments) */}
+          {/* Énergie Snack (barre 5 segments) */}
           <div style={{
             flex: 1, width: '100%',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -528,14 +526,14 @@ export default function HomeScreen({
                 {[0, 1, 2, 3, 4].map(i => (
                   <div key={i} style={{
                     width: 16, height: 8, borderRadius: 4,
-                    background: i < flashEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
+                    background: i < snackEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
                     transition: 'background 0.3s',
-                    boxShadow: i < flashEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
+                    boxShadow: i < snackEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
                   }} />
                 ))}
               </div>
-              <span style={{ fontSize: 11, fontWeight: 800, color: flashEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
-                {flashEnergyRemaining}/5
+              <span style={{ fontSize: 11, fontWeight: 800, color: snackEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
+                {snackEnergyRemaining}/5
               </span>
             </div>
           </div>

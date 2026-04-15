@@ -85,7 +85,7 @@ export default function UnlockCategoryModal({ target, onClose, onConfirmed }) {
           Débloquer {target.label} ?
         </div>
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', textAlign: 'center', lineHeight: 1.4 }}>
-          Tu pourras jouer à cette catégorie en Flash et Explorer. Aucun f*ct n'est débloqué : c'est à toi de les découvrir en jouant.
+          Tu pourras jouer à cette catégorie en Snack et Snack. Aucun f*ct n'est débloqué : c'est à toi de les découvrir en jouant.
         </div>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,

@@ -1,4 +1,4 @@
-import { FLASH_ENERGY } from '../constants/gameConfig'
+import { SNACK_ENERGY } from '../constants/gameConfig'
 
 // ─── Modèle T91 : stock persistant + régén 8h, max 5 ─────────────────────────
 // localStorage keys (wtf_data) :
@@ -29,7 +29,7 @@ function writeWtfData(data) {
  */
 function applyRegen(data) {
   const now = Date.now()
-  const { MAX_STOCK, REGEN_MS } = FLASH_ENERGY
+  const { MAX_STOCK, REGEN_MS } = SNACK_ENERGY
 
   // Pas de régén si déjà au cap
   if ((data.energyCurrent ?? 0) >= MAX_STOCK) {
@@ -61,17 +61,17 @@ function applyRegen(data) {
 }
 
 /**
- * getFlashEnergy — retourne l'état courant de l'énergie.
+ * getSnackEnergy — retourne l'état courant de l'énergie.
  * Applique la régen et migre depuis l'ancien modèle si nécessaire.
  */
-export function getFlashEnergy() {
+export function getSnackEnergy() {
   try {
     const data = readWtfData()
     let dirty = false
 
     // Migration one-shot de l'ancien modèle (journalier)
     if (data.energyCurrent === undefined) {
-      data.energyCurrent = FLASH_ENERGY.INITIAL_STOCK
+      data.energyCurrent = SNACK_ENERGY.INITIAL_STOCK
       data.energyNextRegenAt = null
       delete data.flashEnergyUsed
       delete data.flashEnergyDate
@@ -86,7 +86,7 @@ export function getFlashEnergy() {
 
     if (dirty) writeWtfData(data)
 
-    const { MAX_STOCK, REGEN_MS } = FLASH_ENERGY
+    const { MAX_STOCK, REGEN_MS } = SNACK_ENERGY
     const remaining = Math.max(0, data.energyCurrent)
     const nextRegenAt = data.energyNextRegenAt
     const msUntilNext = nextRegenAt ? Math.max(0, new Date(nextRegenAt).getTime() - Date.now()) : 0
@@ -102,26 +102,26 @@ export function getFlashEnergy() {
     }
   } catch {
     return {
-      remaining: FLASH_ENERGY.INITIAL_STOCK,
-      max: FLASH_ENERGY.MAX_STOCK,
+      remaining: SNACK_ENERGY.INITIAL_STOCK,
+      max: SNACK_ENERGY.MAX_STOCK,
       nextRegenAt: null,
       msUntilNext: 0,
-      used: FLASH_ENERGY.MAX_STOCK - FLASH_ENERGY.INITIAL_STOCK,
+      used: SNACK_ENERGY.MAX_STOCK - SNACK_ENERGY.INITIAL_STOCK,
       date: new Date().toISOString().slice(0, 10),
     }
   }
 }
 
 /**
- * consumeFlashEnergy — décrémente d'1 le stock, arme le timer de régén si
+ * consumeSnackEnergy — décrémente d'1 le stock, arme le timer de régén si
  * l'user redescend sous le cap.
  * @returns true si consommée, false si plus d'énergie
  */
-export function consumeFlashEnergy() {
+export function consumeSnackEnergy() {
   const data = readWtfData()
   // S'assurer que le state est initialisé + régén appliquée
   if (data.energyCurrent === undefined) {
-    data.energyCurrent = FLASH_ENERGY.INITIAL_STOCK
+    data.energyCurrent = SNACK_ENERGY.INITIAL_STOCK
     data.energyNextRegenAt = null
     delete data.flashEnergyUsed
     delete data.flashEnergyDate
@@ -130,12 +130,12 @@ export function consumeFlashEnergy() {
 
   if ((data.energyCurrent ?? 0) <= 0) return false
 
-  const wasAtCap = data.energyCurrent >= FLASH_ENERGY.MAX_STOCK
+  const wasAtCap = data.energyCurrent >= SNACK_ENERGY.MAX_STOCK
   data.energyCurrent -= 1
 
   // Si on passe sous le cap et qu'aucun timer n'est armé, arme-le
-  if (!data.energyNextRegenAt && data.energyCurrent < FLASH_ENERGY.MAX_STOCK) {
-    data.energyNextRegenAt = new Date(Date.now() + FLASH_ENERGY.REGEN_MS).toISOString()
+  if (!data.energyNextRegenAt && data.energyCurrent < SNACK_ENERGY.MAX_STOCK) {
+    data.energyNextRegenAt = new Date(Date.now() + SNACK_ENERGY.REGEN_MS).toISOString()
   }
 
   writeWtfData(data)
@@ -143,20 +143,20 @@ export function consumeFlashEnergy() {
 }
 
 /**
- * addFlashEnergy — crédite X énergies (achat boutique, récompense).
+ * addSnackEnergy — crédite X énergies (achat boutique, récompense).
  * Pas de cap : un joueur peut dépasser MAX_STOCK via achat. La régén reste
  * désactivée tant qu'il est au-dessus du cap.
  */
-export function addFlashEnergy(n = 1) {
+export function addSnackEnergy(n = 1) {
   if (n <= 0) return
   const data = readWtfData()
   if (data.energyCurrent === undefined) {
-    data.energyCurrent = FLASH_ENERGY.INITIAL_STOCK
+    data.energyCurrent = SNACK_ENERGY.INITIAL_STOCK
     data.energyNextRegenAt = null
   }
   applyRegen(data)
   data.energyCurrent = (data.energyCurrent ?? 0) + n
-  if (data.energyCurrent >= FLASH_ENERGY.MAX_STOCK) {
+  if (data.energyCurrent >= SNACK_ENERGY.MAX_STOCK) {
     data.energyNextRegenAt = null
   }
   writeWtfData(data)
@@ -168,16 +168,16 @@ export function addFlashEnergy(n = 1) {
  * @param {Object} deps - { coins, applyCurrencyDelta }
  */
 export function buyExtraSession({ coins, applyCurrencyDelta } = {}) {
-  if ((coins ?? 0) < FLASH_ENERGY.EXTRA_SESSION_COST) return false
-  applyCurrencyDelta?.({ coins: -FLASH_ENERGY.EXTRA_SESSION_COST }, 'buy_extra_energy')
+  if ((coins ?? 0) < SNACK_ENERGY.EXTRA_SESSION_COST) return false
+  applyCurrencyDelta?.({ coins: -SNACK_ENERGY.EXTRA_SESSION_COST }, 'buy_extra_energy')
     ?.catch?.(e => console.warn('[buyExtraSession] applyCurrencyDelta failed:', e?.message || e))
-  addFlashEnergy(1)
+  addSnackEnergy(1)
   return true
 }
 
 /**
- * Raccourci : peut-on jouer en Flash/Explorer ?
+ * Raccourci : peut-on jouer en Snack/Snack ?
  */
-export function canPlayFlash() {
-  return getFlashEnergy().remaining > 0
+export function canPlaySnack() {
+  return getSnackEnergy().remaining > 0
 }

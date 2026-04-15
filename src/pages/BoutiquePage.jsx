@@ -4,8 +4,8 @@ import CoinsIcon from '../components/CoinsIcon'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { getValidFacts, getVipFacts, getFunnyFacts, getCategoryById, getPlayableCategories } from '../data/factsService'
-import { getFlashEnergy, addFlashEnergy } from '../services/energyService'
-import { FLASH_ENERGY } from '../constants/gameConfig'
+import { getSnackEnergy, addSnackEnergy } from '../services/energyService'
+import { SNACK_ENERGY } from '../constants/gameConfig'
 import { useScale } from '../hooks/useScale'
 import RouletteModal from '../components/RouletteModal'
 import { AVATAR_FRAMES, readFrameState, addOwnedFrame } from '../data/avatarFrames'
@@ -193,8 +193,8 @@ export default function BoutiquePage() {
       console.warn('[BoutiquePage] buyPack RPC failed:', e?.message || e)
     )
     if (type === 'energy') {
-      // Nouveau modèle T91 : stock persistant via addFlashEnergy
-      addFlashEnergy(quantity)
+      // Nouveau modèle T91 : stock persistant via addSnackEnergy
+      addSnackEnergy(quantity)
     } else if (type === 'streakFreeze') {
       const wd = readWtfData()
       wd.streakFreezeCount = (wd.streakFreezeCount || 0) + 1
@@ -542,10 +542,10 @@ export default function BoutiquePage() {
             <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 20 }} />
             <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Énergie</h2>
             <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', color: '#16a34a' }}>
-              {getFlashEnergy().remaining} / {FLASH_ENERGY.FREE_SESSIONS_PER_DAY}
+              {getSnackEnergy().remaining} / {SNACK_ENERGY.FREE_SESSIONS_PER_DAY}
             </span>
           </div>
-          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Jouer et Explorer consomment de l'énergie</p>
+          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Jouer et Snack consomment de l'énergie</p>
           <div className="flex flex-col gap-2">
             {ENERGY_PACKS.map(pack => (
               <PackButton

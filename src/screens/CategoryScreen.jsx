@@ -35,9 +35,9 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
   const bgIndex = useRef(Math.floor(Math.random() * BACKGROUNDS.length))
 
   // Pool de facts selon le mode de jeu
-  // Flash et Explorer : Funny facts uniquement (pas de VIP)
+  // Snack et Snack : Funny facts uniquement (pas de VIP)
   const factsPool = useMemo(() => {
-    if (gameMode === 'explorer' || sessionType === 'flash_solo') return getFunnyFacts()
+    if (gameMode === 'snack' || sessionType === 'snack') return getFunnyFacts()
     if (gameMode === 'blitz') return getValidFacts()
     return getValidFacts() // Quest, etc.
   }, [gameMode, sessionType])
@@ -50,7 +50,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
     return counts
   }, [factsPool])
 
-  // Bloc 3.1 — En Explorer/Flash, ne compter que les Funny débloqués
+  // Bloc 3.1 — En Snack/Snack, ne compter que les Funny débloqués
   // (sinon le ratio peut dépasser 100% car total = Funny only)
   const unlockedPerCategory = useMemo(() => {
     const counts = {}
@@ -75,8 +75,8 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
     return cats
   }, [sessionUnlockedCats])
 
-  // En mode Explorer/Flash : seules les catégories débloquées sont jouables
-  const isLockedMode = gameMode === 'explorer' || sessionType === 'flash_solo'
+  // En mode Snack/Snack : seules les catégories débloquées sont jouables
+  const isLockedMode = gameMode === 'snack' || sessionType === 'snack'
 
   // Catégories avec au moins 1 fact — débloquées en haut, bloquées en bas, chaque groupe alphabétique
   const visibleCategories = useMemo(() => {
@@ -195,8 +195,8 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
 
-          {/* Aléatoire — masqué en mode Explorer */}
-          {gameMode !== 'explorer' && <button
+          {/* Aléatoire — masqué en mode Snack */}
+          {gameMode !== 'snack' && <button
             onClick={() => handleCategoryClick('random')}
             style={{
               background: selectedCatId === 'random'

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS } from './constants/gameConfig'
 import { getDailyFact, initFacts, resetFacts } from './data/factsService'
 import { loadStorage, saveStorage } from './utils/storageHelper'
-import { getFlashEnergy } from './services/energyService'
+import { getSnackEnergy } from './services/energyService'
 import { useAuth } from './context/AuthContext'
 import AppModals from './components/AppModals'
 import ScreenRenderer from './components/ScreenRenderer'
@@ -199,7 +199,7 @@ export default function App() {
     if (pendingDuel?.mode === 'create') return SCREENS.BLITZ_LOBBY
     return SCREENS.HOME
   })
-  const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.FLASH)
+  const [selectedDifficulty, setSelectedDifficulty] = useState(DIFFICULTY_LEVELS.SNACK)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [sessionFacts, setSessionFacts] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -214,19 +214,19 @@ export default function App() {
   const { totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday } = storage
   const dailyQuestsRemaining = Math.max(0, 3 - (sessionsToday || 0))
 
-  // Fix React warning: état flashEnergy pour éviter setState pendant le render de ScreenRenderer
-  const [flashEnergy, setFlashEnergy] = useState(() => getFlashEnergy())
+  // Fix React warning: état snackEnergy pour éviter setState pendant le render de ScreenRenderer
+  const [snackEnergy, setSnackEnergy] = useState(() => getSnackEnergy())
   useEffect(() => {
-    const updateFlashEnergy = () => {
-      setFlashEnergy(getFlashEnergy())
+    const updateSnackEnergy = () => {
+      setSnackEnergy(getSnackEnergy())
     }
-    window.addEventListener('wtf_energy_updated', updateFlashEnergy)
-    return () => window.removeEventListener('wtf_energy_updated', updateFlashEnergy)
+    window.addEventListener('wtf_energy_updated', updateSnackEnergy)
+    return () => window.removeEventListener('wtf_energy_updated', updateSnackEnergy)
   }, [])
 
   // isChallengeMode dérivé de pendingDuel — une seule source de vérité (Palier 2).
   const isChallengeMode = pendingDuel?.mode === 'create'
-  const [sessionType, setSessionType] = useState('parcours') // 'wtf_du_jour' | 'flash_solo' | 'parcours' | 'explorer' | 'duel'
+  const [sessionType, setSessionType] = useState('parcours') // 'flash' | 'snack' | 'parcours' | 'snack' | 'duel'
   const [coinsEarnedLastSession, setCoinsEarnedLastSession] = useState(0)
   const [dailyFact, setDailyFact] = useState(null)
   const [dailyFactOverride, setDailyFactOverride] = useState(null)
@@ -241,18 +241,18 @@ export default function App() {
   // Multiplayer state
   const [duelPlayers, setDuelPlayers] = useState([])
   const [duelCurrentPlayerIndex, setDuelCurrentPlayerIndex] = useState(0)
-  const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'explorer'
+  const [gameMode, setGameMode] = useState('solo') // 'solo' | 'duel' | 'snack'
   const [showHowToPlay, setShowHowToPlay] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [gameAlert, setGameAlert] = useState(null) // { emoji, title, message }
   const [showNoEnergyModal, setShowNoEnergyModal] = useState(false)
-  const [noEnergyOrigin, setNoEnergyOrigin] = useState('flash') // 'flash' | 'explorer'
+  const [noEnergyOrigin, setNoEnergyOrigin] = useState('snack') // 'snack' | 'snack'
   const [trophyQueue, setTrophyQueue] = useState([]) // badges à afficher un par un
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
   const [launchMode, setLaunchMode] = useState(null)
-  const [explorerPool, setExplorerPool] = useState([])
+  const [snackPool, setSnackPool] = useState([])
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
   const [newlyUnlockedCategories, setNewlyUnlockedCategories] = useState([])
   const [showNewCategoriesModal, setShowNewCategoriesModal] = useState(false)
@@ -314,8 +314,8 @@ export default function App() {
 
   // ─── Mode starters → extraits dans useModeStarters hook ──────────────────
   const {
-    initSessionState, handleWTFWeekly, handleStartWTFSession,
-    handleFlashSolo, handleQuickPlay,
+    initSessionState, handleFlashTeaser, handleStartFlashSession,
+    handleSnack, handleQuickPlay,
   } = useModeStarters({
     effectiveDailyFact, unlockedFacts, user,
     setSessionFacts, setCurrentIndex, setSessionScore, setCorrectCount,
@@ -339,52 +339,52 @@ export default function App() {
     localStorage.removeItem('tutorial_state')
     localStorage.removeItem('wtf_hints_available')
     localStorage.removeItem('skip_launch_quest')
-    localStorage.removeItem('skip_launch_flash')
+    localStorage.removeItem('skip_launch_snack')
     localStorage.removeItem('skip_launch_blitz')
-    localStorage.removeItem('skip_launch_explorer')
-    localStorage.removeItem('skip_launch_hunt')
+    localStorage.removeItem('skip_launch_snack_legacy')
+    localStorage.removeItem('skip_launch_flash')
     sessionStorage.clear()
     window.location.reload()
   }
 
   // ─── Selection handlers (AVANT navigation car handleHomeNavigate en dépend) ──
-  const { handleSelectDifficulty, handleSelectCategory, handleExplorerMode } = useSelectionHandlers({
+  const { handleSelectDifficulty, handleSelectCategory, handleSnackMode } = useSelectionHandlers({
     gameMode, sessionType, selectedDifficulty, selectedCategory,
     unlockedFacts,
     initSessionState, handleBlitzStart,
     setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
-    setIsQuickPlay, setExplorerPool, setScreen,
+    setIsQuickPlay, setSnackPool, setScreen,
     setGameAlert, setMiniParcours,
   })
 
-  // ── Deep-link Explorer : déclenché par ChallengeScreen quand le joueur n'a
+  // ── Deep-link Snack : déclenché par ChallengeScreen quand le joueur n'a
   // pas assez de f*cts pour relever le défi et veut explorer la catégorie.
   // ChallengeScreen dépose `wtf_pending_explorer_cat` puis navigate('/'). Ici
-  // on consomme le flag et on route vers l'Explorer de la catégorie cible.
+  // on consomme le flag et on route vers l'Snack de la catégorie cible.
   //
   // Ref pattern : handleSelectCategory est re-mémoizé quand gameMode change.
   // On garde une ref toujours à jour pour éviter tout risque de closure stale
-  // entre setGameMode('explorer') et l'appel effectif du handler.
+  // entre setGameMode('snack') et l'appel effectif du handler.
   const handleSelectCategoryRef = useRef(handleSelectCategory)
   useEffect(() => { handleSelectCategoryRef.current = handleSelectCategory }, [handleSelectCategory])
 
-  const [pendingExplorerCat, setPendingExplorerCat] = useState(null)
+  const [pendingSnackCat, setPendingSnackCat] = useState(null)
   useEffect(() => {
     const cat = sessionStorage.getItem('wtf_pending_explorer_cat')
     if (!cat) return
     sessionStorage.removeItem('wtf_pending_explorer_cat')
-    setGameMode('explorer')
-    setSessionType('explorer')
-    setPendingExplorerCat(cat)
+    setGameMode('snack')
+    setSessionType('snack')
+    setPendingSnackCat(cat)
   }, [])
   useEffect(() => {
-    if (!pendingExplorerCat || gameMode !== 'explorer') return
-    const cat = pendingExplorerCat
-    setPendingExplorerCat(null)
-    // Attendre un tick que React ait propagé gameMode='explorer' dans le closure
+    if (!pendingSnackCat || gameMode !== 'snack') return
+    const cat = pendingSnackCat
+    setPendingSnackCat(null)
+    // Attendre un tick que React ait propagé gameMode='snack' dans le closure
     // de handleSelectCategory (via la ref, on prend toujours la dernière version).
     setTimeout(() => handleSelectCategoryRef.current?.(cat), 0)
-  }, [pendingExplorerCat, gameMode])
+  }, [pendingSnackCat, gameMode])
 
   // ─── Navigation, Duel, Replay, Share ──────────────────────────────────────
   const {
@@ -392,18 +392,18 @@ export default function App() {
     handleHomeNavigate,
     handleDuelNextPlayer, handleDuelMode, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
-    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay,
+    handleHome, handleBlitzReplay, handleSnackContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,
   } = useNavigationHandlers({
     launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
     selectedDifficulty,
-    explorerPool, unlockedFacts, duelPlayers, user, sessionCorrectFacts,
-    handleStartWTFSession, handleFlashSolo, handleSelectDifficulty,
+    snackPool, unlockedFacts, duelPlayers, user, sessionCorrectFacts,
+    handleStartFlashSession, handleSnack, handleSelectDifficulty,
     handleSelectCategory, handleBlitzStart, initSessionState,
     setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
     setSelectedCategory, setSessionFacts, setCurrentIndex, setSessionScore,
     setCorrectCount, setDuelPlayers, setDuelCurrentPlayerIndex, setIsQuickPlay,
-    setBlitzFacts, setBlitzResults, setExplorerPool,
+    setBlitzFacts, setBlitzResults, setSnackPool,
     setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
     setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
     setStorage,
@@ -550,7 +550,7 @@ export default function App() {
         clearPendingDuel={clearPendingDuel}
         user={user} storage={storage} streak={streak}
         newlyEarnedBadges={newlyEarnedBadges} showHowToPlay={showHowToPlay}
-        flashEnergy={flashEnergy}
+        snackEnergy={snackEnergy}
         modeConfigs={MODE_CONFIGS}
         handleHomeNavigate={handleHomeNavigate} handleHome={handleHome}
         handleSelectDifficulty={handleSelectDifficulty} handleSelectCategory={handleSelectCategory}
@@ -560,7 +560,7 @@ export default function App() {
         handleDuelStart={handleDuelStart} handleDuelPassReady={handleDuelPassReady}
         handleDuelReplay={handleDuelReplay} handleReplay={handleReplay}
         handleBlitzReplay={handleBlitzReplay} handleBlitzStart={handleBlitzStart}
-        handleBlitzFinish={handleBlitzFinish} handleStartWTFSession={handleStartWTFSession}
+        handleBlitzFinish={handleBlitzFinish} handleStartFlashSession={handleStartFlashSession}
         handleShare={handleShare} handleShareDailyFact={handleShareDailyFact}
         handleSaveTempFacts={handleSaveTempFacts} handleLaunchStart={handleLaunchStart}
         setScreen={setScreen} setShowSettings={setShowSettings} setShowHowToPlay={setShowHowToPlay}
@@ -590,9 +590,9 @@ export default function App() {
         setShowNewCategoriesModal={setShowNewCategoriesModal} setShowDevPanel={setShowDevPanel}
         setSessionType={setSessionType} setGameMode={setGameMode} setIsQuickPlay={setIsQuickPlay}
         setSelectedDifficulty={setSelectedDifficulty} setSelectedCategory={setSelectedCategory}
-        setExplorerPool={setExplorerPool} setScreen={setScreen} setStorage={setStorage}
+        setSnackPool={setSnackPool} setScreen={setScreen} setStorage={setStorage}
         resetOnboarding={resetOnboarding} handleShowRules={handleShowRules}
-        handleFlashSolo={handleFlashSolo} handleHomeNavigate={handleHomeNavigate}
+        handleSnack={handleSnack} handleHomeNavigate={handleHomeNavigate}
         showOrSkipLaunch={showOrSkipLaunch} initSessionState={initSessionState}
         devActions={devActions} signInWithGoogle={signInWithGoogle}
       />

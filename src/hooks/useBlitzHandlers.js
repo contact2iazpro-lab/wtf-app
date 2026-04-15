@@ -34,7 +34,7 @@ export function useBlitzHandlers({
     if (categoryId) pool = pool.filter(f => f.category === categoryId)
 
     if (pool.length < 5) {
-      setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Flash ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
+      setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Snack ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
       return
     }
 

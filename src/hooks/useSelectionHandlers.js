@@ -1,7 +1,7 @@
 /**
  * useSelectionHandlers — Handlers pour la sélection de difficulté et catégorie.
  *
- * Extrait de App.jsx : handleSelectDifficulty, handleSelectCategory, handleExplorerMode.
+ * Extrait de App.jsx : handleSelectDifficulty, handleSelectCategory, handleSnackMode.
  */
 
 import { useCallback } from 'react'
@@ -12,14 +12,14 @@ import {
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { consumeFlashEnergy } from '../services/energyService'
+import { consumeSnackEnergy } from '../services/energyService'
 
 export function useSelectionHandlers({
   gameMode, sessionType, selectedDifficulty, selectedCategory,
   unlockedFacts,
   initSessionState, handleBlitzStart,
   setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
-  setIsQuickPlay, setExplorerPool, setScreen,
+  setIsQuickPlay, setSnackPool, setScreen,
   setGameAlert, setMiniParcours,
 }) {
 
@@ -27,10 +27,10 @@ export function useSelectionHandlers({
     setSelectedDifficulty(difficulty)
     const skipUnlockM = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
 
-    if (gameMode === 'explorer') {
-      // Explorer utilise toujours sa difficulté dédiée (20s / 1 coin / 4 QCM)
+    if (gameMode === 'snack') {
+      // Snack utilise toujours sa difficulté dédiée (20s / 1 coin / 4 QCM)
       // peu importe celle passée en argument (legacy)
-      const explorerDiff = DIFFICULTY_LEVELS.EXPLORER
+      const explorerDiff = DIFFICULTY_LEVELS.SNACK
       setSelectedDifficulty(explorerDiff)
       let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
       if (pool.length < 4 && skipUnlockM) {
@@ -44,28 +44,28 @@ export function useSelectionHandlers({
         const price = pool.length === 1 ? 5 : 10
         const preparedFacts = shuffle(pool)
           .map(fact => ({ ...fact, ...getAnswerOptions(fact, explorerDiff) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId: selectedCategory, difficulty: explorerDiff })
+        setMiniParcours({ pool: preparedFacts, price, mode: 'snack', categoryId: selectedCategory, difficulty: explorerDiff })
         return
       }
       const facts = shuffle(pool).slice(0, 20)
         .map(fact => ({ ...fact, ...getAnswerOptions(fact, explorerDiff) }))
       setIsQuickPlay(false)
-      setSessionType('explorer')
+      setSessionType('snack')
       initSessionState(facts)
       setScreen(SCREENS.QUESTION)
       return
     }
 
     // Ancien mode Quest (tickets + Cool/Hot) supprimé (sub-step 1a — 2026-04-15).
-    // Cette fonction ne gère plus que le flow Explorer.
+    // Cette fonction ne gère plus que le flow Snack.
     console.warn('[useSelectionHandlers] handleSelectDifficulty called outside explorer mode — no-op')
   }, [unlockedFacts, gameMode, selectedCategory, initSessionState, handleBlitzStart])
 
   const handleSelectCategory = useCallback((categoryId) => {
     if (gameMode === 'blitz') { handleBlitzStart(categoryId); return }
 
-    if (gameMode === 'explorer') {
-      const difficulty = DIFFICULTY_LEVELS.EXPLORER
+    if (gameMode === 'snack') {
+      const difficulty = DIFFICULTY_LEVELS.SNACK
       const skipUnlockE = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
       let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
       if (pool.length < 4 && skipUnlockE) pool = getGeneratedFactsByCategory(categoryId)
@@ -73,24 +73,24 @@ export function useSelectionHandlers({
       if (pool.length < 4) {
         const price = pool.length === 1 ? 5 : 10
         const preparedFacts = shuffle(pool).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'explorer', categoryId, difficulty })
+        setMiniParcours({ pool: preparedFacts, price, mode: 'snack', categoryId, difficulty })
         return
       }
       const shuffled = shuffle(pool)
       const sessionFacts = shuffled.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
       const remaining = shuffled.slice(5)
-      setExplorerPool(remaining)
+      setSnackPool(remaining)
       setSelectedCategory(categoryId)
       setSelectedDifficulty(difficulty)
       setIsQuickPlay(false)
-      setSessionType('explorer')
-      consumeFlashEnergy()
+      setSessionType('snack')
+      consumeSnackEnergy()
       initSessionState(sessionFacts)
       setScreen(SCREENS.QUESTION)
       return
     }
 
-    // Flash/Jouer — uniquement les catégories débloquées
+    // Snack/Jouer — uniquement les catégories débloquées
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     const unlockedCats = new Set(wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition'])
     const generatedFacts = getGeneratedFacts().filter(f => unlockedCats.has(f.category))
@@ -117,16 +117,16 @@ export function useSelectionHandlers({
 
     const factsWithOptions = facts.map(fact => ({ ...fact, ...getAnswerOptions(fact, selectedDifficulty) }))
     setSelectedCategory(categoryId)
-    if (sessionType === 'flash_solo' || sessionType === 'explorer') consumeFlashEnergy()
+    if (sessionType === 'snack' || sessionType === 'snack') consumeSnackEnergy()
     initSessionState(factsWithOptions)
     setScreen(SCREENS.QUESTION)
   }, [selectedDifficulty, gameMode, sessionType, handleBlitzStart, unlockedFacts, initSessionState])
 
-  const handleExplorerMode = useCallback(() => {
-    setGameMode('explorer')
-    setSessionType('explorer')
+  const handleSnackMode = useCallback(() => {
+    setGameMode('snack')
+    setSessionType('snack')
     setScreen(SCREENS.CATEGORY)
   }, [])
 
-  return { handleSelectDifficulty, handleSelectCategory, handleExplorerMode }
+  return { handleSelectDifficulty, handleSelectCategory, handleSnackMode }
 }

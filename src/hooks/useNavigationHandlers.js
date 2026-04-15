@@ -12,7 +12,7 @@ import { DIFFICULTY_LEVELS, SCREENS, QUESTIONS_PER_GAME } from '../constants/gam
 import { getFactsByCategory } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { getFlashEnergy, consumeFlashEnergy } from '../services/energyService'
+import { getSnackEnergy, consumeSnackEnergy } from '../services/energyService'
 import { saveStorage, loadStorage } from '../utils/storageHelper'
 import { syncAfterAction } from '../services/playerSyncService'
 
@@ -20,15 +20,15 @@ export function useNavigationHandlers({
   // State
   launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
   selectedDifficulty,
-  explorerPool, unlockedFacts, duelPlayers, user, sessionCorrectFacts,
+  snackPool, unlockedFacts, duelPlayers, user, sessionCorrectFacts,
   // Hooks extraits
-  handleStartWTFSession, handleFlashSolo, handleSelectDifficulty,
+  handleStartFlashSession, handleSnack, handleSelectDifficulty,
   handleSelectCategory, handleBlitzStart, initSessionState,
   // Setters
   setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
   setSelectedCategory, setSessionFacts, setCurrentIndex, setSessionScore,
   setCorrectCount, setDuelPlayers, setDuelCurrentPlayerIndex, setIsQuickPlay,
-  setBlitzFacts, setBlitzResults, setExplorerPool,
+  setBlitzFacts, setBlitzResults, setSnackPool,
   setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
   setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
   setStorage,
@@ -38,18 +38,17 @@ export function useNavigationHandlers({
   unlockFact,
 }) {
   const navigate = useNavigate()
-  const canPlayFlashCheck = () => getFlashEnergy().remaining > 0
+  const canPlaySnackCheck = () => getSnackEnergy().remaining > 0
 
   // ── Launch mode ────────────────────────────────────────────────────────
   const launchModeDestination = useCallback((mode) => {
     switch (mode) {
       case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
-      case 'explorer': setScreen(SCREENS.CATEGORY); break
-      case 'flash':    handleFlashSolo(); break  // Flash = aléatoire direct, pas de CategoryScreen
-      case 'hunt':     handleStartWTFSession(); break
+      case 'snack':    setScreen(SCREENS.CATEGORY); break  // Snack = choix catégorie
+      case 'flash':    handleStartFlashSession(); break
       default: break
     }
-  }, [handleStartWTFSession])
+  }, [handleStartFlashSession])
 
   const handleLaunchStart = useCallback(() => {
     launchModeDestination(launchMode)
@@ -66,23 +65,18 @@ export function useNavigationHandlers({
   const handleHomeNavigate = useCallback((target) => {
     switch (target) {
       case 'wtfWeekly':
-        showOrSkipLaunch('hunt')
+      case 'flash':
+        setScreen(SCREENS.FLASH)
         break
-      case 'categoryFlash': {
+      case 'categoryFlash':
+      case 'snack': {
         const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && !canPlayFlashCheck()) { setNoEnergyOrigin('flash'); setShowNoEnergyModal(true); break }
-        setGameMode('solo'); setSessionType('flash_solo'); setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH); setSelectedCategory(null)
-        showOrSkipLaunch('flash')
-        break
-      }
-      case 'explorer': {
-        const isDevOrTest2 = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest2 && !canPlayFlashCheck()) { setNoEnergyOrigin('explorer'); setShowNoEnergyModal(true); break }
-        setGameMode('explorer'); setSessionType('explorer')
+        if (!isDevOrTest && !canPlaySnackCheck()) { setNoEnergyOrigin('snack'); setShowNoEnergyModal(true); break }
+        setGameMode('snack'); setSessionType('snack'); setSelectedDifficulty(DIFFICULTY_LEVELS.SNACK); setSelectedCategory(null)
         const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        const explorerPlayedInMode = wd.statsByMode?.explorer?.gamesPlayed || 0
-        if (explorerPlayedInMode === 0) launchModeDestination('explorer')
-        else showOrSkipLaunch('explorer')
+        const snackPlayedInMode = wd.statsByMode?.snack?.gamesPlayed || 0
+        if (snackPlayedInMode === 0) launchModeDestination('snack')
+        else showOrSkipLaunch('snack')
         break
       }
       case 'collection':    navigate('/collection'); break
@@ -95,15 +89,12 @@ export function useNavigationHandlers({
         setGameMode('blitz'); setSessionType('blitz'); setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ); setSelectedCategory(null)
         showOrSkipLaunch('blitz')
         break
-      case 'puzzle':
-        setScreen(SCREENS.PUZZLE_DU_JOUR)
-        break
       case 'quest':
         setScreen(SCREENS.QUEST)
         break
       default: break
     }
-  }, [handleFlashSolo, handleStartWTFSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])
+  }, [handleSnack, handleStartFlashSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])
 
   // ── Duel ───────────────────────────────────────────────────────────────
   const handleDuelNextPlayer = useCallback(() => {
@@ -161,7 +152,7 @@ export function useNavigationHandlers({
     setSessionFacts([]); setCurrentIndex(0); setSessionScore(0); setCorrectCount(0)
     setDuelPlayers([]); setDuelCurrentPlayerIndex(0); setIsQuickPlay(false)
     setSessionType('parcours'); setBlitzFacts([]); setBlitzResults(null)
-    setLaunchMode(null); setExplorerPool([])
+    setLaunchMode(null); setSnackPool([])
     // Cleanup pending duel si l'user abandonne le flow
     clearPendingDuel?.()
   }, [clearPendingDuel])
@@ -170,26 +161,25 @@ export function useNavigationHandlers({
     handleBlitzStart(selectedCategory)
   }, [selectedCategory, handleBlitzStart])
 
-  const handleExplorerContinue = useCallback(() => {
-    const filteredPool = explorerPool.filter(f => !unlockedFacts.has(f.id))
+  const handleSnackContinue = useCallback(() => {
+    const filteredPool = snackPool.filter(f => !unlockedFacts.has(f.id))
     if (filteredPool.length === 0) {
       setGameAlert({ emoji: '🎉', title: 'Catégorie terminée !', message: 'Tu as répondu à toutes les questions de cette catégorie !' })
       return
     }
-    const difficulty = DIFFICULTY_LEVELS.EXPLORER
+    const difficulty = DIFFICULTY_LEVELS.SNACK
     const next5 = filteredPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-    setExplorerPool(filteredPool.slice(5))
+    setSnackPool(filteredPool.slice(5))
     setSelectedDifficulty(difficulty)
-    setSessionType('explorer')
+    setSessionType('snack')
     initSessionState(next5)
     setScreen(SCREENS.QUESTION)
-  }, [explorerPool, unlockedFacts, initSessionState])
+  }, [snackPool, unlockedFacts, initSessionState])
 
   const handleReplay = useCallback(() => {
-    if (sessionType === 'flash_solo') handleFlashSolo()
-    else if (sessionType === 'explorer') { setExplorerPool([]); setScreen(SCREENS.CATEGORY) }
+    if (sessionType === 'snack') { setSnackPool([]); setScreen(SCREENS.CATEGORY) }
     else handleSelectCategory(selectedCategory)
-  }, [sessionType, selectedCategory, handleFlashSolo, handleSelectCategory])
+  }, [sessionType, selectedCategory, handleSelectCategory])
 
   const handleShare = useCallback(() => {
     if (!currentFact) return
@@ -211,7 +201,7 @@ export function useNavigationHandlers({
     handleHomeNavigate,
     handleDuelNextPlayer, handleDuelMode, handleDuelStart, handleDuelPassReady, handleDuelReplay,
     handleSaveTempFacts, completeOnboardingIfNeeded,
-    handleHome, handleBlitzReplay, handleExplorerContinue, handleReplay,
+    handleHome, handleBlitzReplay, handleSnackContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,
   }
 }

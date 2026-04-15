@@ -45,8 +45,8 @@ export function useGameHandlers({
 
   // ── Calcul des points ──────────────────────────────────────────────────
   // Chaque difficulté porte sa propre coinsPerCorrect. Plus d'override bâtard
-  // depuis T94.a : Explorer utilise DIFFICULTY_LEVELS.EXPLORER (1 coin) et
-  // Flash utilise DIFFICULTY_LEVELS.FLASH (2 coins) — plus de condition.
+  // depuis T94.a : Snack utilise DIFFICULTY_LEVELS.SNACK (1 coin) et
+  // Snack utilise DIFFICULTY_LEVELS.SNACK (2 coins) — plus de condition.
   const calcPoints = useCallback((isCorrect) => {
     if (!isCorrect) return 0
     if (selectedDifficulty?.coinsPerCorrect !== undefined) {
@@ -81,7 +81,7 @@ export function useGameHandlers({
         })
       }
 
-      // Explorer/Marathon : débloquer le f*ct immédiatement
+      // Snack/Marathon : débloquer le f*ct immédiatement
       // Débloquer le fact immédiatement pour TOUS les modes (pas attendre la fin de session)
       if (isAnswerCorrect && currentFact) {
         setStorage(prev => {

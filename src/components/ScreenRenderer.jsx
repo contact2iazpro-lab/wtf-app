@@ -20,7 +20,7 @@ import BlitzResultsScreen from '../screens/BlitzResultsScreen'
 import DuelSetupScreen, { PLAYER_COLORS, PLAYER_EMOJIS } from '../screens/DuelSetupScreen'
 import DuelPassScreen from '../screens/DuelPassScreen'
 import DuelResultsScreen from '../screens/DuelResultsScreen'
-import PuzzleDuJourScreen from '../screens/PuzzleDuJourScreen'
+import FlashScreen from '../screens/FlashScreen'
 import QuestScreen from '../screens/QuestScreen'
 import { getCategoryById, getTitrePartiel } from '../data/factsService'
 
@@ -32,14 +32,14 @@ export default function ScreenRenderer({
   completedLevels, effectiveDailyFact, launchMode, blitzFacts, blitzResults,
   duelPlayers, duelCurrentPlayerIndex, duelContext, isChallengeMode,
   pendingDuel, lastCreatedDuel, lastCreatedDuelError, clearLastCreatedDuel, clearPendingDuel,
-  user, storage, streak, newlyEarnedBadges, flashEnergy,
+  user, storage, streak, newlyEarnedBadges, snackEnergy,
   showHowToPlay, modeConfigs,
   // Handlers
   handleHomeNavigate, handleHome, handleSelectDifficulty, handleSelectCategory,
   handleSelectAnswer, handleOpenValidate, handleUseHint, handleTimeout,
   handleNext, handleDuelNextPlayer, handleDuelStart, handleDuelPassReady,
   handleDuelReplay, handleReplay, handleBlitzReplay, handleBlitzStart,
-  handleBlitzFinish, handleStartWTFSession, handleShare, handleShareDailyFact,
+  handleBlitzFinish, handleStartFlashSession, handleShare, handleShareDailyFact,
   handleSaveTempFacts, handleLaunchStart,
   // Setters
   setScreen, setShowSettings, setShowHowToPlay, setStorage,
@@ -67,7 +67,7 @@ export default function ScreenRenderer({
           currentStreak={streak}
           newlyEarnedBadges={newlyEarnedBadges}
           onBadgeSeen={onBadgeSeen}
-          flashEnergyRemaining={flashEnergy.remaining}
+          snackEnergyRemaining={snackEnergy.remaining}
           onNavigate={handleHomeNavigate}
           onOpenSettings={() => setShowSettings(true)}
           playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}
@@ -82,7 +82,7 @@ export default function ScreenRenderer({
           fact={effectiveDailyFact}
           titrePartiel={getTitrePartiel(effectiveDailyFact)}
           streak={streak}
-          onStart={handleStartWTFSession}
+          onStart={handleStartFlashSession}
           onBack={() => setScreen(SCREENS.HOME)}
         />
       )}
@@ -133,7 +133,7 @@ export default function ScreenRenderer({
           onQuit={handleHome}
           category={selectedCategory}
           gameMode={gameMode}
-          difficulty={(gameMode === 'solo' || gameMode === 'explorer') ? selectedDifficulty : null}
+          difficulty={(gameMode === 'solo' || gameMode === 'snack') ? selectedDifficulty : null}
           playerName={gameMode === 'duel' ? duelPlayers[duelCurrentPlayerIndex]?.name : null}
           playerColor={gameMode === 'duel' ? PLAYER_COLORS[duelCurrentPlayerIndex] : null}
           playerEmoji={gameMode === 'duel' ? PLAYER_EMOJIS[duelCurrentPlayerIndex] : null}
@@ -180,23 +180,7 @@ export default function ScreenRenderer({
         />
       )}
 
-      {screen === SCREENS.EXPLORER_RESULTS && (
-        <ResultsScreen
-          score={sessionScore}
-          correctCount={correctCount}
-          totalFacts={sessionFacts.length}
-          coinsEarned={coinsEarnedLastSession}
-          sessionType="explorer"
-          difficulty={selectedDifficulty}
-          onReplay={handleReplay}
-          onHome={handleHome}
-          unlockedFactsThisSession={sessionCorrectFacts}
-          allSessionFacts={sessionFacts}
-          sessionsToday={sessionsToday}
-          onSaveTempFacts={handleSaveTempFacts}
-          onCollection={() => navigate('/collection')}
-        />
-      )}
+      {/* EXPLORER_RESULTS legacy screen removed in 1e */}
 
       {screen === SCREENS.BLITZ_LOBBY && (
         <BlitzLobbyScreen
@@ -284,8 +268,8 @@ export default function ScreenRenderer({
         />
       )}
 
-      {screen === SCREENS.PUZZLE_DU_JOUR && (
-        <PuzzleDuJourScreen onHome={handleHome} setStorage={setStorage} />
+      {screen === SCREENS.FLASH && (
+        <FlashScreen onHome={handleHome} setStorage={setStorage} />
       )}
 
       {screen === SCREENS.QUEST && (

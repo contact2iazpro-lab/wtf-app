@@ -1,3 +1,5 @@
+// TODO étape 2 : fusion Hunt dimanche + Puzzle jours ouvrés en une expérience unifiée
+// (Sunday = VIP Hunt de la semaine, weekday = Funny daily theme)
 import { useState, useMemo } from 'react'
 import { getGeneratedFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
@@ -18,7 +20,7 @@ function dailyHash(str) {
   return h
 }
 
-export default function PuzzleDuJourScreen({ onHome, setStorage }) {
+export default function FlashScreen({ onHome, setStorage }) {
   const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const dateStr = todayKey()
   const storageKey = STORAGE_KEY_PREFIX + dateStr
@@ -35,7 +37,7 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
 
   const { options, correctIndex } = useMemo(() => {
     if (!fact) return { options: [], correctIndex: 0 }
-    return getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH)
+    return getAnswerOptions(fact, DIFFICULTY_LEVELS.SNACK)
   }, [fact])
 
   const [attemptsLeft, setAttemptsLeft] = useState(initial?.attemptsLeft ?? 3)
@@ -52,10 +54,10 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
     if (done || eliminated.has(idx)) return
     audio.play('click')
     if (idx === correctIndex) {
-      // B4.11 — Puzzle 6/4/2 → 5/3/1 (cible F2P 30-50/j)
+      // B4.11 — Flash 6/4/2 → 5/3/1 (cible F2P 30-50/j)
       const gain = attemptsLeft === 3 ? 5 : attemptsLeft === 2 ? 3 : 1
       applyCurrencyDelta?.({ coins: gain }, `puzzle_du_jour_attempt_${attemptsLeft}`)?.catch?.(e =>
-        console.warn('[PuzzleDuJour] reward RPC failed:', e?.message || e)
+        console.warn('[Flash] reward RPC failed:', e?.message || e)
       )
       if (setStorage && fact) {
         setStorage(prev => {
@@ -65,7 +67,7 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
         })
         // Phase A.7 : miroir Supabase
         unlockFact?.(fact.id, fact.category, `puzzle_du_jour_attempt_${attemptsLeft}`).catch(e =>
-          console.warn('[PuzzleDuJour] unlockFact RPC failed:', e?.message || e)
+          console.warn('[Flash] unlockFact RPC failed:', e?.message || e)
         )
       }
       setDone(true); setWon(true); setCoinsEarned(gain)
@@ -90,7 +92,7 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
     const greens = won ? 3 - (3 - attemptsLeft) : 0
     const reds = won ? 3 - attemptsLeft : 3
     const squares = '🟩'.repeat(greens) + '🟥'.repeat(reds)
-    const text = `Puzzle WTF! ${dateStr}\n${squares}\nhttps://wtf-app-production.up.railway.app/`
+    const text = `Flash WTF! ${dateStr}\n${squares}\nhttps://wtf-app-production.up.railway.app/`
     if (navigator.share) navigator.share({ text }).catch(() => {})
     else navigator.clipboard?.writeText(text)
   }
@@ -116,7 +118,7 @@ export default function PuzzleDuJourScreen({ onHome, setStorage }) {
         textAlign: 'left', cursor: 'pointer', padding: 0, alignSelf: 'flex-start',
       }}>← Retour</button>
 
-      <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, textAlign: 'center' }}><img src="/assets/ui/emoji-puzzle.png" alt="puzzle" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Puzzle du Jour</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0, textAlign: 'center' }}><img src="/assets/ui/emoji-puzzle.png" alt="flash" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Flash</h1>
       <div style={{ textAlign: 'center', opacity: 0.7, fontSize: 12 }}>{dateStr}</div>
 
       <div style={{

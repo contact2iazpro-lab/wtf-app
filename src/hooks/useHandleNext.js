@@ -133,18 +133,18 @@ export function useHandleNext({
 
       // Bonus coins
       let bonusCoins = 0
-      if (sessionType === 'wtf_du_jour') {
+      if (sessionType === 'flash') {
         bonusCoins = 10
-      } else if (sessionType === 'flash_solo') {
+      } else if (sessionType === 'snack') {
         const isPerfectFlash = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
         // B4.11 — bonus perfect réduit 10→5 (cible F2P 30-50/j)
         bonusCoins = isPerfectFlash ? 5 : 0
       } else if (sessionType === 'parcours') {
         // B4.11 — bonus perfect Quest réduit 10→5
         bonusCoins = isPerfectSession ? 5 : 0
-      } else if (sessionType === 'explorer') {
+      } else if (sessionType === 'snack') {
         const isPerfectExplorer = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length
-        // B4.11 — bonus perfect Explorer réduit 10→5
+        // B4.11 — bonus perfect Snack réduit 10→5
         bonusCoins = isPerfectExplorer ? 5 : 0
       }
       setCoinsEarnedLastSession(sessionScore + bonusCoins)
@@ -162,8 +162,8 @@ export function useHandleNext({
       }
 
       const streakRewardCoins = streakReward?.coins ?? 0
-      const newWtfDuJourDate = sessionType === 'wtf_du_jour' ? TODAY() : wtfDuJourDate
-      const explorerSessionsToday = sessionType === 'explorer' ? sessionsToday : newSessionsToday
+      const newWtfDuJourDate = sessionType === 'flash' ? TODAY() : wtfDuJourDate
+      const explorerSessionsToday = sessionType === 'snack' ? sessionsToday : newSessionsToday
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
       // Phase A : 1 seule RPC atomique coins+hints via usePlayerProfile (tickets supprimés 1b)
@@ -201,7 +201,7 @@ export function useHandleNext({
       })
 
       // WTF du Jour unlock
-      if (sessionType === 'wtf_du_jour' && effectiveDailyFact && !newUnlocked.has(effectiveDailyFact.id)) {
+      if (sessionType === 'flash' && effectiveDailyFact && !newUnlocked.has(effectiveDailyFact.id)) {
         newUnlocked.add(effectiveDailyFact.id)
         setStorage(prev => {
           const updated = { ...prev, unlockedFacts: newUnlocked }
@@ -256,10 +256,10 @@ export function useHandleNext({
     } catch {}
 
     // Route to end screen
-    if (sessionType === 'wtf_du_jour') {
+    if (sessionType === 'flash') {
       setScreen(SCREENS.WTF_REVEAL)
-    } else if (sessionType === 'explorer') {
-      setScreen(SCREENS.EXPLORER_RESULTS)
+    } else if (sessionType === 'snack') {
+      setScreen(SCREENS.RESULTS)
     } else {
       setScreen(SCREENS.RESULTS)
     }

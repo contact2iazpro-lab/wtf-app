@@ -13,7 +13,7 @@ export const ZONE_HEIGHTS = {
   badge: 28,            // Zone 2B — Next badge progress (conditionnel: gamesPlayed >= 3)
   coffres: 60,          // Zone 3 — Daily chests (conditionnel: questsPlayed >= 1)
   flashButton: 44,      // Zone 4B — "Jouer" button height
-  flashButtonGap: 34,   // CRITICAL: Gap between Flash button and navbar
+  flashButtonGap: 34,   // CRITICAL: Gap between Snack button and navbar
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ export const GRID_CONFIG = {
   // Column spacings
   leftColumnGap: 24,      // Quest + Blitz spacing
   centerColumnGap: 24,    // VoF + WTF + Tagline spacing
-  rightColumnGap: 12,     // Explorer + Hunt spacing
+  rightColumnGap: 12,     // Snack + Flash spacing
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -55,21 +55,21 @@ export const MODES = {
     unlockKey: 'canBlitz',
     unlockMessage: 'Débloque 5 f*cts pour jouer en Blitz ! ⚡',
   },
-  explorer: {
-    id: 'explorer',
-    label: 'Explorer',
+  snack: {
+    id: 'snack',
+    label: 'Snack',
     icon: '/assets/modes/marathon.png',
     position: 'right',
-    unlockKey: 'canExplorer',
+    unlockKey: 'canSnack',
     unlockMessage: 'Termine une Quest pour explorer librement ! 🧭',
   },
   hunt: {
-    id: 'hunt',
-    label: 'Hunt',
+    id: 'flash',
+    label: 'Flash',
     icon: '/assets/modes/wtf-semaine.png',
     position: 'right',
     unlockKey: 'canHunt',
-    unlockMessage: 'Joue 10 parties pour débloquer la Hunt ! 🔥',
+    unlockMessage: 'Joue 10 parties pour débloquer la Flash ! 🔥',
   },
 }
 
@@ -82,7 +82,7 @@ export const UNLOCK_THRESHOLDS = {
   quest: { stat: 'gamesPlayed', threshold: 1 },
   blitz: { stat: 'unlockedFactsCount', threshold: 5 },
   hunt: { stat: 'gamesPlayed', threshold: 10 },
-  explorer: { stat: 'statsByMode.parcours.gamesPlayed', threshold: 1 },
+  snack: { stat: 'statsByMode.parcours.gamesPlayed', threshold: 1 },
 
   // UI Features
   streakDisplay: { stat: 'gamesPlayed', threshold: 3 },
@@ -98,8 +98,8 @@ export const UNLOCK_MESSAGES = {
   // Modes
   quest: 'Joue ta première partie pour débloquer ! 🎮',
   blitz: 'Débloque 5 f*cts pour jouer en Blitz ! ⚡',
-  hunt: 'Joue 10 parties pour débloquer la Hunt ! 🔥',
-  explorer: 'Termine une Quest pour explorer librement ! 🧭',
+  hunt: 'Joue 10 parties pour débloquer la Flash ! 🔥',
+  snack: 'Termine une Quest pour explorer librement ! 🧭',
 
   // Navbar (à synchroniser avec UnlockContext)
   boutique: 'Joue 2 parties pour débloquer la Boutique ! 🛍️',
@@ -153,7 +153,7 @@ export const ASSETS = {
   modes: {
     quest: '/assets/modes/quete.png',
     blitz: '/assets/modes/blitz.png',
-    explorer: '/assets/modes/marathon.png',
+    snack: '/assets/modes/marathon.png',
     hunt: '/assets/modes/wtf-semaine.png',
   },
 }

@@ -166,11 +166,9 @@ export function useHandleNext({
       const explorerSessionsToday = sessionType === 'explorer' ? sessionsToday : newSessionsToday
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
-      const totalBonusTickets = (isPerfectSession ? 1 : 0) + (streakReward?.tickets ?? 0)
-      // Phase A : 1 seule RPC atomique coins+tickets+hints via usePlayerProfile
+      // Phase A : 1 seule RPC atomique coins+hints via usePlayerProfile (tickets supprimés 1b)
       const sessionEndDelta = {}
       if (totalBonusCoins > 0)                sessionEndDelta.coins   = totalBonusCoins
-      if (totalBonusTickets > 0)              sessionEndDelta.tickets = totalBonusTickets
       if ((streakReward?.hints ?? 0) > 0)     sessionEndDelta.hints   = streakReward.hints
       if (Object.keys(sessionEndDelta).length > 0) {
         applyCurrencyDelta?.(sessionEndDelta, `session_end_${sessionType}`).catch(e =>
@@ -188,7 +186,6 @@ export function useHandleNext({
           wtfCoins: localWd.wtfCoins || 0,
           wtfDuJourDate: newWtfDuJourDate,
           sessionsToday: explorerSessionsToday,
-          tickets: localWd.tickets || 0,
           wtfDuJourFait: newWtfDuJourDate === TODAY(),
         }
         saveStorage(newStorage)

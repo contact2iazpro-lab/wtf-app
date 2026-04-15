@@ -18,8 +18,6 @@ const Pill = ({ icon, value, alt }) => (
 
 export default function GameHeader({
   // Les devises ne sont PLUS passées en props — lues depuis CurrencyContext
-  // Props conservées pour backward compat mais ignorées si context dispo
-  showTickets = false,
   categoryLabel = null,
   categoryColor = null,
   categoryIcon = null,
@@ -29,7 +27,7 @@ export default function GameHeader({
   const [showSettings, setShowSettings] = useState(false)
 
   // Source unique de vérité pour les devises (Supabase si session, sinon localStorage)
-  const { coins, tickets, hints } = usePlayerProfile()
+  const { coins, hints } = usePlayerProfile()
 
   return (
     <>
@@ -88,7 +86,6 @@ export default function GameHeader({
               </span>
             )}
           </div>
-          <Pill icon="/assets/ui/icon-tickets.png" value={tickets} alt="tickets" />
           <Pill icon="/assets/ui/icon-hint.png" value={hints} alt="hints" />
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}

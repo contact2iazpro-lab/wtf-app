@@ -23,11 +23,10 @@ function readLocalBalances() {
     const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     return {
       coins: data.wtfCoins || 0,
-      tickets: data.tickets || 0,
       hints: parseInt(data.hints || 0, 10) || 0,
     }
   } catch {
-    return { coins: 0, tickets: 0, hints: 0 }
+    return { coins: 0, hints: 0 }
   }
 }
 
@@ -35,13 +34,13 @@ function writeLocalDelta(delta) {
   try {
     const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     if (delta.coins)   data.wtfCoins = Math.max(0, (data.wtfCoins || 0) + delta.coins)
-    if (delta.tickets) data.tickets  = Math.max(0, (data.tickets  || 0) + delta.tickets)
     if (delta.hints)   data.hints    = Math.max(0, (parseInt(data.hints || 0, 10) || 0) + delta.hints)
+    // tickets : legacy ignoré côté client (1b)
     data.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(data))
     window.dispatchEvent(new Event('wtf_currency_updated'))
     window.dispatchEvent(new Event('wtf_storage_sync'))
-    return { coins: data.wtfCoins || 0, tickets: data.tickets || 0, hints: parseInt(data.hints || 0, 10) || 0 }
+    return { coins: data.wtfCoins || 0, hints: parseInt(data.hints || 0, 10) || 0 }
   } catch {
     return null
   }
@@ -108,7 +107,6 @@ export function usePlayerProfile() {
       optimistic: (prev) => prev ? {
         ...prev,
         coins:   (prev.coins   ?? 0) + (delta.coins   ?? 0),
-        tickets: (prev.tickets ?? 0) + (delta.tickets ?? 0),
         hints:   (prev.hints   ?? 0) + (delta.hints   ?? 0),
         energy:  Math.min((prev.energy ?? 0) + (delta.energy ?? 0), 10),
       } : prev,
@@ -183,7 +181,6 @@ export function usePlayerProfile() {
     setData,
     // Raccourcis pratiques — fallback localBalances pour joueurs anonymes
     coins:   profile?.coins   ?? localBalances.coins,
-    tickets: profile?.tickets ?? localBalances.tickets,
     hints:   profile?.hints   ?? localBalances.hints,
     energy:  profile?.energy  ?? null,
     flags:   profile?.flags   ?? {},

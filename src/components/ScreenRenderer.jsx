@@ -168,7 +168,6 @@ export default function ScreenRenderer({
           coinsEarned={coinsEarnedLastSession}
           sessionType={sessionType}
           difficulty={selectedDifficulty}
-          ticketEarned={sessionIsPerfect}
           onReplay={handleReplay}
           onHome={handleHome}
           completedCategoryLevels={completedLevels}
@@ -189,7 +188,6 @@ export default function ScreenRenderer({
           coinsEarned={coinsEarnedLastSession}
           sessionType="explorer"
           difficulty={selectedDifficulty}
-          ticketEarned={false}
           onReplay={handleReplay}
           onHome={handleHome}
           unlockedFactsThisSession={sessionCorrectFacts}

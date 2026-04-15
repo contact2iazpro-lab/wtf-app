@@ -18,7 +18,7 @@ const SEGMENTS = [
   { label: '8',     emoji: '🪙', reward: { type: 'coins',   amount: 8  }, color: '#F59E0B', weight: 18 },
   { label: '2',     emoji: '💡', reward: { type: 'hints',   amount: 2  }, color: '#8B5CF6', weight: 12 },
   { label: '15',    emoji: '🪙', reward: { type: 'coins',   amount: 15 }, color: '#EF4444', weight: 10 },
-  { label: '1',     emoji: '🎟️', reward: { type: 'tickets', amount: 1  }, color: '#10B981', weight: 7  },
+  { label: '20',    emoji: '🪙', reward: { type: 'coins',   amount: 20 }, color: '#10B981', weight: 7  },
   { label: '30',    emoji: '🪙', reward: { type: 'coins',   amount: 30 }, color: '#EC4899', weight: 4  },
   { label: '🛡️',   emoji: '🛡️', reward: { type: 'freeze',  amount: 1  }, color: '#6366F1', weight: 1  },
   { label: 'VIP',   emoji: '⭐', reward: { type: 'vipFact', amount: 1  }, color: '#FFD700', weight: 1  },
@@ -162,7 +162,7 @@ export default function RouletteModal({ onClose, scale }) {
       setResult(seg)
 
       // Appliquer la récompense via RPC (anonyme = localStorage, connecté = Supabase)
-      if (['coins', 'hints', 'tickets'].includes(seg.reward.type)) {
+      if (['coins', 'hints'].includes(seg.reward.type)) {
         const rpcDelta = { [seg.reward.type]: seg.reward.amount }
         applyCurrencyDelta?.(rpcDelta, `roulette_reward_${seg.reward.type}`)?.catch?.(e =>
           console.warn('[RouletteModal] reward RPC failed:', e?.message || e)
@@ -211,7 +211,6 @@ export default function RouletteModal({ onClose, scale }) {
   const rewardLabel = result && {
     coins: `+${result.reward.amount} coins`,
     hints: `+${result.reward.amount} indice${result.reward.amount > 1 ? 's' : ''}`,
-    tickets: `+${result.reward.amount} ticket`,
     freeze: '+1 Streak Freeze',
     vipFact: '⭐ 1 f*ct VIP débloqué !',
   }[result.reward.type]
@@ -315,7 +314,6 @@ export default function RouletteModal({ onClose, scale }) {
                 const pct = (seg.weight / TOTAL_WEIGHT * 100).toFixed(seg.weight < 2 ? 1 : 0)
                 const label = seg.reward.type === 'coins' ? `${seg.reward.amount} coins`
                   : seg.reward.type === 'hints' ? `${seg.reward.amount} indice${seg.reward.amount > 1 ? 's' : ''}`
-                  : seg.reward.type === 'tickets' ? `${seg.reward.amount} ticket`
                   : seg.reward.type === 'freeze' ? 'Streak Freeze'
                   : '⭐ F*ct VIP'
                 return (

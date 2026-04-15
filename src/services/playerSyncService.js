@@ -5,7 +5,7 @@ export async function pushToServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
     const saved = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    // Note: coins/tickets/hints ne sont PLUS syncés ici — ils passent par le delta RPC
+    // Note: coins/hints ne sont PLUS syncés ici — ils passent par le delta RPC
     // via CurrencyContext → syncQueue → apply_currency_delta
     const payload = {
       total_score: saved.totalScore || 0,
@@ -29,7 +29,7 @@ export async function pushToServer(userId) {
 export async function pullFromServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
   try {
-    // Note: les DEVISES (coins/tickets/hints) sont gérées par CurrencyContext + delta RPC.
+    // Note: les DEVISES (coins/hints) sont gérées par usePlayerProfile + delta RPC.
     // pullFromServer ne synce plus que les données NON-devise (score, streak, collections).
     const { data: remote, error } = await supabase
       .from('profiles')

@@ -1,5 +1,5 @@
 /**
- * GainsBreakdown — card "récap gains structurés" : base + bonus + ticket + total.
+ * GainsBreakdown — card "récap gains structurés" : base + bonus + total.
  *
  * Réutilisé par ResultsScreen (Quest/Flash/Explorer/Hunt) et peut aussi être branché
  * sur Puzzle / Route / autres modes qui n'avaient que "+N coins" sèchement.
@@ -17,9 +17,6 @@ const S = (px) => `calc(${px}px * var(--scale))`
 const CoinImg = () => (
   <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
 )
-const TicketImg = () => (
-  <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
-)
 
 export default function GainsBreakdown({
   // Mode structuré (ResultsScreen)
@@ -27,7 +24,6 @@ export default function GainsBreakdown({
   coinsPerCorrect,
   baseCoins,
   bonusCoins = 0,
-  ticketEarned = false,
   isPerfect = false,
   // Total
   total = 0,
@@ -77,15 +73,6 @@ export default function GainsBreakdown({
               <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
                 +{bonusCoins} <CoinImg />
               </span>
-            </div>
-          )}
-          {/* Ligne 3 : Ticket (si gagné) */}
-          {ticketEarned && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: S(10), fontWeight: 700, color: '#FDE047', opacity: 0.95 }}>
-                <TicketImg /> Ticket bonus
-              </span>
-              <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>+1</span>
             </div>
           )}
         </>

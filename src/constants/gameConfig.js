@@ -115,11 +115,12 @@ export const FLASH_ENERGY = {
 
 // ── Paliers de récompenses fidélité Streak
 export function getStreakReward(streakDays) {
-  if (streakDays === 1)  return { coins: 2,  tickets: 0, hints: 0, badge: false }
-  if (streakDays === 3)  return { coins: 0,  tickets: 0, hints: 2, badge: false }
-  if (streakDays === 7)  return { coins: 10, tickets: 1, hints: 0, badge: true  }
-  if (streakDays === 14) return { coins: 0,  tickets: 1, hints: 3, badge: false }
-  if (streakDays === 30) return { coins: 0,  tickets: 0, hints: 0, badge: false, special: 'wtf_premium' }
+  // 1b — tickets supprimés. J7/J14 : tickets convertis en coins (25 coins/ticket)
+  if (streakDays === 1)  return { coins: 2,  hints: 0, badge: false }
+  if (streakDays === 3)  return { coins: 0,  hints: 2, badge: false }
+  if (streakDays === 7)  return { coins: 35, hints: 0, badge: true  }
+  if (streakDays === 14) return { coins: 25, hints: 3, badge: false }
+  if (streakDays === 30) return { coins: 0,  hints: 0, badge: false, special: 'wtf_premium' }
   return null
 }
 

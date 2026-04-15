@@ -5,11 +5,9 @@
 export default function CoffreRewardModal({ reward, onClose }) {
   if (!reward) return null
 
-  const message = reward.type === 'coins' && reward.bonus
-    ? `Tu as gagné ${reward.amount} coins et ${reward.bonus.amount} ticket ! 🎉`
-    : reward.type === 'coins'
-      ? `Tu as gagné ${reward.amount} coins !`
-      : `Tu as gagné ${reward.amount} indice${reward.amount > 1 ? 's' : ''} !`
+  const message = reward.type === 'coins'
+    ? `Tu as gagné ${reward.amount} coins !`
+    : `Tu as gagné ${reward.amount} indice${reward.amount > 1 ? 's' : ''} !`
 
   return (
     <div

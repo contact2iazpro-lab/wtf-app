@@ -37,13 +37,12 @@ export function useDevActions({
       const animauxIds = getValidFacts().filter(f => f.category === 'animaux').map(f => f.id)
       applyStorage({ unlockedFacts: new Set([...storage.unlockedFacts, ...animauxIds]) })
     },
-    setTickets: (n) => applyStorage({ tickets: n }),
     setHints: (n) => {
       updateWtfData(wd => { wd.hints = n })
     },
     cheat999: () => {
       updateWtfData(wd => {
-        wd.wtfCoins = 999; wd.tickets = 999; wd.hints = 999
+        wd.wtfCoins = 999; wd.hints = 999
         wd.streak = wd.streak || 0
         wd.totalScore = wd.totalScore || 0
         wd.unlockedFacts = wd.unlockedFacts || []

@@ -19,6 +19,8 @@ export function useBlitzHandlers({
   setNewlyEarnedBadges,
   // A.9.3 — persistance flags via RPC merge_player_flags
   mergeFlags,
+  // 1b — débit 200 coins pour créer un défi Blitz (ex-ticket)
+  applyCurrencyDelta,
   // DuelContext — pendingDuel lu en mémoire React
   pendingDuel, clearPendingDuel,
   // DuelContext — résultat création async (remplace localStorage wtf_auto_challenge)
@@ -143,6 +145,10 @@ export function useBlitzHandlers({
         const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
         // Palier 3 — RPC atomique : 1 seul round-trip serveur, debit ticket + upsert
         // duel + insert challenge en 1 txn. Plus besoin de timeout/race/fire-forget.
+        // 1b — débit 200 coins pour créer le défi (ex-1 ticket)
+        applyCurrencyDelta?.({ coins: -200 }, 'challenge_create')?.catch?.(e =>
+          console.warn('[useBlitzHandlers] challenge cost RPC failed:', e?.message || e)
+        )
         import('../data/duelService')
           .then(({ createDuelChallenge }) => createDuelChallenge({
             opponentId,
@@ -153,7 +159,7 @@ export function useBlitzHandlers({
             player1Name: user.user_metadata?.name || 'Joueur WTF!',
           }))
           .then((result) => {
-            // Le RPC renvoie { challenge_id, code, duel_id, tickets_remaining }.
+            // Le RPC renvoie { challenge_id, code, duel_id, ... }.
             // On synthétise un "round" compatible avec l'ancien format pour BlitzResultsScreen.
             const round = {
               id: result.challenge_id,
@@ -169,17 +175,13 @@ export function useBlitzHandlers({
               status: 'pending',
             }
             setLastCreatedDuel?.(round)
-            // Sync local cache des tickets (le RPC est source de vérité, mais on évite un refetch)
-            if (typeof result.tickets_remaining === 'number') {
-              window.dispatchEvent(new CustomEvent('wtf_currency_updated', {
-                detail: { tickets: result.tickets_remaining }
-              }))
-            }
+            // 1b — Défi Blitz coûte 200 coins (plus de ticket). Débit client.
+            window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
           })
           .catch((e) => {
             console.error('[useBlitzHandlers] create_duel_challenge failed:', e?.message || e)
-            const msg = e?.message?.includes('Insufficient tickets')
-              ? 'Pas assez de tickets.'
+            const msg = e?.message?.includes('Insufficient')
+              ? 'Pas assez de coins.'
               : e?.message || 'Erreur lors de la création du défi'
             setLastCreatedDuelError?.(msg)
           })
@@ -192,7 +194,7 @@ export function useBlitzHandlers({
 
     setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)
-  }, [user, isChallengeMode, selectedCategory, pendingDuel, setLastCreatedDuel, setLastCreatedDuelError, clearPendingDuel, mergeFlags])
+  }, [user, isChallengeMode, selectedCategory, pendingDuel, setLastCreatedDuel, setLastCreatedDuelError, clearPendingDuel, mergeFlags, applyCurrencyDelta])
 
   return { handleBlitzStart, handleBlitzFinish }
 }

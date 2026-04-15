@@ -65,7 +65,6 @@ export default function AppModals({
             ? streakRewardToast.reward._label
             : <>
                 {streakRewardToast.reward.coins > 0 && <>{`+${streakRewardToast.reward.coins} `}<img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
-                {streakRewardToast.reward.tickets > 0 && <>{`+${streakRewardToast.reward.tickets} `}<img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
                 {streakRewardToast.reward.hints > 0 && <>{`+${streakRewardToast.reward.hints} `}<img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
                 {streakRewardToast.reward.badge && '🏅 Badge !'}
               </>
@@ -85,7 +84,7 @@ export default function AppModals({
                 localStorage.setItem('wtf_badge_streak_30', 'true')
                 localStorage.setItem('wtf_premium_earned', 'true')
                 setShowStreakSpecialModal(false)
-                setStreakRewardToast({ days: 30, reward: { coins: 0, tickets: 0, hints: 0, badge: false, _label: 'WTF Premium 👑' } })
+                setStreakRewardToast({ days: 30, reward: { coins: 0, hints: 0, badge: false, _label: 'WTF Premium 👑' } })
               }} style={{ background: 'linear-gradient(135deg, #FF6B1A, #EA580C)', color: 'white', border: 'none', borderRadius: 14, padding: '14px 20px', fontWeight: 900, fontSize: 16, cursor: 'pointer' }}>
                 👑 WTF Premium
               </button>
@@ -105,7 +104,7 @@ export default function AppModals({
                 })
                 localStorage.setItem('wtf_badge_streak_30', 'true')
                 setShowStreakSpecialModal(false)
-                setStreakRewardToast({ days: 30, reward: { coins: 0, tickets: 0, hints: 0, badge: false, _label: '10 f*cts débloqués 🎴' } })
+                setStreakRewardToast({ days: 30, reward: { coins: 0, hints: 0, badge: false, _label: '10 f*cts débloqués 🎴' } })
               }} style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 14, padding: '14px 20px', fontWeight: 800, fontSize: 16, cursor: 'pointer' }}>
                 🎴 10 f*cts débloqués
               </button>

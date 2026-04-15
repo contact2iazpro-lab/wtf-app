@@ -243,7 +243,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
 
         {/* ─── Cheat button ────────────────────────────────────────────────── */}
         <div className="my-2">
-          <Btn color="#FF6B1A" onClick={() => act('CHEAT 999', () => devActions.cheat999())}>999 coins + tickets + indices</Btn>
+          <Btn color="#FF6B1A" onClick={() => act('CHEAT 999', () => devActions.cheat999())}>999 coins + indices</Btn>
         </div>
 
         {/* ─── Section 3 — Scénarios ───────────────────────────────────────── */}

@@ -14,21 +14,15 @@ import { audio } from '../utils/audio'
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const HINT_PACKS = [
-  { quantity: 1, price: 10, label: '1 indice',   discount: null },
-  { quantity: 3, price: 30, label: '3 indices',   discount: null },
-  { quantity: 5, price: 45, label: '5 indices',   discount: '-10%' },
-]
-
-const TICKET_PACKS = [
-  { quantity: 1, price: 25, label: '1 ticket',    discount: null },
-  { quantity: 3, price: 65, label: '3 tickets',   discount: '-13%' },
-  { quantity: 5, price: 100, label: '5 tickets',   discount: '-20%' },
+  { quantity: 1, price: 50, label: '1 indice',   discount: null },
+  { quantity: 3, price: 140, label: '3 indices',   discount: '-7%' },
+  { quantity: 5, price: 220, label: '5 indices',   discount: '-12%' },
 ]
 
 const ENERGY_PACKS = [
-  { quantity: 1, price: 10, label: '1 énergie',   discount: null },
-  { quantity: 3, price: 25, label: '3 énergies',  discount: '-17%' },
-  { quantity: 5, price: 40, label: '5 énergies',  discount: '-20%' },
+  { quantity: 1, price: 75, label: '1 énergie',   discount: null },
+  { quantity: 3, price: 200, label: '3 énergies',  discount: '-11%' },
+  { quantity: 5, price: 320, label: '5 énergies',  discount: '-15%' },
 ]
 
 const MYSTERY_PACKS = [
@@ -71,7 +65,7 @@ function PackButton({ emoji, label, price, discount, canBuy, onClick, onCannotBu
 export default function BoutiquePage() {
   const navigate = useNavigate()
 
-  const { coins, tickets, hints, applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
+  const { coins, hints, applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
   const [streakFreezeCount, setStreakFreezeCount] = useState(() => readWtfData().streakFreezeCount || 0)
@@ -83,7 +77,7 @@ export default function BoutiquePage() {
   const scale = useScale()
 
   // Backward compat : les endroits qui lisent balances.coins
-  const balances = { coins, tickets, hints }
+  const balances = { coins, hints }
 
   const showToast = (msg) => {
     setToast(msg)
@@ -194,7 +188,6 @@ export default function BoutiquePage() {
     if (coins < price) return
     const rpcDelta = { coins: -price }
     if (type === 'hint')    rpcDelta.hints   = quantity
-    if (type === 'ticket')  rpcDelta.tickets = quantity
     if (type === 'energy')  rpcDelta.energy  = quantity
     applyCurrencyDelta?.(rpcDelta, `shop_buy_${type}`)?.catch?.(e =>
       console.warn('[BoutiquePage] buyPack RPC failed:', e?.message || e)
@@ -213,7 +206,7 @@ export default function BoutiquePage() {
         console.warn('[BoutiquePage] streakFreeze mergeFlags failed:', e?.message || e)
       )
     }
-    const labels = { hint: 'indice', ticket: 'ticket', energy: 'énergie', streakFreeze: 'Streak Freeze' }
+    const labels = { hint: 'indice', energy: 'énergie', streakFreeze: 'Streak Freeze' }
     const unit = labels[type] || type
     showToast(`+${quantity} ${unit}${quantity > 1 && type !== 'streakFreeze' ? 's' : ''} !`)
   }
@@ -268,7 +261,7 @@ export default function BoutiquePage() {
                   <div>
                     <div style={{ fontSize: 28, fontWeight: 900, color: '#1a1a2e', lineHeight: 1 }}>{qty}</div>
                     <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 700 }}>
-                      {totalQty} {confirmPurchase.type === 'hint' ? 'indices' : confirmPurchase.type === 'energy' ? 'énergies' : 'tickets'}
+                      {totalQty} {confirmPurchase.type === 'hint' ? 'indices' : 'énergies'}
                     </div>
                   </div>
                   <button
@@ -450,7 +443,7 @@ export default function BoutiquePage() {
       <div className="px-4 pt-2 pb-3 shrink-0" style={{ display: 'flex', gap: 6 }}>
         {[
           { id: 'packs', label: 'Packs', emoji: '🎁' },
-          { id: 'essentials', label: 'Essentiels', emoji: <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
+          { id: 'essentials', label: 'Essentiels', emoji: <img src="/assets/ui/icon-hint.png" alt="indices" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
           { id: 'subscription', label: 'Abonnement', emoji: '👑' },
         ].map(t => {
           const isActive = activeTab === t.id
@@ -543,32 +536,6 @@ export default function BoutiquePage() {
           </div>
         </div>
 
-        {/* Section Tickets */}
-        <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)' }}>
-          <div className="flex items-center gap-2 mb-1">
-            <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: 20, height: 20, verticalAlign: 'middle', display: 'inline' }} />
-            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Tickets de Quest</h2>
-            <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(139,92,246,0.1)', color: '#7C3AED' }}>
-              Stock : {balances.tickets}
-            </span>
-          </div>
-          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Lance des parties Quest pour débloquer des WTF! rares</p>
-          <div className="flex flex-col gap-2">
-            {TICKET_PACKS.map(pack => (
-              <PackButton
-                key={pack.quantity}
-                emoji={<img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />}
-                label={pack.label}
-                price={pack.price}
-                discount={pack.discount}
-                canBuy={balances.coins >= pack.price}
-                onClick={() => setConfirmPurchase({ type: 'ticket', quantity: pack.quantity, price: pack.price, label: pack.label })}
-                onCannotBuy={() => notEnoughCoins(pack.price)}
-              />
-            ))}
-          </div>
-        </div>
-
         {/* Section Énergie */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
@@ -639,7 +606,7 @@ export default function BoutiquePage() {
                     }}>📦</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Starter Light</span>
-                      <span className="text-xs block" style={{ color: '#6B7280' }}>3 tickets · 5 indices · cadre Bronze</span>
+                      <span className="text-xs block" style={{ color: '#6B7280' }}>5 indices · cadre Bronze</span>
                     </div>
                     <button
                       disabled
@@ -678,7 +645,7 @@ export default function BoutiquePage() {
                     }}>👑</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Starter Pro</span>
-                      <span className="text-xs block" style={{ color: '#6B7280' }}>10 tickets · 15 indices · cadre Or · 100 coins</span>
+                      <span className="text-xs block" style={{ color: '#6B7280' }}>15 indices · cadre Or · 100 coins</span>
                     </div>
                     <button
                       disabled
@@ -847,7 +814,7 @@ export default function BoutiquePage() {
         <div className="rounded-2xl p-4 text-center mb-4" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,165,0,0.18))', border: '1.5px solid rgba(255,165,0,0.4)' }}>
           <span className="text-3xl block mb-2">👑</span>
           <span className="font-black text-base block" style={{ color: '#1a1a2e' }}>WTF! Premium</span>
-          <span className="text-xs block mb-2" style={{ color: '#6B7280' }}>Tickets illimités · 3 indices/jour · badge VIP</span>
+          <span className="text-xs block mb-2" style={{ color: '#6B7280' }}>Énergie illimitée · 3 indices/jour · badge VIP</span>
           <span className="text-sm font-black block" style={{ color: '#FF6B1A' }}>4,99 €/mois</span>
           <span className="inline-block mt-3 px-4 py-1 rounded-lg text-xs font-bold" style={{ background: 'rgba(0,0,0,0.06)', color: '#9CA3AF' }}>Bientôt</span>
         </div>

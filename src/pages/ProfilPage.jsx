@@ -121,10 +121,10 @@ export default function ProfilPage() {
     setResetStep(0)
     if (isConnected && user) {
       try {
-        // Valeurs F2P officielles CLAUDE.md : 50 coins / 1 ticket / 3 indices / 5 énergies
+        // Valeurs F2P officielles CLAUDE.md 1b : 500 coins / 3 indices / 5 énergies
         await supabase.from('profiles').update({
-          coins: 50, total_score: 0, streak_current: 0, streak_max: 0,
-          tickets: 1, hints: 3, energy: 5, updated_at: new Date().toISOString(),
+          coins: 500, total_score: 0, streak_current: 0, streak_max: 0,
+          hints: 3, energy: 5, updated_at: new Date().toISOString(),
         }).eq('id', user.id)
       } catch { /* ignore */ }
     }
@@ -152,8 +152,8 @@ export default function ProfilPage() {
   const totalAnswered = playerData.totalAnswered || 0
   const successRate = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0
 
-  const { coins, tickets, hints } = usePlayerProfile()
-  const balances = { coins, tickets, hints }
+  const { coins, hints } = usePlayerProfile()
+  const balances = { coins, hints }
   const unlockedWtf = allFacts.filter(f => unlockedIds.has(f.id) && f.isVip).length
   const unlockedFunny = allFacts.filter(f => unlockedIds.has(f.id) && !f.isVip).length
 
@@ -176,7 +176,7 @@ export default function ProfilPage() {
         <GameModal
           emoji="⚠️"
           title="Réinitialiser ta progression ?"
-          message="Tu vas perdre tous tes coins, tickets, indices, ta collection et ta progression. Cette action est irréversible."
+          message="Tu vas perdre tous tes coins, indices, ta collection et ta progression. Cette action est irréversible."
           confirmLabel="Continuer"
           cancelLabel="Annuler"
           danger
@@ -335,7 +335,6 @@ export default function ProfilPage() {
         <div className="rounded-2xl mb-3" style={{ background: 'rgba(0,0,0,0.04)', padding: 8, display: 'flex', gap: 6 }}>
           {[
             { emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.coins, label: 'coins' },
-            { emoji: <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.tickets, label: 'tickets' },
             { emoji: <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.hints, label: 'indices' },
           ].map(r => (
             <div key={r.label} style={{ flex: 1, textAlign: 'center' }}>

@@ -8,7 +8,7 @@
 // ────────────────────────────────────────────────────────────────────────────
 
 export const ZONE_HEIGHTS = {
-  header: 44,           // Zone 1 — Avatar + Coins/Tickets + Settings
+  header: 44,           // Zone 1 — Avatar + Coins + Settings
   streak: 32,           // Zone 2 — Streak info (conditionnel: gamesPlayed >= 3)
   badge: 28,            // Zone 2B — Next badge progress (conditionnel: gamesPlayed >= 3)
   coffres: 60,          // Zone 3 — Daily chests (conditionnel: questsPlayed >= 1)
@@ -134,10 +134,10 @@ export const UNLOCK_MESSAGES = {
 
 export const SPOTLIGHT_MESSAGES = {
   flash: 'Lance ta première partie ! 🎮',
-  quest: 'Tu as un ticket ! Découvre les f*cts les plus dingues 🏆',
+  quest: 'Découvre les f*cts les plus dingues 🏆',
   collection: 'Tes f*cts sont dans ta collection ! 📚',
   coffre: 'Ouvre ton coffre du jour ! 🎁',
-  boutique: 'Achète des tickets et indices ici ! 🛍️',
+  boutique: 'Achète indices et énergie ici ! 🛍️',
   blitz: 'Teste ta mémoire en Blitz ! ⚡',
 }
 

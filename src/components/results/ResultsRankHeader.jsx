@@ -18,7 +18,6 @@ export default function ResultsRankHeader({
   catColor = '#FF6B1A',
   textOnBg = '#ffffff',
   isPerfect = false,
-  ticketEarned = false,
 }) {
   return (
     <>
@@ -70,11 +69,6 @@ export default function ResultsRankHeader({
         }}>
           <span style={{ fontSize: S(16) }}>⭐</span>
           <span style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: S(12), color: '#FDE047', letterSpacing: '0.05em' }}>PERFECT !</span>
-          {ticketEarned && (
-            <span style={{ fontSize: S(12) }}>
-              <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> +1
-            </span>
-          )}
           <span style={{ fontSize: S(16) }}>⭐</span>
         </div>
       )}

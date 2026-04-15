@@ -217,7 +217,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           message={isCorrect ? 'Bravo ! 🎉' : 'Pas grave ! 😅'}
           coinsEarned={coinsEarned}
           totalCoins={sessionScore + coinsEarned}
-          tickets={0}
           hintsCount={0}
           socialProofPercent={isCorrect ? socialPercent : 0}
           onNext={() => {
@@ -364,7 +363,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           progressIndex={currentIndex}
           totalQuestions={sessionFacts.length}
           coins={sessionScore}
-          tickets={0}
           hintsCount={0}
           onQuit={() => onSkip?.()}
           showFinger={false}
@@ -394,7 +392,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           fontSize: S_val(16), fontWeight: 700, fontFamily: 'Nunito, sans-serif',
         }}>
           <div><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {sessionScore}</div>
-          <div><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
           <div><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
         </div>
 
@@ -533,7 +530,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           message={isCorrect ? 'Bravo ! 🎉' : 'Pas grave ! 😅'}
           coinsEarned={coinsEarned}
           totalCoins={sessionScore + coinsEarned}
-          tickets={0}
           hintsCount={0}
           socialProofPercent={isCorrect ? socialPercent : 0}
           onNext={() => {
@@ -587,7 +583,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
         progressIndex={currentIndex}
         totalQuestions={sessionFacts.length}
         coins={sessionScore}
-        tickets={0}
         hintsCount={0}
         onQuit={() => onSkip?.()}
         showFinger={false}
@@ -638,11 +633,11 @@ export default function TutoTunnel({ onComplete, onSkip }) {
             textAlign: 'center', fontFamily: 'Nunito, sans-serif',
             marginTop: S_val(8),
           }}>
-            Tu gagnes 1 ticket pour jouer en mode Quest !
+            Tu gagnes 20 coins bonus !
           </div>
 
-          {/* Ticket emoji */}
-          <div style={{ fontSize: S_val(48) }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></div>
+          {/* Coins emoji */}
+          <div style={{ fontSize: S_val(48) }}><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></div>
 
           {/* Continue button */}
           <button
@@ -705,7 +700,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           fontSize: S_val(16), fontWeight: 700, fontFamily: 'Nunito, sans-serif',
         }}>
           <div><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {sessionScore}</div>
-          <div><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 1</div>
           <div><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
         </div>
 
@@ -861,7 +855,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           message={isCorrect ? 'Bravo ! 🎉' : 'Pas grave ! 😅'}
           coinsEarned={coinsEarned}
           totalCoins={sessionScore + coinsEarned}
-          tickets={0}
           hintsCount={0}
           socialProofPercent={isCorrect ? socialPercent : 0}
           onNext={() => {
@@ -915,7 +908,6 @@ export default function TutoTunnel({ onComplete, onSkip }) {
         progressIndex={currentIndex}
         totalQuestions={sessionFacts.length}
         coins={sessionScore}
-        tickets={0}
         hintsCount={0}
         onQuit={() => onSkip?.()}
         showFinger={false}

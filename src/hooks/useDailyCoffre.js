@@ -14,7 +14,7 @@ import { useState, useEffect } from 'react'
 import { readWtfData } from '../utils/storageHelper'
 
 // Récompenses par jour (lundi=0 → dimanche=6)
-// Dimanche : VIP (coins + bonus ticket). Cf. CLAUDE.md B4.11.
+// Dimanche : VIP coins (ticket retiré — 1b). Cf. CLAUDE.md B4.11.
 export const COFFRE_REWARDS = [
   { day: 'L', reward: { type: 'coins', amount: 5 } },
   { day: 'M', reward: { type: 'coins', amount: 5 } },
@@ -22,7 +22,7 @@ export const COFFRE_REWARDS = [
   { day: 'J', reward: { type: 'hints', amount: 1 } },
   { day: 'V', reward: { type: 'coins', amount: 10 } },
   { day: 'S', reward: { type: 'hints', amount: 1 } },
-  { day: 'D', reward: { type: 'coins', amount: 10, bonus: { type: 'tickets', amount: 1 } } },
+  { day: 'D', reward: { type: 'coins', amount: 35 } },
 ]
 
 function getWeekStart() {
@@ -34,7 +34,7 @@ function getWeekStart() {
 
 function applyCofreReward(reward, applyCurrencyDelta) {
   try {
-    if (applyCurrencyDelta && ['coins', 'hints', 'tickets'].includes(reward.type)) {
+    if (applyCurrencyDelta && ['coins', 'hints'].includes(reward.type)) {
       applyCurrencyDelta({ [reward.type]: reward.amount }, 'daily_coffre_claim')?.catch?.(e =>
         console.warn('[useDailyCoffre] coffre RPC failed:', e?.message || e)
       )

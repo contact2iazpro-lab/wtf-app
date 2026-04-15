@@ -5,14 +5,11 @@
 export const CURRENCY_EMOJI_MAP = {
   '🪙': '/assets/ui/icon-coins.png',
   '💰': '/assets/ui/icon-coins.png',
-  '🎟️': '/assets/ui/icon-tickets.png',
-  '🎫': '/assets/ui/icon-tickets.png',
   '💡': '/assets/ui/icon-hint.png',
 }
 
 const ALT_MAP = {
   '/assets/ui/icon-coins.png': 'coins',
-  '/assets/ui/icon-tickets.png': 'tickets',
   '/assets/ui/icon-hint.png': 'indice',
 }
 

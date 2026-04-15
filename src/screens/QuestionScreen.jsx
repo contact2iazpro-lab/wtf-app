@@ -27,7 +27,6 @@ export default function QuestionScreen({
   playerEmoji,
   playerCoins = 0,
   playerHints = 0,
-  playerTickets = 0,
   sessionType = 'parcours',
 }) {
   const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
@@ -147,13 +146,11 @@ export default function QuestionScreen({
     </div>
   )
 
-  // ── Header: ✕ | catégorie | coins | tickets | hints | ⚙️ ─────────────────
+  // ── Header: ✕ | catégorie | coins | hints | ⚙️ ─────────────────
   const header = (
     <GameHeader
       playerCoins={playerCoins}
       playerHints={playerHints}
-      playerTickets={playerTickets}
-      showTickets={sessionType === 'parcours'}
       categoryLabel={cat?.label || 'Question'}
       categoryColor={cat?.color}
       categoryIcon={fact.category ? `/assets/categories/${fact.category}.png` : null}

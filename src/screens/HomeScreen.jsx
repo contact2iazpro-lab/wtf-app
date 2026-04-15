@@ -71,7 +71,7 @@ export default function HomeScreen({
   dailyFactUnlocked = false,
 }) {
   // Devises : source de vérité = usePlayerProfile (pas les props).
-  const { coins, tickets, hints, applyCurrencyDelta, mergeFlags } = usePlayerProfile()
+  const { coins, hints, applyCurrencyDelta, mergeFlags } = usePlayerProfile()
 
   // UI local
   const [showSettings, setShowSettings] = useState(false)
@@ -269,11 +269,10 @@ export default function HomeScreen({
           <img src={playerAvatar || '/assets/ui/avatar-default.png'} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </button>
 
-        {/* Coins + Tickets + Hints + Settings */}
+        {/* Coins + Hints + Settings */}
         <div style={{ display: 'flex', alignItems: 'center', gap: S(12) }}>
           {[
             { icon: '/assets/ui/icon-coins.png', value: coins },
-            { icon: '/assets/ui/icon-tickets.png', value: tickets },
             { icon: '/assets/ui/icon-hint.png', value: hints },
           ].map((pill, i) => (
             <button

@@ -24,7 +24,7 @@ export default function ResultsActionButtons({
     if (sessionType === 'parcours') {
       return (
         <>
-          <img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer en {DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}
+          <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer en {DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}
         </>
       )
     }

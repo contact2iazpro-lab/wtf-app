@@ -208,12 +208,12 @@ export function computeDuelState(duel, lastRound, meId) {
 }
 
 /**
- * RPC atomique (Palier 3) — remplace getOrCreateDuel + createDuelRound + debit ticket.
- * Une seule transaction serveur : debit ticket, upsert duel, insert challenge, génération code.
+ * RPC atomique (Palier 3) — upsert duel + insert challenge + génération code.
  * Cf. supabase/migrations/add_create_duel_challenge_rpc.sql
  *
- * Retourne { challenge_id, code, duel_id, tickets_remaining } ou throw en cas d'erreur
- * (Insufficient tickets, Not authenticated, etc.).
+ * Note 1b : le débit des 200 coins se fait côté client via applyCurrencyDelta
+ * dans useBlitzHandlers (plus de ticket).
+ * Retourne { challenge_id, code, duel_id, ... } ou throw en cas d'erreur.
  */
 export async function createDuelChallenge({
   opponentId, categoryId, categoryLabel, questionCount,

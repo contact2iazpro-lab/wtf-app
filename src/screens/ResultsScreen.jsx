@@ -68,7 +68,6 @@ export default function ResultsScreen({
   coinsEarned = 0,
   sessionType = 'parcours',
   difficulty = null,
-  ticketEarned = false,
   categoryId = null,
   unlockedFactsThisSession = [],
   allSessionFacts = [],
@@ -78,7 +77,7 @@ export default function ResultsScreen({
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
   const { isConnected, signInWithGoogle } = useAuth()
-  const { coins: _cCoins, tickets: _cTickets, hints: _cHints, applyCurrencyDelta, unlockFact } = usePlayerProfile()
+  const { coins: _cCoins, hints: _cHints, applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const googleDismissed = (() => { try { return JSON.parse(localStorage.getItem('wtf_data') || '{}').googlePromptDismissed || 0 } catch { return 0 } })()
   const [showGoogleBanner, setShowGoogleBanner] = useState(!isConnected && googleDismissed < 2)
   const dismissGoogle = () => {
@@ -128,7 +127,6 @@ export default function ResultsScreen({
   const [confettiActive, setConfettiActive] = useState(false) // COR 4
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const gamesPlayed = wtfData.gamesPlayed || 0
-  const [ticketPopVisible, setTicketPopVisible] = useState(false)
 
   // Category color (MOD 1)
   const cat = categoryId ? getCategoryById(categoryId) : null
@@ -231,13 +229,6 @@ export default function ResultsScreen({
     }, interval)
     return () => clearInterval(timer)
   }, [score])
-
-  // Badge Perfect — animation ticket avec délai (après les étoiles)
-  useEffect(() => {
-    if (!ticketEarned) return
-    const t = setTimeout(() => setTicketPopVisible(true), 900)
-    return () => clearTimeout(t)
-  }, [ticketEarned])
 
   // MOD 7 — Coin fly animation (synced with audio)
   useEffect(() => {
@@ -406,10 +397,6 @@ export default function ResultsScreen({
             <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cCoins}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-tickets.png" style={{ width: S(14), height: S(14) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cTickets}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
             <img src="/assets/ui/icon-hint.png" style={{ width: S(14), height: S(14) }} alt="" />
             <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cHints}</span>
           </div>
@@ -459,7 +446,6 @@ export default function ResultsScreen({
           catColor={catColor}
           textOnBg={textOnBg}
           isPerfect={isPerfect}
-          ticketEarned={ticketEarned}
         />
 
         {/* Récap gains structuré — composant extrait (Phase 5.2 A) */}
@@ -468,7 +454,6 @@ export default function ResultsScreen({
           coinsPerCorrect={coinsPerCorrect}
           baseCoins={baseCoins}
           bonusCoins={bonusCoins}
-          ticketEarned={ticketEarned}
           isPerfect={isPerfect}
           total={animatedScore}
           totalColor={catColor}

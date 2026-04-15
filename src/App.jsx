@@ -30,7 +30,7 @@ export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
   // Phase A — profil Supabase (source de vérité pour devises/unlocks/flags)
-  const { applyCurrencyDelta, unlockFact, mergeFlags, coins: profileCoins, tickets: profileTickets, hints: profileHints } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact, mergeFlags, coins: profileCoins, hints: profileHints } = usePlayerProfile()
   // DuelContext — pending nav state en mémoire (remplace localStorage pour Défi)
   const {
     pendingDuel, clearPendingDuel,
@@ -97,21 +97,21 @@ export default function App() {
   }
 
   // Initialiser les devises pour les nouveaux joueurs — valeurs officielles CLAUDE.md F2P
-  // Nouveau joueur : 50 coins / 1 ticket / 3 indices / 5 énergies (profil F2P équilibré)
+  // Nouveau joueur : 500 coins / 3 indices / 5 énergies (tickets supprimés 1b)
   if (localStorage.getItem('wtf_data')) {
     const _initData = JSON.parse(localStorage.getItem('wtf_data'))
-    if (_initData.tickets === undefined) {
-      _initData.tickets = 1; _initData.wtfCoins = 50; _initData.hints = 3
+    if (_initData.wtfCoins === undefined) {
+      _initData.wtfCoins = 500; _initData.hints = 3
       _initData.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(_initData))
     }
   }
 
-  // DEV: 100/100/100 pour les tests — UNE SEULE FOIS au premier lancement
+  // DEV: crédits de test — UNE SEULE FOIS au premier lancement
   useState(() => {
     if (import.meta.env.DEV && !sessionStorage.getItem('wtf_dev_credits_done')) {
       const _d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      _d.tickets = 100; _d.wtfCoins = 100; _d.hints = 100; _d.lastModified = Date.now()
+      _d.wtfCoins = 9999; _d.hints = 100; _d.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(_d))
       sessionStorage.setItem('wtf_dev_credits_done', 'true')
     }
@@ -128,9 +128,9 @@ export default function App() {
     if (!pendingDuel) return
 
     if (pendingDuel.mode === 'create') {
-      // Vérifier tickets mais on débite côté RPC create_duel_challenge (Palier 3)
-      if ((profileTickets ?? 0) < 1) {
-        setGameAlert({ emoji: '🎫', title: 'Pas de ticket', message: 'Tu n\'as pas de ticket pour lancer un défi !' })
+      // 1b — Défi Blitz coûte 200 coins (tickets supprimés)
+      if ((profileCoins ?? 0) < 200) {
+        setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: 'Il te faut 200 coins pour lancer un défi !' })
         clearPendingDuel()
         return
       }
@@ -211,7 +211,7 @@ export default function App() {
   const [isCorrect, setIsCorrect] = useState(null)
   const [pointsEarned, setPointsEarned] = useState(0)
   const [storage, setStorage] = useState(loadStorage)
-  const { totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday, tickets } = storage
+  const { totalScore, streak, unlockedFacts, wtfCoins, wtfDuJourDate, wtfDuJourFait, sessionsToday } = storage
   const dailyQuestsRemaining = Math.max(0, 3 - (sessionsToday || 0))
 
   // Fix React warning: état flashEnergy pour éviter setState pendant le render de ScreenRenderer
@@ -307,6 +307,7 @@ export default function App() {
     setSelectedDifficulty, setBlitzFacts, setBlitzResults, setScreen,
     setNewlyEarnedBadges,
     mergeFlags, // A.9.3 persistance records
+    applyCurrencyDelta, // 1b — débit 200 coins défi Blitz
     pendingDuel, clearPendingDuel, // Duel nav state mémoire
     setLastCreatedDuel, setLastCreatedDuelError, // Résultat création async
   })
@@ -331,7 +332,7 @@ export default function App() {
   const resetOnboarding = () => {
     const freshData = {
       gamesPlayed: 0, totalScore: 0, streak: 0,
-      wtfCoins: 50, tickets: 1, hints: 3,
+      wtfCoins: 500, hints: 3,
       unlockedFacts: [], sessionsToday: 0, statsByMode: {}, lastModified: Date.now(),
     }
     localStorage.setItem('wtf_data', JSON.stringify(freshData))

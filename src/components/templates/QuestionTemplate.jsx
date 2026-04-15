@@ -5,7 +5,7 @@ export default function QuestionTemplate({
   question = '', options = [], selectedAnswerIndex = null,
   onSelectAnswer = () => {}, hints = [], onRevealHint = () => {},
   timer = 0, progressIndex = 0, totalQuestions = 5,
-  coins = 0, tickets = 0, hintsCount = 0,
+  coins = 0, hintsCount = 0,
   onQuit = () => {}, showFinger = false, disabled = false,
 }) {
   const S = useScale()
@@ -42,7 +42,6 @@ export default function QuestionTemplate({
 
         <div style={{ display: 'flex', gap: S(6) }}>
           <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {coins}</span>
-          <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {tickets}</span>
           <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {hintsCount}</span>
         </div>
       </div>

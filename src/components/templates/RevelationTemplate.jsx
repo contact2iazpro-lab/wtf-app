@@ -4,7 +4,7 @@ export default function RevelationTemplate({
   catColor = '#FF6B1A', catName = '', catIcon = '',
   isCorrect = true, imageUrl = '', question = '', correctAnswer = '',
   explanation = '', message = '', coinsEarned = 0, totalCoins = 0,
-  tickets = 0, hintsCount = 0, socialProofPercent = 0,
+  hintsCount = 0, socialProofPercent = 0,
   onNext = () => {}, onShare = () => {}, onQuit = () => {},
   showFinger = true, showShareButton = true, showExplanation = true,
   isLast = false, isVip = false,
@@ -57,7 +57,6 @@ export default function RevelationTemplate({
 
         <div style={{ display: 'flex', gap: S(6) }}>
           <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {totalCoins}</span>
-          <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-tickets.png" alt="tickets" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {tickets}</span>
           <span style={{ background: 'rgba(255,255,255,0.15)', borderRadius: S(20), padding: `${S(4)}px ${S(10)}px`, color: 'white', fontSize: S(11), fontWeight: 700 }}><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {hintsCount}</span>
         </div>
       </div>

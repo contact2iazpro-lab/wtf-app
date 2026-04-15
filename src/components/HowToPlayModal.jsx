@@ -64,7 +64,7 @@ const CHAPTERS = [
     shortTitle: 'Quest',
     title: 'Quête WTF!',
     content: [
-      { icon: '🎫', text: '**Coûte 1 ticket** (25 coins en boutique) par session.' },
+      { icon: '⚡', text: '**Gratuit** (limité par l\'énergie).' },
       { icon: '🎯', text: 'Choisis un **niveau de difficulté** : Cool ou Hot.' },
       { icon: '❄️', text: '**Cool** — 2 QCM · 20s · 2 indices dispo · **2 coins**/bonne réponse' },
       { icon: '🔥', text: '**Hot** — 4 QCM · 30s · 2 indices dispo · **2 coins**/bonne réponse' },
@@ -179,7 +179,7 @@ const CHAPTERS = [
       { icon: '🔥', text: '**Hunt** : **2 coins** par bonne réponse.' },
       { icon: '⚡', text: '**Blitz** : **0 coin** — prestige uniquement.' },
       { icon: '🎰', text: 'Gagne aussi des coins via la **roulette quotidienne** et ta **série**.' },
-      { icon: '🛒', text: 'Dépense-les en **boutique** : tickets, indices, énergie, mystery packs, streak freezes.' },
+      { icon: '🛒', text: 'Dépense-les en **boutique** : indices, énergie, mystery packs, streak freezes.' },
     ],
   },
 
@@ -194,8 +194,8 @@ const CHAPTERS = [
       { icon: '🔥', text: 'La série se **reset à 0** si tu manques un jour (sauf avec un Streak Freeze).' },
       { icon: '🪙', text: '**Jour 1** : 2 coins.' },
       { icon: '💡', text: '**Jour 3** : 2 indices.' },
-      { icon: '🎫', text: '**Jour 7** : 10 coins + 1 ticket.' },
-      { icon: '🎁', text: '**Jour 14** : 1 ticket + 3 indices.' },
+      { icon: '🪙', text: '**Jour 7** : 35 coins + badge.' },
+      { icon: '🎁', text: '**Jour 14** : 25 coins + 3 indices.' },
       { icon: '👑', text: '**Jour 30** : récompense spéciale premium !' },
       { icon: '🛡️', text: 'Achète un **Streak Freeze** (15 coins) pour protéger ta série si tu rates un jour.' },
       { icon: '🏆', text: 'Des **trophées** sont liés à ta série : 7, 30 et 100 jours consécutifs.' },
@@ -211,7 +211,7 @@ const CHAPTERS = [
     content: [
       { icon: '🆓', text: '**1 tour gratuit** par jour — reviens chaque jour !' },
       { icon: '🪙', text: 'Tours supplémentaires : **10 coins** chacun.' },
-      { icon: '🎯', text: 'La roue contient : **5, 10, 20 ou 50 coins** · **1 ou 2 indices** · **1 ticket** · **1 Streak Freeze**.' },
+      { icon: '🎯', text: 'La roue contient : **5, 10, 20 ou 50 coins** · **1 ou 2 indices** · **1 Streak Freeze**.' },
       { icon: '📊', text: 'Les gains les plus rares (50 coins, Streak Freeze) ont **moins de chances** de tomber.' },
       { icon: '💎', text: 'Combine la roulette avec ta série pour **maximiser tes gains quotidiens** !' },
     ],
@@ -225,7 +225,6 @@ const CHAPTERS = [
     title: 'La Boutique',
     content: [
       { icon: '💡', text: '**Indices** : 1 (10 coins) · 3 (30 coins) · 5 (45 coins, -10%).' },
-      { icon: '🎫', text: '**Tickets** : 1 (25 coins) · 3 (65 coins, -13%) · 5 (100 coins, -20%).' },
       { icon: '🔋', text: '**Énergie** : 1 (10 coins) · 3 (25 coins, -17%) · 5 (40 coins, -20%).' },
       { icon: '🛡️', text: '**Streak Freeze** : 15 coins — protège ta série pendant 1 jour.' },
       { icon: '📦', text: '**Mystery Packs** : ouvre des packs pour débloquer des f*cts aléatoires !' },

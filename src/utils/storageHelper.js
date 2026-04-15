@@ -24,7 +24,7 @@ export function readWtfData() {
  * @returns {object} le nouvel état après mutation
  *
  * Exemple :
- *   updateWtfData(wd => { wd.wtfCoins = 100; wd.tickets = 5 })
+ *   updateWtfData(wd => { wd.wtfCoins = 100; wd.hints = 5 })
  */
 export function updateWtfData(mutator) {
   try {

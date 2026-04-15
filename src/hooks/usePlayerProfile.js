@@ -1,16 +1,16 @@
 /**
- * usePlayerProfile — accès optimiste au profil joueur (coins, tickets, hints, energy).
+ * usePlayerProfile — accès optimiste au profil joueur (coins, hints, energy).
  *
  * Utilise useSupabaseResource pour cache stale-while-revalidate.
  * Expose applyCurrencyDelta() qui appelle la RPC Supabase avec nonce anti-replay.
  *
  * Joueurs anonymes (pas de session Supabase) : applyCurrencyDelta écrit directement
  * dans localStorage wtf_data + dispatch `wtf_currency_updated` pour re-render.
- * Les accesseurs coins/tickets/hints fallback vers localStorage quand profile est null.
+ * Les accesseurs coins/hints fallback vers localStorage quand profile est null.
  *
  * Usage :
  *   const { profile, loading, applyCurrencyDelta } = usePlayerProfile()
- *   await applyCurrencyDelta({ coins: 2 }, 'flash_correct')
+ *   await applyCurrencyDelta({ coins: 30 }, 'flash_daily')
  */
 
 import { useCallback, useEffect, useState } from 'react'
@@ -35,7 +35,7 @@ function writeLocalDelta(delta) {
     const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     if (delta.coins)   data.wtfCoins = Math.max(0, (data.wtfCoins || 0) + delta.coins)
     if (delta.hints)   data.hints    = Math.max(0, (parseInt(data.hints || 0, 10) || 0) + delta.hints)
-    // tickets : legacy ignoré côté client (1b)
+    if (delta.hints)   data.hints    = Math.max(0, (parseInt(data.hints || 0, 10) || 0) + delta.hints)
     data.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(data))
     window.dispatchEvent(new Event('wtf_currency_updated'))
@@ -68,7 +68,7 @@ export function usePlayerProfile() {
     if (!userId) return null
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, avatar_url, coins, tickets, hints, energy, energy_reset_at, streak_current, streak_max, stats_by_mode, flags, seeded')
+      .select('id, username, avatar_url, coins, hints, energy, energy_reset_at, streak_current, streak_max, stats_by_mode, flags, seeded')
       .eq('id', userId)
       .single()
     if (error) throw error
@@ -88,8 +88,8 @@ export function usePlayerProfile() {
   /**
    * applyCurrencyDelta — applique un delta atomique via RPC serveur.
    *
-   * @param {Object} delta - { coins, tickets, hints, energy } (valeurs signées)
-   * @param {string} reason - 'flash_correct' | 'quest_perfect' | 'shop_buy_tickets' | ...
+   * @param {Object} delta - { coins, hints, energy } (valeurs signées)
+   * @param {string} reason - 'flash_daily' | 'snack_perfect' | 'shop_buy_hints' | ...
    * @param {string} [sessionId] - optionnel, groupe les mutations d'une session
    */
   const applyCurrencyDelta = useCallback(async (delta, reason, sessionId = null) => {

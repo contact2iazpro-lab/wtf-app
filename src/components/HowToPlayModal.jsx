@@ -78,13 +78,12 @@ const CHAPTERS = [
     shortTitle: 'Snack',
     title: 'Mode Snack',
     content: [
-      { icon: '💰', text: '**Coût :** 1 énergie par session.' },
-      { icon: '📋', text: '**Format :** 5 questions par session.' },
-      { icon: '🔢', text: '**Choix de réponses :** 2 propositions par question.' },
-      { icon: '⏱️', text: '**Timer :** 15 secondes par question.' },
-      { icon: '🪙', text: '**Récompenses :** 10 coins par bonne réponse.' },
-      { icon: '🎁', text: '**Bonus :** +50 coins si tu réponds correctement aux 5 questions.' },
-      { icon: '📂', text: '**Catégorie :** choisis librement dans tes catégories débloquées ou joue en aléatoire.' },
+      { icon: '🔋', text: '**Coût :** 1 Capsule d\'énergie.' },
+      { icon: '📋', text: '**Set :** 5 questions/set.' },
+      { icon: '🔢', text: '**QCM :** 2 /question.' },
+      { icon: '⏱️', text: '**Timer :** 15s/question.' },
+      { icon: '🪙', text: '**Récompense :** 10 WTFCoins/bonne réponse.' },
+      { icon: '🎁', text: '**Perfect :** 5 bonnes réponses = +50 WTFcoins.' },
     ],
   },
   {
@@ -332,61 +331,12 @@ function getChapterIcon(chapterId) {
 // ── Main component ──────────────────────────────────────────────────────────
 export default function HowToPlayModal({ onClose, onRestartTutorial }) {
   // Read player progress from localStorage
-  const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
 
   // State for checkbox "show rules on launch"
   const [showRulesOnLaunch, setShowRulesOnLaunch] = useState(false)
 
-  // Filter chapters based on player progress
-  const visibleChapters = CHAPTERS.filter(ch => {
-    switch (ch.id) {
-      case 'goal':
-      case 'tutorial':
-      case 'hints':
-      case 'coins':
-      case 'tips':
-        return true // Always visible
-
-      case 'quest':
-        return (wd.statsByMode?.parcours?.gamesPlayed || 0) >= 1
-
-      case 'snack':
-        return (wd.statsByMode?.snack?.gamesPlayed || 0) >= 1
-
-      case 'energy':
-        return (wd.statsByMode?.snack?.gamesPlayed || 0) >= 1
-
-      case 'blitz':
-        return (wd.statsByMode?.blitz?.gamesPlayed || 0) >= 1
-
-      case 'flash':
-        return (wd.gamesPlayed || 0) >= 1
-
-      case 'streak':
-        return (wd.gamesPlayed || 0) >= 3
-
-      case 'roulette':
-        return (wd.gamesPlayed || 0) >= 1
-
-      case 'shop':
-        return (wd.gamesPlayed || 0) >= 1
-
-      case 'mystery':
-        return (wd.gamesPlayed || 0) >= 3
-
-      case 'collection':
-        return (wd.unlockedFacts?.length || 0) >= 1
-
-      case 'trophies':
-        return (wd.badgesEarned?.length || 0) >= 1
-
-      case 'profile':
-        return (wd.gamesPlayed || 0) >= 1
-
-      default:
-        return true
-    }
-  })
+  // Toutes les pages visibles dès le départ (plus de gating progressif)
+  const visibleChapters = CHAPTERS
 
   const [activeId, setActiveId] = useState(visibleChapters[0]?.id || 'goal')
   const chapter = visibleChapters.find(c => c.id === activeId) || visibleChapters[0]

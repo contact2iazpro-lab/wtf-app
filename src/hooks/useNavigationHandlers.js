@@ -71,10 +71,7 @@ export function useNavigationHandlers({
         const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
         if (!isDevOrTest && !canPlaySnackCheck()) { setNoEnergyOrigin('snack'); setShowNoEnergyModal(true); break }
         setGameMode('snack'); setSessionType('snack'); setSelectedDifficulty(DIFFICULTY_LEVELS.SNACK); setSelectedCategory(null)
-        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        const snackPlayedInMode = wd.statsByMode?.snack?.gamesPlayed || 0
-        if (snackPlayedInMode === 0) launchModeDestination('snack')
-        else showOrSkipLaunch('snack')
+        showOrSkipLaunch('snack')
         break
       }
       case 'collection':    navigate('/collection'); break

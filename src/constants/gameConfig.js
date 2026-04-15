@@ -72,13 +72,12 @@ export const MODE_CONFIGS = {
   snack: {
     modeId: 'snack', modeName: 'Snack', subtitle: 'Le quotidien sans prise de tête', emoji: '🎯', color: '#FFD700',
     rules: [
-      { icon: '💰', text: 'Coût : 1 énergie par session' },
-      { icon: '📋', text: 'Format : 5 questions par session' },
-      { icon: '🔢', text: 'Choix de réponses : 2 propositions par question' },
-      { icon: '⏱️', text: 'Timer : 15 secondes par question' },
-      { icon: '🪙', text: 'Récompenses : 10 coins par bonne réponse' },
-      { icon: '🎁', text: 'Bonus : +50 coins si tu réponds aux 5 questions' },
-      { icon: '📂', text: 'Catégorie : 5 gratuites + 1 500 coins pour en débloquer une' },
+      { icon: '🔋', text: 'Coût : 1 Capsule d\'énergie' },
+      { icon: '📋', text: 'Set : 5 questions/set' },
+      { icon: '🔢', text: 'QCM : 2 /question' },
+      { icon: '⏱️', text: 'Timer : 15s/question' },
+      { icon: '🪙', text: 'Récompense : 10 WTFCoins/bonne réponse' },
+      { icon: '🎁', text: 'Perfect : 5 bonnes réponses = +50 WTFcoins' },
     ],
   },
   vrai_ou_fou: {

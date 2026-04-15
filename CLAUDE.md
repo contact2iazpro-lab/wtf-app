@@ -1,5 +1,7 @@
 AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jamais créer de worktree ni de branche. Travailler directement sur master.
 
+PUSH: Ne JAMAIS pusher automatiquement vers le remote. Toujours demander confirmation explicite avant `git push` (même après un commit auto). Les commits locaux sont OK sans confirmation, mais le push doit être validé à chaque fois.
+
 LANGUE: Toujours répondre en français.
 
 RÈGLES DES MODES (homogénéité) :

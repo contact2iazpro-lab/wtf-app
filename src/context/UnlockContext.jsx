@@ -13,8 +13,6 @@ export const UnlockContext = createContext({
   canBlitz: false,
   canHunt: false,
   canExplorer: false,
-  canMulti: false,
-  canSerie: false,
 
   // UI feature display conditions
   showStreakDisplay: false,
@@ -51,8 +49,6 @@ export function useUnlock() {
       canBlitz: false,
       canHunt: false,
       canExplorer: false,
-      canMulti: false,
-      canSerie: false,
 
       // UI features
       showStreakDisplay: false,

@@ -470,7 +470,7 @@ export default function HomeScreen({
           </div>
 
           {/* Grille modes 3 cols : 3 icônes à gauche / logo WTF central / 3 icônes à droite.
-              Multi retiré (déjà dans la navbar). Ajout Puzzle, Route, Hunt en plus de Quest/Explorer/Blitz. */}
+              Puzzle, Route, Hunt en plus de Quest/Explorer/Blitz. */}
           <div style={{
             flex: 3, width: '100%',
             display: 'grid',

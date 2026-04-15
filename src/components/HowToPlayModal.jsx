@@ -23,7 +23,7 @@ const CHAPTER_COLORS = {
   hunt: '#EC4899', energy: '#10B981', hints: '#6366F1',
   coins: '#F59E0B', streak: '#F97316', roulette: '#A855F7',
   shop: '#06B6D4', mystery: '#7C3AED', collection: '#14B8A6',
-  trophies: '#EAB308', profile: '#64748B', multi: '#8B5CF6',
+  trophies: '#EAB308', profile: '#64748B',
   tips: '#22C55E',
 }
 
@@ -298,20 +298,6 @@ const CHAPTERS = [
     ],
   },
 
-  // ═══ MULTI ═══
-  {
-    id: 'multi',
-    emoji: '👥',
-    shortTitle: 'Multi',
-    title: 'Multijoueur',
-    content: [
-      { icon: '👥', text: '**Défie tes amis** en Blitz et compare vos scores !' },
-      { icon: '🏆', text: 'Ajoute des amis via leur **pseudo** et envoie des **défis**.' },
-      { icon: '⚡', text: 'Mode **Blitz** — réponds le plus vite possible pour vaincre tes adversaires.' },
-      { icon: '📊', text: 'Grimpe dans le **classement** avec tes amis et deviens champion !' },
-    ],
-  },
-
   // ═══ ASTUCES ═══
   {
     id: 'tips',
@@ -344,7 +330,6 @@ function getChapterIcon(chapterId) {
     explorer: '/assets/modes/marathon.png',
     blitz: '/assets/modes/blitz.png',
     streak: '/assets/modes/serie.png',
-    multi: '/assets/modes/multi.png',
   }
 
   if (modeIcons[chapterId]) {
@@ -413,9 +398,6 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
       case 'profile':
         return (wd.gamesPlayed || 0) >= 1
 
-      case 'multi':
-        return (wd.statsByMode?.blitz?.gamesPlayed || 0) >= 1
-
       default:
         return true
     }
@@ -468,7 +450,6 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               explorer: '/assets/modes/marathon.png',
               blitz: '/assets/modes/blitz.png',
               streak: '/assets/modes/serie.png',
-              multi: '/assets/modes/multi.png',
             }
             return (
               <button

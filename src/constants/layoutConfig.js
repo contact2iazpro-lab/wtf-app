@@ -31,7 +31,7 @@ export const GRID_CONFIG = {
   // Column spacings
   leftColumnGap: 24,      // Quest + Blitz spacing
   centerColumnGap: 24,    // VoF + WTF + Tagline spacing
-  rightColumnGap: 12,     // Explorer + Multi + Hunt spacing
+  rightColumnGap: 12,     // Explorer + Hunt spacing
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -63,14 +63,6 @@ export const MODES = {
     unlockKey: 'canExplorer',
     unlockMessage: 'Termine une Quest pour explorer librement ! 🧭',
   },
-  multi: {
-    id: 'multi',
-    label: 'Multi',
-    icon: '/assets/modes/multi.png',
-    position: 'right',
-    unlockKey: 'canMulti',
-    unlockMessage: 'Termine un Blitz pour défier tes amis ! 👥',
-  },
   hunt: {
     id: 'hunt',
     label: 'Hunt',
@@ -78,14 +70,6 @@ export const MODES = {
     position: 'right',
     unlockKey: 'canHunt',
     unlockMessage: 'Joue 10 parties pour débloquer la Hunt ! 🔥',
-  },
-  serie: {
-    id: 'serie',
-    label: 'Série',
-    icon: '/assets/modes/serie.png',
-    position: 'future',
-    unlockKey: 'canSerie',
-    unlockMessage: 'Joue 3 parties pour débloquer la Série ! 🔥',
   },
 }
 
@@ -99,8 +83,6 @@ export const UNLOCK_THRESHOLDS = {
   blitz: { stat: 'unlockedFactsCount', threshold: 5 },
   hunt: { stat: 'gamesPlayed', threshold: 10 },
   explorer: { stat: 'statsByMode.parcours.gamesPlayed', threshold: 1 },
-  multi: { stat: 'unlockedFactsCount', threshold: 5 },
-  serie: { stat: 'gamesPlayed', threshold: 3 },
 
   // UI Features
   streakDisplay: { stat: 'gamesPlayed', threshold: 3 },
@@ -118,8 +100,6 @@ export const UNLOCK_MESSAGES = {
   blitz: 'Débloque 5 f*cts pour jouer en Blitz ! ⚡',
   hunt: 'Joue 10 parties pour débloquer la Hunt ! 🔥',
   explorer: 'Termine une Quest pour explorer librement ! 🧭',
-  multi: 'Termine un Blitz pour défier tes amis ! 👥',
-  serie: 'Joue 3 parties pour débloquer la Série ! 🔥',
 
   // Navbar (à synchroniser avec UnlockContext)
   boutique: 'Joue 2 parties pour débloquer la Boutique ! 🛍️',
@@ -174,9 +154,7 @@ export const ASSETS = {
     quest: '/assets/modes/quete.png',
     blitz: '/assets/modes/blitz.png',
     explorer: '/assets/modes/marathon.png',
-    multi: '/assets/modes/multi.png',
     hunt: '/assets/modes/wtf-semaine.png',
-    serie: '/assets/modes/serie.png',
   },
 }
 

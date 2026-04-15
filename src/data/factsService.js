@@ -344,11 +344,6 @@ export function getBlitzFacts() {
   }
 }
 
-/** Mode Série : Funny facts, toutes catégories */
-export function getSeriesFacts() {
-  return getFunnyFacts()
-}
-
 /** Mode WTF Semaine : Funny facts, dans la catégorie de la semaine */
 export function getWeeklyFacts(categoryId) {
   return getFunnyFactsByCategory(categoryId)

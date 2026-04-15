@@ -85,7 +85,7 @@ function pickWrongAnswers(fact, numWrong, factId) {
     const fp = pickRandom(funnyOrPlausible, 1)
     picked = fp.length ? [...fp] : [allAvailable[0]]
   } else {
-    // 4 QCM total (Quest/Marathon) : 1 drôle + 1 proche + 1 plausible
+    // 4 QCM total (Quest/No Limit) : 1 drôle + 1 proche + 1 plausible
     const f = pickRandom(funny, 1)
     const c = pickRandom(close, 1)
     const p = pickRandom(plausible, 1)

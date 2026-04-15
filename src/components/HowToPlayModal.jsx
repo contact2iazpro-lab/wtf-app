@@ -143,7 +143,7 @@ const CHAPTERS = [
       { icon: '🔋', text: 'Les modes **Snack** et **Quest** consomment de l\'**énergie** (1 par session/bloc).' },
       { icon: '🆓', text: 'Tu as un **stock de 5 énergies** partagé avec régénération +1 toutes les 8h.' },
       { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 énergie pour 75 coins** en boutique.' },
-      { icon: '♾️', text: 'Les modes **Vrai ou Fou**, **Marathon**, **Blitz** et **Flash** sont **gratuits**.' },
+      { icon: '♾️', text: 'Les modes **Vrai ou Fou**, **No Limit**, **Blitz** et **Flash** sont **gratuits**.' },
     ],
   },
 
@@ -157,7 +157,7 @@ const CHAPTERS = [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
       { icon: '❄️', text: '**Quest / Snack / Flash dimanche** : jusqu\'à **2 indices** par question.' },
-      { icon: '🚫', text: '**Blitz / Marathon / Vrai ou Fou** : aucun indice disponible.' },
+      { icon: '🚫', text: '**Blitz / No Limit / Vrai ou Fou** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : **50 coins** par indice.' },
       { icon: '🎁', text: 'Gagne des indices via la **roulette**, les **récompenses de série** et les **mystery packs**.' },
@@ -328,7 +328,7 @@ function getChapterIcon(chapterId) {
     snack: '/assets/modes/snack.svg',
     flash: '/assets/modes/flash.svg',
     blitz: '/assets/modes/blitz.svg',
-    marathon: '/assets/modes/marathon.svg',
+    no_limit: '/assets/modes/no-limit.svg',
     vrai_ou_fou: '/assets/modes/vrai-ou-fou.svg',
   }
 
@@ -397,7 +397,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               snack: '/assets/modes/snack.svg',
               flash: '/assets/modes/flash.svg',
               blitz: '/assets/modes/blitz.svg',
-              marathon: '/assets/modes/marathon.svg',
+              no_limit: '/assets/modes/no-limit.svg',
               vrai_ou_fou: '/assets/modes/vrai-ou-fou.svg',
             }
             return (

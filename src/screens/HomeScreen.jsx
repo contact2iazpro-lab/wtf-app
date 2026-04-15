@@ -496,8 +496,8 @@ export default function HomeScreen({
             {/* Colonne droite row 2 : Flash (rendez-vous quotidien) */}
             <ModeIcon src="/assets/modes/flash.svg" label="Flash" onClick={() => nav('flash')} />
 
-            {/* Row 3 : Marathon (survie) + Vrai ou Fou (swipe) */}
-            <ModeIcon src="/assets/modes/marathon.svg" label="Marathon" onClick={() => nav('marathon')} />
+            {/* Row 3 : No Limit (survie) + Vrai ou Fou (swipe) */}
+            <ModeIcon src="/assets/modes/no-limit.svg" label="No Limit" onClick={() => nav('no_limit')} />
             <ModeIcon src="/assets/modes/vrai-ou-fou.svg" label="Vrai ou Fou" onClick={() => nav('vrai_ou_fou')} />
           </div>
 

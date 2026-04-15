@@ -88,8 +88,8 @@ export function useNavigationHandlers({
       case 'quest':
         setScreen(SCREENS.QUEST)
         break
-      case 'marathon':
-        setScreen(SCREENS.MARATHON)
+      case 'no_limit':
+        setScreen(SCREENS.NO_LIMIT)
         break
       case 'vrai_ou_fou':
         showOrSkipLaunch('vrai_ou_fou')

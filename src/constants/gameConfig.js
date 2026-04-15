@@ -1,5 +1,5 @@
 // ── Difficulty Levels Configuration — 6 modes officiels (CLAUDE.md 15/04/2026)
-// Snack · Vrai ou Fou · Quest · Marathon · Blitz · Flash
+// Snack · Vrai ou Fou · Quest · No Limit · Blitz · Flash
 // Économie ×10 appliquée.
 
 export const DIFFICULTY_LEVELS = {
@@ -25,8 +25,8 @@ export const DIFFICULTY_LEVELS = {
     coinsPerCorrect: 20, bossBonus: 100, perfectBonus: 0,
     scoring: { correct: 20, wrong: 0 },
   },
-  MARATHON: {
-    id: 'marathon', label: 'Marathon', emoji: '🏃',
+  NO_LIMIT: {
+    id: 'no_limit', label: 'No Limit', emoji: '♾️',
     choices: 4, duration: 0, questionsCount: Infinity,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
@@ -71,7 +71,7 @@ export const SCREENS = {
   FLASH: 'flash',
   QUEST: 'quest',
   VRAI_OU_FOU: 'vrai_ou_fou',
-  MARATHON: 'marathon',
+  NO_LIMIT: 'no_limit',
 }
 
 // ── Mode launch configs (rules displayed before each mode)
@@ -109,8 +109,8 @@ export const MODE_CONFIGS = {
       { icon: '🪙', text: 'Gains : 20 WTFCoins/bonne · +100 WTFCoins/boss' },
     ],
   },
-  marathon: {
-    modeId: 'marathon', modeName: 'Marathon', subtitle: 'Zéro droit à l\'erreur', emoji: '🏃', color: '#E84535',
+  no_limit: {
+    modeId: 'no_limit', modeName: 'No Limit', subtitle: 'Zéro droit à l\'erreur', emoji: '♾️', color: '#E84535',
     rules: [
       { icon: '∞', text: 'Questions illimitées jusqu\'à la 1ʳᵉ erreur' },
       { icon: '🧠', text: '4 QCM · Pas de timer · Pas d\'indices' },

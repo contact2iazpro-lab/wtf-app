@@ -31,20 +31,9 @@ import CoffreRewardModal from '../components/home/CoffreRewardModal'
 import CoffreAccelerateModal from '../components/home/CoffreAccelerateModal'
 import NewBadgeModal from '../components/home/NewBadgeModal'
 
-// ── Fond Option A : navy profond + halo doré central (repro image Recraft) ───
-// Empilement de radial-gradients, pas d'asset externe, zéro animation (perf mobile).
-const HOME_BG_COLOR = [
-  // Halo doré central — cœur chaud derrière le logo WTF!
-  'radial-gradient(circle 180px at 50% 38%, rgba(255,210,60,0.55) 0%, rgba(255,190,40,0.30) 35%, rgba(255,170,20,0.12) 60%, transparent 80%)',
-  // Halo secondaire plus large (diffusion ambiante)
-  'radial-gradient(ellipse 70% 45% at 50% 38%, rgba(255,200,50,0.18) 0%, transparent 70%)',
-  // Tint violet/magenta en bas (chaleur cinématique)
-  'radial-gradient(ellipse 80% 50% at 50% 100%, rgba(80,20,80,0.45) 0%, transparent 60%)',
-  // Vignette sombre sur les bords
-  'radial-gradient(ellipse 130% 110% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)',
-  // Base navy profond
-  '#0B1A35',
-].join(', ')
+// ── Fond Option A : image question-default recolorée navy via hue-rotate ─────
+const HOME_BG_COLOR = '#0B1A35'
+const HOME_BG_IMAGE = '/assets/backgrounds/question-default.webp'
 const S = (px) => `calc(${px}px * var(--scale))`
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -224,11 +213,33 @@ export default function HomeScreen({
         }
       `}</style>
 
+      {/* Fond image : question-default recolorée navy via hue-rotate */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `url('${HOME_BG_IMAGE}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 45%',
+        filter: 'hue-rotate(200deg) saturate(0.85) brightness(0.75)',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
+      {/* Starburst doré centré sur le halo (50% / 45%) */}
+      <div style={{
+        position: 'absolute',
+        top: '45%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }}>
+        <StarburstBackground />
+      </div>
+
       {/* Overlay bas — profondeur */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
         height: '40%',
-        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.25) 100%)',
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 100%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
 
@@ -429,8 +440,6 @@ export default function HomeScreen({
         padding: GRID_CONFIG.padding,
         position: 'relative',
       }}>
-        <StarburstBackground />
-
         {/* LAYOUT PRINCIPAL — 3 zones (VoF / Grille modes / Énergie) */}
         <div style={{
           flex: 1,

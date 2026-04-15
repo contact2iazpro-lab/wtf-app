@@ -31,29 +31,16 @@ import CoffreRewardModal from '../components/home/CoffreRewardModal'
 import CoffreAccelerateModal from '../components/home/CoffreAccelerateModal'
 import NewBadgeModal from '../components/home/NewBadgeModal'
 
-// ── Fond pastel aléatoire par session ─────────────────────────────────────────
-const PASTEL_GRADIENTS = [
-  'linear-gradient(160deg, #4a6fa5 0%, #6b8fc7 40%, #89a8d9 70%, #4a6fa5 100%)',
-  'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)',
-  'linear-gradient(160deg, #4a8a7b 0%, #6bab9d 40%, #89c2b5 70%, #4a8a7b 100%)',
-  'linear-gradient(160deg, #8a6b6b 0%, #ab8d8d 40%, #c2a5a5 70%, #8a6b6b 100%)',
-  'linear-gradient(160deg, #6b7b8a 0%, #8d9dab 40%, #a5b5c2 70%, #6b7b8a 100%)',
-  'linear-gradient(160deg, #8a7b6b 0%, #ab9d8d 40%, #c2b5a5 70%, #8a7b6b 100%)',
-  'linear-gradient(160deg, #6b8a7b 0%, #8dab9d 40%, #a5c2b5 70%, #6b8a7b 100%)',
-  'linear-gradient(160deg, #7b6b7b 0%, #9d8d9d 40%, #b5a5b5 70%, #7b6b7b 100%)',
-]
-
-function getSessionBackground() {
-  const key = 'wtf_session_bg_index'
-  let idx = sessionStorage.getItem(key)
-  if (idx === null) {
-    idx = Math.floor(Math.random() * PASTEL_GRADIENTS.length)
-    sessionStorage.setItem(key, String(idx))
-  }
-  return PASTEL_GRADIENTS[Number(idx)]
-}
-
-const HOME_BG_COLOR = getSessionBackground()
+// ── Fond Option A : dark navy-black + starburst orange central ────────────────
+// Empilement de radial-gradients, pas d'asset externe, zéro animation (perf mobile).
+const HOME_BG_COLOR = [
+  // Halo orange central (derrière le logo WTF!)
+  'radial-gradient(ellipse 80% 55% at 50% 32%, rgba(255,107,26,0.38) 0%, rgba(255,107,26,0.18) 30%, transparent 65%)',
+  // Vignette sombre sur les bords
+  'radial-gradient(ellipse 120% 100% at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%)',
+  // Base navy-black
+  '#0A0F1E',
+].join(', ')
 const S = (px) => `calc(${px}px * var(--scale))`
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -230,10 +217,6 @@ export default function HomeScreen({
         @keyframes coffreSlideIn {
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes starburst-rotate {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to   { transform: translate(-50%, -50%) rotate(360deg); }
         }
       `}</style>
 

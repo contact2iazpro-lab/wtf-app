@@ -257,12 +257,12 @@ export default function VraiOuFouScreen({ onHome }) {
         </div>
       </div>
 
-      {/* Image floutée (preview locked) — priorité taille */}
-      <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0, padding: `${S(10)} 0 ${S(8)}` }}>
+      {/* Image floutée (preview locked) — carré full width */}
+      <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0, padding: `${S(10)} ${S(16)} ${S(8)}` }}>
         <div style={{
           position: 'relative',
-          width: S(190),
-          height: S(190),
+          width: '100%',
+          aspectRatio: '1 / 1',
           borderRadius: S(18),
           overflow: 'hidden',
           boxShadow: '0 8px 28px rgba(0,0,0,0.45)',

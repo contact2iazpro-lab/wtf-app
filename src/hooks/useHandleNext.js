@@ -131,22 +131,19 @@ export function useHandleNext({
 
       // Ticket bonus onboarding supprimé — sera réimplémenté avec le tuto
 
-      // Bonus coins
+      // Bonus coins — CLAUDE.md 15/04/2026 économie ×10
+      // Snack : perfect 5/5 = +50c · Flash lun-sam = 30c fixe (dim = VIP, géré ailleurs)
+      // Quest/Marathon/VraiOuFou/Blitz : pas de bonus perfect (0)
       let bonusCoins = 0
       if (sessionType === 'flash') {
-        bonusCoins = 10
+        // Flash lun-sam : 30 coins fixe (sessionScore = 0 car FLASH.coinsPerCorrect = 0)
+        bonusCoins = 30
       } else if (sessionType === 'snack') {
-        const isPerfectFlash = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
-        // B4.11 — bonus perfect réduit 10→5 (cible F2P 30-50/j)
-        bonusCoins = isPerfectFlash ? 5 : 0
-      } else if (sessionType === 'parcours') {
-        // B4.11 — bonus perfect Quest réduit 10→5
-        bonusCoins = isPerfectSession ? 5 : 0
-      } else if (sessionType === 'snack') {
-        const isPerfectExplorer = correctCount + (isCorrect ? 1 : 0) === sessionFacts.length
-        // B4.11 — bonus perfect Snack réduit 10→5
-        bonusCoins = isPerfectExplorer ? 5 : 0
+        const finalCorrect = correctCount + (isCorrect ? 1 : 0)
+        const isPerfectSnack = finalCorrect === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
+        bonusCoins = isPerfectSnack ? 50 : 0
       }
+      // quest / marathon / vrai_ou_fou / blitz : 0 bonus (gains directs via coinsPerCorrect)
       setCoinsEarnedLastSession(sessionScore + bonusCoins)
 
       // Streak rewards

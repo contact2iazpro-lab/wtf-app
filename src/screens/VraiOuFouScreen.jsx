@@ -30,14 +30,15 @@ export default function VraiOuFouScreen({ onHome }) {
   )
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
-  const [drag, setDrag] = useState({ x: 0, active: false })
+  const [drag, setDrag] = useState({ y: 0, active: false })
   // feedback: { correct: bool, pickedSide: 'left'|'right', draw }
+  // Note : 'left' = carte du haut, 'right' = carte du bas (split horizontal)
   const [feedback, setFeedback] = useState(null)
   const [done, setDone] = useState(false)
   const [showQuit, setShowQuit] = useState(false)
   const [shareMsg, setShareMsg] = useState(null)
   const [imgFailed, setImgFailed] = useState(false)
-  const startX = useRef(0)
+  const startY = useRef(0)
   const feedbackTimer = useRef(null)
 
   useEffect(() => () => clearTimeout(feedbackTimer.current), [])
@@ -74,26 +75,27 @@ export default function VraiOuFouScreen({ onHome }) {
       } else {
         setIndex(i => i + 1)
         setFeedback(null)
-        setDrag({ x: 0, active: false })
+        setDrag({ y: 0, active: false })
       }
     }, FEEDBACK_MS)
   }
 
   const onPointerDown = (e) => {
     if (feedback) return
-    startX.current = e.clientX ?? e.touches?.[0]?.clientX ?? 0
-    setDrag({ x: 0, active: true })
+    startY.current = e.clientY ?? e.touches?.[0]?.clientY ?? 0
+    setDrag({ y: 0, active: true })
   }
   const onPointerMove = (e) => {
     if (!drag.active || feedback) return
-    const x = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) - startX.current
-    setDrag({ x, active: true })
+    const y = (e.clientY ?? e.touches?.[0]?.clientY ?? 0) - startY.current
+    setDrag({ y, active: true })
   }
   const onPointerUp = () => {
     if (!drag.active || feedback) return
-    if (drag.x > SWIPE_THRESHOLD) handlePick('right')
-    else if (drag.x < -SWIPE_THRESHOLD) handlePick('left')
-    else setDrag({ x: 0, active: false })
+    // Swipe vers le HAUT = carte du haut (left) ; vers le BAS = carte du bas (right)
+    if (drag.y < -SWIPE_THRESHOLD) handlePick('left')
+    else if (drag.y > SWIPE_THRESHOLD) handlePick('right')
+    else setDrag({ y: 0, active: false })
   }
 
   const handleReplay = () => {
@@ -101,7 +103,7 @@ export default function VraiOuFouScreen({ onHome }) {
     setIndex(0)
     setCorrect(0)
     setFeedback(null)
-    setDrag({ x: 0, active: false })
+    setDrag({ y: 0, active: false })
     setDone(false)
     setSeed(s => s + 1)
   }
@@ -219,11 +221,12 @@ export default function VraiOuFouScreen({ onHome }) {
     )
   }
 
-  // ── Phase de jeu : 2 cartes côte à côte ───────────────────────────────
+  // ── Phase de jeu : 2 cartes stackées verticalement ────────────────────
   // Intensité visuelle du swipe (0 → 1)
-  const dragIntensity = Math.min(Math.abs(drag.x) / SWIPE_THRESHOLD, 1)
-  const leftHighlight  = !feedback && drag.x < -10
-  const rightHighlight = !feedback && drag.x >  10
+  const dragIntensity = Math.min(Math.abs(drag.y) / SWIPE_THRESHOLD, 1)
+  // left = carte haut, right = carte bas (on garde ces noms pour trueSide)
+  const leftHighlight  = !feedback && drag.y < -10 // swipe haut
+  const rightHighlight = !feedback && drag.y >  10 // swipe bas
 
   // Pendant le feedback, on sait quel côté a été choisi, et quel côté est vrai
   const leftIsTrue  = draw && draw.trueSide === 'left'
@@ -250,19 +253,79 @@ export default function VraiOuFouScreen({ onHome }) {
 
       <GameHeader categoryLabel="Vrai ou Fou" categoryColor={MODE_COLOR} onQuit={() => setShowQuit(true)} />
 
+      {/* Logo VoF en haut de page */}
+      <div style={{ textAlign: 'center', padding: `${S(10)} ${S(16)} ${S(2)}`, flexShrink: 0 }}>
+        <img
+          src="/assets/ui/vof-logo.png"
+          alt="Vrai ou Fou"
+          style={{ height: S(42), width: 'auto', display: 'inline-block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }}
+        />
+      </div>
+
       {/* Compteur de progression */}
-      <div style={{ textAlign: 'center', padding: `${S(10)} 0 ${S(4)}`, flexShrink: 0 }}>
+      <div style={{ textAlign: 'center', padding: `${S(2)} 0 ${S(6)}`, flexShrink: 0 }}>
         <div style={{ fontSize: S(13), fontWeight: 800, color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }}>
           {index + 1} / {pool.length}
         </div>
       </div>
 
-      {/* Image floutée (preview locked) — carré full width */}
-      <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0, padding: `${S(10)} ${S(16)} ${S(8)}` }}>
+      {/* Zone des 2 cartes stackées verticalement + indicateurs au milieu */}
+      <div
+        onMouseDown={onPointerDown}
+        onMouseMove={onPointerMove}
+        onMouseUp={onPointerUp}
+        onMouseLeave={onPointerUp}
+        onTouchStart={onPointerDown}
+        onTouchMove={onPointerMove}
+        onTouchEnd={onPointerUp}
+        style={{
+          display: 'flex', flexDirection: 'column', gap: S(6),
+          padding: `0 ${S(14)}`, flex: 1, minHeight: 0,
+          userSelect: 'none', cursor: feedback ? 'default' : 'grab',
+        }}
+      >
+        {/* Carte du HAUT (left dans la logique) */}
+        <StatementCard S={S} text={leftText}  side="left"  highlight={leftHighlight}  intensity={dragIntensity} feedback={feedback} isTrue={leftIsTrue} />
+
+        {/* Indicateurs VRAI / FOU — milieu de page, entre les 2 cartes */}
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          gap: S(10), padding: `${S(4)} 0`, flexShrink: 0,
+        }}>
+          <div style={{
+            flex: 1, textAlign: 'center',
+            padding: `${S(6)} ${S(10)}`, borderRadius: S(12),
+            background: leftHighlight ? 'rgba(34,197,94,0.4)' : 'rgba(34,197,94,0.15)',
+            border: `2px solid ${leftHighlight ? '#22C55E' : 'rgba(34,197,94,0.5)'}`,
+            color: leftHighlight ? '#FFFFFF' : '#BBF7D0',
+            fontWeight: 900, fontSize: S(12), letterSpacing: '0.1em',
+            transition: 'all 0.2s ease',
+          }}>
+            ↑ VRAI
+          </div>
+          <div style={{
+            flex: 1, textAlign: 'center',
+            padding: `${S(6)} ${S(10)}`, borderRadius: S(12),
+            background: rightHighlight ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.15)',
+            border: `2px solid ${rightHighlight ? '#EF4444' : 'rgba(239,68,68,0.5)'}`,
+            color: rightHighlight ? '#FFFFFF' : '#FECACA',
+            fontWeight: 900, fontSize: S(12), letterSpacing: '0.1em',
+            transition: 'all 0.2s ease',
+          }}>
+            FOU ↓
+          </div>
+        </div>
+
+        {/* Carte du BAS (right dans la logique) */}
+        <StatementCard S={S} text={rightText} side="right" highlight={rightHighlight} intensity={dragIntensity} feedback={feedback} isTrue={rightIsTrue} />
+      </div>
+
+      {/* Image floutée (preview locked) — carré full width, en bas (taille fixe) */}
+      <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0, padding: `${S(10)} ${S(16)} ${S(16)}` }}>
         <div style={{
           position: 'relative',
-          width: '100%',
           aspectRatio: '1 / 1',
+          width: '100%',
           borderRadius: S(18),
           overflow: 'hidden',
           boxShadow: '0 8px 28px rgba(0,0,0,0.45)',
@@ -292,58 +355,6 @@ export default function VraiOuFouScreen({ onHome }) {
             🔒
           </div>
         </div>
-      </div>
-
-      {/* Logo VoF (remplace "Laquelle est vraie ?") */}
-      <div style={{ textAlign: 'center', padding: `${S(4)} ${S(16)} ${S(8)}`, flexShrink: 0 }}>
-        <img
-          src="/assets/ui/vof-logo.png"
-          alt="Vrai ou Fou"
-          style={{ height: S(40), width: 'auto', display: 'inline-block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }}
-        />
-      </div>
-
-      {/* Zone des 2 cartes — swipe gauche/droite */}
-      <div
-        className="flex-1 min-h-0 px-3"
-        onMouseDown={onPointerDown}
-        onMouseMove={onPointerMove}
-        onMouseUp={onPointerUp}
-        onMouseLeave={onPointerUp}
-        onTouchStart={onPointerDown}
-        onTouchMove={onPointerMove}
-        onTouchEnd={onPointerUp}
-        style={{ display: 'flex', gap: S(10), alignItems: 'stretch', userSelect: 'none', cursor: feedback ? 'default' : 'grab' }}
-      >
-        {/* Carte GAUCHE */}
-        <StatementCard
-          S={S}
-          text={leftText}
-          side="left"
-          highlight={leftHighlight}
-          intensity={dragIntensity}
-          feedback={feedback}
-          isTrue={leftIsTrue}
-        />
-        {/* Carte DROITE */}
-        <StatementCard
-          S={S}
-          text={rightText}
-          side="right"
-          highlight={rightHighlight}
-          intensity={dragIntensity}
-          feedback={feedback}
-          isTrue={rightIsTrue}
-        />
-      </div>
-
-      {/* Indication de swipe (masquée pendant le feedback pour éviter le saut) */}
-      <div style={{ padding: `${S(10)} 0 ${S(16)}`, textAlign: 'center', flexShrink: 0, minHeight: S(30) }}>
-        {!feedback && (
-          <p style={{ fontSize: S(11), color: 'rgba(255,255,255,0.55)', fontWeight: 700, letterSpacing: '0.05em' }}>
-            ← swipe pour choisir →
-          </p>
-        )}
       </div>
     </div>
   )

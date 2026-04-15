@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, VIP_USAGES } from '../constants/categories'
 import { resolveImageUrl } from '../utils/imageUrl'
+import { generateStatementsForFact } from '../lib/generateStatements'
 
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
@@ -693,97 +694,14 @@ export default function FactEditorPage({ toast }) {
     }
   }
 
-  // ── Vrai ou Fou : générer les 3 affirmations via Claude ────────────────
-  // Appel direct à l'API Anthropic via le proxy local /anthropic-proxy
-  // (la clé ANTHROPIC_API_KEY reste server-side dans vite.config.js, jamais bundlée).
   async function generateStatements() {
     if (generatingStatements) return
-    if (!fact.question || !fact.short_answer) {
-      toast?.('Remplis question et short_answer d\'abord', 'warn')
-      return
-    }
-
-    // Tirage aléatoire d'une fausse drôle et d'une fausse plausible parmi les variantes remplies
-    const funnyPool = [fact.funny_wrong_1, fact.funny_wrong_2].filter(Boolean)
-    const plausiblePool = [fact.plausible_wrong_1, fact.plausible_wrong_2, fact.plausible_wrong_3].filter(Boolean)
-    if (funnyPool.length === 0 || plausiblePool.length === 0) {
-      toast?.('Il faut au moins 1 funny_wrong et 1 plausible_wrong renseignés', 'warn')
-      return
-    }
-    const funny = funnyPool[Math.floor(Math.random() * funnyPool.length)]
-    const plausible = plausiblePool[Math.floor(Math.random() * plausiblePool.length)]
-
     setGeneratingStatements(true)
     try {
-      const systemPrompt = `Tu es un rédacteur pour un jeu de trivia "Vrai ou Faux". Ton rôle est de transformer des paires question/réponse en affirmations déclaratives auto-suffisantes et PUNCHY.
-
-RÈGLES DE REFORMULATION :
-1. L'affirmation doit être compréhensible SEULE, sans voir la question. Tu dois donc y réintroduire le sujet explicite (personne, animal, objet, lieu, période…) extrait de la question.
-2. Remplace tout pronom ambigu ("elle", "il", "ça", "on"…) par le sujet concret.
-3. Garde la forme déclarative, à la 3e personne, au présent de vérité générale quand c'est pertinent.
-4. CONCISION PRIORITAIRE : 1 phrase, 5 à 15 mots maximum. Tu DOIS couper tout ce qui est accessoire (dates précises, contexte géographique, noms d'acteurs secondaires) si ça fait dépasser 15 mots. Va à l'essentiel : qui, quoi. Préfère "Un bug Nest a coupé le chauffage de milliers de foyers." plutôt que "En 2016, un bug du thermostat Nest a vidé sa batterie et coupé le chauffage de nombreuses familles en plein hiver."
-5. Ne change PAS le fond de l'info : si la réponse dit "trois cœurs", l'affirmation dit "trois cœurs" (ou "3 cœurs"), pas "plusieurs cœurs".
-6. Écris en français naturel, ton neutre et factuel. Pas d'emoji, pas de guillemets autour de l'affirmation.
-7. Capitalise la première lettre. NE TERMINE PAS par un point, ni par aucune ponctuation finale. L'affirmation doit finir sur le dernier mot.
-8. VARIÉTÉ SYNTAXIQUE : si plusieurs affirmations partagent la même structure, reformule-les pour varier l'attaque. Ne recopie JAMAIS le même début sur les 3 phrases. Change le sujet grammatical, l'ordre, ou la voix si besoin.
-9. Pour les questions en "Pourquoi" ou "Comment", tu n'es pas obligé de reproduire toute la proposition dans chaque affirmation. Focalise sur le cœur de l'info.
-10. PIÈGE CONTEXTUEL À ÉVITER : quand tu reformules funny_answer ou plausible_answer en affirmation autonome, vérifie que l'affirmation reste FAUSSE dans l'absolu, pas seulement fausse par rapport à la question d'origine. Si la fausse réponse mentionne une autre entité réelle (autre personne, lieu, animal, événement) qui rend l'affirmation accidentellement VRAIE hors contexte, tu DOIS reformuler pour garder le sujet original (celui de la question).
-11. Le sujet grammatical des 3 affirmations doit rester identique au sujet principal de la question. Si la question porte sur X, les 3 affirmations parlent de X — pas de Y ou Z, même si les fausses réponses mentionnent d'autres entités.
-
-EXEMPLES DE BONNE LONGUEUR (remarque : PAS de point final) :
-- "La pieuvre a trois cœurs" (5 mots ✓)
-- "Un bug Nest a coupé le chauffage de milliers de foyers" (11 mots ✓)
-- "Le cœur humain pèse environ 300 grammes" (7 mots ✓)
-
-TU RENVOIES STRICTEMENT ce JSON, sans texte autour :
-{
-  "statement_true": "…",
-  "statement_false_funny": "…",
-  "statement_false_plausible": "…"
-}`
-
-      const userPrompt = `question: ${fact.question}
-true_answer: ${fact.short_answer}
-funny_answer: ${funny}
-plausible_answer: ${plausible}`
-
-      const resp = await fetch('/anthropic-proxy/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-opus-4-6',
-          max_tokens: 400,
-          temperature: 0.3,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userPrompt }],
-        }),
-      })
-
-      if (!resp.ok) {
-        const errText = await resp.text()
-        throw new Error(`HTTP ${resp.status} — ${errText}`)
-      }
-
-      const data = await resp.json()
-      const raw = data?.content?.[0]?.text?.trim() || ''
-
-      // Claude renvoie parfois le JSON entouré de ``` ou d'un préambule — on extrait le bloc {}
-      const jsonMatch = raw.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) throw new Error('Réponse Claude sans JSON parsable : ' + raw.slice(0, 200))
-
-      const parsed = JSON.parse(jsonMatch[0])
-      if (!parsed.statement_true || !parsed.statement_false_funny || !parsed.statement_false_plausible) {
-        throw new Error('JSON incomplet : ' + JSON.stringify(parsed))
-      }
-
-      // Filet de sécurité : retire un éventuel point / ponctuation finale
-      // même si le prompt l'interdit déjà (au cas où Claude rechute).
-      const stripEndPunct = (s) => s.trim().replace(/[.!?。]+$/u, '').trim()
-
-      set('statement_true', stripEndPunct(parsed.statement_true))
-      set('statement_false_funny', stripEndPunct(parsed.statement_false_funny))
-      set('statement_false_plausible', stripEndPunct(parsed.statement_false_plausible))
-
+      const result = await generateStatementsForFact(fact)
+      set('statement_true', result.statement_true)
+      set('statement_false_funny', result.statement_false_funny)
+      set('statement_false_plausible', result.statement_false_plausible)
       toast?.('✓ 3 affirmations générées — relis et sauvegarde')
     } catch (err) {
       console.error('[generateStatements]', err)

@@ -143,6 +143,13 @@ class AudioManager {
         this.playFile(wrongSounds[Math.floor(Math.random() * wrongSounds.length)].slice(1), 0.2)
         break
       }
+      case 'wrong_vof': {
+        // Descente "whoop" moqueuse pour Vrai ou Fou : 3 tons sine descendants
+        this._tone(494, 0.12, 'sine', 0.22)
+        this._tone(370, 0.14, 'sine', 0.24, 0.1)
+        this._tone(247, 0.3, 'sine', 0.26, 0.22)
+        break
+      }
       case 'buzzer':
         this._tone(150, 0.15, 'square', 0.3)
         this._tone(100, 0.15, 'square', 0.25, 0.05)

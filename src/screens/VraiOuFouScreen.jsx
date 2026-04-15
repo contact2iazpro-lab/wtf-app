@@ -8,7 +8,6 @@ import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import GameHeader from '../components/GameHeader'
 import FallbackImage from '../components/FallbackImage'
-import renderFormattedText from '../utils/renderFormattedText'
 import { CATEGORIES } from '../data/facts'
 
 const SESSION_SIZE = 20
@@ -65,7 +64,7 @@ export default function VraiOuFouScreen({ onHome }) {
     if (feedback || !draw) return
     const isCorrect = pickedSide === draw.trueSide
     setFeedback({ correct: isCorrect, pickedSide, draw })
-    audio.play(isCorrect ? 'correct' : 'wrong')
+    audio.play(isCorrect ? 'correct' : 'wrong_vof')
 
     if (isCorrect) setCorrect(c => c + 1)
 
@@ -258,15 +257,15 @@ export default function VraiOuFouScreen({ onHome }) {
         </div>
       </div>
 
-      {/* Image floutée (preview locked) */}
-      <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0, padding: `${S(8)} 0 ${S(6)}` }}>
+      {/* Image floutée (preview locked) — priorité taille */}
+      <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0, padding: `${S(10)} 0 ${S(8)}` }}>
         <div style={{
           position: 'relative',
-          width: S(110),
-          height: S(110),
-          borderRadius: S(14),
+          width: S(190),
+          height: S(190),
+          borderRadius: S(18),
           overflow: 'hidden',
-          boxShadow: '0 6px 20px rgba(0,0,0,0.35)',
+          boxShadow: '0 8px 28px rgba(0,0,0,0.45)',
         }}>
           {fact?.imageUrl && !imgFailed ? (
             <img
@@ -275,31 +274,33 @@ export default function VraiOuFouScreen({ onHome }) {
               onError={() => setImgFailed(true)}
               style={{
                 width: '100%', height: '100%', objectFit: 'cover',
-                filter: 'blur(14px) brightness(0.65)',
-                transform: 'scale(1.15)', // éviter bords flous
+                filter: 'blur(18px) brightness(0.6)',
+                transform: 'scale(1.15)',
               }}
             />
           ) : (
-            <div style={{ width: '100%', height: '100%', filter: 'blur(10px) brightness(0.7)', transform: 'scale(1.1)' }}>
+            <div style={{ width: '100%', height: '100%', filter: 'blur(14px) brightness(0.65)', transform: 'scale(1.1)' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
           <div style={{
             position: 'absolute', inset: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: S(34),
-            textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+            fontSize: S(52),
+            textShadow: '0 2px 10px rgba(0,0,0,0.7)',
           }}>
             🔒
           </div>
         </div>
       </div>
 
-      {/* Instruction */}
-      <div style={{ textAlign: 'center', padding: `${S(6)} ${S(16)} ${S(8)}`, flexShrink: 0 }}>
-        <p style={{ fontSize: S(14), fontWeight: 900, color: '#fff', letterSpacing: '0.02em' }}>
-          Laquelle est vraie ?
-        </p>
+      {/* Logo VoF (remplace "Laquelle est vraie ?") */}
+      <div style={{ textAlign: 'center', padding: `${S(4)} ${S(16)} ${S(8)}`, flexShrink: 0 }}>
+        <img
+          src="/assets/ui/vof-logo.png"
+          alt="Vrai ou Fou"
+          style={{ height: S(40), width: 'auto', display: 'inline-block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }}
+        />
       </div>
 
       {/* Zone des 2 cartes — swipe gauche/droite */}
@@ -336,36 +337,14 @@ export default function VraiOuFouScreen({ onHome }) {
         />
       </div>
 
-      {/* Bandeau feedback bas (explication + "C'était…") */}
-      {feedback ? (
-        <div style={{ padding: `${S(10)} ${S(16)} ${S(16)}`, flexShrink: 0 }}>
-          <div style={{
-            background: 'rgba(255,255,255,0.95)', borderRadius: S(14),
-            padding: `${S(12)} ${S(14)}`,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-          }}>
-            <p style={{
-              color: feedback.correct ? '#059669' : '#DC2626',
-              fontSize: S(12), fontWeight: 900,
-              textTransform: 'uppercase', letterSpacing: '0.05em',
-              textAlign: 'center', marginBottom: S(6),
-            }}>
-              {feedback.correct ? '✓ Bien vu !' : '✗ Raté !'}
-            </p>
-            {(feedback.draw.fact.explanation || feedback.draw.fact.answer) && (
-              <p style={{ color: '#374151', fontSize: S(12), fontWeight: 600, lineHeight: 1.4, textAlign: 'center' }}>
-                {renderFormattedText(feedback.draw.fact.explanation || feedback.draw.fact.answer)}
-              </p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div style={{ padding: `${S(8)} 0 ${S(16)}`, textAlign: 'center', flexShrink: 0 }}>
+      {/* Indication de swipe (masquée pendant le feedback pour éviter le saut) */}
+      <div style={{ padding: `${S(10)} 0 ${S(16)}`, textAlign: 'center', flexShrink: 0, minHeight: S(30) }}>
+        {!feedback && (
           <p style={{ fontSize: S(11), color: 'rgba(255,255,255,0.55)', fontWeight: 700, letterSpacing: '0.05em' }}>
             ← swipe pour choisir →
           </p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
@@ -414,7 +393,7 @@ function StatementCard({ S, text, side, highlight, intensity, feedback, isTrue }
         background: bg,
         borderRadius: S(18),
         border: `${borderWidth}px solid ${borderColor}`,
-        padding: S(16),
+        padding: `${S(10)} ${S(8)}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

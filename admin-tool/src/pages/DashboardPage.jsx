@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, VIP_USAGES } from '../constants/categories'
+import { generateStatementsForFact } from '../lib/generateStatements'
 
 function StatCard({ label, value, sub, color }) {
   return (
@@ -81,6 +82,14 @@ export default function DashboardPage({ toast }) {
   const [fillUrlsError, setFillUrlsError] = useState('')
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 })
   const enrichCancelRef = useRef(false)
+
+  // ── Bulk Vrai ou Fou : génération des 3 affirmations ─────────────────
+  const [vofStatus, setVofStatus] = useState(null) // null | 'running' | 'done' | 'error'
+  const [vofMessage, setVofMessage] = useState('')
+  const [vofProgress, setVofProgress] = useState({ current: 0, total: 0 })
+  const [vofErrorCount, setVofErrorCount] = useState(0)
+  const [vofForceAll, setVofForceAll] = useState(false)
+  const vofCancelRef = useRef(false)
 
 
   useEffect(() => { load(); fetchQualityIssues(); fetchShortHintsCount() }, [])
@@ -532,6 +541,100 @@ export default function DashboardPage({ toast }) {
 
   function stopEnrich() {
     enrichCancelRef.current = true
+  }
+
+  // ── Bulk Vrai ou Fou : boucle sur les facts incomplets ──────────────
+  async function runBulkStatements() {
+    if (vofStatus === 'running') return
+    vofCancelRef.current = false
+    setVofStatus('running')
+    setVofMessage('⏳ Récupération des facts éligibles...')
+    setVofErrorCount(0)
+
+    try {
+      // Fetch tous les facts qui ont le minimum requis pour générer (question + short_answer + >=1 funny + >=1 plausible)
+      const all = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, question, short_answer, funny_wrong_1, funny_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement_true, statement_false_funny, statement_false_plausible')
+          .range(from, from + PAGE - 1)
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+
+      const isEmpty = v => !v || (typeof v === 'string' && v.trim() === '')
+      const hasMinimum = f =>
+        !isEmpty(f.question) && !isEmpty(f.short_answer) &&
+        (!isEmpty(f.funny_wrong_1) || !isEmpty(f.funny_wrong_2)) &&
+        (!isEmpty(f.plausible_wrong_1) || !isEmpty(f.plausible_wrong_2) || !isEmpty(f.plausible_wrong_3))
+
+      const needsGen = f => isEmpty(f.statement_true) || isEmpty(f.statement_false_funny) || isEmpty(f.statement_false_plausible)
+
+      const eligible = all.filter(f => hasMinimum(f) && (vofForceAll || needsGen(f)))
+
+      if (eligible.length === 0) {
+        setVofStatus('done')
+        setVofMessage(vofForceAll ? '✅ Aucun fact éligible' : '✅ Tous les facts éligibles ont déjà leurs 3 affirmations')
+        return
+      }
+
+      setVofProgress({ current: 0, total: eligible.length })
+      let generated = 0
+
+      for (let i = 0; i < eligible.length; i++) {
+        if (vofCancelRef.current) {
+          setVofStatus('done')
+          setVofMessage(`⏹ Arrêté — ${generated}/${eligible.length} générés`)
+          return
+        }
+
+        const fact = eligible[i]
+        setVofMessage(`🤖 Génération ${i + 1}/${eligible.length} — fact #${fact.id}...`)
+        setVofProgress({ current: i + 1, total: eligible.length })
+
+        try {
+          const result = await generateStatementsForFact(fact)
+
+          const { error: updateError } = await supabase
+            .from('facts')
+            .update({
+              statement_true: result.statement_true,
+              statement_false_funny: result.statement_false_funny,
+              statement_false_plausible: result.statement_false_plausible,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', fact.id)
+          if (updateError) throw updateError
+
+          generated++
+        } catch (err) {
+          console.error(`Erreur génération statements fact #${fact.id}:`, err)
+          setVofErrorCount(prev => prev + 1)
+        }
+
+        // Rate limit doux ~1 req/s pour éviter de saturer l'API Anthropic
+        if (i < eligible.length - 1) {
+          await new Promise(r => setTimeout(r, 1000))
+        }
+      }
+
+      setVofStatus('done')
+      setVofMessage(`✅ Terminé — ${generated}/${eligible.length} facts générés`)
+    } catch (err) {
+      console.error(err)
+      setVofStatus('error')
+      setVofMessage(`❌ Erreur : ${err.message}`)
+    }
+  }
+
+  function stopBulkStatements() {
+    vofCancelRef.current = true
   }
 
   if (loading) {
@@ -1152,6 +1255,90 @@ export default function DashboardPage({ toast }) {
           {enrichStatus === 'error' && (
             <button
               onClick={runEnrichShortHints}
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all"
+            >
+              ↺ Réessayer
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 🤔 Bulk Vrai ou Fou — 3 affirmations */}
+      <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
+        <h2 className="text-base font-black text-white mb-2">🤔 Générer les affirmations Vrai ou Fou</h2>
+        <p className="text-slate-400 text-sm mb-4">
+          Boucle sur tous les facts éligibles (question + short_answer + au moins 1 funny_wrong + 1 plausible_wrong)
+          et génère les 3 affirmations via Claude. Rate-limit ~1 req/s.
+        </p>
+
+        <label className="flex items-center gap-2 mb-4 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={vofForceAll}
+            onChange={e => setVofForceAll(e.target.checked)}
+            disabled={vofStatus === 'running'}
+            className="w-4 h-4"
+          />
+          <span className="text-sm text-slate-300">
+            Forcer la régénération (écrase les statements existants)
+          </span>
+        </label>
+
+        {vofStatus === 'running' && vofProgress.total > 0 && (
+          <div className="mb-4">
+            <div className="flex justify-between text-xs text-slate-400 mb-1">
+              <span>{vofProgress.current}/{vofProgress.total} générés</span>
+              <span>{Math.round((vofProgress.current / vofProgress.total) * 100)}%</span>
+            </div>
+            <div className="h-2.5 bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${(vofProgress.current / vofProgress.total) * 100}%`,
+                  background: 'linear-gradient(135deg, #9B59B6, #6B2F8A)',
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {vofMessage && (
+          <div
+            className="mb-4 px-4 py-3 rounded-xl text-sm font-semibold border"
+            style={{
+              background: vofStatus === 'error' ? 'rgba(239,68,68,0.1)' : vofStatus === 'done' ? 'rgba(34,197,94,0.1)' : 'rgba(155,89,182,0.1)',
+              borderColor: vofStatus === 'error' ? 'rgba(239,68,68,0.3)' : vofStatus === 'done' ? 'rgba(34,197,94,0.3)' : 'rgba(155,89,182,0.3)',
+              color: vofStatus === 'error' ? '#EF4444' : vofStatus === 'done' ? '#22C55E' : '#9B59B6',
+            }}
+          >
+            {vofStatus === 'running' && <span className="inline-block animate-spin mr-2">⟳</span>}
+            {vofMessage}
+            {vofErrorCount > 0 && (
+              <span className="ml-2 text-amber-400">({vofErrorCount} erreur{vofErrorCount > 1 ? 's' : ''})</span>
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-3 flex-wrap">
+          <button
+            disabled={vofStatus === 'running'}
+            onClick={runBulkStatements}
+            className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #9B59B6, #6B2F8A)' }}
+          >
+            {vofStatus === 'running' ? 'Génération…' : '🤖 Générer en masse'}
+          </button>
+          {vofStatus === 'running' && (
+            <button
+              onClick={stopBulkStatements}
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all"
+            >
+              ⏹ Arrêter
+            </button>
+          )}
+          {vofStatus === 'error' && (
+            <button
+              onClick={runBulkStatements}
               className="px-4 py-2 rounded-xl text-sm font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all"
             >
               ↺ Réessayer

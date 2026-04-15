@@ -6,7 +6,7 @@ export const DIFFICULTY_LEVELS = {
   SNACK: {
     id: 'snack', label: 'Snack', emoji: '🎯',
     choices: 2, duration: 15, questionsCount: 5,
-    hintsAllowed: true, freeHints: 1, paidHints: 0, hintCost: 0,
+    hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 50,
     coinsPerCorrect: 10, perfectBonus: 50,
     scoring: { correct: 10, wrong: 0 },
   },

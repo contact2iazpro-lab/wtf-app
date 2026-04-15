@@ -76,28 +76,15 @@ const CHAPTERS = [
     id: 'snack',
     emoji: '🎯',
     shortTitle: 'Snack',
-    title: 'Mode Snack (Jouer)',
-    content: [
-      { icon: '🔋', text: 'Coûte **1 énergie** — 3 gratuites par jour, puis **10 coins** par session.' },
-      { icon: '⚡', text: 'Session rapide de **5 questions** · 4 QCM · **20s** par question.' },
-      { icon: '🎲', text: 'Catégories **aléatoires** uniquement — pas de choix de catégorie.' },
-      { icon: '🪙', text: '**2 coins** par bonne réponse.' },
-      { icon: '💡', text: 'Jusqu\'à **2 indices** utilisables par question (consomme ton stock).' },
-      { icon: '📚', text: 'Les f*cts débloqués sont **sauvegardés immédiatement** dans ta Collection.' },
-    ],
-  },
-  {
-    id: 'snack',
-    emoji: '🗺️',
-    shortTitle: 'Snack',
     title: 'Mode Snack',
     content: [
-      { icon: '🔋', text: 'Coûte **1 énergie** — 3 gratuites par jour, puis **10 coins** par session.' },
-      { icon: '📂', text: '**Choisis ta catégorie** — explore le thème qui t\'intéresse !' },
-      { icon: '⚡', text: '**5 questions** · 4 QCM · **20s** par question.' },
-      { icon: '🪙', text: '**1 coin** par bonne réponse (catégorie choisie = gains réduits).' },
-      { icon: '💡', text: 'Jusqu\'à **2 indices** utilisables par question (consomme ton stock).' },
-      { icon: '📚', text: 'Les f*cts débloqués sont **sauvegardés immédiatement** dans ta Collection.' },
+      { icon: '💰', text: '**Coût :** 1 énergie par session.' },
+      { icon: '📋', text: '**Format :** 5 questions par session.' },
+      { icon: '🔢', text: '**Choix de réponses :** 2 propositions par question.' },
+      { icon: '⏱️', text: '**Timer :** 15 secondes par question.' },
+      { icon: '🪙', text: '**Récompenses :** 10 coins par bonne réponse.' },
+      { icon: '🎁', text: '**Bonus :** +50 coins si tu réponds correctement aux 5 questions.' },
+      { icon: '📂', text: '**Catégorie :** choisis librement dans tes catégories débloquées ou joue en aléatoire.' },
     ],
   },
   {
@@ -542,7 +529,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               )}
 
               {/* Checkbox réafficher les règles des modes — bien visible */}
-              {['quest', 'snack', 'snack', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
+              {['quest', 'snack', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
                 <label style={{
                   display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
                   cursor: 'pointer', marginTop: 12, padding: '8px', background: 'rgba(255,107,26,0.08)',

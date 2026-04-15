@@ -195,8 +195,8 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
 
-          {/* Aléatoire — masqué en mode Snack */}
-          {gameMode !== 'snack' && <button
+          {/* Aléatoire — toujours proposé */}
+          <button
             onClick={() => handleCategoryClick('random')}
             style={{
               background: selectedCatId === 'random'
@@ -228,7 +228,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                 Catégorie surprise !
               </div>
             </div>
-          </button>}
+          </button>
 
           {/* Catégories triées */}
           {visibleCategories.map((cat) => {

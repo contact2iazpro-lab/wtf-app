@@ -186,21 +186,28 @@ export default function RevelationScreen({
     : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
   // ── Coins animation (replaces floating +5 pts badge) ──────────────────────
+  // Reset + re-trigger à chaque nouvelle question (fact.id dans les deps)
   useEffect(() => {
+    setShowCoins(false)
+    setShowScorePulse(false)
+    setDisplayedScore(isCorrect ? sessionScore - pointsEarned : sessionScore)
     if (isCorrect) {
-      setTimeout(() => audio.playFile('What the fact.mp3'), 350)
-      setTimeout(() => audio.playFile('Coins points.mp3'), 600)
-      // Trigger coins animation after a short delay
-      setTimeout(() => setShowCoins(true), 400)
-      // Update score after coins reach target
+      const soundTimer1 = setTimeout(() => audio.playFile('What the fact.mp3'), 350)
+      const soundTimer2 = setTimeout(() => audio.playFile('Coins points.mp3'), 600)
+      const coinsTimer = setTimeout(() => setShowCoins(true), 400)
       const scoreTimer = setTimeout(() => {
         setDisplayedScore(prev => prev + pointsEarned)
         setShowScorePulse(true)
         setTimeout(() => setShowScorePulse(false), 600)
       }, 1800)
-      return () => clearTimeout(scoreTimer)
+      return () => {
+        clearTimeout(soundTimer1)
+        clearTimeout(soundTimer2)
+        clearTimeout(coinsTimer)
+        clearTimeout(scoreTimer)
+      }
     }
-  }, [isCorrect])
+  }, [fact.id, isCorrect, pointsEarned, sessionScore])
 
   const handleNativeShare = () => {
     const shareMessages = [

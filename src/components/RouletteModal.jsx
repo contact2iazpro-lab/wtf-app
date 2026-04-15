@@ -1,9 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import CoinsIcon from './CoinsIcon'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
-import { getVipFacts } from '../data/factsService'
-import { renderEmoji } from '../utils/renderEmoji'
 import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -12,16 +9,16 @@ const S = (px) => `calc(${px}px * var(--scale))`
 // Affichage : tous les segments ont la même taille visuelle (équité perçue).
 // Probabilités : définies séparément via `weight` (indépendant de la taille).
 // Bloc 3.5 — T95 : avg coins/spin ~5,44
+// Spec ROULETTE_WTF_SPECS 15/04/2026 — 8 segments, économie ×10, spin = 100 coins
 const SEGMENTS = [
-  { label: '5',   icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 5  }, color: '#FF6B1A', weight: 26 },
-  { label: '1',   icon: '/assets/ui/icon-hint.png',     reward: { type: 'hints',   amount: 1  }, color: '#3B82F6', weight: 21 },
-  { label: '8',   icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 8  }, color: '#F59E0B', weight: 18 },
-  { label: '2',   icon: '/assets/ui/icon-hint.png',     reward: { type: 'hints',   amount: 2  }, color: '#8B5CF6', weight: 12 },
-  { label: '15',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 15 }, color: '#EF4444', weight: 10 },
-  { label: '20',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 20 }, color: '#10B981', weight: 7  },
-  { label: '30',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins',   amount: 30 }, color: '#EC4899', weight: 4  },
-  { label: '',    icon: '/assets/ui/emoji-streak.png',  reward: { type: 'freeze',  amount: 1  }, color: '#6366F1', weight: 1  },
-  { label: 'VIP', icon: '/assets/ui/level-wtf.png',     reward: { type: 'vipFact', amount: 1  }, color: '#FFD700', weight: 1  },
+  { label: '20',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 20  }, color: '#9CA3AF', weight: 28 },
+  { label: '50',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 50  }, color: '#CD7F32', weight: 24 },
+  { label: '1',   icon: '/assets/ui/icon-hint.png',  reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 18 },
+  { label: '100', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 100 }, color: '#C0C0C0', weight: 12 },
+  { label: '150', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 150 }, color: '#3B82F6', weight: 8  },
+  { label: '2',   icon: '/assets/ui/icon-hint.png',  reward: { type: 'hints', amount: 2   }, color: '#6D28D9', weight: 5  },
+  { label: '300', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 300 }, color: '#F59E0B', weight: 3  },
+  { label: '750', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 750 }, color: '#FFD700', weight: 2  },
 ]
 
 const TOTAL_WEIGHT = SEGMENTS.reduce((sum, s) => sum + s.weight, 0)
@@ -47,7 +44,7 @@ function pickSegment() {
   return 0
 }
 
-const EXTRA_SPIN_COST = 10
+const EXTRA_SPIN_COST = 100
 
 function getSpinData() {
   const wd = readWtfData()
@@ -67,7 +64,7 @@ export default function RouletteModal({ onClose, scale }) {
   const tickIntervalRef = useRef(null)
   const imagesRef = useRef({})
   // Phase A.6/A.7 — miroir Supabase
-  const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
+  const { applyCurrencyDelta } = usePlayerProfile()
 
   const isFree = !spinData.freeUsed
 
@@ -211,42 +208,15 @@ export default function RouletteModal({ onClose, scale }) {
       const seg = SEGMENTS[winIndex]
       setResult(seg)
 
-      // Son de gain selon la rareté du reward
-      const isRare = seg.reward.type === 'vipFact' || seg.reward.type === 'freeze'
-      audio.play(isRare ? 'roulette_jackpot' : 'roulette_win')
+      // Son de gain : jackpot pour 300/750 coins, sinon win
+      const isJackpot = seg.reward.type === 'coins' && seg.reward.amount >= 300
+      audio.play(isJackpot ? 'roulette_jackpot' : 'roulette_win')
 
       // Appliquer la récompense via RPC (anonyme = localStorage, connecté = Supabase)
-      if (['coins', 'hints'].includes(seg.reward.type)) {
-        const rpcDelta = { [seg.reward.type]: seg.reward.amount }
-        applyCurrencyDelta?.(rpcDelta, `roulette_reward_${seg.reward.type}`)?.catch?.(e =>
-          console.warn('[RouletteModal] reward RPC failed:', e?.message || e)
-        )
-      }
-      else if (seg.reward.type === 'freeze') {
-        const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-        wd.streakFreezeCount = (wd.streakFreezeCount || 0) + 1
-        wd.lastModified = Date.now()
-        localStorage.setItem('wtf_data', JSON.stringify(wd))
-      } else if (seg.reward.type === 'vipFact') {
-        // Débloquer un VIP random non possédé
-        try {
-          const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-          const owned = new Set(wd.unlockedFacts || [])
-          const pool = getVipFacts().filter(f => !owned.has(f.id))
-          if (pool.length > 0) {
-            const vip = pool[Math.floor(Math.random() * pool.length)]
-            owned.add(vip.id)
-            wd.unlockedFacts = [...owned]
-            // Phase A.7 : miroir Supabase
-            unlockFact?.(vip.id, vip.category, 'roulette_reward_vip').catch(e =>
-              console.warn('[RouletteModal] unlockFact RPC failed:', e?.message || e)
-            )
-          }
-          wd.lastModified = Date.now()
-          localStorage.setItem('wtf_data', JSON.stringify(wd))
-          window.dispatchEvent(new Event('wtf_storage_sync'))
-        } catch { /* ignore */ }
-      }
+      const rpcDelta = { [seg.reward.type]: seg.reward.amount }
+      applyCurrencyDelta?.(rpcDelta, `roulette_reward_${seg.reward.type}`)?.catch?.(e =>
+        console.warn('[RouletteModal] reward RPC failed:', e?.message || e)
+      )
 
       // Enregistrer le spin
       const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
@@ -265,9 +235,8 @@ export default function RouletteModal({ onClose, scale }) {
   const rewardLabel = result && {
     coins: `+${result.reward.amount} coins`,
     hints: `+${result.reward.amount} indice${result.reward.amount > 1 ? 's' : ''}`,
-    freeze: '+1 Streak Freeze',
-    vipFact: '⭐ 1 f*ct VIP débloqué !',
   }[result.reward.type]
+  const isJackpotResult = result && result.reward.type === 'coins' && result.reward.amount >= 300
 
   return (
     <div
@@ -304,17 +273,17 @@ export default function RouletteModal({ onClose, scale }) {
         {/* Résultat */}
         {result && !spinning && (
           <div style={{
-            background: result.reward.type === 'vipFact'
+            background: isJackpotResult
               ? 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.15))'
               : 'linear-gradient(135deg, rgba(255,107,26,0.1), rgba(255,165,0,0.1))',
-            border: result.reward.type === 'vipFact' ? '1.5px solid rgba(255,215,0,0.5)' : '1.5px solid rgba(255,107,26,0.3)',
+            border: isJackpotResult ? '1.5px solid rgba(255,215,0,0.5)' : '1.5px solid rgba(255,107,26,0.3)',
             borderRadius: 14,
             padding: '12px 16px', marginBottom: 16,
             animation: 'roulettePop 0.3s ease',
-            boxShadow: result.reward.type === 'vipFact' ? '0 0 20px rgba(255,215,0,0.4)' : 'none',
+            boxShadow: isJackpotResult ? '0 0 20px rgba(255,215,0,0.4)' : 'none',
           }}>
-            <span style={{ fontSize: 28 }}>{renderEmoji(result.emoji)}</span>
-            <div style={{ fontSize: 16, fontWeight: 900, color: result.reward.type === 'vipFact' ? '#B8860B' : '#FF6B1A', marginTop: 4 }}>
+            <img src={result.icon} alt="" style={{ width: 36, height: 36 }} />
+            <div style={{ fontSize: 16, fontWeight: 900, color: isJackpotResult ? '#B8860B' : '#FF6B1A', marginTop: 4 }}>
               {rewardLabel}
             </div>
           </div>
@@ -365,18 +334,19 @@ export default function RouletteModal({ onClose, scale }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {SEGMENTS.map((seg, i) => {
-                const pct = (seg.weight / TOTAL_WEIGHT * 100).toFixed(seg.weight < 2 ? 1 : 0)
-                const label = seg.reward.type === 'coins' ? `${seg.reward.amount} coins`
-                  : seg.reward.type === 'hints' ? `${seg.reward.amount} indice${seg.reward.amount > 1 ? 's' : ''}`
-                  : seg.reward.type === 'freeze' ? 'Streak Freeze'
-                  : '⭐ F*ct VIP'
+                const pct = (seg.weight / TOTAL_WEIGHT * 100).toFixed(0)
+                const label = seg.reward.type === 'coins'
+                  ? `${seg.reward.amount} coins`
+                  : `${seg.reward.amount} indice${seg.reward.amount > 1 ? 's' : ''}`
+                const isJack = seg.reward.type === 'coins' && seg.reward.amount >= 300
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
                     <span style={{ width: 10, height: 10, borderRadius: 3, background: seg.color, flexShrink: 0 }} />
-                    <span style={{ flex: 1, color: '#374151', fontWeight: 700 }}>{renderEmoji(seg.emoji)} {label}</span>
+                    <img src={seg.icon} alt="" style={{ width: 14, height: 14 }} />
+                    <span style={{ flex: 1, color: '#374151', fontWeight: 700 }}>{label}</span>
                     <span style={{
                       fontWeight: 900,
-                      color: seg.reward.type === 'vipFact' ? '#B8860B' : '#6B7280',
+                      color: isJack ? '#B8860B' : '#6B7280',
                       fontVariantNumeric: 'tabular-nums',
                     }}>{pct}%</span>
                   </div>

@@ -64,7 +64,7 @@ function buildPools(fact) {
 
 // ── pickWrongAnswers ─────────────────────────────────────────────────────────
 
-function pickWrongAnswers(fact, level, factId) {
+function pickWrongAnswers(fact, numWrong, factId) {
   const { funny, close, plausible } = buildPools(fact)
   const allAvailable = [...funny, ...close, ...plausible]
 
@@ -74,43 +74,25 @@ function pickWrongAnswers(fact, level, factId) {
     const legacyWrong = (fact.options || []).filter(
       (o, i) => o && i !== fact.correctIndex
     )
-    const needed = (level === 'wtf') ? 5 : (level === 'cool' || level === 'onboarding_flash') ? 1 : 3
-    return fisherYatesShuffle(legacyWrong).slice(0, needed)
+    return fisherYatesShuffle(legacyWrong).slice(0, numWrong)
   }
 
   let picked = []
 
-  if (level === 'wtf') {
-    // 6 total: 1 drôle + 1 proche + 3 plausibles
+  if (numWrong <= 1) {
+    // 2 QCM total (Snack/Blitz/Flash) : 1 drôle
     const f = pickRandom(funny, 1)
-    const c = pickRandom(close, 1)
-    const p = pickRandom(plausible, 3)
-    picked = [...f, ...c, ...p]
-    // If not enough in any bucket, fill from the full pool
-    if (picked.length < 5) {
-      const used = new Set(picked)
-      const extra = allAvailable.filter(a => !used.has(a))
-      picked = [...picked, ...pickRandom(extra, 5 - picked.length)]
-    }
-  } else if (level === 'cool' || level === 'onboarding_flash') {
-    // 2 total: 1 drôle (funny) seulement
-    const f = pickRandom(funny, 1)
-    picked = [...f]
-    // If no funny available, fallback to any wrong answer
-    if (picked.length === 0) {
-      picked = [allAvailable[0]]
-    }
+    picked = f.length ? [...f] : [allAvailable[0]]
   } else {
-    // hot / flash / blitz: 4 total: 1 drôle + 1 proche + 1 plausible
+    // 4 QCM total (Quest/Marathon) : 1 drôle + 1 proche + 1 plausible
     const f = pickRandom(funny, 1)
     const c = pickRandom(close, 1)
     const p = pickRandom(plausible, 1)
     picked = [...f, ...c, ...p]
-    // If not enough in any bucket, fill from the full pool
-    if (picked.length < 3) {
+    if (picked.length < numWrong) {
       const used = new Set(picked)
       const extra = allAvailable.filter(a => !used.has(a))
-      picked = [...picked, ...pickRandom(extra, 3 - picked.length)]
+      picked = [...picked, ...pickRandom(extra, numWrong - picked.length)]
     }
   }
 
@@ -153,7 +135,7 @@ function pickWrongAnswers(fact, level, factId) {
  * @returns {Object} - { options: string[], correctIndex: number }
  */
 export function getAnswerOptions(fact, difficulty) {
-  const { choices, id: levelId } = difficulty
+  const { choices } = difficulty
 
   // ── New format: use typed wrong answers ──
   if (hasNewFormat(fact)) {
@@ -163,9 +145,9 @@ export function getAnswerOptions(fact, difficulty) {
       return legacyGetAnswerOptions(fact, choices)
     }
 
-    const level = levelId || 'hot'
-    const allWrongAnswers = pickWrongAnswers(fact, level, fact.id)
-    const numWrong = Math.min((choices || 4) - 1, allWrongAnswers.length)
+    const numWrongTarget = Math.max(0, (choices || 4) - 1)
+    const allWrongAnswers = pickWrongAnswers(fact, numWrongTarget, fact.id)
+    const numWrong = Math.min(numWrongTarget, allWrongAnswers.length)
     let wrongAnswers
     if (numWrong === 1) {
       wrongAnswers = pickMostDifferentWrong(allWrongAnswers, correctAnswer)

@@ -127,8 +127,7 @@
 **Réponse** : JAMAIS. Les worktrees créaient des merges fantômes. Tout se fait sur master directement.
 
 ### Deploy = Railway uniquement
-**Question** : Vercel ou Railway ?
-**Réponse** : Railway UNIQUEMENT. Push sur master → Railway rebuild automatiquement. Vercel est déconnecté.
+**Règle** : Railway UNIQUEMENT. Push sur master → Railway rebuild automatiquement.
 
 ---
 

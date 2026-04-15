@@ -1,11 +1,11 @@
-// Vercel Serverless Function — POST /api/sync-facts
+// Serverless function — POST /api/sync-facts
 //
 // 1. Fetches all published facts from Supabase
 // 2. Reads current src/data/facts.js from GitHub (to get SHA + preserve header/footer)
 // 3. Replaces the FACTS array + updates VIP_FACT_IDS from is_vip column
-// 4. Pushes the regenerated file back to GitHub → triggers Vercel redeploy
+// 4. Pushes the regenerated file back to GitHub → triggers Railway redeploy
 //
-// Required env vars (server-side, set in Vercel dashboard):
+// Required env vars (server-side) :
 //   SUPABASE_URL          — same value as VITE_SUPABASE_URL
 //   SUPABASE_SERVICE_KEY  — same value as VITE_SUPABASE_SERVICE_KEY
 //   GITHUB_TOKEN          — Personal Access Token with "repo" scope
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   // ── Auth ────────────────────────────────────────────────────────────────
   const adminPassword = process.env.ADMIN_PASSWORD
   if (!adminPassword || req.headers.authorization !== `Bearer ${adminPassword}`) {
-    return res.status(401).json({ error: 'Non autorisé — vérifiez ADMIN_PASSWORD dans Vercel' })
+    return res.status(401).json({ error: 'Non autorisé — vérifiez ADMIN_PASSWORD' })
   }
 
   const SUPABASE_URL = process.env.SUPABASE_URL
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
 
   if (missing.length) {
     return res.status(500).json({
-      error: `Variables Vercel manquantes : ${missing.join(', ')}`,
+      error: `Variables serveur manquantes : ${missing.join(', ')}`,
     })
   }
 

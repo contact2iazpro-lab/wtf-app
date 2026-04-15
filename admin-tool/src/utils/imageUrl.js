@@ -2,9 +2,9 @@
  * resolveImageUrl — résout les URLs d'images pour l'admin tool.
  *
  * PROBLÈME : Les facts existants stockent des chemins relatifs comme
- * "/assets/facts/1.png". Ces chemins sont servis par le jeu (wtf-app-livid)
+ * "/assets/facts/1.png". Ces chemins sont servis par le jeu
  * depuis son dossier /public, mais l'admin tool est sur un domaine différent
- * (wtffactchecking.vercel.app) et ne dispose pas de ces assets localement.
+ * et ne dispose pas de ces assets localement.
  *
  * SOLUTION : Préfixer les chemins relatifs avec l'URL de base du jeu.
  * Les URLs absolues (Supabase Storage, http://, https://) sont retournées telles quelles.
@@ -19,7 +19,7 @@
 // Peut être surchargée via variable d'environnement Vite.
 export const GAME_BASE_URL =
   import.meta.env.VITE_GAME_BASE_URL?.replace(/\/$/, '') ||
-  'https://wtf-app-livid.vercel.app'
+  'https://wtf-app-production.up.railway.app'
 
 /**
  * Retourne une URL absolue utilisable dans un <img src>.

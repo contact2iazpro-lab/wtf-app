@@ -79,7 +79,7 @@ export default defineConfig(({ mode }) => {
         // ── 5. @supabase/supabase-js (safety net) ────────────────────────
         // If src/lib/supabase.js somehow escapes the redirect above and tries
         // to import @supabase/supabase-js — a package absent in the game's
-        // root node_modules on Vercel — intercept it here.
+        // root node_modules — intercept it here.
         if (id === '@supabase/supabase-js') {
           return path.resolve(__dirname, 'src/stubs/supabase.js')
         }

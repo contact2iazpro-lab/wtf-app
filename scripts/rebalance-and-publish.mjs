@@ -12,7 +12,7 @@
  * Prérequis — créer wtf-app/.env.local avec :
  *   SUPABASE_URL=https://xxxx.supabase.co
  *   SUPABASE_SERVICE_KEY=eyJ...
- *   (récupérer dans Vercel dashboard → Settings → Environment Variables)
+ *   (récupérer dans Railway dashboard → Variables)
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -248,7 +248,7 @@ async function main() {
   console.log(`\n✅ TOTAL PUBLIÉ : ${toPublish.length} facts`)
   console.log('\n⚠️  Prochain(s) step(s) manuels :')
   console.log('   1. Admin-tool → bouton "Sync" pour mettre à jour facts.js sur GitHub')
-  console.log('   2. Vercel redéploie automatiquement après le sync')
+  console.log('   2. Railway redéploie automatiquement après le sync')
   console.log('\n═══════════════════════════════════════════════════\n')
 }
 

@@ -5,9 +5,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "git add -A && if ! git diff --staged --quiet; then git commit -m \"chore: auto-deploy admin-tool changes\" && git push origin HEAD:master && node scripts/notion-deploy-log.js && echo '{\"systemMessage\": \"✓ Changements committé et pushé sur master → déploiement Vercel déclenché\"}' ; fi",
+            "command": "git add -A && if ! git diff --staged --quiet; then git commit -m \"chore: auto-deploy admin-tool changes\" && git push origin HEAD:master && node scripts/notion-deploy-log.js && echo '{\"systemMessage\": \"✓ Changements committé et pushé sur master → déploiement Railway déclenché\"}' ; fi",
             "timeout": 60,
-            "statusMessage": "Déploiement sur Vercel…"
+            "statusMessage": "Déploiement sur Railway…"
           }
         ]
       }

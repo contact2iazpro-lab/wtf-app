@@ -68,7 +68,7 @@ async function main() {
   const message  = run('git log -1 --pretty=%B').replace(/\n+$/, '') || '(no message)';
   const rawFiles = run('git diff HEAD~1 --name-only');
   const dateTime = new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' });
-  const appUrl   = 'https://wtf-app.vercel.app';
+  const appUrl   = 'https://wtf-app-production.up.railway.app';
 
   const fileList = rawFiles
     ? rawFiles.split('\n').filter(Boolean)

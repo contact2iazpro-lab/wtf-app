@@ -69,6 +69,7 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
 - ✅ **Hotfix Défi post-Bloc 4.2 (2026-04-14 soir)** : 3 bugs fermés
 - ✅ **Refactor Défi 3 Paliers (2026-04-14 nuit)** : RPC atomique `create_duel_challenge`
 - ✅ **Session 15/04/2026** : HomeScreen cleanup + refonte visuelle + ResultsScreen Phase A+B + **Modèle D étudié puis abandonné au profit du Modèle A+ (décision 15/04/2026)**
+- ✅ **Session 16/04/2026** : Fix JSON admin-tool (`generateStatements` balanced-brace extractor) + MarathonScreen refonte complète (gate 20 unlocked, tiered bg, record `marathonBestScore`, animations shake/gold/extreme, share/replay) + Blitz refactor Solo/Défi (variant prop, soloDuration 60s descendant, defiWrongPenalty 5s, `blitzSoloBestScore`, BlitzLobbyScreen toggle Solo/Défi, BlitzResultsScreen vue solo dédiée) + FlashScreen refonte (WEEKDAY_THEMES fixe lun-sam, dimanche 1 VIP cible + 4 Funny distracteurs seed ISO-week, unlock conditionnel `fact.id === vipTargetId`, reveal VIP dans done screen)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client
 Toute variable préfixée `VITE_` est inlinée dans le JS public et lisible via DevTools.

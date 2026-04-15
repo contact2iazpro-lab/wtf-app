@@ -87,6 +87,21 @@ const CHAPTERS = [
     ],
   },
   {
+    id: 'vrai_ou_fou',
+    emoji: '🤔',
+    shortTitle: 'Vrai ou Fou',
+    title: 'Mode Vrai ou Fou',
+    content: [
+      { icon: '🆓', text: '**Coût :** Gratuit et illimité.' },
+      { icon: '📋', text: '**Set :** 20 affirmations/set.' },
+      { icon: '👉', text: '**Format :** Swipe droite = Vrai, gauche = Faux.' },
+      { icon: '⏱️', text: '**Timer :** aucun.' },
+      { icon: '💡', text: '**Indices :** aucun.' },
+      { icon: '🪙', text: '**Gains :** 0 WTFCoins.' },
+      { icon: '🎁', text: '**Débloque :** 1 Funny f*ct/bonne réponse.' },
+    ],
+  },
+  {
     id: 'blitz',
     emoji: '⚡',
     shortTitle: 'Blitz',

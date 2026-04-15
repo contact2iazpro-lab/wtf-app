@@ -41,9 +41,10 @@ export function useNavigationHandlers({
   // ── Launch mode ────────────────────────────────────────────────────────
   const launchModeDestination = useCallback((mode) => {
     switch (mode) {
-      case 'blitz':    setScreen(SCREENS.BLITZ_LOBBY); break
-      case 'snack':    setScreen(SCREENS.CATEGORY); break  // Snack = choix catégorie
-      case 'flash':    handleStartFlashSession(); break
+      case 'blitz':        setScreen(SCREENS.BLITZ_LOBBY); break
+      case 'snack':        setScreen(SCREENS.CATEGORY); break  // Snack = choix catégorie
+      case 'flash':        handleStartFlashSession(); break
+      case 'vrai_ou_fou':  setScreen(SCREENS.VRAI_OU_FOU); break
       default: break
     }
   }, [handleStartFlashSession])
@@ -91,7 +92,7 @@ export function useNavigationHandlers({
         setScreen(SCREENS.MARATHON)
         break
       case 'vrai_ou_fou':
-        setScreen(SCREENS.VRAI_OU_FOU)
+        showOrSkipLaunch('vrai_ou_fou')
         break
       default: break
     }

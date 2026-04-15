@@ -72,11 +72,13 @@ export const MODE_CONFIGS = {
   snack: {
     modeId: 'snack', modeName: 'Snack', subtitle: 'Le quotidien sans prise de tête', emoji: '🎯', color: '#FFD700',
     rules: [
-      { icon: '🔋', text: 'Coût : 1 énergie par session (cap 5, régén +1/8h)' },
-      { icon: '⚡', text: '5 questions · 2 propositions · timer 15s' },
-      { icon: '🪙', text: '10 coins par bonne réponse · Perfect 5/5 = +50 coins' },
-      { icon: '💡', text: 'Indice : débité du stock perso (50 coins en boutique)' },
-      { icon: '📂', text: '5 catégories gratuites + 100 coins pour en débloquer une' },
+      { icon: '💰', text: 'Coût : 1 énergie par session' },
+      { icon: '📋', text: 'Format : 5 questions par session' },
+      { icon: '🔢', text: 'Choix de réponses : 2 propositions par question' },
+      { icon: '⏱️', text: 'Timer : 15 secondes par question' },
+      { icon: '🪙', text: 'Récompenses : 10 coins par bonne réponse' },
+      { icon: '🎁', text: 'Bonus : +50 coins si tu réponds aux 5 questions' },
+      { icon: '📂', text: 'Catégorie : 5 gratuites + 1 500 coins pour en débloquer une' },
     ],
   },
   vrai_ou_fou: {

@@ -107,9 +107,10 @@ export default function App() {
     }
   }
 
-  // DEV: crédits de test — UNE SEULE FOIS au premier lancement
+  // DEV: crédits de test — uniquement si le toggle Mode Dev est actif
   useState(() => {
-    if (import.meta.env.DEV && !sessionStorage.getItem('wtf_dev_credits_done')) {
+    const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
+    if (isDevMode && !sessionStorage.getItem('wtf_dev_credits_done')) {
       const _d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       _d.wtfCoins = 9999; _d.hints = 100; _d.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(_d))

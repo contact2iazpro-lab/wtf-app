@@ -723,17 +723,17 @@ RÈGLES DE REFORMULATION :
 3. Garde la forme déclarative, à la 3e personne, au présent de vérité générale quand c'est pertinent.
 4. CONCISION PRIORITAIRE : 1 phrase, 5 à 15 mots maximum. Tu DOIS couper tout ce qui est accessoire (dates précises, contexte géographique, noms d'acteurs secondaires) si ça fait dépasser 15 mots. Va à l'essentiel : qui, quoi. Préfère "Un bug Nest a coupé le chauffage de milliers de foyers." plutôt que "En 2016, un bug du thermostat Nest a vidé sa batterie et coupé le chauffage de nombreuses familles en plein hiver."
 5. Ne change PAS le fond de l'info : si la réponse dit "trois cœurs", l'affirmation dit "trois cœurs" (ou "3 cœurs"), pas "plusieurs cœurs".
-6. Écris en français naturel, ton neutre et factuel. Pas d'emoji, pas de ponctuation finale exclamative, pas de guillemets autour de l'affirmation.
-7. Capitalise la première lettre, termine par un point.
+6. Écris en français naturel, ton neutre et factuel. Pas d'emoji, pas de guillemets autour de l'affirmation.
+7. Capitalise la première lettre. NE TERMINE PAS par un point, ni par aucune ponctuation finale. L'affirmation doit finir sur le dernier mot.
 8. VARIÉTÉ SYNTAXIQUE : si plusieurs affirmations partagent la même structure, reformule-les pour varier l'attaque. Ne recopie JAMAIS le même début sur les 3 phrases. Change le sujet grammatical, l'ordre, ou la voix si besoin.
 9. Pour les questions en "Pourquoi" ou "Comment", tu n'es pas obligé de reproduire toute la proposition dans chaque affirmation. Focalise sur le cœur de l'info.
 10. PIÈGE CONTEXTUEL À ÉVITER : quand tu reformules funny_answer ou plausible_answer en affirmation autonome, vérifie que l'affirmation reste FAUSSE dans l'absolu, pas seulement fausse par rapport à la question d'origine. Si la fausse réponse mentionne une autre entité réelle (autre personne, lieu, animal, événement) qui rend l'affirmation accidentellement VRAIE hors contexte, tu DOIS reformuler pour garder le sujet original (celui de la question).
 11. Le sujet grammatical des 3 affirmations doit rester identique au sujet principal de la question. Si la question porte sur X, les 3 affirmations parlent de X — pas de Y ou Z, même si les fausses réponses mentionnent d'autres entités.
 
-EXEMPLES DE BONNE LONGUEUR :
-- "La pieuvre a trois cœurs." (5 mots ✓)
-- "Un bug Nest a coupé le chauffage de milliers de foyers." (11 mots ✓)
-- "Le cœur humain pèse environ 300 grammes." (7 mots ✓)
+EXEMPLES DE BONNE LONGUEUR (remarque : PAS de point final) :
+- "La pieuvre a trois cœurs" (5 mots ✓)
+- "Un bug Nest a coupé le chauffage de milliers de foyers" (11 mots ✓)
+- "Le cœur humain pèse environ 300 grammes" (7 mots ✓)
 
 TU RENVOIES STRICTEMENT ce JSON, sans texte autour :
 {
@@ -776,9 +776,13 @@ plausible_answer: ${plausible}`
         throw new Error('JSON incomplet : ' + JSON.stringify(parsed))
       }
 
-      set('statement_true', parsed.statement_true)
-      set('statement_false_funny', parsed.statement_false_funny)
-      set('statement_false_plausible', parsed.statement_false_plausible)
+      // Filet de sécurité : retire un éventuel point / ponctuation finale
+      // même si le prompt l'interdit déjà (au cas où Claude rechute).
+      const stripEndPunct = (s) => s.trim().replace(/[.!?。]+$/u, '').trim()
+
+      set('statement_true', stripEndPunct(parsed.statement_true))
+      set('statement_false_funny', stripEndPunct(parsed.statement_false_funny))
+      set('statement_false_plausible', stripEndPunct(parsed.statement_false_plausible))
 
       toast?.('✓ 3 affirmations générées — relis et sauvegarde')
     } catch (err) {

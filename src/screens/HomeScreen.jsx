@@ -510,9 +510,9 @@ export default function HomeScreen({
             {/* Colonne droite row 2 : Flash (ex-Hunt+Puzzle fusionnés — 1/jour) */}
             <ModeIcon src="/assets/modes/wtf-semaine.png" label="Flash" onClick={() => nav('flash')} />
 
-            {/* Row 3 : libre pour mode à venir */}
-            <div />
-            <div />
+            {/* Row 3 : Marathon (survie) + Vrai ou Fou (swipe) */}
+            <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
+            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Vrai ou Fou" onClick={() => nav('vrai_ou_fou')} />
           </div>
 
           {/* Énergie Snack (barre 5 segments) */}

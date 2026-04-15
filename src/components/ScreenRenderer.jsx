@@ -22,6 +22,7 @@ import DuelPassScreen from '../screens/DuelPassScreen'
 import DuelResultsScreen from '../screens/DuelResultsScreen'
 import FlashScreen from '../screens/FlashScreen'
 import QuestScreen from '../screens/QuestScreen'
+import MarathonScreen from '../screens/MarathonScreen'
 import { getCategoryById, getTitrePartiel } from '../data/factsService'
 
 export default function ScreenRenderer({
@@ -274,6 +275,10 @@ export default function ScreenRenderer({
 
       {screen === SCREENS.QUEST && (
         <QuestScreen onHome={handleHome} setStorage={setStorage} />
+      )}
+
+      {screen === SCREENS.MARATHON && (
+        <MarathonScreen onHome={handleHome} />
       )}
     </>
   )

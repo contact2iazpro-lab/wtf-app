@@ -92,6 +92,9 @@ export function useNavigationHandlers({
       case 'quest':
         setScreen(SCREENS.QUEST)
         break
+      case 'marathon':
+        setScreen(SCREENS.MARATHON)
+        break
       default: break
     }
   }, [handleSnack, handleStartFlashSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])

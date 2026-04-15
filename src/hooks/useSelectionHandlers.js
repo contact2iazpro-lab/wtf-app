@@ -35,14 +35,9 @@ export function useSelectionHandlers({
       // peu importe celle passée en argument (legacy)
       const explorerDiff = DIFFICULTY_LEVELS.EXPLORER
       setSelectedDifficulty(explorerDiff)
-      let pool
-      if (selectedCategory === null) {
-        pool = getGeneratedFacts().filter(f => skipUnlockM || !unlockedFacts.has(f.id))
-      } else {
-        pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
-      }
+      let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
       if (pool.length < 4 && skipUnlockM) {
-        pool = selectedCategory === null ? getGeneratedFacts() : getGeneratedFactsByCategory(selectedCategory)
+        pool = getGeneratedFactsByCategory(selectedCategory)
       }
       if (pool.length === 0) {
         setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' })

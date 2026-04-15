@@ -162,7 +162,7 @@ function buildBlockSession({ blockIdx, unlockedSet, bossOnly = false, bossExclud
 
 // ═════════════════════════════════════════════════════════════════════════════
 export default function QuestScreen({ onHome, setStorage }) {
-  const { applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
+  const { applyCurrencyDelta, unlockFact, mergeFlags, hints: profileHints } = usePlayerProfile()
   const [state, setState] = useState(readQuestState)
   const [session, setSession] = useState(null)
   const [qIndex, setQIndex] = useState(0)
@@ -171,6 +171,7 @@ export default function QuestScreen({ onHome, setStorage }) {
   const [bossCorrect, setBossCorrect] = useState(false)
   const [energyState, setEnergyState] = useState(() => getSnackEnergy())
   const [noEnergyMsg, setNoEnergyMsg] = useState(false)
+  const [hintsRevealed, setHintsRevealed] = useState(0)         // 0, 1 ou 2 indices affichés pour la question courante
   const mapRef = useRef(null)
 
   useEffect(() => {
@@ -185,6 +186,13 @@ export default function QuestScreen({ onHome, setStorage }) {
       el?.scrollIntoView({ block: 'center', behavior: 'instant' })
     }
   }, [session, state.level])
+
+  // Intro dramatique au passage sur la question boss d'un bloc complet
+  useEffect(() => {
+    if (!session || session.bossOnly) return
+    const fact = session.facts[qIndex]
+    if (fact?._isBoss) audio.play('boss_intro')
+  }, [session, qIndex])
 
   const currentBlockIdx = blockIdxOf(state.level)
 
@@ -204,7 +212,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     const unlockedSet = readUnlockedSet()
     const s = buildBlockSession({ blockIdx: currentBlockIdx, unlockedSet })
     if (!s) return
-    setSession(s); setQIndex(0); setSelected(null); setCorrectFactIds([]); setBossCorrect(false)
+    setSession(s); setQIndex(0); setSelected(null); setCorrectFactIds([]); setBossCorrect(false); setHintsRevealed(0)
   }
 
   // ── Lance la boss retry (gratuit) ────────────────────────────────────────
@@ -213,7 +221,9 @@ export default function QuestScreen({ onHome, setStorage }) {
     const prevWrongs = state.bossWrongs?.[blockIdx] || []
     const s = buildBlockSession({ blockIdx, unlockedSet: readUnlockedSet(), bossOnly: true, bossExcludeWrongs: prevWrongs })
     if (!s) return
-    setSession(s); setQIndex(0); setSelected(null); setCorrectFactIds([]); setBossCorrect(false)
+    setSession(s); setQIndex(0); setSelected(null); setCorrectFactIds([]); setBossCorrect(false); setHintsRevealed(0)
+    // Intro dramatique quand on relance le boss directement
+    setTimeout(() => audio.play('boss_intro'), 120)
   }
 
   // ── Fin de session : applique les gains, progression, unlocks ─────────────
@@ -301,7 +311,7 @@ export default function QuestScreen({ onHome, setStorage }) {
 
     setTimeout(() => {
       if (qIndex + 1 < session.facts.length) {
-        setQIndex(q => q + 1); setSelected(null)
+        setQIndex(q => q + 1); setSelected(null); setHintsRevealed(0)
       } else {
         finalizeSession(nextCorrectIds, nextBossCorrect, session)
         setQIndex(session.facts.length) // trigger résultat
@@ -478,6 +488,28 @@ export default function QuestScreen({ onHome, setStorage }) {
   // ── Vue session (question) ───────────────────────────────────────────────
   const fact = session.facts[qIndex]
   const isBoss = fact._isBoss
+
+  // Tirage 2 indices parmi 4 (hint1-hint4), stable par fact + retry
+  // Le retryCount fait varier le tirage à chaque retry boss
+  const retryCount = isBoss ? (state.bossWrongs?.[session.blockIdx]?.length || 0) : 0
+  const hintPool = [fact.hint1, fact.hint2, fact.hint3, fact.hint4].filter(h => h && h.trim() !== '')
+  // Shuffle déterministe via seed simple (factId + retryCount)
+  const seed = (fact.id * 31 + retryCount * 7) >>> 0
+  const shuffledHints = [...hintPool].sort((a, b) => {
+    const ha = (a.charCodeAt(0) + seed) % 100
+    const hb = (b.charCodeAt(0) + seed * 3) % 100
+    return ha - hb
+  })
+  const availableHints = shuffledHints.slice(0, 2)
+
+  const canUseHint = selected === null && hintsRevealed < availableHints.length && (profileHints ?? 0) > 0
+  const useHint = () => {
+    if (!canUseHint) return
+    audio.play('click')
+    setHintsRevealed(n => n + 1)
+    applyCurrencyDelta?.({ hints: -1 }, 'quest_use_hint')
+      ?.catch?.(e => console.warn('[QuestScreen] hint debit failed:', e?.message || e))
+  }
   return (
     <div style={{
       position: 'relative', width: '100%', height: '100%',
@@ -507,6 +539,41 @@ export default function QuestScreen({ onHome, setStorage }) {
       }}>
         {fact.fact || fact.titre || fact.question || 'Question'}
       </div>
+
+      {/* Indices révélés + bouton indice */}
+      {availableHints.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {availableHints.slice(0, hintsRevealed).map((h, i) => (
+            <div key={i} style={{
+              background: 'rgba(255,215,0,0.12)', border: '1.5px solid rgba(255,215,0,0.4)',
+              borderRadius: 10, padding: '8px 12px', fontSize: 12, fontWeight: 700,
+              color: '#FFD700', display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <span>💡</span><span>{h}</span>
+            </div>
+          ))}
+          {hintsRevealed < availableHints.length && (
+            <button
+              onClick={useHint}
+              disabled={!canUseHint}
+              style={{
+                background: canUseHint ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.05)',
+                border: `1.5px solid ${canUseHint ? 'rgba(255,215,0,0.5)' : 'rgba(255,255,255,0.15)'}`,
+                borderRadius: 10, padding: '8px 12px', fontSize: 12, fontWeight: 800,
+                color: canUseHint ? '#FFD700' : 'rgba(255,255,255,0.3)',
+                cursor: canUseHint ? 'pointer' : 'not-allowed',
+                fontFamily: 'Nunito, sans-serif',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              💡 Indice {hintsRevealed + 1}/{availableHints.length}
+              <span style={{ opacity: 0.7, fontSize: 10 }}>
+                · stock : {profileHints ?? 0}
+              </span>
+            </button>
+          )}
+        </div>
+      )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
         {fact.options.map((opt, i) => {

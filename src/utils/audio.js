@@ -150,6 +150,14 @@ class AudioManager {
         this._tone(247, 0.3, 'sine', 0.26, 0.22)
         break
       }
+      case 'boss_intro':
+        // Intro dramatique boss Quest : descente grave puis montée triomphale
+        this._tone(110, 0.25, 'sawtooth', 0.32)
+        this._tone(87, 0.35, 'sawtooth', 0.35, 0.22)
+        this._tone(220, 0.18, 'square', 0.22, 0.55)
+        this._tone(330, 0.22, 'square', 0.28, 0.70)
+        this._tone(440, 0.40, 'square', 0.34, 0.88)
+        break
       case 'buzzer':
         this._tone(150, 0.15, 'square', 0.3)
         this._tone(100, 0.15, 'square', 0.25, 0.05)

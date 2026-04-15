@@ -1,9 +1,9 @@
 // FlashScreen — Rendez-vous quotidien (CLAUDE.md 15/04/2026)
-// Lun-sam : 5 questions · 2 QCM · 15s · 30 coins fixe sur complétion
-// Dimanche : TODO VIP Hunt de la semaine (actuellement même flow Funny, 1 VIP débloqué)
-// Gratuit 1×/jour — seed stable par date pour que les 5 facts soient identiques pour tous
+// Lun-sam : 5 questions Funny · 2 QCM · 15s · 30 coins fixe sur complétion
+// Dimanche : 5 questions VIP Hunt de la semaine · 0 coins · déblocage VIPs
+// Gratuit 1×/jour — seed stable (par date en semaine, par semaine le dimanche)
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
-import { getFunnyFacts } from '../data/factsService'
+import { getFunnyFacts, getVipFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
@@ -20,6 +20,21 @@ const FLASH_DURATION = 400
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
+}
+
+// Dimanche = VIP Hunt hebdomadaire (seed stable toute la semaine via l'année + numéro de semaine ISO)
+function isSunday() {
+  return new Date().getDay() === 0
+}
+
+function weekKey() {
+  const d = new Date()
+  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+  const dayNum = tmp.getUTCDay() || 7
+  tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum)
+  const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1))
+  const weekNo = Math.ceil((((tmp - yearStart) / 86400000) + 1) / 7)
+  return `${tmp.getUTCFullYear()}-W${weekNo}`
 }
 
 function seededPick(pool, dateStr, count) {
@@ -44,6 +59,7 @@ export default function FlashScreen({ onHome, setStorage }) {
   const { applyCurrencyDelta, unlockFact } = usePlayerProfile()
   const diff = DIFFICULTY_LEVELS.FLASH
   const dateStr = todayKey()
+  const sunday = isSunday()
   const storageKey = STORAGE_KEY_PREFIX + dateStr
 
   const initial = useMemo(() => {
@@ -51,11 +67,12 @@ export default function FlashScreen({ onHome, setStorage }) {
   }, [storageKey])
 
   const preparedFacts = useMemo(() => {
-    const pool = getFunnyFacts()
+    const pool = sunday ? getVipFacts() : getFunnyFacts()
     if (!pool.length) return []
-    const picked = seededPick(pool, dateStr, diff.questionsCount || 5)
+    const seed = sunday ? weekKey() : dateStr
+    const picked = seededPick(pool, seed, diff.questionsCount || 5)
     return picked.map(f => ({ ...f, ...getAnswerOptions(f, diff) }))
-  }, [dateStr, diff])
+  }, [dateStr, diff, sunday])
 
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
@@ -82,19 +99,22 @@ export default function FlashScreen({ onHome, setStorage }) {
       )
     }
     if (index + 1 >= preparedFacts.length) {
-      applyCurrencyDelta?.({ coins: FLASH_REWARD }, 'flash_daily_complete').catch(e =>
-        console.warn('[Flash] reward RPC failed:', e?.message || e)
-      )
+      const reward = sunday ? 0 : FLASH_REWARD
+      if (reward > 0) {
+        applyCurrencyDelta?.({ coins: reward }, 'flash_daily_complete').catch(e =>
+          console.warn('[Flash] reward RPC failed:', e?.message || e)
+        )
+      }
       const finalCorrect = correct + (isCorrect ? 1 : 0)
-      const state = { done: true, correctCount: finalCorrect, coinsEarned: FLASH_REWARD }
+      const state = { done: true, correctCount: finalCorrect, coinsEarned: reward }
       try { localStorage.setItem(storageKey, JSON.stringify(state)) } catch { /* ignore */ }
-      setCoinsEarned(FLASH_REWARD)
+      setCoinsEarned(reward)
       setDone(true)
     } else {
       setIndex(i => i + 1)
       setFlash(null)
     }
-  }, [fact, index, preparedFacts.length, correct, setStorage, unlockFact, applyCurrencyDelta, storageKey])
+  }, [fact, index, preparedFacts.length, correct, setStorage, unlockFact, applyCurrencyDelta, storageKey, sunday])
 
   const handleAnswer = useCallback((answerIdx) => {
     if (flash !== null || !fact || done) return
@@ -130,8 +150,8 @@ export default function FlashScreen({ onHome, setStorage }) {
     return (
       <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #2E1A47 0%, #1a0f2e 100%)', color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
         <div style={{ textAlign: 'center', maxWidth: 340 }}>
-          <div style={{ fontSize: 72, marginBottom: 8 }}>🔥</div>
-          <p style={{ fontSize: 14, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700 }}>Flash du jour</p>
+          <div style={{ fontSize: 72, marginBottom: 8 }}>{sunday ? '👑' : '🔥'}</div>
+          <p style={{ fontSize: 14, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700 }}>{sunday ? 'VIP Hunt de la semaine' : 'Flash du jour'}</p>
           <div style={{ fontSize: 72, fontWeight: 900, lineHeight: 1, margin: '12px 0 20px' }}>
             {initial?.correctCount ?? correct}<span style={{ fontSize: 36, opacity: 0.5 }}>/{preparedFacts.length || 5}</span>
           </div>
@@ -145,8 +165,15 @@ export default function FlashScreen({ onHome, setStorage }) {
               />
             </div>
           )}
+          {!alreadyPlayed && sunday && (
+            <p style={{ fontSize: 13, opacity: 0.85, marginBottom: 20, color: '#FFD700', fontWeight: 700 }}>
+              👑 VIPs de la semaine débloqués dans ta collection !
+            </p>
+          )}
           <p style={{ fontSize: 14, opacity: 0.75, marginBottom: 28 }}>
-            {alreadyPlayed ? 'Tu as déjà joué ton Flash aujourd\'hui. Reviens demain !' : 'Rendez-vous demain pour un nouveau Flash !'}
+            {alreadyPlayed
+              ? (sunday ? 'Tu as déjà chassé ton VIP cette semaine.' : 'Tu as déjà joué ton Flash aujourd\'hui. Reviens demain !')
+              : (sunday ? 'Reviens lundi pour un nouveau Flash quotidien !' : 'Rendez-vous demain pour un nouveau Flash !')}
           </p>
           <button onClick={onHome} style={{ padding: '14px 40px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
             Retour
@@ -175,7 +202,7 @@ export default function FlashScreen({ onHome, setStorage }) {
         </div>
       )}
 
-      <GameHeader categoryLabel="Flash du jour" categoryColor="#E91E63" onQuit={() => setShowQuit(true)} />
+      <GameHeader categoryLabel={sunday ? 'VIP Hunt' : 'Flash du jour'} categoryColor={sunday ? '#FFD700' : '#E91E63'} onQuit={() => setShowQuit(true)} />
 
       <div style={{ textAlign: 'center', padding: `${S(12)} 0 ${S(4)}`, flexShrink: 0 }}>
         <div style={{ fontSize: S(14), fontWeight: 800, color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }}>

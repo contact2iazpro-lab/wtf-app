@@ -325,10 +325,12 @@ function renderText(text) {
 // Get chapter icon: image for modes, emoji for others
 function getChapterIcon(chapterId) {
   const modeIcons = {
-    quest: '/assets/modes/quete.png',
-    flash: '/assets/modes/wtf-semaine.png',
-    blitz: '/assets/modes/blitz.png',
-    marathon: '/assets/modes/marathon.png',
+    quest: '/assets/modes/quest.svg',
+    snack: '/assets/modes/snack.svg',
+    flash: '/assets/modes/flash.svg',
+    blitz: '/assets/modes/blitz.svg',
+    marathon: '/assets/modes/marathon.svg',
+    vrai_ou_fou: '/assets/modes/vrai-ou-fou.svg',
   }
 
   if (modeIcons[chapterId]) {
@@ -441,11 +443,12 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             const isActive = ch.id === activeId
             const color = CHAPTER_COLORS[ch.id] || '#FF6B1A'
             const modeIcons = {
-              quest: '/assets/modes/quete.png',
-              flash: '/assets/modes/marathon.png',
-              explorer: '/assets/modes/marathon.png',
-              blitz: '/assets/modes/blitz.png',
-              streak: '/assets/modes/serie.png',
+              quest: '/assets/modes/quest.svg',
+              snack: '/assets/modes/snack.svg',
+              flash: '/assets/modes/flash.svg',
+              blitz: '/assets/modes/blitz.svg',
+              marathon: '/assets/modes/marathon.svg',
+              vrai_ou_fou: '/assets/modes/vrai-ou-fou.svg',
             }
             return (
               <button

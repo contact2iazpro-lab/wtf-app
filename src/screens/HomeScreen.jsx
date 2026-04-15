@@ -483,7 +483,7 @@ export default function HomeScreen({
             columnGap: S(8),
           }}>
             {/* Colonne gauche row 1 : Quest (ex-Route WTF!) — progression linéaire, boss VIP /10 */}
-            <ModeIcon src="/assets/ui/emoji-route.png" label="Quest" onClick={() => nav('quest')} />
+            <ModeIcon src="/assets/modes/quest.svg" label="Quest" onClick={() => nav('quest')} />
 
             {/* Logo WTF central (span 3 rows) */}
             <div style={{
@@ -502,17 +502,17 @@ export default function HomeScreen({
                 }}
               />
             </div>
-            {/* Colonne droite row 1 : Snack (ex-Flash+Explorer fusionnés) */}
-            <ModeIcon src="/assets/modes/marathon.png" label="Snack" onClick={() => nav('snack')} />
+            {/* Colonne droite row 1 : Snack */}
+            <ModeIcon src="/assets/modes/snack.svg" label="Snack" onClick={() => nav('snack')} />
 
             {/* Colonne gauche row 2 : Blitz */}
-            <ModeIcon src="/assets/modes/blitz.png" label="Blitz" onClick={() => nav('blitz')} />
-            {/* Colonne droite row 2 : Flash (ex-Hunt+Puzzle fusionnés — 1/jour) */}
-            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Flash" onClick={() => nav('flash')} />
+            <ModeIcon src="/assets/modes/blitz.svg" label="Blitz" onClick={() => nav('blitz')} />
+            {/* Colonne droite row 2 : Flash (rendez-vous quotidien) */}
+            <ModeIcon src="/assets/modes/flash.svg" label="Flash" onClick={() => nav('flash')} />
 
             {/* Row 3 : Marathon (survie) + Vrai ou Fou (swipe) */}
-            <ModeIcon src="/assets/modes/marathon.png" label="Marathon" onClick={() => nav('marathon')} />
-            <ModeIcon src="/assets/modes/wtf-semaine.png" label="Vrai ou Fou" onClick={() => nav('vrai_ou_fou')} />
+            <ModeIcon src="/assets/modes/marathon.svg" label="Marathon" onClick={() => nav('marathon')} />
+            <ModeIcon src="/assets/modes/vrai-ou-fou.svg" label="Vrai ou Fou" onClick={() => nav('vrai_ou_fou')} />
           </div>
 
           {/* Énergie Snack (barre 5 segments) */}

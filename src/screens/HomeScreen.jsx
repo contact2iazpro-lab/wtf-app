@@ -21,6 +21,7 @@ import { useCountdownToMidnight } from '../hooks/useCountdownToMidnight'
 import StarburstBackground from '../components/home/StarburstBackground'
 import CoffreRewardModal from '../components/home/CoffreRewardModal'
 import NewBadgeModal from '../components/home/NewBadgeModal'
+import BatteryIcon from '../components/home/BatteryIcon'
 
 const HOME_BG_COLOR = [
   'radial-gradient(circle 200px at 50% 45%, rgba(255,225,100,0.55) 0%, rgba(255,200,60,0.28) 35%, rgba(255,170,40,0.10) 65%, transparent 85%)',
@@ -39,14 +40,6 @@ const BRAIN_STYLES = {
   30: { emoji: '👑', filter: 'saturate(1.5) brightness(1.3) drop-shadow(0 0 4px gold)', label: 'Légende' },
 }
 
-function getBatteryColor(remaining) {
-  if (remaining >= 5) return '#22C55E'
-  if (remaining >= 4) return '#86EFAC'
-  if (remaining >= 3) return '#FACC15'
-  if (remaining >= 2) return '#F97316'
-  if (remaining >= 1) return '#EF4444'
-  return '#EF4444'
-}
 
 function getCurrentPalier(streak) {
   let current = null
@@ -123,7 +116,6 @@ export default function HomeScreen({
     ? { 3: '#9CA3AF', 7: '#F472B6', 14: '#F97316', 30: '#FFD700' }[currentPalier.day] || '#9CA3AF'
     : '#9CA3AF'
 
-  const batteryColor = getBatteryColor(quickieEnergyRemaining)
 
   return (
     <div
@@ -190,30 +182,13 @@ export default function HomeScreen({
           <button
             onClick={() => nav('boutique')}
             style={{
-              display: 'flex', alignItems: 'center', gap: S(3),
+              display: 'flex', alignItems: 'center',
               background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
               padding: `${S(3)} ${S(8)}`, border: 'none', cursor: 'pointer',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <div style={{
-              width: S(18), height: S(10), borderRadius: 2,
-              border: `1.5px solid ${batteryColor}`,
-              position: 'relative', display: 'flex', alignItems: 'center', padding: 1,
-            }}>
-              <div style={{
-                width: `${(quickieEnergyRemaining / 5) * 100}%`, height: '100%',
-                background: batteryColor, borderRadius: 1,
-                transition: 'width 0.3s, background 0.3s',
-              }} />
-              <div style={{
-                position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)',
-                width: 2, height: S(5), background: batteryColor, borderRadius: '0 1px 1px 0',
-              }} />
-            </div>
-            <span style={{ fontWeight: 800, color: batteryColor, fontSize: S(10) }}>
-              {quickieEnergyRemaining}
-            </span>
+            <BatteryIcon level={quickieEnergyRemaining} />
           </button>
 
           <button

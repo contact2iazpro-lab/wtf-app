@@ -18,30 +18,6 @@ const isLightColor = (hex) => {
   return (r * 299 + g * 587 + b * 114) / 1000 > 160
 }
 
-// ── Messages bienveillants ─────────────────────────────────────────────────────
-const WRONG_MESSAGES = [
-  "Pas grave, maintenant tu sais... que tu ne sais pas ! 😅",
-  "Même les experts se trompent sur celui-là 🧠",
-  "Tu l'auras la prochaine fois ! 💪",
-  "Ce f*ct est tellement WTF! qu'on comprend que tu aies raté ! 😂",
-  "Même Einstein aurait séché sur celui-là ! 🧠",
-  "Retente ta chance... ce f*ct mérite d'être connu !",
-  "Ce f*ct est dans ta tête pour toujours... même raté ! 🧩",
-  "Un de perdu, dix de retrouvés — rejoue ! 🎯",
-  "La prochaine fois tu épateras tes amis avec ce f*ct ! 🤩",
-  "Raté mais instruit ! C'est le principe de WTF! 😎",
-  "What the... non ! 🤯",
-  "Ton cerveau a bugué 🧠💥",
-  "Même Google aurait hésité 🤖",
-  "C'est un f*ct, pas une fiction ! 📖",
-  "Presque... dans un univers parallèle 🌀",
-  "Le f*ct a gagné cette manche 💪",
-  "Ton doigt a glissé, avoue 👆",
-  "WTF! Tu y étais presque ! 🎯",
-  "Le savoir, ça se cultive 🌱",
-  "Erreur 404 : bonne réponse non trouvée 🔍",
-]
-
 const CORRECT_MESSAGES = [
   "Parfait ! Ce f*ct est gravé dans ta mémoire 🔥",
   "Impressionnant ! Tu connaissais vraiment ça ? 🧠",
@@ -134,6 +110,7 @@ export default function RevelationScreen({
 
   const [flipped, setFlipped] = useState(true)
   const [unlockedByCoins, setUnlockedByCoins] = useState(false)
+  const [showUnlockConfirm, setShowUnlockConfirm] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showLightbox, setShowLightbox] = useState(false)
   // sessionScore includes current points already — start display BEFORE this question's points
@@ -143,8 +120,6 @@ export default function RevelationScreen({
   const [imgFailed, setImgFailed] = useState(false)
   const [showCoins, setShowCoins] = useState(false)
 
-  // Messages aléatoires calculés une seule fois au montage
-  const [wrongMsg]   = useState(() => WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)])
   const [correctMsg] = useState(() => CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)])
 
   const scoreRefTarget = useRef(null)
@@ -364,9 +339,7 @@ export default function RevelationScreen({
                   <button
                       onClick={() => {
                         if (_currencyCoins < 25) return
-                        applyCurrencyDelta?.({ coins: -25 }, 'unlock_fact_wrong_answer')
-                        audio.play('correct')
-                        setUnlockedByCoins(true)
+                        setShowUnlockConfirm(true)
                       }}
                       className="btn-press active:scale-95"
                       style={{
@@ -397,19 +370,67 @@ export default function RevelationScreen({
           )}
         </div>
 
-        {/* Stamp centré H sur la page, centré V entre social phrase et boutons */}
+        {/* Zone centrale — Temps écoulé si timeout, sinon espace vide */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `0 ${S(16)}` }}>
-          <div style={{
-            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
-            border: '3px solid #EF4444',
-            borderRadius: S(14), padding: `${S(14)} ${S(20)}`,
-            textAlign: 'center',
-          }}>
-            <span style={{ fontSize: S(18), fontWeight: 900, color: '#EF4444', lineHeight: 1.4 }}>
-              {isTimeout ? '⏱️ Temps écoulé' : wrongMsg}
+          {isTimeout && (
+            <span style={{ fontSize: S(22), fontWeight: 900, color: '#EF4444', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+              ⏱️ Temps écoulé
             </span>
-          </div>
+          )}
         </div>
+
+        {/* Modal confirmation déblocage */}
+        {showUnlockConfirm && (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 50,
+            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: S(24),
+          }}>
+            <div style={{
+              background: '#FAFAF8', borderRadius: S(20), padding: S(24),
+              width: '100%', maxWidth: 320, textAlign: 'center',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.3)',
+            }}>
+              <div style={{ fontSize: S(40), marginBottom: S(8) }}>🔓</div>
+              <h3 style={{ fontSize: S(16), fontWeight: 900, color: '#1a1a2e', margin: `0 0 ${S(6)}` }}>
+                Débloquer ce f*ct ?
+              </h3>
+              <p style={{ fontSize: S(13), fontWeight: 600, color: '#6B7280', margin: `0 0 ${S(20)}`, lineHeight: 1.4 }}>
+                Tu pourras voir l'image et l'explication pour <span style={{ fontWeight: 900, color: '#1a1a2e' }}>25</span> <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
+              </p>
+              <div style={{ display: 'flex', gap: S(10) }}>
+                <button
+                  onClick={() => setShowUnlockConfirm(false)}
+                  style={{
+                    flex: 1, padding: `${S(12)} 0`, borderRadius: S(12),
+                    fontWeight: 800, fontSize: S(13), fontFamily: 'Nunito, sans-serif',
+                    background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280', cursor: 'pointer',
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={() => {
+                    if (_currencyCoins < 25) return
+                    applyCurrencyDelta?.({ coins: -25 }, 'unlock_fact_wrong_answer')
+                    audio.play('correct')
+                    setShowUnlockConfirm(false)
+                    setUnlockedByCoins(true)
+                  }}
+                  style={{
+                    flex: 1, padding: `${S(12)} 0`, borderRadius: S(12),
+                    fontWeight: 900, fontSize: S(13), fontFamily: 'Nunito, sans-serif',
+                    background: isQuickieMode ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : '#FF6B1A',
+                    border: 'none', color: 'white', cursor: 'pointer',
+                    boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.4)' : '0 4px 16px rgba(255,107,26,0.4)',
+                  }}
+                >
+                  Débloquer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Boutons — demander aide + suivant côte à côte */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
@@ -451,7 +472,8 @@ export default function RevelationScreen({
     )
   }
 
-  // ── CAS BONNE RÉPONSE ─────────────────────────────────────────────────────
+  // ── CAS BONNE RÉPONSE (ou débloqué par coins) ─────────────────────────────
+  const showAsCorrect = isCorrect || unlockedByCoins
   const isVipReveal = isCorrect && fact.isVip
   const showVipGlow = isVipReveal
   return (
@@ -525,11 +547,11 @@ export default function RevelationScreen({
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                onClick={() => isCorrect && setShowLightbox(true)}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)', display: 'block', borderRadius: S(12), cursor: isCorrect ? 'pointer' : 'default' }}
+                onClick={() => showAsCorrect && setShowLightbox(true)}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)', display: 'block', borderRadius: S(12), cursor: showAsCorrect ? 'pointer' : 'default' }}
                 onError={() => setImgFailed(true)}
               />
-              {isCorrect && (
+              {showAsCorrect && (
                 <button
                   onClick={() => setShowLightbox(true)}
                   style={{
@@ -554,7 +576,7 @@ export default function RevelationScreen({
       {/* Zone info — flex: 1, gap 6px */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(6) }}>
         {/* Encadré question */}
-        {isCorrect && (
+        {showAsCorrect && (
           <div style={{
             background: isQuickieMode ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.3)',
             backdropFilter: 'blur(12px)',
@@ -567,7 +589,7 @@ export default function RevelationScreen({
         )}
 
         {/* Social proof */}
-        {flipped && isCorrect && (
+        {flipped && showAsCorrect && (
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
             <span style={{ fontSize: S(13), fontWeight: 800, color: '#ffffff', opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
               👥 Seulement {successRate}% des joueurs ont trouvé ce f*ct
@@ -576,7 +598,7 @@ export default function RevelationScreen({
         )}
 
         {/* Bloc bonne réponse (dissocié) */}
-        {isCorrect && (
+        {showAsCorrect && (
           <div style={{
             background: isQuickieMode ? 'rgba(76,175,80,0.12)' : 'rgba(76,175,80,0.15)',
             border: '1.5px solid rgba(76,175,80,0.5)',
@@ -588,7 +610,7 @@ export default function RevelationScreen({
         )}
 
         {/* Bloc "Le saviez-vous ?" (dissocié) */}
-        {isCorrect && (
+        {showAsCorrect && (
           <div style={{
             background: isQuickieMode ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.35)',
             backdropFilter: 'blur(12px)',
@@ -608,7 +630,7 @@ export default function RevelationScreen({
 
       {/* Boutons — compact */}
       <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
-        {isCorrect && (
+        {showAsCorrect && (
           <>
             <div style={{ display: 'flex', gap: S(8), height: S(44), position: 'relative' }}>
               <button

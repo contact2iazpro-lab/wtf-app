@@ -17,23 +17,22 @@ const ModeIcon = forwardRef(({ icon, name, color, onClick }, ref) => {
         cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
         transition: 'transform 0.1s',
       }}
-      onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.92)')}
+      onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.95)')}
       onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
     >
       <div style={{
         width: S(ICON_SIZES.modeIcon + 8), height: S(ICON_SIZES.modeIcon + 8),
         borderRadius: '50%',
-        background: 'rgba(255,255,255,0.08)',
-        border: color ? `2px solid ${color}44` : '2px solid rgba(255,255,255,0.12)',
-        boxShadow: color ? `0 0 12px ${color}30` : 'none',
+        background: '#FFFFFF',
+        border: `3px solid ${color || 'rgba(255,255,255,0.3)'}`,
+        boxShadow: color ? `0 4px 20px ${color}4D` : 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <img
           src={icon} alt={name}
           style={{
-            width: S(ICON_SIZES.modeIcon), height: S(ICON_SIZES.modeIcon),
+            width: '72%', height: '72%',
             objectFit: 'contain', flexShrink: 0,
-            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
           }}
         />
       </div>

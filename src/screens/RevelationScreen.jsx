@@ -318,12 +318,23 @@ export default function RevelationScreen({
         {/* Header */}
         {renderHeader()}
 
-        {/* Image floutée + stamp bienveillant par-dessus */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0, maxHeight: '42vh' }}>
+        {/* Encadré question — contour violet Quickie */}
+        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} 0` }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+            border: isQuickieMode ? '2px solid #7F77DD' : '1px solid rgba(255,255,255,0.15)',
+            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
+          }}>
+            <div style={{ fontSize: S(12), fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
+          </div>
+        </div>
+
+        {/* Image floutée + stamp bienveillant — alignée sur le padding des boutons */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `${S(8)} ${S(16)} 0`, maxHeight: '35vh' }}>
           <div
             className="overflow-hidden relative"
             style={{
-              background: catGradient, width: '100%', maxHeight: '42vh', borderRadius: S(16), padding: 4,
+              background: catGradient, width: '100%', maxHeight: '35vh', borderRadius: S(16), padding: 4,
               border: isQuickieMode ? '3px solid #7F77DD' : `3px solid ${cat?.color || '#1a3a5c'}`,
               boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : 'none',
             }}
@@ -332,11 +343,11 @@ export default function RevelationScreen({
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
                 onError={() => setImgFailed(true)}
               />
             ) : (
-              <div style={{ width: '100%', height: 'calc(42vh - 14px)', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
+              <div style={{ width: '100%', height: 'calc(35vh - 14px)', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
                 <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
               </div>
             )}
@@ -362,40 +373,52 @@ export default function RevelationScreen({
           </div>
         </div>
 
-        {/* Social proof */}
+        {/* Social proof — une seule ligne */}
         {flipped && (
           <div style={{ textAlign: 'center', padding: `${S(8)} ${S(16)} 0`, flexShrink: 0 }}>
-            <span style={{ fontSize: S(14), fontWeight: 800, color: '#ffffff', opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
-              👥 {100 - successRate}% des joueurs<br />ont trouvé ce f*ct
+            <span style={{ fontSize: S(13), fontWeight: 800, color: '#ffffff', opacity: 0.8, textShadow: '0 1px 3px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+              👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
             </span>
           </div>
         )}
 
-        {/* Encadré question */}
-        <div style={{ flex: 1, minHeight: 0, padding: `${S(8)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
-          <div style={{
-            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
-          }}>
-            <div style={{ fontSize: S(9), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(4) }}>La question :</div>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
-            {isTimeout && (
-              <div style={{ marginTop: S(6), fontSize: S(10), fontWeight: 700, color: '#FB923C' }}>⏱️ Temps écoulé</div>
-            )}
+        {/* Temps écoulé — gros et centré */}
+        {isTimeout && (
+          <div style={{ textAlign: 'center', padding: `${S(12)} ${S(16)} 0`, flexShrink: 0 }}>
+            <span style={{ fontSize: S(22), fontWeight: 900, color: '#FB923C', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+              ⏱️ Temps écoulé
+            </span>
           </div>
-        </div>
+        )}
 
-        {/* Boutons */}
-        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}`, display: 'flex', flexDirection: 'column', gap: S(6) }}>
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Boutons — demander aide + suivant côte à côte */}
+        <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
+            <button
+              onClick={() => { audio.play('click'); handleNativeShare() }}
+              className="btn-press active:scale-95 transition-all"
+              style={{
+                flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(11),
+                color: 'white', letterSpacing: '0.03em',
+                border: isQuickieMode ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
+                background: isQuickieMode
+                  ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
+                  : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+                boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.5)' : 'none',
+              }}
+            >
+              🆘 AIDE
+            </button>
             <button
               onClick={handleNext}
               className="btn-press active:scale-95 transition-all"
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: isQuickieMode ? 'none' : '2px solid rgba(255,255,255,0.4)',
+                border: isQuickieMode ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
                 background: isQuickieMode
                   ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
                   : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,

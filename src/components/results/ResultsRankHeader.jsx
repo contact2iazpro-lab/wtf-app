@@ -44,12 +44,12 @@ export default function ResultsRankHeader({
             }}>
             {label}
           </div>
-          <div style={{ display: 'flex', gap: S(4) }}>
-            {[1, 2, 3].map((s) => (
+          <div style={{ display: 'flex', gap: S(3) }}>
+            {[1, 2, 3, 4, 5].map((s) => (
               <span
                 key={s}
                 style={{
-                  fontSize: S(18), lineHeight: 1,
+                  fontSize: S(16), lineHeight: 1,
                   transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
                   transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   filter: s <= stars ? `drop-shadow(0 0 10px ${catColor})` : 'none',

@@ -158,11 +158,9 @@ export default function RevelationScreen({
 
   // COR 7 — Gradient catégorie identique dans les deux cas
   const isQuickieMode = sessionType === 'quickie'
-  const catGradient = isQuickieMode
-    ? 'linear-gradient(160deg, #4A3FA3, #7F77DD)'
-    : cat
-      ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
-      : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
+  const catGradient = cat
+    ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
+    : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
   // ── Coins animation (replaces floating +5 pts badge) ──────────────────────
   // Reset + re-trigger à chaque nouvelle question (fact.id dans les deps)
@@ -324,7 +322,11 @@ export default function RevelationScreen({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0, maxHeight: '42vh' }}>
           <div
             className="overflow-hidden relative"
-            style={{ background: catGradient, width: '100%', maxHeight: '42vh', borderRadius: S(16), border: `3px solid ${cat?.color || '#1a3a5c'}`, padding: 4 }}
+            style={{
+              background: catGradient, width: '100%', maxHeight: '42vh', borderRadius: S(16), padding: 4,
+              border: isQuickieMode ? '3px solid #7F77DD' : `3px solid ${cat?.color || '#1a3a5c'}`,
+              boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : 'none',
+            }}
           >
             {fact.imageUrl && !imgFailed ? (
               <img
@@ -471,7 +473,8 @@ export default function RevelationScreen({
           style={{
             background: catGradient, width: '100%', maxHeight: '42vh',
             borderRadius: S(16), padding: 4,
-            border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${cat?.color || '#1a3a5c'}`,
+            border: showVipGlow ? `2px solid ${cat?.color}AA` : (isQuickieMode ? '3px solid #7F77DD' : `3px solid ${cat?.color || '#1a3a5c'}`),
+            boxShadow: (!showVipGlow && isQuickieMode) ? '0 0 20px rgba(127,119,221,0.3)' : undefined,
             ...(showVipGlow ? {
               animation: 'vipCardGlow 2s ease-in-out infinite',
             } : {}),
@@ -513,12 +516,13 @@ export default function RevelationScreen({
         {/* Encadré question */}
         {isCorrect && (
           <div style={{
-            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            background: isQuickieMode ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(12px)',
+            border: isQuickieMode ? `1.5px solid ${cat?.color || '#7F77DD'}40` : '1px solid rgba(255,255,255,0.15)',
             borderRadius: S(12), padding: `${S(6)} ${S(10)}`, flexShrink: 0,
           }}>
-            <div style={{ fontSize: S(9), fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>La question :</div>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
+            <div style={{ fontSize: S(9), fontWeight: 900, color: isQuickieMode ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>La question :</div>
+            <div style={{ fontSize: S(12), fontWeight: 700, color: isQuickieMode ? '#1a1a2e' : '#ffffff', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
           </div>
         )}
 
@@ -534,27 +538,29 @@ export default function RevelationScreen({
         {/* Bloc bonne réponse (dissocié) */}
         {isCorrect && (
           <div style={{
-            background: 'rgba(76,175,80,0.15)', border: '1.5px solid rgba(76,175,80,0.5)',
+            background: isQuickieMode ? 'rgba(76,175,80,0.12)' : 'rgba(76,175,80,0.15)',
+            border: '1.5px solid rgba(76,175,80,0.5)',
             borderRadius: S(12), padding: `${S(6)} ${S(10)}`, flexShrink: 0,
           }}>
             <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{correctAnswerText}</div>
+            <div style={{ fontSize: S(12), fontWeight: 700, color: isQuickieMode ? '#1a1a2e' : 'white' }}>{correctAnswerText}</div>
           </div>
         )}
 
         {/* Bloc "Le saviez-vous ?" (dissocié) */}
         {isCorrect && (
           <div style={{
-            background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            background: isQuickieMode ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.35)',
+            backdropFilter: 'blur(12px)',
+            border: isQuickieMode ? `1.5px solid ${cat?.color || '#7F77DD'}40` : '1px solid rgba(255,255,255,0.12)',
             borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
             flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
               <span style={{ fontSize: S(12) }}>🧠</span>
-              <span style={{ color: 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+              <span style={{ color: isQuickieMode ? '#1a1a2e' : 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>{fact.explanation}</p>
+            <p style={{ color: isQuickieMode ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>{fact.explanation}</p>
           </div>
         )}
 

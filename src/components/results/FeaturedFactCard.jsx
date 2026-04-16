@@ -13,33 +13,35 @@ export default function FeaturedFactCard({
   fact,
   fallbackColor = '#FF6B1A',
   textColor = '#ffffff',
+  isQuickie = false,
   onClick,
 }) {
   if (!fact) return null
   const fCat = CATEGORIES.find(c => c.id === fact.category)
   const fColor = fCat?.color || fallbackColor
+  const glowColor = isQuickie ? '#7F77DD' : fColor
 
   return (
     <div
       onClick={onClick}
       style={{
         display: 'flex', alignItems: 'center', gap: S(10),
-        background: `linear-gradient(135deg, ${fColor}33, ${fColor}11)`,
-        border: `1.5px solid ${fColor}`,
-        borderRadius: S(12), padding: S(8), flexShrink: 0,
+        background: isQuickie ? 'rgba(127,119,221,0.15)' : `linear-gradient(135deg, ${fColor}33, ${fColor}11)`,
+        border: `2px solid ${glowColor}`,
+        borderRadius: S(14), padding: S(10), flexShrink: 0,
         cursor: onClick ? 'pointer' : 'default',
-        boxShadow: `0 0 20px ${fColor}44`,
+        boxShadow: `0 0 24px ${glowColor}55`,
         animation: 'wtf-featured-glow 2.4s ease-in-out infinite',
         position: 'relative', overflow: 'hidden',
       }}
     >
       <style>{`@keyframes wtf-featured-glow {
-        0%, 100% { box-shadow: 0 0 14px ${fColor}33; }
-        50%      { box-shadow: 0 0 26px ${fColor}77; }
+        0%, 100% { box-shadow: 0 0 14px ${glowColor}33; }
+        50%      { box-shadow: 0 0 30px ${glowColor}88; }
       }`}</style>
       {/* Image carrée */}
       <div style={{
-        width: S(52), height: S(52), borderRadius: S(8),
+        width: S(64), height: S(64), borderRadius: S(10),
         background: `linear-gradient(135deg, ${fColor}66, ${fColor})`,
         flexShrink: 0, overflow: 'hidden', display: 'flex',
         alignItems: 'center', justifyContent: 'center',
@@ -59,11 +61,11 @@ export default function FeaturedFactCard({
       {/* Texte */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: S(8), fontWeight: 900, color: fColor,
+          fontSize: S(9), fontWeight: 900, color: glowColor,
           textTransform: 'uppercase', letterSpacing: '0.08em',
           marginBottom: S(2), display: 'flex', alignItems: 'center', gap: S(4),
         }}>
-          ✨ {fact.isVip ? 'Le plus WTF (VIP)' : 'Le plus WTF'}
+          ⭐ {fact.isVip ? 'LE PLUS WTF DE TA SESSION (VIP)' : 'LE PLUS WTF DE TA SESSION'}
         </div>
         <div style={{
           fontSize: S(11), fontWeight: 800, color: textColor, lineHeight: 1.25,

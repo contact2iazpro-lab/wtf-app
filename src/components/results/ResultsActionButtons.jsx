@@ -53,7 +53,7 @@ export default function ResultsActionButtons({
             flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
             background: isQuickie ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : 'linear-gradient(135deg, #FFD700, #FFA500)',
             border: 'none', color: isQuickie ? 'white' : '#1a1a2e', fontWeight: 900, fontSize: S(11),
-            cursor: 'pointer', boxShadow: isQuickie ? '0 4px 16px rgba(127,119,221,0.5)' : '0 4px 16px rgba(255,215,0,0.4)',
+            cursor: 'pointer', boxShadow: isQuickie ? '0 8px 30px rgba(127,119,221,0.5)' : '0 4px 16px rgba(255,215,0,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
           }}>
           {replayInner}
@@ -81,8 +81,9 @@ export default function ResultsActionButtons({
           className="active:scale-95 transition-all"
           style={{
             flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-            background: 'rgba(255,255,255,0.25)', border: '2px solid rgba(255,255,255,0.4)',
-            color: '#fff', fontWeight: 800, fontSize: S(11),
+            background: isQuickie ? 'rgba(127,119,221,0.15)' : 'rgba(255,255,255,0.25)',
+            border: isQuickie ? '2px solid #7F77DD' : '2px solid rgba(255,255,255,0.4)',
+            color: isQuickie ? '#B5AFEB' : '#fff', fontWeight: 800, fontSize: S(11),
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
           }}>
@@ -93,8 +94,9 @@ export default function ResultsActionButtons({
           className="active:scale-95 transition-all"
           style={{
             flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-            background: 'rgba(255,255,255,0.25)', border: '2px solid rgba(255,255,255,0.4)',
-            color: '#fff', fontWeight: 800, fontSize: S(11),
+            background: isQuickie ? 'rgba(127,119,221,0.15)' : 'rgba(255,255,255,0.25)',
+            border: isQuickie ? '2px solid #7F77DD' : '2px solid rgba(255,255,255,0.4)',
+            color: isQuickie ? '#B5AFEB' : '#fff', fontWeight: 800, fontSize: S(11),
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
           }}>

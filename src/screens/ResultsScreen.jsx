@@ -132,7 +132,7 @@ export default function ResultsScreen({
 
   // MOD 5 — Rank based on correct answers
   const currentRank = RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
-  const stars = getStars(correctCount, totalFacts)
+  const stars = correctCount
   const isPerfect = totalFacts > 0 && correctCount >= totalFacts
 
   // Fond : même style pastel que la home
@@ -207,8 +207,8 @@ export default function ResultsScreen({
   // MOD 6 — Sequential animations on mount
   useEffect(() => {
     const t1 = setTimeout(() => setRankVisible(true), 250)
-    const starTimers = [1, 2, 3].map((s, i) =>
-      setTimeout(() => { if (s <= stars) setVisibleStars(s) }, 500 + i * 200)
+    const starTimers = [1, 2, 3, 4, 5].map((s, i) =>
+      setTimeout(() => { if (s <= stars) setVisibleStars(s) }, 500 + i * 150)
     )
     return () => { clearTimeout(t1); starTimers.forEach(clearTimeout) }
   }, [stars])
@@ -412,7 +412,7 @@ export default function ResultsScreen({
       <div className="results-content" style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden',
-        position: 'relative', zIndex: 2, padding: `${S(10)} ${S(14)}`, gap: S(6),
+        position: 'relative', zIndex: 2, padding: `${S(10)} ${S(14)}`, gap: S(14),
         scrollbarWidth: 'none',
       }}>
 
@@ -469,6 +469,7 @@ export default function ResultsScreen({
           fact={featuredFact}
           fallbackColor={catColor}
           textColor={textOnBg}
+          isQuickie={sessionType === 'quickie'}
           onClick={() => {
             if (!featuredFact) return
             audio.play?.('click')

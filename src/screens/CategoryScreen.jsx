@@ -132,10 +132,14 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       overflow: 'hidden', boxSizing: 'border-box',
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
-      backgroundImage: `url(${BACKGROUNDS[bgIndex.current]})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundColor: '#1a1a2e',
+      ...(isLockedMode
+        ? { background: 'linear-gradient(160deg, #4A3FA3, #7F77DD)' }
+        : {
+            backgroundImage: `url(${BACKGROUNDS[bgIndex.current]})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundColor: '#1a1a2e',
+          }),
     }}>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 

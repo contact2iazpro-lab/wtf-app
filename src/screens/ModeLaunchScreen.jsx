@@ -64,7 +64,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         padding: `${S(8)} ${S(20)} ${S(8)}`,
       }}>
         {icon
-          ? <img src={icon} alt={modeName} style={{ width: S(56), height: S(56), objectFit: 'contain', marginBottom: S(2) }} />
+          ? <img src={icon} alt={modeName} style={{ width: S(110), height: S(110), objectFit: 'contain', marginBottom: S(4) }} />
           : <div style={{ fontSize: S(40), marginBottom: S(2), lineHeight: 1 }}>{renderIcon(emoji)}</div>
         }
         <h1 style={{
@@ -87,7 +87,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         flex: 1, minHeight: 0, overflow: 'hidden',
         padding: `0 ${S(20)}`,
         display: 'flex', flexDirection: 'column', gap: S(6),
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
       }}>
         {(rules || []).map((rule, i) => (
           <div key={i} style={{
@@ -142,14 +142,14 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           className="active:scale-95 transition-transform"
           style={{
             width: '85%', padding: `${S(14)} 0`,
-            background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-            border: '2px solid rgba(255,255,255,0.4)',
+            background: '#B5AFEB',
+            border: '3px solid #4A3FA3',
             borderRadius: S(16),
             fontFamily: 'Nunito, sans-serif',
             fontSize: S(18), fontWeight: 900,
             color: '#ffffff',
             cursor: 'pointer',
-            boxShadow: `0 4px 0 rgba(0,0,0,0.15), 0 6px 20px ${color}50`,
+            boxShadow: '0 8px 30px rgba(127,119,221,0.6), 0 4px 0 rgba(0,0,0,0.15)',
             letterSpacing: '0.04em',
           }}
         >

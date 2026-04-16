@@ -104,11 +104,9 @@ export default function QuestionScreen({
   }, [])
 
   const isQuickieMode = sessionType === 'quickie' || gameMode === 'quickie'
-  const screenBg = isQuickieMode
-    ? 'linear-gradient(160deg, #4A3FA3, #7F77DD)'
-    : cat
-      ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
-      : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
+  const screenBg = cat
+    ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
+    : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
   const cardBg = 'rgba(0, 0, 0, 0.28)'
 
@@ -178,7 +176,7 @@ export default function QuestionScreen({
                 flex: 1,
                 height: isActive ? S(20) : S(10),
                 borderRadius: S(5),
-                background: isActive ? 'white' : 'rgba(255,255,255,0.3)',
+                background: isActive ? (isQuickieMode ? '#7F77DD' : 'white') : 'rgba(255,255,255,0.2)',
                 position: isActive ? 'relative' : 'static',
                 transition: 'all 0.3s ease',
               }}
@@ -190,7 +188,7 @@ export default function QuestionScreen({
                   transform: 'translate(-50%, -50%)',
                   fontSize: S(12),
                   fontWeight: 900,
-                  color: cat?.color || '#1a1a2e',
+                  color: isQuickieMode ? '#ffffff' : (cat?.color || '#1a1a2e'),
                   whiteSpace: 'nowrap',
                 }}>
                   {factIndex + 1}/{displayTotalFacts}
@@ -209,9 +207,10 @@ export default function QuestionScreen({
       className="rounded-2xl p-3 border shrink-0"
       style={{
         background: cardBg,
-        borderColor: cat?.color + '70',
+        borderColor: isQuickieMode ? '#7F77DD' : (cat?.color + '70'),
+        borderWidth: isQuickieMode ? 3 : 1,
         backdropFilter: 'blur(12px)',
-        boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
+        boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`,
       }}
     >
       {isQuickieMode && (
@@ -571,7 +570,7 @@ export default function QuestionScreen({
                     className="btn-press active:scale-95"
                     style={{
                       background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
-                      border: isQuickieMode ? '2px solid #7F77DD' : devBorder,
+                      border: isQuickieMode ? '3px solid #7F77DD' : devBorder,
                       borderRadius: S(12),
                       color: isQuickieMode ? '#4A3FA3' : 'white',
                       fontWeight: isQuickieMode ? 800 : 700,

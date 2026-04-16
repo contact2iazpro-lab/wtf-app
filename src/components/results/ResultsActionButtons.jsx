@@ -8,8 +8,6 @@
  */
 
 const S = (px) => `calc(${px}px * var(--scale))`
-const DIFFICULTY_LABELS = { cool: 'Cool', hot: 'Hot', wtf: 'WTF!' }
-
 export default function ResultsActionButtons({
   sessionType,
   difficulty,
@@ -24,7 +22,7 @@ export default function ResultsActionButtons({
     if (sessionType === 'parcours') {
       return (
         <>
-          <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer en {DIFFICULTY_LABELS[difficulty?.id] || 'Quest'}
+          <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer en Quest
         </>
       )
     }

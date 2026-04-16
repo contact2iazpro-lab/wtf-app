@@ -46,12 +46,9 @@ function getStars(correct, total) {
   return 0
 }
 
-const DIFFICULTY_LABELS = { cool: 'Cool', hot: 'Hot', wtf: 'WTF!' }
-const DIFFICULTY_EMOJIS = { cool: '❄️', hot: '🔥', wtf: '⚡' }
-const CHALLENGE_LABELS = {
-  cool: 'Tenter le niveau Hot ? 🔥',
-  // hot : pas de niveau supérieur (WTF! retiré) — on ne montre pas de challenge
-}
+const DIFFICULTY_LABELS = { snack: 'Snack', quest: 'Quest', flash: 'Flash', blitz: 'Blitz', no_limit: 'No Limit', vrai_ou_fou: 'Vrai ou Fou' }
+const DIFFICULTY_EMOJIS = { snack: '🍿', quest: '🗺️', flash: '⚡', blitz: '⏱️', no_limit: '♾️', vrai_ou_fou: '🤔' }
+const CHALLENGE_LABELS = {}
 
 // COR 4 — Confetti colors
 const CONFETTI_COLORS = ['#FF5C1A', '#FFD700', '#FF4081', '#00BCD4', '#7C4DFF', '#4CAF50', '#FF9800', '#E91E63']

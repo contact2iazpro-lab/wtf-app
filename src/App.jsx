@@ -355,7 +355,7 @@ export default function App() {
 
   // ── Deep-link Snack : déclenché par ChallengeScreen quand le joueur n'a
   // pas assez de f*cts pour relever le défi et veut explorer la catégorie.
-  // ChallengeScreen dépose `wtf_pending_explorer_cat` puis navigate('/'). Ici
+  // ChallengeScreen dépose `wtf_pending_snack_cat` puis navigate('/'). Ici
   // on consomme le flag et on route vers l'Snack de la catégorie cible.
   //
   // Ref pattern : handleSelectCategory est re-mémoizé quand gameMode change.
@@ -366,9 +366,9 @@ export default function App() {
 
   const [pendingSnackCat, setPendingSnackCat] = useState(null)
   useEffect(() => {
-    const cat = sessionStorage.getItem('wtf_pending_explorer_cat')
+    const cat = sessionStorage.getItem('wtf_pending_snack_cat')
     if (!cat) return
-    sessionStorage.removeItem('wtf_pending_explorer_cat')
+    sessionStorage.removeItem('wtf_pending_snack_cat')
     setGameMode('snack')
     setSessionType('snack')
     setPendingSnackCat(cat)

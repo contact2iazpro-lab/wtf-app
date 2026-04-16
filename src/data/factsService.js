@@ -380,7 +380,7 @@ export function getFlashFacts() {
 }
 
 /** Mode Snack : Funny facts, toutes catégories pour CategoryScreen */
-export function getExplorerFacts() {
+export function getSnackFacts() {
   return getFunnyFacts()
 }
 

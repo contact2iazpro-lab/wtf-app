@@ -30,7 +30,7 @@ export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, 
 
   const handleBuyFact = () => {
     if (!purchaseFact) return
-    const cost = purchaseFact.isVip ? 25 : 5
+    const cost = purchaseFact.isVip ? 250 : 50
     if (coins < cost) return
     applyCurrencyDelta?.({ coins: -cost }, `buy_fact_${purchaseFact.isVip ? 'vip' : 'funny'}`)?.catch?.(e =>
       console.warn('[CategoryFactsView] buy fact RPC failed:', e?.message || e)
@@ -147,7 +147,7 @@ export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, 
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: S(8) }}>
                   {lockedFacts.map(fact => {
-                    const cost = fact.isVip ? 25 : 5
+                    const cost = fact.isVip ? 250 : 50
                     return (
                       <button
                         key={fact.id}
@@ -192,7 +192,7 @@ export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, 
 
       {/* Modal d'achat d'un f*ct verrouillé */}
       {purchaseFact && (() => {
-        const cost = purchaseFact.isVip ? 25 : 5
+        const cost = purchaseFact.isVip ? 250 : 50
         const canAfford = coins >= cost
         return (
           <div

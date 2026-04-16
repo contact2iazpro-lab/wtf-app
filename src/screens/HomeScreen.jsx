@@ -176,12 +176,6 @@ export default function HomeScreen({
     const today = new Date().toISOString().slice(0, 10)
     return d.rouletteFreeDate === today ? null : 'GRATUIT'
   })()
-  const puzzleBadge = (() => {
-    try {
-      const today = new Date().toISOString().slice(0, 10)
-      return localStorage.getItem('wtf_puzzle_' + today) ? null : 'DAILY'
-    } catch { return null }
-  })()
   const questBadge = (() => {
     try {
       const d = readWtfData()

@@ -207,7 +207,7 @@ séparé, sous-domaine privé, ou en local uniquement).
   - **Fidèle** (J14) = 500c
   - **Légende** (J30) = 1 000c + cadre exclusif
 - **Flash** reste le gameplay quotidien (lun-sam 30c fixe, dimanche Hunt VIP). Aucune interférence : Flash = actif, Coffres/Streak = passif.
-- **Implémentation** : `useDailyCoffre.js` devient `useDailyStreakReward.js`. Un seul popup au lancement si récompense disponible.
+- **Implémentation** : `src/hooks/useStreakRewards.js`. Un seul popup au lancement si récompense disponible.
 
 ## Monétisation — Roadmap Y1 → Y5
 
@@ -417,7 +417,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - `src/services/currencyService.js` — SUPPRIMÉ (remplacé par usePlayerProfile.applyCurrencyDelta)
 - `src/utils/storageHelper.js` — centralise lectures localStorage
 - `src/services/playerSyncService.js` — sync Supabase push/pull
-- `src/constants/gameConfig.js` — config modes de jeu (À REFAIRE avec les 6 modes)
+- `src/constants/gameConfig.js` — config modes de jeu (6 modes configurés ✅)
 - `src/data/factsService.js` — chargement facts Supabase
 - `src/utils/answers.js` — tirage réponses QCM
 - `src/hooks/usePlayerProfile.js` — source de vérité devises (applyCurrencyDelta)

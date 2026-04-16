@@ -142,7 +142,7 @@ export function useHandleNext({
 
       const streakRewardCoins = streakReward?.coins ?? 0
       const newWtfDuJourDate = sessionType === 'flash' ? TODAY() : wtfDuJourDate
-      const explorerSessionsToday = sessionType === 'snack' ? sessionsToday : newSessionsToday
+      const snackSessionsToday = sessionType === 'snack' ? sessionsToday : newSessionsToday
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
       // Phase A : 1 seule RPC atomique coins+hints via usePlayerProfile
@@ -164,7 +164,7 @@ export function useHandleNext({
           unlockedFacts: newUnlocked,
           wtfCoins: localWd.wtfCoins || 0,
           wtfDuJourDate: newWtfDuJourDate,
-          sessionsToday: explorerSessionsToday,
+          sessionsToday: snackSessionsToday,
           wtfDuJourFait: newWtfDuJourDate === TODAY(),
         }
         saveStorage(newStorage)

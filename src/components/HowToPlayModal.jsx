@@ -193,7 +193,7 @@ const CHAPTERS = [
       { icon: '🔥', text: '**Flash lun-sam** : 30 fixe · **Flash dimanche** : 1 VIP débloqué' },
       { icon: '🤔', text: '**Vrai ou Fou · No Limit · Blitz** : 0 coin (prestige)' },
       { icon: '🎰', text: 'Gagne aussi des coins via la **roulette quotidienne** et tes **paliers de série**.' },
-      { icon: '🛒', text: 'Dépense-les en **boutique** : indices, énergie, cadres, ticket Défi Blitz.' },
+      { icon: '🛒', text: 'Dépense-les en **boutique** : indices, énergie, cadres, Défi Blitz (200 WTFCoins).' },
     ],
   },
 

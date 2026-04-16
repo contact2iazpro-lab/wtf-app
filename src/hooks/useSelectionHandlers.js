@@ -30,8 +30,8 @@ export function useSelectionHandlers({
     if (gameMode === 'snack') {
       // Snack utilise toujours sa difficulté dédiée (20s / 1 coin / 4 QCM)
       // peu importe celle passée en argument (legacy)
-      const explorerDiff = DIFFICULTY_LEVELS.SNACK
-      setSelectedDifficulty(explorerDiff)
+      const snackDiff = DIFFICULTY_LEVELS.SNACK
+      setSelectedDifficulty(snackDiff)
       let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
       if (pool.length < 4 && skipUnlockM) {
         pool = getGeneratedFactsByCategory(selectedCategory)
@@ -43,12 +43,12 @@ export function useSelectionHandlers({
       if (pool.length < 4) {
         const price = pool.length === 1 ? 5 : 10
         const preparedFacts = shuffle(pool)
-          .map(fact => ({ ...fact, ...getAnswerOptions(fact, explorerDiff) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'snack', categoryId: selectedCategory, difficulty: explorerDiff })
+          .map(fact => ({ ...fact, ...getAnswerOptions(fact, snackDiff) }))
+        setMiniParcours({ pool: preparedFacts, price, mode: 'snack', categoryId: selectedCategory, difficulty: snackDiff })
         return
       }
       const facts = shuffle(pool).slice(0, 20)
-        .map(fact => ({ ...fact, ...getAnswerOptions(fact, explorerDiff) }))
+        .map(fact => ({ ...fact, ...getAnswerOptions(fact, snackDiff) }))
       setIsQuickPlay(false)
       setSessionType('snack')
       initSessionState(facts)

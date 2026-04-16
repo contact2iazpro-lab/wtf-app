@@ -497,7 +497,7 @@ export default function QuestionScreen({
         flexShrink: 0,
         display: 'flex', flexDirection: 'column',
         gap: S(10),
-        padding: `${S(10)} ${S(16)} 0`,
+        padding: `${S(16)} ${S(16)} 0`,
       }}>
         {questionCard}
 

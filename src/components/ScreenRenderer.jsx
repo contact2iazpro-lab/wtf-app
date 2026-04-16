@@ -55,13 +55,6 @@ export default function ScreenRenderer({
     <>
       {screen === SCREENS.HOME && (
         <HomeScreen
-          dailyFactUnlocked={(() => {
-            if (!effectiveDailyFact) return false
-            const u = storage.unlockedFacts
-            if (u instanceof Set) return u.has(effectiveDailyFact.id)
-            if (Array.isArray(u)) return u.includes(effectiveDailyFact.id)
-            return false
-          })()}
           currentStreak={streak}
           newlyEarnedBadges={newlyEarnedBadges}
           onBadgeSeen={onBadgeSeen}

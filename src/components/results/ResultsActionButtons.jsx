@@ -11,13 +11,14 @@ const S = (px) => `calc(${px}px * var(--scale))`
 export default function ResultsActionButtons({
   sessionType,
   difficulty,
-  challengeLabel = null,    // ex: "Tenter le niveau Hot ? 🔥" — null si pas dispo
+  challengeLabel = null,
   onReplay,
   onReplayHarder,
   onShare,
   onHome,
   sharedCopied = false,
 }) {
+  const isQuickie = sessionType === 'quickie'
   const replayInner = (() => {
     if (sessionType === 'parcours') {
       return (
@@ -50,9 +51,9 @@ export default function ResultsActionButtons({
           className="active:scale-95 transition-all"
           style={{
             flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
-            background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-            border: 'none', color: '#1a1a2e', fontWeight: 900, fontSize: S(11),
-            cursor: 'pointer', boxShadow: '0 4px 16px rgba(255,215,0,0.4)',
+            background: isQuickie ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : 'linear-gradient(135deg, #FFD700, #FFA500)',
+            border: 'none', color: isQuickie ? 'white' : '#1a1a2e', fontWeight: 900, fontSize: S(11),
+            cursor: 'pointer', boxShadow: isQuickie ? '0 4px 16px rgba(127,119,221,0.5)' : '0 4px 16px rgba(255,215,0,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
           }}>
           {replayInner}

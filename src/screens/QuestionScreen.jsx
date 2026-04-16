@@ -243,9 +243,14 @@ export default function QuestionScreen({
           <div style={{
             position: 'absolute', inset: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: S(56),
-            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
-          }}>🔒</div>
+          }}>
+            <span style={{
+              fontSize: S(64), fontWeight: 900, color: '#B5AFEB',
+              textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
+              animation: 'quickie-pulse-btn 2s ease-in-out infinite',
+              lineHeight: 1,
+            }}>?</span>
+          </div>
         </div>
       )}
       <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))' }}>{renderFormattedText(fact.question)}</h2>

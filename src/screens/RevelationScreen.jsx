@@ -393,8 +393,11 @@ export default function RevelationScreen({
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: '2px solid rgba(255,255,255,0.4)',
-                background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+                border: isQuickieMode ? 'none' : '2px solid rgba(255,255,255,0.4)',
+                background: isQuickieMode
+                  ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
+                  : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+                boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.5)' : 'none',
               }}
             >
               {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
@@ -568,8 +571,11 @@ export default function RevelationScreen({
                 style={{
                   flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                  color: 'white', border: '2px solid rgba(255,255,255,0.4)',
+                  background: isQuickieMode
+                    ? 'rgba(255,255,255,0.15)'
+                    : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
+                  color: 'white',
+                  border: isQuickieMode ? '2px solid rgba(255,255,255,0.5)' : '2px solid rgba(255,255,255,0.4)',
                 }}
               >
                 🎩 Partager ce WTF!
@@ -581,8 +587,11 @@ export default function RevelationScreen({
                 style={{
                   flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                   color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                  border: '2px solid rgba(255,255,255,0.4)',
-                  background: `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+                  border: isQuickieMode ? 'none' : '2px solid rgba(255,255,255,0.4)',
+                  background: isQuickieMode
+                    ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
+                    : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
+                  boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.5)' : 'none',
                 }}
               >
                 {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}

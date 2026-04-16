@@ -437,7 +437,8 @@ export default function ResultsScreen({
 
         {/* Rang + Étoiles + Badge Perfect — composant extrait (Phase 5.2 A) */}
         <ResultsRankHeader
-          emoji={currentRank.emoji}
+          emoji={sessionType === 'quickie' ? null : currentRank.emoji}
+          customIcon={sessionType === 'quickie' ? '/assets/modes/quickie.png' : null}
           label={currentRank.label}
           stars={stars}
           visibleStars={visibleStars}

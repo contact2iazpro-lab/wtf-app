@@ -11,6 +11,7 @@ const S = (px) => `calc(${px}px * var(--scale))`
 
 export default function ResultsRankHeader({
   emoji,
+  customIcon = null,
   label,
   stars = 0,
   visibleStars = 0,
@@ -29,7 +30,9 @@ export default function ResultsRankHeader({
             transform: rankVisible ? 'scale(1)' : 'scale(0)',
             transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}>
-          {emoji}
+          {customIcon
+            ? <img src={customIcon} alt="" style={{ width: S(42), height: S(42), objectFit: 'contain' }} />
+            : emoji}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: S(2) }}>
           <div

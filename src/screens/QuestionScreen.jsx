@@ -492,13 +492,12 @@ export default function QuestionScreen({
 
       {progressBar}
 
-      {/* Distribution verticale uniforme : progressBar → question → indices → QCM → image → timer */}
+      {/* Blocs avec gap uniforme : question → indices → QCM → image (gap 10px) */}
       <div style={{
-        flex: 1,
+        flexShrink: 0,
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: `0 ${S(16)}`,
-        overflow: 'auto',
+        gap: S(10),
+        padding: `${S(10)} ${S(16)} 0`,
       }}>
         {questionCard}
 
@@ -609,20 +608,20 @@ export default function QuestionScreen({
           )
         })()}
 
-        {/* Image Quickie séparée — entre QCM et timer */}
+        {/* Image Quickie séparée — entre QCM et image */}
         {quickieImage}
+      </div>
 
-        {/* Timer */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            <CircularTimer
-              key={`${fact.id}-${answerMode}`}
-              size={96}
-              duration={timerDuration}
-              onTimeout={handleTimeout}
-              variant={isQuickieMode ? 'quickie' : 'default'}
-            />
-          </div>
+      {/* Timer — centré verticalement dans l'espace restant */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <CircularTimer
+            key={`${fact.id}-${answerMode}`}
+            size={96}
+            duration={timerDuration}
+            onTimeout={handleTimeout}
+            variant={isQuickieMode ? 'quickie' : 'default'}
+          />
         </div>
       </div>
     </div>

@@ -598,42 +598,47 @@ export default function RevelationScreen({
         `}</style>
       )}
       <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
-        <div
-          onClick={() => fact.imageUrl && !imgFailed && setShowLightbox(true)}
-          className="overflow-hidden relative"
-          style={{
-            width: '100%', maxHeight: '35vh', borderRadius: S(16),
-            border: showVipGlow ? `2px solid ${cat?.color}AA` : '3px solid #7F77DD',
-            background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
-            ...(showVipGlow
-              ? { animation: 'vipCardGlow 2s ease-in-out infinite' }
-              : { animation: 'unlockGlowPulse 2s ease-in-out infinite' }),
-          }}
-        >
-          {fact.imageUrl && !imgFailed ? (
-            <>
-              <img
-                src={fact.imageUrl}
-                alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
-                onError={() => setImgFailed(true)}
-              />
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
-                style={{
-                  position: 'absolute', top: S(8), right: S(8), zIndex: 10,
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: 'rgba(0,0,0,0.5)', border: 'none',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', fontSize: 18,
-                }}
-              >🔍</button>
-            </>
-          ) : (
-            <div style={{ width: '100%', height: 'calc(35vh - 6px)', borderRadius: S(12), overflow: 'hidden' }}>
-              <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
-            </div>
-          )}
+        {/* Wrapper glow — pas d'overflow pour que le box-shadow soit visible */}
+        <div style={{
+          borderRadius: S(16),
+          ...(showVipGlow
+            ? { animation: 'vipCardGlow 2s ease-in-out infinite' }
+            : { animation: 'unlockGlowPulse 2s ease-in-out infinite' }),
+        }}>
+          <div
+            onClick={() => fact.imageUrl && !imgFailed && setShowLightbox(true)}
+            className="relative overflow-hidden"
+            style={{
+              width: '100%', maxHeight: '35vh', borderRadius: S(16),
+              border: showVipGlow ? `2px solid ${cat?.color}AA` : '3px solid #7F77DD',
+              background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
+            }}
+          >
+            {fact.imageUrl && !imgFailed ? (
+              <>
+                <img
+                  src={fact.imageUrl}
+                  alt={fact.question}
+                  style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
+                  onError={() => setImgFailed(true)}
+                />
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+                  style={{
+                    position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                    width: 36, height: 36, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.5)', border: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', fontSize: 18,
+                  }}
+                >🔍</button>
+              </>
+            ) : (
+              <div style={{ width: '100%', height: 'calc(35vh - 6px)', borderRadius: S(12), overflow: 'hidden' }}>
+                <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
+              </div>
+            )}
+          </div>
         </div>
         {/* Texte F*ct débloqué sous l'image */}
         <div style={{

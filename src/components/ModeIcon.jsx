@@ -31,7 +31,7 @@ const ModeIcon = forwardRef(({ icon, name, color, onClick }, ref) => {
         <img
           src={icon} alt={name}
           style={{
-            width: '72%', height: '72%',
+            width: '85%', height: '85%',
             objectFit: 'contain', flexShrink: 0,
           }}
         />

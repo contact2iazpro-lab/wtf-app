@@ -325,7 +325,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <img src="/assets/roulette.png?v=2" alt="Roulette" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/assets/roulette.png?v=2" alt="Roulette" style={{ width: S(26), height: S(26), objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Roulette</span>
             {rouletteBadge && (
@@ -344,7 +344,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <img src="/assets/daily.png?v=2" alt="Flash du jour" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/assets/daily.png?v=2" alt="Flash du jour" style={{ width: S(26), height: S(26), objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>
               {isSunday ? 'Hunt VIP' : 'Flash du jour'}

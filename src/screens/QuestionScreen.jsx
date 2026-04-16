@@ -221,7 +221,7 @@ export default function QuestionScreen({
     <div style={{
       position: 'relative',
       width: '55%',
-      marginTop: S(38),
+      marginTop: 48,
       aspectRatio: '1 / 1',
       borderRadius: S(12),
       overflow: 'hidden',

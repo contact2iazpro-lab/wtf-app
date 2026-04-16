@@ -1,9 +1,10 @@
 /**
- * HomeScreen v9 — Fullscreen + flex stable.
- * Zones : Header · Streak · Paliers · Roulette · Modes (grille 6) · Énergie · Partie rapide · BottomNav
+ * HomeScreen v10 — Refonte layout (prompt HOMESCREEN_REFONTE).
+ * Zones : Header (avatar+coins+hints+batterie+settings) · Streak palier+jauge
+ *         · Cerveaux (4 paliers) · Bandeau Roulette+Flash · Logo+Grille 6 · Partie rapide · BottomNav
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import BottomNav from '../components/BottomNav'
 import ModeIcon from '../components/ModeIcon'
@@ -11,7 +12,8 @@ import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
-import { ICON_SIZES, ASSETS } from '../constants/layoutConfig'
+import { ASSETS } from '../constants/layoutConfig'
+import { STREAK_PALIERS } from '../constants/gameConfig'
 import RouletteModal from '../components/RouletteModal'
 
 import { useStreakRewards } from '../hooks/useStreakRewards'
@@ -29,6 +31,37 @@ const HOME_BG_COLOR = [
 ].join(', ')
 
 const S = (px) => `calc(${px}px * var(--scale))`
+
+const BRAIN_STYLES = {
+  3:  { emoji: '🧠', filter: 'grayscale(0.6) brightness(0.8)', label: 'Débutant' },
+  7:  { emoji: '🧠', filter: 'saturate(1.4) brightness(1.1) hue-rotate(-10deg)', label: 'Habitué' },
+  14: { emoji: '🧠', filter: 'saturate(1.8) brightness(1.2) hue-rotate(20deg)', label: 'Fidèle' },
+  30: { emoji: '👑', filter: 'saturate(1.5) brightness(1.3) drop-shadow(0 0 4px gold)', label: 'Légende' },
+}
+
+function getBatteryColor(remaining) {
+  if (remaining >= 5) return '#22C55E'
+  if (remaining >= 4) return '#86EFAC'
+  if (remaining >= 3) return '#FACC15'
+  if (remaining >= 2) return '#F97316'
+  if (remaining >= 1) return '#EF4444'
+  return '#EF4444'
+}
+
+function getCurrentPalier(streak) {
+  let current = null
+  for (const p of STREAK_PALIERS) {
+    if (streak >= p.day) current = p
+  }
+  return current
+}
+
+function getNextPalier(streak) {
+  for (const p of STREAK_PALIERS) {
+    if (streak < p.day) return p
+  }
+  return null
+}
 
 export default function HomeScreen({
   currentStreak = 0,
@@ -74,37 +107,23 @@ export default function HomeScreen({
   const handleClaimPalier = (day) => { audio.play?.('click'); const r = claim(day); if (r) setCoffreReward(r) }
   const handleBadgeClose = () => { setBadgeToShow(null); onBadgeSeen?.() }
 
-  // ModeIcon imported from components/ModeIcon.jsx
-
-  const MiniBtn = ({ icon, label, badge, onClick }) => (
-    <button
-      onClick={onClick}
-      style={{
-        background: 'rgba(255,255,255,0.15)', border: '1.5px solid rgba(255,255,255,0.25)',
-        borderRadius: 12, padding: '6px 12px',
-        display: 'flex', alignItems: 'center', gap: 5,
-        cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-        WebkitTapHighlightColor: 'transparent',
-      }}
-    >
-      <img src={icon} alt={label} style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: S(13) }} />
-      <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>{label}</span>
-      {badge && (
-        <span style={{ fontSize: S(7), fontWeight: 900, color: '#FF6B1A', background: 'rgba(255,107,26,0.15)', borderRadius: 6, padding: '2px 5px' }}>{badge}</span>
-      )}
-    </button>
-  )
-
-  const rouletteBadge = (() => {
+  const rouletteBadge = useMemo(() => {
     const d = readWtfData()
     const today = new Date().toISOString().slice(0, 10)
     return d.rouletteFreeDate === today ? null : 'GRATUIT'
-  })()
+  }, [])
 
-  const questBadge = (() => {
-    try { const d = readWtfData(); const q = d.quest || d.route; return `N${q?.level || 1}` }
-    catch { return 'N1' }
-  })()
+  const isSunday = new Date().getDay() === 0
+  const currentPalier = getCurrentPalier(currentStreak)
+  const nextPalier = getNextPalier(currentStreak)
+  const progressToNext = nextPalier
+    ? Math.min(1, currentStreak / nextPalier.day)
+    : 1
+  const palierColor = currentPalier
+    ? { 3: '#9CA3AF', 7: '#F472B6', 14: '#F97316', 30: '#FFD700' }[currentPalier.day] || '#9CA3AF'
+    : '#9CA3AF'
+
+  const batteryColor = getBatteryColor(quickieEnergyRemaining)
 
   return (
     <div
@@ -120,13 +139,6 @@ export default function HomeScreen({
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      <style>{`
-        @keyframes coffreSlideIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
       <StarburstBackground />
 
       <div style={{
@@ -135,7 +147,7 @@ export default function HomeScreen({
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* ═══ HEADER ═══ */}
+      {/* ═══ HEADER — avatar + coins + hints + batterie + settings ═══ */}
       <div style={{
         flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -155,7 +167,7 @@ export default function HomeScreen({
           <img src={playerAvatar || '/assets/ui/avatar-default.png'} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: S(12) }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(8) }}>
           {[
             { icon: '/assets/ui/icon-coins.png', value: coins },
             { icon: '/assets/ui/icon-hint.png', value: hints },
@@ -173,6 +185,37 @@ export default function HomeScreen({
               <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{pill.value}</span>
             </button>
           ))}
+
+          {/* Batterie énergie */}
+          <button
+            onClick={() => nav('boutique')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: S(3),
+              background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
+              padding: `${S(3)} ${S(8)}`, border: 'none', cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <div style={{
+              width: S(18), height: S(10), borderRadius: 2,
+              border: `1.5px solid ${batteryColor}`,
+              position: 'relative', display: 'flex', alignItems: 'center', padding: 1,
+            }}>
+              <div style={{
+                width: `${(quickieEnergyRemaining / 5) * 100}%`, height: '100%',
+                background: batteryColor, borderRadius: 1,
+                transition: 'width 0.3s, background 0.3s',
+              }} />
+              <div style={{
+                position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)',
+                width: 2, height: S(5), background: batteryColor, borderRadius: '0 1px 1px 0',
+              }} />
+            </div>
+            <span style={{ fontWeight: 800, color: batteryColor, fontSize: S(10) }}>
+              {quickieEnergyRemaining}
+            </span>
+          </button>
+
           <button
             onClick={handleSettings}
             style={{
@@ -187,46 +230,58 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ═══ STREAK + COUNTDOWN ═══ */}
+      {/* ═══ STREAK PALIER + JAUGE ═══ */}
       <div style={{
         flexShrink: 0,
-        margin: `${S(8)} ${S(14)} 0`,
-        display: 'flex', alignItems: 'center', gap: 6,
+        margin: `${S(6)} ${S(14)} 0`,
+        display: 'flex', flexDirection: 'column', gap: S(4),
         position: 'relative', zIndex: 2,
       }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 4,
-          background: currentStreak > 0 ? 'rgba(255,107,26,0.25)' : 'rgba(255,255,255,0.15)',
-          borderRadius: 8, padding: '4px 10px',
-          ...(currentStreak >= 7 ? { boxShadow: '0 0 8px rgba(255,107,26,0.4)' } : {}),
-        }}>
-          <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 12 }} />
-          <span style={{ fontSize: S(11), fontWeight: 900, color: currentStreak > 0 ? '#FF6B1A' : 'rgba(255,255,255,0.4)' }}>
-            {currentStreak} jour{currentStreak !== 1 ? 's' : ''}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', fontSize: 13 }} />
+            <span style={{ fontSize: S(11), fontWeight: 900, color: palierColor }}>
+              {currentPalier ? currentPalier.name : `${currentStreak}j`}
+            </span>
+            <span style={{ fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
+              {currentStreak}j
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: S(9), fontWeight: 700, color: 'white', opacity: 0.5 }}>
+              {nextPalier ? `→ ${nextPalier.name}` : '🏆 Max'}
+            </span>
+            <span style={{ fontSize: S(9), fontWeight: 800, color: 'white', opacity: 0.7 }}>{countdown}</span>
+          </div>
         </div>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
-          <span style={{ fontSize: S(9), fontWeight: 700, color: 'white', opacity: 0.5 }}>Prochain coffre</span>
-          <span style={{ fontSize: S(10), fontWeight: 800, color: 'white', opacity: 0.7 }}>{countdown}</span>
+        {/* Jauge de progression vers prochain palier */}
+        <div style={{
+          width: '100%', height: 4, borderRadius: 2,
+          background: 'rgba(255,255,255,0.12)',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            width: `${progressToNext * 100}%`, height: '100%',
+            background: palierColor,
+            borderRadius: 2,
+            transition: 'width 0.5s ease',
+          }} />
         </div>
       </div>
 
-      {/* ═══ PALIERS STREAK ═══ */}
+      {/* ═══ CERVEAUX (4 paliers) ═══ */}
       <div style={{
         flexShrink: 0,
         display: 'flex', alignItems: 'center',
         gap: S(6), padding: `${S(6)} ${S(10)} 0`,
         justifyContent: 'center',
         position: 'relative', zIndex: 2,
-        animation: 'coffreSlideIn 0.5s ease-out',
       }}>
         {paliers.map((p) => {
           const status = getStatus(p.day)
           const isAvail = status === 'available'
           const isClaimed = status === 'claimed'
-          const chestSrc = isClaimed
-            ? '/assets/ui/chest-locked.png'
-            : isAvail ? '/assets/ui/chest-open.png' : '/assets/ui/chest-locked.png'
+          const brain = BRAIN_STYLES[p.day] || BRAIN_STYLES[3]
           return (
             <button
               key={p.day}
@@ -240,31 +295,77 @@ export default function HomeScreen({
                 borderRadius: S(8),
                 background: isAvail
                   ? 'linear-gradient(135deg, rgba(255,215,0,0.35) 0%, rgba(255,107,26,0.2) 100%)'
-                  : 'rgba(255,255,255,0.12)',
-                border: `1px solid ${isAvail ? 'rgba(255,215,0,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                  : 'rgba(255,255,255,0.08)',
+                border: `1px solid ${isAvail ? 'rgba(255,215,0,0.6)' : 'rgba(255,255,255,0.08)'}`,
                 cursor: isAvail ? 'pointer' : 'default',
                 opacity: isClaimed ? 0.35 : 1,
                 WebkitTapHighlightColor: 'transparent',
                 transition: 'opacity 0.2s, background 0.2s',
-                animation: isAvail ? 'pulse 1.8s ease-in-out infinite' : 'none',
               }}
             >
-              <img src={chestSrc} alt={p.name} style={{ width: S(ICON_SIZES.coffreIcon), height: S(ICON_SIZES.coffreIcon), objectFit: 'contain', flexShrink: 0 }} />
-              <span style={{ fontSize: S(8), fontWeight: 900, lineHeight: 1, color: isAvail ? '#FFD700' : 'white', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center' }}>
-                {isClaimed ? '✓' : p.name}
+              <span style={{
+                fontSize: S(22),
+                filter: isClaimed ? 'grayscale(1) brightness(0.5)' : brain.filter,
+                lineHeight: 1,
+              }}>
+                {brain.emoji}
               </span>
-              <span style={{ fontSize: S(7), fontWeight: 700, lineHeight: 1, color: 'white', opacity: 0.6 }}>J{p.day}</span>
+              <span style={{ fontSize: S(8), fontWeight: 900, lineHeight: 1, color: isAvail ? '#FFD700' : 'white', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center' }}>
+                {isClaimed ? '✓' : brain.label}
+              </span>
+              <span style={{ fontSize: S(7), fontWeight: 700, lineHeight: 1, color: 'white', opacity: 0.5 }}>J{p.day}</span>
             </button>
           )
         })}
       </div>
 
-      {/* ═══ ROULETTE ═══ */}
-      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: `${S(4)} ${S(10)} 0` }}>
-        <MiniBtn icon="/assets/ui/emoji-roulette.png" label="Roulette" badge={rouletteBadge} onClick={() => { audio.play('click'); setShowRoulette(true) }} />
+      {/* ═══ BANDEAU QUOTIDIEN — Roulette + Flash côte à côte ═══ */}
+      <div style={{
+        flexShrink: 0,
+        display: 'flex', gap: S(8),
+        padding: `${S(6)} ${S(14)} 0`,
+        position: 'relative', zIndex: 2,
+      }}>
+        <button
+          onClick={() => { audio.play('click'); setShowRoulette(true) }}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            background: 'rgba(255,255,255,0.12)', border: '1.5px solid rgba(255,255,255,0.2)',
+            borderRadius: S(10), padding: `${S(8)} ${S(6)}`,
+            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ fontSize: S(14) }}>🎰</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Roulette</span>
+            {rouletteBadge && (
+              <span style={{ fontSize: S(7), fontWeight: 900, color: '#22C55E', letterSpacing: '0.04em' }}>{rouletteBadge}</span>
+            )}
+          </div>
+        </button>
+
+        <button
+          onClick={() => nav('flash')}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            background: 'rgba(255,255,255,0.12)', border: '1.5px solid rgba(255,255,255,0.2)',
+            borderRadius: S(10), padding: `${S(8)} ${S(6)}`,
+            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ fontSize: S(14) }}>{isSunday ? '🏆' : '⚡'}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>
+              {isSunday ? 'Hunt VIP' : 'Flash du jour'}
+            </span>
+            <span style={{ fontSize: S(7), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>1×/jour</span>
+          </div>
+        </button>
       </div>
 
-      {/* ═══ ZONE CENTRALE — flex:1, contient logo + grille modes + énergie ═══ */}
+      {/* ═══ ZONE CENTRALE — logo réduit + grille 6 modes ═══ */}
       <div style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'column',
@@ -273,12 +374,12 @@ export default function HomeScreen({
         position: 'relative', zIndex: 1,
         gap: S(8),
       }}>
-        {/* Logo WTF central */}
+        {/* Logo WTF réduit ~30% */}
         <img
           src={ASSETS.ui.wtfLogo}
           alt="WTF!"
           style={{
-            width: 'clamp(90px, 35vw, 140px)', height: 'auto',
+            width: 'clamp(60px, 24vw, 100px)', height: 'auto',
             objectFit: 'contain', flexShrink: 0,
             filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
             WebkitUserSelect: 'none', userSelect: 'none',
@@ -303,24 +404,6 @@ export default function HomeScreen({
           <ModeIcon icon="/assets/modes/no-limit.svg" name="No Limit" color="#E84535" onClick={() => nav('no_limit')} />
           <ModeIcon icon="/assets/modes/blitz.svg" name="Blitz" color="#FF4444" onClick={() => nav('blitz')} />
         </div>
-
-        {/* Énergie Quickie (5 segments) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 14 }} />
-          <div style={{ display: 'flex', gap: 4 }}>
-            {[0, 1, 2, 3, 4].map(i => (
-              <div key={i} style={{
-                width: 16, height: 8, borderRadius: 4,
-                background: i < quickieEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
-                transition: 'background 0.3s',
-                boxShadow: i < quickieEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
-              }} />
-            ))}
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 800, color: quickieEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
-            {quickieEnergyRemaining}/5
-          </span>
-        </div>
       </div>
 
       {/* ═══ BOUTON PARTIE RAPIDE ═══ */}
@@ -343,10 +426,10 @@ export default function HomeScreen({
             boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
           }}
         >
-          <img src="/assets/ui/emoji-energy.png" alt="" style={{ width: S(20), height: S(20), objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/assets/modes/quickie.png" alt="" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
           <span style={{
             fontFamily: "'Fredoka One', cursive",
-            fontWeight: 400, fontSize: S(14), color: '#FF6B1A',
+            fontWeight: 400, fontSize: S(14), color: '#7F77DD',
             letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2,
           }}>
             Partie rapide

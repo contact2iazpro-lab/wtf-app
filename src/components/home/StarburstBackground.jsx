@@ -33,34 +33,34 @@ const RAYS = [
 
 // Particules scintillantes autour du halo (dots or)
 const PARTICLES = [
-  { x: -180, y: -220, s: 3, o: 0.8 },
-  { x: -240, y: -140, s: 2, o: 0.6 },
-  { x: -160, y: -60,  s: 2.5, o: 0.7 },
-  { x: -220, y: 40,   s: 3, o: 0.75 },
-  { x: -150, y: 160,  s: 2, o: 0.55 },
-  { x: -230, y: 230,  s: 2.5, o: 0.65 },
-  { x: -90,  y: -250, s: 2, o: 0.6 },
-  { x: -40,  y: -180, s: 2.5, o: 0.7 },
-  { x: 60,   y: -240, s: 3, o: 0.85 },
-  { x: 130,  y: -170, s: 2, o: 0.55 },
-  { x: 200,  y: -200, s: 2.5, o: 0.7 },
-  { x: 240,  y: -80,  s: 3, o: 0.75 },
-  { x: 180,  y: 30,   s: 2, o: 0.6 },
-  { x: 250,  y: 120,  s: 2.5, o: 0.7 },
-  { x: 160,  y: 200,  s: 3, o: 0.8 },
-  { x: 230,  y: 250,  s: 2, o: 0.55 },
-  { x: 40,   y: 230,  s: 2.5, o: 0.65 },
-  { x: -60,  y: 250,  s: 3, o: 0.75 },
-  { x: 100,  y: 270,  s: 2, o: 0.55 },
-  { x: -120, y: 290,  s: 2.5, o: 0.6 },
+  { x: -180, y: -220, s: 3, o: 0.20 },
+  { x: -240, y: -140, s: 2, o: 0.15 },
+  { x: -160, y: -60,  s: 2.5, o: 0.18 },
+  { x: -220, y: 40,   s: 3, o: 0.19 },
+  { x: -150, y: 160,  s: 2, o: 0.14 },
+  { x: -230, y: 230,  s: 2.5, o: 0.16 },
+  { x: -90,  y: -250, s: 2, o: 0.15 },
+  { x: -40,  y: -180, s: 2.5, o: 0.18 },
+  { x: 60,   y: -240, s: 3, o: 0.20 },
+  { x: 130,  y: -170, s: 2, o: 0.14 },
+  { x: 200,  y: -200, s: 2.5, o: 0.18 },
+  { x: 240,  y: -80,  s: 3, o: 0.19 },
+  { x: 180,  y: 30,   s: 2, o: 0.15 },
+  { x: 250,  y: 120,  s: 2.5, o: 0.18 },
+  { x: 160,  y: 200,  s: 3, o: 0.20 },
+  { x: 230,  y: 250,  s: 2, o: 0.14 },
+  { x: 40,   y: 230,  s: 2.5, o: 0.16 },
+  { x: -60,  y: 250,  s: 3, o: 0.19 },
+  { x: 100,  y: 270,  s: 2, o: 0.14 },
+  { x: -120, y: 290,  s: 2.5, o: 0.15 },
 ]
 
 // Arcs courbés (light streaks sur les côtés)
 const ARCS = [
-  { size: 520, top: -260, left: -380, rot: -25, op: 0.14 },
-  { size: 620, top: -200, left: 160,  rot: 15,  op: 0.12 },
-  { size: 580, top: 120,  left: -420, rot: 20,  op: 0.15 },
-  { size: 640, top: 140,  left: 180,  rot: -18, op: 0.13 },
+  { size: 520, top: -260, left: -380, rot: -25, op: 0.05 },
+  { size: 620, top: -200, left: 160,  rot: 15,  op: 0.04 },
+  { size: 580, top: 120,  left: -420, rot: 20,  op: 0.05 },
+  { size: 640, top: 140,  left: 180,  rot: -18, op: 0.04 },
 ]
 
 export default function StarburstBackground() {
@@ -93,7 +93,7 @@ export default function StarburstBackground() {
         width: 110, height: 110,
         transform: 'translate(-50%, -50%)',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,245,180,0.95) 0%, rgba(255,220,100,0.6) 35%, rgba(255,200,60,0.25) 65%, transparent 85%)',
+        background: 'radial-gradient(circle, rgba(255,245,180,0.25) 0%, rgba(255,220,100,0.15) 35%, rgba(255,200,60,0.07) 65%, transparent 85%)',
       }} />
 
       {/* Rayons dorés */}
@@ -105,7 +105,7 @@ export default function StarburstBackground() {
           height: r.w * 2,
           transformOrigin: '0 50%',
           transform: `rotate(${r.angle}deg) translateY(-50%)`,
-          background: `linear-gradient(90deg, rgba(255,220,90,0.75) 0%, rgba(255,200,50,0.4) 35%, rgba(255,180,30,0.15) 70%, transparent 100%)`,
+          background: `linear-gradient(90deg, rgba(255,220,90,0.20) 0%, rgba(255,200,50,0.12) 35%, rgba(255,180,30,0.05) 70%, transparent 100%)`,
           borderRadius: r.w * 2,
         }} />
       ))}

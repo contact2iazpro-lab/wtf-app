@@ -104,11 +104,9 @@ if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID))
       0%, 100% { opacity: 0.1; transform: scale(0.8); }
       50%      { opacity: 0.35; transform: scale(1.2); }
     }
-    @keyframes unlockBadgeSlide {
-      0% { transform: translateY(20px); opacity: 0; }
-      40% { transform: translateY(-4px); opacity: 1; }
-      60% { transform: translateY(2px); opacity: 1; }
-      100% { transform: translateY(0); opacity: 1; }
+    @keyframes confettiBurst {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--cx), var(--cy)) scale(0) rotate(var(--cr)); opacity: 0; }
     }
   `
   document.head.appendChild(style)
@@ -152,6 +150,9 @@ export default function RevelationScreen({
 
   const scoreRefTarget = useRef(null)
   const nextButtonRef = useRef(null)
+  const explanationRef = useRef(null)
+  const explanationContainerRef = useRef(null)
+  const [explanationFontSize, setExplanationFontSize] = useState(14)
 
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const gamesPlayed = wtfData.gamesPlayed || 0
@@ -190,6 +191,23 @@ export default function RevelationScreen({
       }
     }
   }, [fact.id, isCorrect, pointsEarned, sessionScore])
+
+  // Auto-size explanation text to fill container
+  useEffect(() => {
+    const container = explanationContainerRef.current
+    const textEl = explanationRef.current
+    if (!container || !textEl) return
+    // Reset to max size and shrink until it fits
+    let size = 16
+    const min = 9
+    textEl.style.fontSize = size + 'px'
+    const availableH = container.clientHeight
+    while (textEl.scrollHeight > availableH && size > min) {
+      size -= 0.5
+      textEl.style.fontSize = size + 'px'
+    }
+    setExplanationFontSize(size)
+  }, [fact.id, unlockedByCoins])
 
   const handleNativeShare = () => {
     const shareMessages = [
@@ -604,19 +622,32 @@ export default function RevelationScreen({
                   cursor: 'pointer', fontSize: 18,
                 }}
               >🔍</button>
-              {/* Badge F*ct débloqué */}
-              <div style={{
-                position: 'absolute', bottom: S(10), left: '50%', transform: 'translateX(-50%)',
-                zIndex: 10, animation: 'unlockBadgeSlide 0.6s ease-out both',
-                background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-                borderRadius: S(10), padding: `${S(6)} ${S(14)}`,
-                border: '2px solid #7F77DD',
-                display: 'flex', alignItems: 'center', gap: S(6),
-                whiteSpace: 'nowrap',
-              }}>
-                <span style={{ fontSize: S(16) }}>🔓</span>
-                <span style={{ fontSize: S(12), fontWeight: 900, color: '#ffffff' }}>F*ct débloqué !</span>
-              </div>
+              {/* Confettis F*ct débloqué */}
+              {(() => {
+                const particles = Array.from({ length: 20 }, (_, i) => {
+                  const angle = (i / 20) * Math.PI * 2 + (Math.random() - 0.5) * 0.5
+                  const dist = 60 + Math.random() * 80
+                  const cx = Math.cos(angle) * dist
+                  const cy = Math.sin(angle) * dist
+                  const cr = (Math.random() - 0.5) * 720
+                  const size = 6 + Math.random() * 8
+                  const shapes = ['✦', '✧', '★', '●', '◆']
+                  const colors = ['#FFD700', '#FF6B1A', '#7F77DD', '#4CAF50', '#FF4081', '#00BCD4']
+                  return (
+                    <div key={i} style={{
+                      position: 'absolute', top: '50%', left: '50%',
+                      fontSize: size, lineHeight: 1, pointerEvents: 'none',
+                      color: colors[i % colors.length],
+                      '--cx': `${cx}px`, '--cy': `${cy}px`, '--cr': `${cr}deg`,
+                      animation: `confettiBurst ${0.8 + Math.random() * 0.4}s ${Math.random() * 0.2}s ease-out forwards`,
+                      zIndex: 12,
+                    }}>
+                      {shapes[i % shapes.length]}
+                    </div>
+                  )
+                })
+                return <>{particles}</>
+              })()}
             </>
           ) : (
             <div style={{ width: '100%', height: 'calc(35vh - 6px)', borderRadius: S(12), overflow: 'hidden' }}>
@@ -644,7 +675,9 @@ export default function RevelationScreen({
             <span style={{ fontSize: S(12) }}>🧠</span>
             <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 'clamp(10px, calc(10px * var(--scale)), 14px)', lineHeight: 1.4, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>{fact.explanation}</p>
+          <div ref={explanationContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+            <p ref={explanationRef} style={{ color: 'rgba(255,255,255,0.85)', fontSize: explanationFontSize, lineHeight: 1.45, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
+          </div>
         </div>
       </div>
 

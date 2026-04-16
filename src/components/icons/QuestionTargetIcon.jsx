@@ -25,20 +25,20 @@ export default function QuestionTargetIcon({ size = 40, color = '#ffffff', accen
       </defs>
 
       <g filter={`url(#${id})`}>
-        {/* Cercle extérieur */}
-        <circle cx="50" cy="50" r="32" stroke={color} strokeWidth="5" fill="none" />
+        {/* Cercle extérieur — orange WTF */}
+        <circle cx="50" cy="50" r="32" stroke={accent} strokeWidth="5" fill="none" />
 
-        {/* 4 traits de viseur dépassant du cercle */}
-        <line x1="50" y1="4" x2="50" y2="14" stroke={color} strokeWidth="5" strokeLinecap="round" />
-        <line x1="50" y1="86" x2="50" y2="96" stroke={color} strokeWidth="5" strokeLinecap="round" />
-        <line x1="4" y1="50" x2="14" y2="50" stroke={color} strokeWidth="5" strokeLinecap="round" />
-        <line x1="86" y1="50" x2="96" y2="50" stroke={color} strokeWidth="5" strokeLinecap="round" />
+        {/* 4 traits de viseur — orange WTF */}
+        <line x1="50" y1="4" x2="50" y2="14" stroke={accent} strokeWidth="5" strokeLinecap="round" />
+        <line x1="50" y1="86" x2="50" y2="96" stroke={accent} strokeWidth="5" strokeLinecap="round" />
+        <line x1="4" y1="50" x2="14" y2="50" stroke={accent} strokeWidth="5" strokeLinecap="round" />
+        <line x1="86" y1="50" x2="96" y2="50" stroke={accent} strokeWidth="5" strokeLinecap="round" />
 
-        {/* "?" centré — orange WTF */}
+        {/* "?" centré — blanc */}
         <text
           x="50" y="62"
           textAnchor="middle"
-          fill={accent}
+          fill={color}
           fontSize="40"
           fontWeight="900"
           fontFamily="Nunito, sans-serif"

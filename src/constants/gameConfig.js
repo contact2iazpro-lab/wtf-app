@@ -77,14 +77,14 @@ export const SCREENS = {
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
   quickie: {
-    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '😏', color: '#7F77DD',
+    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/quickie.png', color: '#7F77DD',
     rules: [
-      { icon: '🔋', text: 'Coût : 1 Capsule d\'énergie' },
+      { icon: '⚡', text: 'Coût : 1 énergie' },
       { icon: '📋', text: 'Set : 5 questions/set' },
-      { icon: '🔢', text: 'QCM : 2/question' },
+      { icon: '✌️', text: 'QCM : 2/question' },
       { icon: '⏱️', text: 'Timer : 15s/question' },
-      { icon: '🪙', text: 'Gains : 10 WTFCoins/bonne réponse' },
-      { icon: '🎁', text: 'Perfect : +50 WTFCoins' },
+      { icon: '🪙', text: 'Gains : 10 Coins/bonne réponse' },
+      { icon: '🎁', text: 'Perfect : +50 Coins' },
     ],
   },
   vrai_ou_fou: {

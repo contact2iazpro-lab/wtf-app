@@ -19,7 +19,7 @@ function renderIcon(value) {
   return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
 }
 
-export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, rules, color, onStart, onBack }) {
+export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, icon, rules, color, onStart, onBack }) {
   const scale = useScale()
   const [skipNext, setSkipNext] = useState(false)
 
@@ -38,7 +38,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
       overflow: 'hidden', boxSizing: 'border-box',
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
-      background: `linear-gradient(160deg, ${color}22, ${color})`,
+      background: `linear-gradient(160deg, ${color}88, ${color})`,
       color: '#ffffff',
       position: 'relative',
     }}>
@@ -63,7 +63,10 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
         textAlign: 'center', flexShrink: 0,
         padding: `${S(8)} ${S(20)} ${S(8)}`,
       }}>
-        <div style={{ fontSize: S(40), marginBottom: S(2), lineHeight: 1 }}>{renderIcon(emoji)}</div>
+        {icon
+          ? <img src={icon} alt={modeName} style={{ width: S(56), height: S(56), objectFit: 'contain', marginBottom: S(2) }} />
+          : <div style={{ fontSize: S(40), marginBottom: S(2), lineHeight: 1 }}>{renderIcon(emoji)}</div>
+        }
         <h1 style={{
           fontSize: S(22), fontWeight: 900, margin: 0,
           letterSpacing: '0.02em',
@@ -139,13 +142,14 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ru
           className="active:scale-95 transition-transform"
           style={{
             width: '85%', padding: `${S(14)} 0`,
-            background: '#ffffff',
-            border: 'none', borderRadius: S(16),
+            background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+            border: '2px solid rgba(255,255,255,0.4)',
+            borderRadius: S(16),
             fontFamily: 'Nunito, sans-serif',
             fontSize: S(18), fontWeight: 900,
-            color: color,
+            color: '#ffffff',
             cursor: 'pointer',
-            boxShadow: '0 4px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(0,0,0,0.2)',
+            boxShadow: `0 4px 0 rgba(0,0,0,0.15), 0 6px 20px ${color}50`,
             letterSpacing: '0.04em',
           }}
         >

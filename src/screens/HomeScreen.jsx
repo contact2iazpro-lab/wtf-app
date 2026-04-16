@@ -34,10 +34,10 @@ const HOME_BG_COLOR = [
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const BRAIN_STYLES = {
-  3:  { emoji: '🧠', filter: 'grayscale(0.6) brightness(0.8)', label: 'Débutant' },
-  7:  { emoji: '🧠', filter: 'saturate(1.4) brightness(1.1) hue-rotate(-10deg)', label: 'Habitué' },
-  14: { emoji: '🧠', filter: 'saturate(1.8) brightness(1.2) hue-rotate(20deg)', label: 'Fidèle' },
-  30: { emoji: '👑', filter: 'saturate(1.5) brightness(1.3) drop-shadow(0 0 4px gold)', label: 'Légende' },
+  3:  { img: '/assets/brain-beginner.png', label: 'Débutant' },
+  7:  { img: '/assets/brain-regular.png', label: 'Habitué' },
+  14: { img: '/assets/brain-loyal.png', label: 'Fidèle' },
+  30: { img: '/assets/brain-legend.png', label: 'Légende' },
 }
 
 
@@ -278,13 +278,15 @@ export default function HomeScreen({
                 transition: 'opacity 0.2s, background 0.2s',
               }}
             >
-              <span style={{
-                fontSize: S(22),
-                filter: isClaimed ? 'grayscale(1) brightness(0.5)' : brain.filter,
-                lineHeight: 1,
-              }}>
-                {brain.emoji}
-              </span>
+              <img
+                src={brain.img}
+                alt={brain.label}
+                style={{
+                  width: S(28), height: S(28),
+                  objectFit: 'contain', flexShrink: 0,
+                  filter: isClaimed ? 'grayscale(1) brightness(0.5)' : 'none',
+                }}
+              />
               <span style={{ fontSize: S(8), fontWeight: 900, lineHeight: 1, color: isAvail ? '#FFD700' : 'white', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center' }}>
                 {isClaimed ? '✓' : brain.label}
               </span>
@@ -311,7 +313,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <span style={{ fontSize: S(14) }}>🎰</span>
+          <img src="/assets/roulette.png" alt="Roulette" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Roulette</span>
             {rouletteBadge && (
@@ -330,7 +332,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <span style={{ fontSize: S(14) }}>{isSunday ? '🏆' : '⚡'}</span>
+          <img src="/assets/daily.png" alt="Flash du jour" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>
               {isSunday ? 'Hunt VIP' : 'Flash du jour'}

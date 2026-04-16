@@ -1,6 +1,6 @@
 AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jamais créer de worktree ni de branche. Travailler directement sur master.
 
-PUSH: Ne JAMAIS pusher automatiquement vers le remote. Toujours demander confirmation explicite avant `git push` (même après un commit auto). Les commits locaux sont OK sans confirmation, mais le push doit être validé à chaque fois.
+PUSH: **INTERDIT** de pusher vers le remote sans confirmation explicite de l'utilisateur. Aucune exception. Même après un commit auto, même si le code compile, même si tout semble prêt — NE JAMAIS exécuter `git push` sans que l'utilisateur ait écrit "push" ou "pousse". Les commits locaux sont OK sans confirmation, mais le push nécessite un feu vert explicite à CHAQUE fois.
 
 PRÉ-TÂCHE: Avant d'attaquer toute tâche de la roadmap, vérifier systématiquement :
 1. **Déjà traité ?** — grep le code + check Notion "Fait récemment" pour éviter de refaire.

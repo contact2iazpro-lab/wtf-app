@@ -83,8 +83,9 @@ export const MODE_CONFIGS = {
       { icon: 'icon:set', text: 'Set : 5 questions/set' },
       { icon: 'icon:qcm', text: 'QCM : 2/question' },
       { icon: 'icon:timer', text: 'Timer : 15s/question' },
+      { icon: '💡', text: 'Indices : 1 max/question' },
       { icon: '🪙', text: 'Gains : 10 Coins/bonne réponse' },
-      { icon: 'icon:perfect', text: 'Perfect : +50 Coins' },
+      { icon: 'icon:perfect', text: 'Perfect (5/5) : +50 Coins' },
     ],
   },
   vrai_ou_fou: {

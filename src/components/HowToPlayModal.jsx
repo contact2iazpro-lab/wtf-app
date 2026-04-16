@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 import EnergyIcon from './icons/EnergyIcon'
+import MultipleChoiceIcon from './icons/MultipleChoiceIcon'
+import QuestionTargetIcon from './icons/QuestionTargetIcon'
+import TimerIcon from './icons/TimerIcon'
+import PerfectIcon from './icons/PerfectIcon'
 
 import { CURRENCY_EMOJI_MAP } from '../utils/renderEmoji'
 
@@ -10,8 +14,19 @@ const EMOJI_IMG = {
   '🧩': '/assets/ui/emoji-puzzle.png',
   ...CURRENCY_EMOJI_MAP,
 }
-function renderIcon(value) {
-  if (value === '🔋') return <EnergyIcon size={16} />
+
+const COMPONENT_ICONS = {
+  'icon:qcm': (size) => <MultipleChoiceIcon size={size} />,
+  'icon:set': (size) => <QuestionTargetIcon size={size} />,
+  'icon:timer': (size) => <TimerIcon size={size} />,
+  'icon:perfect': (size) => <PerfectIcon size={size} />,
+  'icon:energy': (size) => <EnergyIcon size={size} />,
+}
+
+function renderIcon(value, size) {
+  const compFn = COMPONENT_ICONS[value]
+  if (compFn) return compFn(size || 18)
+  if (value === '🔋') return <EnergyIcon size={size || 16} />
   const src = EMOJI_IMG[value]
   if (!src) return value
   return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
@@ -66,13 +81,13 @@ const CHAPTERS = [
     shortTitle: 'Quickie',
     title: 'Mode Quickie',
     content: [
-      { icon: '⚡', text: 'Coût : 1 énergie' },
-      { icon: '📋', text: '5 questions/set' },
-      { icon: '✌️', text: 'QCM : 2/question' },
-      { icon: '⏱️', text: '15s/question' },
+      { icon: 'icon:energy', text: 'Coût : 1 énergie' },
+      { icon: 'icon:set', text: 'Set : 5 questions/set' },
+      { icon: 'icon:qcm', text: 'QCM : 2/question' },
+      { icon: 'icon:timer', text: 'Timer : 15s/question' },
       { icon: '💡', text: 'Indices : 1 max/question' },
       { icon: '🪙', text: 'Gains : 10 Coins/bonne réponse' },
-      { icon: '🎁', text: 'Perfect (5/5) : +50 Coins' },
+      { icon: 'icon:perfect', text: 'Perfect (5/5) : +50 Coins' },
     ],
   },
   {

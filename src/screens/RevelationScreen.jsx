@@ -331,12 +331,12 @@ export default function RevelationScreen({
             <div style={{ fontSize: 'calc(1.1rem * var(--scale))', fontWeight: 700, color: '#ffffff', lineHeight: 1.4 }}>{renderFormattedText(fact.question)}</div>
           </div>
 
-          {/* Image floutée + stamp bienveillant */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, maxHeight: '30vh' }}>
+          {/* Image floutée + stamp bienveillant — carrée */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <div
               className="overflow-hidden relative"
               style={{
-                background: catGradient, width: '100%', maxHeight: '30vh', borderRadius: S(16), padding: 4,
+                background: catGradient, width: '100%', aspectRatio: '1 / 1', borderRadius: S(16), padding: 4,
                 border: isQuickieMode ? '3px solid #7F77DD' : `3px solid ${cat?.color || '#1a3a5c'}`,
                 boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : 'none',
               }}
@@ -345,11 +345,11 @@ export default function RevelationScreen({
                 <img
                   src={fact.imageUrl}
                   alt={fact.question}
-                  style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(30vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
                   onError={() => setImgFailed(true)}
                 />
               ) : (
-                <div style={{ width: '100%', height: 'calc(30vh - 14px)', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
+                <div style={{ width: '100%', height: '100%', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
                   <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
                 </div>
               )}
@@ -386,7 +386,7 @@ export default function RevelationScreen({
         {/* Temps écoulé — centré verticalement entre social phrase et boutons */}
         {isTimeout ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: S(22), fontWeight: 900, color: '#FB923C', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+            <span style={{ fontSize: S(22), fontWeight: 900, color: '#EF4444', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
               ⏱️ Temps écoulé
             </span>
           </div>

@@ -492,14 +492,12 @@ export default function QuestionScreen({
 
       {progressBar}
 
-      {/* Zone centrale : question + indices + QCM */}
-      <div className="qs-m" style={{
-        flexShrink: 0,
+      {/* Distribution verticale uniforme : progressBar → question → indices → QCM → image → timer */}
+      <div style={{
+        flex: 1,
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'flex-start',
-        gap: fact.options.length > 4 ? 'clamp(12px, 2.5vh, 20px)' : 'clamp(16px, 3vh, 28px)',
+        justifyContent: 'space-evenly',
         padding: `0 ${S(16)}`,
-        marginTop: 'clamp(8px, 2vh, 16px)',
         overflow: 'auto',
       }}>
         {questionCard}
@@ -610,21 +608,21 @@ export default function QuestionScreen({
             </div>
           )
         })()}
-      </div>
 
-      {/* Image Quickie séparée — entre QCM et timer */}
-      {quickieImage}
+        {/* Image Quickie séparée — entre QCM et timer */}
+        {quickieImage}
 
-      {/* Timer — centré dans l'espace restant sous les QCM */}
-      <div className="qs-timer-wrap" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: S(72), height: S(72), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <CircularTimer
-            key={`${fact.id}-${answerMode}`}
-            size={72}
-            duration={timerDuration}
-            onTimeout={handleTimeout}
-            variant={isQuickieMode ? 'quickie' : 'default'}
-          />
+        {/* Timer */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div style={{ width: S(72), height: S(72), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <CircularTimer
+              key={`${fact.id}-${answerMode}`}
+              size={72}
+              duration={timerDuration}
+              onTimeout={handleTimeout}
+              variant={isQuickieMode ? 'quickie' : 'default'}
+            />
+          </div>
         </div>
       </div>
     </div>

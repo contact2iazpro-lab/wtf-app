@@ -26,16 +26,35 @@ const tierForStreak = (s) => {
   return cur
 }
 
-export default function NoLimitScreen({ onHome }) {
+// One-shot migration noLimitBestScore → raceBestScore + statsByMode.no_limit → .race
+;(() => {
+  try {
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    let changed = false
+    if (wd.noLimitBestScore != null && wd.raceBestScore == null) {
+      wd.raceBestScore = wd.noLimitBestScore
+      delete wd.noLimitBestScore
+      changed = true
+    }
+    if (wd.statsByMode?.no_limit && !wd.statsByMode?.race) {
+      wd.statsByMode.race = wd.statsByMode.no_limit
+      delete wd.statsByMode.no_limit
+      changed = true
+    }
+    if (changed) localStorage.setItem('wtf_data', JSON.stringify(wd))
+  } catch { /* ignore */ }
+})()
+
+export default function RaceScreen({ onHome }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const diff = DIFFICULTY_LEVELS.NO_LIMIT
+  const diff = DIFFICULTY_LEVELS.RACE
 
   const unlockedPool = useMemo(() => getMixedUnlockedFacts(), [])
   const hasEnough = unlockedPool.length >= MIN_UNLOCKED_TO_PLAY
   const missing = Math.max(0, MIN_UNLOCKED_TO_PLAY - unlockedPool.length)
 
-  const initialBest = useMemo(() => readWtfData().noLimitBestScore || 0, [])
+  const initialBest = useMemo(() => readWtfData().raceBestScore || 0, [])
   const [bestScore, setBestScore] = useState(initialBest)
 
   const [runKey, setRunKey] = useState(0)
@@ -67,9 +86,9 @@ export default function NoLimitScreen({ onHome }) {
     setShake(true)
     setTimeout(() => setShake(false), 520)
     try { audio.play('timeout') } catch {}
-    const prev = readWtfData().noLimitBestScore || 0
+    const prev = readWtfData().raceBestScore || 0
     if (finalStreak > prev) {
-      updateWtfData(wd => { wd.noLimitBestScore = finalStreak })
+      updateWtfData(wd => { wd.raceBestScore = finalStreak })
       setBestScore(finalStreak)
       setNewRecord(true)
     }
@@ -112,10 +131,10 @@ export default function NoLimitScreen({ onHome }) {
   }, [])
 
   const handleShare = useCallback(() => {
-    const text = `♾️ J'ai fait une série de ${streak} en No Limit WTF! Et toi ?`
+    const text = `♾️ J'ai fait une série de ${streak} en Race WTF! Et toi ?`
     const url = window.location.origin
     if (navigator.share) {
-      navigator.share({ title: 'No Limit WTF!', text, url }).catch(() => {})
+      navigator.share({ title: 'Race WTF!', text, url }).catch(() => {})
     } else {
       navigator.clipboard?.writeText(`${text}\n${url}`)
     }
@@ -131,12 +150,12 @@ export default function NoLimitScreen({ onHome }) {
       <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #1a0a2e 0%, #2e1a4e 100%)', color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
         <div style={{ textAlign: 'center', maxWidth: 320 }}>
           <div style={{ fontSize: 72, marginBottom: 12 }}>♾️</div>
-          <p style={{ fontSize: 20, fontWeight: 900, marginBottom: 10 }}>No Limit verrouillé</p>
+          <p style={{ fontSize: 20, fontWeight: 900, marginBottom: 10 }}>Race verrouillé</p>
           <p style={{ fontSize: 14, opacity: 0.85, lineHeight: 1.5, marginBottom: 8 }}>
             Débloque encore <strong style={{ color: '#FF6B1A' }}>{missing} f*ct{missing > 1 ? 's' : ''}</strong> pour jouer.
           </p>
           <p style={{ fontSize: 12, opacity: 0.6, lineHeight: 1.5, marginBottom: 28 }}>
-            No Limit pioche dans les f*cts que tu connais déjà. Joue à Quickie, Quest ou Flash pour agrandir ton pool.
+            Race pioche dans les f*cts que tu connais déjà. Joue à Quickie, Quest ou Flash pour agrandir ton pool.
           </p>
           <button onClick={onHome} style={{ padding: '14px 36px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
             Retour
@@ -157,11 +176,11 @@ export default function NoLimitScreen({ onHome }) {
           color: '#fff',
           fontFamily: 'Nunito, sans-serif',
           padding: 24,
-          animation: shake ? 'noLimitShake 0.52s ease' : 'none',
+          animation: shake ? 'raceShake 0.52s ease' : 'none',
         }}
       >
         <style>{`
-          @keyframes noLimitShake {
+          @keyframes raceShake {
             0%, 100% { transform: translate(0, 0) }
             10% { transform: translate(-8px, 4px) }
             20% { transform: translate(7px, -6px) }
@@ -173,7 +192,7 @@ export default function NoLimitScreen({ onHome }) {
             80% { transform: translate(4px, -2px) }
             90% { transform: translate(-2px, 1px) }
           }
-          @keyframes noLimitGoldPulse {
+          @keyframes raceGoldPulse {
             0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(255,215,0,0.6)) }
             50% { transform: scale(1.05); filter: drop-shadow(0 0 24px rgba(255,215,0,0.9)) }
           }
@@ -191,7 +210,7 @@ export default function NoLimitScreen({ onHome }) {
               fontSize: 13,
               letterSpacing: 1,
               marginBottom: 14,
-              animation: 'noLimitGoldPulse 1.4s ease-in-out infinite',
+              animation: 'raceGoldPulse 1.4s ease-in-out infinite',
             }}>
               ⭐ NOUVEAU RECORD !
             </div>
@@ -228,15 +247,15 @@ export default function NoLimitScreen({ onHome }) {
         background: bg,
         fontFamily: 'Nunito, sans-serif',
         transition: 'background 0.8s ease',
-        animation: isExtreme ? 'noLimitExtremePulse 1.4s ease-in-out infinite' : 'none',
+        animation: isExtreme ? 'raceExtremePulse 1.4s ease-in-out infinite' : 'none',
       }}
     >
       <style>{`
-        @keyframes noLimitExtremePulse {
+        @keyframes raceExtremePulse {
           0%, 100% { filter: brightness(1) }
           50% { filter: brightness(1.25) }
         }
-        @keyframes noLimitCounterPop {
+        @keyframes raceCounterPop {
           0% { transform: scale(1) }
           40% { transform: scale(1.18) }
           100% { transform: scale(1) }
@@ -247,7 +266,7 @@ export default function NoLimitScreen({ onHome }) {
         <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
           <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', maxWidth: 360 }}>
             <div className="text-2xl text-center mb-3">♾️</div>
-            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter No Limit ?</h2>
+            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter Race ?</h2>
             <p className="text-sm text-center mb-6" style={{ color: '#6B7280' }}>Ta série de {streak} sera perdue.</p>
             <div className="flex flex-col gap-3">
               <button onClick={() => setShowQuit(false)} className="w-full py-4 rounded-2xl font-black text-base" style={{ background: '#FF6B1A', color: 'white' }}>Continuer</button>
@@ -257,7 +276,7 @@ export default function NoLimitScreen({ onHome }) {
         </div>
       )}
 
-      <GameHeader categoryLabel="No Limit" categoryColor="#E84535" onQuit={() => setShowQuit(true)} />
+      <GameHeader categoryLabel="Race" categoryColor="#00E5FF" onQuit={() => setShowQuit(true)} />
 
       <div style={{ textAlign: 'center', padding: `${S(10)} 0 ${S(2)}`, flexShrink: 0 }}>
         <div
@@ -268,7 +287,7 @@ export default function NoLimitScreen({ onHome }) {
             lineHeight: 1,
             fontVariantNumeric: 'tabular-nums',
             textShadow: '0 4px 20px rgba(0,0,0,0.4)',
-            animation: pulse ? 'noLimitCounterPop 0.26s ease' : 'none',
+            animation: pulse ? 'raceCounterPop 0.26s ease' : 'none',
             display: 'inline-block',
           }}
         >

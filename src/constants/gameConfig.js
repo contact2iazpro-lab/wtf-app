@@ -1,5 +1,5 @@
 // ── Difficulty Levels Configuration — 6 modes officiels (CLAUDE.md 15/04/2026)
-// Quickie · Vrai ou Fou · Quest · No Limit · Blitz · Flash
+// Quickie · Vrai ou Fou · Quest · Race · Blitz · Flash
 // Économie ×10 appliquée.
 
 export const DIFFICULTY_LEVELS = {
@@ -25,8 +25,8 @@ export const DIFFICULTY_LEVELS = {
     coinsPerCorrect: 20, bossBonus: 100, perfectBonus: 0,
     scoring: { correct: 20, wrong: 0 },
   },
-  NO_LIMIT: {
-    id: 'no_limit', label: 'No Limit', emoji: '♾️',
+  RACE: {
+    id: 'race', label: 'Race', emoji: '🏎️',
     choices: 4, duration: 0, questionsCount: Infinity,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
@@ -71,7 +71,7 @@ export const SCREENS = {
   FLASH: 'flash',
   QUEST: 'quest',
   VRAI_OU_FOU: 'vrai_ou_fou',
-  NO_LIMIT: 'no_limit',
+  RACE: 'race',
 }
 
 // ── Mode launch configs (rules displayed before each mode)
@@ -79,13 +79,13 @@ export const MODE_CONFIGS = {
   quickie: {
     modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/quickie.png?v=2', color: '#7F77DD',
     rules: [
-      { icon: 'icon:energy', text: 'Coût : 1 énergie' },
-      { icon: 'icon:set', text: 'Set : 5 questions/set' },
-      { icon: 'icon:qcm', text: 'QCM : 2/question' },
-      { icon: 'icon:timer', text: 'Timer : 15s/question' },
-      { icon: '💡', text: 'Indices : 1 max/question' },
-      { icon: '🪙', text: 'Gains : 10 Coins/bonne réponse' },
-      { icon: 'icon:perfect', text: 'Perfect (5/5) : +50 Coins' },
+      { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
+      { icon: 'icon:set', text: '**Set** : 5 questions/set' },
+      { icon: 'icon:qcm', text: '**QCM** : 2/question' },
+      { icon: 'icon:timer', text: '**Timer** : 15s/question' },
+      { icon: '💡', text: '**Indices** : 1 max/question' },
+      { icon: '🪙', text: '**Gains** : 10 Coins/bonne réponse' },
+      { icon: 'icon:perfect', text: '**Perfect** : (5/5) +50 Coins' },
     ],
   },
   vrai_ou_fou: {
@@ -111,8 +111,8 @@ export const MODE_CONFIGS = {
       { icon: '🪙', text: 'Gains : 20 WTFCoins/bonne · +100 WTFCoins/boss' },
     ],
   },
-  no_limit: {
-    modeId: 'no_limit', modeName: 'No Limit', subtitle: 'Zéro droit à l\'erreur', emoji: '♾️', color: '#E84535',
+  race: {
+    modeId: 'race', modeName: 'Race', subtitle: 'Zéro droit à l\'erreur', emoji: '🏎️', color: '#00E5FF',
     rules: [
       { icon: '∞', text: 'Questions illimitées jusqu\'à la 1ʳᵉ erreur' },
       { icon: '🧠', text: '4 QCM · Pas de timer · Pas d\'indices' },

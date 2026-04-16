@@ -55,8 +55,8 @@ function getStars(correct, total) {
   return 0
 }
 
-const DIFFICULTY_LABELS = { quickie: 'Quickie', quest: 'Quest', flash: 'Flash', blitz: 'Blitz', no_limit: 'No Limit', vrai_ou_fou: 'Vrai ou Fou' }
-const DIFFICULTY_EMOJIS = { quickie: '🍿', quest: '🗺️', flash: '⚡', blitz: '⏱️', no_limit: '♾️', vrai_ou_fou: '🤔' }
+const DIFFICULTY_LABELS = { quickie: 'Quickie', quest: 'Quest', flash: 'Flash', blitz: 'Blitz', race: 'Race', vrai_ou_fou: 'Vrai ou Fou' }
+const DIFFICULTY_EMOJIS = { quickie: '🍿', quest: '🗺️', flash: '⚡', blitz: '⏱️', race: '🏎️', vrai_ou_fou: '🤔' }
 const CHALLENGE_LABELS = {}
 
 // COR 4 — Confetti colors
@@ -395,7 +395,7 @@ export default function ResultsScreen({
       <div className="results-content" style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden',
-        position: 'relative', zIndex: 2, padding: `${S(10)} ${S(14)}`, gap: S(14),
+        position: 'relative', zIndex: 2, padding: `${S(6)} ${S(14)}`, gap: S(8),
         scrollbarWidth: 'none',
       }}>
 

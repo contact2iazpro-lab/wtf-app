@@ -116,18 +116,18 @@ export default function ProfilPage() {
 
   const [resetStep, setResetStep] = useState(0) // 0=hidden, 1=first confirm, 2=second confirm
 
-  async function executeReset() {
+  function executeReset() {
     setResetStep(0)
+
+    // Reset Supabase en fire-and-forget (ne pas bloquer le reload)
     if (isConnected && user) {
-      try {
-        // Valeurs F2P officielles CLAUDE.md 1b : 500 coins / 3 indices / 5 énergies
-        await supabase.from('profiles').update({
-          coins: 500, total_score: 0, streak_current: 0, streak_max: 0,
-          hints: 3, energy: 5, updated_at: new Date().toISOString(),
-        }).eq('id', user.id)
-      } catch { /* ignore */ }
+      supabase.from('profiles').update({
+        coins: 500, total_score: 0, streak_current: 0, streak_max: 0,
+        hints: 3, energy: 5, updated_at: new Date().toISOString(),
+      }).eq('id', user.id).catch(() => {})
     }
 
+    // Clear localStorage (garder auth + version)
     const kept = {}
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
@@ -303,12 +303,9 @@ export default function ProfilPage() {
               </div>
               <button
                 onClick={async () => {
-                  await signOut()
-                  // Hard reload pour garantir que toute la state (Auth, Currency, etc.)
-                  // soit rechargée à zéro — window.location.href seul est parfois
-                  // intercepté en SPA et ne recharge pas vraiment.
+                  try { await signOut() } catch (e) { console.warn('[ProfilPage] signOut error:', e) }
                   window.location.replace('/')
-                  setTimeout(() => window.location.reload(), 50)
+                  setTimeout(() => window.location.reload(), 100)
                 }}
                 className="rounded-xl text-xs font-bold active:scale-95 transition-all"
                 style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', marginTop: 8, padding: '8px 16px' }}

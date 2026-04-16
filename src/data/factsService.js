@@ -361,7 +361,7 @@ export function buildVraiOuFouSessionPool(facts, size) {
   return pool.map((fact, i) => buildVraiOuFouDraw(fact, variants[i]))
 }
 
-/** Mode No Limit : Funny + VIP déjà débloqués, mélangés */
+/** Mode Race : Funny + VIP déjà débloqués, mélangés */
 export function getMixedUnlockedFacts() {
   try {
     const wtfData = readWtfData()
@@ -384,8 +384,8 @@ export function getQuickieFacts() {
   return getFunnyFacts()
 }
 
-/** Mode No Limit : Funny facts, dans la catégorie choisie */
-export function getNoLimitFacts(categoryId) {
+/** Mode Race : Funny facts, dans la catégorie choisie */
+export function getRaceFacts(categoryId) {
   return getFunnyFactsByCategory(categoryId)
 }
 

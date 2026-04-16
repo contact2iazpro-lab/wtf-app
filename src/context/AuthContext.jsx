@@ -277,7 +277,10 @@ export function AuthProvider({ children }) {
 
     // 5. Recrée une session anonyme immédiatement. L'user peut continuer à
     //    jouer sans compte, son state repart à zéro (nouveau user_id).
-    await ensureAnonymousSession()
+    //    Ne pas bloquer signOut si la recréation anonyme échoue (réseau down, rate limit).
+    try { await ensureAnonymousSession() } catch (e) {
+      console.warn('[Auth] ensureAnonymousSession after signOut failed:', e?.message || e)
+    }
   }, [ensureAnonymousSession])
 
   const updateProfile = useCallback(async (updates) => {

@@ -375,12 +375,12 @@ export default function RevelationScreen({
             <div style={{ fontSize: 'calc(1.1rem * var(--scale))', fontWeight: 700, color: '#ffffff', lineHeight: 1.4 }}>{renderFormattedText(fact.question)}</div>
           </div>
 
-          {/* Image floutée + stamp bienveillant — carrée */}
+          {/* Image floutée + stamp bienveillant — carrée, limitée en hauteur */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <div
               className="overflow-hidden relative"
               style={{
-                background: catGradient, width: '100%', aspectRatio: '1 / 1', borderRadius: S(16), padding: 4,
+                background: catGradient, width: '100%', aspectRatio: '1 / 1', maxHeight: '30vh', borderRadius: S(16), padding: 4,
                 border: isBrandedMode ? `3px solid ${accentColor}` : `3px solid ${cat?.color || '#1a3a5c'}`,
                 boxShadow: isBrandedMode ? `0 0 20px ${isVofMode ? 'rgba(107,203,119,0.3)' : 'rgba(127,119,221,0.3)'}` : 'none',
               }}
@@ -616,12 +616,12 @@ export default function RevelationScreen({
           }
         `}</style>
       )}
-      <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
+      <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '28vh' }}>
         <div
           onClick={() => fact.imageUrl && !imgFailed && setShowLightbox(true)}
           className="relative overflow-hidden"
           style={{
-            width: '100%', maxHeight: '35vh', borderRadius: S(16),
+            width: '100%', maxHeight: '28vh', borderRadius: S(16),
             border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${accentColor}`,
             background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
             ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
@@ -632,7 +632,7 @@ export default function RevelationScreen({
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(28vh - 6px)', display: 'block' }}
                 onError={() => setImgFailed(true)}
               />
               <button
@@ -647,7 +647,7 @@ export default function RevelationScreen({
               >🔍</button>
             </>
           ) : (
-            <div style={{ width: '100%', height: 'calc(35vh - 6px)', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: 'calc(28vh - 6px)', overflow: 'hidden' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}

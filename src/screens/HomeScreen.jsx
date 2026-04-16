@@ -12,20 +12,18 @@ import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
-import { ASSETS } from '../constants/layoutConfig'
+// ASSETS retiré — logo WTF remplacé par logo VOF
 import { STREAK_PALIERS } from '../constants/gameConfig'
 import RouletteModal from '../components/RouletteModal'
 
 import { useStreakRewards } from '../hooks/useStreakRewards'
 import { useCountdownToMidnight } from '../hooks/useCountdownToMidnight'
-import StarburstBackground from '../components/home/StarburstBackground'
+// StarburstBackground retiré — fond uni sans rayons
 import CoffreRewardModal from '../components/home/CoffreRewardModal'
 import NewBadgeModal from '../components/home/NewBadgeModal'
 import BatteryIcon from '../components/home/BatteryIcon'
 
 const HOME_BG_COLOR = [
-  'radial-gradient(circle 200px at 50% 45%, rgba(255,225,100,0.55) 0%, rgba(255,200,60,0.28) 35%, rgba(255,170,40,0.10) 65%, transparent 85%)',
-  'radial-gradient(ellipse 75% 55% at 50% 45%, rgba(255,190,50,0.14) 0%, transparent 70%)',
   'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(90,25,90,0.50) 0%, transparent 65%)',
   'radial-gradient(ellipse 135% 115% at 50% 50%, transparent 38%, rgba(0,0,0,0.65) 100%)',
   '#1A3A8A',
@@ -131,300 +129,226 @@ export default function HomeScreen({
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      <StarburstBackground />
-
+      {/* Overlay dégradé bas */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
         background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 100%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* ═══ HEADER — avatar + coins + hints + batterie + settings ═══ */}
-      <div style={{
-        flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: `${S(10)} ${S(14)} 0`,
-        position: 'relative', zIndex: 2,
-      }}>
-        <button
-          onClick={() => nav('profil')}
-          style={{
-            width: S(36), height: S(36), borderRadius: '50%',
-            background: 'rgba(255,255,255,0.3)', border: '2px solid rgba(255,255,255,0.5)',
-            padding: 0, overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            WebkitTapHighlightColor: 'transparent',
-          }}
-        >
-          <img src={playerAvatar || '/assets/ui/avatar-default.png'} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </button>
+      {/* ═══════════════════════════════════════════════════════
+          ZONE HAUTE — fixe, ne scrolle pas, ne grandit pas
+          ═══════════════════════════════════════════════════════ */}
+      <div style={{ flexShrink: 0, position: 'relative', zIndex: 2 }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: S(8) }}>
-          {[
-            { icon: '/assets/ui/icon-coins.png', value: coins },
-            { icon: '/assets/ui/icon-hint.png?v=2', value: hints },
-          ].map((pill, i) => (
-            <button
-              key={i} onClick={() => nav('boutique')}
-              style={{
-                display: 'flex', alignItems: 'center', gap: S(4),
-                background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
-                padding: `${S(3)} ${S(10)}`, border: 'none', cursor: 'pointer',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
-              <img src={pill.icon} alt="" style={{ width: S(14), height: S(14), flexShrink: 0, objectFit: 'contain' }} />
-              <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{pill.value}</span>
-            </button>
-          ))}
-
-          {/* Batterie énergie */}
+        {/* HEADER — avatar + devises + settings */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: `${S(10)} ${S(14)} 0`,
+        }}>
           <button
-            onClick={() => nav('boutique')}
+            onClick={() => nav('profil')}
             style={{
-              display: 'flex', alignItems: 'center',
-              background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
-              padding: `${S(3)} ${S(8)}`, border: 'none', cursor: 'pointer',
+              width: S(36), height: S(36), borderRadius: '50%',
+              background: 'rgba(255,255,255,0.3)', border: '2px solid rgba(255,255,255,0.5)',
+              padding: 0, overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <BatteryIcon level={quickieEnergyRemaining} />
+            <img src={playerAvatar || '/assets/ui/avatar-default.png'} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </button>
 
-          <button
-            onClick={handleSettings}
-            style={{
-              width: S(28), height: S(28), borderRadius: '50%',
-              background: 'rgba(255,255,255,0.2)', border: 'none', padding: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: S(16), height: S(16) }} />
-          </button>
-        </div>
-      </div>
-
-      {/* ═══ STREAK PALIER + JAUGE ═══ */}
-      <div style={{
-        flexShrink: 0,
-        margin: `${S(6)} ${S(14)} 0`,
-        display: 'flex', flexDirection: 'column', gap: S(4),
-        position: 'relative', zIndex: 2,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', fontSize: 13 }} />
-            <span style={{ fontSize: S(11), fontWeight: 900, color: palierColor }}>
-              {currentPalier ? currentPalier.name : `${currentStreak}j`}
-            </span>
-            <span style={{ fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
-              {currentStreak}j
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: S(8) }}>
+            {[
+              { icon: '/assets/ui/icon-coins.png', value: coins },
+              { icon: '/assets/ui/icon-hint.png?v=2', value: hints },
+            ].map((pill, i) => (
+              <button
+                key={i} onClick={() => nav('boutique')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: S(4),
+                  background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
+                  padding: `${S(3)} ${S(10)}`, border: 'none', cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <img src={pill.icon} alt="" style={{ width: S(14), height: S(14), flexShrink: 0, objectFit: 'contain' }} />
+                <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{pill.value}</span>
+              </button>
+            ))}
+            <button
+              onClick={() => nav('boutique')}
+              style={{
+                display: 'flex', alignItems: 'center',
+                background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
+                padding: `${S(3)} ${S(8)}`, border: 'none', cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <BatteryIcon level={quickieEnergyRemaining} />
+            </button>
+            <button
+              onClick={handleSettings}
+              style={{
+                width: S(28), height: S(28), borderRadius: '50%',
+                background: 'rgba(255,255,255,0.2)', border: 'none', padding: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: S(16), height: S(16) }} />
+            </button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        </div>
+
+        {/* STREAK — palier + jauge */}
+        <div style={{ margin: `${S(6)} ${S(14)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', fontSize: 13 }} />
+              <span style={{ fontSize: S(11), fontWeight: 900, color: palierColor }}>
+                {currentPalier ? currentPalier.name : `${currentStreak}j`}
+              </span>
+              {currentPalier && (
+                <span style={{ fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>{currentStreak}j</span>
+              )}
+            </div>
             <span style={{ fontSize: S(9), fontWeight: 700, color: 'white', opacity: 0.5 }}>
               {nextPalier ? `→ ${nextPalier.name} dans ${nextPalier.day - currentStreak}j` : '🏆 Max'}
             </span>
           </div>
+          <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
+            <div style={{ width: `${progressToNext * 100}%`, height: '100%', background: palierColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
+          </div>
         </div>
-        {/* Jauge de progression vers prochain palier */}
-        <div style={{
-          width: '100%', height: 4, borderRadius: 2,
-          background: 'rgba(255,255,255,0.12)',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            width: `${progressToNext * 100}%`, height: '100%',
-            background: palierColor,
-            borderRadius: 2,
-            transition: 'width 0.5s ease',
-          }} />
-        </div>
-      </div>
 
-      {/* ═══ CERVEAUX (4 paliers) ═══ */}
-      <div style={{
-        flexShrink: 0,
-        display: 'flex', alignItems: 'center',
-        gap: S(6), padding: `${S(6)} ${S(10)} 0`,
-        justifyContent: 'center',
-        position: 'relative', zIndex: 2,
-      }}>
-        {paliers.map((p) => {
-          const status = getStatus(p.day)
-          const isAvail = status === 'available'
-          const isClaimed = status === 'claimed'
-          const brain = BRAIN_STYLES[p.day] || BRAIN_STYLES[3]
-          return (
-            <button
-              key={p.day}
-              onClick={() => { if (isAvail) handleClaimPalier(p.day) }}
-              disabled={!isAvail}
-              style={{
-                flex: 1, minWidth: 0,
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                gap: S(2), padding: `${S(4)} ${S(2)}`,
-                borderRadius: S(8),
-                background: isAvail
-                  ? 'linear-gradient(135deg, rgba(255,215,0,0.35) 0%, rgba(255,107,26,0.2) 100%)'
-                  : 'rgba(255,255,255,0.08)',
-                border: `1px solid ${isAvail ? 'rgba(255,215,0,0.6)' : 'rgba(255,255,255,0.08)'}`,
-                cursor: isAvail ? 'pointer' : 'default',
-                opacity: isClaimed ? 0.35 : 1,
-                WebkitTapHighlightColor: 'transparent',
-                transition: 'opacity 0.2s, background 0.2s',
-              }}
-            >
-              <img
-                src={brain.img}
-                alt={brain.label}
+        {/* CERVEAUX — 4 paliers en ligne, sans cadres */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(6), padding: `${S(6)} ${S(10)} 0`, justifyContent: 'center' }}>
+          {paliers.map((p) => {
+            const status = getStatus(p.day)
+            const isAvail = status === 'available'
+            const isClaimed = status === 'claimed'
+            const isReached = currentStreak >= p.day
+            const brain = BRAIN_STYLES[p.day] || BRAIN_STYLES[3]
+            return (
+              <button
+                key={p.day}
+                onClick={() => { if (isAvail) handleClaimPalier(p.day) }}
+                disabled={!isAvail}
                 style={{
-                  width: S(28), height: S(28),
-                  objectFit: 'contain', flexShrink: 0,
-                  filter: isClaimed ? 'grayscale(1) brightness(0.5)' : 'none',
+                  flex: 1, minWidth: 0,
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  gap: S(2), padding: `${S(4)} ${S(2)}`,
+                  background: 'none', border: 'none',
+                  cursor: isAvail ? 'pointer' : 'default',
+                  opacity: isReached ? 1 : 0.55,
+                  WebkitTapHighlightColor: 'transparent',
                 }}
-              />
-              <span style={{ fontSize: S(8), fontWeight: 900, lineHeight: 1, color: isAvail ? '#FFD700' : 'white', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center' }}>
-                {isClaimed ? '✓' : brain.label}
-              </span>
-              <span style={{ fontSize: S(7), fontWeight: 700, lineHeight: 1, color: 'white', opacity: 0.5 }}>J{p.day}</span>
-            </button>
-          )
-        })}
-      </div>
+              >
+                <img src={brain.img} alt={brain.label} style={{
+                  width: S(28), height: S(28), objectFit: 'contain',
+                  filter: isClaimed ? 'grayscale(1) brightness(0.5)'
+                    : isReached ? `drop-shadow(0 0 6px ${palierColor})` : 'none',
+                }} />
+                <span style={{ fontSize: S(8), fontWeight: 900, lineHeight: 1, color: isAvail ? '#FFD700' : 'white', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center' }}>
+                  {isClaimed ? '✓' : brain.label}
+                </span>
+                <span style={{ fontSize: S(7), fontWeight: 700, lineHeight: 1, color: 'white', opacity: 0.5 }}>J{p.day}</span>
+              </button>
+            )
+          })}
+        </div>
 
-      {/* ═══ LOGO VRAI OU FOU ═══ */}
-      <div style={{
-        flexShrink: 0, display: 'flex', justifyContent: 'center',
-        padding: `${S(6)} 0 0`, position: 'relative', zIndex: 2,
-      }}>
-        <img
-          src="/assets/ui/vof-logo.png"
-          alt="Vrai ou Fou"
-          style={{ height: S(42), width: 'auto', objectFit: 'contain' }}
-        />
-      </div>
+        {/* ROULETTE + DROP — glass morphism subtil */}
+        <div style={{ display: 'flex', gap: S(8), padding: `${S(6)} ${S(14)} 0` }}>
+          <button
+            onClick={() => { audio.play('click'); setShowRoulette(true) }}
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.1)', borderRadius: S(16), padding: `${S(8)} ${S(10)}`,
+              cursor: 'pointer', fontFamily: 'Nunito, sans-serif', WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <img src="/assets/roulette.png?v=2" alt="Roulette" style={{ width: S(24), height: S(24), objectFit: 'contain', flexShrink: 0 }} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Roulette</span>
+              {rouletteBadge && <span style={{ fontSize: S(7), fontWeight: 900, color: '#22C55E', letterSpacing: '0.04em' }}>{rouletteBadge}</span>}
+            </div>
+          </button>
+          <button
+            onClick={() => nav('flash')}
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.1)', borderRadius: S(16), padding: `${S(8)} ${S(10)}`,
+              cursor: 'pointer', fontFamily: 'Nunito, sans-serif', WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <img src="/assets/daily.png?v=2" alt="Drop" style={{ width: S(24), height: S(24), objectFit: 'contain', flexShrink: 0 }} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>{isSunday ? 'Hunt VIP' : 'Drop'}</span>
+              <span style={{ fontSize: S(7), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>1×/jour</span>
+            </div>
+          </button>
+        </div>
 
-      {/* ═══ BANDEAU QUOTIDIEN — Roulette + Flash côte à côte ═══ */}
-      <div style={{
-        flexShrink: 0,
-        display: 'flex', gap: S(8),
-        padding: `${S(6)} ${S(14)} 0`,
-        position: 'relative', zIndex: 2,
-      }}>
-        <button
-          onClick={() => { audio.play('click'); setShowRoulette(true) }}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            background: 'rgba(255,255,255,0.12)', border: '1.5px solid rgba(255,255,255,0.2)',
-            borderRadius: S(10), padding: `${S(8)} ${S(6)}`,
-            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-            WebkitTapHighlightColor: 'transparent',
-          }}
-        >
-          <img src="/assets/roulette.png?v=2" alt="Roulette" style={{ width: S(26), height: S(26), objectFit: 'contain', flexShrink: 0 }} />
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Roulette</span>
-            {rouletteBadge && (
-              <span style={{ fontSize: S(7), fontWeight: 900, color: '#22C55E', letterSpacing: '0.04em' }}>{rouletteBadge}</span>
-            )}
-          </div>
-        </button>
+      </div>{/* fin zone haute */}
 
-        <button
-          onClick={() => nav('flash')}
-          style={{
-            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            background: 'rgba(255,255,255,0.12)', border: '1.5px solid rgba(255,255,255,0.2)',
-            borderRadius: S(10), padding: `${S(8)} ${S(6)}`,
-            cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-            WebkitTapHighlightColor: 'transparent',
-          }}
-        >
-          <img src="/assets/daily.png?v=2" alt="Flash du jour" style={{ width: S(26), height: S(26), objectFit: 'contain', flexShrink: 0 }} />
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>
-              {isSunday ? 'Hunt VIP' : 'Flash du jour'}
-            </span>
-            <span style={{ fontSize: S(7), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>1×/jour</span>
-          </div>
-        </button>
-      </div>
-
-      {/* ═══ ZONE CENTRALE — logo réduit + grille 6 modes ═══ */}
+      {/* ═══════════════════════════════════════════════════════
+          ZONE CENTRALE — flex:1, distribue logo + grille + bouton
+          avec space-evenly pour un espacement uniforme
+          ═══════════════════════════════════════════════════════ */}
       <div style={{
         flex: 1, minHeight: 0,
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
+        alignItems: 'center', justifyContent: 'space-evenly',
         padding: `0 ${S(10)}`,
         position: 'relative', zIndex: 1,
-        gap: S(8),
       }}>
-        {/* Logo WTF réduit ~30% */}
+        {/* Logo Vrai ou Fou — même largeur que le bouton Partie rapide */}
         <img
-          src={ASSETS.ui.wtfLogo}
-          alt="WTF!"
-          style={{
-            width: 'clamp(60px, 24vw, 100px)', height: 'auto',
-            objectFit: 'contain', flexShrink: 0,
-            filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
-            WebkitUserSelect: 'none', userSelect: 'none',
-          }}
+          src="/assets/ui/vof-logo.png" alt="Vrai ou Fou"
+          style={{ width: '60%', maxWidth: S(220), height: 'auto', objectFit: 'contain', WebkitUserSelect: 'none', userSelect: 'none' }}
         />
 
-        {/* Grille 3×2 des 6 modes */}
+        {/* Grille 2×2 */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gridTemplateRows: 'auto auto',
-          gap: S(12),
-          justifyItems: 'center',
-          alignItems: 'center',
-          width: '100%',
-          maxWidth: S(320),
+          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: S(16), justifyItems: 'center', alignItems: 'center',
+          width: '100%', maxWidth: S(260),
         }}>
-          <ModeIcon icon="/assets/modes/quickie.png?v=2" name="Quickie" color="#7F77DD" onClick={() => nav('quickie')} />
-          <ModeIcon icon="/assets/modes/quest.svg" name="Quest" color="#FF6B1A" onClick={() => nav('quest')} />
+          <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} />
           <ModeIcon icon="/assets/modes/vrai-ou-fou.png" name="Vrai ou Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} />
-          <ModeIcon icon="/assets/modes/no-limit.svg" name="No Limit" color="#E84535" onClick={() => nav('no_limit')} />
-          <ModeIcon icon="/assets/modes/blitz.svg" name="Blitz" color="#FF4444" onClick={() => nav('blitz')} />
+          <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} />
+          <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} />
         </div>
-      </div>
 
-      {/* ═══ BOUTON PARTIE RAPIDE ═══ */}
-      <div style={{
-        flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: `0 ${S(40)} ${S(10)}`,
-        position: 'relative', zIndex: 10,
-      }}>
+        {/* Bouton Partie rapide */}
         <button
-          onClick={() => nav('quickie')}
+          onClick={() => nav('quickie_random')}
           className="btn-press"
           style={{
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
             borderRadius: S(14), border: 'none',
-            padding: `${S(12)} ${S(24)}`, width: '100%',
+            padding: `${S(12)} ${S(24)}`, width: '70%', maxWidth: S(260),
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8),
-            cursor: 'pointer',
-            WebkitTapHighlightColor: 'transparent',
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
             boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
           }}
         >
-          <img src="/assets/modes/quickie.png?v=2" alt="" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
-          <span style={{
-            fontFamily: "'Fredoka One', cursive",
-            fontWeight: 400, fontSize: S(14), color: '#7F77DD',
-            letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2,
-          }}>
+          <img src="/assets/modes/quickie.png" alt="" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
+          <span style={{ fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(14), color: '#7F77DD', letterSpacing: '0.04em' }}>
             Partie rapide
           </span>
         </button>
       </div>
 
-      {/* ═══ NAVBAR ═══ */}
+      {/* ═══════════════════════════════════════════════════════
+          ZONE BASSE — navbar fixe
+          ═══════════════════════════════════════════════════════ */}
       <BottomNav
         onResetSocialNotif={onResetSocialNotif}
         socialNotifCount={socialNotifCount}
@@ -432,7 +356,7 @@ export default function HomeScreen({
         isHome={true}
       />
 
-      {/* ═══ Modals ═══ */}
+      {/* Modals */}
       {coffreReward && <CoffreRewardModal reward={coffreReward} onClose={() => setCoffreReward(null)} />}
       {showRoulette && <RouletteModal onClose={() => setShowRoulette(false)} scale={scale} />}
       {badgeToShow && <NewBadgeModal badge={badgeToShow} onClose={handleBadgeClose} />}

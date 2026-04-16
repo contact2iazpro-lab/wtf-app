@@ -5,6 +5,7 @@ import { ICON_SIZES } from '../constants/layoutConfig'
 const ModeIcon = forwardRef(({ icon, name, color, onClick }, ref) => {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
+  const size = ICON_SIZES.modeIcon
 
   return (
     <button
@@ -21,23 +22,23 @@ const ModeIcon = forwardRef(({ icon, name, color, onClick }, ref) => {
       onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
     >
       <div style={{
-        width: S(ICON_SIZES.modeIcon + 8), height: S(ICON_SIZES.modeIcon + 8),
+        width: S(size + 6), height: S(size + 6),
         borderRadius: '50%',
-        background: '#FFFFFF',
-        border: `3px solid ${color || 'rgba(255,255,255,0.3)'}`,
-        boxShadow: color ? `0 4px 20px ${color}4D` : 'none',
+        border: `2.5px solid ${color || 'rgba(255,255,255,0.3)'}`,
+        boxShadow: color ? `0 0 14px ${color}55` : 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden',
       }}>
         <img
           src={icon} alt={name}
           style={{
-            width: '85%', height: '85%',
-            objectFit: 'contain', flexShrink: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover', flexShrink: 0,
           }}
         />
       </div>
       <span style={{
-        fontSize: S(11), fontWeight: 700, color: '#ffffff',
+        fontSize: S(11), fontWeight: 700, color: color || '#ffffff',
         fontFamily: 'Nunito, sans-serif',
         textShadow: '0 1px 3px rgba(0,0,0,0.4)',
         lineHeight: 1,

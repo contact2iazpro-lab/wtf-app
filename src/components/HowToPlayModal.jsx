@@ -39,7 +39,7 @@ function renderIcon(value, size, color) {
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6',
   quickie: '#7F77DD', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
-  no_limit: '#0EA5E9', blitz: '#FF6B1A', flash: '#FFD700',
+  race: '#00E5FF', blitz: '#FF1744', flash: '#FFD700',
   energy: '#10B981', hints: '#6366F1', coins: '#F59E0B',
   streak: '#F97316', roulette: '#A855F7', shop: '#06B6D4',
   collection: '#14B8A6', trophies: '#EAB308', profile: '#64748B',
@@ -57,7 +57,7 @@ const CHAPTERS = [
     title: 'Le But du Jeu',
     content: [
       { icon: '🎯', text: 'Des f*cts incroyables te sont présentés — à toi de trouver la **bonne réponse** !' },
-      { icon: '🎮', text: '**6 modes de jeu** : Quickie, Vrai ou Fou, Quest, No Limit, Blitz et Flash.' },
+      { icon: '🎮', text: '**6 modes de jeu** : Quickie, Vrai ou Fou, Quest, Race, Blitz et Flash.' },
       { icon: '🪙', text: 'Gagne des **Coins** à chaque bonne réponse pour débloquer du contenu.' },
       { icon: '📚', text: 'Débloque des **f*cts** et enrichis ta **Collection** personnelle.' },
       { icon: '🏆', text: 'Remporte des **trophées**, maintiens ta **série** et défie tes amis !' },
@@ -84,13 +84,13 @@ const CHAPTERS = [
     shortTitle: 'Quickie',
     title: 'Mode Quickie',
     content: [
-      { icon: 'icon:energy', text: 'Coût : 1 énergie' },
-      { icon: 'icon:set', text: 'Set : 5 questions/set' },
-      { icon: 'icon:qcm', text: 'QCM : 2/question' },
-      { icon: 'icon:timer', text: 'Timer : 15s/question' },
-      { icon: '💡', text: 'Indices : 1 max/question' },
-      { icon: '🪙', text: 'Gains : 10 Coins/bonne réponse' },
-      { icon: 'icon:perfect', text: 'Perfect (5/5) : +50 Coins' },
+      { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
+      { icon: 'icon:set', text: '**Set** : 5 questions/set' },
+      { icon: 'icon:qcm', text: '**QCM** : 2/question' },
+      { icon: 'icon:timer', text: '**Timer** : 15s/question' },
+      { icon: '💡', text: '**Indices** : 1 max/question' },
+      { icon: '🪙', text: '**Gains** : 10 Coins/bonne réponse' },
+      { icon: 'icon:perfect', text: '**Perfect** : (5/5) +50 Coins' },
     ],
   },
   {
@@ -124,10 +124,10 @@ const CHAPTERS = [
     ],
   },
   {
-    id: 'no_limit',
+    id: 'race',
     emoji: '♾️',
-    shortTitle: 'No Limit',
-    title: 'Mode No Limit',
+    shortTitle: 'Race',
+    title: 'Mode Race',
     content: [
       { icon: '🆓', text: 'Coût : gratuit illimité' },
       { icon: '📋', text: 'Questions illimitées jusqu\'à la **première erreur**' },
@@ -178,7 +178,7 @@ const CHAPTERS = [
       { icon: '🔋', text: 'Les modes **Quickie** et **Quest** consomment 1 énergie par session/bloc.' },
       { icon: '🆓', text: 'Stock max **5 énergies** — régénération **+1 toutes les 8h**.' },
       { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 énergie pour 75 Coins** en boutique.' },
-      { icon: '♾️', text: '**Vrai ou Fou, No Limit, Blitz** et **Flash** : gratuits illimités.' },
+      { icon: '♾️', text: '**Vrai ou Fou, Race, Blitz** et **Flash** : gratuits illimités.' },
     ],
   },
 
@@ -192,7 +192,7 @@ const CHAPTERS = [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
       { icon: '🗺️', text: '**Quest** : 2/question · **Quickie** : 1 max · **Flash dimanche** : 2 max' },
-      { icon: '🚫', text: '**Vrai ou Fou, No Limit, Blitz, Flash lun-sam** : aucun indice disponible.' },
+      { icon: '🚫', text: '**Vrai ou Fou, Race, Blitz, Flash lun-sam** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : **50 Coins** par indice.' },
       { icon: '🎁', text: 'Gagne aussi des indices via la **roulette** et les **paliers de série**.' },
@@ -210,7 +210,7 @@ const CHAPTERS = [
       { icon: '🎯', text: '**Quickie** : 10/bonne · +50 perfect' },
       { icon: '🗺️', text: '**Quest** : 20/bonne · +100/boss vaincu' },
       { icon: '🔥', text: '**Flash lun-sam** : 30 fixe · **Flash dimanche** : 1 VIP débloqué' },
-      { icon: '🤔', text: '**Vrai ou Fou · No Limit · Blitz** : 0 coin (prestige)' },
+      { icon: '🤔', text: '**Vrai ou Fou · Race · Blitz** : 0 coin (prestige)' },
       { icon: '🎰', text: 'Gagne aussi des coins via la **roulette quotidienne** et tes **paliers de série**.' },
       { icon: '🛒', text: 'Dépense-les en **boutique** : indices, énergie, cadres, Défi Blitz (200 Coins).' },
     ],
@@ -290,7 +290,7 @@ const CHAPTERS = [
       { icon: '📂', text: '**Par catégorie** : 5 paliers par catégorie (5, 10, 15, 20, tous).' },
       { icon: '🔥', text: '**Séries** : maintiens une série de 7, 30 ou 100 jours.' },
       { icon: '⚡', text: '**Blitz** : paliers Solo 5/10/20/30/50/100 et records de vitesse.' },
-      { icon: '♾️', text: '**No Limit** : atteins 10, 25, 50 ou 100 bonnes réponses d\'affilée.' },
+      { icon: '♾️', text: '**Race** : atteins 10, 25, 50 ou 100 bonnes réponses d\'affilée.' },
       { icon: '👥', text: '**Social** : ajoute des amis et relève des Défis Blitz.' },
       { icon: '📊', text: 'Suis ta progression et ton **prochain objectif** sur la page Trophées.' },
     ],
@@ -321,7 +321,7 @@ const CHAPTERS = [
       { icon: '🎯', text: 'Commence par le mode **Quickie** pour gagner des coins et débloquer des f*cts.' },
       { icon: '💡', text: 'Garde tes **indices** pour les boss VIP de Quest.' },
       { icon: '📅', text: 'Joue **chaque jour** : Flash + roulette + paliers de série = **250-400 Coins/jour**.' },
-      { icon: '🧠', text: 'Joue **No Limit** pour réviser tes f*cts débloqués sans pression.' },
+      { icon: '🧠', text: 'Joue **Race** pour réviser tes f*cts débloqués sans pression.' },
       { icon: '⚔️', text: 'Envoie un **Défi Blitz** à un ami (200 Coins) pour la gloire !' },
       { icon: '🛡️', text: 'Achète un **Streak Freeze** avant un week-end chargé pour protéger ta série.' },
       { icon: '📣', text: 'Partage tes scores **Vrai ou Fou** pour inviter tes potes à jouer !' },
@@ -338,11 +338,11 @@ function renderText(text) {
 // Get chapter icon: image for modes, emoji for others
 function getChapterIcon(chapterId) {
   const modeIcons = {
-    quest: '/assets/modes/quest.svg',
-    quickie: '/assets/modes/quickie.png?v=2',
+    quest: '/assets/modes/quest.png',
+    quickie: '/assets/modes/quickie.png',
     flash: '/assets/modes/flash.svg',
-    blitz: '/assets/modes/blitz.svg',
-    no_limit: '/assets/modes/no-limit.svg',
+    blitz: '/assets/modes/blitz.png',
+    race: '/assets/modes/race.png',
     vrai_ou_fou: '/assets/modes/vrai-ou-fou.png',
   }
 
@@ -407,11 +407,11 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             const isActive = ch.id === activeId
             const color = CHAPTER_COLORS[ch.id] || '#FF6B1A'
             const modeIcons = {
-              quest: '/assets/modes/quest.svg',
-              quickie: '/assets/modes/quickie.png?v=2',
+              quest: '/assets/modes/quest.png',
+              quickie: '/assets/modes/quickie.png',
               flash: '/assets/modes/flash.svg',
-              blitz: '/assets/modes/blitz.svg',
-              no_limit: '/assets/modes/no-limit.svg',
+              blitz: '/assets/modes/blitz.png',
+              race: '/assets/modes/race.png',
               vrai_ou_fou: '/assets/modes/vrai-ou-fou.png',
             }
             return (
@@ -522,7 +522,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               )}
 
               {/* Checkbox réafficher les règles des modes — bien visible */}
-              {['quickie', 'vrai_ou_fou', 'quest', 'no_limit', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
+              {['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
                 <label style={{
                   display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
                   cursor: 'pointer', marginTop: 12, padding: '8px', background: 'rgba(255,107,26,0.08)',

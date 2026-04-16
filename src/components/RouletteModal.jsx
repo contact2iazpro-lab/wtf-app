@@ -60,11 +60,12 @@ export default function RouletteModal({ onClose, scale }) {
   const [rotation, setRotation] = useState(0)
   const [spinData, setSpinData] = useState(getSpinData)
   const [showProbas, setShowProbas] = useState(false)
+  const [notEnough, setNotEnough] = useState(false)
   const canvasRef = useRef(null)
   const tickIntervalRef = useRef(null)
   const imagesRef = useRef({})
   // Phase A.6/A.7 — miroir Supabase
-  const { applyCurrencyDelta } = usePlayerProfile()
+  const { coins, applyCurrencyDelta } = usePlayerProfile()
 
   const isFree = !spinData.freeUsed
 
@@ -169,8 +170,11 @@ export default function RouletteModal({ onClose, scale }) {
 
     // Vérifier le coût
     if (!isFree) {
-      const wd = readWtfData()
-      if ((wd.wtfCoins || 0) < EXTRA_SPIN_COST) return
+      if ((coins ?? 0) < EXTRA_SPIN_COST) {
+        setNotEnough(true)
+        setTimeout(() => setNotEnough(false), 2000)
+        return
+      }
       applyCurrencyDelta?.({ coins: -EXTRA_SPIN_COST }, 'roulette_spin_paid')?.catch?.(e =>
         console.warn('[RouletteModal] spin cost RPC failed:', e?.message || e)
       )
@@ -286,6 +290,13 @@ export default function RouletteModal({ onClose, scale }) {
             <div style={{ fontSize: 16, fontWeight: 900, color: isJackpotResult ? '#B8860B' : '#FF6B1A', marginTop: 4 }}>
               {rewardLabel}
             </div>
+          </div>
+        )}
+
+        {/* Pas assez de coins */}
+        {notEnough && (
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#EF4444', marginBottom: 8, animation: 'roulettePop 0.3s ease' }}>
+            Pas assez de WTFCoins !
           </div>
         )}
 

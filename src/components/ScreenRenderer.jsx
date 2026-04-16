@@ -19,7 +19,7 @@ import BlitzLobbyScreen from '../screens/BlitzLobbyScreen'
 import BlitzResultsScreen from '../screens/BlitzResultsScreen'
 import FlashScreen from '../screens/FlashScreen'
 import QuestScreen from '../screens/QuestScreen'
-import NoLimitScreen from '../screens/NoLimitScreen'
+import RaceScreen from '../screens/RaceScreen'
 import VraiOuFouScreen from '../screens/VraiOuFouScreen'
 import { getCategoryById, getTitrePartiel } from '../data/factsService'
 
@@ -226,8 +226,8 @@ export default function ScreenRenderer({
         <QuestScreen onHome={handleHome} setStorage={setStorage} />
       )}
 
-      {screen === SCREENS.NO_LIMIT && (
-        <NoLimitScreen onHome={handleHome} />
+      {screen === SCREENS.RACE && (
+        <RaceScreen onHome={handleHome} />
       )}
 
       {screen === SCREENS.VRAI_OU_FOU && (

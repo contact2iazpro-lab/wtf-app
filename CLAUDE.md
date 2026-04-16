@@ -36,7 +36,7 @@ RÈGLES DES MODES (homogénéité) :
 | Défi Blitz async | **Blitz Défi** | Sous-mode de Blitz |
 | Hunt + Puzzle du Jour | **Flash** | Événement quotidien + Hunt dimanche |
 | *(nouveau)* | **Vrai ou Fou** | Swipe Vrai/Faux, 20 affirmations |
-| *(nouveau)* | **No Limit** | Survie jusqu'à erreur, 4 QCM, pas de timer |
+| *(nouveau)* | ~~No Limit~~ → **Race** (17/04/2026) | Survie jusqu'à erreur, 4 QCM, pas de timer |
 | Quest ancien (ticket+Cool/Hot) | **SUPPRIMÉ** | Remplacé par Quest (Route) |
 | Mode Série | **SUPPRIMÉ** | Absorbé dans le streak |
 | Multi | **SUPPRIMÉ** | Non prévu V1 |
@@ -97,8 +97,9 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts
 - WTF toujours avec ! (sauf "What The F*ct")
-- Les 6 modes : **Quickie · Vrai ou Fou · Quest · No Limit · Blitz · Flash**
+- Les 6 modes : **Quickie · Vrai ou Fou · Quest · Race · Blitz · Flash**
 - Snack → **Quickie** (renommé 16/04/2026)
+- No Limit → **Race** (renommé 17/04/2026)
 - Cool/Hot/WTF! → **SUPPRIMÉS** (difficulté = nb QCM par mode)
 - Tickets → **SUPPRIMÉS** (coût en coins direct)
 - Streak → Série
@@ -181,7 +182,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 ### Règles communes
 - QCM facile (2 choix) : Quickie, Blitz, Flash
-- QCM difficile (4 choix) : Quest, No Limit
+- QCM difficile (4 choix) : Quest, Race
 - Swipe (0 QCM) : Vrai ou Fou
 - Indices = stock perso, coût 50 coins boutique. Bouton grisé si stock vide, JAMAIS de pause timer.
 - Énergie : cap 5, régén +1/8h, extra = 75 coins
@@ -193,7 +194,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Quickie | Funny | 2 | 1 énergie | 10c/bonne, +50 perfect | ✅ Implémenté (ex-Snack) |
 | Vrai ou Fou | Funny (statements) | Swipe | Gratuit | 0 coins | NOUVEAU |
 | Quest | Funny + VIP boss | 4 | 1 énergie/bloc | 20c/niv + 100c/boss | Renommé (ex-Route) |
-| No Limit | Funny+VIP débloqués | 4 | Gratuit | 0 coins (record) | NOUVEAU |
+| Race | Funny+VIP débloqués | 4 | Gratuit | 0 coins (record) | Renommé (ex-No Limit) |
 | Blitz Solo | Funny+VIP débloqués | 2 | Gratuit | 0 coins (paliers) | Modifié (QCM 4→2) |
 | Blitz Défi | Funny (catég ami) | 2 | 200 coins (créer) | 0 coins | Modifié (QCM 4→2, tickets→coins) |
 | Flash (lun-sam) | Funny thème | 2 | Gratuit 1×/j | 30 coins fixe | Renommé (ex-Hunt+Puzzle) |
@@ -287,7 +288,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Bonus session parfaite : Quickie perfect = +50 coins. Quest pas de perfect bonus (les gains par niveau suffisent).
 
 ## Architecture contenu (15/04/2026)
-- **WTF VIP** (~483) : Quest boss /10, Flash dimanche, No Limit/Blitz (une fois débloqués)
+- **WTF VIP** (~483) : Quest boss /10, Flash dimanche, Race/Blitz (une fois débloqués)
 - **Funny F*cts** (~770+ et croissant) : Quickie, Vrai ou Fou, Quest niveaux, Flash lun-sam
 - **Blitz** pioche dans TOUS les f*cts débloqués (VIP + Funny confondus)
 - Collection : 2 onglets (WTF! + Funny F*cts)

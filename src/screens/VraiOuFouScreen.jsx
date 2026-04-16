@@ -78,13 +78,14 @@ export default function VraiOuFouScreen({ onHome }) {
   )
   const catBg = cat?.color || '#1a3a5c'
 
-  const topIsTrue = draw && draw.trueSide === 'left'
-  const topText = draw && (topIsTrue ? draw.trueStatement : draw.falseStatement)
-  const bottomText = draw && (!topIsTrue ? draw.trueStatement : draw.falseStatement)
+  // Côte à côte : left = anciennement "top", right = anciennement "bottom"
+  const leftIsTrue = draw && draw.trueSide === 'left'
+  const leftText = draw && (leftIsTrue ? draw.trueStatement : draw.falseStatement)
+  const rightText = draw && (!leftIsTrue ? draw.trueStatement : draw.falseStatement)
 
   const currentTrueIsGreen = trueIsGreen[index]
-  const topIsGreen = topIsTrue ? currentTrueIsGreen : !currentTrueIsGreen
-  const bottomIsGreen = !topIsGreen
+  const leftIsGreen = leftIsTrue ? currentTrueIsGreen : !currentTrueIsGreen
+  const rightIsGreen = !leftIsGreen
 
   const advanceToNext = useCallback(() => {
     if (index + 1 >= pool.length) {
@@ -136,8 +137,9 @@ export default function VraiOuFouScreen({ onHome }) {
   }
   const onPointerUp = () => {
     if (!drag.active || feedback) return
-    if (drag.x > SWIPE_THRESHOLD) handlePick(true)
-    else if (drag.x < -SWIPE_THRESHOLD) handlePick(false)
+    // Swipe droite → choisir la carte droite, swipe gauche → carte gauche
+    if (drag.x > SWIPE_THRESHOLD) handlePick(rightIsGreen)
+    else if (drag.x < -SWIPE_THRESHOLD) handlePick(leftIsGreen)
     else setDrag({ x: 0, active: false })
   }
 
@@ -327,25 +329,34 @@ export default function VraiOuFouScreen({ onHome }) {
         onQuit={() => setShowQuit(true)}
       />
 
-      {/* Mode label */}
-      <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
+      {/* Mode label + progression N/20 — sur une seule ligne */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0, padding: `0 ${S(16)} ${S(2)}` }}>
         <span style={{
           fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
           color: VOF_GREEN, textShadow: '0 1px 3px rgba(0,0,0,0.3)',
         }}>
-          MODE VRAI OU FOU
+          VRAI OU FOU
+        </span>
+        <span style={{ fontSize: S(12), fontWeight: 900, color: '#ffffff', opacity: 0.7 }}>—</span>
+        <span style={{ fontSize: S(13), fontWeight: 900, letterSpacing: 1 }}>
+          <span style={{ color: counterColor }}>{index + 1}</span>
+          <span style={{ color: 'rgba(255,255,255,0.5)' }}>/{pool.length}</span>
         </span>
       </div>
 
-      {/* Compteur (= progressBar de Quickie) */}
+      {/* Barre de progression */}
       <div style={{ padding: `0 ${S(16)}`, flexShrink: 0 }}>
-        <div style={{ textAlign: 'center', fontSize: S(15), fontWeight: 900, letterSpacing: 1 }}>
-          <span style={{ color: counterColor }}>{correct}</span>
-          <span style={{ color: VOF_GREEN }}>/{pool.length}</span>
+        <div style={{ height: S(4), borderRadius: S(2), background: 'rgba(255,255,255,0.15)', overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', borderRadius: S(2),
+            background: VOF_GREEN,
+            width: `${((index + 1) / pool.length) * 100}%`,
+            transition: 'width 0.3s ease',
+          }} />
         </div>
       </div>
 
-      {/* Zone centrale : prop1 + boutons + prop2 (= question + indices + QCM de Quickie) */}
+      {/* Zone centrale : 2 propositions côte à côte — swipe ou clic direct */}
       <div
         onMouseDown={onPointerDown}
         onMouseMove={onPointerMove}
@@ -355,44 +366,20 @@ export default function VraiOuFouScreen({ onHome }) {
         onTouchMove={onPointerMove}
         onTouchEnd={onPointerUp}
         style={{
-          flexShrink: 0,
-          display: 'flex', flexDirection: 'column',
-          gap: S(10),
+          flex: 0, display: 'flex', gap: S(10),
           padding: `${S(10)} ${S(16)} 0`,
           userSelect: 'none', cursor: feedback ? 'default' : 'grab',
         }}
       >
-        {/* Proposition 1 (= questionCard) */}
-        <VOFCard S={S} text={topText} isTrue={topIsTrue} isGreen={topIsGreen} feedback={feedback} swipingRight={swipingRight} swipingLeft={swipingLeft} dragIntensity={dragIntensity} />
+        {/* Proposition gauche — clic = pick green si leftIsGreen, sinon pick not-green */}
+        <VOFCard S={S} text={leftText} isTrue={leftIsTrue} feedback={feedback}
+          swiping={swipingLeft} dragIntensity={dragIntensity} side="left"
+          onClick={() => handlePick(leftIsGreen)} />
 
-        {/* Boutons FOU / VRAI (= hintButtons) */}
-        <div style={{ flexShrink: 0, display: 'flex', gap: S(5) }}>
-          <button onClick={() => handlePick(false)} disabled={!!feedback} className="active:scale-95 transition-transform"
-            style={{
-              flex: 1, height: S(64), background: feedback ? 'rgba(232,69,53,0.4)' : VOF_RED,
-              border: `3px solid ${swipingLeft ? '#ffffff' : 'rgba(255,255,255,0.3)'}`, borderRadius: S(12),
-              fontFamily: 'Nunito, sans-serif', fontSize: S(16), fontWeight: 900, color: '#ffffff',
-              cursor: feedback ? 'default' : 'pointer',
-              boxShadow: swipingLeft ? '0 6px 20px rgba(232,69,53,0.5)' : '0 4px 12px rgba(0,0,0,0.2)',
-              transform: swipingLeft ? `scale(${1 + 0.03 * dragIntensity})` : 'scale(1)',
-              transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
-              opacity: feedback ? 0.6 : 1,
-            }}>FOU</button>
-          <button onClick={() => handlePick(true)} disabled={!!feedback} className="active:scale-95 transition-transform"
-            style={{
-              flex: 1, height: S(64), background: feedback ? 'rgba(107,203,119,0.4)' : VOF_GREEN,
-              border: `3px solid ${swipingRight ? '#ffffff' : 'rgba(255,255,255,0.3)'}`, borderRadius: S(12),
-              fontFamily: 'Nunito, sans-serif', fontSize: S(16), fontWeight: 900, color: '#ffffff',
-              cursor: feedback ? 'default' : 'pointer',
-              boxShadow: swipingRight ? '0 6px 20px rgba(107,203,119,0.5)' : '0 4px 12px rgba(0,0,0,0.2)',
-              transform: swipingRight ? `scale(${1 + 0.03 * dragIntensity})` : 'scale(1)',
-              transition: 'transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease',
-              opacity: feedback ? 0.6 : 1,
-            }}>VRAI</button>
-        </div>
-
-        {/* Proposition 2 (= QCM grid) */}
-        <VOFCard S={S} text={bottomText} isTrue={!topIsTrue} isGreen={bottomIsGreen} feedback={feedback} swipingRight={swipingRight} swipingLeft={swipingLeft} dragIntensity={dragIntensity} />
+        {/* Proposition droite */}
+        <VOFCard S={S} text={rightText} isTrue={!leftIsTrue} feedback={feedback}
+          swiping={swipingRight} dragIntensity={dragIntensity} side="right"
+          onClick={() => handlePick(rightIsGreen)} />
       </div>
 
       {/* Image + Timer — même layout que Quickie (space-evenly) */}
@@ -464,46 +451,55 @@ export default function VraiOuFouScreen({ onHome }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-function VOFCard({ S, text, isTrue, isGreen, feedback, swipingRight, swipingLeft, dragIntensity }) {
+function VOFCard({ S, text, isTrue, feedback, swiping, dragIntensity, side, onClick }) {
   const showingFeedback = !!feedback
-  const cardColor = isGreen ? VOF_GREEN : VOF_RED
 
-  let borderColor = cardColor
+  let borderColor = VOF_GREEN
   let borderWidth = 2
   let opacity = 1
   let cardTransform = 'scale(1)'
 
   if (showingFeedback) {
-    // Mauvaise réponse : pas de révélation, juste flash les deux cartes en neutre
     if (!feedback.correct) {
-      borderColor = VOF_RED
-      borderWidth = 2
       opacity = 0.6
     } else {
-      // Bonne réponse : la vraie pulse vert
-      if (isTrue) { borderColor = VOF_GREEN; borderWidth = 3 }
+      if (isTrue) { borderWidth = 3 }
       else { opacity = 0.4 }
     }
-  } else if (swipingRight || swipingLeft) {
+  } else if (swiping) {
     borderWidth = 3
-    cardTransform = `scale(${1 + 0.01 * dragIntensity})`
+    cardTransform = `scale(${1 + 0.02 * dragIntensity})`
   }
 
   return (
-    <div style={{
-      flexShrink: 0, background: '#ffffff', borderRadius: S(12),
-      border: `${borderWidth}px solid ${borderColor}`,
-      padding: `${S(12)} ${S(12)}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-      position: 'relative', opacity, transform: cardTransform,
-      transition: 'transform 0.2s ease, opacity 0.3s ease, border-color 0.2s ease',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-      minHeight: S(64), overflow: 'hidden',
-    }}>
+    <div
+      onClick={!showingFeedback ? onClick : undefined}
+      style={{
+        flex: 1, background: '#ffffff', borderRadius: S(14),
+        border: `${borderWidth}px solid ${borderColor}`,
+        padding: `${S(10)} ${S(8)}`,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+        position: 'relative', opacity, transform: cardTransform,
+        transition: 'transform 0.2s ease, opacity 0.3s ease, border-color 0.2s ease',
+        boxShadow: swiping ? `0 6px 24px ${VOF_GREEN}55` : '0 4px 16px rgba(0,0,0,0.12)',
+        minHeight: S(180), overflow: 'hidden',
+        cursor: showingFeedback ? 'default' : 'pointer',
+      }}
+    >
+      {/* Indicateur visuel swipe */}
+      {swiping && !showingFeedback && (
+        <div style={{
+          position: 'absolute', top: S(6), left: '50%', transform: 'translateX(-50%)',
+          background: VOF_GREEN, borderRadius: S(8), padding: `${S(2)} ${S(10)}`,
+          fontSize: S(10), fontWeight: 900, color: '#fff', letterSpacing: '0.05em',
+        }}>
+          {side === 'left' ? '◀' : '▶'}
+        </div>
+      )}
       <p style={{
-        color: cardColor, fontSize: S(14), fontWeight: 800, lineHeight: 1.35,
+        color: VOF_GREEN, fontSize: S(13), fontWeight: 800, lineHeight: 1.35,
         margin: 0, overflow: 'hidden', display: '-webkit-box',
-        WebkitLineClamp: 5, WebkitBoxOrient: 'vertical',
+        WebkitLineClamp: 7, WebkitBoxOrient: 'vertical',
       }}>
         {text}
       </p>

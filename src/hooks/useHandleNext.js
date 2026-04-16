@@ -115,7 +115,7 @@ export function useHandleNext({
 
       // Bonus coins — CLAUDE.md 15/04/2026 économie ×10
       // Quickie : perfect 5/5 = +50c · Flash lun-sam = 30c fixe (dim = VIP, géré ailleurs)
-      // Quest/No Limit/VraiOuFou/Blitz : pas de bonus perfect (0)
+      // Quest/Race/VraiOuFou/Blitz : pas de bonus perfect (0)
       let bonusCoins = 0
       if (sessionType === 'flash') {
         // Flash lun-sam : 30 coins fixe (sessionScore = 0 car FLASH.coinsPerCorrect = 0)
@@ -125,7 +125,7 @@ export function useHandleNext({
         const isPerfectQuickie = finalCorrect === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
         bonusCoins = isPerfectQuickie ? 50 : 0
       }
-      // quest / no_limit / vrai_ou_fou / blitz : 0 bonus (gains directs via coinsPerCorrect)
+      // quest / race / vrai_ou_fou / blitz : 0 bonus (gains directs via coinsPerCorrect)
       setCoinsEarnedLastSession(sessionScore + bonusCoins)
 
       // Streak rewards

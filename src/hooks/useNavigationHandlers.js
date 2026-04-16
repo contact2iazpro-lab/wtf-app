@@ -77,6 +77,13 @@ export function useNavigationHandlers({
         showOrSkipLaunch('quickie')
         break
       }
+      case 'quickie_random': {
+        // Partie rapide : skip ModeLaunchScreen + CategoryScreen → direct en jeu
+        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+        if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
+        handleQuickie()
+        break
+      }
       case 'collection':    navigate('/collection'); break
       case 'trophees':      navigate('/recompenses'); break
       case 'profil':        navigate('/profil'); break
@@ -90,8 +97,8 @@ export function useNavigationHandlers({
       case 'quest':
         setScreen(SCREENS.QUEST)
         break
-      case 'no_limit':
-        setScreen(SCREENS.NO_LIMIT)
+      case 'race':
+        setScreen(SCREENS.RACE)
         break
       case 'vrai_ou_fou':
         showOrSkipLaunch('vrai_ou_fou')

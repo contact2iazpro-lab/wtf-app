@@ -53,9 +53,15 @@ function renderIcon(value, size, color, modeId) {
 }
 
 function renderText(text) {
-  const parts = text.split(/\{\{red\}\}(.*?)\{\{\/red\}\}/g)
-  if (parts.length === 1) return text
-  return parts.map((part, i) => i % 2 === 1 ? <span key={i} style={{ color: '#E84535' }}>{part}</span> : part)
+  // Support {{red}}...{{/red}} + **bold**
+  const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*)/g)
+  return parts.map((part, i) => {
+    const redMatch = part.match(/^\{\{red\}\}(.*?)\{\{\/red\}\}$/)
+    if (redMatch) return <span key={i} style={{ color: '#E84535' }}>{redMatch[1]}</span>
+    const boldMatch = part.match(/^\*\*(.*?)\*\*$/)
+    if (boldMatch) return <strong key={i}>{boldMatch[1]}</strong>
+    return part
+  })
 }
 
 export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, icon, rules, color, ctaLabel, onStart, onBack }) {

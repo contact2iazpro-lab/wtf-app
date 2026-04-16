@@ -320,9 +320,14 @@ export default function QuestionScreen({
             canAfford={canAfford}
             canUse={canUseHint}
             needsBuy={needsBuy}
-            onReveal={() => { onUseHint(hintNum); audio.play('click') }}
+            onReveal={(wasBought) => {
+              // Si achat+utilisation simultané, handleUseHint ne doit pas re-débiter
+              onUseHint(hintNum, wasBought)
+              audio.play('click')
+            }}
             onBuyHint={!isFree && cost > 0 ? () => {
-              applyCurrencyDelta?.({ coins: -cost, hints: 1 }, 'buy_hint_in_session')?.catch?.(e =>
+              // Achat+utilisation immédiate : delta net = coins -cost seulement (hint +1 -1 = 0)
+              applyCurrencyDelta?.({ coins: -cost }, 'buy_hint_in_session')?.catch?.(e =>
                 console.warn('[QuestionScreen] buy hint RPC failed:', e?.message || e)
               )
             } : null}

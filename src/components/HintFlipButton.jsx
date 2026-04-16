@@ -15,12 +15,12 @@ export default function HintFlipButton({ num, hint, catColor, isFree, cost, canA
 
   const handleClick = () => {
     if (phase !== 'front' || disabled) return
-    // If buying, buy first
-    if (canBuyNow && onBuyHint) {
+    const bought = !!(canBuyNow && onBuyHint)
+    if (bought) {
       onBuyHint()
     }
     setPhase('flip')
-    onReveal()
+    onReveal(bought)
     setTimeout(() => setPhase('back'), 160)
   }
 

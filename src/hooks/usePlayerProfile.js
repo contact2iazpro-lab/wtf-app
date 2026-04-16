@@ -108,7 +108,7 @@ export function usePlayerProfile() {
         ...prev,
         coins:   (prev.coins   ?? 0) + (delta.coins   ?? 0),
         hints:   (prev.hints   ?? 0) + (delta.hints   ?? 0),
-        energy:  Math.min((prev.energy ?? 0) + (delta.energy ?? 0), 10),
+        energy:  Math.min((prev.energy ?? 0) + (delta.energy ?? 0), 5),
       } : prev,
       commit: async (prev) => {
         const { data, error } = await supabase.rpc('apply_currency_delta', {

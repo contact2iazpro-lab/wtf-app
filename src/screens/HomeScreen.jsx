@@ -304,7 +304,7 @@ export default function HomeScreen({
         <img
           src="/assets/ui/vof-logo.png"
           alt="Vrai ou Fou"
-          style={{ height: S(28), width: 'auto', objectFit: 'contain' }}
+          style={{ height: S(42), width: 'auto', objectFit: 'contain' }}
         />
       </div>
 

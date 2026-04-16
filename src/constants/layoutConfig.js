@@ -42,7 +42,7 @@ export const UNLOCK_THRESHOLDS = {
   // Modes de jeu
   quest: { stat: 'gamesPlayed', threshold: 1 },
   blitz: { stat: 'unlockedFactsCount', threshold: 5 },
-  hunt: { stat: 'gamesPlayed', threshold: 10 },
+  flash: { stat: 'gamesPlayed', threshold: 10 },
   snack: { stat: 'statsByMode.parcours.gamesPlayed', threshold: 1 },
 
   // UI Features
@@ -59,7 +59,7 @@ export const UNLOCK_MESSAGES = {
   // Modes
   quest: 'Joue ta première partie pour débloquer ! 🎮',
   blitz: 'Débloque 5 f*cts pour jouer en Blitz ! ⚡',
-  hunt: 'Joue 10 parties pour débloquer la Flash ! 🔥',
+  flash: 'Joue 10 parties pour débloquer la Flash ! 🔥',
   snack: 'Termine une Quest pour explorer librement ! 🧭',
 
   // Navbar (à synchroniser avec UnlockContext)

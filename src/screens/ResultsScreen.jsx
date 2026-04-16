@@ -280,8 +280,8 @@ export default function ResultsScreen({
 
   // COR 5 — Share handler natif avec message défi
   const handleShare = () => {
-    const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || 'Cool') : 'Cool'
-    const text = `J'ai fait ${correctCount}/10 en mode ${diffLabel} sur What The F*ct !\nTu peux faire mieux ? ${window.location.origin}`
+    const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || difficulty.label || sessionType) : sessionType
+    const text = `J'ai fait ${correctCount}/${totalQuestions || 10} en mode ${diffLabel} sur What The F*ct !\nTu peux faire mieux ? ${window.location.origin}`
     if (onShare) {
       onShare(text)
     } else if (navigator.share) {

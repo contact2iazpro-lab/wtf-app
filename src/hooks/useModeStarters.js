@@ -51,21 +51,21 @@ export function useModeStarters({
 
   const handleStartFlashSession = useCallback(() => {
     audio.play('click')
-    let huntFact = effectiveDailyFact
-    if (!huntFact) {
+    let flashFact = effectiveDailyFact
+    if (!flashFact) {
       const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
       if (isDevOrTest) {
         const allValid = getQuestFacts()
-        huntFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
+        flashFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
       }
-      if (!huntFact) {
+      if (!flashFact) {
         setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct de la semaine n\'est pas encore chargé. Réessaie dans quelques secondes !' })
         return
       }
     }
-    const category = huntFact.category
+    const category = flashFact.category
     const skipUnlock = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-    const sameCat = getGeneratedFacts().filter(f => f.category === category && f.id !== huntFact.id)
+    const sameCat = getGeneratedFacts().filter(f => f.category === category && f.id !== flashFact.id)
     let pool = sameCat.filter(f => skipUnlock || !unlockedFacts.has(f.id))
     if (pool.length < 5) {
       const already = sameCat.filter(f => !pool.some(p => p.id === f.id))
@@ -81,7 +81,7 @@ export function useModeStarters({
     setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH)
     setSelectedCategory(category)
     initSessionState(facts)
-    logDevEvent('session_started', { type: 'flash', category, factId: huntFact.id })
+    logDevEvent('session_started', { type: 'flash', category, factId: flashFact.id })
     setScreen(SCREENS.QUESTION)
   }, [effectiveDailyFact, unlockedFacts, initSessionState])
 

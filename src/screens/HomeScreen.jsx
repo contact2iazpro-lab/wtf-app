@@ -104,7 +104,7 @@ export default function HomeScreen({
     const d = readWtfData()
     const today = new Date().toISOString().slice(0, 10)
     return d.rouletteFreeDate === today ? null : 'GRATUIT'
-  }, [])
+  }, [showRoulette])
 
   const isSunday = new Date().getDay() === 0
   const currentPalier = getCurrentPalier(currentStreak)
@@ -224,9 +224,8 @@ export default function HomeScreen({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ fontSize: S(9), fontWeight: 700, color: 'white', opacity: 0.5 }}>
-              {nextPalier ? `→ ${nextPalier.name}` : '🏆 Max'}
+              {nextPalier ? `→ ${nextPalier.name} dans ${nextPalier.day - currentStreak}j` : '🏆 Max'}
             </span>
-            <span style={{ fontSize: S(9), fontWeight: 800, color: 'white', opacity: 0.7 }}>{countdown}</span>
           </div>
         </div>
         {/* Jauge de progression vers prochain palier */}
@@ -388,8 +387,7 @@ export default function HomeScreen({
         }}>
           <ModeIcon icon="/assets/modes/quickie.png?v=2" name="Quickie" color="#7F77DD" onClick={() => nav('quickie')} />
           <ModeIcon icon="/assets/modes/quest.svg" name="Quest" color="#FF6B1A" onClick={() => nav('quest')} />
-          <ModeIcon icon="/assets/modes/flash.svg" name="Flash" color="#E91E63" onClick={() => nav('flash')} />
-          <ModeIcon icon="/assets/modes/vrai-ou-fou.svg" name="Vrai ou Fou" color="#9B59B6" onClick={() => nav('vrai_ou_fou')} />
+          <ModeIcon icon="/assets/modes/vrai-ou-fou.png" name="Vrai ou Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} />
           <ModeIcon icon="/assets/modes/no-limit.svg" name="No Limit" color="#E84535" onClick={() => nav('no_limit')} />
           <ModeIcon icon="/assets/modes/blitz.svg" name="Blitz" color="#FF4444" onClick={() => nav('blitz')} />
         </div>

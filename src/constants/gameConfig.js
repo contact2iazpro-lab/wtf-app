@@ -12,7 +12,7 @@ export const DIFFICULTY_LEVELS = {
   },
   VRAI_OU_FOU: {
     id: 'vrai_ou_fou', label: 'Vrai ou Fou', emoji: '🤔',
-    choices: 0, duration: 0, questionsCount: 20,
+    choices: 0, duration: 15, questionsCount: 20,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
@@ -89,13 +89,14 @@ export const MODE_CONFIGS = {
     ],
   },
   vrai_ou_fou: {
-    modeId: 'vrai_ou_fou', modeName: 'Vrai ou Fou', subtitle: 'Swipe ou pas Swipe ?', emoji: '🤔', color: '#9B59B6',
+    modeId: 'vrai_ou_fou', modeName: 'Vrai ou Fou', subtitle: 'Swipe ou pas swipe ?', emoji: '🤔', icon: '/assets/modes/vrai-ou-fou.png', color: '#6BCB77',
+    ctaLabel: 'VAS-Y, SWIPE !',
     rules: [
-      { icon: '🆓', text: 'Coût : Gratuit et illimité' },
-      { icon: '📋', text: 'Set : 20 manches' },
-      { icon: '👯', text: 'Format : 2 affirmations' },
-      { icon: '👉', text: 'Swipe du bon côté' },
-      { icon: '⏱️', text: 'Timer : aucun' },
+      { icon: 'picto:infinity', text: 'Illimité' },
+      { icon: 'icon:set', text: 'Set : 20 affirmations/set' },
+      { icon: 'picto:swipe', text: '{{red}}Fou à gauche{{/red}}, Vrai à droite' },
+      { icon: 'icon:timer', text: 'Timer : 15s/question' },
+      { icon: 'picto:share', text: 'Partage ton score' },
     ],
   },
   quest: {

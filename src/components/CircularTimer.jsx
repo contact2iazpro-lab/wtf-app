@@ -39,6 +39,8 @@ function getTimerColor(remaining, duration) {
 
 export default function CircularTimer({ duration = 60, onTimeout, paused = false, size = 100, variant = 'default' }) {
   const isQuickie = variant === 'quickie'
+  const isVof = variant === 'vof'
+  const hasWhiteBg = isQuickie || isVof
   const timeRef = useRef(duration)
   const intervalRef = useRef(null)
   const circleRef = useRef(null)
@@ -53,7 +55,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
     }
     if (textRef.current) {
       textRef.current.textContent = duration
-      textRef.current.style.fill = isQuickie ? '#7F77DD' : '#FFFFFF'
+      textRef.current.style.fill = isQuickie ? '#7F77DD' : '#22C55E'
     }
 
     intervalRef.current = setInterval(() => {
@@ -72,7 +74,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
 
       if (textRef.current) {
         textRef.current.textContent = t
-        textRef.current.style.fill = t <= 5 ? '#EF4444' : (isQuickie ? '#7F77DD' : '#FFFFFF')
+        textRef.current.style.fill = isQuickie ? (t <= 5 ? '#EF4444' : '#7F77DD') : (isVof ? color : '#FFFFFF')
       }
 
       // Bip sounds
@@ -109,8 +111,8 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
         {/* Track */}
         <circle
           cx="50" cy="50" r={RADIUS}
-          fill={isQuickie ? '#ffffff' : 'none'}
-          stroke={isQuickie ? '#E5E7EB' : '#2E2E2E'}
+          fill={hasWhiteBg ? '#ffffff' : 'none'}
+          stroke={hasWhiteBg ? '#E5E7EB' : '#2E2E2E'}
           strokeWidth="6"
         />
         {/* Progress stroke */}
@@ -142,7 +144,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
           fontSize={fontSize}
           fontWeight="900"
           fontFamily="Inter, sans-serif"
-          fill="#FFFFFF"
+          fill={isQuickie ? '#7F77DD' : (isVof ? '#22C55E' : '#FFFFFF')}
         >
           {duration}
         </text>

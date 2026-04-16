@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import SettingsModal from '../components/SettingsModal'
-import CoinsIcon from '../components/CoinsIcon'
+import GameHeader from '../components/GameHeader'
 import { audio } from '../utils/audio'
 import { getCategoryById, CATEGORIES } from '../data/facts'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
@@ -40,12 +39,12 @@ const RANKINGS = [
 
 // Quickie — 6 niveaux (0-5)
 const QUICKIE_RANKINGS = [
-  { score: 0, emoji: '😵', label: 'Aïe...' },
-  { score: 1, emoji: '🐣', label: 'Novice' },
-  { score: 2, emoji: '🤔', label: 'Curieux' },
-  { score: 3, emoji: '😎', label: 'Pas mal !' },
-  { score: 4, emoji: '🧠', label: 'Expert' },
-  { score: 5, emoji: '🌟', label: 'PERFECT !' },
+  { score: 0, label: 'Allez, tu peux que faire mieux !' },
+  { score: 1, label: 'Mouais...' },
+  { score: 2, label: 'Pas maaaaal...' },
+  { score: 3, label: 'On passe un cap là !' },
+  { score: 4, label: "T'es un crack !" },
+  { score: 5, label: 'Yes ! Perfect !' },
 ]
 
 function getStars(correct, total) {
@@ -96,7 +95,6 @@ export default function ResultsScreen({
     } catch {}
     setShowGoogleBanner(false)
   }
-  const [showSettings, setShowSettings] = useState(false)
   const [showConnectBanner, setShowConnectBanner] = useState(false)
   const [savedAfterConnect, setSavedAfterConnect] = useState(false)
   const [selectedFact, setSelectedFact] = useState(null)
@@ -384,41 +382,13 @@ export default function ResultsScreen({
         )
       })()}
 
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-
-      {/* ═══ HEADER FIXE (~50px) ═══ */}
-      <div style={{
-        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        width: '100%', flexShrink: 0, padding: `${S(8)} ${S(12)}`, position: 'relative', zIndex: 2,
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-      }}>
-        <button
-          onClick={handleGoHome}
-          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-        >
-          <span style={{ fontSize: S(16), color: textOnBg, fontWeight: 900, lineHeight: 1 }}>✕</span>
-        </button>
-        <div style={{ flex: 1, minWidth: 0, padding: `0 ${S(8)}` }}>
-          <span style={{ fontWeight: 900, fontSize: S(13), color: textOnBg, lineHeight: 1.2, display: 'block', textAlign: 'center' }}>
-            Résultats
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(8), flexShrink: 0, userSelect: 'none' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-coins.png" style={{ width: S(14), height: S(14) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cCoins}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-hint.png?v=2" style={{ width: S(14), height: S(14) }} alt="" />
-            <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cHints}</span>
-          </div>
-        </div>
-        <button
-          onClick={() => { audio.play('click'); setShowSettings(true) }}
-          style={{ width: S(36), height: S(36), borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: S(6) }}
-        >
-          <img src="/assets/ui/icon-settings.png" alt="" style={{ width: S(20), height: S(20) }} />
-        </button>
+      {/* ═══ HEADER — GameHeader unifié ═══ */}
+      <div style={{ position: 'relative', zIndex: 2, flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <GameHeader
+          categoryLabel={!isQuickie ? 'Résultats' : null}
+          categoryIcon={cat ? `/assets/categories/${categoryId}.png` : null}
+          onQuit={handleGoHome}
+        />
       </div>
 
       {/* ═══ CONTENT CENTRAL (flex-1, no scroll prioritaire, fallback auto) ═══ */}
@@ -430,15 +400,16 @@ export default function ResultsScreen({
       }}>
 
         {/* Badge mode + difficulté */}
-        {difficulty && (
+        {isQuickie ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(4), flexShrink: 0 }}>
+            <img src="/assets/modes/quickie.png?v=2" alt="Quickie" style={{ width: S(40), height: S(40), objectFit: 'contain' }} />
+            <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>Résultats — Mode Quickie</span>
+          </div>
+        ) : difficulty && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: S(6), flexShrink: 0 }}>
-            {isQuickie
-              ? <img src="/assets/modes/quickie.png?v=2" alt="Quickie" style={{ width: S(24), height: S(24), objectFit: 'contain' }} />
-              : <span style={{ fontSize: S(14) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
-            }
+            <span style={{ fontSize: S(14) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
             <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>
-              {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` :
-               isQuickie ? 'Mode Quickie' : 'Mode'}
+              {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` : 'Mode'}
             </span>
           </div>
         )}
@@ -454,6 +425,8 @@ export default function ResultsScreen({
           catColor={catColor}
           textOnBg={textOnBg}
           isPerfect={isPerfect}
+          hideEmoji={isQuickie}
+          largeLabelFont={isQuickie}
         />
 
         {/* Récap gains structuré — composant extrait (Phase 5.2 A) */}
@@ -466,6 +439,7 @@ export default function ResultsScreen({
           total={animatedScore}
           totalColor={catColor}
           textColor={textOnBg}
+          borderColor={isQuickie ? '#7F77DD' : null}
           footerStats={[
             { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
             { label: `${precision}% précision`, color: catColor },
@@ -495,71 +469,93 @@ export default function ResultsScreen({
           const locked = allSessionFacts.filter(f => !unlockedIds.has(f.id))
           const sorted = [...unlocked, ...locked]
           return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: S(4), flexShrink: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: S(1) }}>
-                {unlocked.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), flexShrink: 0 }}>
+              {/* Ligne Débloqués */}
+              {unlocked.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: S(4) }}>
                   <span style={{ fontSize: S(10), fontWeight: 800, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     🔓 {unlocked.length} Débloqué{unlocked.length > 1 ? 's' : ''}
                   </span>
-                )}
-                {locked.length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${allSessionFacts.length}, 1fr)`, gap: S(4), width: '100%' }}>
+                    {unlocked.map((fact) => {
+                      const factCat = CATEGORIES.find(c => c.id === fact.category)
+                      const factCatColor = factCat?.color || catColor
+                      return (
+                        <div key={fact.id} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+                          onClick={() => { audio.play?.('click'); setViewingFact(fact) }}>
+                          <div style={{
+                            aspectRatio: '1', borderRadius: `${S(8)} ${S(8)} 0 0`, overflow: 'hidden', position: 'relative',
+                            border: `2px solid ${factCatColor}`, borderBottom: 'none',
+                            background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})`,
+                          }}>
+                            {fact.imageUrl ? (
+                              <img src={fact.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={e => { e.target.style.display = 'none' }} />
+                            ) : (
+                              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontSize: S(20), opacity: 0.3 }}>?</span>
+                              </div>
+                            )}
+                          </div>
+                          <div style={{
+                            background: factCatColor, borderRadius: `0 0 ${S(6)} ${S(6)}`,
+                            padding: `${S(2)} 0`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <img src={`/assets/categories/${fact.category}.png`} alt=""
+                              style={{ width: S(14), height: S(14), borderRadius: S(3), objectFit: 'cover' }}
+                              onError={e => { e.target.style.display = 'none' }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+              {/* Ligne À découvrir */}
+              {locked.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: S(4) }}>
                   <span style={{ fontSize: S(10), fontWeight: 800, color: textOnBg, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     🔒 {locked.length} À découvrir
                   </span>
-                )}
-              </div>
-              <div style={{ display: 'flex', gap: S(4), width: '100%' }}>
-                {sorted.map((fact) => {
-                  const isUnlocked = unlockedIds.has(fact.id)
-                  const factCat = CATEGORIES.find(c => c.id === fact.category)
-                  const factCatColor = factCat?.color || catColor
-                  return (
-                    <div key={fact.id} style={{ width: 0, flexGrow: 1, flexShrink: 0, display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
-                      onClick={() => {
-                        if (isUnlocked) {
-                          // Ouvrir le détail en overlay SUR ResultsScreen (reste ici)
-                          audio.play?.('click')
-                          setViewingFact(fact)
-                        } else {
-                          setSelectedFact({ ...fact, _locked: true, _catColor: factCatColor, _catEmoji: factCat?.emoji, _catLabel: factCat?.label })
-                        }
-                      }}>
-                      {/* Image */}
-                      <div style={{
-                        aspectRatio: '1', borderRadius: `${S(8)} ${S(8)} 0 0`, overflow: 'hidden', position: 'relative',
-                        border: isUnlocked ? `2px solid ${factCatColor}` : '2px solid #6B7280',
-                        borderBottom: 'none',
-                        cursor: isUnlocked ? 'pointer' : 'default',
-                        background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})`,
-                      }}>
-                        {fact.imageUrl ? (
-                          <img src={fact.imageUrl} alt=""
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: !isUnlocked ? 'blur(4px) brightness(0.4)' : 'none' }}
-                            onError={e => { e.target.style.display = 'none' }} />
-                        ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: !isUnlocked ? 'brightness(0.4)' : 'none' }}>
-                            <span style={{ fontSize: S(20), opacity: 0.3 }}>?</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: `repeat(${allSessionFacts.length}, 1fr)`, gap: S(4), width: '100%' }}>
+                    {locked.map((fact) => {
+                      const factCat = CATEGORIES.find(c => c.id === fact.category)
+                      const factCatColor = factCat?.color || catColor
+                      return (
+                        <div key={fact.id} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+                          onClick={() => { setSelectedFact({ ...fact, _locked: true, _catColor: factCatColor, _catEmoji: factCat?.emoji, _catLabel: factCat?.label }) }}>
+                          <div style={{
+                            aspectRatio: '1', borderRadius: `${S(8)} ${S(8)} 0 0`, overflow: 'hidden', position: 'relative',
+                            border: `2px solid ${factCatColor}`, borderBottom: 'none',
+                            background: `linear-gradient(135deg, ${factCatColor}44, ${factCatColor})`,
+                          }}>
+                            {fact.imageUrl ? (
+                              <img src={fact.imageUrl} alt=""
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(4px) brightness(0.4)' }}
+                                onError={e => { e.target.style.display = 'none' }} />
+                            ) : (
+                              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'brightness(0.4)' }}>
+                                <span style={{ fontSize: S(20), opacity: 0.3 }}>?</span>
+                              </div>
+                            )}
+                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ fontSize: S(16), opacity: 0.8 }}>🔒</span>
+                            </div>
                           </div>
-                        )}
-                        {!isUnlocked && (
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontSize: S(16), opacity: 0.8 }}>🔒</span>
+                          <div style={{
+                            background: factCatColor, borderRadius: `0 0 ${S(6)} ${S(6)}`,
+                            padding: `${S(2)} 0`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <img src={`/assets/categories/${fact.category}.png`} alt=""
+                              style={{ width: S(14), height: S(14), borderRadius: S(3), objectFit: 'cover' }}
+                              onError={e => { e.target.style.display = 'none' }} />
                           </div>
-                        )}
-                      </div>
-                      {/* Bandeau catégorie */}
-                      <div style={{
-                        background: factCatColor, borderRadius: `0 0 ${S(6)} ${S(6)}`,
-                        padding: `${S(2)} 0`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <img src={`/assets/categories/${fact.category}.png`} alt=""
-                          style={{ width: S(14), height: S(14), borderRadius: S(3), objectFit: 'cover' }}
-                          onError={e => { e.target.style.display = 'none' }} />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )
         })()}
@@ -606,6 +602,7 @@ export default function ResultsScreen({
         difficulty={difficulty}
         challengeLabel={sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] ? CHALLENGE_LABELS[difficulty.id] : null}
         categoryLabel={cat?.label || null}
+        categoryId={categoryId}
         onReplay={onReplay}
         onReplayHarder={onReplayHarder}
         onShare={handleShare}

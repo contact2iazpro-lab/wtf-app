@@ -4,7 +4,7 @@
  */
 const WTF_ORANGE = '#FF6B1A'
 
-export default function QuestionTargetIcon({ size = 40, color = '#ffffff', accent = WTF_ORANGE }) {
+export default function QuestionTargetIcon({ size = 40, color = '#ffffff', accent = WTF_ORANGE, questionColor = null }) {
   const id = 'qtGlow'
   return (
     <svg
@@ -34,11 +34,11 @@ export default function QuestionTargetIcon({ size = 40, color = '#ffffff', accen
         <line x1="4" y1="50" x2="14" y2="50" stroke={accent} strokeWidth="5" strokeLinecap="round" />
         <line x1="86" y1="50" x2="96" y2="50" stroke={accent} strokeWidth="5" strokeLinecap="round" />
 
-        {/* "?" centré — orange WTF */}
+        {/* "?" centré */}
         <text
           x="50" y="62"
           textAnchor="middle"
-          fill={accent}
+          fill={questionColor || accent}
           fontSize="40"
           fontWeight="900"
           fontFamily="Nunito, sans-serif"

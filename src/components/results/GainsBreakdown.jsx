@@ -33,10 +33,12 @@ export default function GainsBreakdown({
   footerStats = null,
   // Mode libre (Flash/Route) : override des lignes avec un tableau
   items = null,
+  // Contour custom (ex: violet quickie)
+  borderColor = null,
 }) {
   return (
     <div style={{
-      background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.15)',
+      background: 'rgba(0,0,0,0.35)', border: borderColor ? `2.5px solid ${borderColor}` : '1.5px solid rgba(255,255,255,0.15)',
       borderRadius: S(12), padding: `${S(8)} ${S(12)}`, flexShrink: 0,
       textShadow: '0 1px 4px rgba(0,0,0,0.7)',
       display: 'flex', flexDirection: 'column', gap: S(4),

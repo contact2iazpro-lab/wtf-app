@@ -77,7 +77,8 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
 - ✅ **Hotfix Défi post-Bloc 4.2 (2026-04-14 soir)** : 3 bugs fermés
 - ✅ **Refactor Défi 3 Paliers (2026-04-14 nuit)** : RPC atomique `create_duel_challenge`
 - ✅ **Session 15/04/2026** : HomeScreen cleanup + refonte visuelle + ResultsScreen Phase A+B + **Modèle D étudié puis abandonné au profit du Modèle A+ (décision 15/04/2026)**
-- ✅ **Session 16/04/2026** : Fix JSON admin-tool (`generateStatements` balanced-brace extractor) + MarathonScreen refonte complète (gate 20 unlocked, tiered bg, record `marathonBestScore`, animations shake/gold/extreme, share/replay) + Blitz refactor Solo/Défi (variant prop, soloDuration 60s descendant, defiWrongPenalty 5s, `blitzSoloBestScore`, BlitzLobbyScreen toggle Solo/Défi, BlitzResultsScreen vue solo dédiée) + FlashScreen refonte (WEEKDAY_THEMES fixe lun-sam, dimanche 1 VIP cible + 4 Funny distracteurs seed ISO-week, unlock conditionnel `fact.id === vipTargetId`, reveal VIP dans done screen)
+- ✅ **Session 16/04/2026 matin** : Fix JSON admin-tool (`generateStatements` balanced-brace extractor) + MarathonScreen refonte complète (gate 20 unlocked, tiered bg, record `marathonBestScore`, animations shake/gold/extreme, share/replay) + Blitz refactor Solo/Défi (variant prop, soloDuration 60s descendant, defiWrongPenalty 5s, `blitzSoloBestScore`, BlitzLobbyScreen toggle Solo/Défi, BlitzResultsScreen vue solo dédiée) + FlashScreen refonte (WEEKDAY_THEMES fixe lun-sam, dimanche 1 VIP cible + 4 Funny distracteurs seed ISO-week, unlock conditionnel `fact.id === vipTargetId`, reveal VIP dans done screen)
+- ✅ **Session 16/04/2026 soir** : VraiOuFouScreen refonte complète (layout calqué 1:1 sur QuestionScreen Quickie, timer 15s variant "vof" vert→orange→rouge, CircularTimer fond blanc) + RevelationScreen unifiée (VOF utilise le même composant que Quickie via système d'accent : violet Quickie / vert VOF, `accentColor`/`accentGradient`/`accentShadow`) + Encadrés hauteur fixe (question 3 lignes, réponse 2 lignes, explication flex:1, texte auto-size) + FallbackImage SVG inline dynamique (couleur catégorie, viewBox carré 680×680) + Effets holo/shiny sur toutes les images revelation (y compris fallback) + Fix bug achat énergie Quickie (route directe vers CATEGORY) + HomeScreen cercle VOF vert (#6BCB77) + Suppression emoji 🧠 des encadrés "Le saviez-vous" (4 fichiers)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client
 Toute variable préfixée `VITE_` est inlinée dans le JS public et lisible via DevTools.
@@ -115,8 +116,8 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 ### 2. VRAI OU FOU — "Swipe si t'oses"
 - **Swipe cards Vrai/Faux** (PAS de QCM), 20 affirmations par session
-- Timer : Aucun · Indices : Aucun
-- Contenu : Funny facts (champ `statement` + `statement_is_true` en base)
+- Timer : **15s**/question · Indices : Aucun
+- Contenu : Funny facts (champs `statement_true` + `statement_false_funny` + `statement_false_plausible` en base)
 - Coût : Gratuit illimité
 - Gains : **0 coins** (mode viralité/acquisition, pas farming)
 - Déblocage f*cts : **Non** — mode vitrine/viral. Le joueur découvre les affirmations mais ne les collecte pas. Pour posséder un f*ct, jouer Quickie ou Quest.
@@ -290,7 +291,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - **Funny F*cts** (~770+ et croissant) : Quickie, Vrai ou Fou, Quest niveaux, Flash lun-sam
 - **Blitz** pioche dans TOUS les f*cts débloqués (VIP + Funny confondus)
 - Collection : 2 onglets (WTF! + Funny F*cts)
-- **Nouveau champ DB requis** : `statement` (text) + `statement_is_true` (boolean) sur table facts
+- **Champs DB VOF** : `statement_true` (text) + `statement_false_funny` (text) + `statement_false_plausible` (text) sur table facts ✅
 - Quest = ~847 niveaux (770 Funny ÷ 10 par bloc = ~77 blocs × 11 niveaux — 10 Funny + 1 boss)
 
 ## Architecture Data — Règle d'or (décidée 2026-04-12)
@@ -422,6 +423,10 @@ séparé, sous-domaine privé, ou en local uniquement).
 - `src/data/factsService.js` — chargement facts Supabase
 - `src/utils/answers.js` — tirage réponses QCM
 - `src/hooks/usePlayerProfile.js` — source de vérité devises (applyCurrencyDelta)
+- `src/screens/RevelationScreen.jsx` — revelation partagée Quickie/VOF (système accent violet/vert, encadrés hauteur fixe, auto-size texte)
+- `src/screens/VraiOuFouScreen.jsx` — mode Vrai ou Fou (swipe, timer 15s, utilise RevelationScreen)
+- `src/components/FallbackImage.jsx` — SVG inline dynamique (couleur catégorie)
+- `src/components/CircularTimer.jsx` — timer avec variants default/quickie/vof
 
 ## 🎨 Inventaire Émojis — Audit 13/04/2026
 

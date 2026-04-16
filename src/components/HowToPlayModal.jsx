@@ -15,18 +15,21 @@ const EMOJI_IMG = {
   ...CURRENCY_EMOJI_MAP,
 }
 
+const QUICKIE_VIOLET = '#7F77DD'
+const QUICKIE_GOLD = '#FFD700'
+
 const COMPONENT_ICONS = {
-  'icon:qcm': (size) => <MultipleChoiceIcon size={size} />,
-  'icon:set': (size) => <QuestionTargetIcon size={size} />,
-  'icon:timer': (size) => <TimerIcon size={size} />,
-  'icon:perfect': (size) => <PerfectIcon size={size} />,
-  'icon:energy': (size) => <EnergyIcon size={size} />,
+  'icon:qcm': (size, color) => <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />,
+  'icon:set': (size, color) => <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />,
+  'icon:timer': (size, color) => <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />,
+  'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
+  'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
 }
 
-function renderIcon(value, size) {
+function renderIcon(value, size, color) {
   const compFn = COMPONENT_ICONS[value]
-  if (compFn) return compFn(size || 18)
-  if (value === '🔋') return <EnergyIcon size={size || 16} />
+  if (compFn) return compFn(size || 18, color)
+  if (value === '🔋') return <EnergyIcon size={size || 16} color={color} />
   const src = EMOJI_IMG[value]
   if (!src) return value
   return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
@@ -35,7 +38,7 @@ function renderIcon(value, size) {
 // ── Couleurs par chapitre (partagées entre carousel et bandeau) ────────────
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6',
-  quickie: '#7F77DD', vrai_ou_fou: '#EC4899', quest: '#EF4444',
+  quickie: '#7F77DD', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
   no_limit: '#0EA5E9', blitz: '#FF6B1A', flash: '#FFD700',
   energy: '#10B981', hints: '#6366F1', coins: '#F59E0B',
   streak: '#F97316', roulette: '#A855F7', shop: '#06B6D4',
@@ -96,10 +99,10 @@ const CHAPTERS = [
     shortTitle: 'Vrai ou Fou',
     title: 'Mode Vrai ou Fou',
     content: [
-      { icon: '🆓', text: 'Coût : gratuit illimité' },
+      { icon: '🆓', text: 'Coût : Gratuit et illimité' },
       { icon: '📋', text: '20 affirmations/session' },
-      { icon: '👉', text: 'Swipe **Vrai** ou **Faux**' },
-      { icon: '⏱️', text: 'Timer : aucun' },
+      { icon: '👉', text: 'Swipe **Vrai** ou **Fou**' },
+      { icon: '⏱️', text: 'Timer : 15s/question' },
       { icon: '🪙', text: 'Gains : 0 coin (mode viralité)' },
       { icon: '📣', text: 'Partage ton score X/20 avec tes amis !' },
     ],
@@ -340,11 +343,11 @@ function getChapterIcon(chapterId) {
     flash: '/assets/modes/flash.svg',
     blitz: '/assets/modes/blitz.svg',
     no_limit: '/assets/modes/no-limit.svg',
-    vrai_ou_fou: '/assets/modes/vrai-ou-fou.svg',
+    vrai_ou_fou: '/assets/modes/vrai-ou-fou.png',
   }
 
   if (modeIcons[chapterId]) {
-    return <img src={modeIcons[chapterId]} style={{ width: 40, height: 40, objectFit: 'contain' }} alt="" />
+    return <img src={modeIcons[chapterId]} style={{ width: 22, height: 22, objectFit: 'contain' }} alt="" />
   }
 
   // For non-mode chapters, use emoji
@@ -409,7 +412,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               flash: '/assets/modes/flash.svg',
               blitz: '/assets/modes/blitz.svg',
               no_limit: '/assets/modes/no-limit.svg',
-              vrai_ou_fou: '/assets/modes/vrai-ou-fou.svg',
+              vrai_ou_fou: '/assets/modes/vrai-ou-fou.png',
             }
             return (
               <button
@@ -425,7 +428,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 }}
               >
                 {modeIcons[ch.id]
-                  ? <img src={modeIcons[ch.id]} style={{ width: 28, height: 28, objectFit: 'contain', filter: isActive ? 'brightness(10)' : 'none' }} />
+                  ? <img src={modeIcons[ch.id]} style={{ width: 28, height: 28, objectFit: 'contain', filter: isActive && !modeIcons[ch.id].endsWith('.png?v=2') ? 'brightness(10)' : 'none' }} />
                   : <span style={{ fontSize: 24 }}>{renderIcon(ch.emoji)}</span>
                 }
                 <span style={{
@@ -454,7 +457,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               borderBottom: `2px solid ${chapterColor}`,
               boxShadow: `0 2px 8px ${chapterColor}33`,
             }}>
-              <span style={{ fontSize: 22 }}>{renderIcon(chapter.emoji)}</span>
+              <span style={{ fontSize: 22, display: 'flex', alignItems: 'center' }}>{getChapterIcon(chapter.id)}</span>
               <h2 className="font-black" style={{
                 color: '#ffffff',
                 lineHeight: 1.2,
@@ -478,18 +481,34 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
 
             {/* Rules items */}
             <div className="flex flex-col gap-2" style={{ flexShrink: 0 }}>
-              {chapter.content.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2 p-2 rounded-2xl"
-                  style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}
-                >
-                  <span style={{ fontSize: 18, flexShrink: 0, lineHeight: '1.6' }}>{renderIcon(item.icon)}</span>
-                  <p className="font-semibold" style={{ color: '#374151', lineHeight: '1.6', fontSize: '14px' }}>
-                    {renderText(item.text)}
-                  </p>
-                </div>
-              ))}
+              {chapter.content.map((item, i) => {
+                const isQuickieChapter = chapter.id === 'quickie'
+                const isVOFChapter = chapter.id === 'vrai_ou_fou'
+                const isCustomChapter = isQuickieChapter || isVOFChapter
+                let iconColor = undefined
+                if (isQuickieChapter) {
+                  iconColor = item.icon === 'icon:energy' ? '#22C55E' : QUICKIE_GOLD
+                } else if (isVOFChapter) {
+                  iconColor = i % 2 === 0 ? '#6BCB77' : '#E84535'
+                }
+                const borderCol = isQuickieChapter ? QUICKIE_VIOLET : isVOFChapter ? '#6BCB77' : '#E5E7EB'
+                const textCol = isQuickieChapter ? QUICKIE_VIOLET : isVOFChapter ? '#1a1a2e' : '#374151'
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 p-2 rounded-2xl"
+                    style={{
+                      background: isCustomChapter ? '#ffffff' : '#F3F4F6',
+                      border: isCustomChapter ? `2px solid ${borderCol}` : `1px solid ${borderCol}`,
+                    }}
+                  >
+                    <span style={{ fontSize: 18, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{renderIcon(item.icon, 18, iconColor)}</span>
+                    <p style={{ color: textCol, lineHeight: '1.4', fontSize: '14px', fontWeight: isCustomChapter ? 700 : 600, margin: 0 }}>
+                      {renderText(item.text)}
+                    </p>
+                  </div>
+                )
+              })}
 
               {/* Bouton relancer tutoriel */}
               {chapter.tutorialButton && onRestartTutorial && (

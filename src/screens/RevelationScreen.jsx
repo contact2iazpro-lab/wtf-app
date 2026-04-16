@@ -154,6 +154,12 @@ export default function RevelationScreen({
 
   const scoreRefTarget = useRef(null)
   const nextButtonRef = useRef(null)
+  const questionRef = useRef(null)
+  const questionContainerRef = useRef(null)
+  const [questionFontSize, setQuestionFontSize] = useState(14)
+  const answerRef = useRef(null)
+  const answerContainerRef = useRef(null)
+  const [answerFontSize, setAnswerFontSize] = useState(15)
   const explanationRef = useRef(null)
   const explanationContainerRef = useRef(null)
   const [explanationFontSize, setExplanationFontSize] = useState(14)
@@ -168,6 +174,15 @@ export default function RevelationScreen({
 
   // COR 7 — Gradient catégorie identique dans les deux cas
   const isQuickieMode = sessionType === 'quickie'
+  const isVofMode = sessionType === 'vrai_ou_fou'
+  const isBrandedMode = isQuickieMode || isVofMode
+  const accentColor = isVofMode ? '#6BCB77' : '#7F77DD'
+  const accentGradient = isVofMode
+    ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
+    : 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
+  const accentShadow = isVofMode
+    ? '0 4px 16px rgba(107,203,119,0.5)'
+    : '0 4px 16px rgba(127,119,221,0.5)'
   const catGradient = cat
     ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
     : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
@@ -196,21 +211,22 @@ export default function RevelationScreen({
     }
   }, [fact.id, isCorrect, pointsEarned, sessionScore])
 
-  // Auto-size explanation text to fill container
+  // Auto-size text in fixed-height encadrés (question 3 lignes, réponse 2 lignes, explication flex:1)
   useEffect(() => {
-    const container = explanationContainerRef.current
-    const textEl = explanationRef.current
-    if (!container || !textEl) return
-    // Reset to max size and shrink until it fits
-    let size = 16
-    const min = 9
-    textEl.style.fontSize = size + 'px'
-    const availableH = container.clientHeight
-    while (textEl.scrollHeight > availableH && size > min) {
-      size -= 0.5
-      textEl.style.fontSize = size + 'px'
+    const autoSize = (cRef, tRef, setter, max, min) => {
+      const c = cRef.current, t = tRef.current
+      if (!c || !t) return
+      let s = max
+      t.style.fontSize = s + 'px'
+      while (t.scrollHeight > c.clientHeight && s > min) {
+        s -= 0.5
+        t.style.fontSize = s + 'px'
+      }
+      setter(s)
     }
-    setExplanationFontSize(size)
+    autoSize(questionContainerRef, questionRef, setQuestionFontSize, 14, 8)
+    autoSize(answerContainerRef, answerRef, setAnswerFontSize, 15, isVofMode ? 9 : 15)
+    autoSize(explanationContainerRef, explanationRef, setExplanationFontSize, 16, 9)
   }, [fact.id, unlockedByCoins])
 
   const handleNativeShare = () => {
@@ -235,7 +251,7 @@ export default function RevelationScreen({
   const isTimeout = selectedAnswer === -1
 
   const selectedAnswerText = selectedAnswer >= 0 ? fact.options[selectedAnswer] : 'Pas de réponse'
-  const correctAnswerText = fact.options[fact.correctIndex]
+  const correctAnswerText = correctAnswer || fact.options?.[fact.correctIndex] || ''
 
   // ── Coins flying animation ────────────────────────────────────────────────
   const coinsAnimation = showCoins && isCorrect && scoreRefTarget.current && (
@@ -331,13 +347,13 @@ export default function RevelationScreen({
       <div className="relative screen-enter" style={{
         height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
         boxSizing: 'border-box', width: '100%',
-        ...(isQuickieMode ? { background: catGradient } : {
+        ...(isBrandedMode ? { background: catGradient } : {
           backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
           backgroundSize: 'cover', backgroundPosition: 'center',
           backgroundColor: cat?.color || '#1a1a2e',
         }),
       }}>
-        {!isQuickieMode && <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />}
+        {!isBrandedMode && <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />}
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
         {quitModal}
@@ -352,9 +368,9 @@ export default function RevelationScreen({
           {/* Encadré question — même style que QuestionScreen */}
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-            border: isQuickieMode ? '3px solid #7F77DD' : '1px solid rgba(255,255,255,0.15)',
+            border: isBrandedMode ? `3px solid ${accentColor}` : '1px solid rgba(255,255,255,0.15)',
             borderRadius: S(16), padding: S(12),
-            boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : 'none',
+            boxShadow: isBrandedMode ? `0 0 20px ${isVofMode ? 'rgba(107,203,119,0.3)' : 'rgba(127,119,221,0.3)'}` : 'none',
           }}>
             <div style={{ fontSize: 'calc(1.1rem * var(--scale))', fontWeight: 700, color: '#ffffff', lineHeight: 1.4 }}>{renderFormattedText(fact.question)}</div>
           </div>
@@ -365,8 +381,8 @@ export default function RevelationScreen({
               className="overflow-hidden relative"
               style={{
                 background: catGradient, width: '100%', aspectRatio: '1 / 1', borderRadius: S(16), padding: 4,
-                border: isQuickieMode ? '3px solid #7F77DD' : `3px solid ${cat?.color || '#1a3a5c'}`,
-                boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : 'none',
+                border: isBrandedMode ? `3px solid ${accentColor}` : `3px solid ${cat?.color || '#1a3a5c'}`,
+                boxShadow: isBrandedMode ? `0 0 20px ${isVofMode ? 'rgba(107,203,119,0.3)' : 'rgba(127,119,221,0.3)'}` : 'none',
               }}
             >
               {fact.imageUrl && !imgFailed ? (
@@ -394,7 +410,7 @@ export default function RevelationScreen({
                       className="btn-press active:scale-95"
                       style={{
                         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-                        border: isQuickieMode ? '2px solid #7F77DD' : '2px solid rgba(255,255,255,0.5)',
+                        border: isBrandedMode ? `2px solid ${accentColor}` : '2px solid rgba(255,255,255,0.5)',
                         borderRadius: S(12), padding: `${S(8)} ${S(16)}`,
                         color: _currencyCoins >= 25 ? '#ffffff' : '#9CA3AF',
                         fontWeight: 800, fontSize: S(13),
@@ -475,9 +491,9 @@ export default function RevelationScreen({
                   style={{
                     flex: 1, padding: `${S(12)} 0`, borderRadius: S(12),
                     fontWeight: 900, fontSize: S(13), fontFamily: 'Nunito, sans-serif',
-                    background: isQuickieMode ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : '#FF6B1A',
+                    background: isBrandedMode ? accentGradient : '#FF6B1A',
                     border: 'none', color: 'white', cursor: 'pointer',
-                    boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.4)' : '0 4px 16px rgba(255,107,26,0.4)',
+                    boxShadow: isBrandedMode ? accentShadow : '0 4px 16px rgba(255,107,26,0.4)',
                   }}
                 >
                   Débloquer
@@ -496,11 +512,11 @@ export default function RevelationScreen({
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(11),
                 color: 'white', letterSpacing: '0.03em',
-                border: isQuickieMode ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
-                background: isQuickieMode
-                  ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
+                border: isBrandedMode ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
+                background: isBrandedMode
+                  ? accentGradient
                   : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.5)' : 'none',
+                boxShadow: isBrandedMode ? accentShadow : 'none',
               }}
             >
               Demander à un ami
@@ -511,11 +527,11 @@ export default function RevelationScreen({
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: isQuickieMode ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
-                background: isQuickieMode
-                  ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
+                border: isBrandedMode ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
+                background: isBrandedMode
+                  ? accentGradient
                   : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.5)' : 'none',
+                boxShadow: isBrandedMode ? accentShadow : 'none',
               }}
             >
               {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
@@ -535,7 +551,7 @@ export default function RevelationScreen({
     <div className="relative screen-enter" style={{
       height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
       boxSizing: 'border-box', width: '100%',
-      ...(showVipGlow ? {
+      ...(showVipGlow || isBrandedMode ? {
         background: catGradient,
       } : {
         backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
@@ -559,9 +575,9 @@ export default function RevelationScreen({
             }} />
           ))}
         </div>
-      ) : (
+      ) : !isBrandedMode ? (
         <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />
-      )}
+      ) : null}
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {quitModal}
@@ -571,16 +587,19 @@ export default function RevelationScreen({
       {/* Header */}
       {renderHeader()}
 
-      {/* Encadré question — format explorer */}
+      {/* Encadré question — hauteur fixe 3 lignes, texte auto-size */}
       <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(6)}` }}>
         <div style={{
           background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
           borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
-          border: '2.5px solid #7F77DD',
+          border: `2.5px solid ${accentColor}`,
+          height: S(75), overflow: 'hidden',
         }}>
-          <span style={{ fontWeight: 900, fontSize: S(14), color: '#ffffff', lineHeight: 1.3, display: 'block', textAlign: 'center' }}>
-            {renderFormattedText(fact.question)}
-          </span>
+          <div ref={questionContainerRef} style={{ width: '100%', height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span ref={questionRef} style={{ fontWeight: 900, fontSize: questionFontSize + 'px', color: '#ffffff', lineHeight: 1.3, textAlign: 'center' }}>
+              {renderFormattedText(fact.question)}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -603,7 +622,7 @@ export default function RevelationScreen({
           className="relative overflow-hidden"
           style={{
             width: '100%', maxHeight: '35vh', borderRadius: S(16),
-            border: showVipGlow ? `2px solid ${cat?.color}AA` : '3px solid #7F77DD',
+            border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${accentColor}`,
             background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
             ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
           }}
@@ -616,34 +635,6 @@ export default function RevelationScreen({
                 style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
                 onError={() => setImgFailed(true)}
               />
-              {/* Holo shimmer — gradient arc-en-ciel qui défile en continu */}
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
-                background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(127,119,221,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(127,119,221,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
-                backgroundSize: '200% 100%',
-                animation: 'holoShimmer 3s linear infinite',
-                mixBlendMode: 'screen',
-              }} />
-              {/* Lame de lumière blanche qui balaie */}
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden',
-              }}>
-                <div style={{
-                  position: 'absolute', top: '-20%', bottom: '-20%',
-                  width: '45%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
-                  animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
-                }} />
-              </div>
-              {/* Stamp Unlocked */}
-              <div style={{
-                position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
-                background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6),
-                padding: `${S(3)} ${S(8)}`,
-                pointerEvents: 'none',
-              }}>
-                <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
-              </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
                 style={{
@@ -656,29 +647,63 @@ export default function RevelationScreen({
               >🔍</button>
             </>
           ) : (
-            <div style={{ width: '100%', height: 'calc(35vh - 6px)', borderRadius: S(12), overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: 'calc(35vh - 6px)', overflow: 'hidden' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
+          {/* Holo shimmer — toujours visible (pokemon glow) */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+            background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(127,119,221,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(127,119,221,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
+            backgroundSize: '200% 100%',
+            animation: 'holoShimmer 3s linear infinite',
+            mixBlendMode: 'screen',
+          }} />
+          {/* Lame de lumière blanche qui balaie */}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', top: '-20%', bottom: '-20%',
+              width: '45%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+              animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
+            }} />
+          </div>
+          {/* Stamp Unlocked — toujours visible */}
+          <div style={{
+            position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
+            background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6),
+            padding: `${S(3)} ${S(8)}`,
+            pointerEvents: 'none',
+          }}>
+            <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
+          </div>
         </div>
       </div>
 
       {/* Réponse + Explication — format explorer */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(4)} ${S(12)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
-        {/* Encadré réponse */}
-        <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', border: '2.5px solid #7F77DD', borderRadius: S(12), padding: `${S(8)} ${S(10)}`, flexShrink: 0 }}>
-          <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Réponse :</div>
-          <div style={{ fontSize: S(15), fontWeight: 900, color: '#ffffff' }}>{correctAnswerText}</div>
+        {/* Encadré réponse — hauteur fixe 2 lignes, texte auto-size */}
+        <div style={{
+          background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+          border: `2.5px solid ${accentColor}`, borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+          height: S(68), overflow: 'hidden', flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+        }}>
+          <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2), flexShrink: 0 }}>{isVofMode ? '✓ Affirmation vraie' : '✓ Réponse :'}</div>
+          <div ref={answerContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+            <div ref={answerRef} style={{ fontSize: answerFontSize + 'px', fontWeight: 900, color: '#ffffff' }}>{correctAnswerText}</div>
+          </div>
         </div>
 
         {/* Encadré Le saviez-vous */}
         <div style={{
           background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-          border: '2.5px solid #7F77DD', borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+          border: `2.5px solid ${accentColor}`, borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
           flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
-            <span style={{ fontSize: S(12) }}>🧠</span>
             <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
           <div ref={explanationContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
@@ -696,10 +721,10 @@ export default function RevelationScreen({
             style={{
               flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-              background: 'linear-gradient(135deg, #7F77DD, #4A3FA3)',
+              background: accentGradient,
               color: 'white',
               border: '3px solid #ffffff',
-              boxShadow: '0 4px 16px rgba(127,119,221,0.5)',
+              boxShadow: accentShadow,
             }}
           >
             Partager ce f*ct
@@ -712,8 +737,8 @@ export default function RevelationScreen({
               flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
               color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
               border: '3px solid #ffffff',
-              background: 'linear-gradient(135deg, #7F77DD, #4A3FA3)',
-              boxShadow: '0 4px 16px rgba(127,119,221,0.5)',
+              background: accentGradient,
+              boxShadow: accentShadow,
             }}
           >
             {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}

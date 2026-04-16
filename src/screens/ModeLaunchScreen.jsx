@@ -6,6 +6,9 @@ import QuestionTargetIcon from '../components/icons/QuestionTargetIcon'
 import TimerIcon from '../components/icons/TimerIcon'
 import PerfectIcon from '../components/icons/PerfectIcon'
 import EnergyIcon from '../components/icons/EnergyIcon'
+import InfinityIcon from '../components/icons/InfinityIcon'
+import SwipeArrowsIcon from '../components/icons/SwipeArrowsIcon'
+import ShareIcon from '../components/icons/ShareIcon'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -18,24 +21,44 @@ const EMOJI_IMG = {
   ...CURRENCY_EMOJI_MAP,
 }
 
+const QUICKIE_VIOLET = '#7F77DD'
+const QUICKIE_GOLD = '#FFD700'
+const VOF_GREEN = '#6BCB77'
+const VOF_RED = '#E84535'
+
 const COMPONENT_ICONS = {
-  'icon:qcm': (size) => <MultipleChoiceIcon size={size} />,
-  'icon:set': (size) => <QuestionTargetIcon size={size} />,
-  'icon:timer': (size) => <TimerIcon size={size} />,
-  'icon:perfect': (size) => <PerfectIcon size={size} />,
-  'icon:energy': (size) => <EnergyIcon size={size} />,
+  'icon:qcm': (size, color) => <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />,
+  'icon:set': (size, color, modeId) => {
+    if (modeId === 'vrai_ou_fou') return <QuestionTargetIcon size={size} color={'#ffffff'} accent={VOF_GREEN} questionColor={VOF_RED} />
+    return <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />
+  },
+  'icon:timer': (size, color, modeId) => {
+    if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
+    return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
+  },
+  'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
+  'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
+  'picto:infinity': (size) => <InfinityIcon size={size} />,
+  'picto:swipe': (size) => <SwipeArrowsIcon size={size} />,
+  'picto:share': (size) => <ShareIcon size={size} />,
 }
 
-function renderIcon(value, size) {
+function renderIcon(value, size, color, modeId) {
   const compFn = COMPONENT_ICONS[value]
-  if (compFn) return compFn(size)
-  if (value === '🔋') return <EnergyIcon size={size || 16} />
+  if (compFn) return compFn(size, color, modeId)
+  if (value === '🔋') return <EnergyIcon size={size || 16} color={color} />
   const src = EMOJI_IMG[value]
   if (!src) return value
   return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
 }
 
-export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, icon, rules, color, onStart, onBack }) {
+function renderText(text) {
+  const parts = text.split(/\{\{red\}\}(.*?)\{\{\/red\}\}/g)
+  if (parts.length === 1) return text
+  return parts.map((part, i) => i % 2 === 1 ? <span key={i} style={{ color: '#E84535' }}>{part}</span> : part)
+}
+
+export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, icon, rules, color, ctaLabel, onStart, onBack }) {
   const scale = useScale()
   const [skipNext, setSkipNext] = useState(false)
 
@@ -102,22 +125,35 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
         padding: `0 ${S(20)}`,
-        display: 'flex', flexDirection: 'column', gap: S(8),
+        display: 'flex', flexDirection: 'column', gap: (modeId === 'quickie' || modeId === 'vrai_ou_fou') ? S(5) : S(8),
         justifyContent: 'flex-start',
       }}>
-        {(rules || []).map((rule, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: S(12),
-            background: 'rgba(255,255,255,0.12)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: S(12), padding: `${S(12)} ${S(14)}`,
-          }}>
-            <span style={{ fontSize: S(22), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(22), height: S(22) }}>{renderIcon(rule.icon, 22)}</span>
-            <span style={{ fontSize: S(13), fontWeight: 600, lineHeight: 1.35 }}>
-              {rule.text}
-            </span>
-          </div>
-        ))}
+        {(rules || []).map((rule, i) => {
+          const isStyled = modeId === 'quickie' || modeId === 'vrai_ou_fou'
+          const isQuickie = modeId === 'quickie'
+          const isVOF = modeId === 'vrai_ou_fou'
+          const modeColor = isQuickie ? '#7F77DD' : isVOF ? '#6BCB77' : undefined
+          let iconColor = undefined
+          if (isQuickie) {
+            iconColor = rule.icon === 'icon:energy' ? '#22C55E' : '#FFD700'
+          } else if (isVOF) {
+            iconColor = i % 2 === 0 ? '#6BCB77' : '#E84535'
+          }
+          return (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: S(12),
+              background: isStyled ? '#ffffff' : 'rgba(255,255,255,0.12)',
+              border: isStyled ? `2px solid ${modeColor}` : 'none',
+              backdropFilter: isStyled ? 'none' : 'blur(8px)',
+              borderRadius: S(12), padding: isStyled ? `${S(8)} ${S(14)}` : `${S(12)} ${S(14)}`,
+            }}>
+              <span style={{ fontSize: S(22), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(22), height: S(22), color: isStyled ? modeColor : 'inherit' }}>{renderIcon(rule.icon, 22, iconColor, modeId)}</span>
+              <span style={{ fontSize: S(13), fontWeight: isStyled ? 700 : 600, lineHeight: 1.35, color: isStyled ? modeColor : 'inherit' }}>
+                {renderText(rule.text)}
+              </span>
+            </div>
+          )
+        })}
       </div>
 
       {/* Checkbox + Bouton */}
@@ -158,18 +194,22 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           className="active:scale-95 transition-transform"
           style={{
             width: '85%', padding: `${S(14)} 0`,
-            background: '#9400D3',
+            background: modeId === 'vrai_ou_fou'
+              ? '#008000'
+              : '#9400D3',
             border: '3px solid #ffffff',
             borderRadius: S(16),
             fontFamily: 'Nunito, sans-serif',
             fontSize: S(18), fontWeight: 900,
             color: '#ffffff',
             cursor: 'pointer',
-            boxShadow: '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)',
+            boxShadow: modeId === 'vrai_ou_fou'
+              ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+              : '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)',
             letterSpacing: '0.04em',
           }}
         >
-          LET'S GO !
+          {ctaLabel || "LET'S GO !"}
         </button>
       </div>
     </div>

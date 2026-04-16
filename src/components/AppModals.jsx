@@ -149,8 +149,8 @@ export default function AppModals({
           onConfirm={() => {
             if (buyExtraSession({ coins: coinsForGate, applyCurrencyDelta })) {
               setShowNoEnergyModal(false)
-              if (noEnergyOrigin === 'quickie') { setGameMode('quickie'); setSessionType('quickie'); showOrSkipLaunch('quickie') }
-              else { setGameMode('solo'); setSessionType('quickie'); setSelectedCategory(null); showOrSkipLaunch('quickie') }
+              if (noEnergyOrigin === 'quickie') { setGameMode('quickie'); setSessionType('quickie'); setScreen(SCREENS.CATEGORY) }
+              else { setGameMode('solo'); setSessionType('quickie'); setSelectedCategory(null); setScreen(SCREENS.CATEGORY) }
             } else { setShowNoEnergyModal(false); setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: `Il te faut ${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins pour acheter une session.` }) }
           }}
           onCancel={() => setShowNoEnergyModal(false)}

@@ -19,32 +19,37 @@ export default function ResultsRankHeader({
   catColor = '#FF6B1A',
   textOnBg = '#ffffff',
   isPerfect = false,
+  hideEmoji = false,
+  largeLabelFont = false,
 }) {
   return (
     <>
-      {/* Rang + étoiles ligne horizontale */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(10), flexShrink: 0 }}>
-        <div
-          style={{
-            fontSize: S(38), lineHeight: 1,
-            transform: rankVisible ? 'scale(1)' : 'scale(0)',
-            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          }}>
-          {customIcon
-            ? <img src={customIcon} alt="" style={{ width: S(42), height: S(42), objectFit: 'contain' }} />
-            : emoji}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: S(2) }}>
+      {/* Rang + étoiles */}
+      <div style={{ display: 'flex', flexDirection: hideEmoji ? 'column' : 'row', alignItems: 'center', justifyContent: 'center', gap: hideEmoji ? S(6) : S(10), flexShrink: 0 }}>
+        {!hideEmoji && (
           <div
             style={{
-              fontSize: S(13), fontWeight: 900, color: textOnBg, lineHeight: 1,
+              fontSize: S(38), lineHeight: 1,
               transform: rankVisible ? 'scale(1)' : 'scale(0)',
-              transformOrigin: 'left center',
+              transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}>
+            {customIcon
+              ? <img src={customIcon} alt="" style={{ width: S(42), height: S(42), objectFit: 'contain' }} />
+              : emoji}
+          </div>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: hideEmoji ? 'center' : 'flex-start', gap: S(4) }}>
+          <div
+            style={{
+              fontSize: largeLabelFont ? S(18) : S(13), fontWeight: 900, color: textOnBg, lineHeight: 1.2,
+              textAlign: hideEmoji ? 'center' : 'left',
+              transform: rankVisible ? 'scale(1)' : 'scale(0)',
+              transformOrigin: hideEmoji ? 'center center' : 'left center',
               transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
             }}>
             {label}
           </div>
-          <div style={{ display: 'flex', gap: S(3) }}>
+          <div style={{ display: 'flex', gap: S(3), justifyContent: hideEmoji ? 'center' : 'flex-start' }}>
             {[1, 2, 3, 4, 5].map((s) => (
               <span
                 key={s}

@@ -138,7 +138,6 @@ export default function RevelationTemplate({
               <div style={{ fontSize: S(12), fontWeight: 700, color: 'white' }}>{correctAnswer}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3) }}>
-              <span style={{ fontSize: S(12) }}>🧠</span>
               <span style={{ color: 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0 }}>{explanation}</p>

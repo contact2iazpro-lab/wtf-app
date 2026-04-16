@@ -42,7 +42,11 @@ export function useNavigationHandlers({
   const launchModeDestination = useCallback((mode) => {
     switch (mode) {
       case 'blitz':        setScreen(SCREENS.BLITZ_LOBBY); break
-      case 'quickie':        setScreen(SCREENS.CATEGORY); break  // Quickie = choix catégorie
+      case 'quickie': {
+        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+        if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
+        setScreen(SCREENS.CATEGORY); break
+      }
       case 'flash':        handleStartFlashSession(); break
       case 'vrai_ou_fou':  setScreen(SCREENS.VRAI_OU_FOU); break
       default: break
@@ -69,8 +73,6 @@ export function useNavigationHandlers({
         break
       case 'categoryFlash':
       case 'quickie': {
-        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
         setGameMode('quickie'); setSessionType('quickie'); setSelectedDifficulty(DIFFICULTY_LEVELS.QUICKIE); setSelectedCategory(null)
         showOrSkipLaunch('quickie')
         break

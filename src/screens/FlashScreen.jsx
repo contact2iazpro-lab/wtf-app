@@ -10,6 +10,8 @@ import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
 import GameHeader from '../components/GameHeader'
+import FallbackImage from '../components/FallbackImage'
+import { CATEGORIES } from '../data/facts'
 import CircularTimer from '../components/CircularTimer'
 import GainsBreakdown from '../components/results/GainsBreakdown'
 import HintFlipButton from '../components/HintFlipButton'
@@ -381,20 +383,28 @@ export default function FlashScreen({ onHome, setStorage }) {
                     {wasVipUnlocked ? '👑 VIP DÉBLOQUÉ' : '🔒 VIP raté cette semaine'}
                   </span>
                 </div>
-                {vipTargetFact.imageUrl && (
-                  <div style={{
-                    width: '100%', aspectRatio: '16 / 10',
-                    borderRadius: 12, overflow: 'hidden', marginBottom: 10,
-                    filter: wasVipUnlocked ? 'none' : 'blur(8px) brightness(0.6)',
-                    background: '#0a0a1a',
-                  }}>
-                    <img
-                      src={vipTargetFact.imageUrl}
-                      alt=""
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                  </div>
-                )}
+                {(() => {
+                  const vipCat = CATEGORIES.find(c => c.id === vipTargetFact.category)
+                  const vipCatColor = vipCat?.color || '#1a3a5c'
+                  return (
+                    <div style={{
+                      width: '100%', aspectRatio: '16 / 10',
+                      borderRadius: 12, overflow: 'hidden', marginBottom: 10,
+                      filter: wasVipUnlocked ? 'none' : 'blur(8px) brightness(0.6)',
+                      background: vipCatColor,
+                    }}>
+                      {vipTargetFact.imageUrl ? (
+                        <img
+                          src={vipTargetFact.imageUrl}
+                          alt=""
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        />
+                      ) : (
+                        <FallbackImage categoryColor={vipCatColor} />
+                      )}
+                    </div>
+                  )
+                })()}
                 {wasVipUnlocked && vipTargetFact.explanation && (
                   <p style={{ fontSize: 13, lineHeight: 1.5, opacity: 0.9, margin: 0 }}>
                     {vipTargetFact.explanation}

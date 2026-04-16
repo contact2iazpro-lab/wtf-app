@@ -15,6 +15,7 @@ export default function ResultsActionButtons({
   difficulty,
   challengeLabel = null,
   categoryLabel = null,
+  categoryId = null,
   onReplay,
   onReplayHarder,
   onShare,
@@ -35,6 +36,7 @@ export default function ResultsActionButtons({
       return (
         <>
           <EnergyIcon size={16} /> {catText}
+          {categoryId && <img src={`/assets/categories/${categoryId}.png`} alt="" style={{ width: S(16), height: S(16), borderRadius: S(4), objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none' }} />}
         </>
       )
     }

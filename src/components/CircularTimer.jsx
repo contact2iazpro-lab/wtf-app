@@ -95,7 +95,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
     return () => clearInterval(intervalRef.current)
   }, [duration, paused, onTimeout])
 
-  const fontSize = size >= 90 ? 22 : size >= 70 ? 17 : 13
+  const fontSize = size >= 90 ? 30 : size >= 70 ? 17 : 13
 
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>

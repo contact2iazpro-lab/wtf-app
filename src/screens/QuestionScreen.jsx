@@ -496,7 +496,7 @@ export default function QuestionScreen({
       <div style={{
         flex: 1,
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'space-evenly',
+        justifyContent: 'space-between',
         padding: `0 ${S(16)}`,
         overflow: 'auto',
       }}>
@@ -614,10 +614,10 @@ export default function QuestionScreen({
 
         {/* Timer */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <div style={{ width: S(72), height: S(72), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             <CircularTimer
               key={`${fact.id}-${answerMode}`}
-              size={72}
+              size={96}
               duration={timerDuration}
               onTimeout={handleTimeout}
               variant={isQuickieMode ? 'quickie' : 'default'}

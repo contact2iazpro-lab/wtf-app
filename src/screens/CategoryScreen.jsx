@@ -197,7 +197,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
         padding: `0 ${S(12)} ${S(8)}`,
         WebkitOverflowScrolling: 'touch',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: S(4) }}>
 
           {/* Aléatoire — toujours proposé */}
           <button
@@ -256,8 +256,8 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                 }}
                 style={{
                   background: isLocked ? 'rgba(255,255,255,0.08)' : isSelected ? bgColor : `${bgColor}99`,
-                  borderRadius: S(14),
-                  padding: `${S(10)} ${S(12)}`,
+                  borderRadius: S(12),
+                  padding: `${S(7)} ${S(10)}`,
                   width: '100%', boxSizing: 'border-box',
                   display: 'flex', alignItems: 'center', gap: S(10),
                   border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
@@ -278,7 +278,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                   src={getCategoryIcon(cat.id)}
                   alt={cat.label}
                   style={{
-                    width: S(36), height: S(36),
+                    width: S(30), height: S(30),
                     objectFit: 'contain', flexShrink: 0,
                     borderRadius: S(8),
                   }}
@@ -287,15 +287,26 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontWeight: 900, fontSize: S(13), color: 'white',
-                    lineHeight: 1.2, marginBottom: S(4),
-                    textShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    marginBottom: S(3),
                   }}>
-                    {cat.label}
+                    <span style={{
+                      fontWeight: 900, fontSize: S(13), color: 'white',
+                      lineHeight: 1.2,
+                      textShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {cat.label}
+                    </span>
+                    <span style={{
+                      fontSize: S(10), color: 'rgba(255,255,255,0.75)',
+                      fontWeight: 700, flexShrink: 0, marginLeft: S(6),
+                    }}>
+                      {isLocked ? '🔒' : `${unlocked}/${total}`}
+                    </span>
                   </div>
                   <div style={{
-                    height: S(4), background: 'rgba(255,255,255,0.3)',
+                    height: S(3), background: 'rgba(255,255,255,0.3)',
                     borderRadius: 2, width: '100%',
                   }}>
                     <div style={{
@@ -306,20 +317,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                       transition: 'width 0.3s ease',
                     }} />
                   </div>
-                  <div style={{
-                    fontSize: S(10), color: 'rgba(255,255,255,0.75)',
-                    fontWeight: 700, marginTop: S(2),
-                  }}>
-                    {unlocked}/{total} f*cts
-                  </div>
                 </div>
-
-                <span style={{
-                  fontWeight: 900, fontSize: S(12),
-                  color: 'rgba(255,255,255,0.8)', flexShrink: 0,
-                }}>
-                  {isLocked ? '🔒' : `${pct}%`}
-                </span>
               </button>
             )
           })}

@@ -6,6 +6,7 @@ import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import FallbackImage from '../components/FallbackImage'
+import BatteryIcon from '../components/home/BatteryIcon'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -288,10 +289,7 @@ export default function RevelationScreen({
           <img src="/assets/ui/icon-hint.png?v=2" style={{ width: S(16), height: S(16) }} alt="" />
           <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyHints}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-          <img src="/assets/ui/emoji-energy.png" style={{ width: S(16), height: S(16) }} alt="" />
-          <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyEnergy ?? '—'}</span>
-        </div>
+        <BatteryIcon level={_currencyEnergy ?? 0} />
       </div>
       <button
         onClick={() => { audio.play('click'); setShowSettings(true) }}

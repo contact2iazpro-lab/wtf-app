@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import SettingsModal from './SettingsModal'
+import BatteryIcon from './home/BatteryIcon'
 import { audio } from '../utils/audio'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 
@@ -87,7 +88,7 @@ export default function GameHeader({
             )}
           </div>
           <Pill icon="/assets/ui/icon-hint.png?v=2" value={hints} alt="hints" />
-          <Pill icon="/assets/ui/emoji-energy.png" value={energy ?? '—'} alt="energy" />
+          <BatteryIcon level={energy ?? 0} />
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}
             style={{

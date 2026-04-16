@@ -79,9 +79,9 @@ export const MODE_CONFIGS = {
   quickie: {
     modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/quickie.png?v=2', color: '#7F77DD',
     rules: [
-      { icon: '⚡', text: 'Coût : 1 énergie' },
+      { icon: '🔋', text: 'Coût : 1 énergie' },
       { icon: '📋', text: 'Set : 5 questions/set' },
-      { icon: '✌️', text: 'QCM : 2/question' },
+      { icon: 'icon:qcm', text: 'QCM : 2/question' },
       { icon: '⏱️', text: 'Timer : 15s/question' },
       { icon: '🪙', text: 'Gains : 10 Coins/bonne réponse' },
       { icon: '🎁', text: 'Perfect : +50 Coins' },
@@ -102,7 +102,7 @@ export const MODE_CONFIGS = {
     rules: [
       { icon: '🔋', text: 'Coût : 1 énergie par bloc' },
       { icon: '📋', text: 'Bloc : 10 Funny + 1 boss VIP' },
-      { icon: '🔢', text: 'QCM : 4/question' },
+      { icon: 'icon:qcm', text: 'QCM : 4/question' },
       { icon: '⏱️', text: 'Timer : 20s/question' },
       { icon: '💡', text: 'Indices : 2/question' },
       { icon: '👑', text: 'Boss débloqué : 5/10 bonnes réponses' },

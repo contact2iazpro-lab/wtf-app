@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
+import MultipleChoiceIcon from '../components/icons/MultipleChoiceIcon'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -13,7 +14,14 @@ const EMOJI_IMG = {
   '🧩': '/assets/ui/emoji-puzzle.png',
   ...CURRENCY_EMOJI_MAP,
 }
-function renderIcon(value) {
+
+const COMPONENT_ICONS = {
+  'icon:qcm': (size) => <MultipleChoiceIcon size={size} />,
+}
+
+function renderIcon(value, size) {
+  const compFn = COMPONENT_ICONS[value]
+  if (compFn) return compFn(size)
   const src = EMOJI_IMG[value]
   if (!src) return value
   return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
@@ -96,7 +104,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
             backdropFilter: 'blur(8px)',
             borderRadius: S(12), padding: `${S(12)} ${S(14)}`,
           }}>
-            <span style={{ fontSize: S(22), flexShrink: 0, lineHeight: 1 }}>{renderIcon(rule.icon)}</span>
+            <span style={{ fontSize: S(22), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(22), height: S(22) }}>{renderIcon(rule.icon, 22)}</span>
             <span style={{ fontSize: S(13), fontWeight: 600, lineHeight: 1.35 }}>
               {rule.text}
             </span>

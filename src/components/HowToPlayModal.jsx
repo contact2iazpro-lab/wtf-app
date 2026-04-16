@@ -320,7 +320,7 @@ function renderText(text) {
 function getChapterIcon(chapterId) {
   const modeIcons = {
     quest: '/assets/modes/quest.svg',
-    quickie: '/assets/modes/quickie.svg',
+    quickie: '/assets/modes/quickie.png',
     flash: '/assets/modes/flash.svg',
     blitz: '/assets/modes/blitz.svg',
     no_limit: '/assets/modes/no-limit.svg',
@@ -389,7 +389,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             const color = CHAPTER_COLORS[ch.id] || '#FF6B1A'
             const modeIcons = {
               quest: '/assets/modes/quest.svg',
-              quickie: '/assets/modes/quickie.svg',
+              quickie: '/assets/modes/quickie.png',
               flash: '/assets/modes/flash.svg',
               blitz: '/assets/modes/blitz.svg',
               no_limit: '/assets/modes/no-limit.svg',

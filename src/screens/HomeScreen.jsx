@@ -296,7 +296,7 @@ export default function HomeScreen({
           width: '100%',
           maxWidth: S(280),
         }}>
-          <ModeIcon icon="/assets/modes/quickie.svg" name="Quickie" color="#7F77DD" onClick={() => nav('quickie')} />
+          <ModeIcon icon="/assets/modes/quickie.png" name="Quickie" color="#7F77DD" onClick={() => nav('quickie')} />
           <ModeIcon icon="/assets/modes/quest.svg" name="Quest" color="#FF6B1A" onClick={() => nav('quest')} />
           <ModeIcon icon="/assets/modes/flash.svg" name="Flash" color="#E91E63" onClick={() => nav('flash')} />
           <ModeIcon icon="/assets/modes/vrai-ou-fou.svg" name="Vrai ou Fou" color="#9B59B6" onClick={() => nav('vrai_ou_fou')} />

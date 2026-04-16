@@ -104,9 +104,13 @@ if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID))
       0%, 100% { opacity: 0.1; transform: scale(0.8); }
       50%      { opacity: 0.35; transform: scale(1.2); }
     }
-    @keyframes confettiBurst {
-      0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
-      100% { transform: translate(var(--cx), var(--cy)) scale(0) rotate(var(--cr)); opacity: 0; }
+    @keyframes unlockGlowPulse {
+      0%, 100% { box-shadow: 0 0 12px rgba(127,119,221,0.4), 0 0 24px rgba(127,119,221,0.2); }
+      50%      { box-shadow: 0 0 24px rgba(127,119,221,0.7), 0 0 48px rgba(127,119,221,0.4), 0 0 72px rgba(127,119,221,0.15); }
+    }
+    @keyframes unlockTextFadeIn {
+      0% { opacity: 0; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
   `
   document.head.appendChild(style)
@@ -601,7 +605,9 @@ export default function RevelationScreen({
             width: '100%', maxHeight: '35vh', borderRadius: S(16),
             border: showVipGlow ? `2px solid ${cat?.color}AA` : '3px solid #7F77DD',
             background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
-            ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
+            ...(showVipGlow
+              ? { animation: 'vipCardGlow 2s ease-in-out infinite' }
+              : { animation: 'unlockGlowPulse 2s ease-in-out infinite' }),
           }}
         >
           {fact.imageUrl && !imgFailed ? (
@@ -622,38 +628,21 @@ export default function RevelationScreen({
                   cursor: 'pointer', fontSize: 18,
                 }}
               >🔍</button>
-              {/* Confettis F*ct débloqué */}
-              {(() => {
-                const particles = Array.from({ length: 20 }, (_, i) => {
-                  const angle = (i / 20) * Math.PI * 2 + (Math.random() - 0.5) * 0.5
-                  const dist = 60 + Math.random() * 80
-                  const cx = Math.cos(angle) * dist
-                  const cy = Math.sin(angle) * dist
-                  const cr = (Math.random() - 0.5) * 720
-                  const size = 6 + Math.random() * 8
-                  const shapes = ['✦', '✧', '★', '●', '◆']
-                  const colors = ['#FFD700', '#FF6B1A', '#7F77DD', '#4CAF50', '#FF4081', '#00BCD4']
-                  return (
-                    <div key={i} style={{
-                      position: 'absolute', top: '50%', left: '50%',
-                      fontSize: size, lineHeight: 1, pointerEvents: 'none',
-                      color: colors[i % colors.length],
-                      '--cx': `${cx}px`, '--cy': `${cy}px`, '--cr': `${cr}deg`,
-                      animation: `confettiBurst ${0.8 + Math.random() * 0.4}s ${Math.random() * 0.2}s ease-out forwards`,
-                      zIndex: 12,
-                    }}>
-                      {shapes[i % shapes.length]}
-                    </div>
-                  )
-                })
-                return <>{particles}</>
-              })()}
             </>
           ) : (
             <div style={{ width: '100%', height: 'calc(35vh - 6px)', borderRadius: S(12), overflow: 'hidden' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
+        </div>
+        {/* Texte F*ct débloqué sous l'image */}
+        <div style={{
+          textAlign: 'center', marginTop: S(6),
+          animation: 'unlockTextFadeIn 0.6s 0.3s ease-out both',
+        }}>
+          <span style={{ fontSize: S(13), fontWeight: 900, color: '#B5AFEB', letterSpacing: '0.03em' }}>
+            ✨ F*ct débloqué !
+          </span>
         </div>
       </div>
 

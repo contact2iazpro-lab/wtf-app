@@ -226,10 +226,10 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             <span style={{ fontSize: S(28), flexShrink: 0 }}>🎲</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 900, fontSize: S(13), color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
-                Aléatoire
+                Surprends-moi !
               </div>
               <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.75)', fontWeight: 700, marginTop: S(2) }}>
-                Surprends-moi !
+                Catégorie aléatoire
               </div>
             </div>
           </button>
@@ -343,7 +343,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             fontSize: S(18), fontWeight: 900,
             textTransform: 'uppercase',
             letterSpacing: '0.04em',
-            border: 'none',
+            border: hasSelection ? '3px solid #ffffff' : 'none',
             cursor: hasSelection ? 'pointer' : 'default',
             pointerEvents: hasSelection ? 'auto' : 'none',
             background: hasSelection

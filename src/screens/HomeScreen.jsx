@@ -1,16 +1,6 @@
 /**
- * HomeScreen v8 — Cleanup (tâche 5.1 Option 1).
- *
- * Zones : Header · Streak · Coffres · Mini-modes (Roulette/Flash/Quest) · Corps · Bouton Jouer · BottomNav
- *
- * Nettoyage par rapport à v7 :
- *  - `useDailyCoffre` → hook externe (`hooks/useDailyCoffre`)
- *  - `useCountdownToMidnight` → hook externe
- *  - Starburst rays → composant (`components/home/StarburstBackground`)
- *  - Modals Coffre/Accelerate/Badge → composants (`components/home/*Modal`)
- *  - Code mort supprimé : spotlight entier, lockToast, nextBadgeInfo, get24hProgress,
- *    canQuest/canBlitz/... (hardcodés à true), props dupliquées (playerCoins, etc.).
- *  - Props devises lues via `usePlayerProfile()` directement (source de vérité unique).
+ * HomeScreen v9 — Fullscreen + flex stable.
+ * Zones : Header · Streak · Paliers · Roulette · Modes (grille 6) · Énergie · Partie rapide · BottomNav
  */
 
 import { useState, useEffect, forwardRef } from 'react'
@@ -20,33 +10,25 @@ import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
 import { useScale } from '../hooks/useScale'
-import { ZONE_HEIGHTS, ICON_SIZES, ASSETS, GRID_CONFIG } from '../constants/layoutConfig'
+import { ICON_SIZES, ASSETS } from '../constants/layoutConfig'
 import RouletteModal from '../components/RouletteModal'
 
-// Composants/hooks extraits (5.1)
 import { useStreakRewards } from '../hooks/useStreakRewards'
 import { useCountdownToMidnight } from '../hooks/useCountdownToMidnight'
 import StarburstBackground from '../components/home/StarburstBackground'
 import CoffreRewardModal from '../components/home/CoffreRewardModal'
 import NewBadgeModal from '../components/home/NewBadgeModal'
 
-// ── Fond Option A : repro CSS pure de question-default, base navy ────────────
-// Empilement de radial-gradients, rayons + particules via StarburstBackground.
 const HOME_BG_COLOR = [
-  // Halo doré central — cœur chaud au-dessus du centre
   'radial-gradient(circle 200px at 50% 45%, rgba(255,225,100,0.55) 0%, rgba(255,200,60,0.28) 35%, rgba(255,170,40,0.10) 65%, transparent 85%)',
-  // Halo secondaire large (diffusion ambiante chaude)
   'radial-gradient(ellipse 75% 55% at 50% 45%, rgba(255,190,50,0.14) 0%, transparent 70%)',
-  // Tint violet/magenta en bas (chaleur cinématique)
   'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(90,25,90,0.50) 0%, transparent 65%)',
-  // Vignette sombre sur les bords
   'radial-gradient(ellipse 135% 115% at 50% 50%, transparent 38%, rgba(0,0,0,0.65) 100%)',
-  // Base bleu roi
   '#1A3A8A',
 ].join(', ')
+
 const S = (px) => `calc(${px}px * var(--scale))`
 
-// ── Component ─────────────────────────────────────────────────────────────────
 export default function HomeScreen({
   currentStreak = 0,
   newlyEarnedBadges = [],
@@ -58,31 +40,22 @@ export default function HomeScreen({
   onResetSocialNotif,
   pendingChallengesCount = 0,
   snackEnergyRemaining = 3,
-  dailyFactUnlocked = false,
 }) {
-  // Devises : source de vérité = usePlayerProfile (pas les props).
   const { coins, hints, applyCurrencyDelta, mergeFlags } = usePlayerProfile()
 
-  // UI local
   const [showSettings, setShowSettings] = useState(false)
-  const [coffreReward, setCoffreReward] = useState(null)       // modal "gains palier"
+  const [coffreReward, setCoffreReward] = useState(null)
   const [showRoulette, setShowRoulette] = useState(false)
   const [badgeToShow, setBadgeToShow] = useState(null)
 
-  // Streak rewards (fusion coffres + streak — décision 16/04/2026 Option B)
   const { paliers, currentStreak: streakVal, getStatus, claim } = useStreakRewards(applyCurrencyDelta, mergeFlags)
-
   const countdown = useCountdownToMidnight()
   const scale = useScale()
 
-  // Affichage badge dès le retour Home avec newlyEarnedBadges
   useEffect(() => {
-    if (newlyEarnedBadges.length > 0) {
-      setBadgeToShow(newlyEarnedBadges[0])
-    }
+    if (newlyEarnedBadges.length > 0) setBadgeToShow(newlyEarnedBadges[0])
   }, [newlyEarnedBadges])
 
-  // Musique de fond — démarre au premier clic (contourne l'autoplay block)
   useEffect(() => {
     if (!audio.musicEnabled) return
     audio.startMusic()
@@ -95,29 +68,11 @@ export default function HomeScreen({
     }
   }, [])
 
-  const nav = (target) => {
-    audio.play?.('click')
-    if (onNavigate) onNavigate(target)
-  }
+  const nav = (target) => { audio.play?.('click'); onNavigate?.(target) }
+  const handleSettings = () => { audio.play?.('click'); onOpenSettings ? onOpenSettings() : setShowSettings(true) }
+  const handleClaimPalier = (day) => { audio.play?.('click'); const r = claim(day); if (r) setCoffreReward(r) }
+  const handleBadgeClose = () => { setBadgeToShow(null); onBadgeSeen?.() }
 
-  const handleSettings = () => {
-    audio.play?.('click')
-    if (onOpenSettings) onOpenSettings()
-    else setShowSettings(true)
-  }
-
-  const handleClaimPalier = (day) => {
-    audio.play?.('click')
-    const reward = claim(day)
-    if (reward) setCoffreReward(reward)
-  }
-
-  const handleBadgeClose = () => {
-    setBadgeToShow(null)
-    onBadgeSeen?.()
-  }
-
-  // ── Mode icon (réutilisé 4× dans la grille 2×3) ───────────────────────────
   const ModeIcon = forwardRef(({ src, label, onClick }, ref) => (
     <button
       ref={ref}
@@ -126,28 +81,23 @@ export default function HomeScreen({
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'none', border: 'none', padding: 0,
-        cursor: 'pointer',
-        WebkitTapHighlightColor: 'transparent',
+        cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
         transition: 'transform 0.1s',
-        position: 'relative',
       }}
       onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.92)')}
       onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
     >
       <img
-        src={src}
-        alt={label}
+        src={src} alt={label}
         style={{
           width: S(ICON_SIZES.modeIcon), height: S(ICON_SIZES.modeIcon),
-          objectFit: 'contain',
-          flexShrink: 0,
+          objectFit: 'contain', flexShrink: 0,
           filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
         }}
       />
     </button>
   ))
 
-  // ── Mini-bouton (Roulette / Flash / Quest) ──────────────────────────────
   const MiniBtn = ({ icon, label, badge, onClick }) => (
     <button
       onClick={onClick}
@@ -162,37 +112,29 @@ export default function HomeScreen({
       <img src={icon} alt={label} style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: S(13) }} />
       <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>{label}</span>
       {badge && (
-        <span style={{
-          fontSize: S(7), fontWeight: 900, color: '#FF6B1A',
-          background: 'rgba(255,107,26,0.15)', borderRadius: 6, padding: '2px 5px',
-        }}>{badge}</span>
+        <span style={{ fontSize: S(7), fontWeight: 900, color: '#FF6B1A', background: 'rgba(255,107,26,0.15)', borderRadius: 6, padding: '2px 5px' }}>{badge}</span>
       )}
     </button>
   )
 
-  // Badges conditionnels pour les mini-boutons
   const rouletteBadge = (() => {
     const d = readWtfData()
     const today = new Date().toISOString().slice(0, 10)
     return d.rouletteFreeDate === today ? null : 'GRATUIT'
   })()
+
   const questBadge = (() => {
-    try {
-      const d = readWtfData()
-      const q = d.quest || d.route
-      return `N${q?.level || 1}`
-    } catch { return 'N1' }
+    try { const d = readWtfData(); const q = d.quest || d.route; return `N${q?.level || 1}` }
+    catch { return 'N1' }
   })()
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
       style={{
         display: 'flex', flexDirection: 'column',
-        height: '100dvh', width: '100%',
+        height: '100%', width: '100%',
         overflow: 'hidden',
         position: 'relative',
-        boxSizing: 'border-box',
         fontFamily: 'Nunito, sans-serif',
         '--scale': scale,
         background: HOME_BG_COLOR,
@@ -207,33 +149,27 @@ export default function HomeScreen({
         }
       `}</style>
 
-      {/* Starburst doré + particules, centré sur le halo (50% / 45%) */}
       <StarburstBackground />
 
-      {/* Overlay bas — profondeur */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        height: '40%',
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
         background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 100%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* ═══ ZONE 1 — HEADER ════════════════════════════════════ */}
+      {/* ═══ HEADER ═══ */}
       <div style={{
-        height: ZONE_HEIGHTS.header, flexShrink: 0,
+        flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 14px',
+        padding: `${S(10)} ${S(14)} 0`,
         position: 'relative', zIndex: 2,
       }}>
-        {/* Avatar */}
         <button
           onClick={() => nav('profil')}
           style={{
             width: S(36), height: S(36), borderRadius: '50%',
-            background: 'rgba(255,255,255,0.3)',
-            border: '2px solid rgba(255,255,255,0.5)',
-            padding: 0, overflow: 'hidden',
-            cursor: 'pointer', flexShrink: 0,
+            background: 'rgba(255,255,255,0.3)', border: '2px solid rgba(255,255,255,0.5)',
+            padding: 0, overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             WebkitTapHighlightColor: 'transparent',
           }}
@@ -241,15 +177,13 @@ export default function HomeScreen({
           <img src={playerAvatar || '/assets/ui/avatar-default.png'} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </button>
 
-        {/* Coins + Hints + Settings */}
         <div style={{ display: 'flex', alignItems: 'center', gap: S(12) }}>
           {[
             { icon: '/assets/ui/icon-coins.png', value: coins },
             { icon: '/assets/ui/icon-hint.png', value: hints },
           ].map((pill, i) => (
             <button
-              key={i}
-              onClick={() => nav('boutique')}
+              key={i} onClick={() => nav('boutique')}
               style={{
                 display: 'flex', alignItems: 'center', gap: S(4),
                 background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
@@ -265,11 +199,9 @@ export default function HomeScreen({
             onClick={handleSettings}
             style={{
               width: S(28), height: S(28), borderRadius: '50%',
-              background: 'rgba(255,255,255,0.2)',
-              border: 'none', padding: 0,
+              background: 'rgba(255,255,255,0.2)', border: 'none', padding: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0,
-              WebkitTapHighlightColor: 'transparent',
+              cursor: 'pointer', flexShrink: 0, WebkitTapHighlightColor: 'transparent',
             }}
           >
             <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: S(16), height: S(16) }} />
@@ -277,10 +209,10 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ═══ ZONE 2 — STREAK + COUNTDOWN ═════════════════════ */}
+      {/* ═══ STREAK + COUNTDOWN ═══ */}
       <div style={{
-        height: ZONE_HEIGHTS.streak, flexShrink: 0,
-        margin: '8px 14px 0',
+        flexShrink: 0,
+        margin: `${S(8)} ${S(14)} 0`,
         display: 'flex', alignItems: 'center', gap: 6,
         position: 'relative', zIndex: 2,
       }}>
@@ -291,26 +223,21 @@ export default function HomeScreen({
           ...(currentStreak >= 7 ? { boxShadow: '0 0 8px rgba(255,107,26,0.4)' } : {}),
         }}>
           <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 12 }} />
-          <span style={{
-            fontSize: S(11), fontWeight: 900,
-            color: currentStreak > 0 ? '#FF6B1A' : 'rgba(255,255,255,0.4)',
-          }}>
+          <span style={{ fontSize: S(11), fontWeight: 900, color: currentStreak > 0 ? '#FF6B1A' : 'rgba(255,255,255,0.4)' }}>
             {currentStreak} jour{currentStreak !== 1 ? 's' : ''}
           </span>
         </div>
-        <div style={{
-          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4,
-        }}>
-          <span style={{ fontSize: S(9), fontWeight: 700, color: 'white', opacity: 0.5, textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>Prochain coffre</span>
-          <span style={{ fontSize: S(10), fontWeight: 800, color: 'white', opacity: 0.7, textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>{countdown}</span>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+          <span style={{ fontSize: S(9), fontWeight: 700, color: 'white', opacity: 0.5 }}>Prochain coffre</span>
+          <span style={{ fontSize: S(10), fontWeight: 800, color: 'white', opacity: 0.7 }}>{countdown}</span>
         </div>
       </div>
 
-      {/* ═══ ZONE 3 — PALIERS STREAK (Débutant / Habitué / Fidèle / Légende) ═══ */}
+      {/* ═══ PALIERS STREAK ═══ */}
       <div style={{
-        height: ZONE_HEIGHTS.coffres, flexShrink: 0,
+        flexShrink: 0,
         display: 'flex', alignItems: 'center',
-        gap: S(6), padding: '6px 10px 0',
+        gap: S(6), padding: `${S(6)} ${S(10)} 0`,
         justifyContent: 'center',
         position: 'relative', zIndex: 2,
         animation: 'coffreSlideIn 0.5s ease-out',
@@ -321,9 +248,7 @@ export default function HomeScreen({
           const isClaimed = status === 'claimed'
           const chestSrc = isClaimed
             ? '/assets/ui/chest-locked.png'
-            : isAvail
-              ? '/assets/ui/chest-open.png'
-              : '/assets/ui/chest-locked.png'
+            : isAvail ? '/assets/ui/chest-open.png' : '/assets/ui/chest-locked.png'
           return (
             <button
               key={p.day}
@@ -333,7 +258,7 @@ export default function HomeScreen({
                 flex: 1, minWidth: 0,
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                gap: S(2), padding: `${S(4)}px ${S(2)}px`,
+                gap: S(2), padding: `${S(4)} ${S(2)}`,
                 borderRadius: S(8),
                 background: isAvail
                   ? 'linear-gradient(135deg, rgba(255,215,0,0.35) 0%, rgba(255,107,26,0.2) 100%)'
@@ -342,182 +267,116 @@ export default function HomeScreen({
                 cursor: isAvail ? 'pointer' : 'default',
                 opacity: isClaimed ? 0.35 : 1,
                 WebkitTapHighlightColor: 'transparent',
-                transition: 'opacity 0.2s, background 0.2s, transform 0.1s',
+                transition: 'opacity 0.2s, background 0.2s',
                 animation: isAvail ? 'pulse 1.8s ease-in-out infinite' : 'none',
               }}
             >
-              <img
-                src={chestSrc}
-                alt={p.name}
-                style={{ width: S(ICON_SIZES.coffreIcon), height: S(ICON_SIZES.coffreIcon), objectFit: 'contain', flexShrink: 0, display: 'block' }}
-              />
-              <span style={{
-                fontSize: S(8), fontWeight: 900, lineHeight: 1,
-                color: isAvail ? '#FFD700' : 'white',
-                textShadow: '0 1px 4px rgba(0,0,0,0.4)',
-                textAlign: 'center',
-              }}>
+              <img src={chestSrc} alt={p.name} style={{ width: S(ICON_SIZES.coffreIcon), height: S(ICON_SIZES.coffreIcon), objectFit: 'contain', flexShrink: 0 }} />
+              <span style={{ fontSize: S(8), fontWeight: 900, lineHeight: 1, color: isAvail ? '#FFD700' : 'white', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center' }}>
                 {isClaimed ? '✓' : p.name}
               </span>
-              <span style={{
-                fontSize: S(7), fontWeight: 700, lineHeight: 1,
-                color: 'white', opacity: 0.6,
-              }}>
-                J{p.day}
-              </span>
+              <span style={{ fontSize: S(7), fontWeight: 700, lineHeight: 1, color: 'white', opacity: 0.6 }}>J{p.day}</span>
             </button>
           )
         })}
       </div>
 
-      {/* ═══ ZONE 3B — ROULETTE (solo, Flash/Quest désormais dans la grille) ═══ */}
-      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: '4px 10px 0' }}>
+      {/* ═══ ROULETTE ═══ */}
+      <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', padding: `${S(4)} ${S(10)} 0` }}>
         <MiniBtn icon="/assets/ui/emoji-roulette.png" label="Roulette" badge={rouletteBadge} onClick={() => { audio.play('click'); setShowRoulette(true) }} />
       </div>
 
-      {/* ═══ ZONE 4 — CORPS PRINCIPAL (flex: 1) ════════════════════════════ */}
+      {/* ═══ ZONE CENTRALE — flex:1, contient logo + grille modes + énergie ═══ */}
       <div style={{
         flex: 1, minHeight: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: GRID_CONFIG.padding,
-        position: 'relative',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: `0 ${S(10)}`,
+        position: 'relative', zIndex: 1,
+        gap: S(8),
       }}>
-        {/* LAYOUT PRINCIPAL — 3 zones (VoF / Grille modes / Énergie) */}
+        {/* Logo WTF central */}
+        <img
+          src={ASSETS.ui.wtfLogo}
+          alt="WTF!"
+          style={{
+            width: 'clamp(90px, 35vw, 140px)', height: 'auto',
+            objectFit: 'contain', flexShrink: 0,
+            filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
+            WebkitUserSelect: 'none', userSelect: 'none',
+          }}
+        />
+
+        {/* Grille 3×2 des 6 modes */}
         <div style={{
-          flex: 1,
-          minHeight: 0,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateRows: 'auto auto',
+          gap: S(12),
+          justifyItems: 'center',
+          alignItems: 'center',
           width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 1,
+          maxWidth: S(280),
         }}>
-          {/* VoF logo top */}
-          <div style={{
-            flex: 1, width: '100%',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <img
-              src={ASSETS.ui.vofLogo}
-              alt="Vrai ou fou ?"
-              style={{
-                width: 'clamp(100px, 50%, 170px)', maxHeight: 45, height: 'auto',
-                objectFit: 'contain', display: 'block', flexShrink: 0,
-              }}
-            />
+          <ModeIcon src="/assets/modes/snack.svg" label="Snack" onClick={() => nav('snack')} />
+          <ModeIcon src="/assets/modes/quest.svg" label="Quest" onClick={() => nav('quest')} />
+          <ModeIcon src="/assets/modes/flash.svg" label="Flash" onClick={() => nav('flash')} />
+          <ModeIcon src="/assets/modes/vrai-ou-fou.svg" label="Vrai ou Fou" onClick={() => nav('vrai_ou_fou')} />
+          <ModeIcon src="/assets/modes/no-limit.svg" label="No Limit" onClick={() => nav('no_limit')} />
+          <ModeIcon src="/assets/modes/blitz.svg" label="Blitz" onClick={() => nav('blitz')} />
+        </div>
+
+        {/* Énergie Snack (5 segments) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 14 }} />
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} style={{
+                width: 16, height: 8, borderRadius: 4,
+                background: i < snackEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
+                transition: 'background 0.3s',
+                boxShadow: i < snackEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
+              }} />
+            ))}
           </div>
-
-          {/* Grille modes 3 cols : 3 icônes à gauche / logo WTF central / 3 icônes à droite.
-              Quest (ex-Route), Flash, Flash en plus de Snack/Snack/Blitz. */}
-          <div style={{
-            flex: 3, width: '100%',
-            display: 'grid',
-            gridTemplateColumns: '1fr auto 1fr',
-            gridTemplateRows: '1fr 1fr 1fr',
-            alignItems: 'center',
-            justifyItems: 'center',
-            padding: `0 ${S(4)}`,
-            columnGap: S(8),
-          }}>
-            {/* Colonne gauche row 1 : Quest (ex-Route WTF!) — progression linéaire, boss VIP /10 */}
-            <ModeIcon src="/assets/modes/quest.svg" label="Quest" onClick={() => nav('quest')} />
-
-            {/* Logo WTF central (span 3 rows) */}
-            <div style={{
-              gridColumn: '2 / 3', gridRow: '1 / -1',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <img
-                src={ASSETS.ui.wtfLogo}
-                alt="WTF!"
-                style={{
-                  width: 'clamp(80px, 100%, 130px)', height: 'auto',
-                  objectFit: 'contain', display: 'block',
-                  filter: 'drop-shadow(0 3px 12px rgba(255,120,0,0.5))',
-                  WebkitUserSelect: 'none', userSelect: 'none',
-                  flexShrink: 0,
-                }}
-              />
-            </div>
-            {/* Colonne droite row 1 : Snack */}
-            <ModeIcon src="/assets/modes/snack.svg" label="Snack" onClick={() => nav('snack')} />
-
-            {/* Colonne gauche row 2 : Blitz */}
-            <ModeIcon src="/assets/modes/blitz.svg" label="Blitz" onClick={() => nav('blitz')} />
-            {/* Colonne droite row 2 : Flash (rendez-vous quotidien) */}
-            <ModeIcon src="/assets/modes/flash.svg" label="Flash" onClick={() => nav('flash')} />
-
-            {/* Row 3 : No Limit (survie) + Vrai ou Fou (swipe) */}
-            <ModeIcon src="/assets/modes/no-limit.svg" label="No Limit" onClick={() => nav('no_limit')} />
-            <ModeIcon src="/assets/modes/vrai-ou-fou.svg" label="Vrai ou Fou" onClick={() => nav('vrai_ou_fou')} />
-          </div>
-
-          {/* Énergie Snack (barre 5 segments) */}
-          <div style={{
-            flex: 1, width: '100%',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 14 }} />
-              <div style={{ display: 'flex', gap: 4 }}>
-                {[0, 1, 2, 3, 4].map(i => (
-                  <div key={i} style={{
-                    width: 16, height: 8, borderRadius: 4,
-                    background: i < snackEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
-                    transition: 'background 0.3s',
-                    boxShadow: i < snackEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
-                  }} />
-                ))}
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 800, color: snackEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
-                {snackEnergyRemaining}/5
-              </span>
-            </div>
-          </div>
+          <span style={{ fontSize: 11, fontWeight: 800, color: snackEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
+            {snackEnergyRemaining}/5
+          </span>
         </div>
       </div>
 
-      {/* ═══ ZONE 4B — BOUTON FLASH ═══════════════════════════ */}
+      {/* ═══ BOUTON PARTIE RAPIDE ═══ */}
       <div style={{
-        height: ZONE_HEIGHTS.flashButton, flexShrink: 0,
+        flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '0 50px',
-        marginBottom: ZONE_HEIGHTS.flashButtonGap,
+        padding: `0 ${S(40)} ${S(10)}`,
         position: 'relative', zIndex: 10,
       }}>
         <button
-          onClick={() => nav('categoryFlash')}
+          onClick={() => nav('snack')}
+          className="btn-press"
           style={{
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
-            borderRadius: 14, border: 'none',
-            padding: '12px 24px', width: '100%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            borderRadius: S(14), border: 'none',
+            padding: `${S(12)} ${S(24)}`, width: '100%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8),
             cursor: 'pointer',
             WebkitTapHighlightColor: 'transparent',
             boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
-            transition: 'transform 0.1s, box-shadow 0.1s',
-            position: 'relative',
           }}
-          onTouchStart={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)' }}
-          onTouchEnd={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)' }}
-          onMouseDown={e => { e.currentTarget.style.transform = 'translateY(4px)'; e.currentTarget.style.boxShadow = '0 2px 0 #c0c0c0, 0 3px 8px rgba(0,0,0,0.2)' }}
-          onMouseUp={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)' }}
         >
-          <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/assets/ui/emoji-energy.png" alt="" style={{ width: S(20), height: S(20), objectFit: 'contain', flexShrink: 0 }} />
           <span style={{
             fontFamily: "'Fredoka One', cursive",
-            fontWeight: 400, fontSize: 14, color: '#FF6B1A',
+            fontWeight: 400, fontSize: S(14), color: '#FF6B1A',
             letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.2,
           }}>
-            Jouer
+            Partie rapide
           </span>
-          <img src="/assets/ui/level-wtf.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain', flexShrink: 0 }} />
         </button>
       </div>
 
-      {/* ═══ ZONE 5 — NAVBAR ════════════════════════════ */}
+      {/* ═══ NAVBAR ═══ */}
       <BottomNav
         onResetSocialNotif={onResetSocialNotif}
         socialNotifCount={socialNotifCount}
@@ -525,7 +384,7 @@ export default function HomeScreen({
         isHome={true}
       />
 
-      {/* ═══ Modals ════════════════════════════════════════════════ */}
+      {/* ═══ Modals ═══ */}
       {coffreReward && <CoffreRewardModal reward={coffreReward} onClose={() => setCoffreReward(null)} />}
       {showRoulette && <RouletteModal onClose={() => setShowRoulette(false)} scale={scale} />}
       {badgeToShow && <NewBadgeModal badge={badgeToShow} onClose={handleBadgeClose} />}

@@ -548,7 +548,7 @@ export default function RevelationScreen({
         <div style={{
           background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
           borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
-          border: '1px solid rgba(255,255,255,0.12)',
+          border: '2.5px solid #7F77DD',
         }}>
           <span style={{ fontWeight: 900, fontSize: S(14), color: '#ffffff', lineHeight: 1.3, display: 'block', textAlign: 'center' }}>
             {renderFormattedText(fact.question)}
@@ -575,7 +575,7 @@ export default function RevelationScreen({
           className="overflow-hidden relative"
           style={{
             width: '100%', maxHeight: '35vh', borderRadius: S(16),
-            border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${cat?.color || '#1a3a5c'}`,
+            border: showVipGlow ? `2px solid ${cat?.color}AA` : '3px solid #7F77DD',
             background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
             ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
           }}
@@ -610,24 +610,24 @@ export default function RevelationScreen({
       {/* Réponse + Explication — format explorer */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(4)} ${S(12)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
         {/* Encadré réponse */}
-        <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: S(12), padding: `${S(8)} ${S(10)}`, flexShrink: 0 }}>
+        <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', border: '2.5px solid #7F77DD', borderRadius: S(12), padding: `${S(8)} ${S(10)}`, flexShrink: 0 }}>
           <div style={{ background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)', borderRadius: S(8), padding: `${S(6)} ${S(8)}` }}>
             <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>Réponse :</div>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: '#ffffff' }}>{correctAnswerText}</div>
+            <div style={{ fontSize: S(15), fontWeight: 900, color: '#ffffff' }}>{correctAnswerText}</div>
           </div>
         </div>
 
         {/* Encadré Le saviez-vous */}
         <div style={{
           background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255,255,255,0.15)', borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+          border: '2.5px solid #7F77DD', borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
           flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
             <span style={{ fontSize: S(12) }}>🧠</span>
             <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(10), lineHeight: 1.4, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>{fact.explanation}</p>
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 'clamp(10px, calc(10px * var(--scale)), 14px)', lineHeight: 1.4, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>{fact.explanation}</p>
         </div>
       </div>
 

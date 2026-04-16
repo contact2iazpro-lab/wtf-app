@@ -20,9 +20,9 @@ export default function SplashScreen({ onComplete, isReady }) {
   // (reload ou navigation SPA). Sur cold load, le navigateur bloque jusqu'au
   // premier geste → on pose un listener one-shot qui rattrape le premier tap.
   useEffect(() => {
-    try { audio.play('click') } catch { /* ignore */ }
+    try { audio.play('splash_logo') } catch { /* ignore */ }
     const unlock = () => {
-      try { audio.play('click') } catch { /* ignore */ }
+      try { audio.play('splash_logo') } catch { /* ignore */ }
       window.removeEventListener('pointerdown', unlock)
       window.removeEventListener('touchstart', unlock)
     }
@@ -34,10 +34,16 @@ export default function SplashScreen({ onComplete, isReady }) {
     }
   }, [])
 
-  // Animations d'entrée (logo + tagline)
+  // Animations d'entrée (logo + tagline) + sons synchronisés
   useEffect(() => {
-    const t1 = setTimeout(() => setLogoVisible(true), 100)
-    const t2 = setTimeout(() => setTaglineVisible(true), 700)
+    const t1 = setTimeout(() => {
+      setLogoVisible(true)
+      try { audio.play('splash_logo') } catch { /* ignore */ }
+    }, 100)
+    const t2 = setTimeout(() => {
+      setTaglineVisible(true)
+      try { audio.play('splash_tagline') } catch { /* ignore */ }
+    }, 700)
     const t3 = setTimeout(() => setMinTimeElapsed(true), 3000)
     const t4 = setTimeout(() => {
       if (!isReady) setShowLoading(true)
@@ -64,6 +70,7 @@ export default function SplashScreen({ onComplete, isReady }) {
   // Appeler onComplete quand les 2 conditions sont remplies
   useEffect(() => {
     if (minTimeElapsed && (isReady || forceReady)) {
+      try { audio.play('splash_ready') } catch { /* ignore */ }
       setFadeOut(true)
       const t = setTimeout(() => onComplete(), 500)
       return () => clearTimeout(t)

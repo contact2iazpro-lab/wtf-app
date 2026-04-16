@@ -110,6 +110,29 @@ class AudioManager {
     } catch (_) {}
   }
 
+  // ── Noise burst (white noise for percussive sounds) ────────────────
+
+  _noise(dur = 0.05, vol = 0.2, delay = 0) {
+    if (!this._ctx) return
+    try {
+      const c = this._ctx
+      const bufSize = Math.ceil(c.sampleRate * dur)
+      const buf = c.createBuffer(1, bufSize, c.sampleRate)
+      const data = buf.getChannelData(0)
+      for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5
+      const src = c.createBufferSource()
+      src.buffer = buf
+      const g = c.createGain()
+      src.connect(g)
+      g.connect(this._sfxGain)
+      const t = c.currentTime + delay
+      g.gain.setValueAtTime(vol, t)
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur)
+      src.start(t)
+      src.stop(t + dur + 0.01)
+    } catch (_) {}
+  }
+
   // ── SFX (called on user gesture → safe to create ctx) ─────────────
 
   play(name) {
@@ -222,6 +245,28 @@ class AudioManager {
       case 'home':
         this._tone(392, 0.15, 'sine', 0.18)
         this._tone(523, 0.25, 'sine', 0.18, 0.13)
+        break
+      case 'splash_logo':
+        // Pop percussif quand le logo bounce — bruit blanc court + ton montant
+        this._noise(0.04, 0.25)
+        this._tone(440, 0.06, 'sine', 0.20, 0.01)
+        this._tone(880, 0.12, 'sine', 0.28, 0.03)
+        this._tone(1320, 0.08, 'sine', 0.15, 0.06)
+        break
+      case 'splash_tagline':
+        // Shimmer doux quand la tagline apparaît — accord ascendant éthéré
+        this._tone(659, 0.20, 'sine', 0.08)
+        this._tone(880, 0.22, 'sine', 0.10, 0.06)
+        this._tone(1175, 0.25, 'sine', 0.08, 0.12)
+        this._tone(1760, 0.30, 'sine', 0.06, 0.18)
+        break
+      case 'splash_ready':
+        // Jingle de transition — montée triomphale WTF!
+        this._tone(523, 0.10, 'sine', 0.22)
+        this._tone(659, 0.10, 'sine', 0.24, 0.08)
+        this._tone(784, 0.10, 'sine', 0.26, 0.16)
+        this._tone(1047, 0.25, 'triangle', 0.30, 0.24)
+        this._tone(1047, 0.25, 'sine', 0.15, 0.24)
         break
       default: break
     }

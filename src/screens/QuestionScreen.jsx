@@ -221,6 +221,7 @@ export default function QuestionScreen({
     <div style={{
       position: 'relative',
       width: '55%',
+      marginTop: S(16),
       aspectRatio: '1 / 1',
       borderRadius: S(12),
       overflow: 'hidden',
@@ -497,7 +498,7 @@ export default function QuestionScreen({
         flexShrink: 0,
         display: 'flex', flexDirection: 'column',
         gap: S(10),
-        padding: `${S(16)} ${S(16)} 0`,
+        padding: `${S(26)} ${S(16)} 0`,
       }}>
         {questionCard}
 

@@ -18,6 +18,29 @@ const isLightColor = (hex) => {
   return (r * 299 + g * 587 + b * 114) / 1000 > 160
 }
 
+// ── Messages bienveillants ─────────────────────────────────────────────────────
+const WRONG_MESSAGES = [
+  "Pas grave, maintenant tu sais... que tu ne sais pas ! 😅",
+  "Même les experts se trompent sur celui-là 🧠",
+  "Tu l'auras la prochaine fois ! 💪",
+  "Ce f*ct est tellement WTF! qu'on comprend que tu aies raté ! 😂",
+  "Même Einstein aurait séché sur celui-là ! 🧠",
+  "Retente ta chance... ce f*ct mérite d'être connu !",
+  "Ce f*ct est dans ta tête pour toujours... même raté ! 🧩",
+  "Un de perdu, dix de retrouvés — rejoue ! 🎯",
+  "La prochaine fois tu épateras tes amis avec ce f*ct ! 🤩",
+  "What the... non ! 🤯",
+  "Ton cerveau a bugué 🧠💥",
+  "Même Google aurait hésité 🤖",
+  "C'est un f*ct, pas une fiction ! 📖",
+  "Presque... dans un univers parallèle 🌀",
+  "Le f*ct a gagné cette manche 💪",
+  "Ton doigt a glissé, avoue 👆",
+  "WTF! Tu y étais presque ! 🎯",
+  "Le savoir, ça se cultive 🌱",
+  "Erreur 404 : bonne réponse non trouvée 🔍",
+]
+
 const CORRECT_MESSAGES = [
   "Parfait ! Ce f*ct est gravé dans ta mémoire 🔥",
   "Impressionnant ! Tu connaissais vraiment ça ? 🧠",
@@ -120,6 +143,7 @@ export default function RevelationScreen({
   const [imgFailed, setImgFailed] = useState(false)
   const [showCoins, setShowCoins] = useState(false)
 
+  const [wrongMsg]   = useState(() => WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)])
   const [correctMsg] = useState(() => CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)])
 
   const scoreRefTarget = useRef(null)
@@ -370,13 +394,18 @@ export default function RevelationScreen({
           )}
         </div>
 
-        {/* Zone centrale — Temps écoulé si timeout, sinon espace vide */}
+        {/* Stamp centré H sur la page, centré V entre social phrase et boutons */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `0 ${S(16)}` }}>
-          {isTimeout && (
-            <span style={{ fontSize: S(22), fontWeight: 900, color: '#EF4444', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-              ⏱️ Temps écoulé
+          <div style={{
+            background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+            border: '3px solid #EF4444',
+            borderRadius: S(14), padding: `${S(14)} ${S(20)}`,
+            textAlign: 'center',
+          }}>
+            <span style={{ fontSize: S(18), fontWeight: 900, color: '#EF4444', lineHeight: 1.4 }}>
+              {isTimeout ? '⏱️ Temps écoulé' : wrongMsg}
             </span>
-          )}
+          </div>
         </div>
 
         {/* Modal confirmation déblocage */}

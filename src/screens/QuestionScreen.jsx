@@ -504,9 +504,6 @@ export default function QuestionScreen({
       }}>
         {questionCard}
 
-        {/* Image Quickie séparée */}
-        {quickieImage}
-
         {/* Indices */}
         {isDevMode ? devHintButtons : (difficulty?.hintsAllowed && hintButtons)}
 
@@ -614,6 +611,9 @@ export default function QuestionScreen({
           )
         })()}
       </div>
+
+      {/* Image Quickie séparée — entre QCM et timer */}
+      {quickieImage}
 
       {/* Timer — centré dans l'espace restant sous les QCM */}
       <div className="qs-timer-wrap" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

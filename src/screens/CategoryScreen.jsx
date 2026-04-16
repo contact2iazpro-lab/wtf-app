@@ -173,7 +173,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             fontSize: S(22), fontWeight: 900, color: 'white',
             textShadow: '0 2px 8px rgba(0,0,0,0.3)',
             margin: 0,
-          }}>Choisis une catégorie</h1>
+          }}>Qu'est-ce qui t'inspire ?</h1>
         </div>
 
         <button
@@ -229,7 +229,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                 Aléatoire
               </div>
               <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.75)', fontWeight: 700, marginTop: S(2) }}>
-                Catégorie surprise !
+                Surprends-moi !
               </div>
             </div>
           </button>
@@ -356,7 +356,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          {hasSelection ? "C'EST PARTI !" : 'Sélectionne une catégorie'}
+          {hasSelection ? "LET'S GO !" : 'On y va ?'}
         </button>
       </div>
     </div>

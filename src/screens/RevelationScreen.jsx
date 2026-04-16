@@ -543,7 +543,20 @@ export default function RevelationScreen({
       {/* Header */}
       {renderHeader()}
 
-      {/* Image pleine largeur — cover, plein cadre */}
+      {/* Encadré question — format explorer */}
+      <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(6)}` }}>
+        <div style={{
+          background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
+          borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
+          border: '1px solid rgba(255,255,255,0.12)',
+        }}>
+          <span style={{ fontWeight: 900, fontSize: S(14), color: '#ffffff', lineHeight: 1.3, display: 'block', textAlign: 'center' }}>
+            {renderFormattedText(fact.question)}
+          </span>
+        </div>
+      </div>
+
+      {/* Image carrée — format explorer avec loupe */}
       {showVipGlow && (
         <style>{`
           @keyframes vipCardGlow {
@@ -556,17 +569,15 @@ export default function RevelationScreen({
           }
         `}</style>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '42vh' }}>
+      <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
         <div
+          onClick={() => fact.imageUrl && !imgFailed && setShowLightbox(true)}
           className="overflow-hidden relative"
           style={{
-            background: catGradient, width: '100%', maxHeight: '42vh',
-            borderRadius: S(16), padding: 4,
-            border: showVipGlow ? `2px solid ${cat?.color}AA` : (isQuickieMode ? '3px solid #7F77DD' : `3px solid ${cat?.color || '#1a3a5c'}`),
-            boxShadow: (!showVipGlow && isQuickieMode) ? '0 0 20px rgba(127,119,221,0.3)' : undefined,
-            ...(showVipGlow ? {
-              animation: 'vipCardGlow 2s ease-in-out infinite',
-            } : {}),
+            width: '100%', maxHeight: '35vh', borderRadius: S(16),
+            border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${cat?.color || '#1a3a5c'}`,
+            background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
+            ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
           }}
         >
           {fact.imageUrl && !imgFailed ? (
@@ -574,146 +585,84 @@ export default function RevelationScreen({
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                onClick={() => showAsCorrect && setShowLightbox(true)}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(42vh - 14px)', display: 'block', borderRadius: S(12), cursor: showAsCorrect ? 'pointer' : 'default' }}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
                 onError={() => setImgFailed(true)}
               />
-              {showAsCorrect && (
-                <button
-                  onClick={() => setShowLightbox(true)}
-                  style={{
-                    position: 'absolute', top: S(8), right: S(8), zIndex: 10,
-                    width: 28, height: 28, borderRadius: '50%',
-                    background: 'rgba(0,0,0,0.5)', border: 'none',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', fontSize: 14,
-                  }}
-                >🔍</button>
-              )}
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+                style={{
+                  position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.5)', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', fontSize: 18,
+                }}
+              >🔍</button>
             </>
           ) : (
-            <div style={{ width: '100%', height: 'calc(42vh - 14px)', borderRadius: S(12), overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: 'calc(35vh - 6px)', borderRadius: S(12), overflow: 'hidden' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
-
         </div>
       </div>
 
-      {/* Zone info — flex: 1, gap 6px */}
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(6)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(6) }}>
-        {/* Encadré question */}
-        {showAsCorrect && (
-          <div style={{
-            background: isQuickieMode ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(12px)',
-            border: isQuickieMode ? `1.5px solid ${cat?.color || '#7F77DD'}40` : '1px solid rgba(255,255,255,0.15)',
-            borderRadius: S(12), padding: `${S(6)} ${S(10)}`, flexShrink: 0,
-          }}>
-            <div style={{ fontSize: S(9), fontWeight: 900, color: isQuickieMode ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>La question :</div>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: isQuickieMode ? '#1a1a2e' : '#ffffff', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
+      {/* Réponse + Explication — format explorer */}
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(4)} ${S(12)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
+        {/* Encadré réponse */}
+        <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: S(12), padding: `${S(8)} ${S(10)}`, flexShrink: 0 }}>
+          <div style={{ background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)', borderRadius: S(8), padding: `${S(6)} ${S(8)}` }}>
+            <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>Réponse :</div>
+            <div style={{ fontSize: S(12), fontWeight: 700, color: '#ffffff' }}>{correctAnswerText}</div>
           </div>
-        )}
+        </div>
 
-        {/* Social proof */}
-        {flipped && showAsCorrect && (
-          <div style={{ textAlign: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: S(13), fontWeight: 800, color: '#ffffff', opacity: 0.8, display: 'block', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: 1.3 }}>
-              👥 Seulement {successRate}% des joueurs ont trouvé ce f*ct
-            </span>
+        {/* Encadré Le saviez-vous */}
+        <div style={{
+          background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.15)', borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+          flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
+            <span style={{ fontSize: S(12) }}>🧠</span>
+            <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
-        )}
-
-        {/* Bloc bonne réponse (dissocié) */}
-        {showAsCorrect && (
-          <div style={{
-            background: isQuickieMode ? 'rgba(76,175,80,0.12)' : 'rgba(76,175,80,0.15)',
-            border: '1.5px solid rgba(76,175,80,0.5)',
-            borderRadius: S(12), padding: `${S(6)} ${S(10)}`, flexShrink: 0,
-          }}>
-            <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Bonne réponse :</div>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: isQuickieMode ? '#1a1a2e' : 'white' }}>{correctAnswerText}</div>
-          </div>
-        )}
-
-        {/* Bloc "Le saviez-vous ?" (dissocié) */}
-        {showAsCorrect && (
-          <div style={{
-            background: isQuickieMode ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.35)',
-            backdropFilter: 'blur(12px)',
-            border: isQuickieMode ? `1.5px solid ${cat?.color || '#7F77DD'}40` : '1px solid rgba(255,255,255,0.12)',
-            borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
-            flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
-              <span style={{ fontSize: S(12) }}>🧠</span>
-              <span style={{ color: isQuickieMode ? '#1a1a2e' : 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
-            </div>
-            <p style={{ color: isQuickieMode ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, overflow: 'hidden' }}>{fact.explanation}</p>
-          </div>
-        )}
-
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(10), lineHeight: 1.4, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>{fact.explanation}</p>
+        </div>
       </div>
 
-      {/* Boutons — compact */}
-      <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
-        {showAsCorrect && (
-          <>
-            <div style={{ display: 'flex', gap: S(8), height: S(44), position: 'relative' }}>
-              <button
-                onClick={handleNativeShare}
-                className="btn-press active:scale-95 transition-all"
-                style={{
-                  flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-                  background: isQuickieMode
-                    ? 'rgba(255,255,255,0.15)'
-                    : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'} 0%, ${cat?.color || '#FF6B1A'}cc 100%)`,
-                  color: 'white',
-                  border: isQuickieMode ? '2px solid rgba(255,255,255,0.5)' : '2px solid rgba(255,255,255,0.4)',
-                }}
-              >
-                🎩 Partager ce WTF!
-              </button>
-              <button
-                ref={nextButtonRef}
-                onClick={handleNext}
-                className="btn-press active:scale-95 transition-all"
-                style={{
-                  flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
-                  color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                  border: isQuickieMode ? 'none' : '2px solid rgba(255,255,255,0.4)',
-                  background: isQuickieMode
-                    ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
-                    : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                  boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.5)' : 'none',
-                }}
-              >
-                {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
-              </button>
-            </div>
-            {/* Doigt animé en dessous du bouton SUIVANT/RÉSULTATS (pendant le tutoriel onboarding) */}
-            {false && (
-              <div style={{
-                position: 'relative',
-                height: S(40),
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'flex-start',
-                pointerEvents: 'none',
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  bottom: -S(26),
-                  right: S(4),
-                  fontSize: S(28),
-                  animation: 'bounce 0.8s ease-in-out infinite',
-                }}>👆</div>
-              </div>
-            )}
-          </>
-        )}
-
+      {/* Boutons — violet Quickie contour blanc */}
+      <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(8)}` }}>
+        <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
+          <button
+            onClick={handleNativeShare}
+            className="btn-press active:scale-95 transition-all"
+            style={{
+              flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+              background: 'linear-gradient(135deg, #7F77DD, #4A3FA3)',
+              color: 'white',
+              border: '3px solid #ffffff',
+              boxShadow: '0 4px 16px rgba(127,119,221,0.5)',
+            }}
+          >
+            Partager ce f*ct
+          </button>
+          <button
+            ref={nextButtonRef}
+            onClick={handleNext}
+            className="btn-press active:scale-95 transition-all"
+            style={{
+              flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
+              color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
+              border: '3px solid #ffffff',
+              background: 'linear-gradient(135deg, #7F77DD, #4A3FA3)',
+              boxShadow: '0 4px 16px rgba(127,119,221,0.5)',
+            }}
+          >
+            {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
+          </button>
+        </div>
       </div>
 
 

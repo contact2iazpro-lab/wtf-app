@@ -318,81 +318,81 @@ export default function RevelationScreen({
         {/* Header */}
         {renderHeader()}
 
-        {/* Encadré question — contour violet Quickie */}
-        <div style={{ flexShrink: 0, padding: `${S(8)} ${S(16)} 0` }}>
+        {/* Question + Image + Social — gap uniforme 3vh */}
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '3vh', padding: `${S(10)} ${S(16)} 0` }}>
+
+          {/* Encadré question — même style que QuestionScreen */}
           <div style={{
             background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-            border: isQuickieMode ? '2px solid #7F77DD' : '1px solid rgba(255,255,255,0.15)',
-            borderRadius: S(16), padding: `${S(10)} ${S(12)}`,
+            border: isQuickieMode ? '3px solid #7F77DD' : '1px solid rgba(255,255,255,0.15)',
+            borderRadius: S(16), padding: S(12),
+            boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : 'none',
           }}>
-            <div style={{ fontSize: S(12), fontWeight: 700, color: '#ffffff', lineHeight: 1.3 }}>{renderFormattedText(fact.question)}</div>
+            <div style={{ fontSize: 'calc(1.1rem * var(--scale))', fontWeight: 700, color: '#ffffff', lineHeight: 1.4 }}>{renderFormattedText(fact.question)}</div>
           </div>
-        </div>
 
-        {/* Image floutée + stamp bienveillant — alignée sur le padding des boutons */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `${S(8)} ${S(16)} 0`, maxHeight: '35vh' }}>
-          <div
-            className="overflow-hidden relative"
-            style={{
-              background: catGradient, width: '100%', maxHeight: '35vh', borderRadius: S(16), padding: 4,
-              border: isQuickieMode ? '3px solid #7F77DD' : `3px solid ${cat?.color || '#1a3a5c'}`,
-              boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : 'none',
-            }}
-          >
-            {fact.imageUrl && !imgFailed ? (
-              <img
-                src={fact.imageUrl}
-                alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
-                onError={() => setImgFailed(true)}
-              />
-            ) : (
-              <div style={{ width: '100%', height: 'calc(35vh - 14px)', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
-                <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
-              </div>
-            )}
-            {/* Overlay sombre */}
-            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
-            {/* Stamp bienveillant centré par-dessus l'image */}
-            {flipped && (
-              <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 5 }}>
-                <div style={{
-                  position: 'absolute', left: '50%', top: '50%',
-                  animation: 'stampImpact 0.5s ease-out forwards',
-                  background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
-                  border: '3px solid #EF4444',
-                  borderRadius: S(14), padding: `${S(14)} ${S(20)}`,
-                  maxWidth: '90%', textAlign: 'center',
-                }}>
-                  <span style={{ fontSize: S(16), fontWeight: 900, color: '#EF4444', lineHeight: 1.4 }}>
-                    {wrongMsg}
-                  </span>
+          {/* Image floutée + stamp bienveillant */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, maxHeight: '30vh' }}>
+            <div
+              className="overflow-hidden relative"
+              style={{
+                background: catGradient, width: '100%', maxHeight: '30vh', borderRadius: S(16), padding: 4,
+                border: isQuickieMode ? '3px solid #7F77DD' : `3px solid ${cat?.color || '#1a3a5c'}`,
+                boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : 'none',
+              }}
+            >
+              {fact.imageUrl && !imgFailed ? (
+                <img
+                  src={fact.imageUrl}
+                  alt={fact.question}
+                  style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(30vh - 14px)', display: 'block', borderRadius: S(12), filter: 'blur(12px) brightness(0.5)' }}
+                  onError={() => setImgFailed(true)}
+                />
+              ) : (
+                <div style={{ width: '100%', height: 'calc(30vh - 14px)', background: catGradient, filter: 'blur(8px) brightness(0.5)', borderRadius: S(12) }}>
+                  <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
                 </div>
-              </div>
-            )}
+              )}
+              <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
+              {flipped && (
+                <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 5 }}>
+                  <div style={{
+                    position: 'absolute', left: '50%', top: '50%',
+                    animation: 'stampImpact 0.5s ease-out forwards',
+                    background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+                    border: '3px solid #EF4444',
+                    borderRadius: S(14), padding: `${S(14)} ${S(20)}`,
+                    maxWidth: '90%', textAlign: 'center',
+                  }}>
+                    <span style={{ fontSize: S(16), fontWeight: 900, color: '#EF4444', lineHeight: 1.4 }}>
+                      {wrongMsg}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Social proof — une seule ligne */}
+          {flipped && (
+            <div style={{ textAlign: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: S(13), fontWeight: 800, color: '#ffffff', opacity: 0.8, textShadow: '0 1px 3px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Social proof — une seule ligne */}
-        {flipped && (
-          <div style={{ textAlign: 'center', padding: `${S(8)} ${S(16)} 0`, flexShrink: 0 }}>
-            <span style={{ fontSize: S(13), fontWeight: 800, color: '#ffffff', opacity: 0.8, textShadow: '0 1px 3px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
-              👥 {100 - successRate}% des joueurs ont trouvé ce f*ct
-            </span>
-          </div>
-        )}
-
-        {/* Temps écoulé — gros et centré */}
-        {isTimeout && (
-          <div style={{ textAlign: 'center', padding: `${S(12)} ${S(16)} 0`, flexShrink: 0 }}>
+        {/* Temps écoulé — centré verticalement entre social phrase et boutons */}
+        {isTimeout ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: S(22), fontWeight: 900, color: '#FB923C', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
               ⏱️ Temps écoulé
             </span>
           </div>
+        ) : (
+          <div style={{ flex: 1 }} />
         )}
-
-        {/* Spacer */}
-        <div style={{ flex: 1 }} />
 
         {/* Boutons — demander aide + suivant côte à côte */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>

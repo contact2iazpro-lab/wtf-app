@@ -25,8 +25,8 @@ export default function QuestionTargetIcon({ size = 40, color = '#ffffff', accen
       </defs>
 
       <g filter={`url(#${id})`}>
-        {/* Cercle extérieur — orange WTF */}
-        <circle cx="50" cy="50" r="32" stroke={accent} strokeWidth="5" fill="none" />
+        {/* Cercle extérieur — orange WTF, intérieur blanc */}
+        <circle cx="50" cy="50" r="32" stroke={accent} strokeWidth="5" fill={color} />
 
         {/* 4 traits de viseur — orange WTF */}
         <line x1="50" y1="4" x2="50" y2="14" stroke={accent} strokeWidth="5" strokeLinecap="round" />
@@ -34,11 +34,11 @@ export default function QuestionTargetIcon({ size = 40, color = '#ffffff', accen
         <line x1="4" y1="50" x2="14" y2="50" stroke={accent} strokeWidth="5" strokeLinecap="round" />
         <line x1="86" y1="50" x2="96" y2="50" stroke={accent} strokeWidth="5" strokeLinecap="round" />
 
-        {/* "?" centré — blanc */}
+        {/* "?" centré — orange WTF */}
         <text
           x="50" y="62"
           textAnchor="middle"
-          fill={color}
+          fill={accent}
           fontSize="40"
           fontWeight="900"
           fontFamily="Nunito, sans-serif"

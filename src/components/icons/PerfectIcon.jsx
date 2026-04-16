@@ -41,7 +41,7 @@ export default function PerfectIcon({ size = 40, accent = WTF_ORANGE, glowIntens
           stroke={accent}
           strokeWidth="5"
           strokeLinejoin="round"
-          fill="none"
+          fill="#ffffff"
         />
       </g>
     </svg>

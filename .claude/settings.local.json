@@ -12,7 +12,8 @@
       "Bash(python -c \"from docx import Document; d=Document\\('Mode QUEST.docx'\\); [print\\(p.text\\) for p in d.paragraphs]\")",
       "mcp__claude_ai_Notion__notion-fetch",
       "mcp__claude_ai_Notion__notion-update-page",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Bash(git rm *)"
     ]
   }
 }

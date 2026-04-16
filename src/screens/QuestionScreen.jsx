@@ -490,143 +490,135 @@ export default function QuestionScreen({
         </div>
       )}
 
-      {/* Conteneur principal : distribution verticale uniforme */}
-      <div style={{
-        flex: 1,
+      {progressBar}
+
+      {/* Zone centrale : question + indices + QCM */}
+      <div className="qs-m" style={{
+        flexShrink: 0,
         display: 'flex', flexDirection: 'column',
-        padding: `0 ${S(16)}`,
+        gap: S(10),
+        padding: `${S(10)} ${S(16)} 0`,
       }}>
-        {/* Zone haute : progressBar → bloc question/indices/QCM → image (espaces égaux via space-evenly) */}
-        <div style={{
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'stretch',
-          justifyContent: 'space-evenly',
-          flex: 1,
-        }}>
-          <div style={{ flexShrink: 0, padding: `0 ${S(16)}` }}>{progressBar}</div>
+        {questionCard}
 
-          {/* Bloc compact question + indices + QCM */}
-          <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: S(10) }}>
-            {questionCard}
-            {isDevMode ? devHintButtons : (difficulty?.hintsAllowed && hintButtons)}
-            {(() => {
-              const devAllOptions = isDevMode ? [
-                { text: fact.shortAnswer || fact.options?.[fact.correctIndex] || '?', type: 'VRAIE', color: '#22C55E' },
-                { text: fact.funnyWrong1, type: 'DRÔLE', color: '#EAB308' },
-                { text: fact.funnyWrong2, type: 'DRÔLE', color: '#EAB308' },
-                { text: fact.closeWrong1, type: 'PROCHE', color: '#F97316' },
-                { text: fact.closeWrong2, type: 'PROCHE', color: '#F97316' },
-                { text: fact.plausibleWrong1, type: 'PLAUSIBLE', color: '#EF4444' },
-                { text: fact.plausibleWrong2, type: 'PLAUSIBLE', color: '#EF4444' },
-                { text: fact.plausibleWrong3, type: 'PLAUSIBLE', color: '#EF4444' },
-              ].filter(o => o.text) : null
+        {/* Indices */}
+        {isDevMode ? devHintButtons : (difficulty?.hintsAllowed && hintButtons)}
 
-              if (isDevMode && devAllOptions) {
+        {/* Boutons QCM */}
+        {(() => {
+          const devAllOptions = isDevMode ? [
+            { text: fact.shortAnswer || fact.options?.[fact.correctIndex] || '?', type: 'VRAIE', color: '#22C55E' },
+            { text: fact.funnyWrong1, type: 'DRÔLE', color: '#EAB308' },
+            { text: fact.funnyWrong2, type: 'DRÔLE', color: '#EAB308' },
+            { text: fact.closeWrong1, type: 'PROCHE', color: '#F97316' },
+            { text: fact.closeWrong2, type: 'PROCHE', color: '#F97316' },
+            { text: fact.plausibleWrong1, type: 'PLAUSIBLE', color: '#EF4444' },
+            { text: fact.plausibleWrong2, type: 'PLAUSIBLE', color: '#EF4444' },
+            { text: fact.plausibleWrong3, type: 'PLAUSIBLE', color: '#EF4444' },
+          ].filter(o => o.text) : null
+
+          if (isDevMode && devAllOptions) {
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(4), flexShrink: 0, position: 'relative', zIndex: 5 }}>
+                {devAllOptions.map((opt, i) => (
+                  <button key={i} onClick={() => { audio.play(i === 0 ? 'correct' : 'wrong'); onSelectAnswer(i === 0 ? fact.correctIndex : -1) }}
+                    className="btn-press active:scale-95"
+                    style={{
+                      background: 'rgba(255,255,255,0.15)', border: `3px solid ${opt.color}`,
+                      borderRadius: S(10), color: 'white', fontWeight: 700, fontSize: S(10), lineHeight: 1.15,
+                      padding: `${S(2)} ${S(4)}`, height: S(44), width: '100%', overflow: 'hidden',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      textAlign: 'center', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {renderFormattedText(opt.text)}
+                    </span>
+                    <span style={{ fontSize: 7, fontWeight: 900, opacity: 0.6, marginTop: 1, letterSpacing: '0.05em', flexShrink: 0 }}>{opt.type}</span>
+                  </button>
+                ))}
+              </div>
+            )
+          }
+
+          const is6 = fact.options.length > 4
+          const btnH = is6 ? 50 : 64
+          const btnFont = is6 ? 11 : 13
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5), flexShrink: 0, position: 'relative', zIndex: 5 }}>
+              {fact.options.map((option, index) => {
+                let devType = null
+                let devBorder = '1.5px solid rgba(255,255,255,0.4)'
+                if (isDevMode) {
+                  try {
+                    const funnyWrongs = [fact?.funnyWrong1, fact?.funnyWrong2].filter(Boolean)
+                    const closeWrongs = [fact?.closeWrong1, fact?.closeWrong2].filter(Boolean)
+                    const plausibleWrongs = [fact?.plausibleWrong1, fact?.plausibleWrong2, fact?.plausibleWrong3].filter(Boolean)
+                    if (index === fact.correctIndex) { devType = 'VRAIE'; devBorder = '3px solid #22C55E' }
+                    else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; devBorder = '3px solid #EAB308' }
+                    else if (closeWrongs.includes(option)) { devType = 'PROCHE'; devBorder = '3px solid #F97316' }
+                    else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; devBorder = '3px solid #EF4444' }
+                    else { devType = 'AUTRE'; devBorder = '2px solid rgba(255,255,255,0.3)' }
+                  } catch { /* ignore */ }
+                }
                 return (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(4), flexShrink: 0, position: 'relative', zIndex: 5 }}>
-                    {devAllOptions.map((opt, i) => (
-                      <button key={i} onClick={() => { audio.play(i === 0 ? 'correct' : 'wrong'); onSelectAnswer(i === 0 ? fact.correctIndex : -1) }}
-                        className="btn-press active:scale-95"
-                        style={{
-                          background: 'rgba(255,255,255,0.15)', border: `3px solid ${opt.color}`,
-                          borderRadius: S(10), color: 'white', fontWeight: 700, fontSize: S(10), lineHeight: 1.15,
-                          padding: `${S(2)} ${S(4)}`, height: S(44), width: '100%', overflow: 'hidden',
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          textAlign: 'center', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-                        }}
-                      >
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                          {renderFormattedText(opt.text)}
-                        </span>
-                        <span style={{ fontSize: 7, fontWeight: 900, opacity: 0.6, marginTop: 1, letterSpacing: '0.05em', flexShrink: 0 }}>{opt.type}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <button
+                    key={index}
+                    onClick={() => {
+                      const correct = index === fact.correctIndex
+                      audio.play(correct ? 'correct' : 'wrong')
+                      audio.vibrate(correct ? [40, 20, 40] : [120])
+                      onSelectAnswer(index)
+                    }}
+                    className="btn-press active:scale-95"
+                    style={{
+                      background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
+                      border: isQuickieMode ? '3px solid #7F77DD' : devBorder,
+                      borderRadius: S(12),
+                      color: isQuickieMode ? '#4A3FA3' : 'white',
+                      fontWeight: isQuickieMode ? 800 : 700,
+                      fontSize: S(btnFont),
+                      lineHeight: 1.2,
+                      padding: `${S(4)} ${S(6)}`,
+                      height: S(btnH),
+                      width: '100%',
+                      overflow: 'hidden',
+                      wordBreak: 'break-word',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                      transition: 'transform 0.1s, background 0.15s',
+                    }}
+                  >
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: is6 ? 2 : 3, WebkitBoxOrient: 'vertical' }}>
+                      {renderFormattedText(option)}
+                    </span>
+                    {isDevMode && devType && (
+                      <span style={{ fontSize: 8, fontWeight: 900, opacity: 0.6, marginTop: 1, letterSpacing: '0.05em', flexShrink: 0 }}>{devType}</span>
+                    )}
+                  </button>
                 )
-              }
+              })}
+            </div>
+          )
+        })()}
+      </div>
 
-              const is6 = fact.options.length > 4
-              const btnH = is6 ? 50 : 64
-              const btnFont = is6 ? 11 : 13
-              return (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5), flexShrink: 0, position: 'relative', zIndex: 5 }}>
-                  {fact.options.map((option, index) => {
-                    let devType = null
-                    let devBorder = '1.5px solid rgba(255,255,255,0.4)'
-                    if (isDevMode) {
-                      try {
-                        const funnyWrongs = [fact?.funnyWrong1, fact?.funnyWrong2].filter(Boolean)
-                        const closeWrongs = [fact?.closeWrong1, fact?.closeWrong2].filter(Boolean)
-                        const plausibleWrongs = [fact?.plausibleWrong1, fact?.plausibleWrong2, fact?.plausibleWrong3].filter(Boolean)
-                        if (index === fact.correctIndex) { devType = 'VRAIE'; devBorder = '3px solid #22C55E' }
-                        else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; devBorder = '3px solid #EAB308' }
-                        else if (closeWrongs.includes(option)) { devType = 'PROCHE'; devBorder = '3px solid #F97316' }
-                        else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; devBorder = '3px solid #EF4444' }
-                        else { devType = 'AUTRE'; devBorder = '2px solid rgba(255,255,255,0.3)' }
-                      } catch { /* ignore */ }
-                    }
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          const correct = index === fact.correctIndex
-                          audio.play(correct ? 'correct' : 'wrong')
-                          audio.vibrate(correct ? [40, 20, 40] : [120])
-                          onSelectAnswer(index)
-                        }}
-                        className="btn-press active:scale-95"
-                        style={{
-                          background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
-                          border: isQuickieMode ? '3px solid #7F77DD' : devBorder,
-                          borderRadius: S(12),
-                          color: isQuickieMode ? '#4A3FA3' : 'white',
-                          fontWeight: isQuickieMode ? 800 : 700,
-                          fontSize: S(btnFont),
-                          lineHeight: 1.2,
-                          padding: `${S(4)} ${S(6)}`,
-                          height: S(btnH),
-                          width: '100%',
-                          overflow: 'hidden',
-                          wordBreak: 'break-word',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          textAlign: 'center',
-                          cursor: 'pointer',
-                          WebkitTapHighlightColor: 'transparent',
-                          transition: 'transform 0.1s, background 0.15s',
-                        }}
-                      >
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: is6 ? 2 : 3, WebkitBoxOrient: 'vertical' }}>
-                          {renderFormattedText(option)}
-                        </span>
-                        {isDevMode && devType && (
-                          <span style={{ fontSize: 8, fontWeight: 900, opacity: 0.6, marginTop: 1, letterSpacing: '0.05em', flexShrink: 0 }}>{devType}</span>
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
-              )
-            })()}
-          </div>
-
-          {/* Image Quickie */}
-          {quickieImage}
-        </div>
-
-        {/* Timer — centré dans l'espace restant */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            <CircularTimer
-              key={`${fact.id}-${answerMode}`}
-              size={96}
-              duration={timerDuration}
-              onTimeout={handleTimeout}
-              variant={isQuickieMode ? 'quickie' : 'default'}
-            />
-          </div>
+      {/* Image + Timer — distribués dans l'espace restant */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-evenly' }}>
+        {quickieImage}
+        <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <CircularTimer
+            key={`${fact.id}-${answerMode}`}
+            size={96}
+            duration={timerDuration}
+            onTimeout={handleTimeout}
+            variant={isQuickieMode ? 'quickie' : 'default'}
+          />
         </div>
       </div>
     </div>

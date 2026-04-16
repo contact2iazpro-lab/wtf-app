@@ -79,12 +79,12 @@ export const MODE_CONFIGS = {
   quickie: {
     modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/quickie.png?v=2', color: '#7F77DD',
     rules: [
-      { icon: '🔋', text: 'Coût : 1 énergie' },
-      { icon: '📋', text: 'Set : 5 questions/set' },
+      { icon: 'icon:energy', text: 'Coût : 1 énergie' },
+      { icon: 'icon:set', text: 'Set : 5 questions/set' },
       { icon: 'icon:qcm', text: 'QCM : 2/question' },
-      { icon: '⏱️', text: 'Timer : 15s/question' },
+      { icon: 'icon:timer', text: 'Timer : 15s/question' },
       { icon: '🪙', text: 'Gains : 10 Coins/bonne réponse' },
-      { icon: '🎁', text: 'Perfect : +50 Coins' },
+      { icon: 'icon:perfect', text: 'Perfect : +50 Coins' },
     ],
   },
   vrai_ou_fou: {
@@ -100,10 +100,10 @@ export const MODE_CONFIGS = {
   quest: {
     modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', color: '#FF6B1A',
     rules: [
-      { icon: '🔋', text: 'Coût : 1 énergie par bloc' },
-      { icon: '📋', text: 'Bloc : 10 Funny + 1 boss VIP' },
+      { icon: 'icon:energy', text: 'Coût : 1 énergie par bloc' },
+      { icon: 'icon:set', text: 'Bloc : 10 Funny + 1 boss VIP' },
       { icon: 'icon:qcm', text: 'QCM : 4/question' },
-      { icon: '⏱️', text: 'Timer : 20s/question' },
+      { icon: 'icon:timer', text: 'Timer : 20s/question' },
       { icon: '💡', text: 'Indices : 2/question' },
       { icon: '👑', text: 'Boss débloqué : 5/10 bonnes réponses' },
       { icon: '🪙', text: 'Gains : 20 WTFCoins/bonne · +100 WTFCoins/boss' },
@@ -121,7 +121,7 @@ export const MODE_CONFIGS = {
   blitz: {
     modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défie tes potes', emoji: '⚡', color: '#FF4444',
     rules: [
-      { icon: '⏱️', text: 'Chrono 60s · 2 QCM · Pas d\'indices' },
+      { icon: 'icon:timer', text: 'Chrono 60s · 2 QCM · Pas d\'indices' },
       { icon: '❌', text: 'Mauvaise réponse = +5 secondes de pénalité' },
       { icon: '🪙', text: 'Blitz Solo gratuit · Blitz Défi 200 coins pour créer' },
       { icon: '🎯', text: 'Choisis entre 5, 10, 20, 30, 50 ou 100 questions' },
@@ -131,7 +131,7 @@ export const MODE_CONFIGS = {
     modeId: 'flash', modeName: 'Flash', subtitle: 'Le rendez-vous quotidien', emoji: '🔥', color: '#E91E63',
     rules: [
       { icon: '🆓', text: 'Gratuit — 1 fois par jour' },
-      { icon: '⚡', text: '5 questions · 2 QCM · 15s' },
+      { icon: 'icon:timer', text: '5 questions · 2 QCM · 15s' },
       { icon: '🎯', text: 'Lun-Sam : thème du jour · Dim : VIP Hunt de la semaine' },
       { icon: '🪙', text: '30 coins fixe en semaine · 1 VIP débloqué le dimanche' },
     ],

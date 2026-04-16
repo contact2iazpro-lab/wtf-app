@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { useScale } from '../hooks/useScale'
 import { audio } from '../utils/audio'
 import MultipleChoiceIcon from '../components/icons/MultipleChoiceIcon'
+import QuestionTargetIcon from '../components/icons/QuestionTargetIcon'
+import TimerIcon from '../components/icons/TimerIcon'
+import PerfectIcon from '../components/icons/PerfectIcon'
+import EnergyIcon from '../components/icons/EnergyIcon'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -17,6 +21,10 @@ const EMOJI_IMG = {
 
 const COMPONENT_ICONS = {
   'icon:qcm': (size) => <MultipleChoiceIcon size={size} />,
+  'icon:set': (size) => <QuestionTargetIcon size={size} />,
+  'icon:timer': (size) => <TimerIcon size={size} />,
+  'icon:perfect': (size) => <PerfectIcon size={size} />,
+  'icon:energy': (size) => <EnergyIcon size={size} />,
 }
 
 function renderIcon(value, size) {

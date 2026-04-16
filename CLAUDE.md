@@ -354,9 +354,9 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Couleur principale : #FF6B1A (orange WTF!)
 - Fond écrans jeu : linear-gradient(160deg, {couleurCatégorie}22, {couleurCatégorie})
 - CoinsIcon : src/components/CoinsIcon.jsx
-- Scaling responsive : useScale hook — base iPhone SE 375×667px
-- Formule : Math.min(window.innerHeight/667, window.innerWidth/375)
-- Toutes les tailles : calc(Xpx * var(--scale))
+- Scaling responsive : raisonner en full screen (100vh × 100vw), pas de base fixe type iPhone SE
+- Utiliser des unités relatives (%, vh, vw, clamp) et flexbox/grid pour s'adapter à tous les écrans
+- S(x) helper reste disponible mais privilégier les layouts fluides
 - Règle isLightColor : texte #1a1a1a sur fond clair, #ffffff sur fond sombre
 
 ### Couleurs des catégories (source unique : src/data/facts.js)

@@ -151,12 +151,10 @@ export function useGameHandlers({
   // gère déjà la logique canUse/canBuyNow. Si onBuyHint() a été appelé juste avant,
   // hints dans la closure est stale (React n'a pas encore re-rendu).
   // Le débit est sécurisé côté serveur par la RPC.
-  const handleUseHint = useCallback((hintNum, wasBought = false) => {
+  const handleUseHint = useCallback((hintNum) => {
     const freeHints = selectedDifficulty?.freeHints || 0
     const isPaidHint = hintNum > freeHints
-    // Si wasBought, le delta coins a déjà été envoyé sans +1 hint (net = 0 hint)
-    // donc pas besoin de débiter hint ici. Sinon (hint from stock), débiter -1.
-    if (isPaidHint && !wasBought) {
+    if (isPaidHint) {
       applyCurrencyDelta?.({ hints: -1 }, 'hint_used_in_session')?.catch?.(e =>
         console.warn('[useGameHandlers] hint RPC failed:', e?.message || e)
       )

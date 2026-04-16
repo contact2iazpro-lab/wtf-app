@@ -100,6 +100,8 @@ export function useSupabaseResource({
     setData(next)
     dataRef.current = next
     writeCache(cacheKey, next)
+    // Sync intra-tab : notifie toutes les autres instances du même cacheKey
+    window.dispatchEvent(new CustomEvent('wtf_resource_sync', { detail: { cacheKey, data: next } }))
   }, [cacheKey])
 
   // ─── Fetch au mount (et quand enabled devient true) ───────────────────────
@@ -123,6 +125,18 @@ export function useSupabaseResource({
     if (!enabled) return
     refetch()
   }, [enabled, refetch])
+
+  // ─── Sync intra-tab : écoute les updates des autres instances du même hook ─
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.cacheKey === cacheKey && e.detail?.data != null) {
+        setData(e.detail.data)
+        dataRef.current = e.detail.data
+      }
+    }
+    window.addEventListener('wtf_resource_sync', handler)
+    return () => window.removeEventListener('wtf_resource_sync', handler)
+  }, [cacheKey])
 
   // ─── BroadcastChannel : écoute les updates des autres onglets ─────────────
   useEffect(() => {

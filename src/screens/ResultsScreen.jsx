@@ -38,6 +38,16 @@ const RANKINGS = [
   { score: 10, emoji: '🌟', label: 'PARFAIT WTF!',  message: 'Parfait ! Tu es officiellement WTF! certifié 🏆' },
 ]
 
+// Quickie — 6 niveaux (0-5)
+const QUICKIE_RANKINGS = [
+  { score: 0, emoji: '😵', label: 'Aïe...' },
+  { score: 1, emoji: '🐣', label: 'Novice' },
+  { score: 2, emoji: '🤔', label: 'Curieux' },
+  { score: 3, emoji: '😎', label: 'Pas mal !' },
+  { score: 4, emoji: '🧠', label: 'Expert' },
+  { score: 5, emoji: '🌟', label: 'PERFECT !' },
+]
+
 function getStars(correct, total) {
   const ratio = correct / total
   if (ratio >= 1) return 3
@@ -131,7 +141,10 @@ export default function ResultsScreen({
   const textOnBg = '#ffffff' // Toujours blanc sur fond sombre (overlay garanti)
 
   // MOD 5 — Rank based on correct answers
-  const currentRank = RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
+  const isQuickie = sessionType === 'quickie'
+  const currentRank = isQuickie
+    ? QUICKIE_RANKINGS[Math.min(Math.max(correctCount, 0), 5)]
+    : RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
   const stars = correctCount
   const isPerfect = totalFacts > 0 && correctCount >= totalFacts
 
@@ -418,27 +431,22 @@ export default function ResultsScreen({
 
         {/* Badge mode + difficulté */}
         {difficulty && (
-          <div style={{ display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: S(6),
-              background: 'rgba(255,255,255,0.15)', borderRadius: S(20),
-              padding: `${S(4)} ${S(14)}`, border: '1px solid rgba(255,255,255,0.25)',
-            }}>
-              <span style={{ fontSize: S(12) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
-              <span style={{ fontSize: S(11), fontWeight: 800, color: textOnBg }}>
-                {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` :
-                 sessionType === 'quickie' ? 'Mode Quickie' :
-                 sessionType === 'quickie' ? 'Mode Quickie' :
-                 'Mode'}
-              </span>
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: S(6), flexShrink: 0 }}>
+            {isQuickie
+              ? <img src="/assets/modes/quickie.png?v=2" alt="Quickie" style={{ width: S(24), height: S(24), objectFit: 'contain' }} />
+              : <span style={{ fontSize: S(14) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
+            }
+            <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>
+              {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` :
+               isQuickie ? 'Mode Quickie' : 'Mode'}
+            </span>
           </div>
         )}
 
         {/* Rang + Étoiles + Badge Perfect — composant extrait (Phase 5.2 A) */}
         <ResultsRankHeader
-          emoji={sessionType === 'quickie' ? null : currentRank.emoji}
-          customIcon={sessionType === 'quickie' ? '/assets/modes/quickie.png?v=2' : null}
+          emoji={currentRank.emoji}
+          customIcon={null}
           label={currentRank.label}
           stars={stars}
           visibleStars={visibleStars}
@@ -488,10 +496,18 @@ export default function ResultsScreen({
           const sorted = [...unlocked, ...locked]
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: S(4), flexShrink: 0 }}>
-              <span style={{ fontSize: S(10), fontWeight: 800, color: textOnBg, opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                {unlocked.length > 0 ? `🔓 ${unlocked.length} trouvé${unlocked.length > 1 ? 's' : ''}` : ''}
-                {locked.length > 0 ? ` · 🔒 ${locked.length} à découvrir` : ''}
-              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: S(1) }}>
+                {unlocked.length > 0 && (
+                  <span style={{ fontSize: S(10), fontWeight: 800, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    🔓 {unlocked.length} Débloqué{unlocked.length > 1 ? 's' : ''}
+                  </span>
+                )}
+                {locked.length > 0 && (
+                  <span style={{ fontSize: S(10), fontWeight: 800, color: textOnBg, opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    🔒 {locked.length} À découvrir
+                  </span>
+                )}
+              </div>
               <div style={{ display: 'flex', gap: S(4), width: '100%' }}>
                 {sorted.map((fact) => {
                   const isUnlocked = unlockedIds.has(fact.id)
@@ -589,6 +605,7 @@ export default function ResultsScreen({
         sessionType={sessionType}
         difficulty={difficulty}
         challengeLabel={sessionType === 'parcours' && difficulty && CHALLENGE_LABELS[difficulty.id] ? CHALLENGE_LABELS[difficulty.id] : null}
+        categoryLabel={cat?.label || null}
         onReplay={onReplay}
         onReplayHarder={onReplayHarder}
         onShare={handleShare}
@@ -627,7 +644,7 @@ export default function ResultsScreen({
               {selectedFact._catLabel || 'Catégorie'}
             </div>
             {(() => {
-              const unlockCost = selectedFact.isVip ? 25 : 5
+              const unlockCost = 25
               const canUnlock = _cCoins >= unlockCost
               return (
                 <>

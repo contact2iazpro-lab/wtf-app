@@ -14,6 +14,7 @@ export default function ResultsActionButtons({
   sessionType,
   difficulty,
   challengeLabel = null,
+  categoryLabel = null,
   onReplay,
   onReplayHarder,
   onShare,
@@ -30,9 +31,10 @@ export default function ResultsActionButtons({
       )
     }
     if (sessionType === 'quickie') {
+      const catText = categoryLabel ? `Rejouer ${categoryLabel}` : 'Rejouer en aléatoire'
       return (
         <>
-          <EnergyIcon size={16} /> Rejouer
+          <EnergyIcon size={16} /> {catText}
         </>
       )
     }
@@ -83,9 +85,9 @@ export default function ResultsActionButtons({
           className="active:scale-95 transition-all"
           style={{
             flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-            background: isQuickie ? 'rgba(127,119,221,0.15)' : 'rgba(255,255,255,0.25)',
-            border: isQuickie ? '2px solid #7F77DD' : '2px solid rgba(255,255,255,0.4)',
-            color: isQuickie ? '#B5AFEB' : '#fff', fontWeight: 800, fontSize: S(11),
+            background: isQuickie ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : 'rgba(255,255,255,0.25)',
+            border: isQuickie ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
+            color: '#fff', fontWeight: 800, fontSize: S(11),
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
           }}>
@@ -96,9 +98,9 @@ export default function ResultsActionButtons({
           className="active:scale-95 transition-all"
           style={{
             flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-            background: isQuickie ? 'rgba(127,119,221,0.15)' : 'rgba(255,255,255,0.25)',
-            border: isQuickie ? '2px solid #7F77DD' : '2px solid rgba(255,255,255,0.4)',
-            color: isQuickie ? '#B5AFEB' : '#fff', fontWeight: 800, fontSize: S(11),
+            background: isQuickie ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : 'rgba(255,255,255,0.25)',
+            border: isQuickie ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
+            color: '#fff', fontWeight: 800, fontSize: S(11),
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
           }}>

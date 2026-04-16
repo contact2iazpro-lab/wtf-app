@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import CoinsIcon from '../components/CoinsIcon'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
-import { getValidFacts, getVipFacts, getFunnyFacts, getCategoryById, getPlayableCategories } from '../data/factsService'
 import { getSnackEnergy, addSnackEnergy } from '../services/energyService'
 import { SNACK_ENERGY } from '../constants/gameConfig'
 import { useScale } from '../hooks/useScale'
@@ -23,14 +22,6 @@ const ENERGY_PACKS = [
   { quantity: 1, price: 75, label: '1 énergie',   discount: null },
   { quantity: 3, price: 200, label: '3 énergies',  discount: '-11%' },
   { quantity: 5, price: 320, label: '5 énergies',  discount: '-15%' },
-]
-
-const MYSTERY_PACKS = [
-  { id: 'decouverte',  emoji: '📦', label: 'Pack Découverte', desc: '2 Funny f*cts',                          price: 15,  count: 2,  vipChance: 0,    vipGuaranteed: false },
-  { id: 'standard',    emoji: '🎁', label: 'Pack Standard',   desc: '5 Funny f*cts',                          price: 35,  count: 5,  vipChance: 0,    vipGuaranteed: false },
-  { id: 'categorie',   emoji: '📂', label: 'Pack Catégorie',  desc: '4 Funny f*cts d\'une catégorie au choix', price: 40,  count: 4,  vipChance: 0,    vipGuaranteed: false, pickCategory: true },
-  { id: 'premium',     emoji: '✨', label: 'Pack Premium',    desc: '7 f*cts + 5% chance VIP chacun',          price: 80,  count: 7,  vipChance: 0.05, vipGuaranteed: false },
-  { id: 'mega',        emoji: '🏆', label: 'Pack Mega',       desc: '12 f*cts + 1 VIP garanti',               price: 150, count: 12, vipChance: 0,    vipGuaranteed: true },
 ]
 
 function PackButton({ emoji, label, price, discount, canBuy, onClick, onCannotBuy }) {
@@ -65,14 +56,11 @@ function PackButton({ emoji, label, price, discount, canBuy, onClick, onCannotBu
 export default function BoutiquePage() {
   const navigate = useNavigate()
 
-  const { coins, hints, applyCurrencyDelta, unlockFact, mergeFlags } = usePlayerProfile()
+  const { coins, hints, applyCurrencyDelta, mergeFlags } = usePlayerProfile()
   const [toast, setToast] = useState(null)
   const [confirmPurchase, setConfirmPurchase] = useState(null)
   const [streakFreezeCount, setStreakFreezeCount] = useState(() => readWtfData().streakFreezeCount || 0)
   const [purchaseQty, setPurchaseQty] = useState(1)
-  const [packResult, setPackResult] = useState(null) // { facts: [...], packType: 'standard'|'wtf' }
-  const [packRevealed, setPackRevealed] = useState(false)
-  const [packRevealIndex, setPackRevealIndex] = useState(0)
   const [showRoulette, setShowRoulette] = useState(false)
   const scale = useScale()
 
@@ -92,9 +80,6 @@ export default function BoutiquePage() {
     showToast(`Pas assez de coins — il te manque ${missing} 🪙`)
   }
 
-  const [selectedPackCategory, setSelectedPackCategory] = useState(null)
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
-  const [pendingPack, setPendingPack] = useState(null)
   // Onglets de la boutique : Packs | Essentiels | Abonnement
   const [activeTab, setActiveTab] = useState('packs')
   // Cadres profil possédés (refresh via wtf_storage_sync)
@@ -104,85 +89,6 @@ export default function BoutiquePage() {
     window.addEventListener('wtf_storage_sync', refresh)
     return () => window.removeEventListener('wtf_storage_sync', refresh)
   }, [])
-
-  const buyMysteryPack = (packId, categoryFilter = null) => {
-    const packDef = MYSTERY_PACKS.find(p => p.id === packId)
-    if (!packDef || coins < packDef.price) return
-
-    const wd = readWtfData()
-    const unlockedIds = new Set(wd.unlockedFacts || [])
-
-    const vipPool = getVipFacts().filter(f => !unlockedIds.has(f.id) && (!categoryFilter || f.category === categoryFilter))
-    const funnyPool = getFunnyFacts().filter(f => !unlockedIds.has(f.id) && (!categoryFilter || f.category === categoryFilter))
-
-    if (vipPool.length + funnyPool.length < packDef.count) {
-      showToast('Pas assez de f*cts à débloquer !')
-      return
-    }
-
-    applyCurrencyDelta?.({ coins: -packDef.price }, `shop_mystery_pack_${packId}`)?.catch?.(e =>
-      console.warn('[BoutiquePage] mystery pack RPC failed:', e?.message || e)
-    )
-
-    const selected = []
-    const usedIds = new Set()
-
-    // VIP garanti (Pack Mega)
-    if (packDef.vipGuaranteed && vipPool.length > 0) {
-      const vip = vipPool[Math.floor(Math.random() * vipPool.length)]
-      selected.push(vip)
-      usedIds.add(vip.id)
-    }
-
-    // Pity system : après 5 packs Premium sans VIP → forcer 1 VIP
-    if (packId === 'premium') {
-      const pityCount = (wd.mysteryPackPityCounter || 0) + 1
-      if (pityCount >= 5 && vipPool.length > 0) {
-        const vip = vipPool.filter(f => !usedIds.has(f.id))[0]
-        if (vip) { selected.push(vip); usedIds.add(vip.id) }
-        wd.mysteryPackPityCounter = 0
-      } else {
-        wd.mysteryPackPityCounter = pityCount
-      }
-    }
-
-    // Remplir le reste
-    const pool = [...funnyPool, ...vipPool].filter(f => !usedIds.has(f.id))
-    const shuffled = pool.sort(() => Math.random() - 0.5)
-    while (selected.length < packDef.count && shuffled.length > 0) {
-      const fact = shuffled.shift()
-      // Pack Premium : 5% chance VIP par slot
-      if (packDef.vipChance > 0 && fact.isVip && Math.random() > packDef.vipChance) {
-        // Skip ce VIP, prendre un Funny à la place si dispo
-        const funnyAlt = shuffled.find(f => !f.isVip && !usedIds.has(f.id))
-        if (funnyAlt) {
-          shuffled.splice(shuffled.indexOf(funnyAlt), 1)
-          selected.push(funnyAlt)
-          usedIds.add(funnyAlt.id)
-          shuffled.push(fact) // remettre le VIP dans le pool
-          continue
-        }
-      }
-      selected.push(fact)
-      usedIds.add(fact.id)
-    }
-
-    // Débloquer les facts (localStorage + RPC miroir)
-    for (const fact of selected) {
-      unlockedIds.add(fact.id)
-      unlockFact?.(fact.id, fact.category, `shop_mystery_pack_${packId}`).catch(e =>
-        console.warn('[BoutiquePage] unlockFact RPC failed:', e?.message || e)
-      )
-    }
-    wd.unlockedFacts = [...unlockedIds]
-    wd.mysteryPacksOpened = (wd.mysteryPacksOpened || 0) + 1
-    wd.lastModified = Date.now()
-    localStorage.setItem('wtf_data', JSON.stringify(wd))
-
-    setPackResult({ facts: selected, packType: packId })
-    setPackRevealed(false)
-    setPackRevealIndex(0)
-  }
 
   const buyPack = (type, quantity, price) => {
     if (coins < price) return
@@ -224,9 +130,8 @@ export default function BoutiquePage() {
 
       {/* Modale confirmation achat */}
       {confirmPurchase && (() => {
-        const isMystery = confirmPurchase.type?.startsWith('mystery_')
         const isFreeze = confirmPurchase.type === 'streakFreeze'
-        const canMultiply = !isMystery && !isFreeze
+        const canMultiply = !isFreeze
         const qty = canMultiply ? purchaseQty : 1
         const totalPrice = confirmPurchase.price * qty
         const totalQty = confirmPurchase.quantity * qty
@@ -311,20 +216,7 @@ export default function BoutiquePage() {
                 <button
                   onClick={() => {
                     if (!canAfford) return
-                    if (isMystery) {
-                      const packId = confirmPurchase.type.replace('mystery_', '')
-                      const packDef = MYSTERY_PACKS.find(p => p.id === packId)
-                      if (packDef?.pickCategory) {
-                        setPendingPack(packId)
-                        setShowCategoryPicker(true)
-                        setConfirmPurchase(null)
-                        setPurchaseQty(1)
-                        return
-                      }
-                      buyMysteryPack(packId)
-                    } else {
-                      buyPack(confirmPurchase.type, totalQty, totalPrice)
-                    }
+                    buyPack(confirmPurchase.type, totalQty, totalPrice)
                     setConfirmPurchase(null)
                     setPurchaseQty(1)
                   }}
@@ -342,86 +234,6 @@ export default function BoutiquePage() {
           </div>
         )
       })()}
-
-      {/* Modal révélation Mystery Pack */}
-      {packResult && (
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
-          onClick={() => { setPackResult(null); setPackRevealed(false) }}
-        >
-          <div
-            style={{ background: 'white', borderRadius: 24, padding: 24, maxWidth: 340, width: '100%', textAlign: 'center', fontFamily: 'Nunito, sans-serif' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ fontSize: 40, marginBottom: 8 }}>{packResult.packType === 'wtf' ? '✨' : '📦'}</div>
-            <h3 style={{ fontSize: 20, fontWeight: 900, color: '#1a1a2e', margin: '0 0 4px' }}>
-              {packResult.packType === 'wtf' ? 'WTF! Pack' : 'Mystery Pack'}
-            </h3>
-            <p style={{ fontSize: 12, color: '#9CA3AF', margin: '0 0 16px' }}>
-              {packResult.facts.length} f*cts débloqués !
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-              {packResult.facts.map((fact, i) => {
-                const revealed = packRevealed || i <= packRevealIndex
-                const cat = getCategoryById(fact.category)
-                return (
-                  <div
-                    key={fact.id}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (!packRevealed && i === packRevealIndex + 1) setPackRevealIndex(i)
-                    }}
-                    style={{
-                      padding: '10px 14px', borderRadius: 12,
-                      background: revealed
-                        ? fact.isVip ? 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))' : 'rgba(243,244,246,1)'
-                        : 'rgba(0,0,0,0.06)',
-                      border: revealed && fact.isVip ? '1.5px solid rgba(255,215,0,0.4)' : '1px solid rgba(0,0,0,0.06)',
-                      cursor: !revealed && i === packRevealIndex + 1 ? 'pointer' : 'default',
-                      transition: 'all 0.3s ease',
-                      textAlign: 'left',
-                    }}
-                  >
-                    {revealed ? (
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          {fact.isVip && <span style={{ fontSize: 12, color: '#D97706', fontWeight: 900 }}>VIP</span>}
-                          <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 700 }}>{cat?.label || fact.category}</span>
-                        </div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.3 }}>
-                          {fact.text?.slice(0, 80)}{fact.text?.length > 80 ? '...' : ''}
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ textAlign: 'center', padding: '4px 0' }}>
-                        <span style={{ fontSize: 20 }}>❓</span>
-                        <span style={{ fontSize: 11, color: '#9CA3AF', display: 'block', marginTop: 2 }}>Touche pour révéler</span>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-
-            {!packRevealed ? (
-              <button
-                onClick={(e) => { e.stopPropagation(); setPackRevealed(true) }}
-                style={{ width: '100%', padding: '12px 0', borderRadius: 14, fontWeight: 900, fontSize: 14, background: '#FF6B1A', color: 'white', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
-              >
-                Tout révéler
-              </button>
-            ) : (
-              <button
-                onClick={() => { setPackResult(null); setPackRevealed(false) }}
-                style={{ width: '100%', padding: '12px 0', borderRadius: 14, fontWeight: 900, fontSize: 14, background: '#F3F4F6', color: '#374151', border: '1px solid #E5E7EB', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
-              >
-                Fermer
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
@@ -503,7 +315,7 @@ export default function BoutiquePage() {
                 GRATUIT
               </span>
             ) : (
-              <span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>10 <CoinsIcon size={10} /></span>
+              <span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>100 <CoinsIcon size={10} /></span>
             )
           })()}
         </button>
@@ -645,7 +457,7 @@ export default function BoutiquePage() {
                     }}>👑</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Starter Pro</span>
-                      <span className="text-xs block" style={{ color: '#6B7280' }}>15 indices · cadre Or · 100 coins</span>
+                      <span className="text-xs block" style={{ color: '#6B7280' }}>1 500 coins · 5 indices · cadre exclusif</span>
                     </div>
                     <button
                       disabled
@@ -667,50 +479,6 @@ export default function BoutiquePage() {
           )
         })()}
 
-        {/* Section Mystery Packs */}
-        <div className="rounded-2xl p-4 mb-4" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(236,72,153,0.08))', border: '1px solid rgba(168,85,247,0.25)' }}>
-          <div className="flex items-center gap-2 mb-1">
-            <span style={{ fontSize: 20 }}>🎁</span>
-            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Mystery Packs</h2>
-          </div>
-          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Débloque des f*cts aléatoires — surprise garantie !</p>
-          <div className="flex flex-col gap-2">
-            {MYSTERY_PACKS.map(pack => {
-              const canBuyPack = coins >= pack.price
-              return (
-              <button
-                key={pack.id}
-                onClick={canBuyPack
-                  ? () => setConfirmPurchase({ type: `mystery_${pack.id}`, quantity: pack.count, price: pack.price, label: `${pack.label} (${pack.desc})` })
-                  : () => notEnoughCoins(pack.price)
-                }
-                className="w-full flex items-center gap-3 rounded-xl active:scale-95 transition-all"
-                style={{
-                  padding: '12px 16px',
-                  background: canBuyPack
-                    ? (pack.vipGuaranteed ? 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1))' : 'white')
-                    : 'rgba(255,255,255,0.7)',
-                  border: pack.vipGuaranteed && canBuyPack
-                    ? '1px solid rgba(255,215,0,0.3)'
-                    : canBuyPack ? '1px solid rgba(0,0,0,0.08)' : '1px dashed rgba(0,0,0,0.2)',
-                  cursor: 'pointer',
-                  opacity: canBuyPack ? 1 : 0.6,
-                }}
-              >
-                <span style={{ fontSize: 22 }}>{pack.emoji}</span>
-                <div className="flex-1 text-left">
-                  <span className="font-bold text-sm block" style={{ color: '#1a1a2e' }}>{pack.label}</span>
-                  <span className="text-xs" style={{ color: pack.vipGuaranteed ? '#D97706' : '#9CA3AF' }}>{pack.desc}</span>
-                </div>
-                <span className="flex items-center gap-1 font-black text-sm" style={{ color: '#FF6B1A' }}>
-                  {pack.price} <CoinsIcon size={14} />
-                </span>
-              </button>
-              )
-            })}
-          </div>
-        </div>
-
         {/* Section Streak Freeze */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
@@ -724,10 +492,11 @@ export default function BoutiquePage() {
           <PackButton
             emoji="🛡️"
             label="1 Streak Freeze"
-            price={15}
+            price={150}
             discount={null}
-            canBuy={coins >= 15}
-            onClick={() => setConfirmPurchase({ type: 'streakFreeze', quantity: 1, price: 15, label: '1 Streak Freeze' })}
+            canBuy={coins >= 150}
+            onClick={() => setConfirmPurchase({ type: 'streakFreeze', quantity: 1, price: 150, label: '1 Streak Freeze' })}
+            onCannotBuy={() => notEnoughCoins(150)}
           />
         </div>
 
@@ -794,9 +563,9 @@ export default function BoutiquePage() {
         <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Packs de Coins</h2>
         <div className="flex flex-col gap-2 mb-4">
           {[
-            { label: '50 Coins', price: '0,99 €', emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
-            { label: '200 Coins', price: '2,99 €', emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
-            { label: '500 Coins', price: '5,99 €', emoji: '🏆' },
+            { label: '500 Coins', price: '0,99 €', emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
+            { label: '2 000 Coins', price: '2,99 €', emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
+            { label: '5 000 Coins', price: '5,99 €', emoji: '🏆' },
           ].map(pack => (
             <div key={pack.label} className="flex items-center gap-3 rounded-2xl p-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', opacity: 0.5 }}>
               <span className="text-2xl">{pack.emoji}</span>
@@ -821,44 +590,6 @@ export default function BoutiquePage() {
         </>
         )}
       </div>
-
-      {/* Modal sélection catégorie (Pack Catégorie) */}
-      {showCategoryPicker && (
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 250, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
-          onClick={() => { setShowCategoryPicker(false); setPendingPack(null) }}
-        >
-          <div
-            style={{ background: 'white', borderRadius: 20, padding: 24, maxWidth: 340, width: '100%', fontFamily: 'Nunito, sans-serif', maxHeight: '80vh', overflowY: 'auto' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 4px', textAlign: 'center' }}>Choisis une catégorie</h3>
-            <p style={{ fontSize: 12, color: '#9CA3AF', textAlign: 'center', margin: '0 0 16px' }}>Les f*cts du pack seront de cette catégorie</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {getPlayableCategories().map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setShowCategoryPicker(false)
-                    buyMysteryPack(pendingPack, cat.id)
-                    setPendingPack(null)
-                  }}
-                  className="w-full flex items-center gap-3 rounded-xl active:scale-95 transition-all"
-                  style={{ padding: '10px 14px', background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.06)', cursor: 'pointer', textAlign: 'left' }}
-                >
-                  <img
-                    src={`/assets/categories/${cat.id}.png`}
-                    alt={cat.label}
-                    style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover' }}
-                    onError={e => { e.target.style.display = 'none' }}
-                  />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e' }}>{cat.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modal Roulette */}
       {showRoulette && (

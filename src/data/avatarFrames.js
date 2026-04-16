@@ -1,6 +1,6 @@
 // ─── Cadres de profil achetables ────────────────────────────────────────────
 // Stockage: wtf_data.ownedFrames = ['default', ...], wtf_data.equippedFrame = 'default'
-// Prix cohérents avec Notion F2P (Tier 1 — cosmétiques, 30-80 coins)
+// Prix économie ×10 (CLAUDE.md 15/04/2026) — cosmétiques moyen 500c.
 
 export const AVATAR_FRAMES = [
   {
@@ -13,30 +13,30 @@ export const AVATAR_FRAMES = [
   {
     id: 'bronze',
     label: 'Bronze',
-    cost: 30,
+    cost: 300,
     border: '3px solid #CD7F32',
     glow: '0 0 14px rgba(205,127,50,0.6)',
   },
   {
     id: 'argent',
     label: 'Argent',
-    cost: 50,
+    cost: 500,
     border: '3px solid #C0C0C0',
     glow: '0 0 16px rgba(192,192,192,0.7)',
   },
   {
-    id: 'or',
-    label: 'Or',
-    cost: 80,
-    border: '3px solid #FFD700',
-    glow: '0 0 18px rgba(255,215,0,0.75)',
-  },
-  {
     id: 'neon',
     label: 'Néon',
-    cost: 60,
+    cost: 600,
     border: '3px solid #FF6B1A',
     glow: '0 0 22px rgba(255,107,26,0.8), 0 0 40px rgba(255,107,26,0.4)',
+  },
+  {
+    id: 'or',
+    label: 'Or',
+    cost: 800,
+    border: '3px solid #FFD700',
+    glow: '0 0 18px rgba(255,215,0,0.75)',
   },
 ]
 

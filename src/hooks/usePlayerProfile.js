@@ -35,7 +35,6 @@ function writeLocalDelta(delta) {
     const data = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     if (delta.coins)   data.wtfCoins = Math.max(0, (data.wtfCoins || 0) + delta.coins)
     if (delta.hints)   data.hints    = Math.max(0, (parseInt(data.hints || 0, 10) || 0) + delta.hints)
-    if (delta.hints)   data.hints    = Math.max(0, (parseInt(data.hints || 0, 10) || 0) + delta.hints)
     data.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(data))
     window.dispatchEvent(new Event('wtf_currency_updated'))

@@ -213,47 +213,49 @@ export default function QuestionScreen({
       }}
     >
       <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))', margin: 0 }}>{renderFormattedText(fact.question)}</h2>
-      {isQuickieMode && (
-        <div style={{
-          position: 'relative',
-          width: '60%',
-          aspectRatio: '1 / 1',
-          borderRadius: S(12),
-          overflow: 'hidden',
-          margin: `${S(8)} auto 0`,
-          background: 'rgba(0,0,0,0.3)',
-          border: '3px solid #7F77DD',
-          flexShrink: 0,
-        }}>
-          {fact.imageUrl && !imgFailed ? (
-            <img
-              src={fact.imageUrl}
-              alt=""
-              style={{
-                width: '100%', height: '100%', objectFit: 'cover',
-                filter: 'blur(18px) brightness(0.6)',
-                transform: 'scale(1.15)',
-              }}
-              onError={() => setImgFailed(true)}
-            />
-          ) : (
-            <div style={{ width: '100%', height: '100%', filter: 'blur(14px) brightness(0.6)' }}>
-              <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
-            </div>
-          )}
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{
-              fontSize: S(48), fontWeight: 900, color: '#B5AFEB',
-              textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
-              animation: 'quickie-pulse-btn 2s ease-in-out infinite',
-              lineHeight: 1,
-            }}>?</span>
-          </div>
+    </div>
+  )
+
+  // ── Image Quickie (élément séparé) ──────────────────────────────────────
+  const quickieImage = isQuickieMode && (
+    <div style={{
+      position: 'relative',
+      width: '55%',
+      aspectRatio: '1 / 1',
+      borderRadius: S(12),
+      overflow: 'hidden',
+      margin: '0 auto',
+      background: 'rgba(0,0,0,0.3)',
+      border: '3px solid #7F77DD',
+      flexShrink: 0,
+    }}>
+      {fact.imageUrl && !imgFailed ? (
+        <img
+          src={fact.imageUrl}
+          alt=""
+          style={{
+            width: '100%', height: '100%', objectFit: 'cover',
+            filter: 'blur(18px) brightness(0.6)',
+            transform: 'scale(1.15)',
+          }}
+          onError={() => setImgFailed(true)}
+        />
+      ) : (
+        <div style={{ width: '100%', height: '100%', filter: 'blur(14px) brightness(0.6)' }}>
+          <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
         </div>
       )}
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{
+          fontSize: S(48), fontWeight: 900, color: '#B5AFEB',
+          textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
+          animation: 'quickie-pulse-btn 2s ease-in-out infinite',
+          lineHeight: 1,
+        }}>?</span>
+      </div>
     </div>
   )
 
@@ -324,6 +326,7 @@ export default function QuestionScreen({
                 console.warn('[QuestionScreen] buy hint RPC failed:', e?.message || e)
               )
             } : null}
+            revealedTextColor={isQuickieMode ? '#7F77DD' : undefined}
           />
         )
       })}
@@ -500,6 +503,9 @@ export default function QuestionScreen({
         overflow: 'auto',
       }}>
         {questionCard}
+
+        {/* Image Quickie séparée */}
+        {quickieImage}
 
         {/* Indices */}
         {isDevMode ? devHintButtons : (difficulty?.hintsAllowed && hintButtons)}

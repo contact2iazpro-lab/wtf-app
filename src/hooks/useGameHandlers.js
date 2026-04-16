@@ -147,18 +147,21 @@ export function useGameHandlers({
   }, [selectedAnswer])
 
   // ── handleUseHint ──────────────────────────────────────────────────────
+  // Note: ne vérifie PAS le stock hints ici — le composant appelant (HintFlipButton)
+  // gère déjà la logique canUse/canBuyNow. Si onBuyHint() a été appelé juste avant,
+  // hints dans la closure est stale (React n'a pas encore re-rendu).
+  // Le débit est sécurisé côté serveur par la RPC.
   const handleUseHint = useCallback((hintNum) => {
     const freeHints = selectedDifficulty?.freeHints || 0
     const isPaidHint = hintNum > freeHints
     if (isPaidHint) {
-      if ((hints ?? 0) < 1) return
       applyCurrencyDelta?.({ hints: -1 }, 'hint_used_in_session')?.catch?.(e =>
         console.warn('[useGameHandlers] hint RPC failed:', e?.message || e)
       )
     }
     setHintsUsed(hintNum)
     setSessionAnyHintUsed(true)
-  }, [selectedDifficulty, applyCurrencyDelta, hints])
+  }, [selectedDifficulty, applyCurrencyDelta])
 
   return {
     handleSelectAnswer,

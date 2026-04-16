@@ -7,7 +7,7 @@ import { useState } from 'react'
 // canUse: player can use this hint right now
 // onBuyHint: callback when buying with coins (null if free)
 // onReveal: callback when revealing the hint
-export default function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, canUse, needsBuy = false, onReveal, onBuyHint, initialRevealed = false }) {
+export default function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, canUse, needsBuy = false, onReveal, onBuyHint, initialRevealed = false, revealedTextColor }) {
   const [phase, setPhase] = useState(initialRevealed ? 'back' : 'front') // 'front' | 'flip' | 'back'
 
   const canBuyNow = (needsBuy || (!canUse && canAfford && !isFree)) && onBuyHint
@@ -102,7 +102,7 @@ export default function HintFlipButton({ num, hint, catColor, isFree, cost, canA
             style={{
               fontSize: dynFontSize,
               fontWeight: 700,
-              color: '#1a1a2e',
+              color: revealedTextColor || '#1a1a2e',
               textAlign: 'center',
               lineHeight: 1.3,
               wordBreak: 'break-word',

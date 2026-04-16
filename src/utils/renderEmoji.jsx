@@ -5,12 +5,12 @@
 export const CURRENCY_EMOJI_MAP = {
   '🪙': '/assets/ui/icon-coins.png',
   '💰': '/assets/ui/icon-coins.png',
-  '💡': '/assets/ui/icon-hint.png',
+  '💡': '/assets/ui/icon-hint.png?v=2',
 }
 
 const ALT_MAP = {
   '/assets/ui/icon-coins.png': 'coins',
-  '/assets/ui/icon-hint.png': 'indice',
+  '/assets/ui/icon-hint.png?v=2': 'indice',
 }
 
 export function renderEmoji(value) {

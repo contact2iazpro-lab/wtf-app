@@ -4,7 +4,7 @@ import { audio } from '../utils/audio'
 import { CURRENCY_EMOJI_MAP } from '../utils/renderEmoji'
 
 const EMOJI_IMG = {
-  '🎰': '/assets/ui/emoji-roulette.png',
+  '🎰': '/assets/ui/emoji-roulette.png?v=2',
   '🔋': '/assets/ui/emoji-energy.png',
   '🗺️': '/assets/ui/emoji-route.png',
   '🧩': '/assets/ui/emoji-puzzle.png',
@@ -320,7 +320,7 @@ function renderText(text) {
 function getChapterIcon(chapterId) {
   const modeIcons = {
     quest: '/assets/modes/quest.svg',
-    quickie: '/assets/modes/quickie.png',
+    quickie: '/assets/modes/quickie.png?v=2',
     flash: '/assets/modes/flash.svg',
     blitz: '/assets/modes/blitz.svg',
     no_limit: '/assets/modes/no-limit.svg',
@@ -389,7 +389,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             const color = CHAPTER_COLORS[ch.id] || '#FF6B1A'
             const modeIcons = {
               quest: '/assets/modes/quest.svg',
-              quickie: '/assets/modes/quickie.png',
+              quickie: '/assets/modes/quickie.png?v=2',
               flash: '/assets/modes/flash.svg',
               blitz: '/assets/modes/blitz.svg',
               no_limit: '/assets/modes/no-limit.svg',

@@ -34,10 +34,10 @@ const HOME_BG_COLOR = [
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const BRAIN_STYLES = {
-  3:  { img: '/assets/brain-beginner.png', label: 'Débutant' },
-  7:  { img: '/assets/brain-regular.png', label: 'Habitué' },
-  14: { img: '/assets/brain-loyal.png', label: 'Fidèle' },
-  30: { img: '/assets/brain-legend.png', label: 'Légende' },
+  3:  { img: '/assets/brain-beginner.png?v=2', label: 'Débutant' },
+  7:  { img: '/assets/brain-regular.png?v=2', label: 'Habitué' },
+  14: { img: '/assets/brain-loyal.png?v=2', label: 'Fidèle' },
+  30: { img: '/assets/brain-legend.png?v=2', label: 'Légende' },
 }
 
 
@@ -162,7 +162,7 @@ export default function HomeScreen({
         <div style={{ display: 'flex', alignItems: 'center', gap: S(8) }}>
           {[
             { icon: '/assets/ui/icon-coins.png', value: coins },
-            { icon: '/assets/ui/icon-hint.png', value: hints },
+            { icon: '/assets/ui/icon-hint.png?v=2', value: hints },
           ].map((pill, i) => (
             <button
               key={i} onClick={() => nav('boutique')}
@@ -325,7 +325,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <img src="/assets/roulette.png" alt="Roulette" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/assets/roulette.png?v=2" alt="Roulette" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>Roulette</span>
             {rouletteBadge && (
@@ -344,7 +344,7 @@ export default function HomeScreen({
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <img src="/assets/daily.png" alt="Flash du jour" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/assets/daily.png?v=2" alt="Flash du jour" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <span style={{ fontSize: S(10), fontWeight: 800, color: 'white' }}>
               {isSunday ? 'Hunt VIP' : 'Flash du jour'}
@@ -386,7 +386,7 @@ export default function HomeScreen({
           width: '100%',
           maxWidth: S(320),
         }}>
-          <ModeIcon icon="/assets/modes/quickie.png" name="Quickie" color="#7F77DD" onClick={() => nav('quickie')} />
+          <ModeIcon icon="/assets/modes/quickie.png?v=2" name="Quickie" color="#7F77DD" onClick={() => nav('quickie')} />
           <ModeIcon icon="/assets/modes/quest.svg" name="Quest" color="#FF6B1A" onClick={() => nav('quest')} />
           <ModeIcon icon="/assets/modes/flash.svg" name="Flash" color="#E91E63" onClick={() => nav('flash')} />
           <ModeIcon icon="/assets/modes/vrai-ou-fou.svg" name="Vrai ou Fou" color="#9B59B6" onClick={() => nav('vrai_ou_fou')} />
@@ -415,7 +415,7 @@ export default function HomeScreen({
             boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
           }}
         >
-          <img src="/assets/modes/quickie.png" alt="" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/assets/modes/quickie.png?v=2" alt="" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
           <span style={{
             fontFamily: "'Fredoka One', cursive",
             fontWeight: 400, fontSize: S(14), color: '#7F77DD',

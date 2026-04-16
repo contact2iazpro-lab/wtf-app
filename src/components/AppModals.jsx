@@ -65,7 +65,7 @@ export default function AppModals({
             ? streakRewardToast.reward._label
             : <>
                 {streakRewardToast.reward.coins > 0 && <>{`+${streakRewardToast.reward.coins} `}<img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
-                {streakRewardToast.reward.hints > 0 && <>{`+${streakRewardToast.reward.hints} `}<img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
+                {streakRewardToast.reward.hints > 0 && <>{`+${streakRewardToast.reward.hints} `}<img src="/assets/ui/icon-hint.png?v=2" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />{'  '}</>}
                 {streakRewardToast.reward.badge && '🏅 Badge !'}
               </>
           }

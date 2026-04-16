@@ -86,7 +86,7 @@ export default function GameHeader({
               </span>
             )}
           </div>
-          <Pill icon="/assets/ui/icon-hint.png" value={hints} alt="hints" />
+          <Pill icon="/assets/ui/icon-hint.png?v=2" value={hints} alt="hints" />
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}
             style={{

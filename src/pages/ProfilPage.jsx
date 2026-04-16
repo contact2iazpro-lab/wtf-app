@@ -334,7 +334,7 @@ export default function ProfilPage() {
         <div className="rounded-2xl mb-3" style={{ background: 'rgba(0,0,0,0.04)', padding: 8, display: 'flex', gap: 6 }}>
           {[
             { emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.coins, label: 'coins' },
-            { emoji: <img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.hints, label: 'indices' },
+            { emoji: <img src="/assets/ui/icon-hint.png?v=2" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />, value: balances.hints, label: 'indices' },
           ].map(r => (
             <div key={r.label} style={{ flex: 1, textAlign: 'center' }}>
               <span style={{ fontSize: 18, display: 'block' }}>{r.emoji}</span>

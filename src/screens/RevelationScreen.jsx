@@ -284,7 +284,7 @@ export default function RevelationScreen({
           <span ref={scoreRefTarget} className={showScorePulse ? 'score-pulse' : ''} style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyCoins}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-          <img src="/assets/ui/icon-hint.png" style={{ width: S(16), height: S(16) }} alt="" />
+          <img src="/assets/ui/icon-hint.png?v=2" style={{ width: S(16), height: S(16) }} alt="" />
           <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyHints}</span>
         </div>
       </div>

@@ -27,7 +27,7 @@ export default function HintFlipButton({ num, hint, catColor, isFree, cost, canA
   const color = catColor || '#FF6B1A'
 
   // Front label depends on hint state
-  const hintIcon = <img src="/assets/ui/icon-hint.png" alt="" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', opacity: disabled ? 0.5 : 1 }} />
+  const hintIcon = <img src="/assets/ui/icon-hint.png?v=2" alt="" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', opacity: disabled ? 0.5 : 1 }} />
   let frontLabel
   if (isFree || (canUse && !isFree)) {
     // Free hint OR paid hint with stock available → no price shown

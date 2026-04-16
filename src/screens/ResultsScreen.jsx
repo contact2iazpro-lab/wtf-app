@@ -396,7 +396,7 @@ export default function ResultsScreen({
             <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cCoins}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
-            <img src="/assets/ui/icon-hint.png" style={{ width: S(14), height: S(14) }} alt="" />
+            <img src="/assets/ui/icon-hint.png?v=2" style={{ width: S(14), height: S(14) }} alt="" />
             <span style={{ fontWeight: 700, color: textOnBg, fontSize: S(11) }}>{_cHints}</span>
           </div>
         </div>
@@ -438,7 +438,7 @@ export default function ResultsScreen({
         {/* Rang + Étoiles + Badge Perfect — composant extrait (Phase 5.2 A) */}
         <ResultsRankHeader
           emoji={sessionType === 'quickie' ? null : currentRank.emoji}
-          customIcon={sessionType === 'quickie' ? '/assets/modes/quickie.png' : null}
+          customIcon={sessionType === 'quickie' ? '/assets/modes/quickie.png?v=2' : null}
           label={currentRank.label}
           stars={stars}
           visibleStars={visibleStars}

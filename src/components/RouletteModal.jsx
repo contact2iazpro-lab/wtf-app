@@ -13,10 +13,10 @@ const S = (px) => `calc(${px}px * var(--scale))`
 const SEGMENTS = [
   { label: '20',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 20  }, color: '#9CA3AF', weight: 28 },
   { label: '50',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 50  }, color: '#CD7F32', weight: 24 },
-  { label: '1',   icon: '/assets/ui/icon-hint.png',  reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 18 },
+  { label: '1',   icon: '/assets/ui/icon-hint.png?v=2',  reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 18 },
   { label: '100', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 100 }, color: '#C0C0C0', weight: 12 },
   { label: '150', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 150 }, color: '#3B82F6', weight: 8  },
-  { label: '2',   icon: '/assets/ui/icon-hint.png',  reward: { type: 'hints', amount: 2   }, color: '#6D28D9', weight: 5  },
+  { label: '2',   icon: '/assets/ui/icon-hint.png?v=2',  reward: { type: 'hints', amount: 2   }, color: '#6D28D9', weight: 5  },
   { label: '300', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 300 }, color: '#F59E0B', weight: 3  },
   { label: '750', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 750 }, color: '#FFD700', weight: 2  },
 ]
@@ -248,7 +248,7 @@ export default function RouletteModal({ onClose, scale }) {
         onClick={e => e.stopPropagation()}
       >
         <h2 style={{ fontSize: 22, fontWeight: 900, color: '#1a1a2e', margin: '0 0 4px' }}>
-          <img src="/assets/ui/emoji-roulette.png" alt="roulette" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Roulette du jour
+          <img src="/assets/ui/emoji-roulette.png?v=2" alt="roulette" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Roulette du jour
         </h2>
         <p style={{ fontSize: 12, color: '#9CA3AF', margin: '0 0 16px' }}>
           {isFree ? '1 spin gratuit disponible !' : `Spin supplémentaire : ${EXTRA_SPIN_COST} coins`}

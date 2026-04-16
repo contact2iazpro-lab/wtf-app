@@ -392,7 +392,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           fontSize: S_val(16), fontWeight: 700, fontFamily: 'Nunito, sans-serif',
         }}>
           <div><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {sessionScore}</div>
-          <div><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
+          <div><img src="/assets/ui/icon-hint.png?v=2" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
         </div>
 
         {/* Message */}
@@ -700,7 +700,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           fontSize: S_val(16), fontWeight: 700, fontFamily: 'Nunito, sans-serif',
         }}>
           <div><img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> {sessionScore}</div>
-          <div><img src="/assets/ui/icon-hint.png" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
+          <div><img src="/assets/ui/icon-hint.png?v=2" alt="indice" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> 0</div>
         </div>
 
         {/* Message */}

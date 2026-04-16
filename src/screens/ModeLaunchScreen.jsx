@@ -7,7 +7,7 @@ const S = (px) => `calc(${px}px * var(--scale))`
 import { CURRENCY_EMOJI_MAP } from '../utils/renderEmoji'
 
 const EMOJI_IMG = {
-  '🎰': '/assets/ui/emoji-roulette.png',
+  '🎰': '/assets/ui/emoji-roulette.png?v=2',
   '🔋': '/assets/ui/emoji-energy.png',
   '🗺️': '/assets/ui/emoji-route.png',
   '🧩': '/assets/ui/emoji-puzzle.png',

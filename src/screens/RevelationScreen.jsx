@@ -638,11 +638,11 @@ export default function RevelationScreen({
               {/* Stamp Unlocked */}
               <div style={{
                 position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
-                background: '#4CAF50', borderRadius: S(6),
+                background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6),
                 padding: `${S(3)} ${S(8)}`,
                 pointerEvents: 'none',
               }}>
-                <span style={{ fontSize: S(10), fontWeight: 900, color: '#ffffff', letterSpacing: '0.04em' }}>Unlocked !</span>
+                <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}

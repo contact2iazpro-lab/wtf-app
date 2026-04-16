@@ -13,6 +13,7 @@ import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import HintFlipButton from '../components/HintFlipButton'
 import FallbackImage from '../components/FallbackImage'
+import EnergyIcon from '../components/icons/EnergyIcon'
 import RevelationScreen from './RevelationScreen'
 import renderFormattedText from '../utils/renderFormattedText'
 import GainsBreakdown from '../components/results/GainsBreakdown'
@@ -568,7 +569,7 @@ export default function QuestScreen({ onHome, setStorage }) {
           <span style={{ opacity: 0.6, marginLeft: 8 }}>· Bloc {currentBlockIdx}/{TOTAL_BLOCKS}</span>
         </div>
         <div style={{ textAlign: 'center', fontSize: 12, opacity: 0.7, marginBottom: 10 }}>
-          <img src="/assets/ui/emoji-energy.png" alt="⚡" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', marginRight: 4 }} />
+          <span style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}><EnergyIcon size={14} /></span>
           {energyState.remaining}/{energyState.max} · 1 énergie par bloc
         </div>
 
@@ -641,7 +642,7 @@ export default function QuestScreen({ onHome, setStorage }) {
               background: '#FAFAF8', borderRadius: 20, padding: 22, width: '100%', maxWidth: 320,
               color: '#1a1a2e', textAlign: 'center',
             }}>
-              <img src="/assets/ui/emoji-energy.png" alt="" style={{ width: 42, height: 42, marginBottom: 4 }} />
+              <div style={{ marginBottom: 4 }}><EnergyIcon size={42} /></div>
               <h2 style={{ fontSize: 18, fontWeight: 900, margin: '4px 0 6px' }}>Plus d'énergie !</h2>
               <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', lineHeight: 1.5 }}>
                 Achète 1 énergie pour {QUICKIE_ENERGY.EXTRA_SESSION_COST} coins et lance ce bloc, ou attends la régénération.

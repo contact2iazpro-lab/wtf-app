@@ -8,6 +8,7 @@ import { QUICKIE_ENERGY } from '../constants/gameConfig'
 import { useScale } from '../hooks/useScale'
 import RouletteModal from '../components/RouletteModal'
 import { AVATAR_FRAMES, readFrameState, addOwnedFrame } from '../data/avatarFrames'
+import EnergyIcon from '../components/icons/EnergyIcon'
 import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -351,7 +352,7 @@ export default function BoutiquePage() {
         {/* Section Énergie */}
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
-            <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 20 }} />
+            <EnergyIcon size={20} />
             <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Énergie</h2>
             <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', color: '#16a34a' }}>
               {getQuickieEnergy().remaining} / {QUICKIE_ENERGY.FREE_SESSIONS_PER_DAY}
@@ -362,7 +363,7 @@ export default function BoutiquePage() {
             {ENERGY_PACKS.map(pack => (
               <PackButton
                 key={pack.quantity}
-                emoji={<img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />}
+                emoji={<EnergyIcon size={16} />}
                 label={pack.label}
                 price={pack.price}
                 discount={pack.discount}

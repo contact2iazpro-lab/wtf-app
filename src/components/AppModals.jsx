@@ -8,6 +8,7 @@
 import SettingsModal from './SettingsModal'
 import HowToPlayModal from './HowToPlayModal'
 import ConnectBanner from './ConnectBanner'
+import EnergyIcon from './icons/EnergyIcon'
 import NewCategoriesModal from './NewCategoriesModal'
 import GameModal from './GameModal'
 import DevPanel from '../components/DevPanel'
@@ -142,7 +143,7 @@ export default function AppModals({
 
       {/* No energy modal */}
       {showNoEnergyModal && (
-        <GameModal emoji={<img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />} title="Plus de sessions !"
+        <GameModal emoji={<EnergyIcon size={16} />} title="Plus de sessions !"
           message={`Tes ${QUICKIE_ENERGY.FREE_SESSIONS_PER_DAY} sessions gratuites du jour sont utilisées. Achète une session pour ${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins ou reviens demain !`}
           confirmLabel={`Acheter (${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins)`} cancelLabel="Attendre"
           onConfirm={() => {

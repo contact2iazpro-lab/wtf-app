@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
+import EnergyIcon from './icons/EnergyIcon'
 
 import { CURRENCY_EMOJI_MAP } from '../utils/renderEmoji'
 
 const EMOJI_IMG = {
   '🎰': '/assets/ui/emoji-roulette.png?v=2',
-  '🔋': '/assets/ui/emoji-energy.png',
   '🗺️': '/assets/ui/emoji-route.png',
   '🧩': '/assets/ui/emoji-puzzle.png',
   ...CURRENCY_EMOJI_MAP,
 }
 function renderIcon(value) {
+  if (value === '🔋') return <EnergyIcon size={16} />
   const src = EMOJI_IMG[value]
   if (!src) return value
   return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />

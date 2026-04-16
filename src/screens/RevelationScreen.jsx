@@ -359,8 +359,7 @@ export default function RevelationScreen({
               {flipped && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(10) }}>
                   <span style={{ fontSize: S(48), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
-                  {!isTimeout && (
-                    <button
+                  <button
                       onClick={() => {
                         if (_currencyCoins < 25) return
                         applyCurrencyDelta?.({ coins: -25 }, 'unlock_fact_wrong_answer')
@@ -380,8 +379,7 @@ export default function RevelationScreen({
                       }}
                     >
                       🔓 Débloquer — 25 <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
-                    </button>
-                  )}
+                  </button>
                 </div>
               )}
             </div>

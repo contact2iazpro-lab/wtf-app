@@ -129,9 +129,10 @@ export default function RevelationScreen({
   correctAnswer,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _currencyCoins, hints: _currencyHints } = usePlayerProfile()
+  const { coins: _currencyCoins, hints: _currencyHints, applyCurrencyDelta } = usePlayerProfile()
 
   const [flipped, setFlipped] = useState(true)
+  const [unlockedByCoins, setUnlockedByCoins] = useState(false)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [showLightbox, setShowLightbox] = useState(false)
   // sessionScore includes current points already — start display BEFORE this question's points
@@ -297,8 +298,8 @@ export default function RevelationScreen({
     </div>
   )
 
-  // ── CAS MAUVAISE RÉPONSE (solo) ───────────────────────────────────────────
-  if (!isCorrect) {
+  // ── CAS MAUVAISE RÉPONSE (solo) — sauf si débloqué par coins ──────────────
+  if (!isCorrect && !unlockedByCoins) {
     return (
       <div className="relative screen-enter" style={{
         height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
@@ -354,11 +355,11 @@ export default function RevelationScreen({
                 </div>
               )}
               <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
-              {/* Timeout → stamp texte rouge / Mauvaise réponse → cadenas + débloquer */}
-              {flipped && isTimeout && (
-                <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 5 }}>
+              {/* Stamp bienveillant (toujours) */}
+              {flipped && (
+                <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 3 }}>
                   <div style={{
-                    position: 'absolute', left: '50%', top: '50%',
+                    position: 'absolute', left: '50%', top: isTimeout ? '50%' : '30%',
                     animation: 'stampImpact 0.5s ease-out forwards',
                     background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
                     border: '3px solid #EF4444',
@@ -371,21 +372,29 @@ export default function RevelationScreen({
                   </div>
                 </div>
               )}
+              {/* Cadenas + débloquer (mauvaise réponse uniquement, pas timeout) */}
               {flipped && !isTimeout && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(10) }}>
-                  <span style={{ fontSize: S(48), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-end" style={{ zIndex: 5, paddingBottom: S(16) }}>
                   <button
-                    onClick={() => { /* TODO: unlock fact logic */ }}
+                    onClick={() => {
+                      if (_currencyCoins < 25) return
+                      applyCurrencyDelta?.({ coins: -25 }, 'unlock_fact_wrong_answer')
+                      audio.play('correct')
+                      setUnlockedByCoins(true)
+                    }}
                     className="btn-press active:scale-95"
                     style={{
                       background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
                       border: isQuickieMode ? '2px solid #7F77DD' : '2px solid rgba(255,255,255,0.5)',
                       borderRadius: S(12), padding: `${S(8)} ${S(16)}`,
-                      color: '#ffffff', fontWeight: 800, fontSize: S(13),
-                      cursor: 'pointer',
+                      color: _currencyCoins >= 25 ? '#ffffff' : '#9CA3AF',
+                      fontWeight: 800, fontSize: S(13),
+                      cursor: _currencyCoins >= 25 ? 'pointer' : 'not-allowed',
+                      opacity: _currencyCoins >= 25 ? 1 : 0.6,
+                      display: 'flex', alignItems: 'center', gap: S(6),
                     }}
                   >
-                    🔓 Débloquer ce f*ct
+                    🔓 Débloquer — 25 <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
                   </button>
                 </div>
               )}
@@ -402,12 +411,16 @@ export default function RevelationScreen({
           )}
         </div>
 
-        {/* Zone centrale — centré verticalement entre social phrase et boutons */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: S(22), fontWeight: 900, color: '#EF4444', textShadow: '0 2px 8px rgba(0,0,0,0.4)', textAlign: 'center', padding: `0 ${S(16)}`, lineHeight: 1.4 }}>
-            {isTimeout ? '⏱️ Temps écoulé' : wrongMsg}
-          </span>
-        </div>
+        {/* Zone centrale — Temps écoulé centré si timeout, sinon spacer */}
+        {isTimeout ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: S(22), fontWeight: 900, color: '#EF4444', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+              ⏱️ Temps écoulé
+            </span>
+          </div>
+        ) : (
+          <div style={{ flex: 1 }} />
+        )}
 
         {/* Boutons — demander aide + suivant côte à côte */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
@@ -425,7 +438,7 @@ export default function RevelationScreen({
                 boxShadow: isQuickieMode ? '0 4px 16px rgba(127,119,221,0.5)' : 'none',
               }}
             >
-              🆘 AIDE
+              Demander à un ami
             </button>
             <button
               onClick={handleNext}

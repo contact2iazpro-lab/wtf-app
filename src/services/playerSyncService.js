@@ -59,8 +59,7 @@ export async function pullFromServer(userId) {
         // 1d — quest progress (ex-route). Support legacy remote.flags.route
         if (remote.flags.quest) saved.quest = remote.flags.quest
         else if (remote.flags.route) saved.quest = remote.flags.route
-        if (remote.flags.coffreClaimedDays) saved.coffreClaimedDays = remote.flags.coffreClaimedDays
-        if (remote.flags.coffreWeekStart) saved.coffreWeekStart = remote.flags.coffreWeekStart
+        if (remote.flags.streakPaliersClaimed) saved.streakPaliersClaimed = remote.flags.streakPaliersClaimed
         if (remote.flags.streakFreezeCount !== undefined) saved.streakFreezeCount = remote.flags.streakFreezeCount
         if (remote.flags.bestBlitzTime) saved.bestBlitzTime = remote.flags.bestBlitzTime
         // A.9.6 — stats et totaux : MAX par champ (compteurs monotones, jamais

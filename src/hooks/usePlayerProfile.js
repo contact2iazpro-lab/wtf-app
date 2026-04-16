@@ -144,7 +144,7 @@ export function usePlayerProfile() {
 
   /**
    * mergeFlags — merge atomique d'un patch JSONB dans profiles.flags.
-   * Utilisé pour persister blitzRecords, quest progress, coffreClaimedDays,
+   * Utilisé pour persister blitzRecords, quest progress, streakPaliersClaimed,
    * streakFreezeCount, statsByMode, badges, etc.
    *
    * @param {Object} patch - Objet à merger (top-level keys écrasent)

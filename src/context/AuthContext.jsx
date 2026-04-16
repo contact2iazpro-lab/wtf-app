@@ -259,8 +259,7 @@ export function AuthProvider({ children }) {
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       const cleanData = {
-        coffreClaimedDays: wtfData.coffreClaimedDays,
-        coffreWeekStart: wtfData.coffreWeekStart,
+        streakPaliersClaimed: wtfData.streakPaliersClaimed,
       }
       localStorage.setItem('wtf_data', JSON.stringify(cleanData))
       localStorage.removeItem('wtf_hints_available') // legacy, plus utilisé

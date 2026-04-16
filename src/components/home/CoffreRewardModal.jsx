@@ -5,9 +5,11 @@
 export default function CoffreRewardModal({ reward, onClose }) {
   if (!reward) return null
 
-  const message = reward.type === 'coins'
-    ? `Tu as gagné ${reward.amount} coins !`
-    : `Tu as gagné ${reward.amount} indice${reward.amount > 1 ? 's' : ''} !`
+  const parts = []
+  if (reward.coins) parts.push(`${reward.coins} coins`)
+  if (reward.hints) parts.push(`${reward.hints} indice${reward.hints > 1 ? 's' : ''}`)
+  const message = `Tu as gagné ${parts.join(' + ')} !`
+  const title = reward.name ? `Palier ${reward.name} !` : 'Récompense de fidélité !'
 
   return (
     <div
@@ -31,7 +33,7 @@ export default function CoffreRewardModal({ reward, onClose }) {
       >
         <img src="/assets/ui/chest-open.png" alt="coffre" style={{ width: 48, height: 48, marginBottom: 16 }} />
         <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 12, lineHeight: 1.4 }}>
-          Coffre du jour !
+          {title}
         </div>
         <div style={{ fontSize: 18, fontWeight: 700, color: '#1a1a2e', marginBottom: 24, lineHeight: 1.4 }}>
           {message}

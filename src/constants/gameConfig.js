@@ -152,14 +152,18 @@ export const SNACK_ENERGY = {
   FREE_SESSIONS_PER_DAY: 5,
 }
 
-// ── Paliers de récompenses fidélité Streak
+// ── Paliers Streak/Coffres fusionnés (décision 16/04/2026 Option B)
+// Pas de J1 (redondant avec Flash quotidien). 4 paliers nommés.
+export const STREAK_PALIERS = [
+  { day: 3,  name: 'Débutant', coins: 75,   hints: 0, badge: false, special: null },
+  { day: 7,  name: 'Habitué',  coins: 200,  hints: 2, badge: true,  special: null },
+  { day: 14, name: 'Fidèle',   coins: 500,  hints: 0, badge: true,  special: null },
+  { day: 30, name: 'Légende',  coins: 1000, hints: 0, badge: true,  special: 'wtf_premium' },
+]
+
 export function getStreakReward(streakDays) {
-  if (streakDays === 1)  return { coins: 2,  hints: 0, badge: false }
-  if (streakDays === 3)  return { coins: 0,  hints: 2, badge: false }
-  if (streakDays === 7)  return { coins: 35, hints: 0, badge: true  }
-  if (streakDays === 14) return { coins: 25, hints: 3, badge: false }
-  if (streakDays === 30) return { coins: 0,  hints: 0, badge: false, special: 'wtf_premium' }
-  return null
+  const palier = STREAK_PALIERS.find(p => p.day === streakDays)
+  return palier ? { coins: palier.coins, hints: palier.hints, badge: palier.badge, special: palier.special } : null
 }
 
 // ── Tutorial Configs (isolated, used by TutoTunnel)

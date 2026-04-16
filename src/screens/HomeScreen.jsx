@@ -24,11 +24,10 @@ import { ZONE_HEIGHTS, ICON_SIZES, ASSETS, GRID_CONFIG } from '../constants/layo
 import RouletteModal from '../components/RouletteModal'
 
 // Composants/hooks extraits (5.1)
-import { useDailyCoffre } from '../hooks/useDailyCoffre'
+import { useStreakRewards } from '../hooks/useStreakRewards'
 import { useCountdownToMidnight } from '../hooks/useCountdownToMidnight'
 import StarburstBackground from '../components/home/StarburstBackground'
 import CoffreRewardModal from '../components/home/CoffreRewardModal'
-import CoffreAccelerateModal from '../components/home/CoffreAccelerateModal'
 import NewBadgeModal from '../components/home/NewBadgeModal'
 
 // ── Fond Option A : repro CSS pure de question-default, base navy ────────────
@@ -66,13 +65,12 @@ export default function HomeScreen({
 
   // UI local
   const [showSettings, setShowSettings] = useState(false)
-  const [coffreReward, setCoffreReward] = useState(null)       // modal "gains coffre"
-  const [earlyCoffreTarget, setEarlyCoffreTarget] = useState(null) // modal "accélérer J+1"
+  const [coffreReward, setCoffreReward] = useState(null)       // modal "gains palier"
   const [showRoulette, setShowRoulette] = useState(false)
   const [badgeToShow, setBadgeToShow] = useState(null)
 
-  // Daily coffres
-  const { coffres, todayIndex, getStatus, openCoffre, openEarly } = useDailyCoffre(applyCurrencyDelta, mergeFlags)
+  // Streak rewards (fusion coffres + streak — décision 16/04/2026 Option B)
+  const { paliers, currentStreak: streakVal, getStatus, claim } = useStreakRewards(applyCurrencyDelta, mergeFlags)
 
   const countdown = useCountdownToMidnight()
   const scale = useScale()
@@ -108,18 +106,9 @@ export default function HomeScreen({
     else setShowSettings(true)
   }
 
-  const handleClaimCoffre = () => {
+  const handleClaimPalier = (day) => {
     audio.play?.('click')
-    const reward = openCoffre()
-    if (reward) setCoffreReward(reward)
-  }
-
-  const handleAccelerateConfirm = (cost) => {
-    applyCurrencyDelta?.({ coins: -cost }, 'coffre_accelerate')?.catch?.(e =>
-      console.warn('[HomeScreen] accelerate RPC failed:', e?.message || e)
-    )
-    const reward = openEarly(earlyCoffreTarget)
-    setEarlyCoffreTarget(null)
+    const reward = claim(day)
     if (reward) setCoffreReward(reward)
   }
 
@@ -323,94 +312,64 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* ═══ ZONE 3 — COFFRES QUOTIDIENS ═══════════════════════ */}
+      {/* ═══ ZONE 3 — PALIERS STREAK (Débutant / Habitué / Fidèle / Légende) ═══ */}
       <div style={{
         height: ZONE_HEIGHTS.coffres, flexShrink: 0,
         display: 'flex', alignItems: 'center',
-        gap: 2, padding: '6px 10px 0',
+        gap: S(6), padding: '6px 10px 0',
         justifyContent: 'center',
         position: 'relative', zIndex: 2,
         animation: 'coffreSlideIn 0.5s ease-out',
       }}>
-        {coffres.map((c, i) => {
-          const rawStatus = getStatus(i)
-          const isSunday = i === 6
-          const isTodaySunday = new Date().getDay() === 0
-          // Dimanche considéré comme collecté si le f*ct VIP du jour est débloqué
-          const status = (isSunday && dailyFactUnlocked) ? 'collected' : rawStatus
+        {paliers.map((p) => {
+          const status = getStatus(p.day)
           const isAvail = status === 'available'
-          const isColl = status === 'collected'
-          const isMissed = status === 'missed'
-
-          const isWtfDimanche = isSunday && isAvail && isTodaySunday && !dailyFactUnlocked
-
-          if (isWtfDimanche) {
-            return (
-              <button
-                key={i}
-                onClick={() => { audio.play?.('click'); nav('wtfWeekly') }}
-                style={{
-                  flex: 1,
-                  display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'center',
-                  gap: S(2), padding: `${S(3)} ${S(1)}`,
-                  borderRadius: S(6),
-                  background: 'linear-gradient(135deg, rgba(255,107,26,0.4) 0%, rgba(255,107,26,0.2) 100%)',
-                  border: '1px solid rgba(255,107,26,0.6)',
-                  cursor: 'pointer',
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                <span style={{ fontSize: S(24), lineHeight: 1 }}>🎁</span>
-                <span style={{
-                  fontSize: S(7), fontWeight: 800, lineHeight: 1,
-                  color: '#FF6B1A', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                  textAlign: 'center', maxWidth: S(35),
-                }}>VIP</span>
-              </button>
-            )
-          }
-
-          const chestSrc = isAvail
-            ? '/assets/ui/chest-open.png'
-            : isSunday && !isColl
-              ? '/assets/ui/chest-trophy.png?v=2'
+          const isClaimed = status === 'claimed'
+          const chestSrc = isClaimed
+            ? '/assets/ui/chest-locked.png'
+            : isAvail
+              ? '/assets/ui/chest-open.png'
               : '/assets/ui/chest-locked.png'
-          const canAccelerate = status === 'locked' && i === todayIndex + 1
-
           return (
             <button
-              key={i}
-              onClick={() => {
-                if (isAvail) return handleClaimCoffre()
-                if (canAccelerate) {
-                  audio.play?.('click')
-                  setEarlyCoffreTarget(i)
-                }
-              }}
+              key={p.day}
+              onClick={() => { if (isAvail) handleClaimPalier(p.day) }}
+              disabled={!isAvail}
               style={{
-                flex: 1,
+                flex: 1, minWidth: 0,
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                gap: S(1), padding: `${S(3)} ${S(1)}`,
-                borderRadius: S(6),
-                background: isAvail ? 'rgba(255,255,255,0.4)' : canAccelerate ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.15)',
-                border: `1px solid ${isAvail ? 'rgba(255,255,255,0.6)' : canAccelerate ? 'rgba(255,215,0,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                cursor: isAvail || canAccelerate ? 'pointer' : 'default',
-                opacity: isColl ? 0.35 : isMissed ? 0.25 : canAccelerate ? 0.85 : status === 'locked' ? 0.5 : 1,
+                gap: S(2), padding: `${S(4)}px ${S(2)}px`,
+                borderRadius: S(8),
+                background: isAvail
+                  ? 'linear-gradient(135deg, rgba(255,215,0,0.35) 0%, rgba(255,107,26,0.2) 100%)'
+                  : 'rgba(255,255,255,0.12)',
+                border: `1px solid ${isAvail ? 'rgba(255,215,0,0.6)' : 'rgba(255,255,255,0.1)'}`,
+                cursor: isAvail ? 'pointer' : 'default',
+                opacity: isClaimed ? 0.35 : 1,
                 WebkitTapHighlightColor: 'transparent',
-                transition: 'opacity 0.2s, background 0.2s',
-                position: 'relative',
+                transition: 'opacity 0.2s, background 0.2s, transform 0.1s',
+                animation: isAvail ? 'pulse 1.8s ease-in-out infinite' : 'none',
               }}
             >
               <img
                 src={chestSrc}
-                alt={c.day}
+                alt={p.name}
                 style={{ width: S(ICON_SIZES.coffreIcon), height: S(ICON_SIZES.coffreIcon), objectFit: 'contain', flexShrink: 0, display: 'block' }}
               />
-              <span style={{ fontSize: S(7), fontWeight: 800, lineHeight: 1, color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
-                {isColl ? '✓' : c.day}
+              <span style={{
+                fontSize: S(8), fontWeight: 900, lineHeight: 1,
+                color: isAvail ? '#FFD700' : 'white',
+                textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+                textAlign: 'center',
+              }}>
+                {isClaimed ? '✓' : p.name}
+              </span>
+              <span style={{
+                fontSize: S(7), fontWeight: 700, lineHeight: 1,
+                color: 'white', opacity: 0.6,
+              }}>
+                J{p.day}
               </span>
             </button>
           )
@@ -574,13 +533,6 @@ export default function HomeScreen({
 
       {/* ═══ Modals ════════════════════════════════════════════════ */}
       {coffreReward && <CoffreRewardModal reward={coffreReward} onClose={() => setCoffreReward(null)} />}
-      {earlyCoffreTarget !== null && (
-        <CoffreAccelerateModal
-          currentCoins={coins}
-          onCancel={() => setEarlyCoffreTarget(null)}
-          onConfirm={handleAccelerateConfirm}
-        />
-      )}
       {showRoulette && <RouletteModal onClose={() => setShowRoulette(false)} scale={scale} />}
       {badgeToShow && <NewBadgeModal badge={badgeToShow} onClose={handleBadgeClose} />}
     </div>

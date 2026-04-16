@@ -104,13 +104,13 @@ if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID))
       0%, 100% { opacity: 0.1; transform: scale(0.8); }
       50%      { opacity: 0.35; transform: scale(1.2); }
     }
-    @keyframes unlockOverlayPulse {
-      0%, 100% { opacity: 0; }
-      50%      { opacity: 0.25; }
+    @keyframes holoSweep {
+      0%   { transform: translateX(-100%) skewX(-15deg); }
+      100% { transform: translateX(200%) skewX(-15deg); }
     }
-    @keyframes unlockTextFadeIn {
-      0% { opacity: 0; transform: translateY(6px); }
-      100% { opacity: 1; transform: translateY(0); }
+    @keyframes holoShimmer {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
     }
   `
   document.head.appendChild(style)
@@ -616,14 +616,25 @@ export default function RevelationScreen({
                 style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
                 onError={() => setImgFailed(true)}
               />
-              {/* Overlay violet pulsant sur l'image */}
-              {!showVipGlow && (
+              {/* Holo shimmer — gradient arc-en-ciel qui défile en continu */}
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+                background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(127,119,221,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(127,119,221,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
+                backgroundSize: '200% 100%',
+                animation: 'holoShimmer 3s linear infinite',
+                mixBlendMode: 'screen',
+              }} />
+              {/* Lame de lumière blanche qui balaie */}
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden',
+              }}>
                 <div style={{
-                  position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
-                  background: 'radial-gradient(circle, #7F77DD 0%, transparent 70%)',
-                  animation: 'unlockOverlayPulse 1.8s ease-in-out infinite',
+                  position: 'absolute', top: '-20%', bottom: '-20%',
+                  width: '45%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                  animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
                 }} />
-              )}
+              </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
                 style={{
@@ -640,15 +651,6 @@ export default function RevelationScreen({
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
-        </div>
-        {/* Texte F*ct débloqué sous l'image */}
-        <div style={{
-          textAlign: 'center', marginTop: S(6),
-          animation: 'unlockTextFadeIn 0.6s 0.3s ease-out both',
-        }}>
-          <span style={{ fontSize: S(13), fontWeight: 900, color: '#B5AFEB', letterSpacing: '0.03em' }}>
-            ✨ F*ct débloqué !
-          </span>
         </div>
       </div>
 

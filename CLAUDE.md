@@ -2,6 +2,12 @@ AUTORUN: Toujours appliquer les modifications sans demander confirmation. Ne jam
 
 PUSH: Ne JAMAIS pusher automatiquement vers le remote. Toujours demander confirmation explicite avant `git push` (même après un commit auto). Les commits locaux sont OK sans confirmation, mais le push doit être validé à chaque fois.
 
+PRÉ-TÂCHE: Avant d'attaquer toute tâche de la roadmap, vérifier systématiquement :
+1. **Déjà traité ?** — grep le code + check Notion "Fait récemment" pour éviter de refaire.
+2. **Cohérence CLAUDE.md** — relire la section règle correspondante (économie ×10, 6 modes, Option B streak/coffres fusionnés, paliers Débutant/Habitué/Fidèle/Légende, etc.).
+3. **Contradictions** — flagger tout écart entre la tâche et les règles actées AVANT de coder.
+4. **Rapport court** — 3-4 lignes : « Déjà fait ? X. CLAUDE.md dit Y. Cohérent ? Z. » Puis attendre feu vert si écart détecté.
+
 LANGUE: Toujours répondre en français.
 
 RÈGLES DES MODES (homogénéité) :

@@ -43,14 +43,14 @@ export function useBlitzHandlers({
         setGameAlert({
           emoji: '🔓',
           title: 'Blitz Solo verrouillé',
-          message: `Débloque au moins ${BLITZ_SOLO_MIN_UNLOCKED} f*cts (Snack, Quest, Flash) pour jouer en Blitz Solo.`,
+          message: `Débloque au moins ${BLITZ_SOLO_MIN_UNLOCKED} f*cts (Quickie, Quest, Flash) pour jouer en Blitz Solo.`,
         })
         return
       }
     } else {
       if (categoryId) pool = pool.filter(f => f.category === categoryId)
       if (pool.length < 5) {
-        setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Snack ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
+        setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Quickie ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
         return
       }
     }

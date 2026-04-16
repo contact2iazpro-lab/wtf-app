@@ -46,8 +46,8 @@ function getStars(correct, total) {
   return 0
 }
 
-const DIFFICULTY_LABELS = { snack: 'Snack', quest: 'Quest', flash: 'Flash', blitz: 'Blitz', no_limit: 'No Limit', vrai_ou_fou: 'Vrai ou Fou' }
-const DIFFICULTY_EMOJIS = { snack: '🍿', quest: '🗺️', flash: '⚡', blitz: '⏱️', no_limit: '♾️', vrai_ou_fou: '🤔' }
+const DIFFICULTY_LABELS = { quickie: 'Quickie', quest: 'Quest', flash: 'Flash', blitz: 'Blitz', no_limit: 'No Limit', vrai_ou_fou: 'Vrai ou Fou' }
+const DIFFICULTY_EMOJIS = { quickie: '🍿', quest: '🗺️', flash: '⚡', blitz: '⏱️', no_limit: '♾️', vrai_ou_fou: '🤔' }
 const CHALLENGE_LABELS = {}
 
 // COR 4 — Confetti colors
@@ -97,7 +97,7 @@ export default function ResultsScreen({
 
   // Persister les facts temporaires quand le joueur se connecte depuis ResultsScreen
   useEffect(() => {
-    if (isConnected && !savedAfterConnect && onSaveTempFacts && sessionType === 'snack') {
+    if (isConnected && !savedAfterConnect && onSaveTempFacts && sessionType === 'quickie') {
       onSaveTempFacts()
       setSavedAfterConnect(true)
     }
@@ -144,7 +144,9 @@ export default function ResultsScreen({
     'linear-gradient(160deg, #7b8b9a 0%, #9dadbb 40%, #b5c5d2 70%, #7b8b9a 100%)',
   ]
   const bgRef = useRef(PASTEL_GRADIENTS[Math.floor(Math.random() * PASTEL_GRADIENTS.length)])
-  const screenBg = bgRef.current
+  const screenBg = sessionType === 'quickie'
+    ? 'linear-gradient(160deg, #4A3FA3, #7F77DD)'
+    : bgRef.current
 
   // COR 6 — Taux moyen pseudo-aléatoire stable par catégorie
   const avgSuccessRate = 15 + ((categoryId ? categoryId.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 50) % 40)
@@ -425,8 +427,8 @@ export default function ResultsScreen({
               <span style={{ fontSize: S(12) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
               <span style={{ fontSize: S(11), fontWeight: 800, color: textOnBg }}>
                 {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` :
-                 sessionType === 'snack' ? 'Mode Snack' :
-                 sessionType === 'snack' ? 'Mode Snack' :
+                 sessionType === 'quickie' ? 'Mode Quickie' :
+                 sessionType === 'quickie' ? 'Mode Quickie' :
                  'Mode'}
               </span>
             </div>

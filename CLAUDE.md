@@ -30,7 +30,7 @@ RÈGLES DES MODES (homogénéité) :
 
 | Ancien (code actuel) | Nouveau officiel | Notes |
 |---|---|---|
-| Flash + Explorer ("Jouer") | **Snack** | QCM 2 choix, farming quotidien |
+| Flash + Explorer ("Jouer") | ~~Snack~~ → **Quickie** (16/04/2026) | QCM 2 choix, farming quotidien |
 | Route WTF! | **Quest** | Progression linéaire, boss VIP /10 |
 | Blitz chrono 60s | **Blitz Solo** | Sous-mode de Blitz |
 | Défi Blitz async | **Blitz Défi** | Sous-mode de Blitz |
@@ -96,14 +96,15 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts
 - WTF toujours avec ! (sauf "What The F*ct")
-- Les 6 modes : **Snack · Vrai ou Fou · Quest · No Limit · Blitz · Flash**
+- Les 6 modes : **Quickie · Vrai ou Fou · Quest · No Limit · Blitz · Flash**
+- Snack → **Quickie** (renommé 16/04/2026)
 - Cool/Hot/WTF! → **SUPPRIMÉS** (difficulté = nb QCM par mode)
 - Tickets → **SUPPRIMÉS** (coût en coins direct)
 - Streak → Série
 
 ## Règles de jeu — Source de vérité (15/04/2026)
 
-### 1. SNACK — "Le quotidien sans prise de tête"
+### 1. QUICKIE — "Court. Bon. Sans engagement."
 - QCM **2 choix**, 5 questions, timer **15s**
 - Indices : 1 max (stock perso, coût 50 coins en boutique)
 - Contenu : Funny facts uniquement
@@ -118,7 +119,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Contenu : Funny facts (champ `statement` + `statement_is_true` en base)
 - Coût : Gratuit illimité
 - Gains : **0 coins** (mode viralité/acquisition, pas farming)
-- Déblocage f*cts : **Non** — mode vitrine/viral. Le joueur découvre les affirmations mais ne les collecte pas. Pour posséder un f*ct, jouer Snack ou Quest.
+- Déblocage f*cts : **Non** — mode vitrine/viral. Le joueur découvre les affirmations mais ne les collecte pas. Pour posséder un f*ct, jouer Quickie ou Quest.
 - Partage score X/20 (WhatsApp/story) — levier acquisition
 
 ### 3. QUEST — "Le chemin des WTF!" (ex-Route WTF!)
@@ -178,7 +179,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Spec source : `docs/ROULETTE_WTF_SPECS.md`
 
 ### Règles communes
-- QCM facile (2 choix) : Snack, Blitz, Flash
+- QCM facile (2 choix) : Quickie, Blitz, Flash
 - QCM difficile (4 choix) : Quest, No Limit
 - Swipe (0 QCM) : Vrai ou Fou
 - Indices = stock perso, coût 50 coins boutique. Bouton grisé si stock vide, JAMAIS de pause timer.
@@ -188,7 +189,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 | Mode | Contenu | QCM | Coût | Gains | Statut |
 |------|---------|-----|------|-------|--------|
-| Snack | Funny | 2 | 1 énergie | 10c/bonne, +50 perfect | À implémenter |
+| Quickie | Funny | 2 | 1 énergie | 10c/bonne, +50 perfect | ✅ Implémenté (ex-Snack) |
 | Vrai ou Fou | Funny (statements) | Swipe | Gratuit | 0 coins | NOUVEAU |
 | Quest | Funny + VIP boss | 4 | 1 énergie/bloc | 20c/niv + 100c/boss | Renommé (ex-Route) |
 | No Limit | Funny+VIP débloqués | 4 | Gratuit | 0 coins (record) | NOUVEAU |
@@ -282,11 +283,11 @@ séparé, sous-domaine privé, ou en local uniquement).
 ### Règles communes économie
 - Indices = chaque utilisation débite 1 du stock (coût 50 coins en boutique)
 - Indice non disponible si stock vide : bouton grisé, JAMAIS de pause du timer
-- Bonus session parfaite : Snack perfect = +50 coins. Quest pas de perfect bonus (les gains par niveau suffisent).
+- Bonus session parfaite : Quickie perfect = +50 coins. Quest pas de perfect bonus (les gains par niveau suffisent).
 
 ## Architecture contenu (15/04/2026)
 - **WTF VIP** (~483) : Quest boss /10, Flash dimanche, No Limit/Blitz (une fois débloqués)
-- **Funny F*cts** (~770+ et croissant) : Snack, Vrai ou Fou, Quest niveaux, Flash lun-sam
+- **Funny F*cts** (~770+ et croissant) : Quickie, Vrai ou Fou, Quest niveaux, Flash lun-sam
 - **Blitz** pioche dans TOUS les f*cts débloqués (VIP + Funny confondus)
 - Collection : 2 onglets (WTF! + Funny F*cts)
 - **Nouveau champ DB requis** : `statement` (text) + `statement_is_true` (boolean) sur table facts

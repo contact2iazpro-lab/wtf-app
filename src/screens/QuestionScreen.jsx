@@ -34,7 +34,7 @@ export default function QuestionScreen({
 
   // Solo et explorer → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
-    (gameMode === 'solo' || gameMode === 'snack') ? 'qcm' : null
+    (gameMode === 'solo' || gameMode === 'quickie') ? 'qcm' : null
   )
 
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
@@ -70,10 +70,10 @@ export default function QuestionScreen({
   const S = (px) => `calc(${px}px * var(--scale))`
 
   // Timer duration — source unique : difficulty.duration (gameConfig.js)
-  const isFlash = difficulty?.id === 'snack'
+  const isFlash = difficulty?.id === 'quickie'
   const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
 
-  // Progress display — Snack shows X/10
+  // Progress display — Quickie shows X/10
   const displayTotalFacts = totalFacts
 
   // Pause ref — synced to quit modal state (no re-render of CircularTimer)
@@ -103,9 +103,12 @@ export default function QuestionScreen({
     return () => { const el = document.getElementById(styleId); if (el) el.remove() }
   }, [])
 
-  const screenBg = cat
-    ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
-    : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
+  const isQuickieMode = sessionType === 'quickie' || gameMode === 'quickie'
+  const screenBg = isQuickieMode
+    ? 'linear-gradient(160deg, #4A3FA3, #7F77DD)'
+    : cat
+      ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
+      : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
   const cardBg = 'rgba(0, 0, 0, 0.28)'
 
@@ -201,7 +204,6 @@ export default function QuestionScreen({
   )
 
   // ── Question card ──────────────────────────────────────────────────────────
-  const isSnackMode = sessionType === 'snack' || gameMode === 'snack'
   const questionCard = (
     <div
       className="rounded-2xl p-3 border shrink-0"
@@ -212,7 +214,7 @@ export default function QuestionScreen({
         boxShadow: `0 4px 32px ${cat?.color || '#000'}30`,
       }}
     >
-      {isSnackMode && (
+      {isQuickieMode && (
         <div style={{
           position: 'relative',
           width: '100%',
@@ -449,7 +451,7 @@ export default function QuestionScreen({
   }
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
-  const MODE_LABELS = { snack: 'MODE SNACK', flash: 'MODE FLASH', parcours: 'MODE QUEST' }
+  const MODE_LABELS = { quickie: 'MODE QUICKIE', flash: 'MODE FLASH', parcours: 'MODE QUEST' }
   const modeLabel = MODE_LABELS[sessionType] || (difficulty ? `Mode ${difficulty.label || difficulty.id}` : '')
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
@@ -563,11 +565,11 @@ export default function QuestionScreen({
                     }}
                     className="btn-press active:scale-95"
                     style={{
-                      background: 'rgba(255,255,255,0.15)',
-                      border: devBorder,
+                      background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
+                      border: isQuickieMode ? '2px solid #7F77DD' : devBorder,
                       borderRadius: S(12),
-                      color: 'white',
-                      fontWeight: 700,
+                      color: isQuickieMode ? '#4A3FA3' : 'white',
+                      fontWeight: isQuickieMode ? 800 : 700,
                       fontSize: S(btnFont),
                       lineHeight: 1.2,
                       padding: `${S(4)} ${S(6)}`,

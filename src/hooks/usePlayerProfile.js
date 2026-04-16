@@ -89,7 +89,7 @@ export function usePlayerProfile() {
    * applyCurrencyDelta — applique un delta atomique via RPC serveur.
    *
    * @param {Object} delta - { coins, hints, energy } (valeurs signées)
-   * @param {string} reason - 'flash_daily' | 'snack_perfect' | 'shop_buy_hints' | ...
+   * @param {string} reason - 'flash_daily' | 'quickie_perfect' | 'shop_buy_hints' | ...
    * @param {string} [sessionId] - optionnel, groupe les mutations d'une session
    */
   const applyCurrencyDelta = useCallback(async (delta, reason, sessionId = null) => {

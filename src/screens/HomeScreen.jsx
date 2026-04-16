@@ -3,9 +3,10 @@
  * Zones : Header · Streak · Paliers · Roulette · Modes (grille 6) · Énergie · Partie rapide · BottomNav
  */
 
-import { useState, useEffect, forwardRef } from 'react'
+import { useState, useEffect } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import BottomNav from '../components/BottomNav'
+import ModeIcon from '../components/ModeIcon'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
 import { audio } from '../utils/audio'
@@ -39,7 +40,7 @@ export default function HomeScreen({
   socialNotifCount = 0,
   onResetSocialNotif,
   pendingChallengesCount = 0,
-  snackEnergyRemaining = 3,
+  quickieEnergyRemaining = 3,
 }) {
   const { coins, hints, applyCurrencyDelta, mergeFlags } = usePlayerProfile()
 
@@ -73,30 +74,7 @@ export default function HomeScreen({
   const handleClaimPalier = (day) => { audio.play?.('click'); const r = claim(day); if (r) setCoffreReward(r) }
   const handleBadgeClose = () => { setBadgeToShow(null); onBadgeSeen?.() }
 
-  const ModeIcon = forwardRef(({ src, label, onClick }, ref) => (
-    <button
-      ref={ref}
-      onClick={onClick}
-      aria-label={label}
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'none', border: 'none', padding: 0,
-        cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-        transition: 'transform 0.1s',
-      }}
-      onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.92)')}
-      onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
-    >
-      <img
-        src={src} alt={label}
-        style={{
-          width: S(ICON_SIZES.modeIcon), height: S(ICON_SIZES.modeIcon),
-          objectFit: 'contain', flexShrink: 0,
-          filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))',
-        }}
-      />
-    </button>
-  ))
+  // ModeIcon imported from components/ModeIcon.jsx
 
   const MiniBtn = ({ icon, label, badge, onClick }) => (
     <button
@@ -318,29 +296,29 @@ export default function HomeScreen({
           width: '100%',
           maxWidth: S(280),
         }}>
-          <ModeIcon src="/assets/modes/snack.svg" label="Snack" onClick={() => nav('snack')} />
-          <ModeIcon src="/assets/modes/quest.svg" label="Quest" onClick={() => nav('quest')} />
-          <ModeIcon src="/assets/modes/flash.svg" label="Flash" onClick={() => nav('flash')} />
-          <ModeIcon src="/assets/modes/vrai-ou-fou.svg" label="Vrai ou Fou" onClick={() => nav('vrai_ou_fou')} />
-          <ModeIcon src="/assets/modes/no-limit.svg" label="No Limit" onClick={() => nav('no_limit')} />
-          <ModeIcon src="/assets/modes/blitz.svg" label="Blitz" onClick={() => nav('blitz')} />
+          <ModeIcon icon="/assets/modes/quickie.svg" name="Quickie" color="#7F77DD" onClick={() => nav('quickie')} />
+          <ModeIcon icon="/assets/modes/quest.svg" name="Quest" color="#FF6B1A" onClick={() => nav('quest')} />
+          <ModeIcon icon="/assets/modes/flash.svg" name="Flash" color="#E91E63" onClick={() => nav('flash')} />
+          <ModeIcon icon="/assets/modes/vrai-ou-fou.svg" name="Vrai ou Fou" color="#9B59B6" onClick={() => nav('vrai_ou_fou')} />
+          <ModeIcon icon="/assets/modes/no-limit.svg" name="No Limit" color="#E84535" onClick={() => nav('no_limit')} />
+          <ModeIcon icon="/assets/modes/blitz.svg" name="Blitz" color="#FF4444" onClick={() => nav('blitz')} />
         </div>
 
-        {/* Énergie Snack (5 segments) */}
+        {/* Énergie Quickie (5 segments) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 14 }} />
           <div style={{ display: 'flex', gap: 4 }}>
             {[0, 1, 2, 3, 4].map(i => (
               <div key={i} style={{
                 width: 16, height: 8, borderRadius: 4,
-                background: i < snackEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
+                background: i < quickieEnergyRemaining ? '#FF6B1A' : 'rgba(255,255,255,0.15)',
                 transition: 'background 0.3s',
-                boxShadow: i < snackEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
+                boxShadow: i < quickieEnergyRemaining ? '0 0 6px rgba(255,107,26,0.4)' : 'none',
               }} />
             ))}
           </div>
-          <span style={{ fontSize: 11, fontWeight: 800, color: snackEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
-            {snackEnergyRemaining}/5
+          <span style={{ fontSize: 11, fontWeight: 800, color: quickieEnergyRemaining > 0 ? 'rgba(255,255,255,0.7)' : '#EF4444' }}>
+            {quickieEnergyRemaining}/5
           </span>
         </div>
       </div>
@@ -353,7 +331,7 @@ export default function HomeScreen({
         position: 'relative', zIndex: 10,
       }}>
         <button
-          onClick={() => nav('snack')}
+          onClick={() => nav('quickie')}
           className="btn-press"
           style={{
             background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',

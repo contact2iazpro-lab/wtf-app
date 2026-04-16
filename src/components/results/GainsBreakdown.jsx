@@ -1,7 +1,7 @@
 /**
  * GainsBreakdown — card "récap gains structurés" : base + bonus + total.
  *
- * Réutilisé par ResultsScreen (Quest/Snack/Snack/Flash) et peut aussi être branché
+ * Réutilisé par ResultsScreen (Quest/Quickie/Quickie/Flash) et peut aussi être branché
  * sur Flash / Route / autres modes qui n'avaient que "+N coins" sèchement.
  *
  * Props :

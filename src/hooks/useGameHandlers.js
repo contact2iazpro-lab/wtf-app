@@ -42,8 +42,8 @@ export function useGameHandlers({
 
   // ── Calcul des points ──────────────────────────────────────────────────
   // Chaque difficulté porte sa propre coinsPerCorrect. Plus d'override bâtard
-  // depuis T94.a : Snack utilise DIFFICULTY_LEVELS.SNACK (1 coin) et
-  // Snack utilise DIFFICULTY_LEVELS.SNACK (2 coins) — plus de condition.
+  // depuis T94.a : Quickie utilise DIFFICULTY_LEVELS.QUICKIE (1 coin) et
+  // Quickie utilise DIFFICULTY_LEVELS.QUICKIE (2 coins) — plus de condition.
   const calcPoints = useCallback((isCorrect) => {
     if (!isCorrect) return 0
     if (selectedDifficulty?.coinsPerCorrect !== undefined) {

@@ -136,7 +136,7 @@ export default function NoLimitScreen({ onHome }) {
             Débloque encore <strong style={{ color: '#FF6B1A' }}>{missing} f*ct{missing > 1 ? 's' : ''}</strong> pour jouer.
           </p>
           <p style={{ fontSize: 12, opacity: 0.6, lineHeight: 1.5, marginBottom: 28 }}>
-            No Limit pioche dans les f*cts que tu connais déjà. Joue à Snack, Quest ou Flash pour agrandir ton pool.
+            No Limit pioche dans les f*cts que tu connais déjà. Joue à Quickie, Quest ou Flash pour agrandir ton pool.
           </p>
           <button onClick={onHome} style={{ padding: '14px 36px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
             Retour

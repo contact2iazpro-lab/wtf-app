@@ -10,7 +10,7 @@ import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS } from '../constants/gameConfig'
 import { getAnswerOptions } from '../utils/answers'
-import { getSnackEnergy } from '../services/energyService'
+import { getQuickieEnergy } from '../services/energyService'
 import { saveStorage, loadStorage } from '../utils/storageHelper'
 import { syncAfterAction } from '../services/playerSyncService'
 
@@ -18,15 +18,15 @@ export function useNavigationHandlers({
   // State
   launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
   selectedDifficulty,
-  snackPool, unlockedFacts, user, sessionCorrectFacts,
+  quickiePool, unlockedFacts, user, sessionCorrectFacts,
   // Hooks extraits
-  handleStartFlashSession, handleSnack, handleSelectDifficulty,
+  handleStartFlashSession, handleQuickie, handleSelectDifficulty,
   handleSelectCategory, handleBlitzStart, initSessionState,
   // Setters
   setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
   setSelectedCategory, setSessionFacts, setCurrentIndex, setSessionScore,
   setCorrectCount, setIsQuickPlay,
-  setBlitzFacts, setBlitzResults, setSnackPool,
+  setBlitzFacts, setBlitzResults, setQuickiePool,
   setHintsUsed, setSelectedAnswer, setIsCorrect, setPointsEarned,
   setShowNoEnergyModal, setNoEnergyOrigin, setShowHowToPlay, setGameAlert,
   setStorage,
@@ -36,13 +36,13 @@ export function useNavigationHandlers({
   unlockFact,
 }) {
   const navigate = useNavigate()
-  const canPlaySnackCheck = () => getSnackEnergy().remaining > 0
+  const canPlayQuickieCheck = () => getQuickieEnergy().remaining > 0
 
   // ── Launch mode ────────────────────────────────────────────────────────
   const launchModeDestination = useCallback((mode) => {
     switch (mode) {
       case 'blitz':        setScreen(SCREENS.BLITZ_LOBBY); break
-      case 'snack':        setScreen(SCREENS.CATEGORY); break  // Snack = choix catégorie
+      case 'quickie':        setScreen(SCREENS.CATEGORY); break  // Quickie = choix catégorie
       case 'flash':        handleStartFlashSession(); break
       case 'vrai_ou_fou':  setScreen(SCREENS.VRAI_OU_FOU); break
       default: break
@@ -68,11 +68,11 @@ export function useNavigationHandlers({
         setScreen(SCREENS.FLASH)
         break
       case 'categoryFlash':
-      case 'snack': {
+      case 'quickie': {
         const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && !canPlaySnackCheck()) { setNoEnergyOrigin('snack'); setShowNoEnergyModal(true); break }
-        setGameMode('snack'); setSessionType('snack'); setSelectedDifficulty(DIFFICULTY_LEVELS.SNACK); setSelectedCategory(null)
-        showOrSkipLaunch('snack')
+        if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
+        setGameMode('quickie'); setSessionType('quickie'); setSelectedDifficulty(DIFFICULTY_LEVELS.QUICKIE); setSelectedCategory(null)
+        showOrSkipLaunch('quickie')
         break
       }
       case 'collection':    navigate('/collection'); break
@@ -96,7 +96,7 @@ export function useNavigationHandlers({
         break
       default: break
     }
-  }, [handleSnack, handleStartFlashSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])
+  }, [handleQuickie, handleStartFlashSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])
 
   // ── Home / Replay / Share ──────────────────────────────────────────────
   const handleSaveTempFacts = useCallback(() => {
@@ -129,7 +129,7 @@ export function useNavigationHandlers({
     setSessionFacts([]); setCurrentIndex(0); setSessionScore(0); setCorrectCount(0)
     setIsQuickPlay(false)
     setSessionType('parcours'); setBlitzFacts([]); setBlitzResults(null)
-    setLaunchMode(null); setSnackPool([])
+    setLaunchMode(null); setQuickiePool([])
     // Cleanup pending duel si l'user abandonne le flow
     clearPendingDuel?.()
   }, [clearPendingDuel])
@@ -138,23 +138,23 @@ export function useNavigationHandlers({
     handleBlitzStart(selectedCategory)
   }, [selectedCategory, handleBlitzStart])
 
-  const handleSnackContinue = useCallback(() => {
-    const filteredPool = snackPool.filter(f => !unlockedFacts.has(f.id))
+  const handleQuickieContinue = useCallback(() => {
+    const filteredPool = quickiePool.filter(f => !unlockedFacts.has(f.id))
     if (filteredPool.length === 0) {
       setGameAlert({ emoji: '🎉', title: 'Catégorie terminée !', message: 'Tu as répondu à toutes les questions de cette catégorie !' })
       return
     }
-    const difficulty = DIFFICULTY_LEVELS.SNACK
+    const difficulty = DIFFICULTY_LEVELS.QUICKIE
     const next5 = filteredPool.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-    setSnackPool(filteredPool.slice(5))
+    setQuickiePool(filteredPool.slice(5))
     setSelectedDifficulty(difficulty)
-    setSessionType('snack')
+    setSessionType('quickie')
     initSessionState(next5)
     setScreen(SCREENS.QUESTION)
-  }, [snackPool, unlockedFacts, initSessionState])
+  }, [quickiePool, unlockedFacts, initSessionState])
 
   const handleReplay = useCallback(() => {
-    if (sessionType === 'snack') { setSnackPool([]); setScreen(SCREENS.CATEGORY) }
+    if (sessionType === 'quickie') { setQuickiePool([]); setScreen(SCREENS.CATEGORY) }
     else handleSelectCategory(selectedCategory)
   }, [sessionType, selectedCategory, handleSelectCategory])
 
@@ -177,7 +177,7 @@ export function useNavigationHandlers({
     launchModeDestination, handleLaunchStart, showOrSkipLaunch,
     handleHomeNavigate,
     handleSaveTempFacts, completeOnboardingIfNeeded,
-    handleHome, handleBlitzReplay, handleSnackContinue, handleReplay,
+    handleHome, handleBlitzReplay, handleQuickieContinue, handleReplay,
     handleShare, handleShareDailyFact, handleShowRules,
   }
 }

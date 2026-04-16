@@ -178,12 +178,12 @@ export default function ChallengeScreen() {
   }
 
   // Pending — accept challenge
-  const goSnackCategory = () => {
+  const goQuickieCategory = () => {
     if (!challenge?.category_id || challenge.category_id === 'all') {
       navigate('/')
       return
     }
-    sessionStorage.setItem('wtf_pending_snack_cat', challenge.category_id)
+    sessionStorage.setItem('wtf_pending_quickie_cat', challenge.category_id)
     navigate('/')
   }
 
@@ -259,10 +259,10 @@ export default function ChallengeScreen() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {challenge.category_id && challenge.category_id !== 'all' && (
               <button
-                onClick={goSnackCategory}
+                onClick={goQuickieCategory}
                 style={{ padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #6BCB77, #4CAF50)', color: 'white', border: 'none', fontWeight: 900, fontSize: 13, cursor: 'pointer', fontFamily: 'Nunito, sans-serif', lineHeight: 1.3 }}
               >
-                🧭 Snack {challenge.category_label}
+                🧭 Quickie {challenge.category_label}
                 <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, marginTop: 2 }}>Coûte 1 énergie</div>
               </button>
             )}

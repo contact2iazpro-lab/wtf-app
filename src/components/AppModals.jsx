@@ -12,7 +12,7 @@ import NewCategoriesModal from './NewCategoriesModal'
 import GameModal from './GameModal'
 import DevPanel from '../components/DevPanel'
 import { DEV_PANEL_ENABLED } from '../config/devConfig'
-import { SCREENS, SNACK_ENERGY } from '../constants/gameConfig'
+import { SCREENS, QUICKIE_ENERGY } from '../constants/gameConfig'
 import { getValidFacts } from '../data/factsService'
 import { buyExtraSession } from '../services/energyService'
 import { audio } from '../utils/audio'
@@ -32,9 +32,9 @@ export default function AppModals({
   setGameAlert, setShowConnectBanner, setTrophyQueue, setMiniParcours,
   setShowNewCategoriesModal, setShowDevPanel,
   setSessionType, setGameMode, setIsQuickPlay, setSelectedDifficulty,
-  setSelectedCategory, setSnackPool, setScreen, setStorage,
+  setSelectedCategory, setQuickiePool, setScreen, setStorage,
   // Handlers
-  resetOnboarding, handleShowRules, handleSnack, handleHomeNavigate,
+  resetOnboarding, handleShowRules, handleQuickie, handleHomeNavigate,
   showOrSkipLaunch, initSessionState, devActions,
   // Auth
   signInWithGoogle,
@@ -143,14 +143,14 @@ export default function AppModals({
       {/* No energy modal */}
       {showNoEnergyModal && (
         <GameModal emoji={<img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />} title="Plus de sessions !"
-          message={`Tes ${SNACK_ENERGY.FREE_SESSIONS_PER_DAY} sessions gratuites du jour sont utilisées. Achète une session pour ${SNACK_ENERGY.EXTRA_SESSION_COST} coins ou reviens demain !`}
-          confirmLabel={`Acheter (${SNACK_ENERGY.EXTRA_SESSION_COST} coins)`} cancelLabel="Attendre"
+          message={`Tes ${QUICKIE_ENERGY.FREE_SESSIONS_PER_DAY} sessions gratuites du jour sont utilisées. Achète une session pour ${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins ou reviens demain !`}
+          confirmLabel={`Acheter (${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins)`} cancelLabel="Attendre"
           onConfirm={() => {
             if (buyExtraSession({ coins: coinsForGate, applyCurrencyDelta })) {
               setShowNoEnergyModal(false)
-              if (noEnergyOrigin === 'snack') { setGameMode('snack'); setSessionType('snack'); showOrSkipLaunch('snack') }
-              else { setGameMode('solo'); setSessionType('snack'); setSelectedCategory(null); showOrSkipLaunch('snack') }
-            } else { setShowNoEnergyModal(false); setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: `Il te faut ${SNACK_ENERGY.EXTRA_SESSION_COST} coins pour acheter une session.` }) }
+              if (noEnergyOrigin === 'quickie') { setGameMode('quickie'); setSessionType('quickie'); showOrSkipLaunch('quickie') }
+              else { setGameMode('solo'); setSessionType('quickie'); setSelectedCategory(null); showOrSkipLaunch('quickie') }
+            } else { setShowNoEnergyModal(false); setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: `Il te faut ${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins pour acheter une session.` }) }
           }}
           onCancel={() => setShowNoEnergyModal(false)}
         />
@@ -174,8 +174,8 @@ export default function AppModals({
                   console.warn('[AppModals] miniParcours applyCurrencyDelta failed:', e?.message || e)
                 )
                 const { pool, mode, categoryId, difficulty } = miniParcours
-                if (mode === 'snack') { setSessionType('snack'); setGameMode('solo'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(null) }
-                else if (mode === 'snack') { setSessionType('snack'); setGameMode('snack'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId); setSnackPool([]) }
+                if (mode === 'quickie') { setSessionType('quickie'); setGameMode('solo'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(null) }
+                else if (mode === 'quickie') { setSessionType('quickie'); setGameMode('quickie'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId); setQuickiePool([]) }
                 else if (mode === 'quest') { setSessionType('parcours'); setGameMode('solo'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId) }
                 initSessionState(pool); setMiniParcours(null); setScreen(SCREENS.QUESTION)
               }} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: coinsForGate >= miniParcours.price ? '#FF6B1A' : '#E5E7EB', border: 'none', color: coinsForGate >= miniParcours.price ? 'white' : '#9CA3AF', cursor: coinsForGate >= miniParcours.price ? 'pointer' : 'not-allowed' }}>

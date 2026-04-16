@@ -374,13 +374,13 @@ export function getMixedUnlockedFacts() {
   }
 }
 
-/** Mode Snack : Funny facts, toutes catégories */
+/** Mode Flash : Funny facts, toutes catégories */
 export function getFlashFacts() {
   return getFunnyFacts()
 }
 
-/** Mode Snack : Funny facts, toutes catégories pour CategoryScreen */
-export function getSnackFacts() {
+/** Mode Quickie : Funny facts, toutes catégories pour CategoryScreen */
+export function getQuickieFacts() {
   return getFunnyFacts()
 }
 

@@ -41,7 +41,7 @@ function UnlockProvider({ children }) {
       const canQuest = true
       const canBlitz = true
       const canHunt = true
-      const canSnack = true
+      const canQuickie = true
 
       // UI feature display conditions (from layoutConfig UNLOCK_THRESHOLDS)
       const showStreakDisplay = gamesPlayed >= 3
@@ -64,7 +64,7 @@ function UnlockProvider({ children }) {
         canQuest,
         canBlitz,
         canHunt,
-        canSnack,
+        canQuickie,
 
         // UI features
         showStreakDisplay,
@@ -90,7 +90,7 @@ function UnlockProvider({ children }) {
         canQuest: false,
         canBlitz: false,
         canHunt: false,
-        canSnack: false,
+        canQuickie: false,
 
         // UI features
         showStreakDisplay: false,

@@ -162,7 +162,7 @@ export default function VraiOuFouScreen({ onHome }) {
           <p style={{ fontSize: S(14), opacity: 0.85, marginBottom: S(8) }}>{pct}% de bonnes réponses</p>
           <p style={{ fontSize: S(15), fontWeight: 700, opacity: 0.9 }}>{verdict.line}</p>
           <p style={{ fontSize: S(11), opacity: 0.6, marginTop: S(12), fontStyle: 'italic' }}>
-            🔒 Joue Snack ou Quest pour débloquer vraiment ces f*cts
+            🔒 Joue Quickie ou Quest pour débloquer vraiment ces f*cts
           </p>
         </div>
 

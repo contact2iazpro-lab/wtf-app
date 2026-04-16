@@ -1,7 +1,7 @@
 /**
  * useSelectionHandlers — Handlers pour la sélection de difficulté et catégorie.
  *
- * Extrait de App.jsx : handleSelectDifficulty, handleSelectCategory, handleSnackMode.
+ * Extrait de App.jsx : handleSelectDifficulty, handleSelectCategory, handleQuickieMode.
  */
 
 import { useCallback } from 'react'
@@ -12,14 +12,14 @@ import {
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { consumeSnackEnergy } from '../services/energyService'
+import { consumeQuickieEnergy } from '../services/energyService'
 
 export function useSelectionHandlers({
   gameMode, sessionType, selectedDifficulty, selectedCategory,
   unlockedFacts,
   initSessionState, handleBlitzStart,
   setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
-  setIsQuickPlay, setSnackPool, setScreen,
+  setIsQuickPlay, setQuickiePool, setScreen,
   setGameAlert, setMiniParcours,
 }) {
 
@@ -27,11 +27,11 @@ export function useSelectionHandlers({
     setSelectedDifficulty(difficulty)
     const skipUnlockM = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
 
-    if (gameMode === 'snack') {
-      // Snack utilise toujours sa difficulté dédiée (20s / 1 coin / 4 QCM)
+    if (gameMode === 'quickie') {
+      // Quickie utilise toujours sa difficulté dédiée (20s / 1 coin / 4 QCM)
       // peu importe celle passée en argument (legacy)
-      const snackDiff = DIFFICULTY_LEVELS.SNACK
-      setSelectedDifficulty(snackDiff)
+      const quickieDiff = DIFFICULTY_LEVELS.QUICKIE
+      setSelectedDifficulty(quickieDiff)
       let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
       if (pool.length < 4 && skipUnlockM) {
         pool = getGeneratedFactsByCategory(selectedCategory)
@@ -43,29 +43,29 @@ export function useSelectionHandlers({
       if (pool.length < 4) {
         const price = pool.length === 1 ? 5 : 10
         const preparedFacts = shuffle(pool)
-          .map(fact => ({ ...fact, ...getAnswerOptions(fact, snackDiff) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'snack', categoryId: selectedCategory, difficulty: snackDiff })
+          .map(fact => ({ ...fact, ...getAnswerOptions(fact, quickieDiff) }))
+        setMiniParcours({ pool: preparedFacts, price, mode: 'quickie', categoryId: selectedCategory, difficulty: quickieDiff })
         return
       }
       const facts = shuffle(pool).slice(0, 20)
-        .map(fact => ({ ...fact, ...getAnswerOptions(fact, snackDiff) }))
+        .map(fact => ({ ...fact, ...getAnswerOptions(fact, quickieDiff) }))
       setIsQuickPlay(false)
-      setSessionType('snack')
+      setSessionType('quickie')
       initSessionState(facts)
       setScreen(SCREENS.QUESTION)
       return
     }
 
     // Ancien mode Quest (Cool/Hot) supprimé (sub-step 1a — 2026-04-15).
-    // Cette fonction ne gère plus que le flow Snack.
+    // Cette fonction ne gère plus que le flow Quickie.
     console.warn('[useSelectionHandlers] handleSelectDifficulty called outside explorer mode — no-op')
   }, [unlockedFacts, gameMode, selectedCategory, initSessionState, handleBlitzStart])
 
   const handleSelectCategory = useCallback((categoryId) => {
     if (gameMode === 'blitz') { handleBlitzStart(categoryId); return }
 
-    if (gameMode === 'snack') {
-      const difficulty = DIFFICULTY_LEVELS.SNACK
+    if (gameMode === 'quickie') {
+      const difficulty = DIFFICULTY_LEVELS.QUICKIE
       const skipUnlockE = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
       let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
       if (pool.length < 4 && skipUnlockE) pool = getGeneratedFactsByCategory(categoryId)
@@ -73,24 +73,24 @@ export function useSelectionHandlers({
       if (pool.length < 4) {
         const price = pool.length === 1 ? 5 : 10
         const preparedFacts = shuffle(pool).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'snack', categoryId, difficulty })
+        setMiniParcours({ pool: preparedFacts, price, mode: 'quickie', categoryId, difficulty })
         return
       }
       const shuffled = shuffle(pool)
       const sessionFacts = shuffled.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
       const remaining = shuffled.slice(5)
-      setSnackPool(remaining)
+      setQuickiePool(remaining)
       setSelectedCategory(categoryId)
       setSelectedDifficulty(difficulty)
       setIsQuickPlay(false)
-      setSessionType('snack')
-      consumeSnackEnergy()
+      setSessionType('quickie')
+      consumeQuickieEnergy()
       initSessionState(sessionFacts)
       setScreen(SCREENS.QUESTION)
       return
     }
 
-    // Snack/Jouer — uniquement les catégories débloquées
+    // Quickie/Jouer — uniquement les catégories débloquées
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     const unlockedCats = new Set(wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition'])
     const generatedFacts = getGeneratedFacts().filter(f => unlockedCats.has(f.category))
@@ -117,16 +117,16 @@ export function useSelectionHandlers({
 
     const factsWithOptions = facts.map(fact => ({ ...fact, ...getAnswerOptions(fact, selectedDifficulty) }))
     setSelectedCategory(categoryId)
-    if (sessionType === 'snack' || sessionType === 'snack') consumeSnackEnergy()
+    if (sessionType === 'quickie' || sessionType === 'quickie') consumeQuickieEnergy()
     initSessionState(factsWithOptions)
     setScreen(SCREENS.QUESTION)
   }, [selectedDifficulty, gameMode, sessionType, handleBlitzStart, unlockedFacts, initSessionState])
 
-  const handleSnackMode = useCallback(() => {
-    setGameMode('snack')
-    setSessionType('snack')
+  const handleQuickieMode = useCallback(() => {
+    setGameMode('quickie')
+    setSessionType('quickie')
     setScreen(SCREENS.CATEGORY)
   }, [])
 
-  return { handleSelectDifficulty, handleSelectCategory, handleSnackMode }
+  return { handleSelectDifficulty, handleSelectCategory, handleQuickieMode }
 }

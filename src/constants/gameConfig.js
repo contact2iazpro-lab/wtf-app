@@ -1,10 +1,10 @@
 // ── Difficulty Levels Configuration — 6 modes officiels (CLAUDE.md 15/04/2026)
-// Snack · Vrai ou Fou · Quest · No Limit · Blitz · Flash
+// Quickie · Vrai ou Fou · Quest · No Limit · Blitz · Flash
 // Économie ×10 appliquée.
 
 export const DIFFICULTY_LEVELS = {
-  SNACK: {
-    id: 'snack', label: 'Snack', emoji: '🎯',
+  QUICKIE: {
+    id: 'quickie', label: 'Quickie', emoji: '🎯',
     choices: 2, duration: 15, questionsCount: 5,
     hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 50,
     coinsPerCorrect: 10, perfectBonus: 50,
@@ -76,8 +76,8 @@ export const SCREENS = {
 
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
-  snack: {
-    modeId: 'snack', modeName: 'Snack', subtitle: 'Le quotidien sans prise de tête', emoji: '🎯', color: '#FFD700',
+  quickie: {
+    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '😏', color: '#7F77DD',
     rules: [
       { icon: '🔋', text: 'Coût : 1 Capsule d\'énergie' },
       { icon: '📋', text: 'Set : 5 questions/set' },
@@ -141,9 +141,9 @@ export const MODE_CONFIGS = {
 // ── Nombre de questions par session
 export const QUESTIONS_PER_GAME = 5
 
-// ── Énergie Snack — modèle stock+régen (T91, 2026-04-12)
+// ── Énergie Quickie — modèle stock+régen (T91, 2026-04-12)
 // Stock persistant max 5, régénération +1 toutes les 8h jusqu'au cap de 5.
-export const SNACK_ENERGY = {
+export const QUICKIE_ENERGY = {
   INITIAL_STOCK: 5,
   MAX_STOCK: 5,
   REGEN_HOURS: 8,
@@ -167,8 +167,8 @@ export function getStreakReward(streakDays) {
 }
 
 // ── Tutorial Configs (isolated, used by TutoTunnel)
-export const TUTO_SNACK_CONFIG = {
-  id: 'tuto_snack', label: 'Tutoriel', emoji: '🎯',
+export const TUTO_QUICKIE_CONFIG = {
+  id: 'tuto_quickie', label: 'Tutoriel', emoji: '🎯',
   choices: 2, duration: 20,
   hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 0,
   coinsPerCorrect: 2, questionsCount: 5, scoring: { correct: 5, wrong: 0 },

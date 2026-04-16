@@ -2,7 +2,7 @@
  * useModeStarters — Session starters pour chaque mode de jeu.
  *
  * Extrait de App.jsx : handleFlashTeaser, handleStartFlashSession,
- * handleSnack, handleQuickPlay, initSessionState.
+ * handleQuickie, handleQuickPlay, initSessionState.
  */
 
 import { useCallback } from 'react'
@@ -13,7 +13,7 @@ import {
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { consumeSnackEnergy } from '../services/energyService'
+import { consumeQuickieEnergy } from '../services/energyService'
 import { logDevEvent } from '../utils/devLogger'
 import { audio } from '../utils/audio'
 
@@ -85,7 +85,7 @@ export function useModeStarters({
     setScreen(SCREENS.QUESTION)
   }, [effectiveDailyFact, unlockedFacts, initSessionState])
 
-  const handleSnack = useCallback(() => {
+  const handleQuickie = useCallback(() => {
     audio.play('click')
     const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
     const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
@@ -106,22 +106,22 @@ export function useModeStarters({
       if (pool.length < 5) {
         const price = pool.length === 1 ? 5 : 10
         const preparedFacts = shuffle(pool)
-          .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.SNACK) }))
-        setMiniParcours({ pool: preparedFacts, price, mode: 'snack', categoryId: null, difficulty: DIFFICULTY_LEVELS.SNACK })
+          .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.QUICKIE) }))
+        setMiniParcours({ pool: preparedFacts, price, mode: 'quickie', categoryId: null, difficulty: DIFFICULTY_LEVELS.QUICKIE })
         return
       }
     }
 
     const facts = shuffle(pool)
       .slice(0, 5)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.SNACK) }))
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.QUICKIE) }))
 
-    setSessionType('snack')
+    setSessionType('quickie')
     setGameMode('solo')
     setIsQuickPlay(false)
-    setSelectedDifficulty(DIFFICULTY_LEVELS.SNACK)
+    setSelectedDifficulty(DIFFICULTY_LEVELS.QUICKIE)
     setSelectedCategory(null)
-    consumeSnackEnergy()
+    consumeQuickieEnergy()
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
   }, [unlockedFacts, initSessionState])
@@ -132,7 +132,7 @@ export function useModeStarters({
       getValidFacts().some(f => f.category === cat.id) && (childMode || cat.id !== 'kids')
     )
     const randomCat = validCats[Math.floor(Math.random() * validCats.length)]
-    const difficulty = DIFFICULTY_LEVELS.SNACK
+    const difficulty = DIFFICULTY_LEVELS.QUICKIE
     const facts = shuffle(getValidFacts().filter(f => f.category === randomCat.id))
       .slice(0, QUESTIONS_PER_GAME)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
@@ -150,7 +150,7 @@ export function useModeStarters({
     initSessionState,
     handleFlashTeaser,
     handleStartFlashSession,
-    handleSnack,
+    handleQuickie,
     handleQuickPlay,
   }
 }

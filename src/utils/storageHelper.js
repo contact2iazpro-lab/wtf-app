@@ -70,8 +70,9 @@ export function loadStorage() {
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
 
-    // 1e — Migration statsByMode : flash_solo + explorer + marathon → snack ;
+    // 1e — Migration statsByMode : flash_solo + explorer + marathon → quickie ;
     //              hunt + puzzle + wtf_du_jour → flash
+    // 1f — Migration snack → quickie (rename Snack → Quickie 16/04/2026)
     if (saved.statsByMode) {
       const sbm = saved.statsByMode
       const mergeInto = (targetKey, sourceKeys) => {
@@ -84,7 +85,7 @@ export function loadStorage() {
           delete sbm[src]
         }
       }
-      mergeInto('snack', ['flash_solo', 'explorer', 'marathon'])
+      mergeInto('quickie', ['flash_solo', 'explorer', 'marathon', 'snack'])
       mergeInto('flash', ['hunt', 'puzzle', 'wtf_du_jour'])
       saved.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(saved))

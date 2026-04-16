@@ -80,7 +80,7 @@ function pickWrongAnswers(fact, numWrong, factId) {
   let picked = []
 
   if (numWrong <= 1) {
-    // 2 QCM total (Snack/Blitz/Flash) : 1 drôle OU plausible (CLAUDE.md 15/04/2026)
+    // 2 QCM total (Quickie/Blitz/Flash) : 1 drôle OU plausible (CLAUDE.md 15/04/2026)
     const funnyOrPlausible = [...funny, ...plausible]
     const fp = pickRandom(funnyOrPlausible, 1)
     picked = fp.length ? [...fp] : [allAvailable[0]]

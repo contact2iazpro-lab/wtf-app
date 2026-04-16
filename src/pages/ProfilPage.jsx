@@ -13,7 +13,7 @@ import { AVATAR_FRAMES, getFrameById, readFrameState, setEquippedFrame } from '.
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const MODE_LABELS = {
-  snack: { icon: '⚡', name: 'Snack' },
+  quickie: { icon: '⚡', name: 'Quickie' },
   parcours: { icon: '⭐', name: 'Quest' },
   blitz: { icon: '⏱️', name: 'Blitz' },
   flash: { icon: '🔥', name: 'Flash' },

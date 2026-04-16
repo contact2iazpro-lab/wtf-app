@@ -4,11 +4,11 @@ import { getAnswerOptions } from '../utils/answers'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 import {
-  getSnackEnergy,
-  consumeSnackEnergy,
+  getQuickieEnergy,
+  consumeQuickieEnergy,
   buyExtraSession,
 } from '../services/energyService'
-import { SNACK_ENERGY } from '../constants/gameConfig'
+import { QUICKIE_ENERGY } from '../constants/gameConfig'
 import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import HintFlipButton from '../components/HintFlipButton'
@@ -180,13 +180,13 @@ export default function QuestScreen({ onHome, setStorage }) {
   const [bossUnlocked, setBossUnlocked] = useState(false) // ≥5/10 atteint
   const [hintsUsed, setHintsUsed] = useState(0)
   const [imgFailed, setImgFailed] = useState(false)
-  const [energyState, setEnergyState] = useState(() => getSnackEnergy())
+  const [energyState, setEnergyState] = useState(() => getQuickieEnergy())
   const [showEnergyModal, setShowEnergyModal] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
   const mapRef = useRef(null)
 
   useEffect(() => {
-    const refresh = () => setEnergyState(getSnackEnergy())
+    const refresh = () => setEnergyState(getQuickieEnergy())
     window.addEventListener('wtf_energy_updated', refresh)
     return () => window.removeEventListener('wtf_energy_updated', refresh)
   }, [])
@@ -226,11 +226,11 @@ export default function QuestScreen({ onHome, setStorage }) {
   // ── Lance le bloc courant (consomme 1 énergie) ────────────────────────────
   const launchBlock = () => {
     audio.play('click')
-    const energy = getSnackEnergy()
+    const energy = getQuickieEnergy()
     if ((energy.remaining ?? 0) < 1) { setShowEnergyModal(true); return }
-    const ok = consumeSnackEnergy()
+    const ok = consumeQuickieEnergy()
     if (!ok) { setShowEnergyModal(true); return }
-    setEnergyState(getSnackEnergy())
+    setEnergyState(getQuickieEnergy())
 
     const unlockedSet = readUnlockedSet()
     const s = buildBlockSession({ blockIdx: currentBlockIdx, unlockedSet })
@@ -256,7 +256,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     const ok = buyExtraSession({ coins: profileCoins ?? 0, applyCurrencyDelta })
     if (!ok) return
     setShowEnergyModal(false)
-    setEnergyState(getSnackEnergy())
+    setEnergyState(getQuickieEnergy())
     // Relance automatique
     setTimeout(() => launchBlock(), 80)
   }
@@ -644,22 +644,22 @@ export default function QuestScreen({ onHome, setStorage }) {
               <img src="/assets/ui/emoji-energy.png" alt="" style={{ width: 42, height: 42, marginBottom: 4 }} />
               <h2 style={{ fontSize: 18, fontWeight: 900, margin: '4px 0 6px' }}>Plus d'énergie !</h2>
               <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', lineHeight: 1.5 }}>
-                Achète 1 énergie pour {SNACK_ENERGY.EXTRA_SESSION_COST} coins et lance ce bloc, ou attends la régénération.
+                Achète 1 énergie pour {QUICKIE_ENERGY.EXTRA_SESSION_COST} coins et lance ce bloc, ou attends la régénération.
               </p>
               <button
                 onClick={handleBuyEnergy}
-                disabled={(profileCoins ?? 0) < SNACK_ENERGY.EXTRA_SESSION_COST}
+                disabled={(profileCoins ?? 0) < QUICKIE_ENERGY.EXTRA_SESSION_COST}
                 style={{
                   width: '100%', padding: '12px 0', borderRadius: 12,
-                  background: (profileCoins ?? 0) >= SNACK_ENERGY.EXTRA_SESSION_COST
+                  background: (profileCoins ?? 0) >= QUICKIE_ENERGY.EXTRA_SESSION_COST
                     ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : '#E5E7EB',
                   border: 'none',
-                  color: (profileCoins ?? 0) >= SNACK_ENERGY.EXTRA_SESSION_COST ? '#fff' : '#9CA3AF',
+                  color: (profileCoins ?? 0) >= QUICKIE_ENERGY.EXTRA_SESSION_COST ? '#fff' : '#9CA3AF',
                   fontWeight: 900, fontSize: 14, fontFamily: 'Nunito, sans-serif',
-                  cursor: (profileCoins ?? 0) >= SNACK_ENERGY.EXTRA_SESSION_COST ? 'pointer' : 'not-allowed',
+                  cursor: (profileCoins ?? 0) >= QUICKIE_ENERGY.EXTRA_SESSION_COST ? 'pointer' : 'not-allowed',
                 }}
               >
-                Acheter ({SNACK_ENERGY.EXTRA_SESSION_COST} coins)
+                Acheter ({QUICKIE_ENERGY.EXTRA_SESSION_COST} coins)
               </button>
               <button onClick={() => setShowEnergyModal(false)} style={{
                 width: '100%', padding: '10px 0', marginTop: 8,

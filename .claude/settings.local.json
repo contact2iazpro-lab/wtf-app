@@ -15,7 +15,8 @@
       "Bash(git mv *)",
       "Bash(git rm *)",
       "Bash(find /c/Users/VENOEN/wtf-app/src/screens -name \"*Screen.jsx\" -exec basename {} \\\\;)",
-      "mcp__claude_ai_Notion__notion-create-pages"
+      "mcp__claude_ai_Notion__notion-create-pages",
+      "Bash(ls -la /c/Users/VENOEN/wtf-app/*.md)"
     ]
   }
 }

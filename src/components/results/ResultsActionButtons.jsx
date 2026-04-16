@@ -26,7 +26,7 @@ export default function ResultsActionButtons({
         </>
       )
     }
-    if (sessionType === 'snack') {
+    if (sessionType === 'quickie') {
       return (
         <>
           <img src="/assets/ui/emoji-energy.png" alt="energy" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Rejouer

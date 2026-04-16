@@ -31,7 +31,7 @@ export default function ScreenRenderer({
   completedLevels, effectiveDailyFact, launchMode, blitzFacts, blitzResults, blitzVariant,
   isChallengeMode,
   pendingDuel, lastCreatedDuel, lastCreatedDuelError, clearLastCreatedDuel, clearPendingDuel,
-  user, storage, streak, newlyEarnedBadges, snackEnergy,
+  user, storage, streak, newlyEarnedBadges, quickieEnergy,
   showHowToPlay, modeConfigs,
   // Handlers
   handleHomeNavigate, handleHome, handleSelectDifficulty, handleSelectCategory,
@@ -58,7 +58,7 @@ export default function ScreenRenderer({
           currentStreak={streak}
           newlyEarnedBadges={newlyEarnedBadges}
           onBadgeSeen={onBadgeSeen}
-          snackEnergyRemaining={snackEnergy.remaining}
+          quickieEnergyRemaining={quickieEnergy.remaining}
           onNavigate={handleHomeNavigate}
           onOpenSettings={() => setShowSettings(true)}
           playerAvatar={user?.user_metadata?.avatar_url || localStorage.getItem('wtf_player_avatar') || null}
@@ -124,7 +124,7 @@ export default function ScreenRenderer({
           onQuit={handleHome}
           category={selectedCategory}
           gameMode={gameMode}
-          difficulty={(gameMode === 'solo' || gameMode === 'snack') ? selectedDifficulty : null}
+          difficulty={(gameMode === 'solo' || gameMode === 'quickie') ? selectedDifficulty : null}
           sessionType={sessionType}
         />
       )}

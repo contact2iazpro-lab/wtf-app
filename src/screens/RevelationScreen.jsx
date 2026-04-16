@@ -157,9 +157,12 @@ export default function RevelationScreen({
   const catTextColor = cat?.color ? (isLightColor(cat.color) ? '#1a1a1a' : '#ffffff') : 'rgba(255,255,255,0.8)'
 
   // COR 7 — Gradient catégorie identique dans les deux cas
-  const catGradient = cat
-    ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
-    : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
+  const isQuickieMode = sessionType === 'quickie'
+  const catGradient = isQuickieMode
+    ? 'linear-gradient(160deg, #4A3FA3, #7F77DD)'
+    : cat
+      ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
+      : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'
 
   // ── Coins animation (replaces floating +5 pts badge) ──────────────────────
   // Reset + re-trigger à chaque nouvelle question (fact.id dans les deps)
@@ -302,12 +305,13 @@ export default function RevelationScreen({
       <div className="relative screen-enter" style={{
         height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
         boxSizing: 'border-box', width: '100%',
-        backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
-        backgroundSize: 'cover', backgroundPosition: 'center',
-        backgroundColor: cat?.color || '#1a1a2e',
+        ...(isQuickieMode ? { background: catGradient } : {
+          backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
+          backgroundSize: 'cover', backgroundPosition: 'center',
+          backgroundColor: cat?.color || '#1a1a2e',
+        }),
       }}>
-        {/* Overlay couleur catégorie */}
-        <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />
+        {!isQuickieMode && <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />}
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
         {quitModal}

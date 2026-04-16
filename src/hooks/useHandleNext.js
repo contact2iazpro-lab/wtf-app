@@ -114,16 +114,16 @@ export function useHandleNext({
       setSessionIsPerfect(isPerfectSession)
 
       // Bonus coins — CLAUDE.md 15/04/2026 économie ×10
-      // Snack : perfect 5/5 = +50c · Flash lun-sam = 30c fixe (dim = VIP, géré ailleurs)
+      // Quickie : perfect 5/5 = +50c · Flash lun-sam = 30c fixe (dim = VIP, géré ailleurs)
       // Quest/No Limit/VraiOuFou/Blitz : pas de bonus perfect (0)
       let bonusCoins = 0
       if (sessionType === 'flash') {
         // Flash lun-sam : 30 coins fixe (sessionScore = 0 car FLASH.coinsPerCorrect = 0)
         bonusCoins = 30
-      } else if (sessionType === 'snack') {
+      } else if (sessionType === 'quickie') {
         const finalCorrect = correctCount + (isCorrect ? 1 : 0)
-        const isPerfectSnack = finalCorrect === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
-        bonusCoins = isPerfectSnack ? 50 : 0
+        const isPerfectQuickie = finalCorrect === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
+        bonusCoins = isPerfectQuickie ? 50 : 0
       }
       // quest / no_limit / vrai_ou_fou / blitz : 0 bonus (gains directs via coinsPerCorrect)
       setCoinsEarnedLastSession(sessionScore + bonusCoins)
@@ -142,7 +142,7 @@ export function useHandleNext({
 
       const streakRewardCoins = streakReward?.coins ?? 0
       const newWtfDuJourDate = sessionType === 'flash' ? TODAY() : wtfDuJourDate
-      const snackSessionsToday = sessionType === 'snack' ? sessionsToday : newSessionsToday
+      const quickieSessionsToday = sessionType === 'quickie' ? sessionsToday : newSessionsToday
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
       // Phase A : 1 seule RPC atomique coins+hints via usePlayerProfile
@@ -164,7 +164,7 @@ export function useHandleNext({
           unlockedFacts: newUnlocked,
           wtfCoins: localWd.wtfCoins || 0,
           wtfDuJourDate: newWtfDuJourDate,
-          sessionsToday: snackSessionsToday,
+          sessionsToday: quickieSessionsToday,
           wtfDuJourFait: newWtfDuJourDate === TODAY(),
         }
         saveStorage(newStorage)
@@ -237,7 +237,7 @@ export function useHandleNext({
     // Route to end screen
     if (sessionType === 'flash') {
       setScreen(SCREENS.WTF_REVEAL)
-    } else if (sessionType === 'snack') {
+    } else if (sessionType === 'quickie') {
       setScreen(SCREENS.RESULTS)
     } else {
       setScreen(SCREENS.RESULTS)

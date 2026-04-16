@@ -129,7 +129,7 @@ export default function RevelationScreen({
   correctAnswer,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _currencyCoins, hints: _currencyHints, applyCurrencyDelta } = usePlayerProfile()
+  const { coins: _currencyCoins, hints: _currencyHints, energy: _currencyEnergy, applyCurrencyDelta } = usePlayerProfile()
 
   const [flipped, setFlipped] = useState(true)
   const [unlockedByCoins, setUnlockedByCoins] = useState(false)
@@ -287,6 +287,10 @@ export default function RevelationScreen({
         <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
           <img src="/assets/ui/icon-hint.png?v=2" style={{ width: S(16), height: S(16) }} alt="" />
           <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyHints}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+          <img src="/assets/ui/emoji-energy.png" style={{ width: S(16), height: S(16) }} alt="" />
+          <span style={{ fontWeight: 700, color: 'white', fontSize: S(12) }}>{_currencyEnergy ?? '—'}</span>
         </div>
       </div>
       <button

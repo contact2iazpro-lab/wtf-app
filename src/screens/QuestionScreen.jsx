@@ -483,7 +483,7 @@ export default function QuestionScreen({
         <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
           <span style={{
             fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            color: isQuickieMode ? '#B5AFEB' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
           }}>
             {modeLabel}
           </span>

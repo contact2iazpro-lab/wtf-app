@@ -27,7 +27,7 @@ export default function GameHeader({
   const [showSettings, setShowSettings] = useState(false)
 
   // Source unique de vérité pour les devises (Supabase si session, sinon localStorage)
-  const { coins, hints } = usePlayerProfile()
+  const { coins, hints, energy } = usePlayerProfile()
 
   return (
     <>
@@ -87,6 +87,7 @@ export default function GameHeader({
             )}
           </div>
           <Pill icon="/assets/ui/icon-hint.png?v=2" value={hints} alt="hints" />
+          <Pill icon="/assets/ui/emoji-energy.png" value={energy ?? '—'} alt="energy" />
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}
             style={{

@@ -72,7 +72,20 @@ $function$;
 -- ============================================================================
 -- DROP obligatoire : PostgreSQL refuse CREATE OR REPLACE si le type de retour
 -- change (ici on retire la colonne tickets du TABLE return type).
-DROP FUNCTION IF EXISTS public.get_balances();
+-- Drop TOUS les overloads de get_balances (zéro ou n arguments)
+DO $$
+DECLARE
+  r record;
+BEGIN
+  FOR r IN
+    SELECT oid::regprocedure AS sig
+    FROM pg_proc
+    WHERE pronamespace = 'public'::regnamespace
+      AND proname = 'get_balances'
+  LOOP
+    EXECUTE 'DROP FUNCTION ' || r.sig || ' CASCADE';
+  END LOOP;
+END $$;
 
 CREATE FUNCTION public.get_balances()
 RETURNS TABLE(coins integer, hints integer, energy integer)

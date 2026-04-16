@@ -635,6 +635,15 @@ export default function RevelationScreen({
                   animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
                 }} />
               </div>
+              {/* Stamp Unlocked */}
+              <div style={{
+                position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
+                background: '#4CAF50', borderRadius: S(6),
+                padding: `${S(3)} ${S(8)}`,
+                pointerEvents: 'none',
+              }}>
+                <span style={{ fontSize: S(10), fontWeight: 900, color: '#ffffff', letterSpacing: '0.04em' }}>Unlocked !</span>
+              </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
                 style={{

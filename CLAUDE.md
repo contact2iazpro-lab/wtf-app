@@ -195,8 +195,11 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 ## Streak & Coffres — Décision 16/04/2026 (Option B)
 - **Streak et coffres sont FUSIONNÉS** : le coffre quotidien est la matérialisation visuelle du streak (plus de double rail de récompenses).
-- **Paliers** : J3 / J7 / J14 / J30 (**pas de J1** — redondant avec Flash quotidien).
-- **Progression coins** : J3 = 75c · J7 = 200c + 2 indices · J14 = 500c · J30 = coffre prestige (1 000c + cadre exclusif).
+- **Paliers** (pas de J1 — redondant avec Flash quotidien) :
+  - **Débutant** (J3) = 75c
+  - **Habitué** (J7) = 200c + 2 indices
+  - **Fidèle** (J14) = 500c
+  - **Légende** (J30) = 1 000c + cadre exclusif
 - **Flash** reste le gameplay quotidien (lun-sam 30c fixe, dimanche Hunt VIP). Aucune interférence : Flash = actif, Coffres/Streak = passif.
 - **Implémentation** : `useDailyCoffre.js` devient `useDailyStreakReward.js`. Un seul popup au lancement si récompense disponible.
 

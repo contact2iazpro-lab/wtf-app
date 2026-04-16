@@ -7,10 +7,10 @@ import { useState } from 'react'
 // canUse: player can use this hint right now
 // onBuyHint: callback when buying with coins (null if free)
 // onReveal: callback when revealing the hint
-export default function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, canUse, onReveal, onBuyHint, initialRevealed = false }) {
+export default function HintFlipButton({ num, hint, catColor, isFree, cost, canAfford, canUse, needsBuy = false, onReveal, onBuyHint, initialRevealed = false }) {
   const [phase, setPhase] = useState(initialRevealed ? 'back' : 'front') // 'front' | 'flip' | 'back'
 
-  const canBuyNow = !canUse && canAfford && !isFree && onBuyHint
+  const canBuyNow = (needsBuy || (!canUse && canAfford && !isFree)) && onBuyHint
   const disabled = !canAfford && !canUse
 
   const handleClick = () => {
@@ -29,7 +29,14 @@ export default function HintFlipButton({ num, hint, catColor, isFree, cost, canA
   // Front label depends on hint state
   const hintIcon = <img src="/assets/ui/icon-hint.png?v=2" alt="" style={{ width: 14, height: 14, display: 'inline-block', verticalAlign: 'middle', opacity: disabled ? 0.5 : 1 }} />
   let frontLabel
-  if (isFree || (canUse && !isFree)) {
+  if (needsBuy && canBuyNow) {
+    // No stock but can buy with coins → show price
+    frontLabel = (
+      <span style={{ fontWeight: 900, fontSize: 12, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
+        {hintIcon} {cost} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: 12, height: 12 }} />
+      </span>
+    )
+  } else if (isFree || (canUse && !isFree)) {
     // Free hint OR paid hint with stock available → no price shown
     frontLabel = (
       <span style={{ fontWeight: 900, fontSize: 13, color: '#ffffff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>

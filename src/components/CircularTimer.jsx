@@ -37,7 +37,8 @@ function getTimerColor(remaining, duration) {
   return `rgb(${r},${g},${b})`
 }
 
-export default function CircularTimer({ duration = 60, onTimeout, paused = false, size = 100 }) {
+export default function CircularTimer({ duration = 60, onTimeout, paused = false, size = 100, variant = 'default' }) {
+  const isQuickie = variant === 'quickie'
   const timeRef = useRef(duration)
   const intervalRef = useRef(null)
   const circleRef = useRef(null)
@@ -52,7 +53,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
     }
     if (textRef.current) {
       textRef.current.textContent = duration
-      textRef.current.style.fill = '#FFFFFF'
+      textRef.current.style.fill = isQuickie ? '#7F77DD' : '#FFFFFF'
     }
 
     intervalRef.current = setInterval(() => {
@@ -71,7 +72,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
 
       if (textRef.current) {
         textRef.current.textContent = t
-        textRef.current.style.fill = t <= 5 ? '#EF4444' : '#FFFFFF'
+        textRef.current.style.fill = t <= 5 ? '#EF4444' : (isQuickie ? '#7F77DD' : '#FFFFFF')
       }
 
       // Bip sounds
@@ -108,8 +109,8 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
         {/* Track */}
         <circle
           cx="50" cy="50" r={RADIUS}
-          fill="none"
-          stroke="#2E2E2E"
+          fill={isQuickie ? '#ffffff' : 'none'}
+          stroke={isQuickie ? '#E5E7EB' : '#2E2E2E'}
           strokeWidth="6"
         />
         {/* Progress stroke */}

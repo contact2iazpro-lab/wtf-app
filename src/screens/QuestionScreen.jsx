@@ -46,14 +46,14 @@ export default function QuestionScreen({
   const prevCoinsRef = useRef(_cCoins)
 
   useEffect(() => {
-    const diff = _cCoins - prevCoinsRef.current
+    const prev = prevCoinsRef.current
+    prevCoinsRef.current = _cCoins
+    const diff = _cCoins - prev
     if (diff > 0) {
       setCoinFlash(`+${diff}`)
       const t = setTimeout(() => setCoinFlash(null), 1200)
-      prevCoinsRef.current = _cCoins
       return () => clearTimeout(t)
     }
-    prevCoinsRef.current = _cCoins
   }, [_cCoins])
 
   const cat = getCategoryById(fact.category)
@@ -70,7 +70,6 @@ export default function QuestionScreen({
   const S = (px) => `calc(${px}px * var(--scale))`
 
   // Timer duration — source unique : difficulty.duration (gameConfig.js)
-  const isFlash = difficulty?.id === 'quickie'
   const timerDuration = answerMode === 'open' ? 60 : (difficulty?.duration || 20)
 
   // Progress display — Quickie shows X/10
@@ -213,15 +212,18 @@ export default function QuestionScreen({
         boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`,
       }}
     >
+      <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))', margin: 0 }}>{renderFormattedText(fact.question)}</h2>
       {isQuickieMode && (
         <div style={{
           position: 'relative',
-          width: '100%',
+          width: '60%',
           aspectRatio: '1 / 1',
           borderRadius: S(12),
           overflow: 'hidden',
-          marginBottom: S(10),
+          margin: `${S(8)} auto 0`,
           background: 'rgba(0,0,0,0.3)',
+          border: '3px solid #7F77DD',
+          flexShrink: 0,
         }}>
           {fact.imageUrl && !imgFailed ? (
             <img
@@ -244,7 +246,7 @@ export default function QuestionScreen({
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <span style={{
-              fontSize: S(64), fontWeight: 900, color: '#B5AFEB',
+              fontSize: S(48), fontWeight: 900, color: '#B5AFEB',
               textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
               animation: 'quickie-pulse-btn 2s ease-in-out infinite',
               lineHeight: 1,
@@ -252,7 +254,6 @@ export default function QuestionScreen({
           </div>
         </div>
       )}
-      <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))' }}>{renderFormattedText(fact.question)}</h2>
     </div>
   )
 
@@ -302,18 +303,21 @@ export default function QuestionScreen({
         const isFree = hintNum <= freeHints
         const cost = isFree ? 0 : hintCost
         // Paid hint: can use if has stock OR can buy with coins
-        const canAfford = isFree || _cCoins >= cost || stockRemaining > 0
-        const canUseHint = isFree ? (hintsUsed < freeHints) : (stockRemaining > 0 || _cCoins >= cost)
+        const hasStock = stockRemaining > 0
+        const canAfford = isFree || _cCoins >= cost || hasStock
+        const canUseHint = isFree ? (hintsUsed < freeHints) : (hasStock || _cCoins >= cost)
+        const needsBuy = !isFree && !hasStock && _cCoins >= cost
         return (
           <HintFlipButton
             key={hintNum}
             num={hintNum}
             hint={hintText}
-            catColor={cat?.color || '#FF6B1A'}
+            catColor={isQuickieMode ? '#7F77DD' : (cat?.color || '#FF6B1A')}
             isFree={isFree}
             cost={cost}
             canAfford={canAfford}
             canUse={canUseHint}
+            needsBuy={needsBuy}
             onReveal={() => { onUseHint(hintNum); audio.play('click') }}
             onBuyHint={!isFree && cost > 0 ? () => {
               applyCurrencyDelta?.({ coins: -cost, hints: 1 }, 'buy_hint_in_session')?.catch?.(e =>
@@ -613,6 +617,7 @@ export default function QuestionScreen({
             size={72}
             duration={timerDuration}
             onTimeout={handleTimeout}
+            variant={isQuickieMode ? 'quickie' : 'default'}
           />
         </div>
       </div>

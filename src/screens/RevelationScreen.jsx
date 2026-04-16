@@ -104,6 +104,12 @@ if (typeof document !== 'undefined' && !document.getElementById(STAMP_STYLE_ID))
       0%, 100% { opacity: 0.1; transform: scale(0.8); }
       50%      { opacity: 0.35; transform: scale(1.2); }
     }
+    @keyframes unlockBadgeSlide {
+      0% { transform: translateY(20px); opacity: 0; }
+      40% { transform: translateY(-4px); opacity: 1; }
+      60% { transform: translateY(2px); opacity: 1; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
   `
   document.head.appendChild(style)
 }
@@ -598,6 +604,19 @@ export default function RevelationScreen({
                   cursor: 'pointer', fontSize: 18,
                 }}
               >🔍</button>
+              {/* Badge F*ct débloqué */}
+              <div style={{
+                position: 'absolute', bottom: S(10), left: '50%', transform: 'translateX(-50%)',
+                zIndex: 10, animation: 'unlockBadgeSlide 0.6s ease-out both',
+                background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+                borderRadius: S(10), padding: `${S(6)} ${S(14)}`,
+                border: '2px solid #7F77DD',
+                display: 'flex', alignItems: 'center', gap: S(6),
+                whiteSpace: 'nowrap',
+              }}>
+                <span style={{ fontSize: S(16) }}>🔓</span>
+                <span style={{ fontSize: S(12), fontWeight: 900, color: '#ffffff' }}>F*ct débloqué !</span>
+              </div>
             </>
           ) : (
             <div style={{ width: '100%', height: 'calc(35vh - 6px)', borderRadius: S(12), overflow: 'hidden' }}>
@@ -611,10 +630,8 @@ export default function RevelationScreen({
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(4)} ${S(12)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
         {/* Encadré réponse */}
         <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', border: '2.5px solid #7F77DD', borderRadius: S(12), padding: `${S(8)} ${S(10)}`, flexShrink: 0 }}>
-          <div style={{ background: 'rgba(76,175,80,0.12)', border: '1px solid rgba(76,175,80,0.3)', borderRadius: S(8), padding: `${S(6)} ${S(8)}` }}>
-            <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>Réponse :</div>
-            <div style={{ fontSize: S(15), fontWeight: 900, color: '#ffffff' }}>{correctAnswerText}</div>
-          </div>
+          <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>✓ Réponse :</div>
+          <div style={{ fontSize: S(15), fontWeight: 900, color: '#ffffff' }}>{correctAnswerText}</div>
         </div>
 
         {/* Encadré Le saviez-vous */}

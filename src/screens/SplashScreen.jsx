@@ -16,13 +16,10 @@ export default function SplashScreen({ onComplete, isReady }) {
   const scale = useScale()
   const timers = useRef([])
 
-  // Tenter de jouer le son d'intro — fonctionne si l'AudioContext existe déjà
-  // (reload ou navigation SPA). Sur cold load, le navigateur bloque jusqu'au
-  // premier geste → on pose un listener one-shot qui rattrape le premier tap.
+  // Débloquer l'AudioContext au premier geste utilisateur (cold load)
   useEffect(() => {
-    try { audio.play('splash_logo') } catch { /* ignore */ }
     const unlock = () => {
-      try { audio.play('splash_logo') } catch { /* ignore */ }
+      try { audio.play('click') } catch { /* ignore */ }
       window.removeEventListener('pointerdown', unlock)
       window.removeEventListener('touchstart', unlock)
     }
@@ -34,15 +31,12 @@ export default function SplashScreen({ onComplete, isReady }) {
     }
   }, [])
 
-  // Animations d'entrée (logo + tagline) + sons synchronisés
+  // Animations d'entrée (logo + tagline) + son "What the fact" sur la tagline
   useEffect(() => {
-    const t1 = setTimeout(() => {
-      setLogoVisible(true)
-      try { audio.play('splash_logo') } catch { /* ignore */ }
-    }, 100)
+    const t1 = setTimeout(() => setLogoVisible(true), 100)
     const t2 = setTimeout(() => {
       setTaglineVisible(true)
-      try { audio.play('splash_tagline') } catch { /* ignore */ }
+      try { audio.playFile('What the fact.mp3') } catch { /* ignore */ }
     }, 700)
     const t3 = setTimeout(() => setMinTimeElapsed(true), 3000)
     const t4 = setTimeout(() => {
@@ -70,7 +64,6 @@ export default function SplashScreen({ onComplete, isReady }) {
   // Appeler onComplete quand les 2 conditions sont remplies
   useEffect(() => {
     if (minTimeElapsed && (isReady || forceReady)) {
-      try { audio.play('splash_ready') } catch { /* ignore */ }
       setFadeOut(true)
       const t = setTimeout(() => onComplete(), 500)
       return () => clearTimeout(t)

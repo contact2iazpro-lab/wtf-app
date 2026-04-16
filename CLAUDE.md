@@ -193,6 +193,13 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 **Modes SUPPRIMÉS :** Quest ancien (tickets+Cool/Hot), Série, Multi, Puzzle du Jour séparé, Hunt séparé, Explorer séparé
 
+## Streak & Coffres — Décision 16/04/2026 (Option B)
+- **Streak et coffres sont FUSIONNÉS** : le coffre quotidien est la matérialisation visuelle du streak (plus de double rail de récompenses).
+- **Paliers** : J3 / J7 / J14 / J30 (**pas de J1** — redondant avec Flash quotidien).
+- **Progression coins** : J3 = 75c · J7 = 200c + 2 indices · J14 = 500c · J30 = coffre prestige (1 000c + cadre exclusif).
+- **Flash** reste le gameplay quotidien (lun-sam 30c fixe, dimanche Hunt VIP). Aucune interférence : Flash = actif, Coffres/Streak = passif.
+- **Implémentation** : `useDailyCoffre.js` devient `useDailyStreakReward.js`. Un seul popup au lancement si récompense disponible.
+
 ## Monétisation — Roadmap Y1 → Y5
 
 - **Y1 (10K € cible)** : Starter Pack 2,99€ (1 500 coins + 5 indices + cadre exclusif, plus de tickets) + Packs Gems + Abo optionnel

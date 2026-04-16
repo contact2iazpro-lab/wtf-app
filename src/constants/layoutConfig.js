@@ -41,7 +41,7 @@ export const SPOTLIGHT_MESSAGES = {
 // ── Icon sizes ───────────────────────────────────────────────────────────────
 
 export const ICON_SIZES = {
-  modeIcon: 48,
+  modeIcon: 62,
   coffreIcon: 28,
   lockBadge: 18,
 }

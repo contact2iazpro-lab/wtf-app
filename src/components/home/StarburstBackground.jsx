@@ -86,16 +86,6 @@ export default function StarburstBackground() {
         }} />
       ))}
 
-      {/* Noyau lumineux au centre */}
-      <div style={{
-        position: 'absolute',
-        top: '50%', left: '50%',
-        width: 110, height: 110,
-        transform: 'translate(-50%, -50%)',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255,245,180,0.25) 0%, rgba(255,220,100,0.15) 35%, rgba(255,200,60,0.07) 65%, transparent 85%)',
-      }} />
-
       {/* Rayons dorés */}
       {RAYS.map((r, i) => (
         <div key={`ray-${i}`} style={{

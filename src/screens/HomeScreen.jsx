@@ -296,6 +296,18 @@ export default function HomeScreen({
         })}
       </div>
 
+      {/* ═══ LOGO VRAI OU FOU ═══ */}
+      <div style={{
+        flexShrink: 0, display: 'flex', justifyContent: 'center',
+        padding: `${S(6)} 0 0`, position: 'relative', zIndex: 2,
+      }}>
+        <img
+          src="/assets/ui/vof-logo.png"
+          alt="Vrai ou Fou"
+          style={{ height: S(28), width: 'auto', objectFit: 'contain' }}
+        />
+      </div>
+
       {/* ═══ BANDEAU QUOTIDIEN — Roulette + Flash côte à côte ═══ */}
       <div style={{
         flexShrink: 0,
@@ -372,7 +384,7 @@ export default function HomeScreen({
           justifyItems: 'center',
           alignItems: 'center',
           width: '100%',
-          maxWidth: S(280),
+          maxWidth: S(320),
         }}>
           <ModeIcon icon="/assets/modes/quickie.png" name="Quickie" color="#7F77DD" onClick={() => nav('quickie')} />
           <ModeIcon icon="/assets/modes/quest.svg" name="Quest" color="#FF6B1A" onClick={() => nav('quest')} />

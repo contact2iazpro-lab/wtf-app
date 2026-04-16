@@ -70,8 +70,11 @@ $function$;
 -- ============================================================================
 -- get_balances — retourne sans tickets
 -- ============================================================================
+-- DROP obligatoire : PostgreSQL refuse CREATE OR REPLACE si le type de retour
+-- change (ici on retire la colonne tickets du TABLE return type).
+DROP FUNCTION IF EXISTS public.get_balances();
 
-CREATE OR REPLACE FUNCTION public.get_balances()
+CREATE FUNCTION public.get_balances()
 RETURNS TABLE(coins integer, hints integer, energy integer)
 LANGUAGE plpgsql
 SECURITY DEFINER

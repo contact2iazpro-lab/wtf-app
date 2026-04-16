@@ -2,7 +2,9 @@
  * QuestionTargetIcon — viseur circulaire avec "?" centré.
  * Icône "questions/set" pour la page règles.
  */
-export default function QuestionTargetIcon({ size = 40, color = '#ffffff' }) {
+const WTF_ORANGE = '#FF6B1A'
+
+export default function QuestionTargetIcon({ size = 40, color = '#ffffff', accent = WTF_ORANGE }) {
   const id = 'qtGlow'
   return (
     <svg
@@ -32,11 +34,11 @@ export default function QuestionTargetIcon({ size = 40, color = '#ffffff' }) {
         <line x1="4" y1="50" x2="14" y2="50" stroke={color} strokeWidth="5" strokeLinecap="round" />
         <line x1="86" y1="50" x2="96" y2="50" stroke={color} strokeWidth="5" strokeLinecap="round" />
 
-        {/* "?" centré */}
+        {/* "?" centré — orange WTF */}
         <text
           x="50" y="62"
           textAnchor="middle"
-          fill={color}
+          fill={accent}
           fontSize="40"
           fontWeight="900"
           fontFamily="Nunito, sans-serif"

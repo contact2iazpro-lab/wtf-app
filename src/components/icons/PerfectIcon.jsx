@@ -1,8 +1,10 @@
 /**
- * PerfectIcon — étoile 5 branches avec glow pour "Perfect" sur la page règles.
- * Stroke-width 5, viewBox 100x100 — cohérent avec les autres icônes règles.
+ * PerfectIcon — étoile 5 branches pour "Perfect" sur la page règles.
+ * Contour orange WTF avec glow.
  */
-export default function PerfectIcon({ size = 40, color = '#ffffff', glowIntensity = 'strong' }) {
+const WTF_ORANGE = '#FF6B1A'
+
+export default function PerfectIcon({ size = 40, accent = WTF_ORANGE, glowIntensity = 'strong' }) {
   const id = 'pfGlow'
   const blur = glowIntensity === 'strong' ? 4 : 2.5
 
@@ -36,7 +38,7 @@ export default function PerfectIcon({ size = 40, color = '#ffffff', glowIntensit
       <g filter={`url(#${id})`}>
         <polygon
           points={points.join(' ')}
-          stroke={color}
+          stroke={accent}
           strokeWidth="5"
           strokeLinejoin="round"
           fill="none"

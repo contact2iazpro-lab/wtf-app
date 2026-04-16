@@ -221,7 +221,6 @@ export default function QuestionScreen({
     <div style={{
       position: 'relative',
       width: '55%',
-      marginTop: 48,
       aspectRatio: '1 / 1',
       borderRadius: S(12),
       overflow: 'hidden',
@@ -609,12 +608,11 @@ export default function QuestionScreen({
           )
         })()}
 
-        {/* Image Quickie séparée — entre QCM et image */}
-        {quickieImage}
       </div>
 
-      {/* Timer — centré verticalement dans l'espace restant */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Image + Timer — distribués dans l'espace restant */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-evenly' }}>
+        {quickieImage}
         <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <CircularTimer
             key={`${fact.id}-${answerMode}`}

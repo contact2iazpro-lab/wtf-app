@@ -64,18 +64,18 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         padding: `${S(8)} ${S(20)} ${S(8)}`,
       }}>
         {icon
-          ? <img src={icon} alt={modeName} style={{ width: S(110), height: S(110), objectFit: 'contain', marginBottom: S(4) }} />
+          ? <img src={icon} alt={modeName} style={{ width: S(110), height: S(110), objectFit: 'contain', marginBottom: S(4), display: 'block', marginLeft: 'auto', marginRight: 'auto' }} />
           : <div style={{ fontSize: S(40), marginBottom: S(2), lineHeight: 1 }}>{renderIcon(emoji)}</div>
         }
         <h1 style={{
-          fontSize: S(22), fontWeight: 900, margin: 0,
+          fontSize: S(28), fontWeight: 900, margin: 0,
           letterSpacing: '0.02em',
           textShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
           {modeName}
         </h1>
         <p style={{
-          fontSize: S(12), fontWeight: 700, margin: `${S(4)} 0 0`,
+          fontSize: S(15), fontWeight: 700, margin: `${S(4)} 0 0`,
           opacity: 0.8,
         }}>
           {subtitle}
@@ -86,7 +86,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
         padding: `0 ${S(20)}`,
-        display: 'flex', flexDirection: 'column', gap: S(6),
+        display: 'flex', flexDirection: 'column', gap: S(8),
         justifyContent: 'flex-start',
       }}>
         {(rules || []).map((rule, i) => (
@@ -94,9 +94,9 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
             display: 'flex', alignItems: 'center', gap: S(12),
             background: 'rgba(255,255,255,0.12)',
             backdropFilter: 'blur(8px)',
-            borderRadius: S(12), padding: `${S(8)} ${S(12)}`,
+            borderRadius: S(12), padding: `${S(12)} ${S(14)}`,
           }}>
-            <span style={{ fontSize: S(20), flexShrink: 0, lineHeight: 1 }}>{renderIcon(rule.icon)}</span>
+            <span style={{ fontSize: S(22), flexShrink: 0, lineHeight: 1 }}>{renderIcon(rule.icon)}</span>
             <span style={{ fontSize: S(13), fontWeight: 600, lineHeight: 1.35 }}>
               {rule.text}
             </span>
@@ -142,18 +142,18 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           className="active:scale-95 transition-transform"
           style={{
             width: '85%', padding: `${S(14)} 0`,
-            background: '#B5AFEB',
-            border: '3px solid #4A3FA3',
+            background: '#9400D3',
+            border: '3px solid #ffffff',
             borderRadius: S(16),
             fontFamily: 'Nunito, sans-serif',
             fontSize: S(18), fontWeight: 900,
             color: '#ffffff',
             cursor: 'pointer',
-            boxShadow: '0 8px 30px rgba(127,119,221,0.6), 0 4px 0 rgba(0,0,0,0.15)',
+            boxShadow: '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)',
             letterSpacing: '0.04em',
           }}
         >
-          C'EST PARTI !
+          LET'S GO !
         </button>
       </div>
     </div>

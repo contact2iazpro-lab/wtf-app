@@ -305,17 +305,25 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                       {isLocked ? '🔒' : `${unlocked}/${total}`}
                     </span>
                   </div>
-                  <div style={{
-                    height: S(3), background: 'rgba(255,255,255,0.3)',
-                    borderRadius: 2, width: '100%',
-                  }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: S(6) }}>
                     <div style={{
-                      height: '100%',
-                      width: `${Math.min(pct, 100)}%`,
-                      background: 'white',
+                      flex: 1, height: S(3), background: 'rgba(255,255,255,0.3)',
                       borderRadius: 2,
-                      transition: 'width 0.3s ease',
-                    }} />
+                    }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${Math.min(pct, 100)}%`,
+                        background: 'white',
+                        borderRadius: 2,
+                        transition: 'width 0.3s ease',
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: S(9), color: 'rgba(255,255,255,0.6)',
+                      fontWeight: 700, flexShrink: 0,
+                    }}>
+                      {isLocked ? '' : `${pct}%`}
+                    </span>
                   </div>
                 </div>
               </button>

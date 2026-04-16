@@ -397,14 +397,13 @@ export default function RevelationScreen({
           )}
         </div>
 
-        {/* Stamp centré verticalement entre social phrase et boutons */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {/* Stamp centré H sur la page, centré V entre social phrase et boutons */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `0 ${S(16)}` }}>
           <div style={{
-            animation: 'stampImpact 0.5s ease-out forwards',
             background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
             border: '3px solid #EF4444',
             borderRadius: S(14), padding: `${S(14)} ${S(20)}`,
-            maxWidth: '85%', textAlign: 'center',
+            textAlign: 'center',
           }}>
             <span style={{ fontSize: S(18), fontWeight: 900, color: '#EF4444', lineHeight: 1.4 }}>
               {isTimeout ? '⏱️ Temps écoulé' : wrongMsg}

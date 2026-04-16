@@ -14,7 +14,8 @@
       "mcp__claude_ai_Notion__notion-update-page",
       "Bash(git mv *)",
       "Bash(git rm *)",
-      "Bash(find /c/Users/VENOEN/wtf-app/src/screens -name \"*Screen.jsx\" -exec basename {} \\\\;)"
+      "Bash(find /c/Users/VENOEN/wtf-app/src/screens -name \"*Screen.jsx\" -exec basename {} \\\\;)",
+      "mcp__claude_ai_Notion__notion-create-pages"
     ]
   }
 }

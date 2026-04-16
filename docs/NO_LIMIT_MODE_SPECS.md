@@ -2,7 +2,7 @@ MODE MARATHON — Spécifications complètes (15/04/2026)
 
 CONCEPT : Mode survie — le joueur répond à des questions jusqu'à sa première erreur. Pas de timer, pas d'indices, pas de coins. Prestige pur et record personnel.
 
-⚠️ ATTENTION : L'ancien "Marathon" dans le code (20 questions avec scoring) est un mode COMPLÈTEMENT DIFFÉRENT et doit être SUPPRIMÉ avant d'implémenter celui-ci.
+⚠️ Note historique : un ancien mode "Marathon" (20 questions avec scoring) a été supprimé. Ce fichier décrit le mode **No Limit** final (survie illimitée, renommé depuis "Marathon" le 16/04/2026).
 
 RÈGLES :
 - QCM **4 choix**
@@ -18,7 +18,7 @@ RÈGLES :
 CONDITION D'ACCÈS :
 - Le joueur doit avoir au moins 20 f*cts débloqués dans sa collection
 - Si moins de 20 : bouton grisé avec message "Débloque encore X f*cts pour jouer"
-- Le pool grandit avec la collection du joueur → incitation à jouer Snack/Quest pour agrandir le pool Marathon
+- Le pool grandit avec la collection du joueur → incitation à jouer Snack/Quest pour agrandir le pool No Limit
 
 RECORD :
 - Meilleur score = nombre de bonnes réponses consécutives
@@ -48,17 +48,17 @@ UX — GAME OVER :
 UX — ÉCRAN RÉSULTAT :
 - Score de la session vs record personnel
 - Si nouveau record : animation dorée spéciale + message "NOUVEAU RECORD !"
-- Bouton partager : "J'ai fait une série de 23 au Marathon WTF! Et toi ?" + lien app
+- Bouton partager : "J'ai fait une série de 23 au No Limit WTF! Et toi ?" + lien app
 - Bouton rejouer (direct, pas de retour HomeScreen)
 - Bouton accueil
 
-FICHIER À CRÉER : src/screens/MarathonScreen.jsx
+FICHIER À CRÉER : src/screens/No LimitScreen.jsx
 - Nouveau composant complet
 - Ne réutilise PAS QuestionScreen (l'UX est trop différente : pas de timer, pas d'indices, compteur central, fond dynamique, game over dramatique)
 - Peut réutiliser les composants de base (boutons QCM, chargement facts)
 
 FICHIERS À MODIFIER :
-- App.jsx : ajouter routing vers MarathonScreen, handler handleMarathon
+- App.jsx : ajouter routing vers No LimitScreen, handler handleNo Limit
 - gameConfig.js : ajouter MARATHON_CONFIG (4 QCM, 0 timer, 0 indices, 0 coins, pool = débloqués)
-- HomeScreen.jsx : brancher le bouton Marathon
-- factsService.js : fonction getMarathonFacts() qui retourne les f*cts débloqués du joueur (VIP + Funny mélangés, ordre aléatoire)
+- HomeScreen.jsx : brancher le bouton No Limit
+- factsService.js : fonction getNo LimitFacts() qui retourne les f*cts débloqués du joueur (VIP + Funny mélangés, ordre aléatoire)

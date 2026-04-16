@@ -122,7 +122,7 @@ export default function DashboardPage({ toast }) {
         VIP_USAGES.map(u => ({ ...u, count: usageCounts[u.value] || 0 }))
       )
 
-      // Type distribution (Quête / Flash-Marathon)
+      // Type distribution (VIP boss / Funny)
       const typeCounts = { vip: 0, generated: 0 }
       for (const f of (allFacts || [])) {
         if (f.is_vip) typeCounts.vip++
@@ -426,7 +426,7 @@ export default function DashboardPage({ toast }) {
         )
       })()}
 
-      {/* Type distribution (Quête / Flash/Marathon) */}
+      {/* Type distribution (VIP boss / Funny) */}
       <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 mb-8">
         <h2 className="text-base font-black text-white mb-4">🏷️ Répartition par type</h2>
         <div className="grid grid-cols-2 gap-4 mb-4">

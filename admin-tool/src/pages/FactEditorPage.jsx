@@ -872,13 +872,13 @@ export default function FactEditorPage({ toast }) {
                   color: !fact.is_vip ? 'white' : '#9CA3AF',
                 }}
               >
-                <span>⚡</span> <span>Flash / Marathon</span>
+                <span>⚡</span> <span>Snack / Flash</span>
               </button>
             </div>
             <p className="text-xs text-slate-500 mt-1.5">
               {fact.is_vip
-                ? 'Disponible uniquement en mode Quête WTF!'
-                : 'Disponible en Flash, Marathon, Blitz, Série'}
+                ? 'Disponible uniquement comme boss Quest (VIP)'
+                : 'Disponible en Snack, Vrai ou Fou, Quest, Flash, Blitz, No Limit'}
             </p>
           </div>
         </Section>

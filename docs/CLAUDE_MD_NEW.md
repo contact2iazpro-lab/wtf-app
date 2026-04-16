@@ -26,7 +26,7 @@
 | Défi Blitz (async amis) | **Blitz Défi** | Sous-mode de Blitz |
 | Hunt + Puzzle du Jour | **Flash** | Événement quotidien + Hunt dimanche |
 | *(nouveau)* | **Vrai ou Fou** | Swipe Vrai/Faux, 20 affirmations |
-| *(nouveau)* | **Marathon** | Survie jusqu'à erreur, 4 QCM, pas de timer |
+| *(nouveau)* | **No Limit** | Survie jusqu'à erreur, 4 QCM, pas de timer |
 | Quest (ancien avec tickets + Cool/Hot) | **SUPPRIMÉ** | Remplacé par Quest (Route) |
 | Mode Série | **SUPPRIMÉ** | Absorbé dans le streak |
 | Multi | **SUPPRIMÉ** | Non prévu V1 |
@@ -122,7 +122,7 @@
 - TTF : 5-10 jours
 
 ## CONTENU
-- **VIP facts** (~483) : Quest boss /10 + Flash dimanche + Marathon/Blitz (débloqués)
+- **VIP facts** (~483) : Quest boss /10 + Flash dimanche + No Limit/Blitz (débloqués)
 - **Funny facts** (~770+) : Snack, Vrai ou Fou, Quest niveaux, Flash lun-sam
 - Nouveau champ requis : `statement` (text) + `statement_is_true` (boolean)
 - Quest = ~850 niveaux (770 Funny ÷ 9 par bloc × 10)
@@ -153,4 +153,4 @@
 - fact/fait → f*ct | facts → f*cts
 - WTF toujours avec ! (sauf "What The F*ct")
 - Niveaux Cool/Hot/WTF! → SUPPRIMÉS
-- Les 6 modes : Snack, Vrai ou Fou, Quest, Marathon, Blitz, Flash
+- Les 6 modes : Snack, Vrai ou Fou, Quest, No Limit, Blitz, Flash

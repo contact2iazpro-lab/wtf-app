@@ -206,7 +206,7 @@ const CHAPTERS = [
     content: [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
-      { icon: '🗺️', text: '**Quest** : 2/question · **Quickie** : 1 max · **Flash dimanche** : 2 max' },
+      { icon: '🗺️', text: '**Quest** : 2 / question · **Quickie** : 1 max · **Flash dimanche** : 2 max' },
       { icon: '🚫', text: '**Vrai ET Fou, Race, Blitz, Flash lun-sam** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : **50 Coins** par indice.' },
@@ -386,15 +386,14 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center p-5"
+      className="fixed inset-0 flex items-center justify-center"
       style={{ zIndex: 300, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full flex flex-col rounded-3xl overflow-hidden"
+        className="w-full h-full flex flex-col overflow-hidden"
         style={{
           maxWidth: 520,
-          height: 'min(92vh, 700px)',
           background: '#FAFAF8',
           boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
         }}
@@ -481,15 +480,16 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           )
         })()}
 
-        {/* ── Content area - scrollable full width ───────────────────────────── */}
+        {/* ── Content area - fullscreen sans scroll ───────────────────────────── */}
         <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-        <div className="overflow-y-auto p-4" style={{
+        <div className="p-3" style={{
           position: 'absolute', inset: 0,
           display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
         }}>
 
             {/* Rules items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: STYLED_MODE_IDS.includes(chapter.id) ? 5 : 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: STYLED_MODE_IDS.includes(chapter.id) ? 4 : 6, flexShrink: 0 }}>
               {(chapter.content || []).map((item, i) => {
                 const isStyledMode = STYLED_MODE_IDS.includes(chapter.id)
                 let iconColor = undefined
@@ -537,43 +537,38 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   🔄 Relancer le tutoriel
                 </button>
               )}
-
-              {/* Checkbox réafficher les règles des modes */}
-              {['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
-                <label style={{
-                  display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
-                  cursor: 'pointer', marginTop: 12, padding: '8px', background: 'rgba(255,107,26,0.08)',
-                  borderRadius: '8px', border: '1px solid rgba(255,107,26,0.2)', flexShrink: 0
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={showRulesOnLaunch}
-                    onChange={(e) => {
-                      audio.play('click')
-                      setShowRulesOnLaunch(e.target.checked)
-                      if (e.target.checked) {
-                        const keysToRemove = []
-                        for (let i = 0; i < localStorage.length; i++) {
-                          const k = localStorage.key(i)
-                          if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
-                        }
-                        keysToRemove.forEach(k => localStorage.removeItem(k))
-                      }
-                    }}
-                    style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
-                  />
-                  <span>Réafficher les règles au lancement</span>
-                </label>
-              )}
             </div>
           </div>
-          {/* Fade gradient bas */}
-          <div style={{
-            position: 'absolute', left: 0, right: 0, bottom: 0, height: 24,
-            background: 'linear-gradient(to bottom, rgba(250,250,248,0), rgba(250,250,248,1))',
-            pointerEvents: 'none',
-          }} />
         </div>
+
+        {/* ── Checkbox réafficher règles — extraite pour ne jamais être coupée ── */}
+        {['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
+            cursor: 'pointer', margin: '6px 12px 0', padding: '6px 8px',
+            background: 'rgba(255,107,26,0.08)',
+            borderRadius: '8px', border: '1px solid rgba(255,107,26,0.2)', flexShrink: 0,
+          }}>
+            <input
+              type="checkbox"
+              checked={showRulesOnLaunch}
+              onChange={(e) => {
+                audio.play('click')
+                setShowRulesOnLaunch(e.target.checked)
+                if (e.target.checked) {
+                  const keysToRemove = []
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i)
+                    if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
+                  }
+                  keysToRemove.forEach(k => localStorage.removeItem(k))
+                }
+              }}
+              style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
+            />
+            <span>Réafficher les règles au lancement</span>
+          </label>
+        )}
 
         {/* ── Footer ─────────────────────────────────────────────────────── */}
         <div

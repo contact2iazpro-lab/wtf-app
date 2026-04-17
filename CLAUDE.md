@@ -12,7 +12,7 @@ LANGUE: Toujours répondre en français.
 
 RÈGLES DES MODES (homogénéité) :
 - Devise écrite **WTFCoins** (C majuscule) — jamais "WTFcoins" ni "coins".
-- Format slash compact sans espace : `2/question`, `15s/question`, `5 questions/set`.
+- Format slash AVEC espaces : `2 / question`, `15s / question`, `5 questions / set` (mis à jour 17/04/2026, avant c'était sans espace).
 - Structure des lignes : `Label : valeur` (deux-points entouré d'espaces).
 - Appliquer ces règles sur toutes les pages de règles (livret HowToPlayModal + ModeLaunchScreen).
 

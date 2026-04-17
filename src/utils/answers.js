@@ -80,10 +80,27 @@ function pickWrongAnswers(fact, numWrong, factId) {
   let picked = []
 
   if (numWrong <= 1) {
-    // 2 QCM total (Quickie/Flash) : 1 drôle OU plausible
-    const funnyOrPlausible = [...funny, ...plausible]
-    const fp = pickRandom(funnyOrPlausible, 1)
-    picked = fp.length ? [...fp] : [allAvailable[0]]
+    // 2 QCM total (Quickie/Flash) : tirage pondéré 50% plausible / 30% proche / 20% drôle
+    // Si un type manque, rebalancer uniformément entre les types dispo.
+    const available = [
+      { type: 'plausible', pool: plausible, weight: 0.5 },
+      { type: 'close',     pool: close,     weight: 0.3 },
+      { type: 'funny',     pool: funny,     weight: 0.2 },
+    ].filter(b => b.pool.length > 0)
+    let chosen = null
+    if (available.length > 0) {
+      const totalW = available.reduce((s, b) => s + b.weight, 0)
+      const r = Math.random() * totalW
+      let acc = 0
+      for (const b of available) {
+        acc += b.weight
+        if (r <= acc) {
+          chosen = pickRandom(b.pool, 1)[0]
+          break
+        }
+      }
+    }
+    picked = chosen ? [chosen] : [allAvailable[0]]
   } else {
     // 4 QCM total (Quest/Race/Blitz) : 1 drôle + 2 plausibles (+ proche si dispo)
     const f = pickRandom(funny, 1)

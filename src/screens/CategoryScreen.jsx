@@ -78,17 +78,30 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
   // En mode Quickie/Quickie : seules les catégories débloquées sont jouables
   const isLockedMode = gameMode === 'quickie' || sessionType === 'quickie'
 
-  // Catégories avec au moins 1 fact — débloquées en haut, bloquées en bas, chaque groupe alphabétique
+  // Tri catégories (17/04/2026) :
+  //   1. Verrouillées (Quickie) en bas
+  //   2. Parmi débloquées : complètes (100%) en bas, classées alpha
+  //   3. Parmi non-complètes : % complétion décroissant, puis alpha en cas d'égalité
   const visibleCategories = useMemo(() => {
     const cats = getPlayableCategories().filter(cat => (totalPerCategory[cat.id] || 0) > 0)
+    const pctOf = (id) => {
+      const total = totalPerCategory[id] || 0
+      if (!total) return 0
+      return (unlockedPerCategory[id] || 0) / total
+    }
     cats.sort((a, b) => {
       const aLocked = isLockedMode && !unlockedCatIds.has(a.id)
       const bLocked = isLockedMode && !unlockedCatIds.has(b.id)
       if (aLocked !== bLocked) return aLocked ? 1 : -1
+      const aPct = pctOf(a.id), bPct = pctOf(b.id)
+      const aComplete = aPct >= 1
+      const bComplete = bPct >= 1
+      if (aComplete !== bComplete) return aComplete ? 1 : -1 // complètes en bas
+      if (!aComplete && !bComplete && aPct !== bPct) return bPct - aPct // % desc
       return a.label.localeCompare(b.label, 'fr')
     })
     return cats
-  }, [totalPerCategory, isLockedMode, unlockedCatIds])
+  }, [totalPerCategory, unlockedPerCategory, isLockedMode, unlockedCatIds])
 
   const selectedCat = selectedCatId === 'random'
     ? { label: 'Aléatoire', emoji: '🎲', id: 'random' }
@@ -242,6 +255,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             const pct = total > 0 ? Math.round((unlocked / total) * 100) : 0
             const bgColor = getCategoryColor(cat)
             const isLocked = isLockedMode && !unlockedCatIds.has(cat.id)
+            const isComplete = !isLocked && total > 0 && unlocked >= total
 
             return (
               <button
@@ -295,36 +309,53 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                       lineHeight: 1.2,
                       textShadow: '0 1px 3px rgba(0,0,0,0.2)',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      flexShrink: 1, minWidth: 0,
                     }}>
                       {cat.label}
                     </span>
-                    <span style={{
-                      fontSize: S(10), color: 'rgba(255,255,255,0.75)',
-                      fontWeight: 700, flexShrink: 0, marginLeft: S(6),
-                    }}>
-                      {isLocked ? '🔒' : `${unlocked}/${total}`}
-                    </span>
+                    {isComplete ? (
+                      <span style={{
+                        fontSize: S(9), fontWeight: 900, color: '#FFD700',
+                        flexShrink: 0, marginLeft: S(6), textAlign: 'right',
+                        lineHeight: 1.1, letterSpacing: '0.02em',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                      }}>
+                        ⭐ Catégorie complète<br />
+                        <span style={{ fontSize: S(8), fontWeight: 700, opacity: 0.85 }}>
+                          Bientôt de nouveaux f*cts
+                        </span>
+                      </span>
+                    ) : (
+                      <span style={{
+                        fontSize: S(10), color: 'rgba(255,255,255,0.75)',
+                        fontWeight: 700, flexShrink: 0, marginLeft: S(6),
+                      }}>
+                        {isLocked ? '🔒' : `${unlocked}/${total}`}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: S(6) }}>
-                    <div style={{
-                      flex: 1, height: S(3), background: 'rgba(255,255,255,0.3)',
-                      borderRadius: 2,
-                    }}>
+                  {!isComplete && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: S(6) }}>
                       <div style={{
-                        height: '100%',
-                        width: `${Math.min(pct, 100)}%`,
-                        background: 'white',
+                        flex: 1, height: S(3), background: 'rgba(255,255,255,0.3)',
                         borderRadius: 2,
-                        transition: 'width 0.3s ease',
-                      }} />
+                      }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${Math.min(pct, 100)}%`,
+                          background: 'white',
+                          borderRadius: 2,
+                          transition: 'width 0.3s ease',
+                        }} />
+                      </div>
+                      <span style={{
+                        fontSize: S(9), color: 'rgba(255,255,255,0.6)',
+                        fontWeight: 700, flexShrink: 0,
+                      }}>
+                        {isLocked ? '' : `${pct}%`}
+                      </span>
                     </div>
-                    <span style={{
-                      fontSize: S(9), color: 'rgba(255,255,255,0.6)',
-                      fontWeight: 700, flexShrink: 0,
-                    }}>
-                      {isLocked ? '' : `${pct}%`}
-                    </span>
-                  </div>
+                  )}
                 </div>
               </button>
             )

@@ -66,7 +66,7 @@ export async function generateStatementsForFact(fact) {
   if (!fact.question || !fact.short_answer) {
     throw new Error('question ou short_answer manquant')
   }
-  const funnyPool = [fact.funny_wrong_1, fact.funny_wrong_2].filter(Boolean)
+  const funnyPool = [fact.funny_wrong_1, fact.funny_wrong_2, fact.funny_wrong_3].filter(Boolean)
   const plausiblePool = [fact.plausible_wrong_1, fact.plausible_wrong_2, fact.plausible_wrong_3].filter(Boolean)
   if (funnyPool.length === 0 || plausiblePool.length === 0) {
     throw new Error('funny_wrong ou plausible_wrong manquant')

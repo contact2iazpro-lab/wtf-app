@@ -1,15 +1,14 @@
 /**
  * FactMobileEditorPage — éditeur mobile inline d'un fact.
  *
- * Layout calqué sur QuestionScreen du jeu (tailles réelles) :
- * - Sticky top : Question + Réponse vraie (toujours visibles)
- * - Scroll : 7 autres réponses (grid 2 col) → 4 indices (grid 2 col)
- *           → Le saviez-vous → 3 affirmations
- * - Compteur N/X sous chaque champ (rouge si dépasse)
+ * Calqué sur QuestionScreen du jeu (tailles réelles) pour vérifier le débord UI.
+ * - Sticky top : Question + Réponse vraie
+ * - Scroll : 7+1 autres réponses (grid 2 col) → 4 indices (grid 2 col) → 3 affirmations → Le saviez-vous
+ * - Compteur N/X positionné en bas-droite DANS le cadre
+ * - Fond rouge si champ invalide (dépasse max ou manquant sous min ou vide obligatoire)
+ * - Pas de titres de section (devinés par le layout)
+ * - Texte centré vertical + horizontal (vraie/fausses/indices)
  * - Bouton flottant Sauvegarder bas-droite
- *
- * Objectif : permettre à l'admin de vérifier si les textes dépassent l'UI
- * du jeu directement dans l'éditeur.
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -28,14 +27,35 @@ const isLightColor = (hex) => {
 
 // Limites de caractères (source : admin-tool FactEditorPage + spec jeu)
 const LIMITS = {
-  question: 100,
-  short_answer: 50,
-  hint1: 20, hint2: 20, hint3: 20, hint4: 20,
-  funny_wrong_1: 50, funny_wrong_2: 50,
-  close_wrong_1: 50, close_wrong_2: 50,
-  plausible_wrong_1: 50, plausible_wrong_2: 50, plausible_wrong_3: 50,
-  explanation_min: 100, explanation_max: 300,
-  statement_true: 140, statement_false_funny: 140, statement_false_plausible: 140,
+  question: { max: 100, required: true },
+  short_answer: { max: 50, required: true },
+  hint1: { max: 20, required: true },
+  hint2: { max: 20, required: true },
+  hint3: { max: 20, required: false },
+  hint4: { max: 20, required: false },
+  funny_wrong_1: { max: 50, required: true },
+  funny_wrong_2: { max: 50, required: true },
+  funny_wrong_3: { max: 50, required: true },
+  close_wrong_1: { max: 50, required: true },
+  close_wrong_2: { max: 50, required: true },
+  plausible_wrong_1: { max: 50, required: true },
+  plausible_wrong_2: { max: 50, required: true },
+  plausible_wrong_3: { max: 50, required: true },
+  explanation: { min: 100, max: 300, required: true },
+  statement_true: { max: 140, required: false },
+  statement_false_funny: { max: 140, required: false },
+  statement_false_plausible: { max: 140, required: false },
+}
+
+function isFieldInvalid(value, key) {
+  const lim = LIMITS[key]
+  if (!lim) return false
+  const v = value || ''
+  const len = v.length
+  if (lim.required && len === 0) return true
+  if (lim.max && len > lim.max) return true
+  if (lim.min && len > 0 && len < lim.min) return true
+  return false
 }
 
 // Couleurs des 4 types (source : QuestionScreen dev mode)
@@ -44,16 +64,20 @@ const COLOR_DROLE     = '#EAB308'
 const COLOR_PROCHE    = '#F97316'
 const COLOR_PLAUSIBLE = '#EF4444'
 
-// Les 7 mauvaises réponses (toutes sauf short_answer) avec couleur
+// Les 8 mauvaises réponses (hors short_answer) avec couleur
 const WRONG_ANSWERS = [
   { key: 'funny_wrong_1',      color: COLOR_DROLE },
   { key: 'funny_wrong_2',      color: COLOR_DROLE },
+  { key: 'funny_wrong_3',      color: COLOR_DROLE },
   { key: 'close_wrong_1',      color: COLOR_PROCHE },
   { key: 'close_wrong_2',      color: COLOR_PROCHE },
   { key: 'plausible_wrong_1',  color: COLOR_PLAUSIBLE },
   { key: 'plausible_wrong_2',  color: COLOR_PLAUSIBLE },
   { key: 'plausible_wrong_3',  color: COLOR_PLAUSIBLE },
 ]
+
+// Fond rouge (invalide) — teinté sombre, gardé lisible
+const INVALID_BG = 'rgba(239,68,68,0.35)'
 
 // ── Auto-resize textarea ────────────────────────────────────────────────
 function AutoTextarea({ value, onChange, placeholder, style, minHeight = null, ...rest }) {
@@ -83,17 +107,21 @@ function AutoTextarea({ value, onChange, placeholder, style, minHeight = null, .
   )
 }
 
-// ── Compteur N/X (rouge si dépasse) ─────────────────────────────────────
-function CharCounter({ value, max, min = null }) {
+// ── Compteur overlay (bas-droite DANS le cadre) ─────────────────────────
+function OverlayCounter({ value, max, min = null, color = 'rgba(255,255,255,0.55)', dark = false }) {
   const len = (value || '').length
   const tooLong = len > max
   const tooShort = min != null && len > 0 && len < min
   const bad = tooLong || tooShort
+  const textColor = bad ? '#EF4444' : (dark ? 'rgba(0,0,0,0.55)' : color)
   return (
     <span style={{
-      fontSize: 9, fontWeight: 800,
-      color: bad ? '#EF4444' : 'rgba(255,255,255,0.5)',
-      letterSpacing: '0.03em',
+      position: 'absolute', right: 4, bottom: 2, zIndex: 2,
+      fontSize: 9, fontWeight: 800, lineHeight: 1,
+      letterSpacing: '0.02em',
+      color: textColor,
+      pointerEvents: 'none',
+      textShadow: dark ? 'none' : '0 1px 2px rgba(0,0,0,0.5)',
     }}>
       {len}/{min != null ? `${min}-${max}` : max}
     </span>
@@ -141,7 +169,7 @@ export default function FactMobileEditorPage({ toast }) {
         question: fact.question,
         hint1: fact.hint1, hint2: fact.hint2, hint3: fact.hint3, hint4: fact.hint4,
         short_answer: fact.short_answer,
-        funny_wrong_1: fact.funny_wrong_1, funny_wrong_2: fact.funny_wrong_2,
+        funny_wrong_1: fact.funny_wrong_1, funny_wrong_2: fact.funny_wrong_2, funny_wrong_3: fact.funny_wrong_3,
         close_wrong_1: fact.close_wrong_1, close_wrong_2: fact.close_wrong_2,
         plausible_wrong_1: fact.plausible_wrong_1, plausible_wrong_2: fact.plausible_wrong_2, plausible_wrong_3: fact.plausible_wrong_3,
         explanation: fact.explanation,
@@ -175,7 +203,6 @@ export default function FactMobileEditorPage({ toast }) {
   const categoryColor = cat?.color || '#FF6B1A'
   const textOnCat = isLightColor(categoryColor) ? '#1a1a1a' : '#ffffff'
   const bg = `linear-gradient(160deg, ${categoryColor}22, ${categoryColor})`
-  // Couleur opaque pour sticky (évite transparence sur scroll)
   const stickyBg = categoryColor
 
   // ══════════════════════════════════════════════════════════════════════
@@ -233,19 +260,19 @@ export default function FactMobileEditorPage({ toast }) {
             </div>
           </div>
 
-          {/* Question — taille jeu : fontSize 15, weight 800, center, bg noir translucide */}
-          <div style={{ marginBottom: 8 }}>
+          {/* Question — taille jeu : fontSize 15, weight 800, center */}
+          <div style={{ position: 'relative', marginBottom: 8 }}>
             <AutoTextarea
               value={fact.question}
               onChange={v => set('question', v)}
-              placeholder="Question du fact…"
+              placeholder="Question…"
               style={{
                 width: '100%',
-                background: 'rgba(0,0,0,0.35)',
+                background: isFieldInvalid(fact.question, 'question') ? INVALID_BG : 'rgba(0,0,0,0.35)',
                 color: '#ffffff',
                 border: '1.5px solid rgba(255,255,255,0.18)',
                 borderRadius: 10,
-                padding: '8px 10px',
+                padding: '10px 32px 14px 10px',
                 fontSize: 15,
                 fontWeight: 800,
                 lineHeight: 1.4,
@@ -255,27 +282,22 @@ export default function FactMobileEditorPage({ toast }) {
               }}
               minHeight={44}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingLeft: 4 }}>
-              <span style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                Question
-              </span>
-              <CharCounter value={fact.question} max={LIMITS.question} />
-            </div>
+            <OverlayCounter value={fact.question} max={LIMITS.question.max} />
           </div>
 
-          {/* Vraie réponse — juste après la question, contour vert */}
-          <div>
+          {/* Vraie réponse — contour vert, centré */}
+          <div style={{ position: 'relative' }}>
             <AutoTextarea
               value={fact.short_answer}
               onChange={v => set('short_answer', v)}
               placeholder="Vraie réponse…"
               style={{
                 width: '100%',
-                background: 'rgba(255,255,255,0.15)',
+                background: isFieldInvalid(fact.short_answer, 'short_answer') ? INVALID_BG : 'rgba(255,255,255,0.15)',
                 color: '#ffffff',
                 border: `3px solid ${COLOR_VRAIE}`,
                 borderRadius: 12,
-                padding: '8px 10px',
+                padding: '8px 32px 14px 10px',
                 fontSize: 13,
                 fontWeight: 700,
                 lineHeight: 1.2,
@@ -284,75 +306,65 @@ export default function FactMobileEditorPage({ toast }) {
               }}
               minHeight={50}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingLeft: 4 }}>
-              <span style={{ fontSize: 9, fontWeight: 900, color: COLOR_VRAIE, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                Vraie
-              </span>
-              <CharCounter value={fact.short_answer} max={LIMITS.short_answer} />
-            </div>
+            <OverlayCounter value={fact.short_answer} max={LIMITS.short_answer.max} />
           </div>
         </div>
 
-        {/* ══ SCROLL : 7 autres réponses → indices → Le saviez-vous → affirmations ══ */}
+        {/* ══ SCROLL : 8 autres réponses → 4 indices → affirmations → saviez-vous ══ */}
         <div style={{ padding: '10px' }}>
 
-          {/* ── 7 autres réponses — grid 2 col, taille jeu (btnH 50, fontSize 11) ── */}
+          {/* ── 8 autres réponses — grid 2 col, taille jeu (50h, 11px, centré) ── */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
-              Mauvaises réponses (7)
-            </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-              {WRONG_ANSWERS.map(({ key, color }) => (
-                <div key={key}>
-                  <AutoTextarea
-                    value={fact[key]}
-                    onChange={v => set(key, v)}
-                    placeholder="—"
-                    style={{
-                      width: '100%',
-                      background: 'rgba(255,255,255,0.15)',
-                      color: '#ffffff',
-                      border: `3px solid ${color}`,
-                      borderRadius: 12,
-                      padding: '4px 6px',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      lineHeight: 1.2,
-                      textAlign: 'center',
-                      outline: 'none',
-                    }}
-                    minHeight={50}
-                  />
-                  <div style={{ textAlign: 'right', marginTop: 2, paddingRight: 2 }}>
-                    <CharCounter value={fact[key]} max={LIMITS[key]} />
+              {WRONG_ANSWERS.map(({ key, color }) => {
+                const invalid = isFieldInvalid(fact[key], key)
+                return (
+                  <div key={key} style={{ position: 'relative' }}>
+                    <AutoTextarea
+                      value={fact[key]}
+                      onChange={v => set(key, v)}
+                      placeholder="—"
+                      style={{
+                        width: '100%',
+                        background: invalid ? INVALID_BG : 'rgba(255,255,255,0.15)',
+                        color: '#ffffff',
+                        border: `3px solid ${color}`,
+                        borderRadius: 12,
+                        padding: '4px 24px 12px 6px',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        lineHeight: 1.2,
+                        textAlign: 'center',
+                        outline: 'none',
+                      }}
+                      minHeight={50}
+                    />
+                    <OverlayCounter value={fact[key]} max={LIMITS[key].max} />
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
-          {/* ── 4 Indices — grille 2 col, taille jeu (height 28, fontSize 10) ── */}
+          {/* ── 4 Indices — grille 2 col, taille jeu (28h, fond blanc, centré) ── */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
-              Indices (4)
-            </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[1, 2, 3, 4].map(n => {
                 const key = `hint${n}`
+                const invalid = isFieldInvalid(fact[key], key)
                 return (
-                  <div key={n}>
+                  <div key={n} style={{ position: 'relative' }}>
                     <AutoTextarea
                       value={fact[key]}
                       onChange={v => set(key, v)}
                       placeholder={`Indice ${n}`}
                       style={{
                         width: '100%',
-                        height: 28,
-                        background: 'rgba(235,235,235,0.95)',
-                        color: '#1a1a2e',
+                        background: invalid ? INVALID_BG : 'rgba(235,235,235,0.95)',
+                        color: invalid ? '#ffffff' : '#1a1a2e',
                         border: `2px solid ${categoryColor}`,
                         borderRadius: 14,
-                        padding: '2px 8px',
+                        padding: '2px 24px 8px 8px',
                         fontSize: 10,
                         fontWeight: 800,
                         lineHeight: 1,
@@ -362,32 +374,62 @@ export default function FactMobileEditorPage({ toast }) {
                       }}
                       minHeight={28}
                     />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingLeft: 2 }}>
-                      <span style={{ fontSize: 8, fontWeight: 900, color: 'rgba(255,255,255,0.5)' }}>#{n}</span>
-                      <CharCounter value={fact[key]} max={LIMITS[key]} />
-                    </div>
+                    <OverlayCounter value={fact[key]} max={LIMITS[key].max} dark={!invalid} />
                   </div>
                 )
               })}
             </div>
           </div>
 
-          {/* ── Le saviez-vous (explanation) ────────────────────────────── */}
+          {/* ── 3 Affirmations ────────────────────────────────────────── */}
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
-              Le saviez-vous ?
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {[
+                { key: 'statement_true',              color: COLOR_VRAIE },
+                { key: 'statement_false_funny',       color: COLOR_DROLE },
+                { key: 'statement_false_plausible',   color: COLOR_PLAUSIBLE },
+              ].map(s => {
+                const invalid = isFieldInvalid(fact[s.key], s.key)
+                return (
+                  <div key={s.key} style={{ position: 'relative' }}>
+                    <AutoTextarea
+                      value={fact[s.key]}
+                      onChange={v => set(s.key, v)}
+                      placeholder="—"
+                      style={{
+                        width: '100%',
+                        background: invalid ? INVALID_BG : 'rgba(0,0,0,0.35)',
+                        color: '#ffffff',
+                        border: `2.5px solid ${s.color}`,
+                        borderRadius: 10,
+                        padding: '8px 32px 14px 10px',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        lineHeight: 1.3,
+                        outline: 'none',
+                      }}
+                      minHeight={44}
+                    />
+                    <OverlayCounter value={fact[s.key]} max={LIMITS[s.key].max} />
+                  </div>
+                )
+              })}
             </div>
+          </div>
+
+          {/* ── Le saviez-vous (explanation) — en TOUT FIN ────────────── */}
+          <div style={{ marginBottom: 12, position: 'relative' }}>
             <AutoTextarea
               value={fact.explanation}
               onChange={v => set('explanation', v)}
-              placeholder="Explication du fact…"
+              placeholder="Le saviez-vous…"
               style={{
                 width: '100%',
-                background: 'rgba(0,0,0,0.35)',
+                background: isFieldInvalid(fact.explanation, 'explanation') ? INVALID_BG : 'rgba(0,0,0,0.35)',
                 color: '#ffffff',
                 border: '1.5px solid rgba(255,255,255,0.25)',
                 borderRadius: 10,
-                padding: '8px 10px',
+                padding: '8px 10px 18px',
                 fontSize: 12,
                 fontWeight: 500,
                 lineHeight: 1.45,
@@ -395,50 +437,7 @@ export default function FactMobileEditorPage({ toast }) {
               }}
               minHeight={80}
             />
-            <div style={{ textAlign: 'right', marginTop: 2 }}>
-              <CharCounter value={fact.explanation} max={LIMITS.explanation_max} min={LIMITS.explanation_min} />
-            </div>
-          </div>
-
-          {/* ── 3 Affirmations (Vrai ou Fou) ─────────────────────────────── */}
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
-              Affirmations — Vrai ou Fou
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {[
-                { key: 'statement_true',              color: COLOR_VRAIE,     label: 'VRAIE' },
-                { key: 'statement_false_funny',       color: COLOR_DROLE,     label: 'FAUSSE DRÔLE' },
-                { key: 'statement_false_plausible',   color: COLOR_PLAUSIBLE, label: 'FAUSSE PLAUSIBLE' },
-              ].map(s => (
-                <div key={s.key}>
-                  <AutoTextarea
-                    value={fact[s.key]}
-                    onChange={v => set(s.key, v)}
-                    placeholder={s.label.toLowerCase()}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(0,0,0,0.35)',
-                      color: '#ffffff',
-                      border: `2.5px solid ${s.color}`,
-                      borderRadius: 10,
-                      padding: '8px 10px',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      lineHeight: 1.3,
-                      outline: 'none',
-                    }}
-                    minHeight={44}
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingLeft: 2 }}>
-                    <span style={{ fontSize: 8, fontWeight: 900, color: s.color, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                      {s.label}
-                    </span>
-                    <CharCounter value={fact[s.key]} max={LIMITS[s.key]} />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <OverlayCounter value={fact.explanation} max={LIMITS.explanation.max} min={LIMITS.explanation.min} />
           </div>
 
         </div>{/* end scroll */}

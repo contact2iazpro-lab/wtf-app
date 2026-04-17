@@ -11,7 +11,7 @@ const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
   'source_url', 'options', 'correct_index', 'image_url',
   'is_vip', 'type', 'status', 'pack_id', 'vip_usage',
-  'funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2',
+  'funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3', 'close_wrong_1', 'close_wrong_2',
   'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
   'statement_true', 'statement_false_funny', 'statement_false_plausible',
 ]
@@ -585,6 +585,7 @@ export default function FactEditorPage({ toast }) {
       set('hint4', data.hint4)
       set('funny_wrong_1', data.funny_wrong_1)
       set('funny_wrong_2', data.funny_wrong_2)
+      set('funny_wrong_3', data.funny_wrong_3)
       set('close_wrong_1', data.close_wrong_1)
       set('close_wrong_2', data.close_wrong_2)
       set('plausible_wrong_1', data.plausible_wrong_1)
@@ -711,7 +712,7 @@ export default function FactEditorPage({ toast }) {
         <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-4">
         {/* Warning bandeau si fausses réponses incomplètes */}
         {(() => {
-          const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
+          const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
           const filled = wrongFields.filter(f => fact[f]?.trim()).length
           if (filled < 7) return (
             <div className="px-4 py-3 rounded-xl border border-amber-600/50 text-sm font-semibold" style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }}>
@@ -945,7 +946,7 @@ export default function FactEditorPage({ toast }) {
 
           {/* Badge de complétion */}
           {(() => {
-            const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
+            const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
             const filled = wrongFields.filter(f => fact[f]?.trim()).length
             const badgeColor = filled === 7 ? '#22C55E' : filled >= 4 ? '#F59E0B' : '#EF4444'
             const badgeBg = filled === 7 ? 'rgba(34,197,94,0.15)' : filled >= 4 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)'
@@ -961,7 +962,7 @@ export default function FactEditorPage({ toast }) {
           {/* 😂 Fausses drôles */}
           <div className="mb-4">
             <div className="text-xs font-bold text-slate-400 mb-2">😂 Fausses drôles</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Field label="Drôle 1" hint={<CharCounter value={fact.funny_wrong_1} max={50} />}>
                 <input
                   value={fact.funny_wrong_1 || ''}
@@ -976,6 +977,15 @@ export default function FactEditorPage({ toast }) {
                   value={fact.funny_wrong_2 || ''}
                   onChange={e => set('funny_wrong_2', e.target.value)}
                   className={(fact.funny_wrong_2 || '').length > 50 ? inputClsErr : inputCls}
+                  placeholder="Une réponse absurde et marrante…"
+                  maxLength={55}
+                />
+              </Field>
+              <Field label="Drôle 3" hint={<CharCounter value={fact.funny_wrong_3} max={50} />}>
+                <input
+                  value={fact.funny_wrong_3 || ''}
+                  onChange={e => set('funny_wrong_3', e.target.value)}
+                  className={(fact.funny_wrong_3 || '').length > 50 ? inputClsErr : inputCls}
                   placeholder="Une réponse absurde et marrante…"
                   maxLength={55}
                 />

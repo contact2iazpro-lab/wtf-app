@@ -378,6 +378,7 @@ export default function GenerateFactsPage({ toast }) {
             hint4: enrichResult.hint4 || '',
             funny_wrong_1: enrichResult.funny_wrong_1,
             funny_wrong_2: enrichResult.funny_wrong_2,
+            funny_wrong_3: enrichResult.funny_wrong_3,
             close_wrong_1: enrichResult.close_wrong_1,
             close_wrong_2: enrichResult.close_wrong_2,
             plausible_wrong_1: enrichResult.plausible_wrong_1,
@@ -414,7 +415,7 @@ export default function GenerateFactsPage({ toast }) {
         const { data, error } = await supabase
           .from('facts')
           .select('id, question, short_answer, explanation, category, hint1, hint2')
-          .or('funny_wrong_1.is.null,funny_wrong_1.eq.,hint1.is.null,hint1.eq.,hint2.is.null,hint2.eq.')
+          .or('funny_wrong_1.is.null,funny_wrong_1.eq.,funny_wrong_3.is.null,funny_wrong_3.eq.,hint1.is.null,hint1.eq.,hint2.is.null,hint2.eq.')
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break

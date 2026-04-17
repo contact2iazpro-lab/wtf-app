@@ -73,6 +73,7 @@ function fromRow(row) {
     teaser:       row.teaser       || null,
     funnyWrong1:     row.funny_wrong_1     || null,
     funnyWrong2:     row.funny_wrong_2     || null,
+    funnyWrong3:     row.funny_wrong_3     || null,
     closeWrong1:     row.close_wrong_1     || null,
     closeWrong2:     row.close_wrong_2     || null,
     plausibleWrong1: row.plausible_wrong_1 || null,
@@ -165,7 +166,7 @@ function buildAll(rawFacts) {
 // ─── Cache localStorage ─────────────────────────────────────────────────────
 const CACHE_KEY = 'wtf_facts_cache'
 const CACHE_VERSION_KEY = 'wtf_facts_cache_version'
-const CACHE_VERSION = '4' // bump 15/04/2026 — refonte statements : 3 variantes par fact
+const CACHE_VERSION = '5' // bump 17/04/2026 — ajout funny_wrong_3 (8ème fausse réponse drôle)
 
 function saveCacheToLocal(rawRows) {
   try {
@@ -191,7 +192,7 @@ const MAX_RETRIES = 3
 const RETRY_DELAY = 1500 // ms
 
 async function fetchFromSupabase() {
-  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement_true, statement_false_funny, statement_false_plausible'
+  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, funny_wrong_3, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement_true, statement_false_funny, statement_false_plausible'
   const all = []
   let from = 0
   const PAGE = 1000

@@ -2,7 +2,7 @@
  * Answer options generation with new-format wrong answers
  *
  * New format fields on fact:
- *   funnyWrong1, funnyWrong2       — drôles
+ *   funnyWrong1/2/3                — drôles
  *   closeWrong1, closeWrong2       — proches
  *   plausibleWrong1/2/3            — plausibles
  *
@@ -47,7 +47,7 @@ function pickMostDifferentWrong(wrongAnswers, correctAnswer) {
 
 function hasNewFormat(fact) {
   return !!(
-    fact.funnyWrong1 || fact.funnyWrong2 ||
+    fact.funnyWrong1 || fact.funnyWrong2 || fact.funnyWrong3 ||
     fact.closeWrong1 || fact.closeWrong2 ||
     fact.plausibleWrong1 || fact.plausibleWrong2 || fact.plausibleWrong3
   )
@@ -56,7 +56,7 @@ function hasNewFormat(fact) {
 // ── Pool builder ─────────────────────────────────────────────────────────────
 
 function buildPools(fact) {
-  const funny     = [fact.funnyWrong1, fact.funnyWrong2].filter(Boolean)
+  const funny     = [fact.funnyWrong1, fact.funnyWrong2, fact.funnyWrong3].filter(Boolean)
   const close     = [fact.closeWrong1, fact.closeWrong2].filter(Boolean)
   const plausible = [fact.plausibleWrong1, fact.plausibleWrong2, fact.plausibleWrong3].filter(Boolean)
   return { funny, close, plausible }

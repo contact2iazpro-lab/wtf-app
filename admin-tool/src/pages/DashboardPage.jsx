@@ -171,7 +171,7 @@ export default function DashboardPage({ toast }) {
       while (true) {
         const { data, error } = await supabase
           .from('facts')
-          .select('id, question, hint1, hint2, hint3, hint4, explanation, options, image_url, source_url, category, is_published, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
+          .select('id, question, hint1, hint2, hint3, hint4, explanation, options, image_url, source_url, category, is_published, funny_wrong_1, funny_wrong_2, funny_wrong_3, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3')
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break
@@ -193,7 +193,7 @@ export default function DashboardPage({ toast }) {
         }),
         noSourceUrl:           all.filter(x => isEmpty(x.source_url)),
         missingWrongAnswers:   all.filter(x =>
-          isEmpty(x.funny_wrong_1) || isEmpty(x.funny_wrong_2) ||
+          isEmpty(x.funny_wrong_1) || isEmpty(x.funny_wrong_2) || isEmpty(x.funny_wrong_3) ||
           isEmpty(x.close_wrong_1) || isEmpty(x.close_wrong_2) ||
           isEmpty(x.plausible_wrong_1) || isEmpty(x.plausible_wrong_2) || isEmpty(x.plausible_wrong_3)
         ),

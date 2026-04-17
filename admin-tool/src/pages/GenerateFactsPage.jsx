@@ -360,26 +360,14 @@ export default function GenerateFactsPage({ toast }) {
       setEnrichProgress({ current: i + 1, total: facts.length })
 
       try {
-        const resp = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-fact`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              question: fact.question,
-              short_answer: fact.short_answer,
-              explanation: fact.explanation,
-              category: fact.category,
-              hint1: fact.hint1,
-              hint2: fact.hint2,
-            }),
-          }
-        )
-        if (!resp.ok) throw new Error(await resp.text() || 'Erreur API')
-        const enrichResult = await resp.json()
+        const enrichResult = await callEdgeFunction('enrich-fact', {
+          question: fact.question,
+          short_answer: fact.short_answer,
+          explanation: fact.explanation,
+          category: fact.category,
+          hint1: fact.hint1,
+          hint2: fact.hint2,
+        })
 
         const { error: updErr } = await supabase
           .from('facts')
@@ -483,21 +471,9 @@ export default function GenerateFactsPage({ toast }) {
     setFillUrlsResult(null)
     setFillUrlsError('')
     try {
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fill-missing-urls`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
-          'Content-Type': 'application/json',
-        },
-      })
-      const data = await resp.json()
-      if (!resp.ok) {
-        setFillUrlsStatus('error')
-        setFillUrlsError(data.error || resp.statusText)
-      } else {
-        setFillUrlsStatus('done')
-        setFillUrlsResult(data)
-      }
+      const data = await callEdgeFunction('fill-missing-urls')
+      setFillUrlsStatus('done')
+      setFillUrlsResult(data)
     } catch (err) {
       setFillUrlsStatus('error')
       setFillUrlsError(err.message || 'Erreur réseau')

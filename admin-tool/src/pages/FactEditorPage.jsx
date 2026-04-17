@@ -5,6 +5,7 @@ import { CATEGORIES, VIP_USAGES } from '../constants/categories'
 import { resolveImageUrl } from '../utils/imageUrl'
 import { generateStatementsForFact } from '../lib/generateStatements'
 import { STATUSES, CharCounter, Toggle, Section, Field, inputCls, inputClsErr } from '../components/shared'
+import { callEdgeFunction } from '../utils/helpers'
 
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
@@ -433,22 +434,11 @@ export default function FactEditorPage({ toast }) {
         max_output_tokens: 1024,
       }
 
-      const directionsRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image-directions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fact_ids: [factId],
-          fact_type: fact.is_vip ? 'vip' : 'funny',
-          generationConfig,
-        }),
+      await callEdgeFunction('generate-image-directions', {
+        fact_ids: [factId],
+        fact_type: fact.is_vip ? 'vip' : 'funny',
+        generationConfig,
       })
-
-      if (!directionsRes.ok) {
-        throw new Error(`Erreur génération directions: ${directionsRes.status}`)
-      }
 
       // 3. Get updated pipeline with directions
       const { data: updatedPipeline, error: fetchError } = await supabase
@@ -473,21 +463,7 @@ export default function FactEditorPage({ toast }) {
 
       // 5. Generate image
       console.log('Generating image...')
-      const imageRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ pipeline_id: pipelineId }),
-      })
-
-      if (!imageRes.ok) {
-        const errBody = await imageRes.json()
-        throw new Error(errBody.error || `Erreur génération image: ${imageRes.status}`)
-      }
-
-      const { image_url } = await imageRes.json()
+      const { image_url } = await callEdgeFunction('generate-image', { pipeline_id: pipelineId })
 
       // 6. Reload fact to get updated image_url
       const { data: updatedFact, error: reloadError } = await supabase
@@ -594,26 +570,14 @@ export default function FactEditorPage({ toast }) {
   async function enrichFact() {
     setEnriching(true)
     try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-fact`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            question: fact.question,
-            short_answer: fact.short_answer,
-            explanation: fact.explanation,
-            category: fact.category,
-            hint1: fact.hint1,
-            hint2: fact.hint2,
-          }),
-        }
-      )
-      const data = await resp.json()
-      if (!resp.ok) throw new Error(data.error || 'Erreur enrichissement')
+      const data = await callEdgeFunction('enrich-fact', {
+        question: fact.question,
+        short_answer: fact.short_answer,
+        explanation: fact.explanation,
+        category: fact.category,
+        hint1: fact.hint1,
+        hint2: fact.hint2,
+      })
 
       set('hint1', data.hint1)
       set('hint2', data.hint2)

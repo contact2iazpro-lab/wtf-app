@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { callEdgeFunction } from '../utils/helpers'
 
 const STYLE_LABELS_MAP = {
   'realiste': '📷 Réaliste',
@@ -252,27 +253,10 @@ export default function ImagePipelinePage() {
       console.log(`✓ Inserted ${selectedFacts.size} facts into image_pipeline`)
 
       // Call Edge Function
-      const resp = await fetch(
-        import.meta.env.VITE_SUPABASE_URL + '/functions/v1/generate-image-directions',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + import.meta.env.VITE_ADMIN_PASSWORD,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            fact_ids: selectedIds,
-            fact_type: selectedObjs[0]?.is_vip ? 'vip' : 'funny',
-          }),
-        }
-      )
-
-      const result = await resp.json()
-      console.log('Edge Function response:', result)
-
-      if (!resp.ok) {
-        throw new Error(result.error || 'Edge Function error')
-      }
+      await callEdgeFunction('generate-image-directions', {
+        fact_ids: selectedIds,
+        fact_type: selectedObjs[0]?.is_vip ? 'vip' : 'funny',
+      })
 
       showToast(`✅ ${selectedFacts.size} facts en attente de directions`)
       setSelectedFacts(new Set())
@@ -343,34 +327,14 @@ export default function ImagePipelinePage() {
       console.log(`✓ Direction validée pour pipeline #${pipelineId}`)
 
       // Step 2: Call generate-image Edge Function
-      const resp = await fetch(
-        import.meta.env.VITE_SUPABASE_URL + '/functions/v1/generate-image',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + import.meta.env.VITE_ADMIN_PASSWORD,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ pipeline_id: pipelineId }),
-        }
-      )
-
-      const result = await resp.json()
-      console.log('Image generation result:', result)
-
-      if (!resp.ok) {
-        console.error('Image generation error:', result)
-        showToast('❌ Erreur génération image: ' + (result.error || 'inconnu'))
+      await callEdgeFunction('generate-image', { pipeline_id: pipelineId })
+      showToast('✅ Direction validée ! Génération de l\'image en cours...')
+      // Step 3: Switch to Validation tab after 1.5s delay
+      setTimeout(() => {
+        setTab('validation')
+        fetchValidationQueue()
         setValidatingDirectionId(null)
-      } else {
-        showToast('✅ Direction validée ! Génération de l\'image en cours...')
-        // Step 3: Switch to Validation tab after 1.5s delay
-        setTimeout(() => {
-          setTab('validation')
-          fetchValidationQueue()
-          setValidatingDirectionId(null)
-        }, 1500)
-      }
+      }, 1500)
     } catch (err) {
       console.error('Error in handleValidateDirection:', err)
       showToast('❌ Erreur: ' + err.message)

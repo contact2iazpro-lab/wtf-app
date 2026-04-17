@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, VIP_USAGES } from '../constants/categories'
-import { fmtDateTime } from '../utils/helpers'
+import { fmtDateTime, callEdgeFunction } from '../utils/helpers'
 
 function StatCard({ label, value, sub, color }) {
   return (
@@ -224,28 +224,15 @@ export default function DashboardPage({ toast }) {
     }, 2000)
 
     try {
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-facts`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
-          'Content-Type': 'application/json',
-        },
-      })
+      const data = await callEdgeFunction('sync-facts')
       clearInterval(interval)
-      const data = await resp.json()
-
-      if (!resp.ok) {
-        setSyncStatus('error')
-        setSyncMessage(`❌ Erreur : ${data.error || resp.statusText}`)
-      } else {
-        setSyncStatus('done')
-        setSyncMessage(`✅ Synchronisation terminée — ${data.count} facts · Commit : ${data.commit}`)
-        load() // refresh stats
-      }
+      setSyncStatus('done')
+      setSyncMessage(`✅ Synchronisation terminée — ${data.count} facts · Commit : ${data.commit}`)
+      load() // refresh stats
     } catch (err) {
       clearInterval(interval)
       setSyncStatus('error')
-      setSyncMessage(`❌ Erreur réseau : ${err.message}`)
+      setSyncMessage(`❌ Erreur : ${err.message}`)
     }
   }
 

@@ -3,44 +3,15 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, getCategoryEmoji } from '../constants/categories'
 import { STATUSES, StatusBadge, DIFFICULTIES, difficultyStyle, DifficultyBadge, Toggle, SortIcon, inputCls as sharedInputCls, inputClsErr as sharedInputClsErr } from '../components/shared'
+import { fmtDate, callEdgeFunction } from '../utils/helpers'
 
 const PAGE_SIZE_OPTIONS = [50, 100, 200, 500]
 
-function fmt(dateStr) {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })
-}
-
 // ── Claude API generation via Supabase Edge Function ──────────────────────
 async function generateFactsWithClaude(category, count) {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD
-  if (!supabaseUrl || !adminPassword) {
-    throw new Error('VITE_SUPABASE_URL ou VITE_ADMIN_PASSWORD manquant dans .env.local')
-  }
-
   const categoryObj = CATEGORIES.find(c => c.id === category)
   const categoryLabel = categoryObj ? `${categoryObj.emoji} ${categoryObj.label}` : category
-
-  const response = await fetch(`${supabaseUrl}/functions/v1/generate-facts`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${adminPassword}`,
-    },
-    body: JSON.stringify({
-      category,
-      categoryLabel,
-      count,
-    }),
-  })
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: response.statusText }))
-    throw new Error(`Erreur génération (${response.status}): ${err.error || JSON.stringify(err)}`)
-  }
-
-  return await response.json()
+  return callEdgeFunction('generate-facts', { category, categoryLabel, count })
 }
 
 // ── Empty fact template ────────────────────────────────────────────────────
@@ -436,23 +407,14 @@ export default function FactsListPage({ toast }) {
 
 
   // ── Enrich functions ──────────────────────────────────────────────────
-  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-
   async function enrichSingleFact(fact) {
     setEnrichingSingleId(fact.id)
     try {
-      const resp = await fetch(`${supabaseUrl}/functions/v1/enrich-fact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPassword}` },
-        body: JSON.stringify({
-          question: fact.question, short_answer: fact.short_answer,
-          explanation: fact.explanation, category: fact.category,
-          hint1: fact.hint1, hint2: fact.hint2,
-        }),
+      const data = await callEdgeFunction('enrich-fact', {
+        question: fact.question, short_answer: fact.short_answer,
+        explanation: fact.explanation, category: fact.category,
+        hint1: fact.hint1, hint2: fact.hint2,
       })
-      const data = await resp.json()
-      if (!resp.ok) throw new Error(data.error)
       await supabase.from('facts').update({
         hint1: data.hint1, hint2: data.hint2, hint3: data.hint3, hint4: data.hint4,
         funny_wrong_1: data.funny_wrong_1, funny_wrong_2: data.funny_wrong_2,
@@ -494,17 +456,11 @@ export default function FactsListPage({ toast }) {
       for (const fact of incomplete) {
         if (enrichCancelRef.current) break
         try {
-          const resp = await fetch(`${supabaseUrl}/functions/v1/enrich-fact`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPassword}` },
-            body: JSON.stringify({
-              question: fact.question, short_answer: fact.short_answer,
-              explanation: fact.explanation, category: fact.category,
-              hint1: fact.hint1, hint2: fact.hint2,
-            }),
+          const data = await callEdgeFunction('enrich-fact', {
+            question: fact.question, short_answer: fact.short_answer,
+            explanation: fact.explanation, category: fact.category,
+            hint1: fact.hint1, hint2: fact.hint2,
           })
-          const data = await resp.json()
-          if (!resp.ok) throw new Error(data.error)
           await supabase.from('facts').update({
             hint1: data.hint1, hint2: data.hint2, hint3: data.hint3, hint4: data.hint4,
             funny_wrong_1: data.funny_wrong_1, funny_wrong_2: data.funny_wrong_2,
@@ -1218,7 +1174,7 @@ export default function FactsListPage({ toast }) {
                       {fact.pack_id || 'free'}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-slate-500">{fmt(fact.updated_at)}</td>
+                  <td className="px-3 py-2.5 text-xs text-slate-500">{fmtDate(fact.updated_at)}</td>
                   <td className="px-3 py-2.5 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       {!fact.funny_wrong_1 && (
@@ -1294,7 +1250,7 @@ export default function FactsListPage({ toast }) {
                 >
                   {fact.pack_id || 'free'}
                 </span>
-                <span className="text-slate-500 ml-auto">{fmt(fact.updated_at)}</span>
+                <span className="text-slate-500 ml-auto">{fmtDate(fact.updated_at)}</span>
               </div>
               {/* Edit button */}
               <Link

@@ -225,14 +225,15 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         </p>
       </div>
 
-      {/* Règles — compact, sans scroll, encadrés tous à la largeur du plus grand, centrés */}
+      {/* Règles — compact, sans scroll, encadrés tous à la largeur du plus grand,
+          centrés horizontalement et verticalement (équidistance titre ↔ bouton) */}
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
         padding: `0 ${S(16)}`,
         display: 'grid',
         gridTemplateColumns: 'auto',
         justifyContent: 'center',
-        alignContent: 'start',
+        alignContent: 'center',
         rowGap: isStyled ? S(4) : S(5),
       }}>
         {(rules || []).map((rule, i) => {

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES } from '../constants/categories'
 import { callEdgeFunction } from '../utils/helpers'
@@ -133,6 +133,10 @@ export default function GenerateFactsPage({ toast }) {
     explanation: true,
   })
   const toggleEnrichGroup = (g) => setEnrichGroups(prev => ({ ...prev, [g]: !prev[g] }))
+
+  // Nombre de facts concernés par chaque groupe (live)
+  const [enrichCounts, setEnrichCounts] = useState({ hints: null, funny: null, close: null, plausible: null, explanation: null })
+  const [enrichCountsLoading, setEnrichCountsLoading] = useState(false)
 
   // ── Fill URLs state ──────────────────────────────────────────────────────
   const [fillUrlsStatus, setFillUrlsStatus] = useState(null)
@@ -353,6 +357,39 @@ export default function GenerateFactsPage({ toast }) {
   // ── Enrich (incomplets + short hints) ──────────────────────────────────
   function stopEnrich() { enrichCancelRef.current = true }
 
+  // Clauses .or(...) par groupe — sert à la fois au comptage et au ciblage
+  const GROUP_CLAUSES = {
+    hints:       'hint1.is.null,hint1.eq.,hint2.is.null,hint2.eq.',
+    funny:       'funny_wrong_1.is.null,funny_wrong_1.eq.,funny_wrong_2.is.null,funny_wrong_2.eq.,funny_wrong_3.is.null,funny_wrong_3.eq.',
+    close:       'close_wrong_1.is.null,close_wrong_1.eq.,close_wrong_2.is.null,close_wrong_2.eq.',
+    plausible:   'plausible_wrong_1.is.null,plausible_wrong_1.eq.,plausible_wrong_2.is.null,plausible_wrong_2.eq.,plausible_wrong_3.is.null,plausible_wrong_3.eq.',
+    explanation: 'explanation.is.null,explanation.eq.',
+  }
+
+  // Charge le count de facts concernés par chaque groupe
+  const loadEnrichCounts = useCallback(async () => {
+    setEnrichCountsLoading(true)
+    try {
+      const entries = await Promise.all(
+        Object.entries(GROUP_CLAUSES).map(async ([key, clause]) => {
+          const { count, error } = await supabase
+            .from('facts')
+            .select('id', { count: 'exact', head: true })
+            .or(clause)
+          return [key, error ? null : (count ?? 0)]
+        })
+      )
+      setEnrichCounts(Object.fromEntries(entries))
+    } catch (err) {
+      console.error('[loadEnrichCounts]', err)
+    } finally {
+      setEnrichCountsLoading(false)
+    }
+  }, [])
+
+  // Charge les counts au montage
+  useEffect(() => { loadEnrichCounts() }, [loadEnrichCounts])
+
   // Construit le payload d'update Supabase en ne gardant que les champs des groupes cochés
   function buildEnrichUpdatePayload(enrichResult, groups) {
     const payload = { updated_at: new Date().toISOString() }
@@ -384,34 +421,11 @@ export default function GenerateFactsPage({ toast }) {
 
   // Construit la clause .or(...) qui cible les facts avec au moins un champ vide dans les groupes cochés
   function buildEnrichOrClause(groups) {
-    const parts = []
-    if (groups.hints) {
-      parts.push('hint1.is.null', 'hint1.eq.', 'hint2.is.null', 'hint2.eq.')
-    }
-    if (groups.funny) {
-      parts.push(
-        'funny_wrong_1.is.null', 'funny_wrong_1.eq.',
-        'funny_wrong_2.is.null', 'funny_wrong_2.eq.',
-        'funny_wrong_3.is.null', 'funny_wrong_3.eq.',
-      )
-    }
-    if (groups.close) {
-      parts.push(
-        'close_wrong_1.is.null', 'close_wrong_1.eq.',
-        'close_wrong_2.is.null', 'close_wrong_2.eq.',
-      )
-    }
-    if (groups.plausible) {
-      parts.push(
-        'plausible_wrong_1.is.null', 'plausible_wrong_1.eq.',
-        'plausible_wrong_2.is.null', 'plausible_wrong_2.eq.',
-        'plausible_wrong_3.is.null', 'plausible_wrong_3.eq.',
-      )
-    }
-    if (groups.explanation) {
-      parts.push('explanation.is.null', 'explanation.eq.')
-    }
-    return parts.join(',')
+    return Object.entries(groups)
+      .filter(([, v]) => v)
+      .map(([k]) => GROUP_CLAUSES[k])
+      .filter(Boolean)
+      .join(',')
   }
 
   async function enrichLoop(facts, label, groups) {
@@ -427,6 +441,7 @@ export default function GenerateFactsPage({ toast }) {
       if (enrichCancelRef.current) {
         setEnrichRunState('done')
         setEnrichMessage(`⏹ Arrêté — ${okCount}/${facts.length}`)
+        loadEnrichCounts()
         return
       }
       const fact = facts[i]
@@ -462,6 +477,7 @@ export default function GenerateFactsPage({ toast }) {
 
     setEnrichRunState('done')
     setEnrichMessage(`✅ ${label} terminé — ${okCount}/${facts.length} (${koCount} erreurs)`)
+    loadEnrichCounts()
   }
 
   async function runEnrichAll() {
@@ -1118,8 +1134,8 @@ export default function GenerateFactsPage({ toast }) {
               seuls les champs cochés seront réécrits (les autres sont préservés).
             </p>
 
-            {/* Filtres par groupe */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            {/* Filtres par groupe + counts live */}
+            <div className="flex flex-wrap gap-2 mb-2 items-center">
               {[
                 { key: 'hints',       label: 'Indices',           color: '#38BDF8' },
                 { key: 'funny',       label: 'Fausses drôles',    color: '#EAB308' },
@@ -1128,22 +1144,43 @@ export default function GenerateFactsPage({ toast }) {
                 { key: 'explanation', label: 'Le saviez-vous',    color: '#22C55E' },
               ].map(({ key, label, color }) => {
                 const on = enrichGroups[key]
+                const count = enrichCounts[key]
+                const countStr = enrichCountsLoading && count == null
+                  ? '…'
+                  : count == null ? '?' : String(count)
                 return (
                   <button
                     key={key}
                     onClick={() => toggleEnrichGroup(key)}
                     disabled={enrichRunState === 'running'}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40 flex items-center gap-1.5"
                     style={{
                       background: on ? `${color}22` : 'transparent',
                       border: `2px solid ${on ? color : '#475569'}`,
                       color: on ? color : '#94A3B8',
                     }}
                   >
-                    {on ? '✓' : '○'} {label}
+                    <span>{on ? '✓' : '○'} {label}</span>
+                    <span
+                      className="px-1.5 py-0.5 rounded-md text-[10px] font-black"
+                      style={{
+                        background: on ? color : '#475569',
+                        color: on ? (['#EAB308','#F97316'].includes(color) ? '#1a1a2e' : '#fff') : '#cbd5e1',
+                      }}
+                    >
+                      {countStr}
+                    </span>
                   </button>
                 )
               })}
+              <button
+                onClick={loadEnrichCounts}
+                disabled={enrichCountsLoading || enrichRunState === 'running'}
+                title="Recharger les compteurs"
+                className="px-2 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-40 transition-all"
+              >
+                {enrichCountsLoading ? '⟳' : '↻'}
+              </button>
             </div>
 
             <div className="flex gap-3 flex-wrap">

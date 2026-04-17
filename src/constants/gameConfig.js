@@ -136,10 +136,13 @@ export const MODE_CONFIGS = {
   flash: {
     modeId: 'flash', modeName: 'Flash', subtitle: 'Le rendez-vous quotidien', emoji: '🔥', icon: '/assets/daily.png', color: '#E91E63',
     rules: [
-      { icon: '🆓', text: 'Gratuit — 1 fois par jour' },
-      { icon: 'icon:timer', text: '5 questions · 2 QCM · 15s' },
-      { icon: '🎯', text: 'Lun-Sam : thème du jour · Dim : VIP Hunt de la semaine' },
-      { icon: '🪙', text: '30 coins fixe en semaine · 1 VIP débloqué le dimanche' },
+      { icon: 'picto:free', text: '**Coût** : Gratuit · 1 × / jour' },
+      { icon: 'icon:set', text: '**Set** : 5 questions / set' },
+      { icon: 'icon:qcm', text: '**QCM** : 2 / question' },
+      { icon: 'icon:timer', text: '**Timer** : 15s / question' },
+      { icon: '💡', text: '**Indices** : 0 (Lun-Sam) · 2 max (Dim)' },
+      { icon: '🎯', text: '**Lun-Sam** : thème du jour · **Dim** : Hunt VIP' },
+      { icon: '🪙', text: '**Gains** : 30 Coins (Lun-Sam) · 1 VIP débloqué (Dim)' },
     ],
   },
 }

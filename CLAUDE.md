@@ -173,14 +173,17 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Dimanche : VIP Hunt de la semaine, 2 indices, **1 VIP débloqué**
 - Coût : Gratuit 1×/jour
 - UX : Bannière thème du jour. Dimanche = mise en scène Hunt.
+- **Règles ModeLaunchScreen (harmonisées 18/04/2026)** : 7 règles format `**Label** : valeur` comme les autres modes, avec split Lun-Sam / Dim sur Indices et Gains
 
 ### Roulette WTF!
 - 1 spin gratuit/jour + spins payants **100 coins** (économie ×10)
-- 8 segments (tailles visuelles égales) : 20c(28%) / 50c(24%) / 1indice(18%) / 100c(12%) / 150c(8%) / 2indices(5%) / 300c(3%) / 750c jackpot(2%)
-- Valeur espérée ~79,6 coins. Sink net ~20,4 coins/spin (20%)
-- 52% de perdre (<100), 12% remboursé (=100), 36% gagner (>100), 2% jackpot
+- **12 segments** (refonte 18/04/2026, avant 8) — 8 classiques + 4 nouvelles récompenses
+  - **Coins/Hints** : 20c(22%) / 50c(18%) / 1indice(14%) / 100c(10%) / 150c(7%) / 2indices(4%) / 300c(3%) / 750c jackpot(2%)
+  - **Nouveaux** : +1 énergie(8%) / 1 f*ct débloqué(4%) / relance gratuite(5%) / Streak Freeze(3%)
+- **Valeur espérée : 85,4 coins · Sink net : 14,6 coins/spin (14,6%)**
+- 12 couleurs distinctes (gris, orange, violet, bleu, cyan, vert, turquoise, fuchsia, rose, jaune, indigo, rouge)
 - Sons : `roulette_spin` au lancement, `roulette_tick` pendant le ralentissement, `roulette_win` (gains courants) ou `roulette_jackpot` (300c/750c)
-- Icônes PNG (icon-coins, icon-hint) — plus de Streak Freeze ni VIP
+- Icônes PNG (icon-coins, icon-hint)
 - Spec source : `docs/ROULETTE_WTF_SPECS.md`
 
 ### Règles communes

@@ -92,7 +92,7 @@ export default function UnlockCategoryModal({ target, onClose, onConfirmed }) {
           padding: '10px 18px', borderRadius: 12,
           background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)',
         }}>
-          <img src="/assets/ui/coin.png" style={{ width: 20, height: 20 }} alt="" onError={(e) => { e.target.style.display = 'none' }} />
+          <img src="/assets/ui/icon-coins.png" style={{ width: 20, height: 20 }} alt="" onError={(e) => { e.target.style.display = 'none' }} />
           <span style={{ fontSize: 22, fontWeight: 900, color: '#FFD700' }}>{UNLOCK_CATEGORY_PRICE}</span>
         </div>
         <div style={{ fontSize: 12, color: canAfford ? 'rgba(255,255,255,0.5)' : '#EF4444', fontWeight: 700 }}>

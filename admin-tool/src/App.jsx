@@ -7,6 +7,8 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import FactsListPage from './pages/FactsListPage'
 import FactEditorPage from './pages/FactEditorPage'
+import FactMobilePickerPage from './pages/FactMobilePickerPage'
+import FactMobileEditorPage from './pages/FactMobileEditorPage'
 import ArchivedFactsPage from './pages/ArchivedFactsPage'
 import ImagePipelinePage from './pages/ImagePipelinePage'
 import GenerateFactsPage from './pages/GenerateFactsPage'
@@ -30,6 +32,8 @@ export default function App() {
           <Route index element={<DashboardPage toast={toast} />} />
           <Route path="facts" element={<FactsListPage toast={toast} />} />
           <Route path="facts/:id" element={<FactEditorPage toast={toast} />} />
+          <Route path="facts-mobile" element={<FactMobilePickerPage toast={toast} />} />
+          <Route path="facts-mobile/:id" element={<FactMobileEditorPage toast={toast} />} />
           <Route path="generate" element={<GenerateFactsPage toast={toast} />} />
           <Route path="archived" element={<ArchivedFactsPage toast={toast} />} />
           <Route path="images" element={<ImagePipelinePage />} />

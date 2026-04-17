@@ -1195,6 +1195,14 @@ export default function FactsListPage({ toast }) {
                       >
                         Éditer
                       </Link>
+                      <Link
+                        to={`/facts-mobile/${fact.id}`}
+                        className="px-2 py-1 rounded-lg text-xs font-bold text-white transition-all hover:opacity-80"
+                        style={{ background: '#64748B' }}
+                        title="Éditeur mobile"
+                      >
+                        📱
+                      </Link>
                     </div>
                   </td>
                 </tr>
@@ -1252,14 +1260,24 @@ export default function FactsListPage({ toast }) {
                 </span>
                 <span className="text-slate-500 ml-auto">{fmtDate(fact.updated_at)}</span>
               </div>
-              {/* Edit button */}
-              <Link
-                to={`/facts/${fact.id}`}
-                className="w-full text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
-                style={{ background: '#FF6B1A' }}
-              >
-                Editer
-              </Link>
+              {/* Edit buttons : desktop + mobile */}
+              <div className="flex gap-2">
+                <Link
+                  to={`/facts/${fact.id}`}
+                  className="flex-1 text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
+                  style={{ background: '#FF6B1A' }}
+                >
+                  Editer
+                </Link>
+                <Link
+                  to={`/facts-mobile/${fact.id}`}
+                  className="px-4 text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
+                  style={{ background: '#64748B' }}
+                  title="Éditeur mobile"
+                >
+                  📱
+                </Link>
+              </div>
             </div>
           ))
         )}

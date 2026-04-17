@@ -11,6 +11,7 @@ import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import FallbackImage from '../components/FallbackImage'
 import RevelationScreen from './RevelationScreen'
+import ResultsScreen from './ResultsScreen'
 import { CATEGORIES } from '../data/facts'
 
 const SESSION_SIZE = 20
@@ -20,7 +21,6 @@ const VOF_GREEN = '#6BCB77'
 const VOF_RED = '#E84535'
 const UNLOCK_COST = 25
 const TIMER_DURATION = 15
-const SHARE_URL = 'https://wtf-app-production.up.railway.app/'
 
 function lerpColor(ratio) {
   const r1 = 0xE8, g1 = 0x45, b1 = 0x35
@@ -43,11 +43,11 @@ export default function VraiOuFouScreen({ onHome }) {
   )
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
+  const [sessionAnswers, setSessionAnswers] = useState([]) // [{factId, wasCorrect}]
   const [drag, setDrag] = useState({ x: 0, active: false })
   const [feedback, setFeedback] = useState(null) // null | { correct: bool }
   const [done, setDone] = useState(false)
   const [showQuit, setShowQuit] = useState(false)
-  const [shareMsg, setShareMsg] = useState(null)
   const [imgFailed, setImgFailed] = useState(false)
 
   // Revelation (bonne réponse)
@@ -103,6 +103,7 @@ export default function VraiOuFouScreen({ onHome }) {
 
     setFeedback({ correct: isCorrect })
     audio.play(isCorrect ? 'correct' : 'wrong_vof')
+    setSessionAnswers(prev => [...prev, { factId: draw.fact.id, wasCorrect: isCorrect }])
     if (isCorrect) setCorrect(c => c + 1)
 
     if (isCorrect) {
@@ -174,6 +175,7 @@ export default function VraiOuFouScreen({ onHome }) {
     if (feedback || !draw) return
     setFeedback({ correct: false })
     audio.play('wrong_vof')
+    setSessionAnswers(prev => [...prev, { factId: draw.fact.id, wasCorrect: false }])
     feedbackTimer.current = setTimeout(() => {
       advanceToNext()
     }, WRONG_DELAY_MS)
@@ -181,20 +183,9 @@ export default function VraiOuFouScreen({ onHome }) {
 
   const handleReplay = () => {
     audio.play('click')
-    setIndex(0); setCorrect(0); setFeedback(null); setDrag({ x: 0, active: false })
+    setIndex(0); setCorrect(0); setSessionAnswers([]); setFeedback(null); setDrag({ x: 0, active: false })
     setDone(false); setShowReveal(false); setRevealFact(null)
     setSeed(s => s + 1)
-  }
-
-  const handleShare = async () => {
-    audio.play('click')
-    const text = `J'ai eu ${correct}/${pool.length} au Vrai ET Fou WTF! Et toi ?`
-    try {
-      if (navigator.share) { await navigator.share({ title: 'WTF! — Vrai ET Fou', text, url: SHARE_URL }); return }
-      await navigator.clipboard.writeText(`${text} ${SHARE_URL}`)
-      setShareMsg('Lien copié !')
-      setTimeout(() => setShareMsg(null), 1800)
-    } catch { /* canceled */ }
   }
 
   // ── Écran indisponible ──
@@ -235,61 +226,29 @@ export default function VraiOuFouScreen({ onHome }) {
     )
   }
 
-  // ── Résultats ──
+  // ── Résultats — délégué à ResultsScreen (Option A, 17/04/2026) ──
   if (done) {
-    const total = pool.length
-    const pct = Math.round((correct / total) * 100)
-    const verdict =
-      correct === total ? { emoji: '🔥', line: 'Perfect ! Tu es une machine.' } :
-      correct >= total * 0.8 ? { emoji: '🎯', line: 'Excellent score !' } :
-      correct >= total * 0.5 ? { emoji: '👍', line: 'Pas mal, tu peux mieux.' } :
-      { emoji: '😅', line: 'Aïe… retente ta chance !' }
-
+    const allSessionFacts = sessionAnswers.map(a => {
+      const draw = pool.find(d => d.fact.id === a.factId)
+      return { fact: draw?.fact, wasCorrect: a.wasCorrect }
+    }).filter(e => e.fact)
     return (
-      <div
-        className="absolute inset-0 flex flex-col"
-        style={{ '--scale': scale, background: `linear-gradient(160deg, ${VOF_GREEN}88, ${VOF_GREEN})`, color: '#fff', fontFamily: 'Nunito, sans-serif', padding: `${S(24)} ${S(20)}` }}
-      >
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-          <div style={{ fontSize: S(72), marginBottom: S(4), lineHeight: 1 }}>{verdict.emoji}</div>
-          <p style={{ fontSize: S(12), opacity: 0.65, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 800 }}>Score final</p>
-          <div style={{ fontSize: S(96), fontWeight: 900, lineHeight: 1, margin: `${S(8)} 0 ${S(4)}` }}>
-            <span style={{ color: lerpColor(correct / total) }}>{correct}</span>
-            <span style={{ fontSize: S(40), color: VOF_GREEN }}>/{total}</span>
-          </div>
-          <p style={{ fontSize: S(14), opacity: 0.85, marginBottom: S(8) }}>{pct}% de bonnes réponses</p>
-          <p style={{ fontSize: S(15), fontWeight: 700, opacity: 0.9 }}>{verdict.line}</p>
-          <p style={{ fontSize: S(11), opacity: 0.6, marginTop: S(12), fontStyle: 'italic' }}>
-            🔒 Joue Quickie ou Quest pour débloquer vraiment ces f*cts
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: S(10), flexShrink: 0, position: 'relative' }}>
-          <button onClick={handleShare} className="active:scale-95 transition-transform" style={{
-            padding: `${S(16)} 0`, borderRadius: S(16), background: '#25D366', color: '#fff', border: 'none',
-            fontWeight: 900, fontSize: S(15), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8),
-            cursor: 'pointer', fontFamily: 'Nunito, sans-serif', boxShadow: '0 4px 16px rgba(37,211,102,0.4)',
-          }}>
-            📣 PARTAGER MON SCORE
-          </button>
-          <button onClick={handleReplay} className="active:scale-95 transition-transform" style={{
-            padding: `${S(16)} 0`, borderRadius: S(16), background: VOF_RED, color: '#fff', border: 'none',
-            fontWeight: 900, fontSize: S(15), cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-          }}>
-            🔄 REJOUER
-          </button>
-          <button onClick={onHome} className="active:scale-95 transition-transform" style={{
-            padding: `${S(14)} 0`, borderRadius: S(16), background: 'rgba(255,255,255,0.12)', color: '#fff',
-            border: '1px solid rgba(255,255,255,0.2)', fontWeight: 800, fontSize: S(13), cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-          }}>
-            Accueil
-          </button>
-          {shareMsg && (
-            <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-              marginBottom: S(8), padding: `${S(6)} ${S(12)}`, borderRadius: S(8), background: 'rgba(0,0,0,0.8)', fontSize: S(12), fontWeight: 700,
-            }}>{shareMsg}</div>
-          )}
-        </div>
+      <div style={{ position: 'relative', width: '100%', height: '100%', '--scale': scale }}>
+        <ResultsScreen
+          score={correct}
+          correctCount={correct}
+          totalFacts={pool.length}
+          coinsEarned={0}
+          sessionType="vrai_ou_fou"
+          difficulty={null}
+          categoryId={null}
+          unlockedFactsThisSession={[]}
+          allSessionFacts={allSessionFacts}
+          sessionsToday={0}
+          onReplay={handleReplay}
+          onReplayHarder={null}
+          onHome={onHome}
+        />
       </div>
     )
   }

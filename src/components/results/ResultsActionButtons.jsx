@@ -21,8 +21,10 @@ export default function ResultsActionButtons({
   onShare,
   onHome,
   sharedCopied = false,
+  shareLabel = null,
 }) {
   const isQuickie = sessionType === 'quickie'
+  const isVof = sessionType === 'vrai_ou_fou'
   const replayInner = (() => {
     if (sessionType === 'parcours') {
       return (
@@ -31,7 +33,7 @@ export default function ResultsActionButtons({
         </>
       )
     }
-    if (sessionType === 'quickie') {
+    if (isQuickie) {
       const catText = categoryLabel ? `Rejouer ${categoryLabel}` : 'Rejouer en aléatoire'
       return (
         <>
@@ -40,8 +42,60 @@ export default function ResultsActionButtons({
         </>
       )
     }
+    if (isVof) return '🔄 Rejouer'
     return '🔄 Rejouer'
   })()
+
+  // Mode VOF : partage prioritaire en tête, puis rejouer + accueil
+  if (isVof) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: S(8),
+        padding: `${S(12)} ${S(16)} ${S(16)}`, flexShrink: 0,
+        position: 'relative', zIndex: 2,
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+      }}>
+        <button
+          onClick={onShare}
+          className="active:scale-95 transition-all"
+          style={{
+            width: '100%', padding: `${S(14)} ${S(12)}`, borderRadius: S(14),
+            background: 'linear-gradient(135deg, #25D366, #128C7E)',
+            border: '3px solid #ffffff', color: '#fff', fontWeight: 900, fontSize: S(13),
+            cursor: 'pointer', boxShadow: '0 4px 16px rgba(37,211,102,0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+          }}>
+          {sharedCopied ? '✅ Copié !' : (shareLabel || '📣 PARTAGER MON SCORE')}
+        </button>
+        <div style={{ display: 'flex', gap: S(8) }}>
+          <button
+            onClick={onReplay}
+            className="active:scale-95 transition-all"
+            style={{
+              flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
+              background: 'linear-gradient(135deg, #6BCB77, #3A8A4A)',
+              border: 'none', color: '#fff', fontWeight: 900, fontSize: S(12),
+              cursor: 'pointer', boxShadow: '0 4px 16px rgba(107,203,119,0.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+            }}>
+            🔄 Rejouer
+          </button>
+          <button
+            onClick={onHome}
+            className="active:scale-95 transition-all"
+            style={{
+              flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
+              background: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.4)',
+              color: '#fff', fontWeight: 800, fontSize: S(12),
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+            }}>
+            ← Accueil
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{

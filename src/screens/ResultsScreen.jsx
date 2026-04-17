@@ -47,6 +47,19 @@ const QUICKIE_RANKINGS = [
   { score: 5, label: 'Yes ! Perfect !' },
 ]
 
+// Vrai ET Fou — 6 paliers sur /20 (mode viralité, pas de coins)
+const VOF_RANKINGS = [
+  { max: 4,  emoji: '😅', label: 'Aïe… retente ta chance !' },
+  { max: 9,  emoji: '🤔', label: 'Tu chauffes, continue !' },
+  { max: 13, emoji: '👍', label: 'Pas mal, tu peux mieux.' },
+  { max: 16, emoji: '😎', label: 'Bon flair !' },
+  { max: 19, emoji: '🎯', label: 'Excellent score !' },
+  { max: 20, emoji: '🔥', label: 'Perfect ! Tu es une machine.' },
+]
+function getVofRank(correct) {
+  return VOF_RANKINGS.find(r => correct <= r.max) || VOF_RANKINGS[0]
+}
+
 function getStars(correct, total) {
   const ratio = correct / total
   if (ratio >= 1) return 3
@@ -140,9 +153,12 @@ export default function ResultsScreen({
 
   // MOD 5 — Rank based on correct answers
   const isQuickie = sessionType === 'quickie'
-  const currentRank = isQuickie
-    ? QUICKIE_RANKINGS[Math.min(Math.max(correctCount, 0), 5)]
-    : RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
+  const isVof = sessionType === 'vrai_ou_fou'
+  const currentRank = isVof
+    ? getVofRank(correctCount)
+    : isQuickie
+      ? QUICKIE_RANKINGS[Math.min(Math.max(correctCount, 0), 5)]
+      : RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
   const stars = correctCount
   const isPerfect = totalFacts > 0 && correctCount >= totalFacts
 
@@ -155,9 +171,11 @@ export default function ResultsScreen({
     'linear-gradient(160deg, #7b8b9a 0%, #9dadbb 40%, #b5c5d2 70%, #7b8b9a 100%)',
   ]
   const bgRef = useRef(PASTEL_GRADIENTS[Math.floor(Math.random() * PASTEL_GRADIENTS.length)])
-  const screenBg = sessionType === 'quickie'
+  const screenBg = isQuickie
     ? 'linear-gradient(160deg, #4A3FA3, #7F77DD)'
-    : bgRef.current
+    : isVof
+      ? 'linear-gradient(160deg, #3A8A4A, #6BCB77)'
+      : bgRef.current
 
   // COR 6 — Taux moyen pseudo-aléatoire stable par catégorie
   const avgSuccessRate = 15 + ((categoryId ? categoryId.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 50) % 40)
@@ -294,7 +312,9 @@ export default function ResultsScreen({
   // COR 5 — Share handler natif avec message défi
   const handleShare = () => {
     const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || difficulty.label || sessionType) : sessionType
-    const text = `J'ai fait ${correctCount}/${totalQuestions || 10} en mode ${diffLabel} sur What The F*ct !\nTu peux faire mieux ? ${window.location.origin}`
+    const text = isVof
+      ? `J'ai eu ${correctCount}/${totalFacts} au Vrai ET Fou WTF! 🤯 Tu peux faire mieux ? ${window.location.origin}`
+      : `J'ai fait ${correctCount}/${totalFacts} en mode ${diffLabel} sur What The F*ct !\nTu peux faire mieux ? ${window.location.origin}`
     if (onShare) {
       onShare(text)
     } else if (navigator.share) {
@@ -401,9 +421,14 @@ export default function ResultsScreen({
 
         {/* Badge mode + difficulté */}
         {isQuickie ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(4), flexShrink: 0 }}>
-            <img src="/assets/modes/quickie.png?v=2" alt="Quickie" style={{ width: S(40), height: S(40), objectFit: 'contain' }} />
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0 }}>
+            <img src="/assets/modes/quickie.png?v=2" alt="Quickie" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
             <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>Résultats — Mode Quickie</span>
+          </div>
+        ) : isVof ? (
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0 }}>
+            <img src="/assets/modes/icon-vrai-et-fou.png" alt="Vrai ET Fou" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
+            <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>Résultats — Mode Vrai ET Fou</span>
           </div>
         ) : difficulty && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: S(6), flexShrink: 0 }}>
@@ -422,45 +447,133 @@ export default function ResultsScreen({
           stars={stars}
           visibleStars={visibleStars}
           rankVisible={rankVisible}
-          catColor={catColor}
+          catColor={isVof ? '#6BCB77' : catColor}
           textOnBg={textOnBg}
           isPerfect={isPerfect}
           hideEmoji={isQuickie}
+          hideStars={isVof}
           largeLabelFont={isQuickie}
         />
 
-        {/* Récap gains structuré — composant extrait (Phase 5.2 A) */}
-        <GainsBreakdown
-          correctCount={correctCount}
-          coinsPerCorrect={coinsPerCorrect}
-          baseCoins={baseCoins}
-          bonusCoins={bonusCoins}
-          isPerfect={isPerfect}
-          total={animatedScore}
-          totalColor={catColor}
-          textColor={textOnBg}
-          borderColor={isQuickie ? '#7F77DD' : null}
-          footerStats={[
-            { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
-            { label: `${precision}% précision`, color: catColor },
-          ]}
-        />
+        {/* Récap gains structuré (Quickie/Quest/...) ou bloc Score X/20 (VOF) */}
+        {isVof ? (
+          <div style={{
+            background: 'rgba(0,0,0,0.35)', border: '2.5px solid #6BCB77',
+            borderRadius: S(12), padding: `${S(10)} ${S(14)}`, flexShrink: 0,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(4),
+            textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+          }}>
+            <span style={{ fontSize: S(10), fontWeight: 800, color: textOnBg, opacity: 0.75, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Score final
+            </span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: S(2) }}>
+              <span style={{ fontSize: S(36), fontWeight: 900, color: correctCount >= totalFacts * 0.5 ? '#6BCB77' : '#E84535', lineHeight: 1 }}>
+                {correctCount}
+              </span>
+              <span style={{ fontSize: S(20), fontWeight: 900, color: '#6BCB77', opacity: 0.8 }}>
+                /{totalFacts}
+              </span>
+            </div>
+            <span style={{ fontSize: S(11), fontWeight: 700, color: textOnBg, opacity: 0.85 }}>
+              {precision}% de bonnes réponses
+            </span>
+          </div>
+        ) : (
+          <GainsBreakdown
+            correctCount={correctCount}
+            coinsPerCorrect={coinsPerCorrect}
+            baseCoins={baseCoins}
+            bonusCoins={bonusCoins}
+            isPerfect={isPerfect}
+            total={animatedScore}
+            totalColor={catColor}
+            textColor={textOnBg}
+            borderColor={isQuickie ? '#7F77DD' : null}
+            footerStats={[
+              { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
+              { label: `${precision}% précision`, color: catColor },
+            ]}
+          />
+        )}
 
         {/* Fact le plus WTF — composant extrait (Phase 5.2 A) */}
-        <FeaturedFactCard
-          fact={featuredFact}
-          fallbackColor={catColor}
-          textColor={textOnBg}
-          isQuickie={sessionType === 'quickie'}
-          onClick={() => {
-            if (!featuredFact) return
-            audio.play?.('click')
-            setViewingFact(featuredFact)
-          }}
-        />
+        {(() => {
+          const vofFeatured = isVof && allSessionFacts.length > 0
+            ? (allSessionFacts.find(f => f.fact?.isVip)?.fact || allSessionFacts[allSessionFacts.length - 1]?.fact || null)
+            : null
+          const shownFact = isVof ? vofFeatured : featuredFact
+          return (
+            <FeaturedFactCard
+              fact={shownFact}
+              fallbackColor={catColor}
+              textColor={textOnBg}
+              isQuickie={isQuickie || isVof}
+              onClick={() => {
+                if (!shownFact) return
+                audio.play?.('click')
+                setViewingFact(shownFact)
+              }}
+            />
+          )
+        })()}
 
-        {/* Carrousel facts — max 80px height */}
-        {allSessionFacts.length > 0 && (() => {
+        {/* Carrousel facts — VOF : ✅/❌, autres modes : 🔓/🔒 */}
+        {allSessionFacts.length > 0 && isVof && (() => {
+          const answered = allSessionFacts.map((entry, i) => ({
+            fact: entry.fact || entry,
+            wasCorrect: entry.wasCorrect ?? false,
+            idx: i,
+          }))
+          const right = answered.filter(a => a.wasCorrect)
+          const wrong = answered.filter(a => !a.wasCorrect)
+          const renderRow = (items, label, color) => items.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: S(4) }}>
+              <span style={{ fontSize: S(10), fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                {label}
+              </span>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(10, 1fr)`, gap: S(3), width: '100%' }}>
+                {items.map(({ fact, wasCorrect, idx }) => {
+                  const fc = CATEGORIES.find(c => c.id === fact.category)
+                  const fcColor = fc?.color || catColor
+                  return (
+                    <div key={`${idx}-${fact.id}`} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+                      onClick={() => { audio.play?.('click'); setViewingFact(fact) }}>
+                      <div style={{
+                        aspectRatio: '1', borderRadius: S(6), overflow: 'hidden', position: 'relative',
+                        border: `2px solid ${wasCorrect ? '#6BCB77' : '#E84535'}`,
+                        background: `linear-gradient(135deg, ${fcColor}44, ${fcColor})`,
+                      }}>
+                        {fact.imageUrl ? (
+                          <img src={fact.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={e => { e.target.style.display = 'none' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: '55%', height: '55%', objectFit: 'contain', opacity: 0.7 }} onError={e => { e.target.style.display = 'none' }} />
+                          </div>
+                        )}
+                        <div style={{ position: 'absolute', top: 2, right: 2, width: S(14), height: S(14), borderRadius: '50%', background: wasCorrect ? '#6BCB77' : '#E84535', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(10), fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+                          {wasCorrect ? '✓' : '✗'}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), flexShrink: 0 }}>
+              {renderRow(right, `✅ ${right.length} Trouvé${right.length > 1 ? 's' : ''}`, '#6BCB77')}
+              {renderRow(wrong, `❌ ${wrong.length} Raté${wrong.length > 1 ? 's' : ''}`, '#E84535')}
+              <span style={{ fontSize: S(10), color: textOnBg, opacity: 0.7, textAlign: 'center', fontStyle: 'italic', marginTop: S(2) }}>
+                🔒 Joue Quickie ou Quest pour débloquer vraiment ces f*cts
+              </span>
+            </div>
+          )
+        })()}
+
+        {/* Carrousel facts Quickie/autres — max 80px height */}
+        {allSessionFacts.length > 0 && !isVof && (() => {
           const unlockedIds = new Set([
             ...unlockedFactsThisSession.map(f => f.id),
             ...extraUnlockedIds,

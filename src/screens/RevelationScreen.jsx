@@ -627,39 +627,37 @@ export default function RevelationScreen({
       )}
       <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
         <div
-          onClick={() => fact.imageUrl && !imgFailed && setShowLightbox(true)}
+          onClick={() => setShowLightbox(true)}
           className="relative overflow-hidden"
           style={{
             width: '100%', maxHeight: '35vh', borderRadius: S(16),
             border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${accentColor}`,
-            background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
+            background: catGradient, cursor: 'pointer',
             ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
           }}
         >
           {fact.imageUrl && !imgFailed ? (
-            <>
-              <img
-                src={fact.imageUrl}
-                alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
-                onError={() => setImgFailed(true)}
-              />
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
-                style={{
-                  position: 'absolute', top: S(8), right: S(8), zIndex: 10,
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: 'rgba(0,0,0,0.5)', border: 'none',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', fontSize: 18,
-                }}
-              >🔍</button>
-            </>
+            <img
+              src={fact.imageUrl}
+              alt={fact.question}
+              style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
+              onError={() => setImgFailed(true)}
+            />
           ) : (
             <div style={{ width: '100%', height: 'calc(35vh - 6px)', overflow: 'hidden' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+            style={{
+              position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(0,0,0,0.5)', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: 18,
+            }}
+          >🔍</button>
           {/* Holo shimmer — toujours visible (pokemon glow) */}
           <div style={{
             position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
@@ -757,7 +755,7 @@ export default function RevelationScreen({
 
 
       {/* Lightbox image — bonne réponse uniquement */}
-      {showLightbox && fact.imageUrl && (
+      {showLightbox && (
         <div
           onClick={() => setShowLightbox(false)}
           style={{
@@ -778,16 +776,29 @@ export default function RevelationScreen({
               cursor: 'pointer',
             }}
           >✕</button>
-          <img
-            src={fact.imageUrl}
-            alt={fact.question}
-            onClick={e => e.stopPropagation()}
-            style={{
-              width: '95%', maxHeight: '80vh', objectFit: 'contain',
-              borderRadius: 12,
-              animation: 'lightboxZoom 0.2s ease-out',
-            }}
-          />
+          {fact.imageUrl && !imgFailed ? (
+            <img
+              src={fact.imageUrl}
+              alt={fact.question}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '95%', maxHeight: '80vh', objectFit: 'contain',
+                borderRadius: 12,
+                animation: 'lightboxZoom 0.2s ease-out',
+              }}
+            />
+          ) : (
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: 'min(95%, 80vh)', aspectRatio: '1 / 1',
+                borderRadius: 12, overflow: 'hidden',
+                animation: 'lightboxZoom 0.2s ease-out',
+              }}
+            >
+              <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
+            </div>
+          )}
           <style>{`
             @keyframes lightboxZoom {
               from { transform: scale(0.8); opacity: 0; }

@@ -317,48 +317,30 @@ export function getQuestFacts() {
   return getVipFacts()
 }
 
-/** Mode Vrai ET Fou : Funny facts dont les 3 variantes d'affirmation sont remplies */
+/** Mode Vrai ET Fou : Funny facts avec affirmation vraie + fausse plausible remplies */
 export function getFunnyFactsWithStatement() {
   return getFunnyFacts().filter(f =>
-    f.statementTrue && f.statementFalseFunny && f.statementFalsePlausible
+    f.statementTrue && f.statementFalsePlausible
   )
 }
 
 /**
- * Construit un "draw" pour le mode Vrai ET Fou : 2 affirmations sur le même fact
- * (une vraie + une fausse), avec la position vraie/fausse randomisée.
- *
- * @param {object} fact — doit avoir statementTrue, statementFalseFunny, statementFalsePlausible
- * @param {'funny'|'plausible'} falseVariant — quelle fausse affirmation utiliser
- * @returns {{ fact, trueStatement, falseStatement, trueSide: 'left'|'right', falseVariant }}
+ * Construit un "draw" pour le mode Vrai ET Fou : affirmation vraie + fausse plausible,
+ * position vraie/fausse randomisée.
  */
-export function buildVraiOuFouDraw(fact, falseVariant) {
-  const falseStatement = falseVariant === 'funny'
-    ? fact.statementFalseFunny
-    : fact.statementFalsePlausible
+export function buildVraiOuFouDraw(fact) {
   const trueSide = Math.random() < 0.5 ? 'left' : 'right'
   return {
     fact,
     trueStatement: fact.statementTrue,
-    falseStatement,
+    falseStatement: fact.statementFalsePlausible,
     trueSide,
-    falseVariant,
   }
 }
 
-/**
- * Construit un pool de N draws à partir d'une liste de facts, avec alternance
- * exacte 50/50 entre fausses drôles et fausses plausibles (pattern mélangé).
- */
+/** Construit un pool de N draws à partir d'une liste de facts. */
 export function buildVraiOuFouSessionPool(facts, size) {
-  const pool = facts.slice(0, size)
-  const half = Math.ceil(pool.length / 2)
-  // Tableau [funny, plausible, funny, plausible, …] mélangé pour éviter les streaks
-  const variants = [
-    ...Array(half).fill('funny'),
-    ...Array(pool.length - half).fill('plausible'),
-  ].sort(() => Math.random() - 0.5)
-  return pool.map((fact, i) => buildVraiOuFouDraw(fact, variants[i]))
+  return facts.slice(0, size).map(buildVraiOuFouDraw)
 }
 
 /** Mode Race : Funny + VIP déjà débloqués, mélangés */

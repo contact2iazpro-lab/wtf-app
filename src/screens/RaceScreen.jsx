@@ -514,19 +514,9 @@ export default function RaceScreen({ onHome }) {
         <div style={{ width: S(96), height: S(96), visibility: 'hidden' }} />
       </div>
 
-      {/* ── Le saviez-vous + Boutons — absolus, ne décalent pas l'image ── */}
+      {/* ── Boutons — absolus, ne décalent pas l'image ── */}
       {awaitingNext && (
         <div style={{ position: 'absolute', bottom: S(12), left: S(16), right: S(16), display: 'flex', flexDirection: 'column', gap: S(6), zIndex: 10 }}>
-          <div style={{
-            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-            border: '2px solid #23D5D5', borderRadius: S(12), padding: `${S(6)} ${S(10)}`,
-            overflow: 'hidden', height: S(136),
-          }}>
-            <div style={{ fontSize: S(9), fontWeight: 900, color: '#23D5D5', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>Le saviez-vous ?</div>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              {preparedFact?.explanation || ''}
-            </p>
-          </div>
           <div style={{ display: 'flex', gap: S(8) }}>
           <button
             onClick={handleShare}

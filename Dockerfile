@@ -1,4 +1,5 @@
-# Stage 1 — Build game + admin-tool
+# Stage 1 — Build game + admin-tool (v2 — unified build 2026-04-17)
+ARG CACHE_BUST=1
 FROM node:22-alpine AS build
 WORKDIR /app
 

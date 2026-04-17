@@ -417,7 +417,7 @@ export default function FactsListPage({ toast }) {
       })
       await supabase.from('facts').update({
         hint1: data.hint1, hint2: data.hint2, hint3: data.hint3, hint4: data.hint4,
-        funny_wrong_1: data.funny_wrong_1, funny_wrong_2: data.funny_wrong_2,
+        funny_wrong_1: data.funny_wrong_1, funny_wrong_2: data.funny_wrong_2, funny_wrong_3: data.funny_wrong_3,
         close_wrong_1: data.close_wrong_1, close_wrong_2: data.close_wrong_2,
         plausible_wrong_1: data.plausible_wrong_1, plausible_wrong_2: data.plausible_wrong_2,
         plausible_wrong_3: data.plausible_wrong_3, updated_at: new Date().toISOString(),
@@ -438,7 +438,7 @@ export default function FactsListPage({ toast }) {
       const { data: incomplete, error } = await supabase
         .from('facts')
         .select('id, question, short_answer, explanation, category, hint1, hint2')
-        .is('funny_wrong_1', null)
+        .or('funny_wrong_1.is.null,funny_wrong_3.is.null')
         .eq('is_published', true)
         .order('id')
       if (error) throw error

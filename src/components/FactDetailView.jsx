@@ -11,14 +11,19 @@ export default function FactDetailView({ fact, onClose }) {
   const catGradient = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
   const isVip = !!fact.isVip
 
-  // Même message que RevelationScreen mauvaise réponse (pool randomisé de 3 variantes)
+  // Partage Funny uniquement (pas les VIP). Message : teaser + fact détaillé.
+  const shortAnswer = fact.shortAnswer || fact.options?.[fact.correctIndex] || ''
   const share = () => {
-    const shareMessages = [
-      `Mate ce f*ct !\n\n"${fact.question}"\n\n${window.location.origin}`,
-      `Tu connais ça ?!\n\n"${fact.question}"\n\n${window.location.origin}`,
-      `Incroyable !\n\n"${fact.question}"\n\n${window.location.origin}`,
+    const parts = [
+      'Tu savais ça ?!',
+      '',
+      fact.question,
+      '',
+      `👉 ${shortAnswer}`,
     ]
-    const text = shareMessages[Math.floor(Math.random() * shareMessages.length)]
+    if (fact.explanation) { parts.push('', fact.explanation) }
+    parts.push('', `Joue sur What The F*ct ! ${window.location.origin}`)
+    const text = parts.join('\n')
     if (navigator.share) navigator.share({ text }).catch(() => {})
     else navigator.clipboard?.writeText(text).catch(() => {})
   }
@@ -84,7 +89,7 @@ export default function FactDetailView({ fact, onClose }) {
               border: '1px solid rgba(255,255,255,0.12)',
             }}>
               <span style={{ fontWeight: 900, fontSize: S(14), color: '#ffffff', lineHeight: 1.3, display: 'block', textAlign: 'center' }}>
-                {renderFormattedText(fact.question)}
+                {renderFormattedText(fact.question, catColor)}
               </span>
             </div>
           </div>
@@ -135,8 +140,8 @@ export default function FactDetailView({ fact, onClose }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
                 <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
               </div>
-              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(10), lineHeight: 1.4, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>
-                {fact.explanation}
+              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: S(14), lineHeight: 1.45, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                {renderFormattedText(fact.explanation, catColor)}
               </p>
               {fact.sourceUrl && (
                 <a href={fact.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: S(9), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(4), textDecoration: 'underline', textAlign: 'right', flexShrink: 0 }}>
@@ -146,23 +151,25 @@ export default function FactDetailView({ fact, onClose }) {
             </div>
           </div>
 
-          {/* Bouton partager */}
-          <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
-            <button
-              onClick={share}
-              className="active:scale-95 transition-all"
-              style={{
-                width: '100%', height: S(44), borderRadius: S(14),
-                fontWeight: 900, fontSize: S(13), color: '#ffffff',
-                border: '3px solid #ffffff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
-                background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
-                boxShadow: `0 4px 16px ${catColor}50`,
-              }}
-            >
-              Partager ce F*ct
-            </button>
-          </div>
+          {/* Bouton partager — Funny uniquement (VIP non partageables) */}
+          {!isVip && (
+            <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
+              <button
+                onClick={share}
+                className="active:scale-95 transition-all"
+                style={{
+                  width: '100%', height: S(44), borderRadius: S(14),
+                  fontWeight: 900, fontSize: S(13), color: '#ffffff',
+                  border: '3px solid #ffffff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                  background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
+                  boxShadow: `0 4px 16px ${catColor}50`,
+                }}
+              >
+                Partager ce F*ct
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

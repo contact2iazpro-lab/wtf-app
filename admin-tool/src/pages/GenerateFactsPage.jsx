@@ -121,6 +121,19 @@ export default function GenerateFactsPage({ toast }) {
   const [enrichErrorCount, setEnrichErrorCount] = useState(0)
   const enrichCancelRef = useRef(false)
 
+  // ── Enrich filter : groupes de champs à cibler + écrire ────────────────
+  // Une case cochée signifie :
+  //   (A) les facts avec au moins un champ vide dans ce groupe seront ciblés
+  //   (B) seuls les champs de ce groupe seront réécrits (les autres préservés)
+  const [enrichGroups, setEnrichGroups] = useState({
+    hints:       true,
+    funny:       true,
+    close:       true,
+    plausible:   true,
+    explanation: true,
+  })
+  const toggleEnrichGroup = (g) => setEnrichGroups(prev => ({ ...prev, [g]: !prev[g] }))
+
   // ── Fill URLs state ──────────────────────────────────────────────────────
   const [fillUrlsStatus, setFillUrlsStatus] = useState(null)
   const [fillUrlsResult, setFillUrlsResult] = useState(null)
@@ -340,7 +353,68 @@ export default function GenerateFactsPage({ toast }) {
   // ── Enrich (incomplets + short hints) ──────────────────────────────────
   function stopEnrich() { enrichCancelRef.current = true }
 
-  async function enrichLoop(facts, label) {
+  // Construit le payload d'update Supabase en ne gardant que les champs des groupes cochés
+  function buildEnrichUpdatePayload(enrichResult, groups) {
+    const payload = { updated_at: new Date().toISOString() }
+    if (groups.hints) {
+      payload.hint1 = enrichResult.hint1
+      payload.hint2 = enrichResult.hint2
+      payload.hint3 = enrichResult.hint3 || ''
+      payload.hint4 = enrichResult.hint4 || ''
+    }
+    if (groups.funny) {
+      payload.funny_wrong_1 = enrichResult.funny_wrong_1
+      payload.funny_wrong_2 = enrichResult.funny_wrong_2
+      payload.funny_wrong_3 = enrichResult.funny_wrong_3
+    }
+    if (groups.close) {
+      payload.close_wrong_1 = enrichResult.close_wrong_1
+      payload.close_wrong_2 = enrichResult.close_wrong_2
+    }
+    if (groups.plausible) {
+      payload.plausible_wrong_1 = enrichResult.plausible_wrong_1
+      payload.plausible_wrong_2 = enrichResult.plausible_wrong_2
+      payload.plausible_wrong_3 = enrichResult.plausible_wrong_3
+    }
+    if (groups.explanation && enrichResult.explanation) {
+      payload.explanation = enrichResult.explanation
+    }
+    return payload
+  }
+
+  // Construit la clause .or(...) qui cible les facts avec au moins un champ vide dans les groupes cochés
+  function buildEnrichOrClause(groups) {
+    const parts = []
+    if (groups.hints) {
+      parts.push('hint1.is.null', 'hint1.eq.', 'hint2.is.null', 'hint2.eq.')
+    }
+    if (groups.funny) {
+      parts.push(
+        'funny_wrong_1.is.null', 'funny_wrong_1.eq.',
+        'funny_wrong_2.is.null', 'funny_wrong_2.eq.',
+        'funny_wrong_3.is.null', 'funny_wrong_3.eq.',
+      )
+    }
+    if (groups.close) {
+      parts.push(
+        'close_wrong_1.is.null', 'close_wrong_1.eq.',
+        'close_wrong_2.is.null', 'close_wrong_2.eq.',
+      )
+    }
+    if (groups.plausible) {
+      parts.push(
+        'plausible_wrong_1.is.null', 'plausible_wrong_1.eq.',
+        'plausible_wrong_2.is.null', 'plausible_wrong_2.eq.',
+        'plausible_wrong_3.is.null', 'plausible_wrong_3.eq.',
+      )
+    }
+    if (groups.explanation) {
+      parts.push('explanation.is.null', 'explanation.eq.')
+    }
+    return parts.join(',')
+  }
+
+  async function enrichLoop(facts, label, groups) {
     if (!facts || facts.length === 0) {
       setEnrichRunState('done')
       setEnrichMessage('✅ Aucun fact à traiter.')
@@ -369,24 +443,13 @@ export default function GenerateFactsPage({ toast }) {
           hint2: fact.hint2,
         })
 
+        const payload = buildEnrichUpdatePayload(enrichResult, groups)
+        // Si aucun champ à écrire (groupes tous vides sauf explication absente), skip
+        if (Object.keys(payload).length <= 1) { okCount++; continue }
+
         const { error: updErr } = await supabase
           .from('facts')
-          .update({
-            hint1: enrichResult.hint1,
-            hint2: enrichResult.hint2,
-            hint3: enrichResult.hint3 || '',
-            hint4: enrichResult.hint4 || '',
-            funny_wrong_1: enrichResult.funny_wrong_1,
-            funny_wrong_2: enrichResult.funny_wrong_2,
-            funny_wrong_3: enrichResult.funny_wrong_3,
-            close_wrong_1: enrichResult.close_wrong_1,
-            close_wrong_2: enrichResult.close_wrong_2,
-            plausible_wrong_1: enrichResult.plausible_wrong_1,
-            plausible_wrong_2: enrichResult.plausible_wrong_2,
-            plausible_wrong_3: enrichResult.plausible_wrong_3,
-            ...(enrichResult.explanation ? { explanation: enrichResult.explanation } : {}),
-            updated_at: new Date().toISOString(),
-          })
+          .update(payload)
           .eq('id', fact.id)
         if (updErr) throw updErr
         okCount++
@@ -403,10 +466,22 @@ export default function GenerateFactsPage({ toast }) {
 
   async function runEnrichAll() {
     if (enrichRunState === 'running') return
+    // Vérif : au moins un groupe coché
+    const activeGroups = Object.entries(enrichGroups).filter(([, v]) => v).map(([k]) => k)
+    if (activeGroups.length === 0) {
+      toast?.('Sélectionne au moins un groupe de champs', 'warn')
+      return
+    }
+    const orClause = buildEnrichOrClause(enrichGroups)
+    if (!orClause) {
+      toast?.('Filtre vide', 'warn')
+      return
+    }
+
     enrichCancelRef.current = false
     setEnrichRunState('running')
     setEnrichErrorCount(0)
-    setEnrichMessage('⏳ Récupération des facts incomplets...')
+    setEnrichMessage('⏳ Récupération des facts concernés...')
     try {
       const all = []
       let from = 0
@@ -415,7 +490,7 @@ export default function GenerateFactsPage({ toast }) {
         const { data, error } = await supabase
           .from('facts')
           .select('id, question, short_answer, explanation, category, hint1, hint2')
-          .or('funny_wrong_1.is.null,funny_wrong_1.eq.,funny_wrong_3.is.null,funny_wrong_3.eq.,hint1.is.null,hint1.eq.,hint2.is.null,hint2.eq.')
+          .or(orClause)
           .range(from, from + PAGE - 1)
         if (error) throw error
         if (!data || data.length === 0) break
@@ -423,7 +498,21 @@ export default function GenerateFactsPage({ toast }) {
         if (data.length < PAGE) break
         from += PAGE
       }
-      await enrichLoop(all, 'Enrichissement')
+
+      // Confirm avec le nombre trouvé
+      if (all.length === 0) {
+        setEnrichRunState('done')
+        setEnrichMessage('✅ Aucun fact concerné par ces filtres.')
+        return
+      }
+      const writeGroups = activeGroups.join(', ')
+      if (!confirm(`Enrichir ${all.length} fact${all.length > 1 ? 's' : ''} ? Champs réécrits : ${writeGroups}.`)) {
+        setEnrichRunState('done')
+        setEnrichMessage('⏹ Annulé.')
+        return
+      }
+
+      await enrichLoop(all, 'Enrichissement', enrichGroups)
     } catch (err) {
       setEnrichRunState('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
@@ -458,7 +547,8 @@ export default function GenerateFactsPage({ toast }) {
         const h2Short = f.hint2 && !f.hint2.includes(' ')
         return h1Short || h2Short
       })
-      await enrichLoop(shortHints, 'Reformulation')
+      // Reformulation ne touche que les indices
+      await enrichLoop(shortHints, 'Reformulation', { hints: true, funny: false, close: false, plausible: false, explanation: false })
     } catch (err) {
       setEnrichRunState('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
@@ -1024,9 +1114,38 @@ export default function GenerateFactsPage({ toast }) {
           <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
             <h2 className="text-base font-black text-white mb-2">🧠 Enrichir les incomplets</h2>
             <p className="text-slate-400 text-sm mb-4">
-              Enrichit tous les facts sans fausses réponses ou sans indices via Claude Opus.
-              Chaque fact est sauvegardé immédiatement après enrichissement.
+              Coche les groupes de champs à traiter. Les facts avec au moins un champ vide dans un groupe coché seront ciblés ;
+              seuls les champs cochés seront réécrits (les autres sont préservés).
             </p>
+
+            {/* Filtres par groupe */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {[
+                { key: 'hints',       label: 'Indices (1-4)',        color: '#38BDF8' },
+                { key: 'funny',       label: 'Fausses drôles (1-3)', color: '#EAB308' },
+                { key: 'close',       label: 'Fausses proches (1-2)', color: '#F97316' },
+                { key: 'plausible',   label: 'Fausses plausibles (1-3)', color: '#EF4444' },
+                { key: 'explanation', label: 'Le saviez-vous',       color: '#22C55E' },
+              ].map(({ key, label, color }) => {
+                const on = enrichGroups[key]
+                return (
+                  <button
+                    key={key}
+                    onClick={() => toggleEnrichGroup(key)}
+                    disabled={enrichRunState === 'running'}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
+                    style={{
+                      background: on ? `${color}22` : 'transparent',
+                      border: `2px solid ${on ? color : '#475569'}`,
+                      color: on ? color : '#94A3B8',
+                    }}
+                  >
+                    {on ? '✓' : '○'} {label}
+                  </button>
+                )
+              })}
+            </div>
+
             <div className="flex gap-3 flex-wrap">
               <button
                 disabled={enrichRunState === 'running'}

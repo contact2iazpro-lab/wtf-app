@@ -70,7 +70,9 @@ export function useNavigationHandlers({
     switch (target) {
       case 'wtfWeekly':
       case 'flash':
-        setScreen(SCREENS.FLASH)
+        // Passe par la page de règles (comme les autres modes) — respect de
+        // skip_launch_flash. Avant : bypass direct vers SCREENS.FLASH.
+        showOrSkipLaunch('flash')
         break
       case 'categoryFlash':
       case 'quickie': {

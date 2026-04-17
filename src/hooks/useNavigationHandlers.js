@@ -166,6 +166,13 @@ export function useNavigationHandlers({
 
   const handleReplay = useCallback(() => {
     if (sessionType === 'quickie') {
+      // Check énergie avant de relancer — sinon le replay court-circuite la vérif
+      const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
+      if (!isDevOrTest && !canPlayQuickieCheck()) {
+        setNoEnergyOrigin('quickie')
+        setShowNoEnergyModal(true)
+        return
+      }
       if (selectedCategory) {
         handleSelectCategory(selectedCategory)
       } else {
@@ -173,7 +180,7 @@ export function useNavigationHandlers({
       }
     }
     else handleSelectCategory(selectedCategory)
-  }, [sessionType, selectedCategory, handleSelectCategory, handleQuickie])
+  }, [sessionType, selectedCategory, handleSelectCategory, handleQuickie, setNoEnergyOrigin, setShowNoEnergyModal])
 
   const handleShare = useCallback(() => {
     if (!currentFact) return

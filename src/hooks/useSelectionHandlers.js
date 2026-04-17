@@ -70,8 +70,14 @@ export function useSelectionHandlers({
       let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
       if (pool.length < 4 && skipUnlockE) pool = getGeneratedFactsByCategory(categoryId)
       if (pool.length === 0) { setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' }); return }
-      if (pool.length < 4) {
-        const price = pool.length === 1 ? 5 : 10
+      // Mini-parcours : catégorie presque terminée (< 5 f*cts restants)
+      // Économie ×10 (décision 17/04/2026) : 50 coins par fact.
+      //   1 fact  → 50 coins   (max gain 10 → expérience, perte nette)
+      //   2 facts → 100 coins  (max gain 20)
+      //   3 facts → 150 coins  (max gain 30)
+      //   4 facts → 200 coins  (max gain 40)
+      if (pool.length < 5) {
+        const price = pool.length * 50
         const preparedFacts = shuffle(pool).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
         setMiniParcours({ pool: preparedFacts, price, mode: 'quickie', categoryId, difficulty })
         return

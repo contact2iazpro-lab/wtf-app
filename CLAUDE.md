@@ -114,6 +114,8 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Gains : 10 coins/bonne réponse · Perfect (5/5) : +50 coins
 - Déblocage f*cts : Oui (Funny)
 - Catégories : 5 gratuites (sport, records, animaux, kids, définition) + débloquables 1 500 coins
+- **Mini-parcours catégorie presque terminée (< 5 f*cts restants, éco ×10 17/04/2026)** :
+  - 1 fact = 50 coins · 2 facts = 100c · 3 facts = 150c · 4 facts = 200c
 
 ### 2. VRAI OU FOU — "Swipe si t'oses"
 - **Swipe cards Vrai/Faux** (PAS de QCM), 20 affirmations par session

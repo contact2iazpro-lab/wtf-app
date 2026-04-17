@@ -47,14 +47,15 @@ const QUICKIE_RANKINGS = [
   { score: 5, label: 'Yes ! Perfect !' },
 ]
 
-// Vrai ET Fou — 6 paliers sur /20 (mode viralité, pas de coins)
+// Vrai ET Fou — 6 paliers sur /10 (mode viralité, pas de coins)
+// Migré 20→10 le 18/04/2026
 const VOF_RANKINGS = [
-  { max: 4,  emoji: '😅', label: 'Aïe… retente ta chance !' },
-  { max: 9,  emoji: '🤔', label: 'Tu chauffes, continue !' },
-  { max: 13, emoji: '👍', label: 'Pas mal, tu peux mieux.' },
-  { max: 16, emoji: '😎', label: 'Bon flair !' },
-  { max: 19, emoji: '🎯', label: 'Excellent score !' },
-  { max: 20, emoji: '🔥', label: 'Perfect ! Tu es une machine.' },
+  { max: 2,  emoji: '😅', label: 'Aïe… retente ta chance !' },
+  { max: 4,  emoji: '🤔', label: 'Tu chauffes, continue !' },
+  { max: 6,  emoji: '👍', label: 'Pas mal, tu peux mieux.' },
+  { max: 7,  emoji: '😎', label: 'Bon flair !' },
+  { max: 9,  emoji: '🎯', label: 'Excellent score !' },
+  { max: 10, emoji: '🔥', label: 'Perfect ! Tu es une machine.' },
 ]
 function getVofRank(correct) {
   return VOF_RANKINGS.find(r => correct <= r.max) || VOF_RANKINGS[0]
@@ -505,12 +506,20 @@ export default function ResultsScreen({
           />
         )}
 
-        {/* Fact le plus WTF — composant extrait (Phase 5.2 A) */}
+        {/* Fact le plus WTF — pour VOF, limité aux facts déjà débloqués (globalement) */}
         {(() => {
-          const vofFeatured = isVof && allSessionFacts.length > 0
-            ? (allSessionFacts.find(f => f.fact?.isVip)?.fact || allSessionFacts[allSessionFacts.length - 1]?.fact || null)
-            : null
-          const shownFact = isVof ? vofFeatured : featuredFact
+          let shownFact = featuredFact
+          if (isVof) {
+            const globalUnlocked = new Set([
+              ...((wtfData.unlockedFacts) || []),
+              ...extraUnlockedIds,
+            ])
+            const sessionUnlocked = allSessionFacts
+              .map(e => e.fact || e)
+              .filter(f => globalUnlocked.has(f.id))
+            // Priorise VIP parmi débloqués, sinon dernier débloqué, sinon null
+            shownFact = sessionUnlocked.find(f => f.isVip) || sessionUnlocked[sessionUnlocked.length - 1] || null
+          }
           return (
             <FeaturedFactCard
               fact={shownFact}
@@ -526,8 +535,12 @@ export default function ResultsScreen({
           )
         })()}
 
-        {/* Carrousel facts — VOF : ✅/❌, autres modes : 🔓/🔒 */}
+        {/* Carrousel facts VOF : ✓/✗ + facts lockés achetables (comme Quickie) */}
         {allSessionFacts.length > 0 && isVof && (() => {
+          const globalUnlocked = new Set([
+            ...((wtfData.unlockedFacts) || []),
+            ...extraUnlockedIds,
+          ])
           const answered = allSessionFacts.map((entry, i) => ({
             fact: entry.fact || entry,
             wasCorrect: entry.wasCorrect ?? false,
@@ -540,24 +553,37 @@ export default function ResultsScreen({
               <span style={{ fontSize: S(10), fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {label}
               </span>
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(10, 1fr)`, gap: S(3), width: '100%' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.max(items.length, 1)}, 1fr)`, gap: S(3), width: '100%' }}>
                 {items.map(({ fact, wasCorrect, idx }) => {
                   const fc = CATEGORIES.find(c => c.id === fact.category)
                   const fcColor = fc?.color || catColor
+                  const isUnlocked = globalUnlocked.has(fact.id)
+                  const handleClick = () => {
+                    audio.play?.('click')
+                    if (isUnlocked) setViewingFact(fact)
+                    else setSelectedFact({ ...fact, _locked: true, _catColor: fcColor, _catEmoji: fc?.emoji, _catLabel: fc?.label })
+                  }
                   return (
                     <div key={`${idx}-${fact.id}`} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
-                      onClick={() => { audio.play?.('click'); setViewingFact(fact) }}>
+                      onClick={handleClick}>
                       <div style={{
                         aspectRatio: '1', borderRadius: S(6), overflow: 'hidden', position: 'relative',
                         border: `2px solid ${wasCorrect ? '#6BCB77' : '#E84535'}`,
                         background: `linear-gradient(135deg, ${fcColor}44, ${fcColor})`,
                       }}>
                         {fact.imageUrl ? (
-                          <img src={fact.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            onError={e => { e.target.style.display = 'none' }} />
+                          <img src={fact.imageUrl} alt="" style={{
+                            width: '100%', height: '100%', objectFit: 'cover',
+                            filter: isUnlocked ? 'none' : 'blur(4px) brightness(0.4)',
+                          }} onError={e => { e.target.style.display = 'none' }} />
                         ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: isUnlocked ? 'none' : 'brightness(0.4)' }}>
                             <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: '55%', height: '55%', objectFit: 'contain', opacity: 0.7 }} onError={e => { e.target.style.display = 'none' }} />
+                          </div>
+                        )}
+                        {!isUnlocked && (
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: S(14), opacity: 0.85 }}>🔒</span>
                           </div>
                         )}
                         <div style={{ position: 'absolute', top: 2, right: 2, width: S(14), height: S(14), borderRadius: '50%', background: wasCorrect ? '#6BCB77' : '#E84535', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(10), fontWeight: 900, color: '#fff', lineHeight: 1 }}>
@@ -575,7 +601,7 @@ export default function ResultsScreen({
               {renderRow(right, `✅ ${right.length} Trouvé${right.length > 1 ? 's' : ''}`, '#6BCB77')}
               {renderRow(wrong, `❌ ${wrong.length} Raté${wrong.length > 1 ? 's' : ''}`, '#E84535')}
               <span style={{ fontSize: S(10), color: textOnBg, opacity: 0.7, textAlign: 'center', fontStyle: 'italic', marginTop: S(2) }}>
-                🔒 Joue Quickie ou Quest pour débloquer vraiment ces f*cts
+                🔒 Clique un f*ct verrouillé pour le débloquer (25 <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle' }} />)
               </span>
             </div>
           )

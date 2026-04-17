@@ -14,7 +14,7 @@ import RevelationScreen from './RevelationScreen'
 import ResultsScreen from './ResultsScreen'
 import { CATEGORIES } from '../data/facts'
 
-const SESSION_SIZE = 20
+const SESSION_SIZE = 10
 const SWIPE_THRESHOLD = 60
 const WRONG_DELAY_MS = 1200
 const VOF_GREEN = '#6BCB77'

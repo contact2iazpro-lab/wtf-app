@@ -318,23 +318,33 @@ export function getQuestFacts() {
   return getVipFacts()
 }
 
-/** Mode Vrai ET Fou : Funny facts avec affirmation vraie + fausse plausible remplies */
+/** Mode Vrai ET Fou : Funny facts avec affirmation vraie + au moins une fausse remplie */
 export function getFunnyFactsWithStatement() {
   return getFunnyFacts().filter(f =>
-    f.statementTrue && f.statementFalsePlausible
+    f.statementTrue && (f.statementFalsePlausible || f.statementFalseFunny)
   )
 }
 
 /**
- * Construit un "draw" pour le mode Vrai ET Fou : affirmation vraie + fausse plausible,
+ * Construit un "draw" pour le mode Vrai ET Fou : affirmation vraie + fausse,
  * position vraie/fausse randomisée.
+ * Pondération fausse (décision 18/04/2026) : 75% plausible, 25% drôle.
+ * Si un type manque, fallback sur l'autre.
  */
 export function buildVraiOuFouDraw(fact) {
   const trueSide = Math.random() < 0.5 ? 'left' : 'right'
+  const hasPlausible = !!fact.statementFalsePlausible
+  const hasFunny = !!fact.statementFalseFunny
+  let falseStatement
+  if (hasPlausible && hasFunny) {
+    falseStatement = Math.random() < 0.75 ? fact.statementFalsePlausible : fact.statementFalseFunny
+  } else {
+    falseStatement = fact.statementFalsePlausible || fact.statementFalseFunny
+  }
   return {
     fact,
     trueStatement: fact.statementTrue,
-    falseStatement: fact.statementFalsePlausible,
+    falseStatement,
     trueSide,
   }
 }

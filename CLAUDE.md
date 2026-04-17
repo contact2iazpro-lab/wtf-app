@@ -118,9 +118,10 @@ séparé, sous-domaine privé, ou en local uniquement).
   - 1 fact = 50 coins · 2 facts = 100c · 3 facts = 150c · 4 facts = 200c
 
 ### 2. VRAI OU FOU — "Swipe si t'oses"
-- **Swipe cards Vrai/Faux** (PAS de QCM), 20 affirmations par session
+- **Swipe cards Vrai/Faux** (PAS de QCM), 10 affirmations par session (passé de 20 le 18/04/2026)
 - Timer : **15s**/question · Indices : Aucun
 - Contenu : Funny facts (champs `statement_true` + `statement_false_funny` + `statement_false_plausible` en base)
+- **Tirage fausse (18/04/2026)** : 75% plausible / 25% drôle (pondéré)
 - Coût : Gratuit illimité
 - Gains : **0 coins** (mode viralité/acquisition, pas farming)
 - Déblocage f*cts : **Non** — mode vitrine/viral. Le joueur découvre les affirmations mais ne les collecte pas. Pour posséder un f*ct, jouer Quickie ou Quest.

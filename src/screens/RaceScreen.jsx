@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { getMixedUnlockedFacts } from '../data/factsService'
+import { CATEGORIES } from '../data/facts'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
@@ -8,23 +9,11 @@ import renderFormattedText from '../utils/renderFormattedText'
 import { useScale } from '../hooks/useScale'
 import { readWtfData, updateWtfData } from '../utils/storageHelper'
 import GameHeader from '../components/GameHeader'
+import FallbackImage from '../components/FallbackImage'
 
-const FLASH_DURATION = 380
+const WRONG_FLASH_DURATION = 500
+const COUNTDOWN_SECONDS = 3
 const MIN_UNLOCKED_TO_PLAY = 20
-
-// Paliers visuels (spec 15/04/2026) : plus la série monte, plus le fond chauffe.
-const TIERS = [
-  { min: 0,  bg: 'linear-gradient(160deg, #0f3d22 0%, #1a6b3a 100%)' }, // vert — tranquille
-  { min: 6,  bg: 'linear-gradient(160deg, #4a3a0a 0%, #8a6a1a 100%)' }, // jaune — ça commence
-  { min: 11, bg: 'linear-gradient(160deg, #5a2a0a 0%, #b04a15 100%)' }, // orange — tension
-  { min: 21, bg: 'linear-gradient(160deg, #5a0a0a 0%, #b01515 100%)' }, // rouge — danger
-  { min: 31, bg: 'linear-gradient(160deg, #1a0000 0%, #4a0000 100%)' }, // rouge foncé — extrême
-]
-const tierForStreak = (s) => {
-  let cur = TIERS[0]
-  for (const t of TIERS) if (s >= t.min) cur = t
-  return cur
-}
 
 // One-shot migration noLimitBestScore → raceBestScore + statsByMode.no_limit → .race
 ;(() => {
@@ -68,8 +57,13 @@ export default function RaceScreen({ onHome }) {
   const [pulse, setPulse] = useState(false)
   const [shake, setShake] = useState(false)
   const [newRecord, setNewRecord] = useState(false)
+  const [imgFailed, setImgFailed] = useState(false)
+  const [showLightbox, setShowLightbox] = useState(false)
+  const [awaitingNext, setAwaitingNext] = useState(false)
+  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS)
   const flashTimer = useRef(null)
   const pulseTimer = useRef(null)
+  const countdownRef = useRef(null)
 
   const preparedFact = useMemo(() => {
     const raw = shuffledPool[index]
@@ -77,9 +71,16 @@ export default function RaceScreen({ onHome }) {
     return { ...raw, ...getAnswerOptions(raw, diff) }
   }, [shuffledPool, index, diff])
 
+  const cat = useMemo(
+    () => (preparedFact ? CATEGORIES.find(c => c.id === preparedFact.category) : null),
+    [preparedFact?.category]
+  )
+  const catBg = cat?.color || '#1a3a5c'
+
   useEffect(() => () => {
     clearTimeout(flashTimer.current)
     clearTimeout(pulseTimer.current)
+    clearInterval(countdownRef.current)
   }, [])
 
   const finalizeGameOver = useCallback((finalStreak) => {
@@ -95,38 +96,62 @@ export default function RaceScreen({ onHome }) {
     setGameOver(true)
   }, [])
 
+  const advanceToNext = useCallback(() => {
+    clearInterval(countdownRef.current)
+    const newStreak = streak + 1
+    setStreak(newStreak)
+    setPulse(true)
+    clearTimeout(pulseTimer.current)
+    pulseTimer.current = setTimeout(() => setPulse(false), 260)
+    if (index + 1 >= shuffledPool.length) {
+      finalizeGameOver(newStreak)
+      return
+    }
+    setIndex(i => i + 1)
+    setFlash(null)
+    setAwaitingNext(false)
+    setImgFailed(false)
+    setShowLightbox(false)
+    setCountdown(COUNTDOWN_SECONDS)
+  }, [streak, index, shuffledPool.length, finalizeGameOver])
+
   const handleAnswer = useCallback((answerIdx) => {
-    if (flash !== null || !preparedFact || gameOver) return
+    if (flash !== null || awaitingNext || !preparedFact || gameOver) return
     const isCorrect = answerIdx === preparedFact.correctIndex
     setFlash({ idx: answerIdx, correct: isCorrect })
     audio.play(isCorrect ? 'correct' : 'buzzer')
 
-    flashTimer.current = setTimeout(() => {
-      if (!isCorrect) {
+    if (!isCorrect) {
+      flashTimer.current = setTimeout(() => {
         finalizeGameOver(streak)
-        return
+      }, WRONG_FLASH_DURATION)
+      return
+    }
+
+    setAwaitingNext(true)
+    setCountdown(COUNTDOWN_SECONDS)
+    let remaining = COUNTDOWN_SECONDS
+    countdownRef.current = setInterval(() => {
+      remaining--
+      setCountdown(remaining)
+      if (remaining <= 0) {
+        clearInterval(countdownRef.current)
+        advanceToNext()
       }
-      const newStreak = streak + 1
-      setStreak(newStreak)
-      setPulse(true)
-      clearTimeout(pulseTimer.current)
-      pulseTimer.current = setTimeout(() => setPulse(false), 260)
-      if (index + 1 >= shuffledPool.length) {
-        finalizeGameOver(newStreak)
-        return
-      }
-      setIndex(i => i + 1)
-      setFlash(null)
-    }, FLASH_DURATION)
-  }, [flash, preparedFact, streak, index, shuffledPool.length, gameOver, finalizeGameOver])
+    }, 1000)
+  }, [flash, awaitingNext, preparedFact, streak, gameOver, finalizeGameOver, advanceToNext])
 
   const replay = useCallback(() => {
+    clearInterval(countdownRef.current)
     setIndex(0)
     setStreak(0)
     setFlash(null)
     setGameOver(false)
     setNewRecord(false)
     setPulse(false)
+    setAwaitingNext(false)
+    setCountdown(COUNTDOWN_SECONDS)
+    setImgFailed(false)
     setRunKey(k => k + 1)
   }, [])
 
@@ -140,9 +165,7 @@ export default function RaceScreen({ onHome }) {
     }
   }, [streak])
 
-  const currentTier = tierForStreak(streak)
-  const bg = currentTier.bg
-  const isExtreme = streak >= 31
+  const bg = `linear-gradient(160deg, ${catBg}88, ${catBg})`
 
   // ─── Gate : pas assez de f*cts débloqués ───
   if (!hasEnough) {
@@ -212,7 +235,7 @@ export default function RaceScreen({ onHome }) {
               marginBottom: 14,
               animation: 'raceGoldPulse 1.4s ease-in-out infinite',
             }}>
-              ⭐ NOUVEAU RECORD !
+              <img src="/assets/ui/wtf-star.png" alt="" style={{ width: 16, height: 16, objectFit: 'contain', verticalAlign: 'middle', marginRight: 4 }} /> NOUVEAU RECORD !
             </div>
           )}
           <p style={{ fontSize: 13, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700 }}>Ta série</p>
@@ -238,6 +261,12 @@ export default function RaceScreen({ onHome }) {
     )
   }
 
+  // ─── Barre de progression glissante (fenêtre de 10) ───
+  const WINDOW_SIZE = 10
+  const windowStart = Math.max(0, streak - WINDOW_SIZE + 1)
+  const segCount = Math.min(streak + 1, WINDOW_SIZE)
+  const isImageRevealed = awaitingNext
+
   // ─── En jeu ───
   return (
     <div
@@ -247,18 +276,21 @@ export default function RaceScreen({ onHome }) {
         background: bg,
         fontFamily: 'Nunito, sans-serif',
         transition: 'background 0.8s ease',
-        animation: isExtreme ? 'raceExtremePulse 1.4s ease-in-out infinite' : 'none',
       }}
     >
       <style>{`
-        @keyframes raceExtremePulse {
-          0%, 100% { filter: brightness(1) }
-          50% { filter: brightness(1.25) }
-        }
         @keyframes raceCounterPop {
           0% { transform: scale(1) }
           40% { transform: scale(1.18) }
           100% { transform: scale(1) }
+        }
+        @keyframes holoShimmer {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 200% 50%; }
+        }
+        @keyframes holoSweep {
+          0% { transform: translateX(-100%) skewX(-15deg); }
+          100% { transform: translateX(200%) skewX(-15deg); }
         }
       `}</style>
 
@@ -276,70 +308,300 @@ export default function RaceScreen({ onHome }) {
         </div>
       )}
 
-      <GameHeader categoryLabel="Race" categoryColor="#00E5FF" onQuit={() => setShowQuit(true)} />
+      <GameHeader
+        categoryLabel={cat?.label || 'Race'}
+        categoryColor={catBg}
+        categoryIcon={cat?.id ? `/assets/categories/${cat.id}.png` : null}
+        onQuit={() => setShowQuit(true)}
+      />
 
-      <div style={{ textAlign: 'center', padding: `${S(10)} 0 ${S(2)}`, flexShrink: 0 }}>
-        <div
-          style={{
-            fontSize: S(72),
-            fontWeight: 900,
-            color: '#fff',
-            lineHeight: 1,
-            fontVariantNumeric: 'tabular-nums',
-            textShadow: '0 4px 20px rgba(0,0,0,0.4)',
+      {/* Bloc mode label + info + progress — hauteur fixe identique aux 3 modes */}
+      <div style={{ height: S(56), flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: `${S(2)} ${S(16)} ${S(4)}` }}>
+        {/* Mode label */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6) }}>
+          <img src="/assets/modes/icon-race.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />
+          <span style={{
+            fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+            color: '#23D5D5', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          }}>
+            RACE
+          </span>
+        </div>
+        {/* Streak + Record */}
+        <div style={{ textAlign: 'center' }}>
+          <span style={{
+            fontSize: S(12), fontWeight: 900, letterSpacing: 1,
             animation: pulse ? 'raceCounterPop 0.26s ease' : 'none',
             display: 'inline-block',
-          }}
-        >
-          {streak}
+          }}>
+            <span style={{ color: '#23D5D5' }}>{streak}</span>
+            <span style={{ color: 'rgba(255,255,255,0.5)' }}> · Record {bestScore}</span>
+          </span>
         </div>
-        <div style={{ fontSize: S(11), fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: 2, textTransform: 'uppercase', marginTop: S(2) }}>
-          Série · Record {bestScore}
+        {/* Barre de progression glissante */}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
+          {Array.from({ length: segCount }).map((_, i) => {
+            const isActive = i === segCount - 1
+            return (
+              <div
+                key={windowStart + i}
+                style={{
+                  flex: 1,
+                  height: isActive ? S(12) : S(8),
+                  borderRadius: S(4),
+                  background: isActive ? '#23D5D5' : 'rgba(35,213,213,0.4)',
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            )
+          })}
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col px-4 pb-4 min-h-0" style={{ gap: S(12) }}>
-        <div className="rounded-3xl flex items-center justify-center p-5" style={{ background: 'rgba(0,0,0,0.28)', minHeight: S(110), flex: '0 0 auto' }}>
-          <p style={{ color: '#ffffff', fontSize: S(16), fontWeight: 800, textAlign: 'center', lineHeight: 1.4 }}>
-            {renderFormattedText(preparedFact.question)}
+      {/* ── Bloc contenu S(264) — question + 6 QCM ── */}
+      <div style={{
+        height: S(270), flexShrink: 0, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+        justifyContent: 'flex-start', gap: S(6),
+        padding: `${S(6)} ${S(16)} 0`,
+      }}>
+        <div style={{
+          borderRadius: S(16), padding: `${S(12)} ${S(16)}`,
+          background: 'rgba(0,0,0,0.28)', border: '2px solid #23D5D5',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          height: S(90), flexShrink: 0, overflow: 'hidden',
+        }}>
+          <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>
+            {renderFormattedText(preparedFact.question, '#23D5D5')}
           </p>
         </div>
-
-        <div className="flex-1 flex items-center">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8), width: '100%' }}>
-            {preparedFact.options.map((opt, i) => {
-              const isFlashed = flash?.idx === i
-              const isAnswer = i === preparedFact.correctIndex
-              let btnBg = 'rgba(255,255,255,0.15)'
-              let btnBorder = 'rgba(255,255,255,0.2)'
-              if (flash) {
-                if (isFlashed && flash.correct) { btnBg = 'rgba(34,197,94,0.4)'; btnBorder = '#22C55E' }
-                else if (isFlashed && !flash.correct) { btnBg = 'rgba(239,68,68,0.4)'; btnBorder = '#EF4444' }
-                else if (isAnswer && !flash.correct) { btnBg = 'rgba(34,197,94,0.25)'; btnBorder = '#22C55E' }
-              }
-              return (
-                <button
-                  key={`${index}-${i}`}
-                  onClick={() => handleAnswer(i)}
-                  disabled={flash !== null}
-                  className="rounded-2xl text-center transition-all active:scale-[0.97]"
-                  style={{
-                    background: btnBg, border: `2px solid ${btnBorder}`,
-                    height: S(64), padding: S(10), borderRadius: S(14),
-                    opacity: flash && !isFlashed && !(isAnswer && !flash.correct) ? 0.5 : 1,
-                    transition: 'all 0.15s ease',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  <span style={{ fontSize: S(13), fontWeight: 700, color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                    {renderFormattedText(opt)}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5) }}>
+          {preparedFact.options.map((opt, i) => {
+            const isFlashed = flash?.idx === i
+            const isAnswer = i === preparedFact.correctIndex
+            let btnBg = '#ffffff'
+            let btnBorder = '#23D5D5'
+            let txtColor = catBg
+            if (flash) {
+              if (isFlashed && flash.correct) { btnBg = 'rgba(34,197,94,0.4)'; btnBorder = '#22C55E'; txtColor = '#ffffff' }
+              else if (isFlashed && !flash.correct) { btnBg = 'rgba(239,68,68,0.4)'; btnBorder = '#EF4444'; txtColor = '#ffffff' }
+              else if (isAnswer && !flash.correct) { btnBg = 'rgba(34,197,94,0.25)'; btnBorder = '#22C55E'; txtColor = '#ffffff' }
+            }
+            return (
+              <button
+                key={`${index}-${i}`}
+                onClick={() => handleAnswer(i)}
+                disabled={flash !== null}
+                className="active:scale-[0.97]"
+                style={{
+                  background: btnBg, border: `2px solid ${btnBorder}`,
+                  height: S(52), padding: `${S(6)} ${S(8)}`, borderRadius: S(12),
+                  opacity: flash && !isFlashed && !(isAnswer && !flash.correct) ? 0.5 : 1,
+                  transition: 'all 0.15s ease',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: awaitingNext ? 'default' : 'pointer',
+                }}
+              >
+                <span style={{ fontSize: S(12), fontWeight: 800, color: txtColor, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  {renderFormattedText(opt)}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
+
+      {/* ── Zone image + timer — flex:1 space-evenly (aligné Quickie/VoF) ── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-evenly' }}>
+        {/* Image — position Y identique aux 3 modes */}
+        <div key={index} style={{
+          position: 'relative', width: '55%', aspectRatio: '1 / 1',
+          borderRadius: S(12), overflow: 'hidden',
+          border: '3px solid #23D5D5',
+          boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
+          background: 'rgba(0,0,0,0.3)',
+        }}>
+          {preparedFact?.imageUrl && !imgFailed ? (
+            <>
+              <img
+                src={preparedFact.imageUrl} alt=""
+                onError={() => setImgFailed(true)}
+                style={{
+                  width: '100%', height: '100%', objectFit: 'cover',
+                  filter: isImageRevealed ? 'none' : 'blur(18px) brightness(0.6)',
+                  transform: isImageRevealed ? 'none' : 'scale(1.15)',
+                  transition: isImageRevealed ? 'filter 0.4s ease, transform 0.4s ease' : 'none',
+                }}
+              />
+              {isImageRevealed && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+                    style={{
+                      position: 'absolute', top: S(6), right: S(6), zIndex: 10,
+                      width: 32, height: 32, borderRadius: '50%',
+                      background: 'rgba(0,0,0,0.5)', border: 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', fontSize: 16,
+                    }}
+                  >🔍</button>
+                  {/* Holo shimmer */}
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+                    background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(35,213,213,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(35,213,213,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'holoShimmer 3s linear infinite',
+                    mixBlendMode: 'screen',
+                  }} />
+                  {/* Lame de lumière */}
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden' }}>
+                    <div style={{
+                      position: 'absolute', top: '-20%', bottom: '-20%', width: '45%',
+                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                      animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
+                    }} />
+                  </div>
+                  {/* Stamp Unlocked */}
+                  <div style={{
+                    position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
+                    background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
+                    borderRadius: S(6), padding: `${S(3)} ${S(8)}`,
+                  }}>
+                    <span style={{ color: '#23D5D5', fontSize: S(9), fontWeight: 900, letterSpacing: '0.04em' }}>Unlocked !</span>
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <div style={{
+                width: '100%', height: '100%',
+                filter: isImageRevealed ? 'none' : 'blur(14px) brightness(0.65)',
+                transform: isImageRevealed ? 'none' : 'scale(1.1)',
+                transition: isImageRevealed ? 'filter 0.4s ease, transform 0.4s ease' : 'none',
+              }}>
+                <FallbackImage categoryColor={catBg} />
+              </div>
+              {isImageRevealed && (
+                <>
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+                    background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(35,213,213,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(35,213,213,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'holoShimmer 3s linear infinite',
+                    mixBlendMode: 'screen',
+                  }} />
+                  <div style={{ position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden' }}>
+                    <div style={{
+                      position: 'absolute', top: '-20%', bottom: '-20%', width: '45%',
+                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                      animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
+                    }} />
+                  </div>
+                  <div style={{
+                    position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
+                    background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
+                    borderRadius: S(6), padding: `${S(3)} ${S(8)}`,
+                  }}>
+                    <span style={{ color: '#23D5D5', fontSize: S(9), fontWeight: 900, letterSpacing: '0.04em' }}>Unlocked !</span>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
+        {/* Slot 2 — fantôme timer (même taille que CircularTimer Quickie/VoF) */}
+        <div style={{ width: S(96), height: S(96), visibility: 'hidden' }} />
+      </div>
+
+      {/* ── Le saviez-vous + Boutons — absolus, ne décalent pas l'image ── */}
+      {awaitingNext && (
+        <div style={{ position: 'absolute', bottom: S(12), left: S(16), right: S(16), display: 'flex', flexDirection: 'column', gap: S(6), zIndex: 10 }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
+            border: '2px solid #23D5D5', borderRadius: S(12), padding: `${S(6)} ${S(10)}`,
+            overflow: 'hidden', height: S(136),
+          }}>
+            <div style={{ fontSize: S(9), fontWeight: 900, color: '#23D5D5', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>Le saviez-vous ?</div>
+            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {preparedFact?.explanation || ''}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: S(8) }}>
+          <button
+            onClick={handleShare}
+            className="active:scale-95"
+            style={{
+              flex: 1, padding: `${S(10)} 0`, borderRadius: S(14),
+              background: 'linear-gradient(135deg, #23D5D5, #0A8F8F)',
+              border: '3px solid #ffffff',
+              color: '#fff', fontWeight: 800, fontSize: S(12),
+              cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+              boxShadow: '0 4px 16px rgba(35,213,213,0.5)',
+            }}
+          >
+            Partager ce f*ct
+          </button>
+          <button
+            onClick={advanceToNext}
+            className="active:scale-95"
+            style={{
+              flex: 1, padding: `${S(10)} 0`, borderRadius: S(14),
+              background: 'linear-gradient(135deg, #23D5D5, #0A8F8F)',
+              border: '3px solid #ffffff',
+              color: '#fff', fontWeight: 900, fontSize: S(12),
+              cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+              boxShadow: '0 4px 16px rgba(35,213,213,0.5)',
+              textTransform: 'uppercase', letterSpacing: '0.05em',
+            }}
+          >
+            SUIVANT ({countdown}s) →
+          </button>
+          </div>
+        </div>
+      )}
+
+      {showLightbox && preparedFact?.imageUrl && (
+        <div
+          onClick={() => setShowLightbox(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 500,
+            background: 'rgba(0,0,0,0.9)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 16,
+          }}
+        >
+          <button
+            onClick={() => setShowLightbox(false)}
+            style={{
+              position: 'absolute', top: 16, right: 16, zIndex: 10,
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)', border: 'none',
+              color: 'white', fontSize: 18, fontWeight: 900,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >✕</button>
+          <img
+            src={preparedFact.imageUrl}
+            alt=""
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '95%', maxHeight: '80vh', objectFit: 'contain',
+              borderRadius: 12,
+              animation: 'lightboxZoom 0.2s ease-out',
+            }}
+          />
+          <style>{`
+            @keyframes lightboxZoom {
+              from { transform: scale(0.8); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   )
 }

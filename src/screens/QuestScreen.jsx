@@ -609,7 +609,7 @@ export default function QuestScreen({ onHome, setStorage }) {
                     WebkitTapHighlightColor: 'transparent',
                   }}
                 >
-                  Bloc {b} — Niv. {startLv}-{bossLv} ⭐{isDone ? ' ✓' : ''}
+                  Bloc {b} — Niv. {startLv}-{bossLv}{isDone ? ' ✓' : ''}
                 </button>
                 {isDone && failedBoss && (
                   <button
@@ -787,7 +787,7 @@ export default function QuestScreen({ onHome, setStorage }) {
             fontSize: 'calc(1.05rem * var(--scale))', fontWeight: 800, lineHeight: 1.35,
             color: '#fff', margin: 0, textAlign: 'center',
           }}>
-            {renderFormattedText(fact.question || fact.fact || '')}
+            {renderFormattedText(fact.question || fact.fact || '', '#FF6B1A')}
           </h2>
         </div>
 

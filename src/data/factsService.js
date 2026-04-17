@@ -317,7 +317,7 @@ export function getQuestFacts() {
   return getVipFacts()
 }
 
-/** Mode Vrai ou Fou : Funny facts dont les 3 variantes d'affirmation sont remplies */
+/** Mode Vrai ET Fou : Funny facts dont les 3 variantes d'affirmation sont remplies */
 export function getFunnyFactsWithStatement() {
   return getFunnyFacts().filter(f =>
     f.statementTrue && f.statementFalseFunny && f.statementFalsePlausible
@@ -325,7 +325,7 @@ export function getFunnyFactsWithStatement() {
 }
 
 /**
- * Construit un "draw" pour le mode Vrai ou Fou : 2 affirmations sur le même fact
+ * Construit un "draw" pour le mode Vrai ET Fou : 2 affirmations sur le même fact
  * (une vraie + une fausse), avec la position vraie/fausse randomisée.
  *
  * @param {object} fact — doit avoir statementTrue, statementFalseFunny, statementFalsePlausible

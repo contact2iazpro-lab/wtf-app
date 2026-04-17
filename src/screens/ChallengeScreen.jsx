@@ -142,7 +142,7 @@ export default function ChallengeScreen() {
             background: p1Won ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.06)',
             border: p1Won ? '2px solid #FFD700' : '1px solid rgba(255,255,255,0.1)',
           }}>
-            {p1Won && <div style={{ fontSize: 12, fontWeight: 900, color: '#FFD700', marginBottom: 4 }}>⭐ GAGNANT</div>}
+            {p1Won && <div style={{ fontSize: 12, fontWeight: 900, color: '#FFD700', marginBottom: 4 }}>GAGNANT</div>}
             <div style={{ fontSize: 14, fontWeight: 800, color: 'white', marginBottom: 8 }}>{challenge.player1_name}</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: p1Won ? '#FFD700' : '#FF6B1A' }}>{formatTime(challenge.player1_time)}</div>
           </div>
@@ -156,7 +156,7 @@ export default function ChallengeScreen() {
             background: !p1Won ? 'rgba(255,215,0,0.15)' : 'rgba(255,255,255,0.06)',
             border: !p1Won ? '2px solid #FFD700' : '1px solid rgba(255,255,255,0.1)',
           }}>
-            {!p1Won && <div style={{ fontSize: 12, fontWeight: 900, color: '#FFD700', marginBottom: 4 }}>⭐ GAGNANT</div>}
+            {!p1Won && <div style={{ fontSize: 12, fontWeight: 900, color: '#FFD700', marginBottom: 4 }}>GAGNANT</div>}
             <div style={{ fontSize: 14, fontWeight: 800, color: 'white', marginBottom: 8 }}>{challenge.player2_name}</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: !p1Won ? '#FFD700' : '#FF6B1A' }}>{formatTime(challenge.player2_time)}</div>
           </div>

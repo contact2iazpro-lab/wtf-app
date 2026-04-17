@@ -207,7 +207,7 @@ export default function CategoryFactsView({ cat, facts, unlockedIds, activeTab, 
                 fontFamily: 'Nunito, sans-serif',
               }}
             >
-              <div style={{ fontSize: 44, marginBottom: 8 }}>{purchaseFact.isVip ? '⭐' : '🔒'}</div>
+              <div style={{ fontSize: 44, marginBottom: 8 }}>{purchaseFact.isVip ? <img src="/assets/ui/wtf-star.png" alt="" style={{ width: 44, height: 44, display: 'inline' }} /> : '🔒'}</div>
               <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>
                 {purchaseFact.isVip ? 'Débloquer ce f*ct VIP ?' : 'Débloquer ce f*ct ?'}
               </h3>

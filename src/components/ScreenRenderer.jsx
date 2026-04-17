@@ -93,7 +93,7 @@ export default function ScreenRenderer({
 
       {screen === SCREENS.MODE_LAUNCH && launchMode && (
         <ModeLaunchScreen
-          {...modeConfigs[launchMode]}
+          {...(modeConfigs[launchMode] || modeConfigs[launchMode?.replace('_random', '')]  || {})}
           onStart={handleLaunchStart}
           onBack={() => setScreen(SCREENS.HOME)}
         />

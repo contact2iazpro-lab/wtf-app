@@ -1,36 +1,57 @@
-# Stage 1 — Build
+# Stage 1 — Build game + admin-tool
 FROM node:22-alpine AS build
 WORKDIR /app
 
 # Vite env vars (injected at build time)
-# ⚠️ CRITIQUE : NE JAMAIS passer VITE_SUPABASE_SERVICE_KEY ici.
-# Tout ce qui commence par VITE_ est inliné dans le JS public du bundle.
-# La clé service_role bypasse RLS — si elle fuite, tout Supabase est compromis.
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 ARG VITE_GAME_BASE_URL
+ARG VITE_ADMIN_PASSWORD
 
-# Expose Vite env vars for build
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 ENV VITE_GAME_BASE_URL=$VITE_GAME_BASE_URL
+ENV VITE_ADMIN_PASSWORD=$VITE_ADMIN_PASSWORD
 
-# Install + build game
+# Install game deps
 COPY package.json package-lock.json ./
 RUN npm ci
+
+# Copy game source
 COPY . .
+
+# Build game
 RUN npm run build
 
-# ⚠️ admin-tool NE DOIT PAS être mergé dans le build principal.
-# Il contient la clé service_role dans son bundle (via VITE_SUPABASE_SERVICE_KEY)
-# et doit être déployé séparément sur un sous-domaine privé ou en local uniquement.
-# Pour tester l'admin : `cd admin-tool && npm run dev` (jamais en prod public).
+# Build admin-tool (needs game source for @game alias)
+RUN cd admin-tool && npm ci && npm run build
 
-# Stage 2 — Serve
-FROM nginx:alpine
-COPY nginx.conf /etc/nginx/templates/nginx.conf.template
-RUN rm /etc/nginx/conf.d/default.conf
+# Stage 2 — Runtime (node + nginx)
+FROM node:22-alpine
+RUN apk add --no-cache nginx gettext
+
+WORKDIR /app
+
+# Install admin-tool server deps
+RUN echo '{"type":"module"}' > package.json && npm install express http-proxy-middleware
+
+# Copy builds
 COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/admin-tool/dist /usr/share/nginx/html/admin
+
+# Copy server + nginx config
+COPY admin-tool/server.js ./admin-server.js
+COPY nginx.conf /etc/nginx/nginx.conf.template
+
+# Entrypoint script
+RUN printf '#!/bin/sh\n\
+if [ "$SERVICE_MODE" = "admin" ]; then\n\
+  exec node /app/admin-server.js\n\
+else\n\
+  envsubst "\\$PORT" < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf\n\
+  exec nginx -g "daemon off;"\n\
+fi\n' > /entrypoint.sh && chmod +x /entrypoint.sh
+
 ENV PORT=80
-ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 EXPOSE 80
+CMD ["/entrypoint.sh"]

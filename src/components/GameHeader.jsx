@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import SettingsModal from './SettingsModal'
 import BatteryIcon from './home/BatteryIcon'
 import { audio } from '../utils/audio'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
+import { getQuickieEnergy } from '../services/energyService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -27,8 +28,13 @@ export default function GameHeader({
 }) {
   const [showSettings, setShowSettings] = useState(false)
 
-  // Source unique de vérité pour les devises (Supabase si session, sinon localStorage)
-  const { coins, hints, energy } = usePlayerProfile()
+  const { coins, hints } = usePlayerProfile()
+  const [energy, setEnergy] = useState(() => getQuickieEnergy().remaining)
+  useEffect(() => {
+    const refresh = () => setEnergy(getQuickieEnergy().remaining)
+    window.addEventListener('wtf_energy_updated', refresh)
+    return () => window.removeEventListener('wtf_energy_updated', refresh)
+  }, [])
 
   return (
     <>

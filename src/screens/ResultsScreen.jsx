@@ -34,7 +34,7 @@ const RANKINGS = [
   { score: 7,  emoji: '🧠', label: 'Expert',         message: "Impressionnant ! Tu maîtrises l'art du WTF!" },
   { score: 8,  emoji: '🔥', label: 'WTF! Addict',   message: "Impressionnant ! Tu maîtrises l'art du WTF!" },
   { score: 9,  emoji: '👑', label: 'Génie WTF!',    message: "Impressionnant ! Tu maîtrises l'art du WTF!" },
-  { score: 10, emoji: '🌟', label: 'PARFAIT WTF!',  message: 'Parfait ! Tu es officiellement WTF! certifié 🏆' },
+  { score: 10, emoji: 'wtf-star', label: 'PARFAIT WTF!',  message: 'Parfait ! Tu es officiellement WTF! certifié 🏆' },
 ]
 
 // Quickie — 6 niveaux (0-5)
@@ -55,7 +55,7 @@ function getStars(correct, total) {
   return 0
 }
 
-const DIFFICULTY_LABELS = { quickie: 'Quickie', quest: 'Quest', flash: 'Flash', blitz: 'Blitz', race: 'Race', vrai_ou_fou: 'Vrai ou Fou' }
+const DIFFICULTY_LABELS = { quickie: 'Quickie', quest: 'Quest', flash: 'Flash', blitz: 'Blitz', race: 'Race', vrai_ou_fou: 'Vrai ET Fou' }
 const DIFFICULTY_EMOJIS = { quickie: '🍿', quest: '🗺️', flash: '⚡', blitz: '⏱️', race: '🏎️', vrai_ou_fou: '🤔' }
 const CHALLENGE_LABELS = {}
 
@@ -407,7 +407,7 @@ export default function ResultsScreen({
           </div>
         ) : difficulty && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: S(6), flexShrink: 0 }}>
-            <span style={{ fontSize: S(14) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '⭐'}</span>
+            <span style={{ fontSize: S(14) }}>{DIFFICULTY_EMOJIS[difficulty.id] || '❓'}</span>
             <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>
               {sessionType === 'parcours' ? `Quest — ${DIFFICULTY_LABELS[difficulty.id] || difficulty.label}` : 'Mode'}
             </span>
@@ -580,7 +580,7 @@ export default function ResultsScreen({
                   marginBottom: S(4), fontSize: S(12),
                 }}>
                   <div style={{ width: S(28), height: S(28), flexShrink: 0, borderRadius: S(6), display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.1)', fontSize: S(16) }}>
-                    {lvlCat?.emoji || '🌟'}
+                    {lvlCat?.emoji || '❓'}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 900, color: textOnBg, fontSize: S(11) }}>
@@ -647,7 +647,7 @@ export default function ResultsScreen({
                 <>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 16, lineHeight: 1.4 }}>
                     {selectedFact.isVip
-                      ? `Ce f*ct ⭐ VIP est encore verrouillé. Dépense ${unlockCost} coins pour le découvrir !`
+                      ? `Ce f*ct VIP est encore verrouillé. Dépense ${unlockCost} coins pour le découvrir !`
                       : `Ce f*ct est encore verrouillé. Dépense ${unlockCost} coins pour le découvrir !`}
                   </div>
 

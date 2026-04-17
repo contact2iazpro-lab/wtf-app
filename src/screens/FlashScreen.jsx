@@ -478,7 +478,7 @@ export default function FlashScreen({ onHome, setStorage }) {
       <div className="flex-1 flex flex-col px-4 pb-4 min-h-0" style={{ gap: S(12), paddingTop: S(10) }}>
         <div className="rounded-3xl flex items-center justify-center p-5" style={{ background: 'rgba(0,0,0,0.32)', minHeight: S(110), flex: '0 0 auto', border: `1px solid ${themeColor}22` }}>
           <p style={{ color: '#ffffff', fontSize: S(16), fontWeight: 800, textAlign: 'center', lineHeight: 1.4 }}>
-            {renderFormattedText(fact.question)}
+            {renderFormattedText(fact.question, '#E91E63')}
           </p>
         </div>
 

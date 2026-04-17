@@ -80,19 +80,18 @@ function pickWrongAnswers(fact, numWrong, factId) {
   let picked = []
 
   if (numWrong <= 1) {
-    // 2 QCM total (Quickie/Blitz/Flash) : 1 drôle OU plausible (CLAUDE.md 15/04/2026)
+    // 2 QCM total (Quickie/Flash) : 1 drôle OU plausible
     const funnyOrPlausible = [...funny, ...plausible]
     const fp = pickRandom(funnyOrPlausible, 1)
     picked = fp.length ? [...fp] : [allAvailable[0]]
   } else {
-    // 4 QCM total (Quest/Race) : 1 drôle + 1 proche + 1 plausible
+    // 4 QCM total (Quest/Race/Blitz) : 1 drôle + 2 plausibles (+ proche si dispo)
     const f = pickRandom(funny, 1)
-    const c = pickRandom(close, 1)
-    const p = pickRandom(plausible, 1)
-    picked = [...f, ...c, ...p]
+    const p = pickRandom(plausible, 2)
+    picked = [...f, ...p]
     if (picked.length < numWrong) {
       const used = new Set(picked)
-      const extra = allAvailable.filter(a => !used.has(a))
+      const extra = [...close, ...plausible, ...funny].filter(a => !used.has(a))
       picked = [...picked, ...pickRandom(extra, numWrong - picked.length)]
     }
   }

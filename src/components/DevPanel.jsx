@@ -220,7 +220,7 @@ export default function DevPanel({ storage, devActions, dailyFact, onClose }) {
             <Btn color="#22C55E" onClick={() => act('+100 coins', () => devActions.addCoins(100))}>+100</Btn>
           </StateRow>
 
-          <StateRow label="⭐ Niveau WTF!" value={`Niv.${level} — ${levelTitle}`}>
+          <StateRow label="Niveau WTF!" value={`Niv.${level} — ${levelTitle}`}>
             <Btn color="#8B5CF6" onClick={() => act('Level up forcé', () => devActions.unlockRandomFacts(35))}>Level up</Btn>
           </StateRow>
 

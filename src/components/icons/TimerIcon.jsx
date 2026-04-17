@@ -28,11 +28,11 @@ export default function TimerIcon({ size = 40, color = '#ffffff', accent = WTF_O
       <rect x="42" y="4" width="16" height="10" rx="3" fill={accent} />
 
       {/* Petits traits latéraux du bouton */}
-      <line x1="34" y1="18" x2="40" y2="12" stroke={color} strokeWidth="4" strokeLinecap="round" opacity={0.7} />
-      <line x1="66" y1="18" x2="60" y2="12" stroke={color} strokeWidth="4" strokeLinecap="round" opacity={0.7} />
+      <line x1="34" y1="18" x2="40" y2="12" stroke={color} strokeWidth="6" strokeLinecap="round" opacity={0.7} />
+      <line x1="66" y1="18" x2="60" y2="12" stroke={color} strokeWidth="6" strokeLinecap="round" opacity={0.7} />
 
       {/* Cercle principal */}
-      <circle cx="50" cy="56" r="34" stroke={color} strokeWidth="5" fill={color} opacity={0.85} />
+      <circle cx="50" cy="56" r="34" stroke={color} strokeWidth="7" fill={color} opacity={0.85} />
 
       {/* Pivot central */}
       <circle cx="50" cy="56" r="3" fill={accent} />
@@ -42,7 +42,7 @@ export default function TimerIcon({ size = 40, color = '#ffffff', accent = WTF_O
         <line
           x1="50" y1="56"
           x2="67" y2="39"
-          stroke={accent} strokeWidth="5" strokeLinecap="round"
+          stroke={accent} strokeWidth="7" strokeLinecap="round"
         />
       </g>
     </svg>

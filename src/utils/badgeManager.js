@@ -39,8 +39,8 @@ for (const cat of CATEGORIES) {
 
 // ===== TROPHÉES WTF! vs FUNNY (8 trophées) =====
 const TYPE_TROPHIES = [
-  { id: 'wtf_1', label: 'Premier WTF!', emoji: '⭐', section: 'type', description: 'Débloque ton premier f*ct WTF!', condition: (data) => (data.vipCount || 0) >= 1, target: 1, getCurrent: (data) => data.vipCount || 0 },
-  { id: 'wtf_10', label: 'Collectionneur WTF!', emoji: '🌟', section: 'type', description: 'Débloque 10 f*cts WTF!', condition: (data) => (data.vipCount || 0) >= 10, target: 10, getCurrent: (data) => data.vipCount || 0 },
+  { id: 'wtf_1', label: 'Premier WTF!', emoji: 'wtf-star', section: 'type', description: 'Débloque ton premier f*ct WTF!', condition: (data) => (data.vipCount || 0) >= 1, target: 1, getCurrent: (data) => data.vipCount || 0 },
+  { id: 'wtf_10', label: 'Collectionneur WTF!', emoji: 'wtf-star', section: 'type', description: 'Débloque 10 f*cts WTF!', condition: (data) => (data.vipCount || 0) >= 10, target: 10, getCurrent: (data) => data.vipCount || 0 },
   { id: 'wtf_25', label: 'Chasseur WTF!', emoji: '💫', section: 'type', description: 'Débloque 25 f*cts WTF!', condition: (data) => (data.vipCount || 0) >= 25, target: 25, getCurrent: (data) => data.vipCount || 0 },
   { id: 'wtf_50', label: 'Roi des WTF!', emoji: '🏆', section: 'type', description: 'Débloque 50 f*cts WTF!', condition: (data) => (data.vipCount || 0) >= 50, target: 50, getCurrent: (data) => data.vipCount || 0 },
   { id: 'funny_1', label: 'Premier Funny', emoji: '🎭', section: 'type', description: 'Débloque ton premier Funny F*ct', condition: (data) => (data.funnyCount || 0) >= 1, target: 1, getCurrent: (data) => data.funnyCount || 0 },
@@ -61,7 +61,7 @@ const GLOBAL_TROPHIES = [
 // ===== TROPHÉES STREAK (3 trophées) =====
 const STREAK_TROPHIES = [
   { id: 'serie_7', label: 'Série de 7', emoji: '⚡', section: 'streak', description: 'Maintiens une série de 7 jours consécutifs', condition: (data) => (data.bestStreak || 0) >= 7, target: 7, getCurrent: (data) => data.bestStreak || 0 },
-  { id: 'serie_30', label: 'Série de 30', emoji: '🌟', section: 'streak', description: 'Maintiens une série de 30 jours consécutifs', condition: (data) => (data.bestStreak || 0) >= 30, target: 30, getCurrent: (data) => data.bestStreak || 0 },
+  { id: 'serie_30', label: 'Série de 30', emoji: 'wtf-star', section: 'streak', description: 'Maintiens une série de 30 jours consécutifs', condition: (data) => (data.bestStreak || 0) >= 30, target: 30, getCurrent: (data) => data.bestStreak || 0 },
   { id: 'serie_100', label: 'Série de 100', emoji: '🏅', section: 'streak', description: 'Maintiens une série de 100 jours consécutifs', condition: (data) => (data.bestStreak || 0) >= 100, target: 100, getCurrent: (data) => data.bestStreak || 0 },
 ]
 
@@ -110,7 +110,7 @@ const ALL_TROPHIES = [
 // ===== SECTIONS POUR L'AFFICHAGE =====
 const TROPHY_SECTIONS = [
   { id: 'global', label: '🌍 Progression', trophies: GLOBAL_TROPHIES },
-  { id: 'type', label: '⭐ WTF! & Funny', trophies: TYPE_TROPHIES },
+  { id: 'type', label: 'WTF! & Funny', trophies: TYPE_TROPHIES },
   { id: 'categories', label: '📂 Par catégorie', trophies: CATEGORY_TROPHIES },
   { id: 'streak', label: '🔥 Séries', trophies: STREAK_TROPHIES },
   { id: 'blitz', label: '⚡ Blitz', trophies: BLITZ_TROPHIES },

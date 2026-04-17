@@ -70,7 +70,7 @@ export default function GainsBreakdown({
           {bonusCoins > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: S(10), fontWeight: 700, color: '#FDE047', opacity: 0.95 }}>
-                ⭐ Bonus {isPerfect ? 'Perfect' : ''}
+                <img src="/assets/ui/wtf-star.png" alt="" style={{ width: 'calc(12px * var(--scale))', height: 'calc(12px * var(--scale))', objectFit: 'contain', marginRight: 4, verticalAlign: 'middle' }} /> Bonus {isPerfect ? 'Perfect' : ''}
               </span>
               <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
                 +{bonusCoins} <CoinImg />

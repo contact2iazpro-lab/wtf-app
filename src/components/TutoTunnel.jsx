@@ -344,7 +344,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           catColor={catColor}
           catName={currentFact.category}
           catIcon={'/assets/categories/' + currentFact.category + '.png'}
-          modeLabel='⭐ MODE QUEST'
+          modeLabel='MODE QUEST'
           question={currentFact.question}
           options={currentOptions}
           selectedAnswerIndex={selectedAnswer !== null ? currentOptions.findIndex(opt => opt.text === selectedAnswer) : null}
@@ -889,7 +889,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
         catColor={catColor}
         catName={currentFact.category}
         catIcon={'/assets/categories/' + currentFact.category + '.png'}
-        modeLabel='⭐ MODE QUEST'
+        modeLabel='MODE QUEST'
         question={currentFact.question}
         options={currentOptions}
         selectedAnswerIndex={selectedAnswer !== null ? currentOptions.findIndex(opt => opt.text === selectedAnswer) : null}
@@ -936,7 +936,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
           gap: S_val(16),
         }}>
           {/* Emoji */}
-          <div style={{ fontSize: S_val(56), lineHeight: 1 }}>⭐</div>
+          <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S_val(56), height: S_val(56), objectFit: 'contain' }} />
 
           {/* Title */}
           <div style={{

@@ -286,7 +286,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
             style={{ background: 'rgba(0,0,0,0.28)', minHeight: S(120), flex: '0 0 auto' }}
           >
             <p style={{ color: '#ffffff', fontSize: S(17), fontWeight: 800, textAlign: 'center', lineHeight: 1.4 }}>
-              {renderFormattedText(currentFact.question)}
+              {renderFormattedText(currentFact.question, '#FF4444')}
             </p>
           </div>
         )}

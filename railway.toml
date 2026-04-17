@@ -1,12 +1,9 @@
 [build]
 dockerfilePath = "Dockerfile"
 
-# ⚠️ SÉCURITÉ : NE JAMAIS ajouter VITE_SUPABASE_SERVICE_KEY, VITE_ADMIN_PASSWORD
-# ni VITE_ANTHROPIC_KEY ici. Tout ce qui commence par VITE_ est inliné dans le
-# JS public du bundle Vite et récupérable via les devtools par n'importe qui.
-# L'admin-tool doit être déployé séparément (service Railway distinct, sous-domaine privé).
 [build.args]
 VITE_SUPABASE_URL = "${{VITE_SUPABASE_URL}}"
 VITE_SUPABASE_ANON_KEY = "${{VITE_SUPABASE_ANON_KEY}}"
 VITE_GAME_BASE_URL = "${{VITE_GAME_BASE_URL}}"
 VITE_APP_VERSION = "${{VITE_APP_VERSION}}"
+VITE_ADMIN_PASSWORD = "${{ADMIN_PASSWORD}}"

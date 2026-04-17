@@ -26,21 +26,103 @@ const QUICKIE_GOLD = '#FFD700'
 const VOF_GREEN = '#6BCB77'
 const VOF_RED = '#E84535'
 
+const MODE_COLORS = {
+  quickie: '#9400D3',
+  vrai_ou_fou: '#008000',
+  race: '#0F52BA',
+  blitz: '#FF4444',
+  quest: '#FF6B1A',
+  flash: '#E91E63',
+}
+
+const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz']
+
+function NoHintIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
+      <text x="50" y="58" textAnchor="middle" fill={color} fontSize="40" fontWeight="900" fontFamily="Nunito, sans-serif">💡</text>
+      <line x1="22" y1="78" x2="78" y2="22" stroke={color} strokeWidth="6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function FreeIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
+      <text x="50" y="66" textAnchor="middle" fill={color} fontSize="44" fontWeight="900" fontFamily="Nunito, sans-serif">∞</text>
+    </svg>
+  )
+}
+
+function TrophyIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M30 25h40v30c0 12-8 20-20 20s-20-8-20-20V25z" stroke={color} strokeWidth="6" fill="none" strokeLinejoin="round" />
+      <path d="M30 35H18c0 14 6 20 12 22" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M70 35h12c0 14-6 20-12 22" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="50" y1="75" x2="50" y2="85" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      <line x1="36" y1="85" x2="64" y2="85" stroke={color} strokeWidth="5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function PenaltyIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
+      <text x="50" y="64" textAnchor="middle" fill={color} fontSize="38" fontWeight="900" fontFamily="Nunito, sans-serif">+5s</text>
+    </svg>
+  )
+}
+
+function TargetIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
+      <circle cx="50" cy="50" r="24" stroke={color} strokeWidth="5" fill="none" />
+      <circle cx="50" cy="50" r="10" fill={color} />
+    </svg>
+  )
+}
+
+function SurvivalIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 15L15 85h70L50 15z" stroke={color} strokeWidth="6" fill="none" strokeLinejoin="round" />
+      <line x1="50" y1="40" x2="50" y2="60" stroke={color} strokeWidth="6" strokeLinecap="round" />
+      <circle cx="50" cy="72" r="4" fill={color} />
+    </svg>
+  )
+}
+
 const COMPONENT_ICONS = {
-  'icon:qcm': (size, color) => <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />,
+  'icon:qcm': (size, color, modeId) => {
+    if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
+    return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
+  },
   'icon:set': (size, color, modeId) => {
     if (modeId === 'vrai_ou_fou') return <QuestionTargetIcon size={size} color={'#ffffff'} accent={VOF_GREEN} questionColor={VOF_RED} />
     return <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />
   },
   'icon:timer': (size, color, modeId) => {
     if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
+    if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
     return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
+  'icon:star': (size) => <img src="/assets/ui/wtf-star.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
   'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
-  'picto:infinity': (size) => <InfinityIcon size={size} />,
-  'picto:swipe': (size) => <SwipeArrowsIcon size={size} />,
-  'picto:share': (size) => <ShareIcon size={size} />,
+  'picto:infinity': (size, color) => <InfinityIcon size={size} color={color || '#6BCB77'} />,
+  'picto:swipe': (size, color) => <SwipeArrowsIcon size={size} />,
+  'picto:share': (size, color) => <ShareIcon size={size} />,
+  'picto:no-hint': (size, color) => <NoHintIcon size={size} color={color || '#ffffff'} />,
+  'picto:free': (size, color) => <FreeIcon size={size} color={color || '#ffffff'} />,
+  'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
+  'picto:penalty': (size, color) => <PenaltyIcon size={size} color={color || '#ffffff'} />,
+  'picto:target': (size, color) => <TargetIcon size={size} color={color || '#ffffff'} />,
+  'picto:survival': (size, color) => <SurvivalIcon size={size} color={color || '#ffffff'} />,
 }
 
 function renderIcon(value, size, color, modeId) {
@@ -53,7 +135,6 @@ function renderIcon(value, size, color, modeId) {
 }
 
 function renderText(text) {
-  // Support {{red}}...{{/red}} + **bold**
   const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*)/g)
   return parts.map((part, i) => {
     const redMatch = part.match(/^\{\{red\}\}(.*?)\{\{\/red\}\}$/)
@@ -75,6 +156,19 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     }
     onStart()
   }
+
+  const isStyled = STYLED_MODES.includes(modeId)
+  const modeColor = MODE_COLORS[modeId] || color
+  const textColor = modeId === 'quickie' ? '#7F77DD' : modeId === 'vrai_ou_fou' ? '#6BCB77' : modeId === 'race' ? '#23D5D5' : modeColor
+
+  const btnBg = modeId === 'vrai_ou_fou' ? '#008000'
+    : modeId === 'race' ? '#0F52BA'
+    : modeId === 'blitz' ? '#CC0000'
+    : '#9400D3'
+  const btnShadow = modeId === 'vrai_ou_fou' ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : modeId === 'race' ? '0 8px 30px rgba(0,255,255,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : modeId === 'blitz' ? '0 8px 30px rgba(204,0,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)'
 
   return (
     <div style={{
@@ -131,30 +225,30 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
         padding: `0 ${S(20)}`,
-        display: 'flex', flexDirection: 'column', gap: (modeId === 'quickie' || modeId === 'vrai_ou_fou') ? S(5) : S(8),
+        display: 'flex', flexDirection: 'column', gap: isStyled ? S(5) : S(8),
         justifyContent: 'flex-start',
       }}>
         {(rules || []).map((rule, i) => {
-          const isStyled = modeId === 'quickie' || modeId === 'vrai_ou_fou'
-          const isQuickie = modeId === 'quickie'
-          const isVOF = modeId === 'vrai_ou_fou'
-          const modeColor = isQuickie ? '#7F77DD' : isVOF ? '#6BCB77' : undefined
           let iconColor = undefined
-          if (isQuickie) {
+          if (modeId === 'quickie') {
             iconColor = rule.icon === 'icon:energy' ? '#22C55E' : '#FFD700'
-          } else if (isVOF) {
+          } else if (modeId === 'vrai_ou_fou') {
             iconColor = i % 2 === 0 ? '#6BCB77' : '#E84535'
+          } else if (modeId === 'race') {
+            iconColor = i % 2 === 0 ? '#00E5FF' : '#0097A7'
+          } else if (modeId === 'blitz') {
+            iconColor = i % 2 === 0 ? '#FF4444' : '#CC0000'
           }
           return (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: S(12),
               background: isStyled ? '#ffffff' : 'rgba(255,255,255,0.12)',
-              border: isStyled ? `2px solid ${modeColor}` : 'none',
+              border: isStyled ? `3px solid ${modeColor}` : 'none',
               backdropFilter: isStyled ? 'none' : 'blur(8px)',
               borderRadius: S(12), padding: isStyled ? `${S(8)} ${S(14)}` : `${S(12)} ${S(14)}`,
             }}>
-              <span style={{ fontSize: S(22), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(22), height: S(22), color: isStyled ? modeColor : 'inherit' }}>{renderIcon(rule.icon, 22, iconColor, modeId)}</span>
-              <span style={{ fontSize: S(13), fontWeight: isStyled ? 700 : 600, lineHeight: 1.35, color: isStyled ? modeColor : 'inherit' }}>
+              <span style={{ fontSize: S(22), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(22), height: S(22), color: isStyled ? textColor : 'inherit' }}>{renderIcon(rule.icon, 22, iconColor, modeId)}</span>
+              <span style={{ fontSize: S(13), fontWeight: isStyled ? 700 : 600, lineHeight: 1.35, color: isStyled ? textColor : 'inherit' }}>
                 {renderText(rule.text)}
               </span>
             </div>
@@ -194,24 +288,20 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           </span>
         </button>
 
-        {/* Bouton C'EST PARTI ! */}
+        {/* Bouton CTA */}
         <button
           onClick={handleStart}
           className="active:scale-95 transition-transform"
           style={{
             width: '85%', padding: `${S(14)} 0`,
-            background: modeId === 'vrai_ou_fou'
-              ? '#008000'
-              : '#9400D3',
+            background: btnBg,
             border: '3px solid #ffffff',
             borderRadius: S(16),
             fontFamily: 'Nunito, sans-serif',
             fontSize: S(18), fontWeight: 900,
             color: '#ffffff',
             cursor: 'pointer',
-            boxShadow: modeId === 'vrai_ou_fou'
-              ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
-              : '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)',
+            boxShadow: btnShadow,
             letterSpacing: '0.04em',
           }}
         >

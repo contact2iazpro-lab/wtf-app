@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
+import { MODE_CONFIGS } from '../constants/gameConfig'
 import EnergyIcon from './icons/EnergyIcon'
 import MultipleChoiceIcon from './icons/MultipleChoiceIcon'
 import QuestionTargetIcon from './icons/QuestionTargetIcon'
 import TimerIcon from './icons/TimerIcon'
 import PerfectIcon from './icons/PerfectIcon'
+import InfinityIcon from './icons/InfinityIcon'
+import SwipeArrowsIcon from './icons/SwipeArrowsIcon'
+import ShareIcon from './icons/ShareIcon'
 
 import { CURRENCY_EMOJI_MAP } from '../utils/renderEmoji'
 
@@ -17,25 +21,107 @@ const EMOJI_IMG = {
 
 const QUICKIE_VIOLET = '#7F77DD'
 const QUICKIE_GOLD = '#FFD700'
+const VOF_GREEN = '#6BCB77'
+const VOF_RED = '#E84535'
 
-const COMPONENT_ICONS = {
-  'icon:qcm': (size, color) => <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />,
-  'icon:set': (size, color) => <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />,
-  'icon:timer': (size, color) => <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />,
-  'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
-  'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
+function NoHintIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
+      <text x="50" y="58" textAnchor="middle" fill={color} fontSize="40" fontWeight="900" fontFamily="Nunito, sans-serif">💡</text>
+      <line x1="22" y1="78" x2="78" y2="22" stroke={color} strokeWidth="6" strokeLinecap="round" />
+    </svg>
+  )
 }
 
-function renderIcon(value, size, color) {
+function FreeIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
+      <text x="50" y="66" textAnchor="middle" fill={color} fontSize="44" fontWeight="900" fontFamily="Nunito, sans-serif">∞</text>
+    </svg>
+  )
+}
+
+function TrophyIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M30 25h40v30c0 12-8 20-20 20s-20-8-20-20V25z" stroke={color} strokeWidth="6" fill="none" strokeLinejoin="round" />
+      <path d="M30 35H18c0 14 6 20 12 22" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M70 35h12c0 14-6 20-12 22" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="50" y1="75" x2="50" y2="85" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      <line x1="36" y1="85" x2="64" y2="85" stroke={color} strokeWidth="5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function PenaltyIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
+      <text x="50" y="64" textAnchor="middle" fill={color} fontSize="38" fontWeight="900" fontFamily="Nunito, sans-serif">+5s</text>
+    </svg>
+  )
+}
+
+function TargetIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
+      <circle cx="50" cy="50" r="24" stroke={color} strokeWidth="5" fill="none" />
+      <circle cx="50" cy="50" r="10" fill={color} />
+    </svg>
+  )
+}
+
+function SurvivalIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 15L15 85h70L50 15z" stroke={color} strokeWidth="6" fill="none" strokeLinejoin="round" />
+      <line x1="50" y1="40" x2="50" y2="60" stroke={color} strokeWidth="6" strokeLinecap="round" />
+      <circle cx="50" cy="72" r="4" fill={color} />
+    </svg>
+  )
+}
+
+const COMPONENT_ICONS = {
+  'icon:qcm': (size, color, modeId) => {
+    if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
+    return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
+  },
+  'icon:set': (size, color, modeId) => {
+    if (modeId === 'vrai_ou_fou') return <QuestionTargetIcon size={size} color={'#ffffff'} accent={VOF_GREEN} questionColor={VOF_RED} />
+    return <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />
+  },
+  'icon:timer': (size, color, modeId) => {
+    if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
+    if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
+    return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
+  },
+  'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
+  'icon:star': (size) => <img src="/assets/ui/wtf-star.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
+  'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
+  'picto:infinity': (size, color) => <InfinityIcon size={size} color={color || '#6BCB77'} />,
+  'picto:swipe': (size, color) => <SwipeArrowsIcon size={size} />,
+  'picto:share': (size, color) => <ShareIcon size={size} />,
+  'picto:no-hint': (size, color) => <NoHintIcon size={size} color={color || '#ffffff'} />,
+  'picto:free': (size, color) => <FreeIcon size={size} color={color || '#ffffff'} />,
+  'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
+  'picto:penalty': (size, color) => <PenaltyIcon size={size} color={color || '#ffffff'} />,
+  'picto:target': (size, color) => <TargetIcon size={size} color={color || '#ffffff'} />,
+  'picto:survival': (size, color) => <SurvivalIcon size={size} color={color || '#ffffff'} />,
+}
+
+function renderIcon(value, size, color, modeId) {
   const compFn = COMPONENT_ICONS[value]
-  if (compFn) return compFn(size || 18, color)
+  if (compFn) return compFn(size || 18, color, modeId)
   if (value === '🔋') return <EnergyIcon size={size || 16} color={color} />
   const src = EMOJI_IMG[value]
   if (!src) return value
   return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
 }
 
-// ── Couleurs par chapitre (partagées entre carousel et bandeau) ────────────
+// ── Couleurs par chapitre ────────────────────────────────────────────────────
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6',
   quickie: '#7F77DD', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
@@ -46,8 +132,20 @@ const CHAPTER_COLORS = {
   tips: '#22C55E',
 }
 
+// ── Mode icon mapping — utilise les icon-* pour les modes ────────────────────
+const MODE_ICON_MAP = {
+  quest: '/assets/modes/icon-quest.png',
+  quickie: '/assets/modes/icon-quickie.png',
+  flash: '/assets/daily.png',
+  blitz: '/assets/modes/icon-blitz.png',
+  race: '/assets/modes/icon-race.png',
+  vrai_ou_fou: '/assets/modes/icon-vrai-et-fou.png',
+}
+
+// Modes qui utilisent un style "white card" dans le livret (identique à ModeLaunchScreen)
+const STYLED_MODE_IDS = ['quickie', 'vrai_ou_fou', 'race', 'blitz']
+
 // ── Chapters data ───────────────────────────────────────────────────────────
-// Source de vérité : CLAUDE.md (économie ×10, 6 modes, Option B streak/coffres)
 const CHAPTERS = [
   // ═══ INTRODUCTION ═══
   {
@@ -57,7 +155,7 @@ const CHAPTERS = [
     title: 'Le But du Jeu',
     content: [
       { icon: '🎯', text: 'Des f*cts incroyables te sont présentés — à toi de trouver la **bonne réponse** !' },
-      { icon: '🎮', text: '**6 modes de jeu** : Quickie, Vrai ou Fou, Quest, Race, Blitz et Flash.' },
+      { icon: '🎮', text: '**6 modes de jeu** : Quickie, Vrai ET Fou, Quest, Race, Blitz et Flash.' },
       { icon: '🪙', text: 'Gagne des **Coins** à chaque bonne réponse pour débloquer du contenu.' },
       { icon: '📚', text: 'Débloque des **f*cts** et enrichis ta **Collection** personnelle.' },
       { icon: '🏆', text: 'Remporte des **trophées**, maintiens ta **série** et défie tes amis !' },
@@ -77,96 +175,13 @@ const CHAPTERS = [
     tutorialButton: true,
   },
 
-  // ═══ MODES DE JEU (ordre CLAUDE.md) ═══
-  {
-    id: 'quickie',
-    emoji: '🍸',
-    shortTitle: 'Quickie',
-    title: 'Mode Quickie',
-    content: [
-      { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
-      { icon: 'icon:set', text: '**Set** : 5 questions/set' },
-      { icon: 'icon:qcm', text: '**QCM** : 2/question' },
-      { icon: 'icon:timer', text: '**Timer** : 15s/question' },
-      { icon: '💡', text: '**Indices** : 1 max/question' },
-      { icon: '🪙', text: '**Gains** : 10 Coins/bonne réponse' },
-      { icon: 'icon:perfect', text: '**Perfect** : (5/5) +50 Coins' },
-    ],
-  },
-  {
-    id: 'vrai_ou_fou',
-    emoji: '🤔',
-    shortTitle: 'Vrai ou Fou',
-    title: 'Mode Vrai ou Fou',
-    content: [
-      { icon: '🆓', text: 'Coût : Gratuit et illimité' },
-      { icon: '📋', text: '20 affirmations/session' },
-      { icon: '👉', text: 'Swipe **Vrai** ou **Fou**' },
-      { icon: '⏱️', text: 'Timer : 15s/question' },
-      { icon: '🪙', text: 'Gains : 0 coin (mode viralité)' },
-      { icon: '📣', text: 'Partage ton score X/20 avec tes amis !' },
-    ],
-  },
-  {
-    id: 'quest',
-    emoji: '🗺️',
-    shortTitle: 'Quest',
-    title: 'Mode Quest',
-    content: [
-      { icon: '🔋', text: 'Coût : 1 énergie/bloc' },
-      { icon: '📋', text: '10 Funny + 1 boss VIP conditionnel' },
-      { icon: '🔢', text: 'QCM : 4/question' },
-      { icon: '⏱️', text: '20s/question' },
-      { icon: '💡', text: 'Indices : 2/question' },
-      { icon: '👑', text: 'Boss VIP débloqué à **≥5/10** bonnes réponses' },
-      { icon: '🪙', text: 'Gains : 20 Coins/bonne · +100 Coins/boss vaincu' },
-      { icon: '🔒', text: 'Boss raté → retente depuis la carte pour débloquer le VIP' },
-    ],
-  },
-  {
-    id: 'race',
-    emoji: '♾️',
-    shortTitle: 'Race',
-    title: 'Mode Race',
-    content: [
-      { icon: '🆓', text: 'Coût : gratuit illimité' },
-      { icon: '📋', text: 'Questions illimitées jusqu\'à la **première erreur**' },
-      { icon: '🔢', text: 'QCM : 4/question' },
-      { icon: '⏱️', text: 'Timer : aucun' },
-      { icon: '🚫', text: 'Aucun indice' },
-      { icon: '🧠', text: 'Pioche dans tes f*cts Funny + VIP **déjà débloqués**' },
-      { icon: '🏆', text: 'Gains : 0 coin — records et prestige uniquement' },
-    ],
-  },
-  {
-    id: 'blitz',
-    emoji: '⚡',
-    shortTitle: 'Blitz',
-    title: 'Mode Blitz',
-    content: [
-      { icon: '🆓', text: 'Coût : gratuit (Solo) · 200 Coins pour créer un Défi' },
-      { icon: '🎮', text: '2 sous-modes : **Solo** et **Défi**' },
-      { icon: '⏱️', text: 'Solo : chrono **60s descendant** · Défi : chrono montant **+5s/erreur**' },
-      { icon: '🔢', text: 'QCM : 2/question' },
-      { icon: '🚫', text: 'Aucun indice — c\'est la mémoire pure !' },
-      { icon: '🧠', text: 'Pioche dans tes f*cts **déjà débloqués** (Funny + VIP)' },
-      { icon: '🏆', text: 'Gains : 0 coin — paliers de records 5/10/20/30/50/100' },
-      { icon: '📣', text: 'Défi : partage ton résultat via WhatsApp (expire sous 48h)' },
-    ],
-  },
-  {
-    id: 'flash',
-    emoji: '🔥',
-    shortTitle: 'Flash',
-    title: 'Mode Flash',
-    content: [
-      { icon: '🆓', text: 'Coût : gratuit · **1 fois par jour**' },
-      { icon: '📋', text: '5 questions/set · QCM 2/question · 15s/question' },
-      { icon: '📅', text: 'Lun-Sam : Funny thème du jour — 0 indice — **30 Coins fixe**' },
-      { icon: '👑', text: 'Dimanche : **VIP Hunt de la semaine** — 2 indices — 1 VIP débloqué' },
-      { icon: '⏰', text: 'Ne rate jamais ton rendez-vous quotidien !' },
-    ],
-  },
+  // ═══ MODES DE JEU — contenu dynamique depuis MODE_CONFIGS ═══
+  { id: 'quickie', shortTitle: 'Quickie', dynamic: true },
+  { id: 'vrai_ou_fou', shortTitle: 'Vrai ET Fou', dynamic: true },
+  { id: 'quest', shortTitle: 'Quest', dynamic: true },
+  { id: 'race', shortTitle: 'Race', dynamic: true },
+  { id: 'blitz', shortTitle: 'Blitz', dynamic: true },
+  { id: 'flash', shortTitle: 'Flash', dynamic: true },
 
   // ═══ ÉNERGIE ═══
   {
@@ -178,7 +193,7 @@ const CHAPTERS = [
       { icon: '🔋', text: 'Les modes **Quickie** et **Quest** consomment 1 énergie par session/bloc.' },
       { icon: '🆓', text: 'Stock max **5 énergies** — régénération **+1 toutes les 8h**.' },
       { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 énergie pour 75 Coins** en boutique.' },
-      { icon: '♾️', text: '**Vrai ou Fou, Race, Blitz** et **Flash** : gratuits illimités.' },
+      { icon: '♾️', text: '**Vrai ET Fou, Race, Blitz** et **Flash** : gratuits illimités.' },
     ],
   },
 
@@ -192,7 +207,7 @@ const CHAPTERS = [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
       { icon: '🗺️', text: '**Quest** : 2/question · **Quickie** : 1 max · **Flash dimanche** : 2 max' },
-      { icon: '🚫', text: '**Vrai ou Fou, Race, Blitz, Flash lun-sam** : aucun indice disponible.' },
+      { icon: '🚫', text: '**Vrai ET Fou, Race, Blitz, Flash lun-sam** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : **50 Coins** par indice.' },
       { icon: '🎁', text: 'Gagne aussi des indices via la **roulette** et les **paliers de série**.' },
@@ -210,7 +225,7 @@ const CHAPTERS = [
       { icon: '🎯', text: '**Quickie** : 10/bonne · +50 perfect' },
       { icon: '🗺️', text: '**Quest** : 20/bonne · +100/boss vaincu' },
       { icon: '🔥', text: '**Flash lun-sam** : 30 fixe · **Flash dimanche** : 1 VIP débloqué' },
-      { icon: '🤔', text: '**Vrai ou Fou · Race · Blitz** : 0 coin (prestige)' },
+      { icon: '🤔', text: '**Vrai ET Fou · Race · Blitz** : 0 coin (prestige)' },
       { icon: '🎰', text: 'Gagne aussi des coins via la **roulette quotidienne** et tes **paliers de série**.' },
       { icon: '🛒', text: 'Dépense-les en **boutique** : indices, énergie, cadres, Défi Blitz (200 Coins).' },
     ],
@@ -272,7 +287,7 @@ const CHAPTERS = [
     content: [
       { icon: '🗂️', text: 'Tes f*cts débloqués sont organisés par **catégorie** (30+ catégories).' },
       { icon: '📊', text: 'Suis ta **progression par catégorie** avec les barres de progression.' },
-      { icon: '⭐', text: '2 onglets : **WTF! VIP** (boss Quest + Hunt Flash) et **Funny F*cts**.' },
+      { icon: 'icon:star', text: '2 onglets : **WTF! VIP** (boss Quest + Hunt Flash) et **Funny F*cts**.' },
       { icon: '🔄', text: 'Un f*ct déjà débloqué **ne réapparaît plus** dans les quiz.' },
       { icon: '🏆', text: 'Complète des catégories pour débloquer des **trophées** !' },
     ],
@@ -286,7 +301,7 @@ const CHAPTERS = [
     title: 'Les Trophées',
     content: [
       { icon: '🌍', text: '**Progression** : débloque 1, 10, 50, 100 ou 200 f*cts au total.' },
-      { icon: '⭐', text: '**WTF! & Funny** : collectionne des f*cts VIP et Funny par paliers.' },
+      { icon: 'icon:star', text: '**WTF! & Funny** : collectionne des f*cts VIP et Funny par paliers.' },
       { icon: '📂', text: '**Par catégorie** : 5 paliers par catégorie (5, 10, 15, 20, tous).' },
       { icon: '🔥', text: '**Séries** : maintiens une série de 7, 30 ou 100 jours.' },
       { icon: '⚡', text: '**Blitz** : paliers Solo 5/10/20/30/50/100 et records de vitesse.' },
@@ -324,49 +339,50 @@ const CHAPTERS = [
       { icon: '🧠', text: 'Joue **Race** pour réviser tes f*cts débloqués sans pression.' },
       { icon: '⚔️', text: 'Envoie un **Défi Blitz** à un ami (200 Coins) pour la gloire !' },
       { icon: '🛡️', text: 'Achète un **Streak Freeze** avant un week-end chargé pour protéger ta série.' },
-      { icon: '📣', text: 'Partage tes scores **Vrai ou Fou** pour inviter tes potes à jouer !' },
+      { icon: '📣', text: 'Partage tes scores **Vrai ET Fou** pour inviter tes potes à jouer !' },
     ],
   },
 ]
 
-// Bold markdown renderer
+// Bold + {{red}} markdown renderer
 function renderText(text) {
-  const parts = text.split(/\*\*(.+?)\*\*/g)
-  return parts.map((p, i) => i % 2 === 1 ? <strong key={i}>{p}</strong> : p)
+  const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*)/g)
+  return parts.map((p, i) => {
+    const redMatch = p.match(/^\{\{red\}\}(.*?)\{\{\/red\}\}$/)
+    if (redMatch) return <span key={i} style={{ color: '#E84535' }}>{redMatch[1]}</span>
+    if (i % 2 === 1 && p.startsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>
+    return p
+  })
 }
 
-// Get chapter icon: image for modes, emoji for others
 function getChapterIcon(chapterId) {
-  const modeIcons = {
-    quest: '/assets/modes/quest.png',
-    quickie: '/assets/modes/quickie.png',
-    flash: '/assets/modes/flash.svg',
-    blitz: '/assets/modes/blitz.png',
-    race: '/assets/modes/race.png',
-    vrai_ou_fou: '/assets/modes/vrai-ou-fou.png',
+  if (MODE_ICON_MAP[chapterId]) {
+    return <img src={MODE_ICON_MAP[chapterId]} style={{ width: 22, height: 22, objectFit: 'contain' }} alt="" />
   }
-
-  if (modeIcons[chapterId]) {
-    return <img src={modeIcons[chapterId]} style={{ width: 22, height: 22, objectFit: 'contain' }} alt="" />
-  }
-
-  // For non-mode chapters, use emoji
-  const chapter = CHAPTERS.find(c => c.id === chapterId)
+  const chapter = resolveChapter(CHAPTERS.find(c => c.id === chapterId))
   return <span style={{ fontSize: 20 }}>{renderIcon(chapter?.emoji || '')}</span>
+}
+
+function resolveChapter(ch) {
+  if (!ch || !ch.dynamic) return ch
+  const cfg = MODE_CONFIGS[ch.id]
+  if (!cfg) return ch
+  return {
+    ...ch,
+    emoji: cfg.emoji,
+    title: `Mode ${cfg.modeName}`,
+    content: cfg.rules,
+  }
 }
 
 // ── Main component ──────────────────────────────────────────────────────────
 export default function HowToPlayModal({ onClose, onRestartTutorial }) {
-  // Read player progress from localStorage
-
-  // State for checkbox "show rules on launch"
   const [showRulesOnLaunch, setShowRulesOnLaunch] = useState(false)
 
-  // Toutes les pages visibles dès le départ (plus de gating progressif)
   const visibleChapters = CHAPTERS
-
   const [activeId, setActiveId] = useState(visibleChapters[0]?.id || 'goal')
-  const chapter = visibleChapters.find(c => c.id === activeId) || visibleChapters[0]
+  const rawChapter = visibleChapters.find(c => c.id === activeId) || visibleChapters[0]
+  const chapter = resolveChapter(rawChapter)
 
   return (
     <div
@@ -406,14 +422,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           {visibleChapters.map(ch => {
             const isActive = ch.id === activeId
             const color = CHAPTER_COLORS[ch.id] || '#FF6B1A'
-            const modeIcons = {
-              quest: '/assets/modes/quest.png',
-              quickie: '/assets/modes/quickie.png',
-              flash: '/assets/modes/flash.svg',
-              blitz: '/assets/modes/blitz.png',
-              race: '/assets/modes/race.png',
-              vrai_ou_fou: '/assets/modes/vrai-ou-fou.png',
-            }
+            const resolvedCh = resolveChapter(ch)
             return (
               <button
                 key={ch.id}
@@ -427,9 +436,9 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   minWidth: 70,
                 }}
               >
-                {modeIcons[ch.id]
-                  ? <img src={modeIcons[ch.id]} style={{ width: 28, height: 28, objectFit: 'contain', filter: isActive && !modeIcons[ch.id].endsWith('.png?v=2') ? 'brightness(10)' : 'none' }} />
-                  : <span style={{ fontSize: 24 }}>{renderIcon(ch.emoji)}</span>
+                {MODE_ICON_MAP[ch.id]
+                  ? <img src={MODE_ICON_MAP[ch.id]} style={{ width: 28, height: 28, objectFit: 'contain' }} alt="" />
+                  : <span style={{ fontSize: 24 }}>{renderIcon(resolvedCh?.emoji || '')}</span>
                 }
                 <span style={{
                   fontSize: 10, fontWeight: 800, lineHeight: 1.2, textAlign: 'center',
@@ -480,32 +489,40 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
         }}>
 
             {/* Rules items */}
-            <div className="flex flex-col gap-2" style={{ flexShrink: 0 }}>
-              {chapter.content.map((item, i) => {
-                const isQuickieChapter = chapter.id === 'quickie'
-                const isVOFChapter = chapter.id === 'vrai_ou_fou'
-                const isCustomChapter = isQuickieChapter || isVOFChapter
+            <div style={{ display: 'flex', flexDirection: 'column', gap: STYLED_MODE_IDS.includes(chapter.id) ? 5 : 8, flexShrink: 0 }}>
+              {(chapter.content || []).map((item, i) => {
+                const isStyledMode = STYLED_MODE_IDS.includes(chapter.id)
                 let iconColor = undefined
-                if (isQuickieChapter) {
+                if (chapter.id === 'quickie') {
                   iconColor = item.icon === 'icon:energy' ? '#22C55E' : QUICKIE_GOLD
-                } else if (isVOFChapter) {
+                } else if (chapter.id === 'vrai_ou_fou') {
                   iconColor = i % 2 === 0 ? '#6BCB77' : '#E84535'
+                } else if (chapter.id === 'race') {
+                  iconColor = i % 2 === 0 ? '#00E5FF' : '#0097A7'
+                } else if (chapter.id === 'blitz') {
+                  iconColor = i % 2 === 0 ? '#FF4444' : '#CC0000'
                 }
-                const borderCol = isQuickieChapter ? QUICKIE_VIOLET : isVOFChapter ? '#6BCB77' : '#E5E7EB'
-                const textCol = isQuickieChapter ? QUICKIE_VIOLET : isVOFChapter ? '#1a1a2e' : '#374151'
+                const BORDER_OVERRIDES = { quickie: '#9400D3', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444' }
+                const TEXT_OVERRIDES = { quickie: QUICKIE_VIOLET, vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444' }
+                const modeColor = CHAPTER_COLORS[chapter.id] || '#FF6B1A'
+                const borderCol = isStyledMode ? (BORDER_OVERRIDES[chapter.id] || modeColor) : '#E5E7EB'
+                const textCol = isStyledMode ? (TEXT_OVERRIDES[chapter.id] || '#1a1a2e') : '#374151'
                 return (
                   <div
                     key={i}
-                    className="flex items-center gap-2 p-2 rounded-2xl"
                     style={{
-                      background: isCustomChapter ? '#ffffff' : '#F3F4F6',
-                      border: isCustomChapter ? `2px solid ${borderCol}` : `1px solid ${borderCol}`,
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      background: isStyledMode ? '#ffffff' : '#F3F4F6',
+                      border: isStyledMode ? `3px solid ${borderCol}` : `1px solid ${borderCol}`,
+                      borderRadius: 12, padding: isStyledMode ? '8px 14px' : '12px 14px',
                     }}
                   >
-                    <span style={{ fontSize: 18, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{renderIcon(item.icon, 18, iconColor)}</span>
-                    <p style={{ color: textCol, lineHeight: '1.4', fontSize: '14px', fontWeight: isCustomChapter ? 700 : 600, margin: 0 }}>
+                    <span style={{ fontSize: 22, flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, color: isStyledMode ? textCol : 'inherit' }}>
+                      {renderIcon(item.icon, 22, iconColor, chapter.id)}
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: isStyledMode ? 700 : 600, lineHeight: 1.35, color: isStyledMode ? textCol : '#374151', margin: 0 }}>
                       {renderText(item.text)}
-                    </p>
+                    </span>
                   </div>
                 )
               })}
@@ -521,7 +538,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 </button>
               )}
 
-              {/* Checkbox réafficher les règles des modes — bien visible */}
+              {/* Checkbox réafficher les règles des modes */}
               {['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
                 <label style={{
                   display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
@@ -535,7 +552,6 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                       audio.play('click')
                       setShowRulesOnLaunch(e.target.checked)
                       if (e.target.checked) {
-                        // Supprimer toutes les clés skip_launch_*
                         const keysToRemove = []
                         for (let i = 0; i < localStorage.length; i++) {
                           const k = localStorage.key(i)
@@ -551,7 +567,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
               )}
             </div>
           </div>
-          {/* Fade gradient bas pour indiquer le scroll */}
+          {/* Fade gradient bas */}
           <div style={{
             position: 'absolute', left: 0, right: 0, bottom: 0, height: 24,
             background: 'linear-gradient(to bottom, rgba(250,250,248,0), rgba(250,250,248,1))',
@@ -564,7 +580,6 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           className="px-5 pb-5 pt-3 shrink-0 flex items-center gap-3"
           style={{ borderTop: '1px solid #E5E7EB' }}
         >
-          {/* Prev / Next shortcuts */}
           <button
             onClick={() => {
               audio.play('click')
@@ -577,7 +592,6 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           >
             ←
           </button>
-          {/* Indicateur de progression */}
           <span style={{
             fontSize: 11, fontWeight: 800, color: '#9CA3AF',
             minWidth: 38, textAlign: 'center', fontVariantNumeric: 'tabular-nums',

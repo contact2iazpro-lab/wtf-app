@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "serve dist -s -l tcp://0.0.0.0:$PORT",
+    "start": "node server.js",
     "preview": "vite preview"
   },
   "dependencies": {

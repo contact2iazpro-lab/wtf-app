@@ -59,7 +59,6 @@ export default function RouletteModal({ onClose, scale }) {
   const [result, setResult] = useState(null)
   const [rotation, setRotation] = useState(0)
   const [spinData, setSpinData] = useState(getSpinData)
-  const [showProbas, setShowProbas] = useState(false)
   const [notEnough, setNotEnough] = useState(false)
   const canvasRef = useRef(null)
   const tickIntervalRef = useRef(null)
@@ -317,55 +316,6 @@ export default function RouletteModal({ onClose, scale }) {
           {spinning ? 'En cours...' : isFree ? 'Spin gratuit !' : `Spin (${EXTRA_SPIN_COST} coins)`}
         </button>
 
-        {/* Toggle probabilités */}
-        {!spinning && (
-          <button
-            onClick={() => setShowProbas(v => !v)}
-            style={{
-              marginTop: 10, background: 'transparent', border: 'none',
-              fontSize: 11, fontWeight: 700, color: '#6B7280',
-              cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-              textDecoration: 'underline',
-            }}
-          >
-            {showProbas ? 'Masquer les probabilités' : '📊 Voir les probabilités'}
-          </button>
-        )}
-
-        {/* Table des probabilités */}
-        {showProbas && !spinning && (
-          <div style={{
-            marginTop: 8, padding: '10px 12px',
-            background: '#F9FAFB', borderRadius: 12,
-            border: '1px solid #E5E7EB',
-            textAlign: 'left',
-          }}>
-            <div style={{ fontSize: 10, fontWeight: 900, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-              Chances de gain
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {SEGMENTS.map((seg, i) => {
-                const pct = (seg.weight / TOTAL_WEIGHT * 100).toFixed(0)
-                const label = seg.reward.type === 'coins'
-                  ? `${seg.reward.amount} coins`
-                  : `${seg.reward.amount} indice${seg.reward.amount > 1 ? 's' : ''}`
-                const isJack = seg.reward.type === 'coins' && seg.reward.amount >= 300
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: 3, background: seg.color, flexShrink: 0 }} />
-                    <img src={seg.icon} alt="" style={{ width: 14, height: 14 }} />
-                    <span style={{ flex: 1, color: '#374151', fontWeight: 700 }}>{label}</span>
-                    <span style={{
-                      fontWeight: 900,
-                      color: isJack ? '#B8860B' : '#6B7280',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}>{pct}%</span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
 
         {/* Fermer */}
         {!spinning && (

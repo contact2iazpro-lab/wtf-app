@@ -188,9 +188,9 @@ export default function VraiOuFouScreen({ onHome }) {
 
   const handleShare = async () => {
     audio.play('click')
-    const text = `J'ai eu ${correct}/${pool.length} au Vrai ou Fou WTF! Et toi ?`
+    const text = `J'ai eu ${correct}/${pool.length} au Vrai ET Fou WTF! Et toi ?`
     try {
-      if (navigator.share) { await navigator.share({ title: 'WTF! — Vrai ou Fou', text, url: SHARE_URL }); return }
+      if (navigator.share) { await navigator.share({ title: 'WTF! — Vrai ET Fou', text, url: SHARE_URL }); return }
       await navigator.clipboard.writeText(`${text} ${SHARE_URL}`)
       setShareMsg('Lien copié !')
       setTimeout(() => setShareMsg(null), 1800)
@@ -203,7 +203,7 @@ export default function VraiOuFouScreen({ onHome }) {
       <div className="absolute inset-0 flex items-center justify-center" style={{ background: '#1a0a2e', color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
         <div style={{ textAlign: 'center', maxWidth: 320 }}>
           <div style={{ fontSize: 56, marginBottom: 16 }}>🤔</div>
-          <p style={{ fontSize: 18, fontWeight: 900 }}>Vrai ou Fou indisponible</p>
+          <p style={{ fontSize: 18, fontWeight: 900 }}>Vrai ET Fou indisponible</p>
           <p style={{ fontSize: 13, opacity: 0.7, marginTop: 10, lineHeight: 1.5 }}>Aucune affirmation disponible pour le moment.</p>
           <button onClick={onHome} style={{ marginTop: 28, padding: '14px 36px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>Retour</button>
         </div>
@@ -229,7 +229,7 @@ export default function VraiOuFouScreen({ onHome }) {
           gameMode="vrai_ou_fou"
           sessionScore={0}
           sessionType="vrai_ou_fou"
-          correctAnswer={revealFact.trueStatement || rFact.statementTrue}
+          correctAnswer={rFact.shortAnswer || rFact.options?.[rFact.correctIndex] || ''}
         />
       </div>
     )
@@ -311,7 +311,7 @@ export default function VraiOuFouScreen({ onHome }) {
         <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
           <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', maxWidth: 360 }}>
             <div className="text-2xl text-center mb-3">🤔</div>
-            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter Vrai ou Fou ?</h2>
+            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter Vrai ET Fou ?</h2>
             <p className="text-sm text-center mb-6" style={{ color: '#6B7280' }}>Tes réponses seront perdues.</p>
             <div className="flex flex-col gap-3">
               <button onClick={() => setShowQuit(false)} className="w-full py-4 rounded-2xl font-black text-base" style={{ background: VOF_GREEN, color: 'white' }}>Continuer</button>
@@ -323,40 +323,52 @@ export default function VraiOuFouScreen({ onHome }) {
 
       {/* Header */}
       <GameHeader
-        categoryLabel={cat?.label || 'Vrai ou Fou'}
+        categoryLabel={cat?.label || 'Vrai ET Fou'}
         categoryColor={catBg}
         categoryIcon={cat?.id ? `/assets/categories/${cat.id}.png` : null}
         onQuit={() => setShowQuit(true)}
       />
 
-      {/* Mode label + progression N/20 — sur une seule ligne */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0, padding: `0 ${S(16)} ${S(2)}` }}>
-        <span style={{
-          fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-          color: VOF_GREEN, textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-        }}>
-          VRAI OU FOU
-        </span>
-        <span style={{ fontSize: S(12), fontWeight: 900, color: '#ffffff', opacity: 0.7 }}>—</span>
-        <span style={{ fontSize: S(13), fontWeight: 900, letterSpacing: 1 }}>
-          <span style={{ color: counterColor }}>{index + 1}</span>
-          <span style={{ color: 'rgba(255,255,255,0.5)' }}>/{pool.length}</span>
-        </span>
-      </div>
-
-      {/* Barre de progression */}
-      <div style={{ padding: `0 ${S(16)}`, flexShrink: 0 }}>
-        <div style={{ height: S(4), borderRadius: S(2), background: 'rgba(255,255,255,0.15)', overflow: 'hidden' }}>
-          <div style={{
-            height: '100%', borderRadius: S(2),
-            background: VOF_GREEN,
-            width: `${((index + 1) / pool.length) * 100}%`,
-            transition: 'width 0.3s ease',
-          }} />
+      {/* Bloc mode label + info + progress — hauteur fixe identique aux 3 modes */}
+      <div style={{ height: S(56), flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: `${S(2)} ${S(16)} ${S(4)}` }}>
+        {/* Mode label */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6) }}>
+          <img src="/assets/modes/icon-vrai-et-fou.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />
+          <span style={{
+            fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+            color: VOF_GREEN, textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          }}>
+            VRAI ET FOU
+          </span>
+        </div>
+        {/* Compteur N/20 */}
+        <div style={{ textAlign: 'center' }}>
+          <span style={{ fontSize: S(12), fontWeight: 900, letterSpacing: 1 }}>
+            <span style={{ color: counterColor }}>{index + 1}</span>
+            <span style={{ color: 'rgba(255,255,255,0.5)' }}>/{pool.length}</span>
+          </span>
+        </div>
+        {/* Barre de progression segmentée */}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
+          {Array.from({ length: pool.length }).map((_, i) => {
+            const isActive = i === index
+            return (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  height: isActive ? S(12) : S(8),
+                  borderRadius: S(4),
+                  background: isActive ? VOF_GREEN : 'rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            )
+          })}
         </div>
       </div>
 
-      {/* Zone centrale : 2 propositions côte à côte — swipe ou clic direct */}
+      {/* ── Bloc contenu S(264) — 2 propositions ── */}
       <div
         onMouseDown={onPointerDown}
         onMouseMove={onPointerMove}
@@ -366,31 +378,32 @@ export default function VraiOuFouScreen({ onHome }) {
         onTouchMove={onPointerMove}
         onTouchEnd={onPointerUp}
         style={{
-          flex: 0, display: 'flex', gap: S(10),
-          padding: `${S(10)} ${S(16)} 0`,
+          height: S(270), flexShrink: 0, overflow: 'hidden',
+          display: 'flex', gap: S(10),
+          padding: `${S(6)} ${S(16)} 0`,
+          alignItems: 'stretch',
           userSelect: 'none', cursor: feedback ? 'default' : 'grab',
         }}
       >
         {/* Proposition gauche — clic = pick green si leftIsGreen, sinon pick not-green */}
         <VOFCard S={S} text={leftText} isTrue={leftIsTrue} feedback={feedback}
           swiping={swipingLeft} dragIntensity={dragIntensity} side="left"
-          onClick={() => handlePick(leftIsGreen)} />
+          textColor={catBg} onClick={() => handlePick(leftIsGreen)} />
 
         {/* Proposition droite */}
         <VOFCard S={S} text={rightText} isTrue={!leftIsTrue} feedback={feedback}
           swiping={swipingRight} dragIntensity={dragIntensity} side="right"
-          onClick={() => handlePick(rightIsGreen)} />
+          textColor={catBg} onClick={() => handlePick(rightIsGreen)} />
       </div>
 
-      {/* Image + Timer — même layout que Quickie (space-evenly) */}
+      {/* ── Zone image + timer — flex:1 space-evenly (3 espaces égaux) ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-evenly' }}>
-        {/* Image floutée + cadenas */}
         <div style={{
           position: 'relative', width: '55%', aspectRatio: '1 / 1',
           borderRadius: S(12), overflow: 'hidden',
-          border: `3px solid ${isRevealed ? '#4CAF50' : '#ffffff'}`,
+          border: `3px solid ${isRevealed ? '#4CAF50' : VOF_GREEN}`,
           boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
-          background: 'rgba(0,0,0,0.3)', flexShrink: 0,
+          background: 'rgba(0,0,0,0.3)',
         }}>
           {fact?.imageUrl && !imgFailed ? (
             <img src={fact.imageUrl} alt="" onError={() => setImgFailed(true)}
@@ -433,8 +446,6 @@ export default function VraiOuFouScreen({ onHome }) {
             </div>
           )}
         </div>
-
-        {/* Timer */}
         <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <CircularTimer
             key={`vof-${index}-${seed}`}
@@ -451,7 +462,7 @@ export default function VraiOuFouScreen({ onHome }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-function VOFCard({ S, text, isTrue, feedback, swiping, dragIntensity, side, onClick }) {
+function VOFCard({ S, text, isTrue, feedback, swiping, dragIntensity, side, onClick, textColor }) {
   const showingFeedback = !!feedback
 
   let borderColor = VOF_GREEN
@@ -482,7 +493,7 @@ function VOFCard({ S, text, isTrue, feedback, swiping, dragIntensity, side, onCl
         position: 'relative', opacity, transform: cardTransform,
         transition: 'transform 0.2s ease, opacity 0.3s ease, border-color 0.2s ease',
         boxShadow: swiping ? `0 6px 24px ${VOF_GREEN}55` : '0 4px 16px rgba(0,0,0,0.12)',
-        minHeight: S(180), overflow: 'hidden',
+        height: '100%', overflow: 'hidden',
         cursor: showingFeedback ? 'default' : 'pointer',
       }}
     >
@@ -497,7 +508,7 @@ function VOFCard({ S, text, isTrue, feedback, swiping, dragIntensity, side, onCl
         </div>
       )}
       <p style={{
-        color: VOF_GREEN, fontSize: S(13), fontWeight: 800, lineHeight: 1.35,
+        color: textColor || VOF_GREEN, fontSize: S(16), fontWeight: 800, lineHeight: 1.35,
         margin: 0, overflow: 'hidden', display: '-webkit-box',
         WebkitLineClamp: 7, WebkitBoxOrient: 'vertical',
       }}>

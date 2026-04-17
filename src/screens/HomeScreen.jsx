@@ -243,17 +243,40 @@ export default function HomeScreen({
                   gap: S(2), padding: `${S(4)} ${S(2)}`,
                   background: 'none', border: 'none',
                   cursor: isAvail ? 'pointer' : 'default',
-                  opacity: isReached ? 1 : 0.55,
+                  opacity: isReached ? 1 : 0.4,
                   WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                <img src={brain.img} alt={brain.label} style={{
-                  width: S(28), height: S(28), objectFit: 'contain',
-                  filter: isClaimed ? 'grayscale(1) brightness(0.5)'
-                    : isReached ? `drop-shadow(0 0 6px ${palierColor})` : 'none',
-                }} />
-                <span style={{ fontSize: S(8), fontWeight: 900, lineHeight: 1, color: isAvail ? '#FFD700' : 'white', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center' }}>
-                  {isClaimed ? '✓' : brain.label}
+                <div style={{ position: 'relative', width: S(28), height: S(28) }}>
+                  <img src={brain.img} alt={brain.label} style={{
+                    width: '100%', height: '100%', objectFit: 'contain',
+                    filter: (isClaimed && p.day === 3) ? 'sepia(1) hue-rotate(300deg) saturate(1.5) brightness(1.3)'
+                      : isClaimed ? 'none'
+                      : isAvail ? `drop-shadow(0 0 8px #FFD700)`
+                      : (isReached && p.day === 3) ? `sepia(1) hue-rotate(300deg) saturate(1.5) brightness(1.3) drop-shadow(0 0 6px ${palierColor})`
+                      : isReached ? `drop-shadow(0 0 6px ${palierColor})` : 'none',
+                  }} />
+                  {isClaimed && (
+                    <div style={{
+                      position: 'absolute', bottom: -2, right: -2,
+                      width: S(12), height: S(12), borderRadius: '50%',
+                      background: '#22C55E', border: '1.5px solid #ffffff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <span style={{ fontSize: S(7), color: '#ffffff', fontWeight: 900, lineHeight: 1 }}>✓</span>
+                    </div>
+                  )}
+                  {isAvail && (
+                    <div style={{
+                      position: 'absolute', top: -3, right: -3,
+                      width: S(10), height: S(10), borderRadius: '50%',
+                      background: '#FFD700',
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                    }} />
+                  )}
+                </div>
+                <span style={{ fontSize: S(8), fontWeight: 900, lineHeight: 1, color: isAvail ? '#FFD700' : isClaimed ? '#22C55E' : 'white', textShadow: '0 1px 4px rgba(0,0,0,0.4)', textAlign: 'center' }}>
+                  {brain.label}
                 </span>
                 <span style={{ fontSize: S(7), fontWeight: 700, lineHeight: 1, color: 'white', opacity: 0.5 }}>J{p.day}</span>
               </button>
@@ -310,7 +333,7 @@ export default function HomeScreen({
       }}>
         {/* Logo Vrai ou Fou — même largeur que le bouton Partie rapide */}
         <img
-          src="/assets/ui/vof-logo.png" alt="Vrai ou Fou"
+          src="/assets/ui/vof-logo.png" alt="Vrai ET Fou"
           style={{ width: '60%', maxWidth: S(220), height: 'auto', objectFit: 'contain', WebkitUserSelect: 'none', userSelect: 'none' }}
         />
 
@@ -321,7 +344,7 @@ export default function HomeScreen({
           width: '100%', maxWidth: S(260),
         }}>
           <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} />
-          <ModeIcon icon="/assets/modes/vrai-ou-fou.png" name="Vrai ou Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} />
+          <ModeIcon icon="/assets/modes/vrai-et-fou.png" name="Vrai ET Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} />
           <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} />
           <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} />
         </div>
@@ -339,7 +362,7 @@ export default function HomeScreen({
             boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
           }}
         >
-          <img src="/assets/modes/quickie.png" alt="" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/assets/modes/icon-quickie.png" alt="" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
           <span style={{ fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(14), color: '#7F77DD', letterSpacing: '0.04em' }}>
             Partie rapide
           </span>

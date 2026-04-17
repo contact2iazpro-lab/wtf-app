@@ -339,6 +339,8 @@ export default function App() {
     localStorage.removeItem('skip_launch_blitz')
     localStorage.removeItem('skip_launch_quickie_legacy')
     localStorage.removeItem('skip_launch_flash')
+    localStorage.removeItem('skip_launch_race')
+    localStorage.removeItem('skip_launch_vrai_ou_fou')
     sessionStorage.clear()
     window.location.reload()
   }

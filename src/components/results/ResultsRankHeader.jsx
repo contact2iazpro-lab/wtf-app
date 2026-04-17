@@ -35,7 +35,9 @@ export default function ResultsRankHeader({
             }}>
             {customIcon
               ? <img src={customIcon} alt="" style={{ width: S(42), height: S(42), objectFit: 'contain' }} />
-              : emoji}
+              : emoji === 'wtf-star'
+                ? <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(42), height: S(42), objectFit: 'contain' }} />
+                : emoji}
           </div>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: hideEmoji ? 'center' : 'flex-start', gap: S(4) }}>
@@ -60,7 +62,7 @@ export default function ResultsRankHeader({
                   filter: s <= stars ? `drop-shadow(0 0 10px ${catColor})` : 'none',
                   opacity: s <= stars ? 1 : 0.2,
                 }}>
-                ⭐
+                <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(16), height: S(16), objectFit: 'contain' }} />
               </span>
             ))}
           </div>
@@ -75,9 +77,9 @@ export default function ResultsRankHeader({
           border: '1.5px solid rgba(253,224,71,0.6)',
           borderRadius: S(14), padding: `${S(6)} ${S(16)}`, flexShrink: 0,
         }}>
-          <span style={{ fontSize: S(16) }}>⭐</span>
+          <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(16), height: S(16), objectFit: 'contain' }} />
           <span style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: S(12), color: '#FDE047', letterSpacing: '0.05em' }}>PERFECT !</span>
-          <span style={{ fontSize: S(16) }}>⭐</span>
+          <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(16), height: S(16), objectFit: 'contain' }} />
         </div>
       )}
     </>

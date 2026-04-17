@@ -54,8 +54,15 @@ export default function FeaturedFactCard({
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => { e.target.style.display = 'none' }}
           />
+        ) : fCat?.id ? (
+          <img
+            src={`/assets/categories/${fCat.id}.png`}
+            alt=""
+            style={{ width: '70%', height: '70%', objectFit: 'contain' }}
+            onError={e => { e.target.style.display = 'none' }}
+          />
         ) : (
-          <span style={{ fontSize: S(22) }}>{fCat?.emoji || '⭐'}</span>
+          <span style={{ fontSize: S(22) }}>❓</span>
         )}
       </div>
       {/* Texte */}
@@ -65,7 +72,7 @@ export default function FeaturedFactCard({
           textTransform: 'uppercase', letterSpacing: '0.08em',
           marginBottom: S(2), display: 'flex', alignItems: 'center', gap: S(4),
         }}>
-          ⭐ {fact.isVip ? 'LE PLUS WTF DE TA SESSION (VIP)' : 'LE PLUS WTF DE TA SESSION'}
+          <img src="/assets/ui/wtf-star.png" alt="" style={{ width: 'calc(12px * var(--scale))', height: 'calc(12px * var(--scale))', objectFit: 'contain' }} /> {fact.isVip ? 'LE PLUS WTF DE TA SESSION (VIP)' : 'LE PLUS WTF DE TA SESSION'}
         </div>
         <div style={{
           fontSize: S(11), fontWeight: 800, color: textColor, lineHeight: 1.25,

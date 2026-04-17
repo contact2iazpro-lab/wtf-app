@@ -162,57 +162,21 @@ export default function QuestionScreen({
     />
   )
 
-  // ── Barre de progression ─────────────────────────────────────────────────────
-  const progressBar = (
-    <div style={{ padding: `0 ${S(16)}`, flexShrink: 0 }}>
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
-        {Array.from({ length: displayTotalFacts }).map((_, i) => {
-          const isActive = i === factIndex
-          return (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                height: isActive ? S(20) : S(10),
-                borderRadius: S(5),
-                background: isActive ? (isQuickieMode ? '#7F77DD' : 'white') : 'rgba(255,255,255,0.2)',
-                position: isActive ? 'relative' : 'static',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              {isActive && (
-                <span style={{
-                  position: 'absolute',
-                  top: '50%', left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  fontSize: S(12),
-                  fontWeight: 900,
-                  color: isQuickieMode ? '#ffffff' : (cat?.color || '#1a1a2e'),
-                  whiteSpace: 'nowrap',
-                }}>
-                  {factIndex + 1}/{displayTotalFacts}
-                </span>
-              )}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-
   // ── Question card ──────────────────────────────────────────────────────────
   const questionCard = (
     <div
-      className="rounded-2xl p-3 border shrink-0"
       style={{
+        padding: `${S(12)} ${S(16)}`,
+        borderRadius: S(16),
         background: cardBg,
-        borderColor: isQuickieMode ? '#7F77DD' : (cat?.color + '70'),
-        borderWidth: isQuickieMode ? 3 : 1,
+        border: `${isQuickieMode ? 3 : 1}px solid ${isQuickieMode ? '#7F77DD' : (cat?.color + '70')}`,
         backdropFilter: 'blur(12px)',
         boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`,
+        height: S(90), flexShrink: 0, overflow: 'hidden',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
-      <h2 className="text-white font-bold leading-snug" style={{ fontSize: 'calc(1.1rem * var(--scale))', margin: 0 }}>{renderFormattedText(fact.question)}</h2>
+      <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>{renderFormattedText(fact.question, isQuickieMode ? '#B5AFEB' : undefined)}</p>
     </div>
   )
 
@@ -462,7 +426,7 @@ export default function QuestionScreen({
   }
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
-  const MODE_LABELS = { quickie: 'MODE QUICKIE', flash: 'MODE FLASH', parcours: 'MODE QUEST' }
+  const MODE_LABELS = { quickie: 'QUICKIE', flash: 'MODE FLASH', parcours: 'MODE QUEST' }
   const modeLabel = MODE_LABELS[sessionType] || (difficulty ? `Mode ${difficulty.label || difficulty.id}` : '')
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
@@ -478,33 +442,61 @@ export default function QuestionScreen({
       {quitModal}
       {header}
 
-      {/* Rappel du mode */}
-      {modeLabel && (
-        <div style={{ textAlign: 'center', flexShrink: 0, padding: `0 0 ${S(2)}` }}>
-          <span style={{
-            fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-            color: isQuickieMode ? '#B5AFEB' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-          }}>
-            {modeLabel}
-          </span>
+      {/* Bloc mode label + info + progress — hauteur fixe identique aux 3 modes */}
+      <div style={{ height: S(56), flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: `${S(2)} ${S(16)} ${S(4)}` }}>
+        {/* Mode label */}
+        {modeLabel && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6) }}>
+            {isQuickieMode && <img src="/assets/modes/icon-quickie.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />}
+            <span style={{
+              fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: isQuickieMode ? '#B5AFEB' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}>
+              {modeLabel}
+            </span>
+          </div>
+        )}
+        {/* Compteur */}
+        {isQuickieMode && (
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: S(12), fontWeight: 900, color: '#B5AFEB' }}>
+              {factIndex + 1}/{displayTotalFacts}
+            </span>
+          </div>
+        )}
+        {/* Barre de progression */}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
+          {Array.from({ length: displayTotalFacts }).map((_, i) => {
+            const isActive = i === factIndex
+            return (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  height: isActive ? S(12) : S(8),
+                  borderRadius: S(4),
+                  background: isActive ? (isQuickieMode ? '#7F77DD' : 'white') : 'rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                }}
+              />
+            )
+          })}
         </div>
-      )}
+      </div>
 
-      {progressBar}
-
-      {/* Zone centrale : question + indices + QCM */}
+      {/* ── Bloc contenu S(264) — question + indices + QCM ── */}
       <div className="qs-m" style={{
-        flexShrink: 0,
+        height: S(270), flexShrink: 0, overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
-        gap: S(10),
-        padding: `${S(10)} ${S(16)} 0`,
+        justifyContent: 'space-between',
+        padding: `${S(6)} ${S(16)} 0`,
       }}>
         {questionCard}
 
-        {/* Indices */}
-        {isDevMode ? devHintButtons : (difficulty?.hintsAllowed && hintButtons)}
+        {/* Indices — enfant central */}
+        <div>{isDevMode ? devHintButtons : (difficulty?.hintsAllowed && hintButtons)}</div>
 
-        {/* Boutons QCM */}
+        {/* Boutons QCM — enfant bas */}
         {(() => {
           const devAllOptions = isDevMode ? [
             { text: fact.shortAnswer || fact.options?.[fact.correctIndex] || '?', type: 'VRAIE', color: '#22C55E' },
@@ -575,7 +567,7 @@ export default function QuestionScreen({
                       background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
                       border: isQuickieMode ? '3px solid #7F77DD' : devBorder,
                       borderRadius: S(12),
-                      color: isQuickieMode ? '#4A3FA3' : 'white',
+                      color: isQuickieMode ? (cat?.color || '#4A3FA3') : 'white',
                       fontWeight: isQuickieMode ? 800 : 700,
                       fontSize: S(btnFont),
                       lineHeight: 1.2,
@@ -608,7 +600,7 @@ export default function QuestionScreen({
         })()}
       </div>
 
-      {/* Image + Timer — distribués dans l'espace restant */}
+      {/* ── Zone image + timer — flex:1 space-evenly (3 espaces égaux) ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-evenly' }}>
         {quickieImage}
         <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>

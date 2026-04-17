@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-  base: '/admin/',
+  base: mode === 'production' ? '/' : '/admin/',
   plugins: [
     react(),
 

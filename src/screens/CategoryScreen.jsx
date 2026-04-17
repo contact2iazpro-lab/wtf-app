@@ -347,10 +347,10 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             cursor: hasSelection ? 'pointer' : 'default',
             pointerEvents: hasSelection ? 'auto' : 'none',
             background: hasSelection
-              ? (isLockedMode ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : `linear-gradient(135deg, ${getCategoryColor(selectedCat) || '#FF6B1A'}, ${getCategoryColor(selectedCat) || '#FF6B1A'}cc)`)
+              ? (isLockedMode ? '#9400D3' : `linear-gradient(135deg, ${getCategoryColor(selectedCat) || '#FF6B1A'}, ${getCategoryColor(selectedCat) || '#FF6B1A'}cc)`)
               : 'rgba(255,255,255,0.25)',
             color: hasSelection ? 'white' : 'rgba(255,255,255,0.5)',
-            boxShadow: hasSelection ? (isLockedMode ? '0 6px 24px rgba(127,119,221,0.5)' : `0 6px 24px ${getCategoryColor(selectedCat) || '#FF6B1A'}50`) : 'none',
+            boxShadow: hasSelection ? (isLockedMode ? '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)' : `0 6px 24px ${getCategoryColor(selectedCat) || '#FF6B1A'}50`) : 'none',
             transition: 'all 0.2s ease',
             fontFamily: 'Nunito, sans-serif',
             WebkitTapHighlightColor: 'transparent',

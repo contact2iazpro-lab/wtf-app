@@ -153,12 +153,12 @@ séparé, sous-domaine privé, ou en local uniquement).
 ### 5. BLITZ — "Défie tes potes" (2 sous-modes)
 
 #### 5a. Blitz Solo
-- QCM **2 choix**, chrono global **60s** descendant
+- QCM **4 choix** (1 vraie + 1 drôle + 2 plausibles), chrono global **60s** descendant
 - Indices : Aucun · Contenu : Funny + VIP débloqués
 - Gains : 0 coins · Paliers : 5/10/20/30/50/100
 
 #### 5b. Blitz Défi
-- QCM **2 choix**, même set 5-10 questions pour les 2 joueurs
+- QCM **4 choix**, même set 5-10 questions pour les 2 joueurs
 - Chrono montant global (+5s par erreur)
 - Contenu : Funny facts (catégorie choisie par créateur)
 - Coût : **200 coins** pour créer · Gratuit pour relever · 48h expiration
@@ -181,8 +181,8 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Spec source : `docs/ROULETTE_WTF_SPECS.md`
 
 ### Règles communes
-- QCM facile (2 choix) : Quickie, Blitz, Flash
-- QCM difficile (4 choix) : Quest, Race
+- QCM facile (2 choix) : Quickie, Flash
+- QCM difficile (4 choix) : Quest, Race, Blitz
 - Swipe (0 QCM) : Vrai ou Fou
 - Indices = stock perso, coût 50 coins boutique. Bouton grisé si stock vide, JAMAIS de pause timer.
 - Énergie : cap 5, régén +1/8h, extra = 75 coins
@@ -195,8 +195,8 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Vrai ou Fou | Funny (statements) | Swipe | Gratuit | 0 coins | NOUVEAU |
 | Quest | Funny + VIP boss | 4 | 1 énergie/bloc | 20c/niv + 100c/boss | Renommé (ex-Route) |
 | Race | Funny+VIP débloqués | 4 | Gratuit | 0 coins (record) | Renommé (ex-No Limit) |
-| Blitz Solo | Funny+VIP débloqués | 2 | Gratuit | 0 coins (paliers) | Modifié (QCM 4→2) |
-| Blitz Défi | Funny (catég ami) | 2 | 200 coins (créer) | 0 coins | Modifié (QCM 4→2, tickets→coins) |
+| Blitz Solo | Funny+VIP débloqués | 4 | Gratuit | 0 coins (paliers) | Modifié (QCM 2→4, 17/04/2026) |
+| Blitz Défi | Funny (catég ami) | 4 | 200 coins (créer) | 0 coins | Modifié (QCM 2→4, 17/04/2026) |
 | Flash (lun-sam) | Funny thème | 2 | Gratuit 1×/j | 30 coins fixe | Renommé (ex-Hunt+Puzzle) |
 | Flash (dimanche) | VIP Hunt | 2 | Gratuit 1×/j | 1 VIP | Renommé |
 

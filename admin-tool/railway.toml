@@ -1,0 +1,10 @@
+[build]
+dockerfilePath = "admin-tool/Dockerfile"
+
+[build.args]
+VITE_SUPABASE_URL = "${{SUPABASE_URL}}"
+VITE_ADMIN_PASSWORD = "${{ADMIN_PASSWORD}}"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 30

@@ -145,7 +145,7 @@ export function useAppEffects({
     if (!setPendingChallengesCount) return
     if (!user) { setPendingChallengesCount(0); return }
     const fetchPending = async () => {
-      const { data } = await supabase.from('challenges').select('id').eq('status', 'pending').neq('player1_id', user.id)
+      const { data } = await supabase.from('challenges').select('id').eq('status', 'pending').eq('player2_id', user.id)
       const count = (data || []).length
       setPendingChallengesCount(count)
       // Persist pour BottomNav (autonome)

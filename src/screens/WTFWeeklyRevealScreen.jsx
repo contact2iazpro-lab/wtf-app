@@ -83,7 +83,7 @@ export default function WTFWeeklyRevealScreen({
             <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: S(10), fontWeight: 700 }}>F*ct de la semaine débloqué</div>
           </div>
           <span style={{ fontSize: S(10), fontWeight: 900, color: '#FFD700', background: 'rgba(255,215,0,0.15)', borderRadius: S(12), padding: `${S(3)} ${S(10)}`, border: '1px solid rgba(255,215,0,0.3)' }}>
-            ⭐ VIP
+            VIP
           </span>
         </div>
 

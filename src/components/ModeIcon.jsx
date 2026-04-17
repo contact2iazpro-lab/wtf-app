@@ -24,8 +24,8 @@ const ModeIcon = forwardRef(({ icon, name, color, onClick }, ref) => {
       <div style={{
         width: S(size + 6), height: S(size + 6),
         borderRadius: '50%',
-        border: `2.5px solid ${color || 'rgba(255,255,255,0.3)'}`,
-        boxShadow: color ? `0 0 14px ${color}55` : 'none',
+        border: 'none',
+        boxShadow: 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
       }}>

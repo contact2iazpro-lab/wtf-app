@@ -49,6 +49,7 @@ export function useNavigationHandlers({
       }
       case 'flash':        handleStartFlashSession(); break
       case 'vrai_ou_fou':  setScreen(SCREENS.VRAI_OU_FOU); break
+      case 'race':         setScreen(SCREENS.RACE); break
       default: break
     }
   }, [handleStartFlashSession])
@@ -78,10 +79,10 @@ export function useNavigationHandlers({
         break
       }
       case 'quickie_random': {
-        // Partie rapide : skip ModeLaunchScreen + CategoryScreen → direct en jeu
         const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
         if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
-        handleQuickie()
+        setGameMode('quickie'); setSessionType('quickie'); setSelectedDifficulty(DIFFICULTY_LEVELS.QUICKIE); setSelectedCategory(null)
+        showOrSkipLaunch('quickie')
         break
       }
       case 'collection':    navigate('/collection'); break
@@ -98,7 +99,8 @@ export function useNavigationHandlers({
         setScreen(SCREENS.QUEST)
         break
       case 'race':
-        setScreen(SCREENS.RACE)
+        setGameMode('race'); setSessionType('race'); setSelectedDifficulty(DIFFICULTY_LEVELS.RACE); setSelectedCategory(null)
+        showOrSkipLaunch('race')
         break
       case 'vrai_ou_fou':
         showOrSkipLaunch('vrai_ou_fou')
@@ -163,9 +165,15 @@ export function useNavigationHandlers({
   }, [quickiePool, unlockedFacts, initSessionState])
 
   const handleReplay = useCallback(() => {
-    if (sessionType === 'quickie') { setQuickiePool([]); setScreen(SCREENS.CATEGORY) }
+    if (sessionType === 'quickie') {
+      if (selectedCategory) {
+        handleSelectCategory(selectedCategory)
+      } else {
+        handleQuickie()
+      }
+    }
     else handleSelectCategory(selectedCategory)
-  }, [sessionType, selectedCategory, handleSelectCategory])
+  }, [sessionType, selectedCategory, handleSelectCategory, handleQuickie])
 
   const handleShare = useCallback(() => {
     if (!currentFact) return

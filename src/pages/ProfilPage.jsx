@@ -14,7 +14,7 @@ const S = (px) => `calc(${px}px * var(--scale))`
 
 const MODE_LABELS = {
   quickie: { icon: '⚡', name: 'Quickie' },
-  parcours: { icon: '⭐', name: 'Quest' },
+  parcours: { icon: '🗺️', name: 'Quest' },
   blitz: { icon: '⏱️', name: 'Blitz' },
   flash: { icon: '🔥', name: 'Flash' },
 }
@@ -344,7 +344,7 @@ export default function ProfilPage() {
         {/* Collection WTF! vs Funny */}
         <div className="flex gap-1.5 mb-3">
           <div className="flex-1 rounded-2xl p-2 text-center" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.3)' }}>
-            <span className="text-base block">⭐</span>
+            <img src="/assets/ui/wtf-star.png" alt="" className="block mx-auto" style={{ width: 20, height: 20 }} />
             <span className="font-black text-sm block" style={{ color: '#D97706' }}>{unlockedWtf}</span>
             <span className="text-xs" style={{ color: '#9CA3AF' }}>WTF!</span>
           </div>

@@ -4,6 +4,11 @@ import { useGoBack } from '../hooks/useGoBack'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
+function BadgeEmoji({ emoji, size = 24, style = {} }) {
+  if (emoji === 'wtf-star') return <img src="/assets/ui/wtf-star.png" alt="" style={{ width: size, height: size, objectFit: 'contain', ...style }} />
+  return <span style={{ fontSize: size, ...style }}>{emoji}</span>
+}
+
 export default function RecompensesPage() {
   const goBack = useGoBack()
   const [sections, setSections] = useState([])
@@ -51,7 +56,7 @@ export default function RecompensesPage() {
           {nextTrophy ? (
             <>
               <div className="flex items-center gap-2 mb-2">
-                <span style={{ fontSize: 24 }}>{nextTrophy.badge.emoji}</span>
+                <BadgeEmoji emoji={nextTrophy.badge.emoji} size={24} />
                 <div>
                   <span className="font-black text-xs block" style={{ color: 'rgba(26,26,46,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Prochain objectif</span>
                   <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>{nextTrophy.badge.label}</span>
@@ -115,7 +120,7 @@ export default function RecompensesPage() {
                                   border: trophy.earned ? '1px solid rgba(255,215,0,0.4)' : '1px solid rgba(0,0,0,0.05)',
                                 }}
                               >
-                                <span style={{ fontSize: 16, display: 'block', opacity: trophy.earned ? 1 : 0.25, filter: trophy.earned ? 'none' : 'grayscale(100%)' }}>{trophy.emoji}</span>
+                                <BadgeEmoji emoji={trophy.emoji} size={16} style={{ display: 'block', opacity: trophy.earned ? 1 : 0.25, filter: trophy.earned ? 'none' : 'grayscale(100%)' }} />
                                 {!trophy.earned && trophy.current > 0 && (
                                   <div style={{ height: 2, background: 'rgba(0,0,0,0.08)', borderRadius: 1, margin: '3px 4px 0', overflow: 'hidden' }}>
                                     <div style={{ height: '100%', width: `${Math.min(100, (trophy.current / trophy.target) * 100)}%`, background: '#FF6B1A', borderRadius: 1 }} />
@@ -142,7 +147,7 @@ export default function RecompensesPage() {
                         }}
                       >
                         <div className="relative mb-1" style={{ display: 'inline-block' }}>
-                          <span style={{ fontSize: 26, display: 'block', opacity: trophy.earned ? 1 : 0.25, filter: trophy.earned ? 'none' : 'grayscale(100%)' }}>{trophy.emoji}</span>
+                          <BadgeEmoji emoji={trophy.emoji} size={26} style={{ display: 'block', opacity: trophy.earned ? 1 : 0.25, filter: trophy.earned ? 'none' : 'grayscale(100%)' }} />
                           {trophy.earned && <span style={{ position: 'absolute', bottom: -2, right: -6, fontSize: 10 }}>✅</span>}
                           {!trophy.earned && <span style={{ position: 'absolute', bottom: -2, right: -6, fontSize: 10 }}>🔒</span>}
                         </div>
@@ -181,7 +186,7 @@ export default function RecompensesPage() {
             }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ fontSize: 48, marginBottom: 12 }}>{selectedTrophy.emoji}</div>
+            <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}><BadgeEmoji emoji={selectedTrophy.emoji} size={48} /></div>
             <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>
               {selectedTrophy.label}
             </h3>

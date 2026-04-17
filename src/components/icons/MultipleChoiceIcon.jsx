@@ -25,17 +25,17 @@ export default function MultipleChoiceIcon({ size = 40, color = '#ffffff', accen
       </defs>
 
       {/* Ligne 1 — non sélectionnée */}
-      <circle cx="18" cy="22" r="8" stroke={color} strokeWidth="4" fill={color} opacity={0.7} />
+      <circle cx="18" cy="22" r="8" stroke={color} strokeWidth="6" fill={color} opacity={0.7} />
       <rect x="36" y="16" width="50" height="12" rx="6" fill={color} opacity={0.7} />
 
       {/* Ligne 2 — sélectionnée (orange WTF + glow) */}
       <g filter={`url(#${id})`}>
-        <circle cx="18" cy="50" r="8" stroke={accent} strokeWidth="4" fill={accent} />
+        <circle cx="18" cy="50" r="8" stroke={accent} strokeWidth="6" fill={accent} />
         <rect x="36" y="44" width="50" height="12" rx="6" fill={accent} />
       </g>
 
       {/* Ligne 3 — non sélectionnée */}
-      <circle cx="18" cy="78" r="8" stroke={color} strokeWidth="4" fill={color} opacity={0.7} />
+      <circle cx="18" cy="78" r="8" stroke={color} strokeWidth="6" fill={color} opacity={0.7} />
       <rect x="36" y="72" width="50" height="12" rx="6" fill={color} opacity={0.7} />
     </svg>
   )

@@ -7,6 +7,7 @@ import renderFormattedText from '../utils/renderFormattedText'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import FallbackImage from '../components/FallbackImage'
 import BatteryIcon from '../components/home/BatteryIcon'
+import { getQuickieEnergy } from '../services/energyService'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
 const isLightColor = (hex) => {
@@ -135,7 +136,13 @@ export default function RevelationScreen({
   correctAnswer,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _currencyCoins, hints: _currencyHints, energy: _currencyEnergy, applyCurrencyDelta } = usePlayerProfile()
+  const { coins: _currencyCoins, hints: _currencyHints, applyCurrencyDelta } = usePlayerProfile()
+  const [_currencyEnergy, setLocalEnergy] = useState(() => getQuickieEnergy().remaining)
+  useEffect(() => {
+    const refresh = () => setLocalEnergy(getQuickieEnergy().remaining)
+    window.addEventListener('wtf_energy_updated', refresh)
+    return () => window.removeEventListener('wtf_energy_updated', refresh)
+  }, [])
 
   const [flipped, setFlipped] = useState(true)
   const [unlockedByCoins, setUnlockedByCoins] = useState(false)
@@ -177,6 +184,8 @@ export default function RevelationScreen({
   const isVofMode = sessionType === 'vrai_ou_fou'
   const isBrandedMode = isQuickieMode || isVofMode
   const accentColor = isVofMode ? '#6BCB77' : '#7F77DD'
+  const MODE_HIGHLIGHT = { quickie: '#B5AFEB', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', flash: '#E91E63' }
+  const questionHighlight = MODE_HIGHLIGHT[sessionType]
   const accentGradient = isVofMode
     ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
     : 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
@@ -251,7 +260,7 @@ export default function RevelationScreen({
   const isTimeout = selectedAnswer === -1
 
   const selectedAnswerText = selectedAnswer >= 0 ? fact.options[selectedAnswer] : 'Pas de réponse'
-  const correctAnswerText = correctAnswer || fact.options?.[fact.correctIndex] || ''
+  const correctAnswerText = correctAnswer || fact.shortAnswer || fact.options?.[fact.correctIndex] || ''
 
   // ── Coins flying animation ────────────────────────────────────────────────
   const coinsAnimation = showCoins && isCorrect && scoreRefTarget.current && (
@@ -372,7 +381,7 @@ export default function RevelationScreen({
             borderRadius: S(16), padding: S(12),
             boxShadow: isBrandedMode ? `0 0 20px ${isVofMode ? 'rgba(107,203,119,0.3)' : 'rgba(127,119,221,0.3)'}` : 'none',
           }}>
-            <div style={{ fontSize: 'calc(1.1rem * var(--scale))', fontWeight: 700, color: '#ffffff', lineHeight: 1.4 }}>{renderFormattedText(fact.question)}</div>
+            <div style={{ fontSize: 'calc(1.1rem * var(--scale))', fontWeight: 700, color: '#ffffff', lineHeight: 1.4 }}>{renderFormattedText(fact.question, questionHighlight)}</div>
           </div>
 
           {/* Image floutée + stamp bienveillant — carrée, limitée en hauteur */}
@@ -597,7 +606,7 @@ export default function RevelationScreen({
         }}>
           <div ref={questionContainerRef} style={{ width: '100%', height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span ref={questionRef} style={{ fontWeight: 900, fontSize: questionFontSize + 'px', color: '#ffffff', lineHeight: 1.3, textAlign: 'center' }}>
-              {renderFormattedText(fact.question)}
+              {renderFormattedText(fact.question, questionHighlight)}
             </span>
           </div>
         </div>
@@ -616,12 +625,12 @@ export default function RevelationScreen({
           }
         `}</style>
       )}
-      <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '28vh' }}>
+      <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
         <div
           onClick={() => fact.imageUrl && !imgFailed && setShowLightbox(true)}
           className="relative overflow-hidden"
           style={{
-            width: '100%', maxHeight: '28vh', borderRadius: S(16),
+            width: '100%', maxHeight: '35vh', borderRadius: S(16),
             border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${accentColor}`,
             background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
             ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
@@ -632,7 +641,7 @@ export default function RevelationScreen({
               <img
                 src={fact.imageUrl}
                 alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(28vh - 6px)', display: 'block' }}
+                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
                 onError={() => setImgFailed(true)}
               />
               <button
@@ -647,7 +656,7 @@ export default function RevelationScreen({
               >🔍</button>
             </>
           ) : (
-            <div style={{ width: '100%', height: 'calc(28vh - 6px)', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: 'calc(35vh - 6px)', overflow: 'hidden' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
@@ -691,7 +700,7 @@ export default function RevelationScreen({
           height: S(68), overflow: 'hidden', flexShrink: 0,
           display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2), flexShrink: 0 }}>{isVofMode ? '✓ Affirmation vraie' : '✓ Réponse :'}</div>
+          <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2), flexShrink: 0 }}>✓ Réponse :</div>
           <div ref={answerContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
             <div ref={answerRef} style={{ fontSize: answerFontSize + 'px', fontWeight: 900, color: '#ffffff' }}>{correctAnswerText}</div>
           </div>
@@ -704,7 +713,7 @@ export default function RevelationScreen({
           flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
-            <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            <span style={{ color: accentColor, fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
           <div ref={explanationContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
             <p ref={explanationRef} style={{ color: 'rgba(255,255,255,0.85)', fontSize: explanationFontSize, lineHeight: 1.45, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>

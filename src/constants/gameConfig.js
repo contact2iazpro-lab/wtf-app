@@ -1,5 +1,5 @@
 // ── Difficulty Levels Configuration — 6 modes officiels (CLAUDE.md 15/04/2026)
-// Quickie · Vrai ou Fou · Quest · Race · Blitz · Flash
+// Quickie · Vrai ET Fou · Quest · Race · Blitz · Flash
 // Économie ×10 appliquée.
 
 export const DIFFICULTY_LEVELS = {
@@ -11,7 +11,7 @@ export const DIFFICULTY_LEVELS = {
     scoring: { correct: 10, wrong: 0 },
   },
   VRAI_OU_FOU: {
-    id: 'vrai_ou_fou', label: 'Vrai ou Fou', emoji: '🤔',
+    id: 'vrai_ou_fou', label: 'Vrai ET Fou', emoji: '🤔',
     choices: 0, duration: 15, questionsCount: 20,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
@@ -27,14 +27,14 @@ export const DIFFICULTY_LEVELS = {
   },
   RACE: {
     id: 'race', label: 'Race', emoji: '🏎️',
-    choices: 4, duration: 0, questionsCount: Infinity,
+    choices: 6, duration: 0, questionsCount: Infinity,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
   },
   BLITZ: {
     id: 'blitz', label: 'Blitz', emoji: '⚡',
-    choices: 2, duration: 60,
+    choices: 4, duration: 60,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
@@ -77,7 +77,7 @@ export const SCREENS = {
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
   quickie: {
-    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/quickie.png?v=2', color: '#7F77DD',
+    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png', color: '#7F77DD',
     rules: [
       { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
       { icon: 'icon:set', text: '**Set** : 5 questions/set' },
@@ -85,22 +85,22 @@ export const MODE_CONFIGS = {
       { icon: 'icon:timer', text: '**Timer** : 15s/question' },
       { icon: '💡', text: '**Indices** : 1 max/question' },
       { icon: '🪙', text: '**Gains** : 10 Coins/bonne réponse' },
-      { icon: 'icon:perfect', text: '**Perfect** : (5/5) +50 Coins' },
+      { icon: 'icon:star', text: '**Perfect** : (5/5) +50 Coins' },
     ],
   },
   vrai_ou_fou: {
-    modeId: 'vrai_ou_fou', modeName: 'Vrai ou Fou', subtitle: 'Swipe ou pas swipe ?', emoji: '🤔', icon: '/assets/modes/vrai-ou-fou.png', color: '#6BCB77',
+    modeId: 'vrai_ou_fou', modeName: 'Vrai ET Fou', subtitle: 'Swipe ou pas swipe ?', emoji: '🤔', icon: '/assets/modes/icon-vrai-et-fou.png', color: '#6BCB77',
     ctaLabel: 'VAS-Y, SWIPE !',
     rules: [
-      { icon: 'picto:infinity', text: 'Illimité' },
-      { icon: 'icon:set', text: 'Set : 20 affirmations/set' },
-      { icon: 'picto:swipe', text: '{{red}}Fou à gauche{{/red}}, Vrai à droite' },
-      { icon: 'icon:timer', text: 'Timer : 15s/question' },
-      { icon: 'picto:share', text: 'Partage ton score' },
+      { icon: 'picto:infinity', text: '**Coût** : Illimité' },
+      { icon: 'icon:set', text: '**Set** : 20 affirmations/set' },
+      { icon: 'picto:swipe', text: '**Swipe** : {{red}}Faux à gauche{{/red}}, Vrai à droite' },
+      { icon: 'icon:timer', text: '**Timer** : 15s/question' },
+      { icon: 'picto:share', text: '**Social** : Partage ton score' },
     ],
   },
   quest: {
-    modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', color: '#FF6B1A',
+    modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png', color: '#FF6B1A',
     rules: [
       { icon: 'icon:energy', text: 'Coût : 1 énergie par bloc' },
       { icon: 'icon:set', text: 'Bloc : 10 Funny + 1 boss VIP' },
@@ -112,25 +112,29 @@ export const MODE_CONFIGS = {
     ],
   },
   race: {
-    modeId: 'race', modeName: 'Race', subtitle: 'Zéro droit à l\'erreur', emoji: '🏎️', color: '#00E5FF',
+    modeId: 'race', modeName: 'Race', subtitle: 'Zéro droit à l\'erreur', emoji: '🏎️', icon: '/assets/modes/icon-race.png', color: '#00E5FF',
     rules: [
-      { icon: '∞', text: 'Questions illimitées jusqu\'à la 1ʳᵉ erreur' },
-      { icon: '🧠', text: '4 QCM · Pas de timer · Pas d\'indices' },
-      { icon: '🆓', text: 'Gratuit et illimité' },
-      { icon: '🏆', text: 'Mode prestige · 0 coins · Bats ton record de série' },
+      { icon: 'picto:survival', text: '**Survie** : Illimitées jusqu\'à la 1ʳᵉ erreur' },
+      { icon: 'icon:qcm', text: '**QCM** : 6/question' },
+      { icon: 'icon:timer', text: '**Timer** : Aucun' },
+      { icon: '💡', text: '**Indices** : Aucun' },
+      { icon: '🪙', text: '**Coût** : Gratuit' },
+      { icon: 'icon:star', text: '**Prestige** : Bats ton record' },
     ],
   },
   blitz: {
-    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défie tes potes', emoji: '⚡', color: '#FF4444',
+    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défie tes potes', emoji: '⚡', icon: '/assets/modes/icon-blitz.png', color: '#FF4444',
     rules: [
-      { icon: 'icon:timer', text: 'Chrono 60s · 2 QCM · Pas d\'indices' },
-      { icon: '❌', text: 'Mauvaise réponse = +5 secondes de pénalité' },
-      { icon: '🪙', text: 'Blitz Solo gratuit · Blitz Défi 200 coins pour créer' },
-      { icon: '🎯', text: 'Choisis entre 5, 10, 20, 30, 50 ou 100 questions' },
+      { icon: 'icon:timer', text: '**Chrono** : 60s descendant · 2 QCM' },
+      { icon: 'icon:qcm', text: '**QCM** : 2/question' },
+      { icon: 'picto:no-hint', text: '**Indices** : Aucun' },
+      { icon: 'picto:penalty', text: '**Pénalité** : +5 secondes par erreur' },
+      { icon: 'picto:free', text: '**Coût** : Solo gratuit · Défi 200 coins' },
+      { icon: 'picto:target', text: '**Paliers** : 5, 10, 20, 30, 50, 100 questions' },
     ],
   },
   flash: {
-    modeId: 'flash', modeName: 'Flash', subtitle: 'Le rendez-vous quotidien', emoji: '🔥', color: '#E91E63',
+    modeId: 'flash', modeName: 'Flash', subtitle: 'Le rendez-vous quotidien', emoji: '🔥', icon: '/assets/daily.png', color: '#E91E63',
     rules: [
       { icon: '🆓', text: 'Gratuit — 1 fois par jour' },
       { icon: 'icon:timer', text: '5 questions · 2 QCM · 15s' },

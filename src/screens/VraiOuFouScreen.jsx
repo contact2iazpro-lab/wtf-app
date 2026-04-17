@@ -214,7 +214,7 @@ export default function VraiOuFouScreen({ onHome }) {
           pointsEarned={0}
           hintsUsed={0}
           onNext={handleRevealNext}
-          onQuit={handleRevealNext}
+          onQuit={onHome}
           factIndex={index}
           totalFacts={pool.length}
           gameMode="vrai_ou_fou"
@@ -265,16 +265,24 @@ export default function VraiOuFouScreen({ onHome }) {
       className="absolute inset-0 flex flex-col overflow-hidden"
       style={{ '--scale': scale, background: `linear-gradient(160deg, ${catBg}88, ${catBg})`, fontFamily: 'Nunito, sans-serif' }}
     >
-      {/* Modal quitter */}
+      {/* Modal quitter — aligné avec RevelationScreen (même wording/style) */}
       {showQuit && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', maxWidth: 360 }}>
-            <div className="text-2xl text-center mb-3">🤔</div>
-            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter Vrai ET Fou ?</h2>
-            <p className="text-sm text-center mb-6" style={{ color: '#6B7280' }}>Tes réponses seront perdues.</p>
-            <div className="flex flex-col gap-3">
-              <button onClick={() => setShowQuit(false)} className="w-full py-4 rounded-2xl font-black text-base" style={{ background: VOF_GREEN, color: 'white' }}>Continuer</button>
-              <button onClick={onHome} className="w-full py-3 rounded-2xl font-bold text-sm" style={{ background: '#F3F4F6', color: '#6B7280' }}>Quitter</button>
+          <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', border: '1px solid #E5E7EB', boxShadow: '0 24px 64px rgba(0,0,0,0.25)', maxWidth: 360 }}>
+            <div className="text-2xl text-center mb-3">🏃</div>
+            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter la partie ?</h2>
+            <p className="text-sm text-center mb-6 leading-relaxed" style={{ color: '#6B7280' }}>
+              Tes réponses ne seront pas sauvegardées.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowQuit(false)} className="flex-1 py-4 rounded-2xl font-black text-base"
+                style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>
+                Annuler
+              </button>
+              <button onClick={() => { audio.stopAll(); onHome() }} className="flex-1 py-4 rounded-2xl font-black text-base"
+                style={{ background: 'rgba(244,67,54,0.1)', border: '1px solid #F44336', color: '#DC2626' }}>
+                Quitter
+              </button>
             </div>
           </div>
         </div>

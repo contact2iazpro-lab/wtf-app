@@ -15,7 +15,7 @@ export default function App() {
   const { toasts, toast, dismiss } = useToast()
 
   return (
-    <BrowserRouter basename="/admin">
+    <BrowserRouter basename={import.meta.env.PROD ? '/' : '/admin'}>
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       <Routes>
         <Route path="/login" element={<LoginPage toast={toast} />} />

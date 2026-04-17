@@ -103,11 +103,13 @@ export function usePlayerProfile() {
     // L'optimistic update est null-safe (si prev null, on le laisse tel quel).
     const nonce = generateNonce()
     return mutate({
+      // Clamp >= 0 pour coins/hints (même logique que GREATEST(0, …) côté RPC)
+      // Évite le flash négatif dans le header quand un achat dépasse le solde.
       optimistic: (prev) => prev ? {
         ...prev,
-        coins:   (prev.coins   ?? 0) + (delta.coins   ?? 0),
-        hints:   (prev.hints   ?? 0) + (delta.hints   ?? 0),
-        energy:  Math.min((prev.energy ?? 0) + (delta.energy ?? 0), 5),
+        coins:   Math.max(0, (prev.coins   ?? 0) + (delta.coins   ?? 0)),
+        hints:   Math.max(0, (prev.hints   ?? 0) + (delta.hints   ?? 0)),
+        energy:  Math.max(0, Math.min((prev.energy ?? 0) + (delta.energy ?? 0), 5)),
       } : prev,
       commit: async (prev) => {
         const { data, error } = await supabase.rpc('apply_currency_delta', {

@@ -121,6 +121,12 @@ const TROPHY_SECTIONS = [
 
 // ===== FONCTIONS EXPORTÉES =====
 
+// Seuil anti-cascade : au-delà, on considère qu'il s'agit d'un backfill
+// (re-login sur compte existant, sync Supabase → localStorage, migration) et on
+// persiste sans déclencher le cascade de modals. En jeu normal on ne gagne quasi
+// jamais plus de 2-3 badges d'un coup.
+const SILENT_BACKFILL_THRESHOLD = 5
+
 export function checkBadges() {
   const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
   const earned = [...(wtfData.badgesEarned || [])]
@@ -137,6 +143,12 @@ export function checkBadges() {
     wtfData.badgesEarned = earned
     wtfData.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(wtfData))
+  }
+
+  // Anti-cascade : au-delà du seuil, on persiste en silence (pas de modals)
+  if (newBadges.length > SILENT_BACKFILL_THRESHOLD) {
+    console.log(`[checkBadges] ${newBadges.length} badges marqués silencieusement (backfill detecté)`)
+    return []
   }
 
   return newBadges

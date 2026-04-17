@@ -62,8 +62,13 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
     return counts
   }, [unlockedFacts, factsPool])
 
-  // Catégories débloquées : 5 de base + celles persistées (Quest progression
-  // ou achat 100 coins) + celles débloquées dans la session courante.
+  // Catégories débloquées :
+  //   1. 5 de base (GUEST_CATEGORIES)
+  //   2. Celles persistées (achat 1500 coins ou progression Quest)
+  //   3. Celles de la session courante
+  //   4. Toute catégorie où le joueur a déjà ≥ 1 fact débloqué
+  //      (migration douce : comptes existants qui ont des f*cts dans des catégories
+  //       jamais "achetées" restent jouables — décidé 17/04/2026)
   const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
   const unlockedCatIds = useMemo(() => {
     const cats = new Set(GUEST_CATEGORIES)
@@ -72,8 +77,12 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       for (const id of (wd.unlockedCategories || [])) cats.add(id)
     } catch { /* ignore */ }
     for (const id of sessionUnlockedCats) cats.add(id)
+    // Auto-unlock : catégorie avec au moins 1 fact débloqué
+    for (const [catId, count] of Object.entries(unlockedPerCategory)) {
+      if (count > 0) cats.add(catId)
+    }
     return cats
-  }, [sessionUnlockedCats])
+  }, [sessionUnlockedCats, unlockedPerCategory])
 
   // En mode Quickie/Quickie : seules les catégories débloquées sont jouables
   const isLockedMode = gameMode === 'quickie' || sessionType === 'quickie'

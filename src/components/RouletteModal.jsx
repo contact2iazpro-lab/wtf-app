@@ -10,16 +10,25 @@ const S = (px) => `calc(${px}px * var(--scale))`
 // Probabilités : définies séparément via `weight` (indépendant de la taille).
 // Bloc 3.5 — T95 : avg coins/spin ~5,44
 // Spec ROULETTE_WTF_SPECS 15/04/2026 — 8 segments, économie ×10, spin = 100 coins
-const SEGMENTS = [
-  { label: '20',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 20  }, color: '#9CA3AF', weight: 28 },
-  { label: '50',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 50  }, color: '#CD7F32', weight: 24 },
-  { label: '1',   icon: '/assets/ui/icon-hint.png?v=2',  reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 18 },
-  { label: '100', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 100 }, color: '#C0C0C0', weight: 12 },
-  { label: '150', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 150 }, color: '#3B82F6', weight: 8  },
-  { label: '2',   icon: '/assets/ui/icon-hint.png?v=2',  reward: { type: 'hints', amount: 2   }, color: '#6D28D9', weight: 5  },
-  { label: '300', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 300 }, color: '#F59E0B', weight: 3  },
-  { label: '750', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 750 }, color: '#FFD700', weight: 2  },
+// 16 segments, 8 couleurs distinctes dupliquées (décision 18/04/2026) :
+// Chaque récompense apparaît 2× sur la roue → look plus riche, probas identiques.
+// Ordre couleurs : gris · orange · violet · bleu · vert · fuchsia · jaune · rouge
+const BASE_SEGMENTS = [
+  { label: '20',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 20  }, color: '#9CA3AF', weight: 28 }, // gris
+  { label: '50',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 50  }, color: '#F97316', weight: 24 }, // orange
+  { label: '1',   icon: '/assets/ui/icon-hint.png?v=2',  reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 18 }, // violet
+  { label: '100', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 100 }, color: '#3B82F6', weight: 12 }, // bleu
+  { label: '150', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 150 }, color: '#22C55E', weight: 8  }, // vert
+  { label: '2',   icon: '/assets/ui/icon-hint.png?v=2',  reward: { type: 'hints', amount: 2   }, color: '#EC4899', weight: 5  }, // fuchsia
+  { label: '300', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 300 }, color: '#EAB308', weight: 3  }, // jaune
+  { label: '750', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 750 }, color: '#EF4444', weight: 2  }, // rouge
 ]
+// Duplication pour 16 segments — on divise les poids par 2 pour garder les
+// probabilités de chaque récompense identiques au total.
+const SEGMENTS = [...BASE_SEGMENTS, ...BASE_SEGMENTS].map(s => ({
+  ...s,
+  weight: s.weight / 2,
+}))
 
 const TOTAL_WEIGHT = SEGMENTS.reduce((sum, s) => sum + s.weight, 0)
 const SEG_ANGLE = 360 / SEGMENTS.length
@@ -273,7 +282,7 @@ export default function RouletteModal({ onClose, scale }) {
           </div>
         </div>
 
-        {/* Résultat */}
+        {/* Résultat — icône centrée horizontalement */}
         {result && !spinning && (
           <div style={{
             background: isJackpotResult
@@ -284,6 +293,7 @@ export default function RouletteModal({ onClose, scale }) {
             padding: '12px 16px', marginBottom: 16,
             animation: 'roulettePop 0.3s ease',
             boxShadow: isJackpotResult ? '0 0 20px rgba(255,215,0,0.4)' : 'none',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           }}>
             <img src={result.icon} alt="" style={{ width: 36, height: 36 }} />
             <div style={{ fontSize: 16, fontWeight: 900, color: isJackpotResult ? '#B8860B' : '#FF6B1A', marginTop: 4 }}>

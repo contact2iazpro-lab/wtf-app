@@ -4,6 +4,7 @@ import CoinsIcon from '../components/CoinsIcon'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
+import { stripEmojis } from '../utils/stripEmojis'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import FallbackImage from '../components/FallbackImage'
 import BatteryIcon from '../components/home/BatteryIcon'
@@ -716,7 +717,7 @@ export default function RevelationScreen({
             <span style={{ color: accentColor, fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
           <div ref={explanationContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-            <p ref={explanationRef} style={{ color: 'rgba(255,255,255,0.85)', fontSize: explanationFontSize, lineHeight: 1.45, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
+            <p ref={explanationRef} style={{ color: 'rgba(255,255,255,0.85)', fontSize: explanationFontSize, lineHeight: 1.45, fontWeight: 500, margin: 0 }}>{stripEmojis(fact.explanation)}</p>
           </div>
         </div>
       </div>

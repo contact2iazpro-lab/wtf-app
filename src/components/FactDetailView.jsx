@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getPlayableCategories } from '../data/factsService'
 import renderFormattedText from '../utils/renderFormattedText'
+import { stripEmojis } from '../utils/stripEmojis'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -141,7 +142,7 @@ export default function FactDetailView({ fact, onClose }) {
                 <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: S(14), lineHeight: 1.45, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>
-                {renderFormattedText(fact.explanation, catColor)}
+                {renderFormattedText(stripEmojis(fact.explanation), catColor)}
               </p>
               {fact.sourceUrl && (
                 <a href={fact.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: S(9), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(4), textDecoration: 'underline', textAlign: 'right', flexShrink: 0 }}>

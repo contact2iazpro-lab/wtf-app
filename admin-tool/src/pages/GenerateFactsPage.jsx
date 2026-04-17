@@ -138,6 +138,9 @@ export default function GenerateFactsPage({ toast }) {
   const [enrichCounts, setEnrichCounts] = useState({ hints: null, funny: null, close: null, plausible: null, explanation: null })
   const [enrichCountsLoading, setEnrichCountsLoading] = useState(false)
 
+  // Limite optionnelle du nombre de facts à enrichir (test / batch réduit)
+  const [enrichLimit, setEnrichLimit] = useState('')
+
   // ── Fill URLs state ──────────────────────────────────────────────────────
   const [fillUrlsStatus, setFillUrlsStatus] = useState(null)
   const [fillUrlsResult, setFillUrlsResult] = useState(null)
@@ -494,6 +497,10 @@ export default function GenerateFactsPage({ toast }) {
       return
     }
 
+    // Parse la limite (0 ou vide = tous)
+    const parsedLimit = parseInt(enrichLimit, 10)
+    const limit = !isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : null
+
     enrichCancelRef.current = false
     setEnrichRunState('running')
     setEnrichErrorCount(0)
@@ -503,32 +510,39 @@ export default function GenerateFactsPage({ toast }) {
       let from = 0
       const PAGE = 1000
       while (true) {
-        const { data, error } = await supabase
+        let q = supabase
           .from('facts')
           .select('id, question, short_answer, explanation, category, hint1, hint2')
           .or(orClause)
           .range(from, from + PAGE - 1)
+        const { data, error } = await q
         if (error) throw error
         if (!data || data.length === 0) break
         all.push(...data)
+        // Stop dès qu'on a assez pour la limite
+        if (limit && all.length >= limit) break
         if (data.length < PAGE) break
         from += PAGE
       }
 
+      // Tronque à la limite si nécessaire
+      const toProcess = limit ? all.slice(0, limit) : all
+
       // Confirm avec le nombre trouvé
-      if (all.length === 0) {
+      if (toProcess.length === 0) {
         setEnrichRunState('done')
         setEnrichMessage('✅ Aucun fact concerné par ces filtres.')
         return
       }
       const writeGroups = activeGroups.join(', ')
-      if (!confirm(`Enrichir ${all.length} fact${all.length > 1 ? 's' : ''} ? Champs réécrits : ${writeGroups}.`)) {
+      const limitNote = limit && all.length > limit ? ` (limité à ${limit} sur ${all.length} concernés)` : ''
+      if (!confirm(`Enrichir ${toProcess.length} fact${toProcess.length > 1 ? 's' : ''}${limitNote} ? Champs réécrits : ${writeGroups}.`)) {
         setEnrichRunState('done')
         setEnrichMessage('⏹ Annulé.')
         return
       }
 
-      await enrichLoop(all, 'Enrichissement', enrichGroups)
+      await enrichLoop(toProcess, 'Enrichissement', enrichGroups)
     } catch (err) {
       setEnrichRunState('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
@@ -1181,6 +1195,40 @@ export default function GenerateFactsPage({ toast }) {
               >
                 {enrichCountsLoading ? '⟳' : '↻'}
               </button>
+            </div>
+
+            {/* Limite optionnelle + raccourcis */}
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <label className="text-xs font-bold text-slate-400">Limite :</label>
+              <input
+                type="number"
+                min="0"
+                value={enrichLimit}
+                onChange={e => setEnrichLimit(e.target.value)}
+                placeholder="tous"
+                disabled={enrichRunState === 'running'}
+                className="w-20 px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs font-bold text-white outline-none focus:border-orange-500 disabled:opacity-40"
+              />
+              <span className="text-xs text-slate-500">(vide = tous)</span>
+              <div className="flex gap-1 ml-2">
+                {[5, 10, 50, 100].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setEnrichLimit(String(n))}
+                    disabled={enrichRunState === 'running'}
+                    className="px-2 py-1 rounded-md text-[10px] font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 transition-all"
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setEnrichLimit('')}
+                  disabled={enrichRunState === 'running'}
+                  className="px-2 py-1 rounded-md text-[10px] font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 transition-all"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <div className="flex gap-3 flex-wrap">

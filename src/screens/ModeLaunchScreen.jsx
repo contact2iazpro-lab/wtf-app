@@ -197,35 +197,35 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         </button>
       </div>
 
-      {/* Icône + Titre + Sous-titre */}
+      {/* Icône + Titre + Sous-titre — compact pour laisser la place aux règles */}
       <div style={{
         textAlign: 'center', flexShrink: 0,
-        padding: `${S(8)} ${S(20)} ${S(8)}`,
+        padding: `${S(4)} ${S(20)} ${S(4)}`,
       }}>
         {icon
-          ? <img src={icon} alt={modeName} style={{ width: S(110), height: S(110), objectFit: 'contain', marginBottom: S(4), display: 'block', marginLeft: 'auto', marginRight: 'auto' }} />
-          : <div style={{ fontSize: S(40), marginBottom: S(2), lineHeight: 1 }}>{renderIcon(emoji)}</div>
+          ? <img src={icon} alt={modeName} style={{ width: S(72), height: S(72), objectFit: 'contain', marginBottom: S(2), display: 'block', marginLeft: 'auto', marginRight: 'auto' }} />
+          : <div style={{ fontSize: S(32), marginBottom: S(2), lineHeight: 1 }}>{renderIcon(emoji)}</div>
         }
         <h1 style={{
-          fontSize: S(28), fontWeight: 900, margin: 0,
+          fontSize: S(22), fontWeight: 900, margin: 0,
           letterSpacing: '0.02em',
           textShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
           {modeName}
         </h1>
         <p style={{
-          fontSize: S(15), fontWeight: 700, margin: `${S(4)} 0 0`,
+          fontSize: S(12), fontWeight: 700, margin: `${S(2)} 0 0`,
           opacity: 0.8,
         }}>
           {subtitle}
         </p>
       </div>
 
-      {/* Règles */}
+      {/* Règles — compact, sans scroll */}
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
-        padding: `0 ${S(20)}`,
-        display: 'flex', flexDirection: 'column', gap: isStyled ? S(5) : S(8),
+        padding: `0 ${S(16)}`,
+        display: 'flex', flexDirection: 'column', gap: isStyled ? S(4) : S(5),
         justifyContent: 'flex-start',
       }}>
         {(rules || []).map((rule, i) => {
@@ -241,14 +241,14 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           }
           return (
             <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: S(12),
+              display: 'flex', alignItems: 'center', gap: S(10),
               background: isStyled ? '#ffffff' : 'rgba(255,255,255,0.12)',
               border: isStyled ? `3px solid ${modeColor}` : 'none',
               backdropFilter: isStyled ? 'none' : 'blur(8px)',
-              borderRadius: S(12), padding: isStyled ? `${S(8)} ${S(14)}` : `${S(12)} ${S(14)}`,
+              borderRadius: S(10), padding: isStyled ? `${S(5)} ${S(10)}` : `${S(8)} ${S(10)}`,
             }}>
-              <span style={{ fontSize: S(22), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(22), height: S(22), color: isStyled ? textColor : 'inherit' }}>{renderIcon(rule.icon, 22, iconColor, modeId)}</span>
-              <span style={{ fontSize: S(13), fontWeight: isStyled ? 700 : 600, lineHeight: 1.35, color: isStyled ? textColor : 'inherit' }}>
+              <span style={{ fontSize: S(18), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(18), height: S(18), color: isStyled ? textColor : 'inherit' }}>{renderIcon(rule.icon, 18, iconColor, modeId)}</span>
+              <span style={{ fontSize: S(12), fontWeight: isStyled ? 700 : 600, lineHeight: 1.3, color: isStyled ? textColor : 'inherit' }}>
                 {renderText(rule.text)}
               </span>
             </div>
@@ -256,16 +256,16 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         })}
       </div>
 
-      {/* Checkbox + Bouton */}
+      {/* Checkbox + Bouton — footer compact */}
       <div style={{
-        flexShrink: 0, padding: `${S(8)} ${S(20)} ${S(12)}`,
+        flexShrink: 0, padding: `${S(4)} ${S(20)} ${S(10)}`,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}>
         <button
           onClick={() => setSkipNext(!skipNext)}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: S(10), marginBottom: S(14), cursor: 'pointer',
+            gap: S(8), marginBottom: S(8), cursor: 'pointer',
             background: 'none', border: 'none', padding: 0,
             WebkitTapHighlightColor: 'transparent',
           }}

@@ -55,11 +55,12 @@ if (ANTHROPIC_API_KEY) {
 }
 
 // ── Fichiers statiques (build Vite) ──
-app.use(express.static(path.join(__dirname, 'dist')))
+const DIST = process.env.ADMIN_DIST_PATH || path.join(__dirname, 'dist')
+app.use(express.static(DIST))
 
 // ── SPA fallback ──
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+  res.sendFile(path.join(DIST, 'index.html'))
 })
 
 app.listen(PORT, '0.0.0.0', () => {

@@ -54,5 +54,6 @@ else\n\
 fi\n' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENV PORT=80
+ENV ADMIN_DIST_PATH=/usr/share/nginx/html/admin
 EXPOSE 80
 CMD ["/entrypoint.sh"]

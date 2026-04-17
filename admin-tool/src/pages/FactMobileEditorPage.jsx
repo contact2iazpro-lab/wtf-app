@@ -380,7 +380,7 @@ export default function FactMobileEditorPage({ toast }) {
             </div>
           </div>
 
-          {/* Le saviez-vous — en tout fin */}
+          {/* Le saviez-vous */}
           <div style={{ marginBottom: 12 }}>
             <CenteredTextarea
               value={fact.explanation}
@@ -396,6 +396,33 @@ export default function FactMobileEditorPage({ toast }) {
               borderRadius={10}
               padding="8px 10px"
             />
+          </div>
+
+          {/* Image du fact — en tout fin (lecture seule) */}
+          <div style={{
+            marginBottom: 12,
+            borderRadius: 10,
+            overflow: 'hidden',
+            background: 'rgba(0,0,0,0.25)',
+            border: '1.5px solid rgba(255,255,255,0.18)',
+            aspectRatio: '1 / 1',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            {fact.image_url ? (
+              <img
+                src={fact.image_url}
+                alt="Fact"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                onError={e => { e.target.style.display = 'none' }}
+              />
+            ) : (
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: 12 }}>
+                Pas d'image
+              </span>
+            )}
           </div>
 
         </div>{/* end scroll */}

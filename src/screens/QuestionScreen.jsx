@@ -75,14 +75,21 @@ export default function QuestionScreen({
   // Progress display — Quickie shows X/10
   const displayTotalFacts = totalFacts
 
-  // Pause ref — synced to quit modal state (no re-render of CircularTimer)
-  const pausedRef = useRef(false)
-  useEffect(() => { pausedRef.current = showQuitConfirm }, [showQuitConfirm])
-
-  // Wrapped timeout — no-op while quit modal is open
+  // Le timer continue même quand la modal quitter est ouverte (décision 17/04/2026)
   const handleTimeout = useCallback(() => {
-    if (!pausedRef.current) onTimeout?.()
+    onTimeout?.()
   }, [onTimeout])
+
+  // Back button physique : ouvre la modal quitter (timer continue)
+  useEffect(() => {
+    const prev = window.__wtfBackHandler
+    window.__wtfBackHandler = () => {
+      if (showQuitConfirm) { setShowQuitConfirm(false); return true }
+      setShowQuitConfirm(true)
+      return true
+    }
+    return () => { window.__wtfBackHandler = prev || null }
+  }, [showQuitConfirm])
 
 
   // ── Style injection: compact screen media query only ───────────────────────

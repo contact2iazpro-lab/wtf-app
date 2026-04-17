@@ -11,8 +11,14 @@ export default function FactDetailView({ fact, onClose }) {
   const catGradient = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
   const isVip = !!fact.isVip
 
+  // Même message que RevelationScreen mauvaise réponse (pool randomisé de 3 variantes)
   const share = () => {
-    const text = `Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct ! ${window.location.origin}`
+    const shareMessages = [
+      `Mate ce f*ct !\n\n"${fact.question}"\n\n${window.location.origin}`,
+      `Tu connais ça ?!\n\n"${fact.question}"\n\n${window.location.origin}`,
+      `Incroyable !\n\n"${fact.question}"\n\n${window.location.origin}`,
+    ]
+    const text = shareMessages[Math.floor(Math.random() * shareMessages.length)]
     if (navigator.share) navigator.share({ text }).catch(() => {})
     else navigator.clipboard?.writeText(text).catch(() => {})
   }
@@ -147,7 +153,8 @@ export default function FactDetailView({ fact, onClose }) {
               className="active:scale-95 transition-all"
               style={{
                 width: '100%', height: S(44), borderRadius: S(14),
-                fontWeight: 900, fontSize: S(13), color: '#ffffff', border: 'none',
+                fontWeight: 900, fontSize: S(13), color: '#ffffff',
+                border: '3px solid #ffffff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
                 background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
                 boxShadow: `0 4px 16px ${catColor}50`,

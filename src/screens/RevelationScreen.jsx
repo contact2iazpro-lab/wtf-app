@@ -241,12 +241,14 @@ export default function RevelationScreen({
   const handleNativeShare = () => {
     const shareMessages = [
       `Mate ce f*ct !\n\n"${fact.question}"\n\n${window.location.origin}`,
-      `Tu savais ça ?!\n\n"${fact.question}"\n\n${window.location.origin}`,
+      `Tu connais ça ?!\n\n"${fact.question}"\n\n${window.location.origin}`,
       `Incroyable !\n\n"${fact.question}"\n\n${window.location.origin}`,
     ]
     const shareMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
     if (navigator.share) {
       navigator.share({ text: shareMessage }).catch(() => {})
+    } else if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(shareMessage)
     }
   }
 

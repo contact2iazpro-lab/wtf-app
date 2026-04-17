@@ -116,6 +116,17 @@ export default function ResultsScreen({
   // F*cts débloqués par achat depuis ce ResultsScreen (pour refresh immédiat du carrousel)
   const [extraUnlockedIds, setExtraUnlockedIds] = useState(() => new Set())
 
+  // Back physique : si un overlay est ouvert (FactDetailView / modal unlock), fermer au lieu de quitter
+  useEffect(() => {
+    const prev = window.__wtfBackHandler
+    window.__wtfBackHandler = () => {
+      if (viewingFact) { setViewingFact(null); return true }
+      if (selectedFact) { setSelectedFact(null); return true }
+      return false
+    }
+    return () => { window.__wtfBackHandler = prev || null }
+  }, [viewingFact, selectedFact])
+
   // Persister les facts temporaires quand le joueur se connecte depuis ResultsScreen
   useEffect(() => {
     if (isConnected && !savedAfterConnect && onSaveTempFacts && sessionType === 'quickie') {
@@ -309,15 +320,13 @@ export default function ResultsScreen({
   }, [coinsEarned])
 
 
-  // COR 5 — Share handler natif avec message défi
+  // Share handler natif avec message défi
   const handleShare = () => {
     const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || difficulty.label || sessionType) : sessionType
     const text = isVof
       ? `J'ai eu ${correctCount}/${totalFacts} au Vrai ET Fou WTF! 🤯 Tu peux faire mieux ? ${window.location.origin}`
       : `J'ai fait ${correctCount}/${totalFacts} en mode ${diffLabel} sur What The F*ct !\nTu peux faire mieux ? ${window.location.origin}`
-    if (onShare) {
-      onShare(text)
-    } else if (navigator.share) {
+    if (navigator.share) {
       navigator.share({ title: 'What The F*ct!', text }).catch(() => {})
     } else if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text)

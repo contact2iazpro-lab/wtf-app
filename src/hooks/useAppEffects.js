@@ -174,13 +174,29 @@ export function useAppEffects({
   useEffect(() => {
     const handlePopState = () => {
       window.history.pushState(null, '')
+      // Priorité : intercepteur de l'écran courant (modal ouverte, overlay…)
+      if (typeof window.__wtfBackHandler === 'function') {
+        try {
+          if (window.__wtfBackHandler() === true) return
+        } catch (e) { console.warn('[back] handler threw', e) }
+      }
       switch (screen) {
         case SCREENS.HOME: break
         case SCREENS.MODE_LAUNCH:
         case SCREENS.WTF_TEASER:
           setScreen(SCREENS.HOME)
           break
-        case SCREENS.CATEGORY:
+        case SCREENS.CATEGORY: {
+          // Quickie : retour ModeLaunchScreen si l'utilisateur n'a pas coché "skip"
+          const skipQuickie = localStorage.getItem('skip_launch_quickie') === 'true'
+          if (!skipQuickie) {
+            setScreen(SCREENS.MODE_LAUNCH)
+          } else {
+            setScreen(SCREENS.HOME)
+            setGameMode('solo')
+          }
+          break
+        }
         case SCREENS.BLITZ_LOBBY:
           setScreen(SCREENS.HOME)
           setGameMode('solo')

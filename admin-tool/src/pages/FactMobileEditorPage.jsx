@@ -1,14 +1,15 @@
 /**
  * FactMobileEditorPage — éditeur mobile inline d'un fact.
  *
- * Layout QuestionScreen (style Race) avec tous les champs en inputs/textareas
- * éditables directement. Bouton Sauvegarder flottant en bas-droite.
+ * Layout calqué sur QuestionScreen du jeu (tailles réelles) :
+ * - Sticky top : Question + Réponse vraie (toujours visibles)
+ * - Scroll : 7 autres réponses (grid 2 col) → 4 indices (grid 2 col)
+ *           → Le saviez-vous → 3 affirmations
+ * - Compteur N/X sous chaque champ (rouge si dépasse)
+ * - Bouton flottant Sauvegarder bas-droite
  *
- * Champs affichés :
- *   1 question
- *   4 indices (grille 2×2)
- *   8 réponses (code couleur par type)
- *   3 affirmations (statements)
+ * Objectif : permettre à l'admin de vérifier si les textes dépassent l'UI
+ * du jeu directement dans l'éditeur.
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -25,46 +26,56 @@ const isLightColor = (hex) => {
   return (r * 299 + g * 587 + b * 114) / 1000 > 160
 }
 
-// Couleurs des 4 types de réponses
-const ANSWER_COLORS = {
-  true:      { bg: '#22c55e', label: 'VRAIE' },
-  funny:     { bg: '#a855f7', label: 'DRÔLE' },
-  close:     { bg: '#f97316', label: 'PROCHE' },
-  plausible: { bg: '#3b82f6', label: 'PLAUSIBLE' },
+// Limites de caractères (source : admin-tool FactEditorPage + spec jeu)
+const LIMITS = {
+  question: 100,
+  short_answer: 50,
+  hint1: 20, hint2: 20, hint3: 20, hint4: 20,
+  funny_wrong_1: 50, funny_wrong_2: 50,
+  close_wrong_1: 50, close_wrong_2: 50,
+  plausible_wrong_1: 50, plausible_wrong_2: 50, plausible_wrong_3: 50,
+  explanation_min: 100, explanation_max: 300,
+  statement_true: 140, statement_false_funny: 140, statement_false_plausible: 140,
 }
 
-// Les 8 champs de réponse avec leur type
-const ANSWER_FIELDS = [
-  { key: 'short_answer',       type: 'true' },
-  { key: 'funny_wrong_1',      type: 'funny' },
-  { key: 'funny_wrong_2',      type: 'funny' },
-  { key: 'close_wrong_1',      type: 'close' },
-  { key: 'close_wrong_2',      type: 'close' },
-  { key: 'plausible_wrong_1',  type: 'plausible' },
-  { key: 'plausible_wrong_2',  type: 'plausible' },
-  { key: 'plausible_wrong_3',  type: 'plausible' },
+// Couleurs des 4 types (source : QuestionScreen dev mode)
+const COLOR_VRAIE     = '#22C55E'
+const COLOR_DROLE     = '#EAB308'
+const COLOR_PROCHE    = '#F97316'
+const COLOR_PLAUSIBLE = '#EF4444'
+
+// Les 7 mauvaises réponses (toutes sauf short_answer) avec couleur
+const WRONG_ANSWERS = [
+  { key: 'funny_wrong_1',      color: COLOR_DROLE },
+  { key: 'funny_wrong_2',      color: COLOR_DROLE },
+  { key: 'close_wrong_1',      color: COLOR_PROCHE },
+  { key: 'close_wrong_2',      color: COLOR_PROCHE },
+  { key: 'plausible_wrong_1',  color: COLOR_PLAUSIBLE },
+  { key: 'plausible_wrong_2',  color: COLOR_PLAUSIBLE },
+  { key: 'plausible_wrong_3',  color: COLOR_PLAUSIBLE },
 ]
 
 // ── Auto-resize textarea ────────────────────────────────────────────────
-function AutoTextarea({ value, onChange, placeholder, style, minRows = 1, ...rest }) {
+function AutoTextarea({ value, onChange, placeholder, style, minHeight = null, ...rest }) {
   const ref = useRef(null)
   useEffect(() => {
     const el = ref.current
     if (!el) return
     el.style.height = 'auto'
-    el.style.height = el.scrollHeight + 'px'
-  }, [value])
+    const h = minHeight ? Math.max(el.scrollHeight, minHeight) : el.scrollHeight
+    el.style.height = h + 'px'
+  }, [value, minHeight])
   return (
     <textarea
       ref={ref}
       value={value || ''}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      rows={minRows}
       style={{
         resize: 'none',
         overflow: 'hidden',
-        fontFamily: 'inherit',
+        fontFamily: 'Nunito, sans-serif',
+        display: 'block',
         ...style,
       }}
       {...rest}
@@ -72,18 +83,20 @@ function AutoTextarea({ value, onChange, placeholder, style, minRows = 1, ...res
   )
 }
 
-// ── Bloc labelled (titre + contenu) ─────────────────────────────────────
-function Field({ label, color = '#94a3b8', children, style }) {
+// ── Compteur N/X (rouge si dépasse) ─────────────────────────────────────
+function CharCounter({ value, max, min = null }) {
+  const len = (value || '').length
+  const tooLong = len > max
+  const tooShort = min != null && len > 0 && len < min
+  const bad = tooLong || tooShort
   return (
-    <div style={style}>
-      <div style={{
-        fontSize: 9, fontWeight: 900, color, textTransform: 'uppercase',
-        letterSpacing: '0.08em', marginBottom: 3,
-      }}>
-        {label}
-      </div>
-      {children}
-    </div>
+    <span style={{
+      fontSize: 9, fontWeight: 800,
+      color: bad ? '#EF4444' : 'rgba(255,255,255,0.5)',
+      letterSpacing: '0.03em',
+    }}>
+      {len}/{min != null ? `${min}-${max}` : max}
+    </span>
   )
 }
 
@@ -131,6 +144,7 @@ export default function FactMobileEditorPage({ toast }) {
         funny_wrong_1: fact.funny_wrong_1, funny_wrong_2: fact.funny_wrong_2,
         close_wrong_1: fact.close_wrong_1, close_wrong_2: fact.close_wrong_2,
         plausible_wrong_1: fact.plausible_wrong_1, plausible_wrong_2: fact.plausible_wrong_2, plausible_wrong_3: fact.plausible_wrong_3,
+        explanation: fact.explanation,
         statement_true: fact.statement_true,
         statement_false_funny: fact.statement_false_funny,
         statement_false_plausible: fact.statement_false_plausible,
@@ -161,163 +175,275 @@ export default function FactMobileEditorPage({ toast }) {
   const categoryColor = cat?.color || '#FF6B1A'
   const textOnCat = isLightColor(categoryColor) ? '#1a1a1a' : '#ffffff'
   const bg = `linear-gradient(160deg, ${categoryColor}22, ${categoryColor})`
+  // Couleur opaque pour sticky (évite transparence sur scroll)
+  const stickyBg = categoryColor
 
-  // Styles communs inputs (fond sombre + texte blanc, look QuestionScreen Race)
-  const inputBase = {
-    width: '100%',
-    background: 'rgba(0,0,0,0.35)',
-    color: '#ffffff',
-    border: '1.5px solid rgba(255,255,255,0.18)',
-    borderRadius: 10,
-    padding: '8px 10px',
-    fontSize: 13,
-    fontWeight: 600,
-    lineHeight: 1.35,
-    outline: 'none',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-  }
-
+  // ══════════════════════════════════════════════════════════════════════
   return (
-    <div className="min-h-full flex justify-center" style={{ background: '#0f172a' }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: '#0f172a',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
       <div
-        className="w-full"
         style={{
           maxWidth: 420,
+          margin: '0 auto',
           background: bg,
-          padding: '12px 12px 96px',
-          minHeight: '100vh',
+          minHeight: '100%',
           color: '#ffffff',
           fontFamily: 'Nunito, sans-serif',
+          paddingBottom: 100,
+          position: 'relative',
         }}
       >
-        {/* ── Header : retour + catégorie + id ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.25)',
-              color: '#fff', fontSize: 16, fontWeight: 900, cursor: 'pointer',
-            }}
-          >
-            ←
-          </button>
-          <div style={{
-            flex: 1, display: 'flex', alignItems: 'center', gap: 6,
-            padding: '6px 10px', borderRadius: 8,
-            background: categoryColor, color: textOnCat,
-            fontWeight: 900, fontSize: 12, letterSpacing: '0.03em',
-          }}>
-            <span>#{fact.id}</span>
-            <span style={{ opacity: 0.6 }}>·</span>
-            <span>{cat?.label || fact.category || '—'}</span>
-            {fact.is_vip && <span style={{ marginLeft: 'auto' }}>⭐</span>}
+        {/* ══ STICKY TOP : Header + Question + Vraie ══════════════════════ */}
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 10,
+          background: stickyBg,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+          padding: '8px 10px 10px',
+        }}>
+          {/* Header : retour + id + cat + vip */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <button
+              onClick={() => navigate(-1)}
+              style={{
+                width: 30, height: 30, borderRadius: '50%',
+                background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.35)',
+                color: '#fff', fontSize: 14, fontWeight: 900, cursor: 'pointer', flexShrink: 0,
+              }}
+            >
+              ←
+            </button>
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 11, fontWeight: 900, color: textOnCat, letterSpacing: '0.02em',
+            }}>
+              <span>#{fact.id}</span>
+              <span style={{ opacity: 0.6 }}>·</span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {cat?.label || fact.category || '—'}
+              </span>
+              {fact.is_vip && <span style={{ marginLeft: 4 }}>⭐</span>}
+            </div>
+          </div>
+
+          {/* Question — taille jeu : fontSize 15, weight 800, center, bg noir translucide */}
+          <div style={{ marginBottom: 8 }}>
+            <AutoTextarea
+              value={fact.question}
+              onChange={v => set('question', v)}
+              placeholder="Question du fact…"
+              style={{
+                width: '100%',
+                background: 'rgba(0,0,0,0.35)',
+                color: '#ffffff',
+                border: '1.5px solid rgba(255,255,255,0.18)',
+                borderRadius: 10,
+                padding: '8px 10px',
+                fontSize: 15,
+                fontWeight: 800,
+                lineHeight: 1.4,
+                textAlign: 'center',
+                outline: 'none',
+                backdropFilter: 'blur(8px)',
+              }}
+              minHeight={44}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingLeft: 4 }}>
+              <span style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                Question
+              </span>
+              <CharCounter value={fact.question} max={LIMITS.question} />
+            </div>
+          </div>
+
+          {/* Vraie réponse — juste après la question, contour vert */}
+          <div>
+            <AutoTextarea
+              value={fact.short_answer}
+              onChange={v => set('short_answer', v)}
+              placeholder="Vraie réponse…"
+              style={{
+                width: '100%',
+                background: 'rgba(255,255,255,0.15)',
+                color: '#ffffff',
+                border: `3px solid ${COLOR_VRAIE}`,
+                borderRadius: 12,
+                padding: '8px 10px',
+                fontSize: 13,
+                fontWeight: 700,
+                lineHeight: 1.2,
+                textAlign: 'center',
+                outline: 'none',
+              }}
+              minHeight={50}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingLeft: 4 }}>
+              <span style={{ fontSize: 9, fontWeight: 900, color: COLOR_VRAIE, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                Vraie
+              </span>
+              <CharCounter value={fact.short_answer} max={LIMITS.short_answer} />
+            </div>
           </div>
         </div>
 
-        {/* ── Question ─────────────────────────────────────────────── */}
-        <Field label="Question" color="rgba(255,255,255,0.75)" style={{ marginBottom: 12 }}>
-          <AutoTextarea
-            value={fact.question}
-            onChange={v => set('question', v)}
-            placeholder="Question du fact…"
-            minRows={2}
-            style={{ ...inputBase, fontSize: 14, fontWeight: 800 }}
-          />
-        </Field>
+        {/* ══ SCROLL : 7 autres réponses → indices → Le saviez-vous → affirmations ══ */}
+        <div style={{ padding: '10px' }}>
 
-        {/* ── 4 Indices — grille 2×2 ──────────────────────────────── */}
-        <Field label="Indices (1 à 4)" color="rgba(255,255,255,0.75)" style={{ marginBottom: 12 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-            {[1, 2, 3, 4].map(n => (
-              <div key={n} style={{ position: 'relative' }}>
-                <span style={{
-                  position: 'absolute', top: 4, right: 6, zIndex: 1,
-                  fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.5)',
-                }}>
-                  {n}
-                </span>
-                <AutoTextarea
-                  value={fact[`hint${n}`]}
-                  onChange={v => set(`hint${n}`, v)}
-                  placeholder={`Indice ${n}`}
-                  minRows={1}
-                  style={{ ...inputBase, fontSize: 12, paddingRight: 22 }}
-                />
-              </div>
-            ))}
-          </div>
-        </Field>
-
-        {/* ── 8 Réponses — code couleur par type ──────────────────── */}
-        <Field label="Réponses (8)" color="rgba(255,255,255,0.75)" style={{ marginBottom: 12 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {ANSWER_FIELDS.map(({ key, type }) => {
-              const c = ANSWER_COLORS[type]
-              return (
-                <div key={key} style={{ display: 'flex', gap: 6, alignItems: 'stretch' }}>
-                  <div style={{
-                    width: 70, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: c.bg, borderRadius: 10, padding: '0 6px',
-                    color: isLightColor(c.bg) ? '#1a1a1a' : '#ffffff',
-                    fontSize: 9, fontWeight: 900, letterSpacing: '0.04em',
-                  }}>
-                    {c.label}
-                  </div>
+          {/* ── 7 autres réponses — grid 2 col, taille jeu (btnH 50, fontSize 11) ── */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
+              Mauvaises réponses (7)
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
+              {WRONG_ANSWERS.map(({ key, color }) => (
+                <div key={key}>
                   <AutoTextarea
                     value={fact[key]}
                     onChange={v => set(key, v)}
-                    placeholder={c.label.toLowerCase()}
-                    minRows={1}
+                    placeholder="—"
                     style={{
-                      ...inputBase,
-                      flex: 1,
-                      borderColor: `${c.bg}88`,
-                      background: `${c.bg}14`,
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.15)',
+                      color: '#ffffff',
+                      border: `3px solid ${color}`,
+                      borderRadius: 12,
+                      padding: '4px 6px',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      lineHeight: 1.2,
+                      textAlign: 'center',
+                      outline: 'none',
                     }}
+                    minHeight={50}
                   />
+                  <div style={{ textAlign: 'right', marginTop: 2, paddingRight: 2 }}>
+                    <CharCounter value={fact[key]} max={LIMITS[key]} />
+                  </div>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
-        </Field>
 
-        {/* ── 3 Affirmations ─────────────────────────────────────── */}
-        <Field label="Affirmations (Vrai ou Fou)" color="rgba(255,255,255,0.75)" style={{ marginBottom: 12 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {[
-              { key: 'statement_true',              label: 'VRAIE',    color: '#22c55e' },
-              { key: 'statement_false_funny',       label: 'F. DRÔLE', color: '#a855f7' },
-              { key: 'statement_false_plausible',   label: 'F. PLAUS.', color: '#3b82f6' },
-            ].map(s => (
-              <div key={s.key} style={{ display: 'flex', gap: 6, alignItems: 'stretch' }}>
-                <div style={{
-                  width: 70, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: s.color, borderRadius: 10, padding: '0 6px',
-                  color: isLightColor(s.color) ? '#1a1a1a' : '#ffffff',
-                  fontSize: 9, fontWeight: 900, letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.1,
-                }}>
-                  {s.label}
+          {/* ── 4 Indices — grille 2 col, taille jeu (height 28, fontSize 10) ── */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
+              Indices (4)
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {[1, 2, 3, 4].map(n => {
+                const key = `hint${n}`
+                return (
+                  <div key={n}>
+                    <AutoTextarea
+                      value={fact[key]}
+                      onChange={v => set(key, v)}
+                      placeholder={`Indice ${n}`}
+                      style={{
+                        width: '100%',
+                        height: 28,
+                        background: 'rgba(235,235,235,0.95)',
+                        color: '#1a1a2e',
+                        border: `2px solid ${categoryColor}`,
+                        borderRadius: 14,
+                        padding: '2px 8px',
+                        fontSize: 10,
+                        fontWeight: 800,
+                        lineHeight: 1,
+                        textAlign: 'center',
+                        outline: 'none',
+                        overflow: 'hidden',
+                      }}
+                      minHeight={28}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingLeft: 2 }}>
+                      <span style={{ fontSize: 8, fontWeight: 900, color: 'rgba(255,255,255,0.5)' }}>#{n}</span>
+                      <CharCounter value={fact[key]} max={LIMITS[key]} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* ── Le saviez-vous (explanation) ────────────────────────────── */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
+              Le saviez-vous ?
+            </div>
+            <AutoTextarea
+              value={fact.explanation}
+              onChange={v => set('explanation', v)}
+              placeholder="Explication du fact…"
+              style={{
+                width: '100%',
+                background: 'rgba(0,0,0,0.35)',
+                color: '#ffffff',
+                border: '1.5px solid rgba(255,255,255,0.25)',
+                borderRadius: 10,
+                padding: '8px 10px',
+                fontSize: 12,
+                fontWeight: 500,
+                lineHeight: 1.45,
+                outline: 'none',
+              }}
+              minHeight={80}
+            />
+            <div style={{ textAlign: 'right', marginTop: 2 }}>
+              <CharCounter value={fact.explanation} max={LIMITS.explanation_max} min={LIMITS.explanation_min} />
+            </div>
+          </div>
+
+          {/* ── 3 Affirmations (Vrai ou Fou) ─────────────────────────────── */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.65)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5 }}>
+              Affirmations — Vrai ou Fou
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {[
+                { key: 'statement_true',              color: COLOR_VRAIE,     label: 'VRAIE' },
+                { key: 'statement_false_funny',       color: COLOR_DROLE,     label: 'FAUSSE DRÔLE' },
+                { key: 'statement_false_plausible',   color: COLOR_PLAUSIBLE, label: 'FAUSSE PLAUSIBLE' },
+              ].map(s => (
+                <div key={s.key}>
+                  <AutoTextarea
+                    value={fact[s.key]}
+                    onChange={v => set(s.key, v)}
+                    placeholder={s.label.toLowerCase()}
+                    style={{
+                      width: '100%',
+                      background: 'rgba(0,0,0,0.35)',
+                      color: '#ffffff',
+                      border: `2.5px solid ${s.color}`,
+                      borderRadius: 10,
+                      padding: '8px 10px',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      lineHeight: 1.3,
+                      outline: 'none',
+                    }}
+                    minHeight={44}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingLeft: 2 }}>
+                    <span style={{ fontSize: 8, fontWeight: 900, color: s.color, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                      {s.label}
+                    </span>
+                    <CharCounter value={fact[s.key]} max={LIMITS[s.key]} />
+                  </div>
                 </div>
-                <AutoTextarea
-                  value={fact[s.key]}
-                  onChange={v => set(s.key, v)}
-                  placeholder={s.label.toLowerCase()}
-                  minRows={1}
-                  style={{
-                    ...inputBase,
-                    flex: 1,
-                    borderColor: `${s.color}88`,
-                    background: `${s.color}14`,
-                  }}
-                />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </Field>
 
-        {/* ── FAB Sauvegarder (bas-droite) ────────────────────────── */}
+        </div>{/* end scroll */}
+
+        {/* ══ FAB Sauvegarder (fixed bas-droite) ══════════════════════ */}
         <button
           onClick={save}
           disabled={saving || !dirty}

@@ -1,14 +1,13 @@
 /**
  * FactMobileEditorPage — éditeur mobile inline d'un fact.
  *
- * Calqué sur QuestionScreen du jeu (tailles réelles) pour vérifier le débord UI.
- * - Sticky top : Question + Réponse vraie
- * - Scroll : 7+1 autres réponses (grid 2 col) → 4 indices (grid 2 col) → 3 affirmations → Le saviez-vous
- * - Compteur N/X positionné en bas-droite DANS le cadre
- * - Fond rouge si champ invalide (dépasse max ou manquant sous min ou vide obligatoire)
- * - Pas de titres de section (devinés par le layout)
- * - Texte centré vertical + horizontal (vraie/fausses/indices)
- * - Bouton flottant Sauvegarder bas-droite
+ * Calqué sur QuestionScreen du jeu (tailles réelles).
+ * - Sticky top : Question + Vraie réponse
+ * - Scroll : 8 autres réponses (grid 2) → 4 indices (grid 2) → 3 affirmations → Le saviez-vous
+ * - Cellule ROUGE VIF si champ invalide (pas de compteur N/X)
+ * - Contenu centré horizontal + vertical dans chaque cadre
+ * - Pas de titres de section
+ * - FAB Sauvegarder bas-droite
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -25,7 +24,7 @@ const isLightColor = (hex) => {
   return (r * 299 + g * 587 + b * 114) / 1000 > 160
 }
 
-// Limites de caractères (source : admin-tool FactEditorPage + spec jeu)
+// Limites de caractères (validation → fond rouge si non conforme)
 const LIMITS = {
   question: { max: 100, required: true },
   short_answer: { max: 50, required: true },
@@ -64,7 +63,7 @@ const COLOR_DROLE     = '#EAB308'
 const COLOR_PROCHE    = '#F97316'
 const COLOR_PLAUSIBLE = '#EF4444'
 
-// Les 8 mauvaises réponses (hors short_answer) avec couleur
+// Les 8 mauvaises réponses (hors short_answer)
 const WRONG_ANSWERS = [
   { key: 'funny_wrong_1',      color: COLOR_DROLE },
   { key: 'funny_wrong_2',      color: COLOR_DROLE },
@@ -76,55 +75,55 @@ const WRONG_ANSWERS = [
   { key: 'plausible_wrong_3',  color: COLOR_PLAUSIBLE },
 ]
 
-// Fond rouge (invalide) — teinté sombre, gardé lisible
-const INVALID_BG = 'rgba(239,68,68,0.35)'
+// Rouge vif — fond si champ invalide
+const INVALID_BG = 'rgba(239,68,68,0.65)'
 
-// ── Auto-resize textarea ────────────────────────────────────────────────
-function AutoTextarea({ value, onChange, placeholder, style, minHeight = null, ...rest }) {
+// ── Auto-resize textarea, centrée dans un wrapper flex ──────────────────
+function CenteredTextarea({ value, onChange, placeholder, bg, border, color, fontSize, fontWeight, lineHeight = 1.3, minHeight, borderRadius = 12, padding = '6px 8px' }) {
   const ref = useRef(null)
   useEffect(() => {
     const el = ref.current
     if (!el) return
     el.style.height = 'auto'
-    const h = minHeight ? Math.max(el.scrollHeight, minHeight) : el.scrollHeight
-    el.style.height = h + 'px'
-  }, [value, minHeight])
+    el.style.height = el.scrollHeight + 'px'
+  }, [value])
   return (
-    <textarea
-      ref={ref}
-      value={value || ''}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      style={{
-        resize: 'none',
-        overflow: 'hidden',
-        fontFamily: 'Nunito, sans-serif',
-        display: 'block',
-        ...style,
-      }}
-      {...rest}
-    />
-  )
-}
-
-// ── Compteur overlay (bas-droite DANS le cadre) ─────────────────────────
-function OverlayCounter({ value, max, min = null, color = 'rgba(255,255,255,0.55)', dark = false }) {
-  const len = (value || '').length
-  const tooLong = len > max
-  const tooShort = min != null && len > 0 && len < min
-  const bad = tooLong || tooShort
-  const textColor = bad ? '#EF4444' : (dark ? 'rgba(0,0,0,0.55)' : color)
-  return (
-    <span style={{
-      position: 'absolute', right: 4, bottom: 2, zIndex: 2,
-      fontSize: 9, fontWeight: 800, lineHeight: 1,
-      letterSpacing: '0.02em',
-      color: textColor,
-      pointerEvents: 'none',
-      textShadow: dark ? 'none' : '0 1px 2px rgba(0,0,0,0.5)',
+    <div style={{
+      width: '100%', minHeight,
+      background: bg,
+      border,
+      borderRadius,
+      padding,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxSizing: 'border-box',
     }}>
-      {len}/{min != null ? `${min}-${max}` : max}
-    </span>
+      <textarea
+        ref={ref}
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={1}
+        style={{
+          width: '100%',
+          background: 'transparent',
+          color,
+          border: 'none',
+          outline: 'none',
+          resize: 'none',
+          overflow: 'hidden',
+          fontFamily: 'Nunito, sans-serif',
+          fontSize,
+          fontWeight,
+          lineHeight,
+          textAlign: 'center',
+          padding: 0,
+          margin: 0,
+          display: 'block',
+        }}
+      />
+    </div>
   )
 }
 
@@ -260,128 +259,98 @@ export default function FactMobileEditorPage({ toast }) {
             </div>
           </div>
 
-          {/* Question — taille jeu : fontSize 15, weight 800, center */}
-          <div style={{ position: 'relative', marginBottom: 8 }}>
-            <AutoTextarea
+          {/* Question */}
+          <div style={{ marginBottom: 8 }}>
+            <CenteredTextarea
               value={fact.question}
               onChange={v => set('question', v)}
               placeholder="Question…"
-              style={{
-                width: '100%',
-                background: isFieldInvalid(fact.question, 'question') ? INVALID_BG : 'rgba(0,0,0,0.35)',
-                color: '#ffffff',
-                border: '1.5px solid rgba(255,255,255,0.18)',
-                borderRadius: 10,
-                padding: '10px 32px 14px 10px',
-                fontSize: 15,
-                fontWeight: 800,
-                lineHeight: 1.4,
-                textAlign: 'center',
-                outline: 'none',
-                backdropFilter: 'blur(8px)',
-              }}
-              minHeight={44}
+              bg={isFieldInvalid(fact.question, 'question') ? INVALID_BG : 'rgba(0,0,0,0.35)'}
+              border="1.5px solid rgba(255,255,255,0.18)"
+              color="#ffffff"
+              fontSize={15}
+              fontWeight={800}
+              lineHeight={1.4}
+              minHeight={48}
+              borderRadius={10}
+              padding="8px 10px"
             />
-            <OverlayCounter value={fact.question} max={LIMITS.question.max} />
           </div>
 
-          {/* Vraie réponse — contour vert, centré */}
-          <div style={{ position: 'relative' }}>
-            <AutoTextarea
-              value={fact.short_answer}
-              onChange={v => set('short_answer', v)}
-              placeholder="Vraie réponse…"
-              style={{
-                width: '100%',
-                background: isFieldInvalid(fact.short_answer, 'short_answer') ? INVALID_BG : 'rgba(255,255,255,0.15)',
-                color: '#ffffff',
-                border: `3px solid ${COLOR_VRAIE}`,
-                borderRadius: 12,
-                padding: '8px 32px 14px 10px',
-                fontSize: 13,
-                fontWeight: 700,
-                lineHeight: 1.2,
-                textAlign: 'center',
-                outline: 'none',
-              }}
-              minHeight={50}
-            />
-            <OverlayCounter value={fact.short_answer} max={LIMITS.short_answer.max} />
-          </div>
+          {/* Vraie réponse */}
+          <CenteredTextarea
+            value={fact.short_answer}
+            onChange={v => set('short_answer', v)}
+            placeholder="Vraie réponse…"
+            bg={isFieldInvalid(fact.short_answer, 'short_answer') ? INVALID_BG : 'rgba(255,255,255,0.15)'}
+            border={`3px solid ${COLOR_VRAIE}`}
+            color="#ffffff"
+            fontSize={13}
+            fontWeight={700}
+            lineHeight={1.2}
+            minHeight={50}
+            borderRadius={12}
+            padding="4px 8px"
+          />
         </div>
 
-        {/* ══ SCROLL : 8 autres réponses → 4 indices → affirmations → saviez-vous ══ */}
+        {/* ══ SCROLL : 8 réponses → 4 indices → 3 affirmations → saviez-vous ══ */}
         <div style={{ padding: '10px' }}>
 
-          {/* ── 8 autres réponses — grid 2 col, taille jeu (50h, 11px, centré) ── */}
+          {/* 8 mauvaises réponses — grid 2 col, taille jeu */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
               {WRONG_ANSWERS.map(({ key, color }) => {
                 const invalid = isFieldInvalid(fact[key], key)
                 return (
-                  <div key={key} style={{ position: 'relative' }}>
-                    <AutoTextarea
-                      value={fact[key]}
-                      onChange={v => set(key, v)}
-                      placeholder="—"
-                      style={{
-                        width: '100%',
-                        background: invalid ? INVALID_BG : 'rgba(255,255,255,0.15)',
-                        color: '#ffffff',
-                        border: `3px solid ${color}`,
-                        borderRadius: 12,
-                        padding: '4px 24px 12px 6px',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        lineHeight: 1.2,
-                        textAlign: 'center',
-                        outline: 'none',
-                      }}
-                      minHeight={50}
-                    />
-                    <OverlayCounter value={fact[key]} max={LIMITS[key].max} />
-                  </div>
+                  <CenteredTextarea
+                    key={key}
+                    value={fact[key]}
+                    onChange={v => set(key, v)}
+                    placeholder="—"
+                    bg={invalid ? INVALID_BG : 'rgba(255,255,255,0.15)'}
+                    border={`3px solid ${color}`}
+                    color="#ffffff"
+                    fontSize={11}
+                    fontWeight={700}
+                    lineHeight={1.2}
+                    minHeight={50}
+                    borderRadius={12}
+                    padding="4px 6px"
+                  />
                 )
               })}
             </div>
           </div>
 
-          {/* ── 4 Indices — grille 2 col, taille jeu (28h, fond blanc, centré) ── */}
+          {/* 4 Indices — grid 2 col, taille jeu (fond blanc, 28h) */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[1, 2, 3, 4].map(n => {
                 const key = `hint${n}`
                 const invalid = isFieldInvalid(fact[key], key)
                 return (
-                  <div key={n} style={{ position: 'relative' }}>
-                    <AutoTextarea
-                      value={fact[key]}
-                      onChange={v => set(key, v)}
-                      placeholder={`Indice ${n}`}
-                      style={{
-                        width: '100%',
-                        background: invalid ? INVALID_BG : 'rgba(235,235,235,0.95)',
-                        color: invalid ? '#ffffff' : '#1a1a2e',
-                        border: `2px solid ${categoryColor}`,
-                        borderRadius: 14,
-                        padding: '2px 24px 8px 8px',
-                        fontSize: 10,
-                        fontWeight: 800,
-                        lineHeight: 1,
-                        textAlign: 'center',
-                        outline: 'none',
-                        overflow: 'hidden',
-                      }}
-                      minHeight={28}
-                    />
-                    <OverlayCounter value={fact[key]} max={LIMITS[key].max} dark={!invalid} />
-                  </div>
+                  <CenteredTextarea
+                    key={n}
+                    value={fact[key]}
+                    onChange={v => set(key, v)}
+                    placeholder={`Indice ${n}`}
+                    bg={invalid ? INVALID_BG : 'rgba(235,235,235,0.95)'}
+                    border={`2px solid ${categoryColor}`}
+                    color={invalid ? '#ffffff' : '#1a1a2e'}
+                    fontSize={10}
+                    fontWeight={800}
+                    lineHeight={1}
+                    minHeight={28}
+                    borderRadius={14}
+                    padding="2px 8px"
+                  />
                 )
               })}
             </div>
           </div>
 
-          {/* ── 3 Affirmations ────────────────────────────────────────── */}
+          {/* 3 Affirmations (Vrai ou Fou) */}
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {[
@@ -391,53 +360,42 @@ export default function FactMobileEditorPage({ toast }) {
               ].map(s => {
                 const invalid = isFieldInvalid(fact[s.key], s.key)
                 return (
-                  <div key={s.key} style={{ position: 'relative' }}>
-                    <AutoTextarea
-                      value={fact[s.key]}
-                      onChange={v => set(s.key, v)}
-                      placeholder="—"
-                      style={{
-                        width: '100%',
-                        background: invalid ? INVALID_BG : 'rgba(0,0,0,0.35)',
-                        color: '#ffffff',
-                        border: `2.5px solid ${s.color}`,
-                        borderRadius: 10,
-                        padding: '8px 32px 14px 10px',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        lineHeight: 1.3,
-                        outline: 'none',
-                      }}
-                      minHeight={44}
-                    />
-                    <OverlayCounter value={fact[s.key]} max={LIMITS[s.key].max} />
-                  </div>
+                  <CenteredTextarea
+                    key={s.key}
+                    value={fact[s.key]}
+                    onChange={v => set(s.key, v)}
+                    placeholder="—"
+                    bg={invalid ? INVALID_BG : 'rgba(0,0,0,0.35)'}
+                    border={`2.5px solid ${s.color}`}
+                    color="#ffffff"
+                    fontSize={12}
+                    fontWeight={600}
+                    lineHeight={1.3}
+                    minHeight={44}
+                    borderRadius={10}
+                    padding="6px 10px"
+                  />
                 )
               })}
             </div>
           </div>
 
-          {/* ── Le saviez-vous (explanation) — en TOUT FIN ────────────── */}
-          <div style={{ marginBottom: 12, position: 'relative' }}>
-            <AutoTextarea
+          {/* Le saviez-vous — en tout fin */}
+          <div style={{ marginBottom: 12 }}>
+            <CenteredTextarea
               value={fact.explanation}
               onChange={v => set('explanation', v)}
               placeholder="Le saviez-vous…"
-              style={{
-                width: '100%',
-                background: isFieldInvalid(fact.explanation, 'explanation') ? INVALID_BG : 'rgba(0,0,0,0.35)',
-                color: '#ffffff',
-                border: '1.5px solid rgba(255,255,255,0.25)',
-                borderRadius: 10,
-                padding: '8px 10px 18px',
-                fontSize: 12,
-                fontWeight: 500,
-                lineHeight: 1.45,
-                outline: 'none',
-              }}
+              bg={isFieldInvalid(fact.explanation, 'explanation') ? INVALID_BG : 'rgba(0,0,0,0.35)'}
+              border="1.5px solid rgba(255,255,255,0.25)"
+              color="#ffffff"
+              fontSize={12}
+              fontWeight={500}
+              lineHeight={1.45}
               minHeight={80}
+              borderRadius={10}
+              padding="8px 10px"
             />
-            <OverlayCounter value={fact.explanation} max={LIMITS.explanation.max} min={LIMITS.explanation.min} />
           </div>
 
         </div>{/* end scroll */}

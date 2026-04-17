@@ -1121,11 +1121,11 @@ export default function GenerateFactsPage({ toast }) {
             {/* Filtres par groupe */}
             <div className="flex flex-wrap gap-2 mb-4">
               {[
-                { key: 'hints',       label: 'Indices (1-4)',        color: '#38BDF8' },
-                { key: 'funny',       label: 'Fausses drôles (1-3)', color: '#EAB308' },
-                { key: 'close',       label: 'Fausses proches (1-2)', color: '#F97316' },
-                { key: 'plausible',   label: 'Fausses plausibles (1-3)', color: '#EF4444' },
-                { key: 'explanation', label: 'Le saviez-vous',       color: '#22C55E' },
+                { key: 'hints',       label: 'Indices',           color: '#38BDF8' },
+                { key: 'funny',       label: 'Fausses drôles',    color: '#EAB308' },
+                { key: 'close',       label: 'Fausses proches',   color: '#F97316' },
+                { key: 'plausible',   label: 'Fausses plausibles', color: '#EF4444' },
+                { key: 'explanation', label: 'Le saviez-vous',    color: '#22C55E' },
               ].map(({ key, label, color }) => {
                 const on = enrichGroups[key]
                 return (

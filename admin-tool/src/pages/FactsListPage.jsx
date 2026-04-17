@@ -144,7 +144,18 @@ export default function FactsListPage({ toast }) {
         .select('id, category, question, short_answer, explanation, hint1, hint2, is_vip, is_published, status, pack_id, updated_at, image_url, funny_wrong_1', { count: 'exact' })
 
       if (debouncedSearch) {
-        q = q.or(`question.ilike.%${debouncedSearch}%,explanation.ilike.%${debouncedSearch}%,short_answer.ilike.%${debouncedSearch}%`)
+        // Recherche étendue sur tous les champs texte d'un fact
+        const s = debouncedSearch.replace(/,/g, ' ') // virgule réservée en syntaxe .or
+        const fields = [
+          'question', 'short_answer', 'explanation',
+          'hint1', 'hint2', 'hint3', 'hint4',
+          'funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3',
+          'close_wrong_1', 'close_wrong_2',
+          'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
+          'statement_true', 'statement_false_funny', 'statement_false_plausible',
+          'source_url', 'category',
+        ]
+        q = q.or(fields.map(f => `${f}.ilike.%${s}%`).join(','))
       }
       if (filterCategories.length) q = q.in('category', filterCategories)
       if (filterVip === 'vip') q = q.eq('is_vip', true)

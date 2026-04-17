@@ -54,8 +54,17 @@ if (ANTHROPIC_API_KEY) {
   console.warn('⚠️ ANTHROPIC_API_KEY manquant — génération affirmations désactivée')
 }
 
+// ── Health check ──
+app.get('/health', (req, res) => res.json({ status: 'ok', port: PORT }))
+
 // ── Fichiers statiques (build Vite) ──
 const DIST = process.env.ADMIN_DIST_PATH || path.join(__dirname, 'dist')
+console.log(`📁 Serving static from: ${DIST}`)
+
+import fs from 'fs'
+const files = fs.existsSync(DIST) ? fs.readdirSync(DIST) : ['DIST NOT FOUND']
+console.log(`📁 Files in DIST:`, files)
+
 app.use(express.static(DIST))
 
 // ── SPA fallback ──

@@ -147,6 +147,10 @@ function renderText(text) {
 
 export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, icon, rules, color, ctaLabel, onStart, onBack }) {
   const scale = useScale()
+  // Règle (17/04/2026) : la page de règles s'affiche TOUJOURS par défaut, case décochée.
+  // - Seul le clic utilisateur sur la case "Ne plus afficher" + LET'S GO active skip_launch_${modeId}.
+  // - Unique moyen de réactiver : décocher "Réafficher les règles au lancement" dans le livret (HowToPlayModal).
+  // - Aucun autre code ne doit écrire la clé skip_launch_* (audité 18/04/2026).
   const [skipNext, setSkipNext] = useState(false)
 
   const handleStart = () => {
@@ -221,13 +225,15 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         </p>
       </div>
 
-      {/* Règles — compact, sans scroll, encadrés auto-width centrés */}
+      {/* Règles — compact, sans scroll, encadrés tous à la largeur du plus grand, centrés */}
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
         padding: `0 ${S(16)}`,
-        display: 'flex', flexDirection: 'column', gap: isStyled ? S(4) : S(5),
-        justifyContent: 'flex-start',
-        alignItems: 'center',
+        display: 'grid',
+        gridTemplateColumns: 'auto',
+        justifyContent: 'center',
+        alignContent: 'start',
+        rowGap: isStyled ? S(4) : S(5),
       }}>
         {(rules || []).map((rule, i) => {
           let iconColor = undefined
@@ -242,12 +248,12 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           }
           return (
             <div key={i} style={{
-              display: 'inline-flex', alignItems: 'center', gap: S(10),
+              display: 'flex', alignItems: 'center', gap: S(10),
               background: isStyled ? '#ffffff' : 'rgba(255,255,255,0.12)',
               border: isStyled ? `3px solid ${modeColor}` : 'none',
               backdropFilter: isStyled ? 'none' : 'blur(8px)',
               borderRadius: S(10), padding: isStyled ? `${S(5)} ${S(10)}` : `${S(8)} ${S(10)}`,
-              width: 'auto', maxWidth: '100%',
+              width: '100%', boxSizing: 'border-box',
             }}>
               <span style={{ fontSize: S(18), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(18), height: S(18), color: isStyled ? textColor : 'inherit' }}>{renderIcon(rule.icon, 18, iconColor, modeId)}</span>
               <span style={{ fontSize: S(12), fontWeight: isStyled ? 700 : 600, lineHeight: 1.3, color: isStyled ? textColor : 'inherit' }}>

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { CATEGORIES, VIP_USAGES } from '../constants/categories'
 import { resolveImageUrl } from '../utils/imageUrl'
 import { generateStatementsForFact } from '../lib/generateStatements'
+import { STATUSES, CharCounter, Toggle, Section, Field, inputCls, inputClsErr } from '../components/shared'
 
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
@@ -14,13 +15,6 @@ const EDITABLE_FIELDS = [
   'statement_true', 'statement_false_funny', 'statement_false_plausible',
 ]
 
-const STATUSES = [
-  { value: 'draft',     label: 'Brouillon', color: '#9CA3AF', icon: '✏️' },
-  { value: 'reserve',   label: 'Réserve',   color: '#F59E0B', icon: '🔒' },
-  { value: 'published', label: 'Publié',    color: '#10B981', icon: '✅' },
-]
-
-
 const CHAR_LIMITS = {
   question:     { max: 100 },
   hint1:        { max: 20 },
@@ -29,58 +23,6 @@ const CHAR_LIMITS = {
   explanation:  { min: 100, max: 300 },
   option:       { max: 50 },
 }
-
-function CharCounter({ value, max, min }) {
-  const len = (value || '').length
-  const isOver = len > max
-  const isUnder = min != null && len > 0 && len < min
-  return (
-    <span className={`text-xs font-mono tabular-nums ${isOver ? 'text-red-400 font-bold' : isUnder ? 'text-amber-400' : 'text-slate-600'}`}>
-      {len}/{max}{isOver && ' ⚠'}
-    </span>
-  )
-}
-
-function Toggle({ on, onChange, label, color }) {
-  return (
-    <button
-      onClick={() => onChange(!on)}
-      className="flex items-center gap-3 w-full"
-    >
-      <div
-        className="relative w-12 h-6 rounded-full transition-all shrink-0"
-        style={{ background: on ? (color || '#22C55E') : '#374151' }}
-      >
-        <div className="absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all" style={{ left: on ? '26px' : '4px' }} />
-      </div>
-      <span className={`text-sm font-semibold ${on ? 'text-white' : 'text-slate-500'}`}>{label}</span>
-    </button>
-  )
-}
-
-function Section({ title, children }) {
-  return (
-    <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-      <h3 className="text-sm font-black text-slate-400 uppercase tracking-wider mb-4">{title}</h3>
-      {children}
-    </div>
-  )
-}
-
-function Field({ label, hint, children }) {
-  return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between mb-1.5">
-        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</label>
-        {hint && <span className="text-xs text-slate-600">{hint}</span>}
-      </div>
-      {children}
-    </div>
-  )
-}
-
-const inputCls = "w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-orange-DEFAULT placeholder-slate-500 resize-none"
-const inputClsOver = "w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-red-500 text-white text-sm focus:outline-none placeholder-slate-500 resize-none"
 
 function fmt(dateStr) {
   if (!dateStr) return '—'
@@ -145,8 +87,8 @@ function FactPreviewStandalone({ fact }) {
 
       {/* Phone frame */}
       <div
-        className="mx-auto rounded-[2rem] overflow-hidden border-4 border-slate-600 shadow-2xl"
-        style={{ width: 320, height: 580, fontFamily: 'Nunito, sans-serif' }}
+        className="mx-auto rounded-[2rem] overflow-hidden border-4 border-slate-600 shadow-2xl max-w-[320px] w-full"
+        style={{ aspectRatio: '320/580', fontFamily: 'Nunito, sans-serif' }}
       >
         {tab === 'question' ? (
           /* ───── QUESTION TAB ───── */
@@ -491,7 +433,7 @@ export default function FactEditorPage({ toast }) {
         max_output_tokens: 1024,
       }
 
-      const directionsRes = await fetch('https://znoceotakhynqcqhpwgz.supabase.co/functions/v1/generate-image-directions', {
+      const directionsRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image-directions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
@@ -531,7 +473,7 @@ export default function FactEditorPage({ toast }) {
 
       // 5. Generate image
       console.log('Generating image...')
-      const imageRes = await fetch('https://znoceotakhynqcqhpwgz.supabase.co/functions/v1/generate-image', {
+      const imageRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_ADMIN_PASSWORD}`,
@@ -745,7 +687,7 @@ export default function FactEditorPage({ toast }) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-20 md:pb-0">
       {/* Delete confirmation modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShowDeleteConfirm(false)}>
@@ -788,21 +730,21 @@ export default function FactEditorPage({ toast }) {
         </div>
         <div className="flex items-center gap-2">
           {prevId && (
-            <Link to={`/facts/${prevId}?${searchParams.toString()}`} className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
+            <Link to={`/facts/${prevId}?${searchParams.toString()}`} className="min-h-[44px] min-w-[44px] flex items-center justify-center px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
               ← #{prevId}
             </Link>
           )}
           {nextId && (
-            <Link to={`/facts/${nextId}?${searchParams.toString()}`} className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
+            <Link to={`/facts/${nextId}?${searchParams.toString()}`} className="min-h-[44px] min-w-[44px] flex items-center justify-center px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
               #{nextId} →
             </Link>
           )}
         </div>
       </div>
 
-      <div className="flex gap-6 items-start">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* COLONNE GAUCHE */}
-        <div className="w-80 flex-shrink-0 space-y-4">
+        <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-4">
         {/* Warning bandeau si fausses réponses incomplètes */}
         {(() => {
           const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
@@ -872,13 +814,13 @@ export default function FactEditorPage({ toast }) {
                   color: !fact.is_vip ? 'white' : '#9CA3AF',
                 }}
               >
-                <span>⚡</span> <span>Snack / Flash</span>
+                <span>⚡</span> <span>Quickie / Flash</span>
               </button>
             </div>
             <p className="text-xs text-slate-500 mt-1.5">
               {fact.is_vip
                 ? 'Disponible uniquement comme boss Quest (VIP)'
-                : 'Disponible en Snack, Vrai ou Fou, Quest, Flash, Blitz, No Limit'}
+                : 'Disponible en Quickie, Vrai ou Fou, Quest, Flash, Blitz, Race'}
             </p>
           </div>
         </Section>
@@ -893,7 +835,7 @@ export default function FactEditorPage({ toast }) {
               value={fact.question || ''}
               onChange={e => set('question', e.target.value)}
               rows={3}
-              className={isOverLimit('question', fact.question) || errors.question ? inputClsOver : inputCls}
+              className={isOverLimit('question', fact.question) || errors.question ? inputClsErr : inputCls}
               placeholder="Affirmation à valider ou infirmer…"
               maxLength={120}
             />
@@ -906,7 +848,7 @@ export default function FactEditorPage({ toast }) {
             <input
               value={fact.short_answer || ''}
               onChange={e => set('short_answer', e.target.value)}
-              className={isOverLimit('short_answer', fact.short_answer) || errors.short_answer ? inputClsOver : inputCls}
+              className={isOverLimit('short_answer', fact.short_answer) || errors.short_answer ? inputClsErr : inputCls}
               placeholder="Réponse courte visible au joueur…"
               maxLength={55}
             />
@@ -920,7 +862,7 @@ export default function FactEditorPage({ toast }) {
               value={fact.explanation || ''}
               onChange={e => set('explanation', e.target.value)}
               rows={4}
-              className={errors.explanation ? inputClsOver : inputCls}
+              className={errors.explanation ? inputClsErr : inputCls}
               placeholder="Explication détaillée du fait…"
               maxLength={310}
             />
@@ -985,7 +927,7 @@ export default function FactEditorPage({ toast }) {
               value={fact.statement_true || ''}
               onChange={e => set('statement_true', e.target.value)}
               rows={2}
-              className={(fact.statement_true || '').length > 140 ? inputClsOver : inputCls}
+              className={(fact.statement_true || '').length > 140 ? inputClsErr : inputCls}
               placeholder="Ex : « La pieuvre a trois cœurs. »"
               maxLength={200}
             />
@@ -999,7 +941,7 @@ export default function FactEditorPage({ toast }) {
               value={fact.statement_false_funny || ''}
               onChange={e => set('statement_false_funny', e.target.value)}
               rows={2}
-              className={(fact.statement_false_funny || '').length > 140 ? inputClsOver : inputCls}
+              className={(fact.statement_false_funny || '').length > 140 ? inputClsErr : inputCls}
               placeholder="Ex : « La pieuvre rote de l'encre. »"
               maxLength={200}
             />
@@ -1013,7 +955,7 @@ export default function FactEditorPage({ toast }) {
               value={fact.statement_false_plausible || ''}
               onChange={e => set('statement_false_plausible', e.target.value)}
               rows={2}
-              className={(fact.statement_false_plausible || '').length > 140 ? inputClsOver : inputCls}
+              className={(fact.statement_false_plausible || '').length > 140 ? inputClsErr : inputCls}
               placeholder="Ex : « La pieuvre a des os dans les tentacules. »"
               maxLength={200}
             />
@@ -1023,7 +965,7 @@ export default function FactEditorPage({ toast }) {
         </div>{/* END COLONNE GAUCHE */}
 
         {/* COLONNE DROITE — sticky */}
-        <div className="flex-1 min-w-0 space-y-4 sticky top-4">
+        <div className="flex-1 min-w-0 space-y-4 lg:sticky lg:top-4">
         {/* RÉPONSES (8 au total) */}
         <Section title="🎯 Réponses (8 au total)">
           {/* Vraie réponse — lecture seule */}
@@ -1060,7 +1002,7 @@ export default function FactEditorPage({ toast }) {
                 <input
                   value={fact.funny_wrong_1 || ''}
                   onChange={e => set('funny_wrong_1', e.target.value)}
-                  className={(fact.funny_wrong_1 || '').length > 50 ? inputClsOver : inputCls}
+                  className={(fact.funny_wrong_1 || '').length > 50 ? inputClsErr : inputCls}
                   placeholder="Une réponse absurde et marrante…"
                   maxLength={55}
                 />
@@ -1069,7 +1011,7 @@ export default function FactEditorPage({ toast }) {
                 <input
                   value={fact.funny_wrong_2 || ''}
                   onChange={e => set('funny_wrong_2', e.target.value)}
-                  className={(fact.funny_wrong_2 || '').length > 50 ? inputClsOver : inputCls}
+                  className={(fact.funny_wrong_2 || '').length > 50 ? inputClsErr : inputCls}
                   placeholder="Une réponse absurde et marrante…"
                   maxLength={55}
                 />
@@ -1085,7 +1027,7 @@ export default function FactEditorPage({ toast }) {
                 <input
                   value={fact.close_wrong_1 || ''}
                   onChange={e => set('close_wrong_1', e.target.value)}
-                  className={(fact.close_wrong_1 || '').length > 50 ? inputClsOver : inputCls}
+                  className={(fact.close_wrong_1 || '').length > 50 ? inputClsErr : inputCls}
                   placeholder="Une réponse crédible mais fausse…"
                   maxLength={55}
                 />
@@ -1094,7 +1036,7 @@ export default function FactEditorPage({ toast }) {
                 <input
                   value={fact.close_wrong_2 || ''}
                   onChange={e => set('close_wrong_2', e.target.value)}
-                  className={(fact.close_wrong_2 || '').length > 50 ? inputClsOver : inputCls}
+                  className={(fact.close_wrong_2 || '').length > 50 ? inputClsErr : inputCls}
                   placeholder="Une réponse crédible mais fausse…"
                   maxLength={55}
                 />
@@ -1110,7 +1052,7 @@ export default function FactEditorPage({ toast }) {
                 <input
                   value={fact.plausible_wrong_1 || ''}
                   onChange={e => set('plausible_wrong_1', e.target.value)}
-                  className={(fact.plausible_wrong_1 || '').length > 50 ? inputClsOver : inputCls}
+                  className={(fact.plausible_wrong_1 || '').length > 50 ? inputClsErr : inputCls}
                   placeholder="Une réponse qui semble logique…"
                   maxLength={55}
                 />
@@ -1119,7 +1061,7 @@ export default function FactEditorPage({ toast }) {
                 <input
                   value={fact.plausible_wrong_2 || ''}
                   onChange={e => set('plausible_wrong_2', e.target.value)}
-                  className={(fact.plausible_wrong_2 || '').length > 50 ? inputClsOver : inputCls}
+                  className={(fact.plausible_wrong_2 || '').length > 50 ? inputClsErr : inputCls}
                   placeholder="Une réponse qui semble logique…"
                   maxLength={55}
                 />
@@ -1128,7 +1070,7 @@ export default function FactEditorPage({ toast }) {
                 <input
                   value={fact.plausible_wrong_3 || ''}
                   onChange={e => set('plausible_wrong_3', e.target.value)}
-                  className={(fact.plausible_wrong_3 || '').length > 50 ? inputClsOver : inputCls}
+                  className={(fact.plausible_wrong_3 || '').length > 50 ? inputClsErr : inputCls}
                   placeholder="Une réponse qui semble logique…"
                   maxLength={55}
                 />
@@ -1139,7 +1081,7 @@ export default function FactEditorPage({ toast }) {
 
         {/* INDICES (4 au total) */}
         <Section title="💡 Indices (4 au total)">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field
               label={`Indice 1 (20 max)${errors.hint1 ? ' — ' + errors.hint1 : ''}`}
               hint={<CharCounter value={fact.hint1} max={CHAR_LIMITS.hint1.max} />}
@@ -1147,7 +1089,7 @@ export default function FactEditorPage({ toast }) {
               <input
                 value={fact.hint1 || ''}
                 onChange={e => set('hint1', e.target.value)}
-                className={isOverLimit('hint1', fact.hint1) || errors.hint1 ? inputClsOver : inputCls}
+                className={isOverLimit('hint1', fact.hint1) || errors.hint1 ? inputClsErr : inputCls}
                 placeholder="Premier indice…"
                 maxLength={25}
               />
@@ -1159,7 +1101,7 @@ export default function FactEditorPage({ toast }) {
               <input
                 value={fact.hint2 || ''}
                 onChange={e => set('hint2', e.target.value)}
-                className={isOverLimit('hint2', fact.hint2) || errors.hint2 ? inputClsOver : inputCls}
+                className={isOverLimit('hint2', fact.hint2) || errors.hint2 ? inputClsErr : inputCls}
                 placeholder="Deuxième indice…"
                 maxLength={25}
               />
@@ -1372,7 +1314,7 @@ export default function FactEditorPage({ toast }) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-2 pb-8 flex-wrap sm:flex-nowrap">
+        <div className="hidden md:flex gap-3 pt-2 pb-8 flex-wrap sm:flex-nowrap">
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="px-5 py-3.5 rounded-2xl font-black text-sm text-red-400 bg-red-900/20 border border-red-800/40 hover:bg-red-900/40 transition-all"
@@ -1402,6 +1344,26 @@ export default function FactEditorPage({ toast }) {
             {saving ? 'Sauvegarde…' : isDirty ? 'Enregistrer ✓' : 'Aucune modification'}
           </button>
         </div>
+      </div>
+
+      {/* Mobile sticky bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 p-3 bg-slate-900 border-t border-slate-700 md:hidden flex gap-3">
+        <Link
+          to="/facts"
+          className="flex-1 py-3 rounded-2xl text-center font-black text-sm bg-slate-800 border border-slate-700 text-slate-300 active:bg-slate-700 transition-all"
+        >
+          Annuler
+        </Link>
+        {isDirty && (
+          <button
+            onClick={save}
+            disabled={saving}
+            className="flex-1 py-3 rounded-2xl font-black text-sm text-white transition-all disabled:opacity-40 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
+          >
+            {saving ? 'Sauvegarde…' : 'Enregistrer'}
+          </button>
+        )}
       </div>
     </div>
   )

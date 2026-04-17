@@ -2,69 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, getCategoryEmoji } from '../constants/categories'
+import { STATUSES, StatusBadge, DIFFICULTIES, difficultyStyle, DifficultyBadge, Toggle, SortIcon, inputCls as sharedInputCls, inputClsErr as sharedInputClsErr } from '../components/shared'
 
 const PAGE_SIZE_OPTIONS = [50, 100, 200, 500]
-
-const STATUSES = [
-  { value: 'published', label: 'Publié',    color: '#10B981', bg: 'rgba(16,185,129,0.15)', icon: '✅' },
-  { value: 'reserve',   label: 'Réserve',   color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: '🔒' },
-  { value: 'draft',     label: 'Brouillon', color: '#FF6B1A', bg: 'rgba(255,107,26,0.15)', icon: '✏️' },
-  { value: 'doublon',   label: 'Doublon',   color: '#6B7280', bg: 'rgba(107,114,128,0.15)', icon: '🔄' },
-]
-
-function StatusBadge({ value }) {
-  const s = STATUSES.find(st => st.value === value) || STATUSES[2] // default draft
-  return (
-    <span className="text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap inline-flex items-center gap-1"
-      style={{ background: s.bg, color: s.color }}>
-      {s.icon} {s.label}
-    </span>
-  )
-}
-
-const DIFFICULTIES = [
-  { value: 'Facile', color: '#22C55E', bg: 'rgba(34,197,94,0.15)' },
-  { value: 'Normal', color: '#3B82F6', bg: 'rgba(59,130,246,0.15)' },
-  { value: 'Expert', color: '#EF4444', bg: 'rgba(239,68,68,0.15)' },
-]
-
-function difficultyStyle(value) {
-  return DIFFICULTIES.find(d => d.value === value) || DIFFICULTIES[1]
-}
-
-function DifficultyBadge({ value }) {
-  const d = difficultyStyle(value)
-  return (
-    <span className="text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
-      style={{ background: d.bg, color: d.color }}>
-      {value || 'Normal'}
-    </span>
-  )
-}
 
 function fmt(dateStr) {
   if (!dateStr) return '—'
   return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })
-}
-
-function Toggle({ on, onChange, color }) {
-  return (
-    <button
-      onClick={e => { e.stopPropagation(); onChange(!on) }}
-      className="relative w-10 h-5 rounded-full transition-all flex-shrink-0"
-      style={{ background: on ? (color || '#22C55E') : '#374151' }}
-    >
-      <div
-        className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all"
-        style={{ left: on ? '22px' : '2px' }}
-      />
-    </button>
-  )
-}
-
-function SortIcon({ field, current, dir }) {
-  if (field !== current) return <span className="text-slate-600 ml-1">↕</span>
-  return <span className="ml-1" style={{ color: '#FF6B1A' }}>{dir === 'asc' ? '↑' : '↓'}</span>
 }
 
 // ── Claude API generation via Supabase Edge Function ──────────────────────
@@ -587,8 +531,20 @@ export default function FactsListPage({ toast }) {
   const allSelected = facts.length > 0 && selected.size === facts.length
   const someSelected = selected.size > 0
 
-  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none placeholder-slate-500 resize-none"
-  const inputClsErr = "w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-red-500 text-white text-sm focus:outline-none placeholder-slate-500 resize-none"
+  const inputCls = sharedInputCls
+  const inputClsErr = sharedInputClsErr
+
+  // Mobile filters toggle
+  const [showFilters, setShowFilters] = useState(false)
+  const activeFilterCount = [
+    filterCategories.length > 0,
+    filterVip !== 'all',
+    filterPublished !== 'all',
+    filterStatus !== 'all',
+    filterPack !== 'all',
+    filterImage !== 'all',
+    filterRecent,
+  ].filter(Boolean).length
 
   return (
     <div className="p-3 sm:p-6 flex flex-col h-full" style={{ minHeight: 0 }}>
@@ -969,6 +925,7 @@ export default function FactsListPage({ toast }) {
 
       {/* ── Filters ───────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-2 mb-4 shrink-0">
+        {/* Search bar — always visible */}
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">🔍</span>
           <input
@@ -981,185 +938,197 @@ export default function FactsListPage({ toast }) {
           />
         </div>
 
-        {/* Page size selector */}
-        <select
-          value={pageSize}
-          onChange={e => setPageSize(Number(e.target.value))}
-          className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none cursor-pointer hover:bg-slate-700 transition-all"
+        {/* Mobile toggle button for filters */}
+        <button
+          onClick={() => setShowFilters(v => !v)}
+          className="md:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 hover:bg-slate-700 transition-all"
         >
-          {PAGE_SIZE_OPTIONS.map(n => (
-            <option key={n} value={n}>{n} / page</option>
-          ))}
-        </select>
+          🎛 Filtres{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''} {showFilters ? '▴' : '▾'}
+        </button>
 
-        {/* Category dropdown */}
-        <div className="relative" ref={catDropdownRef}>
-          <button
-            onClick={() => setShowCatDropdown(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 hover:bg-slate-700 transition-all"
+        {/* Collapsible filters — hidden on mobile by default, always visible on md+ */}
+        <div className={`${showFilters ? 'flex' : 'hidden'} md:flex flex-wrap gap-2 w-full md:w-auto`}>
+
+          {/* Page size selector */}
+          <select
+            value={pageSize}
+            onChange={e => setPageSize(Number(e.target.value))}
+            className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none cursor-pointer hover:bg-slate-700 transition-all"
           >
-            Catégorie{filterCategories.length > 0 ? ` (${filterCategories.length})` : ''} ▾
+            {PAGE_SIZE_OPTIONS.map(n => (
+              <option key={n} value={n}>{n} / page</option>
+            ))}
+          </select>
+
+          {/* Category dropdown */}
+          <div className="relative" ref={catDropdownRef}>
+            <button
+              onClick={() => setShowCatDropdown(v => !v)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 hover:bg-slate-700 transition-all"
+            >
+              Catégorie{filterCategories.length > 0 ? ` (${filterCategories.length})` : ''} ▾
+            </button>
+            {showCatDropdown && (
+              <div className="absolute top-full left-0 mt-1 z-20 w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-auto" style={{ maxHeight: 300 }}>
+                <div className="p-2 border-b border-slate-700 flex justify-between">
+                  <button onClick={() => setFilterCategories([])} className="text-xs text-slate-400 hover:text-white">Tout effacer</button>
+                  <button onClick={() => setShowCatDropdown(false)} className="text-xs text-slate-400 hover:text-white">Fermer</button>
+                </div>
+                {CATEGORIES.map(c => (
+                  <label key={c.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-700 cursor-pointer text-sm">
+                    <input
+                      type="checkbox"
+                      checked={filterCategories.includes(c.id)}
+                      onChange={e => {
+                        setFilterCategories(prev => e.target.checked ? [...prev, c.id] : prev.filter(x => x !== c.id))
+                      }}
+                      className="w-3.5 h-3.5"
+                    />
+                    <span>{c.emoji} {c.label}</span>
+                  </label>
+                ))}
+                <div className="p-2 border-t border-slate-700">
+                  <button onClick={() => setShowCatDropdown(false)} className="w-full text-xs text-center text-slate-400 hover:text-white py-1 rounded hover:bg-slate-700 transition-colors">
+                    ▲ Fermer
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* WTF! / Funny filter */}
+          <div className="flex rounded-xl overflow-hidden border border-slate-700">
+            {[
+              { value: 'all',    label: 'Tous' },
+              { value: 'vip',    label: '⭐ WTF!', color: '#F59E0B' },
+              { value: 'non-vip', label: '⚡ Funny F*cts', color: '#7C3AED' },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setFilterVip(opt.value)}
+                className="px-3 py-2 text-xs font-bold transition-all"
+                style={{
+                  background: filterVip === opt.value ? (opt.color || '#FF6B1A') : 'transparent',
+                  color: filterVip === opt.value ? 'white' : '#94A3B8',
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Recent filter */}
+          <button
+            onClick={() => setFilterRecent(v => !v)}
+            className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+            style={{
+              background: filterRecent ? '#3B82F6' : 'transparent',
+              color: filterRecent ? 'white' : '#94A3B8',
+              border: `1px solid ${filterRecent ? '#3B82F6' : '#334155'}`,
+            }}
+          >
+            🕐 Récents (24h)
           </button>
-          {showCatDropdown && (
-            <div className="absolute top-full left-0 mt-1 z-20 w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-auto" style={{ maxHeight: 300 }}>
-              <div className="p-2 border-b border-slate-700 flex justify-between">
-                <button onClick={() => setFilterCategories([])} className="text-xs text-slate-400 hover:text-white">Tout effacer</button>
-                <button onClick={() => setShowCatDropdown(false)} className="text-xs text-slate-400 hover:text-white">Fermer</button>
-              </div>
-              {CATEGORIES.map(c => (
-                <label key={c.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-700 cursor-pointer text-sm">
-                  <input
-                    type="checkbox"
-                    checked={filterCategories.includes(c.id)}
-                    onChange={e => {
-                      setFilterCategories(prev => e.target.checked ? [...prev, c.id] : prev.filter(x => x !== c.id))
-                    }}
-                    className="w-3.5 h-3.5"
-                  />
-                  <span>{c.emoji} {c.label}</span>
-                </label>
-              ))}
-              <div className="p-2 border-t border-slate-700">
-                <button onClick={() => setShowCatDropdown(false)} className="w-full text-xs text-center text-slate-400 hover:text-white py-1 rounded hover:bg-slate-700 transition-colors">
-                  ▲ Fermer
-                </button>
-              </div>
-            </div>
+
+          {/* Brouillons filter */}
+          <button
+            onClick={() => {
+              const next = filterPublished === 'unpublished' ? 'all' : 'unpublished'
+              setFilterPublished(next)
+              if (next === 'unpublished') setFilterStatus('draft')
+              else setFilterStatus('all')
+            }}
+            className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
+            style={{
+              background: filterPublished === 'unpublished' ? '#EF4444' : 'transparent',
+              color: filterPublished === 'unpublished' ? 'white' : '#94A3B8',
+              border: `1px solid ${filterPublished === 'unpublished' ? '#EF4444' : '#334155'}`,
+            }}
+          >
+            📝 Brouillons
+          </button>
+
+          {/* Status filter */}
+          <div className="flex rounded-xl overflow-hidden border border-slate-700">
+            {[
+              { value: 'all', label: 'Tous', color: '#FF6B1A' },
+              ...STATUSES.map(s => ({ value: s.value, label: `${s.icon}`, color: s.color, title: s.label })),
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setFilterStatus(opt.value)}
+                className="px-3 py-2 text-xs font-bold transition-all"
+                title={opt.title || opt.label}
+                style={{
+                  background: filterStatus === opt.value ? (opt.color || '#FF6B1A') : 'transparent',
+                  color: filterStatus === opt.value ? 'white' : '#94A3B8',
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          <select
+            value={filterPack}
+            onChange={e => setFilterPack(e.target.value)}
+            className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none"
+          >
+            <option value="all">Pack : Tous</option>
+            <option value="free">Free</option>
+            <option value="premium">Premium</option>
+          </select>
+
+          {/* Filtre image */}
+          <select
+            value={filterImage}
+            onChange={e => setFilterImage(e.target.value)}
+            className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none"
+            style={filterImage !== 'all' ? { borderColor: filterImage === 'with' ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)' } : {}}
+          >
+            <option value="all">Image : Tous</option>
+            <option value="with">🖼️ Avec image</option>
+            <option value="without">❌ Sans image</option>
+          </select>
+
+          {(search || filterCategories.length || filterVip !== 'all' || filterPublished !== 'all' || filterStatus !== 'all' || filterPack !== 'all' || filterImage !== 'all') && (
+            <button
+              onClick={() => { setSearch(''); setFilterCategories([]); setFilterVip('all'); setFilterPublished('all'); setFilterStatus('all'); setFilterPack('all'); setFilterImage('all') }}
+              className="px-3 py-2 rounded-xl bg-red-900/30 border border-red-800 text-red-400 text-sm hover:bg-red-900/50 transition-all"
+            >
+              ✕ Effacer
+            </button>
           )}
         </div>
-
-        {/* WTF! / Funny filter */}
-        <div className="flex rounded-xl overflow-hidden border border-slate-700">
-          {[
-            { value: 'all',    label: 'Tous' },
-            { value: 'vip',    label: '⭐ WTF!', color: '#F59E0B' },
-            { value: 'non-vip', label: '⚡ Funny F*cts', color: '#7C3AED' },
-          ].map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setFilterVip(opt.value)}
-              className="px-3 py-2 text-xs font-bold transition-all"
-              style={{
-                background: filterVip === opt.value ? (opt.color || '#FF6B1A') : 'transparent',
-                color: filterVip === opt.value ? 'white' : '#94A3B8',
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Recent filter */}
-        <button
-          onClick={() => setFilterRecent(v => !v)}
-          className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
-          style={{
-            background: filterRecent ? '#3B82F6' : 'transparent',
-            color: filterRecent ? 'white' : '#94A3B8',
-            border: `1px solid ${filterRecent ? '#3B82F6' : '#334155'}`,
-          }}
-        >
-          🕐 Récents (24h)
-        </button>
-
-        {/* Brouillons filter */}
-        <button
-          onClick={() => {
-            const next = filterPublished === 'unpublished' ? 'all' : 'unpublished'
-            setFilterPublished(next)
-            if (next === 'unpublished') setFilterStatus('draft')
-            else setFilterStatus('all')
-          }}
-          className="px-3 py-2 rounded-xl text-xs font-bold transition-all"
-          style={{
-            background: filterPublished === 'unpublished' ? '#EF4444' : 'transparent',
-            color: filterPublished === 'unpublished' ? 'white' : '#94A3B8',
-            border: `1px solid ${filterPublished === 'unpublished' ? '#EF4444' : '#334155'}`,
-          }}
-        >
-          📝 Brouillons
-        </button>
-
-        {/* Status filter */}
-        <div className="flex rounded-xl overflow-hidden border border-slate-700">
-          {[
-            { value: 'all', label: 'Tous', color: '#FF6B1A' },
-            ...STATUSES.map(s => ({ value: s.value, label: `${s.icon}`, color: s.color, title: s.label })),
-          ].map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setFilterStatus(opt.value)}
-              className="px-3 py-2 text-xs font-bold transition-all"
-              title={opt.title || opt.label}
-              style={{
-                background: filterStatus === opt.value ? (opt.color || '#FF6B1A') : 'transparent',
-                color: filterStatus === opt.value ? 'white' : '#94A3B8',
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        <select
-          value={filterPack}
-          onChange={e => setFilterPack(e.target.value)}
-          className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none"
-        >
-          <option value="all">Pack : Tous</option>
-          <option value="free">Free</option>
-          <option value="premium">Premium</option>
-        </select>
-
-        {/* Filtre image */}
-        <select
-          value={filterImage}
-          onChange={e => setFilterImage(e.target.value)}
-          className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none"
-          style={filterImage !== 'all' ? { borderColor: filterImage === 'with' ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)' } : {}}
-        >
-          <option value="all">Image : Tous</option>
-          <option value="with">🖼️ Avec image</option>
-          <option value="without">❌ Sans image</option>
-        </select>
-
-        {(search || filterCategories.length || filterVip !== 'all' || filterPublished !== 'all' || filterStatus !== 'all' || filterPack !== 'all' || filterImage !== 'all') && (
-          <button
-            onClick={() => { setSearch(''); setFilterCategories([]); setFilterVip('all'); setFilterPublished('all'); setFilterStatus('all'); setFilterPack('all'); setFilterImage('all') }}
-            className="px-3 py-2 rounded-xl bg-red-900/30 border border-red-800 text-red-400 text-sm hover:bg-red-900/50 transition-all"
-          >
-            ✕ Effacer
-          </button>
-        )}
       </div>
 
       {/* ── Batch action bar ──────────────────────────────────────────── */}
       {someSelected && (
-        <div className="flex items-center gap-3 mb-3 p-3 rounded-xl bg-slate-800 border shrink-0" style={{ borderColor: 'rgba(255,107,26,0.3)' }}>
+        <div className="fixed bottom-0 left-0 right-0 z-20 md:relative md:z-auto flex items-center gap-3 mb-0 md:mb-3 p-3 rounded-none md:rounded-xl bg-slate-800 border-t md:border shrink-0" style={{ borderColor: 'rgba(255,107,26,0.3)', paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
           <span className="text-sm font-bold shrink-0" style={{ color: '#FF6B1A' }}>
             {selected.size} sélectionné{selected.size > 1 ? 's' : ''}
           </span>
           <div className="flex items-center gap-1.5 flex-wrap">
             {/* Groupe 1 — Mode de jeu */}
-            <button onClick={() => { setBatchAction('mode_quete'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#D97706' }}>⚔️ WTF!</button>
-            <button onClick={() => { setBatchAction('mode_flash'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#7C3AED' }}>⚡ Funny</button>
-            <span className="text-slate-600 mx-1">|</span>
+            <button onClick={() => { setBatchAction('mode_quete'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all min-h-[44px] md:min-h-0" style={{ background: '#D97706' }}>⚔️ WTF!</button>
+            <button onClick={() => { setBatchAction('mode_flash'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all min-h-[44px] md:min-h-0" style={{ background: '#7C3AED' }}>⚡ Funny</button>
+            <span className="text-slate-600 mx-1 hidden md:inline">|</span>
             {/* Groupe 2 — Statut */}
-            <button onClick={() => { setBatchAction('status_change'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#334155' }}>📋 Statut</button>
-            <span className="text-slate-600 mx-1">|</span>
+            <button onClick={() => { setBatchAction('status_change'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all min-h-[44px] md:min-h-0" style={{ background: '#334155' }}>📋 Statut</button>
+            <span className="text-slate-600 mx-1 hidden md:inline">|</span>
             {/* Groupe 3 — Organisation */}
-            <button onClick={() => { setBatchAction('category'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#334155' }}>🗂 Catégorie</button>
-            <button onClick={() => { setBatchAction('pack'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#334155' }}>📦 Pack</button>
-            <span className="text-slate-600 mx-1">|</span>
+            <button onClick={() => { setBatchAction('category'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all min-h-[44px] md:min-h-0" style={{ background: '#334155' }}>🗂 Catégorie</button>
+            <button onClick={() => { setBatchAction('pack'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all min-h-[44px] md:min-h-0" style={{ background: '#334155' }}>📦 Pack</button>
+            <span className="text-slate-600 mx-1 hidden md:inline">|</span>
             {/* Groupe 4 — Danger */}
-            <button onClick={() => { setBatchAction('delete'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all" style={{ background: '#DC2626' }}>🗑 Supprimer</button>
+            <button onClick={() => { setBatchAction('delete'); setBatchValue('') }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-80 transition-all min-h-[44px] md:min-h-0" style={{ background: '#DC2626' }}>🗑 Supprimer</button>
           </div>
-          <button onClick={() => setSelected(new Set())} className="ml-auto text-slate-500 hover:text-white text-sm shrink-0">✕</button>
+          <button onClick={() => setSelected(new Set())} className="ml-auto text-slate-500 hover:text-white text-sm shrink-0 min-h-[44px] md:min-h-0 min-w-[44px] flex items-center justify-center">✕</button>
         </div>
       )}
 
-      {/* ── Table ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-auto rounded-xl border border-slate-700">
+      {/* ── Table (desktop) ──────────────────────────────────────────── */}
+      <div className={`flex-1 overflow-auto rounded-xl border border-slate-700 hidden md:block`}>
         <table className="w-full text-sm border-collapse min-w-[700px]">
           <thead className="sticky top-0 bg-slate-900 z-10">
             <tr className="border-b border-slate-700">
@@ -1279,25 +1248,86 @@ export default function FactsListPage({ toast }) {
         </table>
       </div>
 
+      {/* ── Cards (mobile) ────────────────────────────────────────────── */}
+      <div className={`md:hidden flex-1 overflow-auto space-y-2 ${someSelected ? 'pb-16' : ''}`}>
+        {loading ? (
+          <div className="text-center py-12 text-slate-500">Chargement...</div>
+        ) : facts.length === 0 ? (
+          <div className="text-center py-12 text-slate-500">Aucun fact trouve</div>
+        ) : (
+          facts.map(fact => (
+            <div
+              key={fact.id}
+              className="rounded-xl border border-slate-700 p-3 transition-colors"
+              style={{ background: selected.has(fact.id) ? 'rgba(255,107,26,0.08)' : '#1E293B' }}
+            >
+              {/* Row 1: checkbox + #id + emoji cat + status + VIP toggle */}
+              <div className="flex items-center gap-2 mb-1.5">
+                <input
+                  type="checkbox"
+                  checked={selected.has(fact.id)}
+                  onChange={() => toggleSelect(fact.id)}
+                  className="w-4 h-4 shrink-0"
+                />
+                <span className="font-mono text-xs text-slate-500">#{fact.id}</span>
+                <span className="text-sm">{getCategoryEmoji(fact.category)}</span>
+                <StatusBadge value={fact.status || (fact.is_published ? 'published' : 'draft')} />
+                <button onClick={() => toggleVip(fact)} className="ml-auto text-lg min-w-[44px] min-h-[44px] flex items-center justify-center">
+                  {fact.is_vip ? '⭐' : <span className="text-slate-700">☆</span>}
+                </button>
+              </div>
+              {/* Row 2: question */}
+              <p className="text-sm text-slate-300 line-clamp-2 mb-1.5 leading-snug">{fact.question}</p>
+              {/* Row 3: image indicator + pack + date */}
+              <div className="flex items-center gap-2 text-xs mb-2.5">
+                {fact.image_url ? (
+                  <span className="px-1.5 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>🖼️</span>
+                ) : (
+                  <span className="px-1.5 py-0.5 rounded-full text-xs font-bold" style={{ background: 'rgba(239,68,68,0.1)', color: 'rgba(239,68,68,0.6)' }}>✕</span>
+                )}
+                <span
+                  className="px-2 py-0.5 rounded text-xs font-bold"
+                  style={{
+                    background: fact.pack_id === 'free' ? 'rgba(34,197,94,0.12)' : 'rgba(255,107,26,0.15)',
+                    color: fact.pack_id === 'free' ? '#22C55E' : '#FF6B1A',
+                  }}
+                >
+                  {fact.pack_id || 'free'}
+                </span>
+                <span className="text-slate-500 ml-auto">{fmt(fact.updated_at)}</span>
+              </div>
+              {/* Edit button */}
+              <Link
+                to={`/facts/${fact.id}`}
+                className="w-full text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
+                style={{ background: '#FF6B1A' }}
+              >
+                Editer
+              </Link>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* ── Pagination ────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mt-3 shrink-0 flex-wrap gap-2">
-        <span className="text-sm text-slate-400">
-          {page * pageSize + 1} - {Math.min((page + 1) * pageSize, total)} sur {total} facts
+        <span className="text-xs md:text-sm text-slate-400">
+          {page * pageSize + 1}-{Math.min((page + 1) * pageSize, total)} / {total}
         </span>
         <div className="flex gap-2">
           <button
             onClick={() => setPage(p => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 disabled:opacity-30 hover:bg-slate-700 transition-all"
+            className="px-3 md:px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs md:text-sm text-slate-300 disabled:opacity-30 hover:bg-slate-700 transition-all min-h-[44px]"
           >
-            ← Précédent
+            ← <span className="hidden sm:inline">Precedent</span>
           </button>
           <button
             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-sm text-slate-300 disabled:opacity-30 hover:bg-slate-700 transition-all"
+            className="px-3 md:px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs md:text-sm text-slate-300 disabled:opacity-30 hover:bg-slate-700 transition-all min-h-[44px]"
           >
-            Suivant →
+            <span className="hidden sm:inline">Suivant </span>→
           </button>
         </div>
       </div>

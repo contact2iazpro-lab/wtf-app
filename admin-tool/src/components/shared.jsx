@@ -50,7 +50,23 @@ export function StatusBadge({ value }) {
 }
 
 // ── Toggle switch ────────────────────────────────────────────────────────────
-export function Toggle({ on, onChange, color }) {
+export function Toggle({ on, onChange, label, color }) {
+  if (label) {
+    return (
+      <button
+        onClick={() => onChange(!on)}
+        className="flex items-center gap-3 w-full"
+      >
+        <div
+          className="relative w-12 h-6 rounded-full transition-all shrink-0"
+          style={{ background: on ? (color || '#22C55E') : '#374151' }}
+        >
+          <div className="absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all" style={{ left: on ? '26px' : '4px' }} />
+        </div>
+        <span className={`text-sm font-semibold ${on ? 'text-white' : 'text-slate-500'}`}>{label}</span>
+      </button>
+    )
+  }
   return (
     <button
       onClick={e => { e.stopPropagation(); onChange(!on) }}
@@ -69,6 +85,28 @@ export function Toggle({ on, onChange, color }) {
 export function SortIcon({ field, current, dir }) {
   if (field !== current) return <span className="text-slate-600 ml-1">↕</span>
   return <span className="ml-1" style={{ color: '#FF6B1A' }}>{dir === 'asc' ? '↑' : '↓'}</span>
+}
+
+// ── Section & Field ──────────────────────────────────────────────────────────
+export function Section({ title, children }) {
+  return (
+    <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+      <h3 className="text-sm font-black text-slate-400 uppercase tracking-wider mb-4">{title}</h3>
+      {children}
+    </div>
+  )
+}
+
+export function Field({ label, hint, children }) {
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</label>
+        {hint && <span className="text-xs text-slate-600">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  )
 }
 
 // ── Char counter ─────────────────────────────────────────────────────────────

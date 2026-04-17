@@ -19,35 +19,6 @@ export function fmtDateTime(dateStr) {
   })
 }
 
-// ── String truncation ────────────────────────────────────────────────────────
-export function truncate(str, n) {
-  return str && str.length > n ? str.slice(0, n) + '…' : (str || '')
-}
-
-// ── Supabase paginated fetch ─────────────────────────────────────────────────
-// Fetches all rows from a Supabase query, paginating in chunks of `pageSize`.
-export async function fetchAllPaginated(supabase, table, select, filters = {}, pageSize = 1000) {
-  const all = []
-  let from = 0
-  while (true) {
-    let q = supabase.from(table).select(select).range(from, from + pageSize - 1)
-    // Apply filters
-    for (const [method, args] of Object.entries(filters)) {
-      if (method === 'eq') for (const [col, val] of Object.entries(args)) q = q.eq(col, val)
-      if (method === 'not') for (const [col, val] of Object.entries(args)) q = q.not(col, 'is', val)
-      if (method === 'neq') for (const [col, val] of Object.entries(args)) q = q.neq(col, val)
-      if (method === 'or') q = q.or(args)
-    }
-    const { data, error } = await q
-    if (error) throw error
-    if (!data || data.length === 0) break
-    all.push(...data)
-    if (data.length < pageSize) break
-    from += pageSize
-  }
-  return all
-}
-
 // ── Edge Function caller ─────────────────────────────────────────────────────
 export async function callEdgeFunction(functionName, body = {}) {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL

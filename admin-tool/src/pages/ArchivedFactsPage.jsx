@@ -2,21 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getCategoryLabel, getCategoryEmoji } from '../constants/categories'
-
-// ── Difficulty badge ────────────────────────────────────────────────────────
-const DIFF_STYLES = [
-  { value: 'Facile', color: '#22C55E', bg: 'rgba(34,197,94,0.15)' },
-  { value: 'Normal', color: '#F59E0B', bg: 'rgba(245,158,11,0.15)' },
-  { value: 'Expert', color: '#EF4444', bg: 'rgba(239,68,68,0.15)' },
-]
-function DifficultyBadge({ value }) {
-  const d = DIFF_STYLES.find(s => s.value === value) || DIFF_STYLES[1]
-  return (
-    <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ color: d.color, background: d.bg }}>
-      {d.value}
-    </span>
-  )
-}
+import { DifficultyBadge } from '../components/shared'
 
 export default function ArchivedFactsPage({ toast }) {
   const [archivedFacts, setArchivedFacts] = useState([])

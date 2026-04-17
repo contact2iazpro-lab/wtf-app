@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, VIP_USAGES } from '../constants/categories'
+import { fmtDateTime } from '../utils/helpers'
 
 function StatCard({ label, value, sub, color }) {
   return (
@@ -45,17 +46,6 @@ const ALL_QUALITY_CHECKS = [
   { key: 'missingWrongAnswers',   emoji: '🎭', label: 'Fausses réponses incomplètes' },
 ]
 
-function truncate(str, n) {
-  return str && str.length > n ? str.slice(0, n) + '…' : (str || '')
-}
-
-function fmt(dateStr) {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleString('fr-FR', {
-    day: '2-digit', month: '2-digit', year: '2-digit',
-    hour: '2-digit', minute: '2-digit',
-  })
-}
 
 export default function DashboardPage({ toast }) {
   const [stats, setStats] = useState(null)
@@ -270,7 +260,7 @@ export default function DashboardPage({ toast }) {
   return (
     <div className="p-4 sm:p-8 max-w-5xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-4 sm:mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Dashboard</h1>
           <p className="text-slate-400 text-sm mt-1">Vue d'ensemble du contenu WTF!</p>
@@ -284,7 +274,7 @@ export default function DashboardPage({ toast }) {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="Facts total" value={stats?.total} color="#FF6B1A" />
         <StatCard label="Publiés" value={stats?.published} color="#22C55E" />
         <Link to="/facts?status=draft" className="hover:ring-2 ring-red-500/30 rounded-2xl transition-all">
@@ -335,13 +325,13 @@ export default function DashboardPage({ toast }) {
               {qualityError ? (
                 <p className="text-red-400 text-sm">Erreur lors du chargement des données qualité.</p>
               ) : qualityLoading ? (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {ALL_QUALITY_CHECKS.map(c => (
                     <div key={c.key} className="bg-slate-700/50 rounded-xl p-4 animate-pulse h-28" />
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {ALL_QUALITY_CHECKS.map(c => {
                     const badCount = qualityIssues?.[c.key]?.length ?? 0
                     const okCount = totalFacts - badCount
@@ -405,7 +395,7 @@ export default function DashboardPage({ toast }) {
                         </Link>
                         <span className="text-xs text-slate-500 shrink-0">{f.category}</span>
                         <span className="text-xs text-slate-300 flex-1 min-w-0 truncate">
-                          {truncate(f.question, 60)}
+                          {f.question?.length > 60 ? f.question.slice(0, 60) + '…' : (f.question || '')}
                         </span>
                         <span className="text-xs shrink-0" style={{ color: f.is_published ? '#22C55E' : '#F59E0B' }}>
                           {f.is_published ? '✓' : '⏸'}
@@ -477,7 +467,7 @@ export default function DashboardPage({ toast }) {
             <div className="space-y-2">
               {recentEdits.map(e => (
                 <div key={e.id} className="text-xs flex gap-2 items-start">
-                  <span className="text-slate-500 shrink-0">{fmt(e.edited_at)}</span>
+                  <span className="text-slate-500 shrink-0">{fmtDateTime(e.edited_at)}</span>
                   <Link
                     to={`/facts/${e.fact_id}`}
                     className="font-semibold text-orange-DEFAULT hover:underline shrink-0"
@@ -579,7 +569,8 @@ export default function DashboardPage({ toast }) {
               <span className="text-xs text-slate-500 font-semibold">{rows.length} catégories · {facts.length} facts</span>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-700 text-xs uppercase tracking-wider">
@@ -658,6 +649,39 @@ export default function DashboardPage({ toast }) {
                   </tr>
                 </tfoot>
               </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden p-4 space-y-2">
+              {rows.map(r => {
+                const pubPct = r.total > 0 ? Math.round((r.published / r.total) * 100) : 0
+                return (
+                  <button
+                    key={r.id}
+                    className="w-full text-left bg-slate-700/40 rounded-xl p-3 hover:bg-slate-700/60 transition-colors"
+                    onClick={() => { window.location.href = `/admin/facts?category=${r.id}` }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{r.emoji}</span>
+                        <span className="text-slate-200 font-semibold text-sm">{r.label}</span>
+                      </div>
+                      <span className="text-sm font-black text-slate-300">{r.total}</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-600 rounded-full overflow-hidden mb-1.5">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pubPct}%`, background: pubPct === 100 ? '#22C55E' : pubPct >= 50 ? '#FF6B1A' : '#EF4444' }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span style={{ color: '#22C55E' }} className="font-bold">{r.published} pub.</span>
+                      <span style={{ color: '#F59E0B' }} className="font-bold">{r.draftQuete + r.draftFlash} brouillon{(r.draftQuete + r.draftFlash) > 1 ? 's' : ''}</span>
+                      <span className="text-slate-500 font-bold">{pubPct}%</span>
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )

@@ -221,12 +221,13 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         </p>
       </div>
 
-      {/* Règles — compact, sans scroll */}
+      {/* Règles — compact, sans scroll, encadrés auto-width centrés */}
       <div style={{
         flex: 1, minHeight: 0, overflow: 'hidden',
         padding: `0 ${S(16)}`,
         display: 'flex', flexDirection: 'column', gap: isStyled ? S(4) : S(5),
         justifyContent: 'flex-start',
+        alignItems: 'center',
       }}>
         {(rules || []).map((rule, i) => {
           let iconColor = undefined
@@ -241,11 +242,12 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           }
           return (
             <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: S(10),
+              display: 'inline-flex', alignItems: 'center', gap: S(10),
               background: isStyled ? '#ffffff' : 'rgba(255,255,255,0.12)',
               border: isStyled ? `3px solid ${modeColor}` : 'none',
               backdropFilter: isStyled ? 'none' : 'blur(8px)',
               borderRadius: S(10), padding: isStyled ? `${S(5)} ${S(10)}` : `${S(8)} ${S(10)}`,
+              width: 'auto', maxWidth: '100%',
             }}>
               <span style={{ fontSize: S(18), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(18), height: S(18), color: isStyled ? textColor : 'inherit' }}>{renderIcon(rule.icon, 18, iconColor, modeId)}</span>
               <span style={{ fontSize: S(12), fontWeight: isStyled ? 700 : 600, lineHeight: 1.3, color: isStyled ? textColor : 'inherit' }}>

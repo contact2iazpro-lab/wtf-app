@@ -27,6 +27,3 @@ verify_jwt = false
 
 [functions.complete-urls]
 verify_jwt = false
-
-[functions.deep-research-url]
-verify_jwt = false

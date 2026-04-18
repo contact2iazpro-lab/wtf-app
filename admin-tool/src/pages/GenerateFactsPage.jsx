@@ -6,8 +6,7 @@ import { generateStatementsForFact } from '../lib/generateStatements'
 
 // ── Tab definitions ──────────────────────────────────────────────────────────
 const TABS = [
-  { id: 'standard', label: 'Standard',    icon: '⚡', desc: 'Volume rapide' },
-  { id: 'vip',      label: 'VIP',         icon: '⭐', desc: 'Qualité WTF!' },
+  { id: 'standard', label: 'Générer',     icon: '⚡', desc: 'Volume / VIP' },
   { id: 'vof',      label: 'Vrai ou Fou', icon: '🎴', desc: 'Affirmations' },
   { id: 'enrich',   label: 'Enrichir',    icon: '🧠', desc: 'Facts incomplets' },
 ]
@@ -39,6 +38,8 @@ function wtfColor(score) {
 
 export default function GenerateFactsPage({ toast }) {
   const [tab, setTab] = useState('standard')
+  // Toggle : utilise le flow VIP (3 formulations au choix) au lieu du flow Standard (1 formulation auto)
+  const [useVipMode, setUseVipMode] = useState(false)
 
   // ── Standard mode state ──────────────────────────────────────────────────
   const [stdCategory, setStdCategory] = useState('')
@@ -605,85 +606,6 @@ export default function GenerateFactsPage({ toast }) {
     }
   }
 
-  // ── Deep Research URLs pour les facts restés INTROUVABLE après complete-urls ─
-  async function runDeepResearchUrls() {
-    if (enrichRunState === 'running') return
-    enrichCancelRef.current = false
-    setEnrichRunState('running')
-    setEnrichErrorCount(0)
-    setEnrichMessage('⏳ Recherche des facts sans URL...')
-
-    try {
-      const { data: facts, error } = await supabase
-        .from('facts')
-        .select('id, question, short_answer, explanation, category')
-        .or('source_url.is.null,source_url.eq.')
-        .order('id')
-      if (error) throw error
-
-      if (!facts || facts.length === 0) {
-        setEnrichRunState('done')
-        setEnrichMessage('✅ Aucun fact sans URL — tout est déjà renseigné.')
-        return
-      }
-
-      const estimatedMinutes = Math.ceil(facts.length * 5)
-      const estimatedCost = (facts.length * 0.16).toFixed(2)
-      if (!confirm(`Deep Research o4-mini pour ${facts.length} fact${facts.length > 1 ? 's' : ''} sans URL.\n\nCoût estimé : ~${estimatedCost} $ (~${(parseFloat(estimatedCost) * 0.92).toFixed(2)} €)\nDurée estimée : ~${estimatedMinutes} min (séquentiel, 2-8 min/fact)\n\nTu peux stopper à tout moment.`)) {
-        setEnrichRunState('done')
-        setEnrichMessage('⏹ Annulé.')
-        return
-      }
-
-      setEnrichProgress({ current: 0, total: facts.length })
-      let okCount = 0, notFoundCount = 0, errCount = 0
-
-      for (let i = 0; i < facts.length; i++) {
-        if (enrichCancelRef.current) {
-          setEnrichRunState('done')
-          setEnrichMessage(`⏹ Arrêté — ${okCount} ok · ${notFoundCount} introuvables · ${errCount} erreurs (${i}/${facts.length})`)
-          loadEnrichCounts()
-          return
-        }
-        const fact = facts[i]
-        setEnrichMessage(`🔬 Deep Research ${i + 1}/${facts.length} — fact #${fact.id} (peut prendre 2-8 min)...`)
-        setEnrichProgress({ current: i + 1, total: facts.length })
-
-        try {
-          const res = await callEdgeFunction('deep-research-url', {
-            fact_id: fact.id,
-            question: fact.question,
-            short_answer: fact.short_answer,
-            explanation: fact.explanation,
-            category: fact.category,
-          })
-
-          if (res.status === 'ok' && res.url) {
-            const { error: updErr } = await supabase
-              .from('facts')
-              .update({ source_url: res.url, updated_at: new Date().toISOString() })
-              .eq('id', fact.id)
-            if (updErr) throw updErr
-            okCount++
-          } else {
-            notFoundCount++
-          }
-        } catch (err) {
-          console.error(`deep-research-url #${fact.id}:`, err)
-          errCount++
-          setEnrichErrorCount(prev => prev + 1)
-        }
-      }
-
-      setEnrichRunState('done')
-      setEnrichMessage(`✅ Deep Research terminé — ${okCount} ajoutées · ${notFoundCount} toujours introuvables · ${errCount} erreurs`)
-      loadEnrichCounts()
-    } catch (err) {
-      setEnrichRunState('error')
-      setEnrichMessage(`❌ Erreur : ${err.message}`)
-    }
-  }
-
   // ── Mode chirurgical hints : vides OU > 20 chars (appelé quand seul le groupe
   //    "hints" est coché dans Enrichir les incomplets) ──────────────────────
   async function runHintsSurgical(limit) {
@@ -888,61 +810,98 @@ export default function GenerateFactsPage({ toast }) {
       {/* ══════════ STANDARD MODE ══════════ */}
       {tab === 'standard' && (
         <div className="space-y-6">
-          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-            <h2 className="text-base font-black text-white mb-1">⚡ Mode Standard</h2>
-            <p className="text-slate-400 text-xs mb-4">Génère des f*cts en volume via le prompt classique.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Catégorie</label>
-                <select value={stdCategory} onChange={e => setStdCategory(e.target.value)} disabled={stdLoading} className={selectCls}>
-                  <option value="">Choisir…</option>
-                  {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Thème (optionnel)</label>
-                <input value={stdTheme} onChange={e => setStdTheme(e.target.value)} disabled={stdLoading} placeholder="Ex: Les inventions du 20e siècle..." className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nombre</label>
-                <select value={stdCount} onChange={e => setStdCount(Number(e.target.value))} disabled={stdLoading} className={selectCls}>
-                  {[3, 5, 10].map(n => <option key={n} value={n}>{n} f*cts</option>)}
-                </select>
-              </div>
-            </div>
-            <button onClick={generateStandard} disabled={stdLoading || !stdCategory}
-              className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}>
-              {stdLoading ? <><span className="inline-block animate-spin mr-2">⟳</span>Génération...</> : '⚡ Générer'}
+          {/* Toggle Standard / VIP */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setUseVipMode(false)}
+              disabled={stdLoading || vipLoading}
+              className="px-4 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
+              style={{
+                background: !useVipMode ? 'rgba(255,107,26,0.15)' : 'rgba(30,41,59,1)',
+                color: !useVipMode ? '#FF6B1A' : '#94A3B8',
+                border: `2px solid ${!useVipMode ? '#FF6B1A' : '#334155'}`,
+              }}
+            >
+              ⚡ Standard — 1 formulation auto
             </button>
-            {stdMessage && <div className="mt-3 text-sm font-semibold" style={{ color: stdMessage.startsWith('Erreur') ? '#EF4444' : '#22C55E' }}>{stdMessage}</div>}
+            <button
+              onClick={() => setUseVipMode(true)}
+              disabled={stdLoading || vipLoading}
+              className="px-4 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
+              style={{
+                background: useVipMode ? 'rgba(255,215,0,0.15)' : 'rgba(30,41,59,1)',
+                color: useVipMode ? '#FFD700' : '#94A3B8',
+                border: `2px solid ${useVipMode ? '#FFD700' : '#334155'}`,
+              }}
+            >
+              ⭐ VIP — 1 fait, 3 formulations à choisir
+            </button>
           </div>
 
-          {stdResults.length > 0 && (
-            <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
-                <h3 className="text-sm font-black text-white">{stdResults.length} f*cts générés</h3>
-                <button onClick={saveStandardResults} className="px-4 py-2 rounded-xl text-xs font-black text-white active:scale-95" style={{ background: '#22C55E' }}>
-                  Sauvegarder tous en brouillon
-                </button>
-              </div>
-              <div className="divide-y divide-slate-700 max-h-96 overflow-y-auto">
-                {stdResults.map((f, i) => (
-                  <div key={i} className="px-5 py-3">
-                    <div className="text-sm text-white font-semibold mb-1">{f.question}</div>
-                    <div className="text-xs font-bold" style={{ color: '#FF6B1A' }}>{f.short_answer}</div>
-                    {f.explanation && <div className="text-xs text-slate-400 mt-1">{f.explanation}</div>}
+          {/* ── Mode STANDARD ── */}
+          {!useVipMode && (
+            <>
+              <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+                <h2 className="text-base font-black text-white mb-1">⚡ Mode Standard</h2>
+                <p className="text-slate-400 text-xs mb-4">
+                  Pipeline unifié : web search + 7 archétypes + sélection automatique de la meilleure formulation.
+                  L'IA choisit l'angle, tu as plusieurs f*cts d'un coup.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Catégorie</label>
+                    <select value={stdCategory} onChange={e => setStdCategory(e.target.value)} disabled={stdLoading} className={selectCls}>
+                      <option value="">Choisir…</option>
+                      {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
+                    </select>
                   </div>
-                ))}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Thème (optionnel)</label>
+                    <input value={stdTheme} onChange={e => setStdTheme(e.target.value)} disabled={stdLoading} placeholder="Ex: Les inventions du 20e siècle..." className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nombre</label>
+                    <select value={stdCount} onChange={e => setStdCount(Number(e.target.value))} disabled={stdLoading} className={selectCls}>
+                      {[3, 5, 10].map(n => <option key={n} value={n}>{n} f*cts</option>)}
+                    </select>
+                  </div>
+                </div>
+                <button onClick={generateStandard} disabled={stdLoading || !stdCategory}
+                  className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-40"
+                  style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}>
+                  {stdLoading ? <><span className="inline-block animate-spin mr-2">⟳</span>Génération...</> : '⚡ Générer'}
+                </button>
+                {stdMessage && <div className="mt-3 text-sm font-semibold" style={{ color: stdMessage.startsWith('Erreur') ? '#EF4444' : '#22C55E' }}>{stdMessage}</div>}
               </div>
-            </div>
+
+              {stdResults.length > 0 && (
+                <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+                    <h3 className="text-sm font-black text-white">{stdResults.length} f*cts générés</h3>
+                    <button onClick={saveStandardResults} className="px-4 py-2 rounded-xl text-xs font-black text-white active:scale-95" style={{ background: '#22C55E' }}>
+                      Sauvegarder tous en brouillon
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-700 max-h-96 overflow-y-auto">
+                    {stdResults.map((f, i) => (
+                      <div key={i} className="px-5 py-3">
+                        <div className="text-sm text-white font-semibold mb-1">{f.question}</div>
+                        <div className="text-xs font-bold" style={{ color: '#FF6B1A' }}>{f.short_answer}</div>
+                        {f.explanation && <div className="text-xs text-slate-400 mt-1">{f.explanation}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
+
         </div>
       )}
 
-      {/* ══════════ VIP MODE ══════════ */}
-      {tab === 'vip' && (
-        <div className="space-y-6">
+      {/* ══════════ VIP MODE — affiché dans l'onglet "Générer" quand toggle VIP activé ══════════ */}
+      {tab === 'standard' && useVipMode && (
+        <div className="space-y-6 mt-6">
           {/* Controls */}
           <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#FFD70030' }}>
             <h2 className="text-base font-black mb-1" style={{ color: '#FFD700' }}>⭐ Mode VIP — 1 fait, 3 formulations</h2>
@@ -1491,29 +1450,6 @@ export default function GenerateFactsPage({ toast }) {
                 style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
               >
                 {enrichRunState === 'running' ? 'Enrichissement…' : '🧠 Enrichir les incomplets'}
-              </button>
-              {enrichRunState === 'running' && (
-                <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">
-                  ⏹ Arrêter
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Card 2 — Deep Research pour URLs introuvables */}
-          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#A78BFA30' }}>
-            <h2 className="text-base font-black mb-2" style={{ color: '#A78BFA' }}>🔬 Deep Research — URLs introuvables</h2>
-            <p className="text-slate-400 text-sm mb-4">
-              Pour les facts où GPT-4o search n'a rien trouvé après 3 tentatives, lance <strong>o4-mini Deep Research</strong> (recherche exhaustive, archives, bases académiques, PDFs scientifiques). ~0,16 $/fact · 2-8 min par fact.
-            </p>
-            <div className="flex gap-3 flex-wrap">
-              <button
-                disabled={enrichRunState === 'running'}
-                onClick={runDeepResearchUrls}
-                className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 hover:opacity-90 active:scale-95"
-                style={{ background: 'linear-gradient(135deg, #A78BFA, #7C3AED)' }}
-              >
-                {enrichRunState === 'running' ? 'Deep Research…' : '🔬 Lancer Deep Research'}
               </button>
               {enrichRunState === 'running' && (
                 <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">

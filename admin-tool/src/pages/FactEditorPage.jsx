@@ -3,8 +3,7 @@ import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, VIP_USAGES } from '../constants/categories'
 import { resolveImageUrl, optimizeSupabaseImageUrl } from '../utils/imageUrl'
-import { generateStatementsForFact } from '../lib/generateStatements'
-import { STATUSES, CharCounter, Toggle, Section, Field, inputCls, inputClsErr } from '../components/shared'
+import { STATUSES, CharCounter, Section, Field, inputCls, inputClsErr } from '../components/shared'
 import { callEdgeFunction } from '../utils/helpers'
 
 const EDITABLE_FIELDS = [
@@ -33,210 +32,6 @@ function fmt(dateStr) {
   })
 }
 
-const isLightColor = (hex) => {
-  if (!hex) return false
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return (r * 299 + g * 587 + b * 114) / 1000 > 128
-}
-
-function FactPreviewStandalone({ fact }) {
-  const [tab, setTab] = useState('question')
-  const cat = CATEGORIES.find(c => c.id === fact.category)
-  const categoryColor = cat?.color || '#FF6B1A'
-  const categoryLabel = cat?.label || fact.category || '—'
-  const categoryEmoji = cat?.emoji || '❓'
-  const textColor = isLightColor(categoryColor) ? '#1a1a1a' : '#ffffff'
-  const bg = `linear-gradient(160deg, ${categoryColor}22, ${categoryColor})`
-
-  // Build QCM options: short_answer + 3 first available wrong answers
-  const wrongAnswers = [
-    fact.funny_wrong_1, fact.close_wrong_1, fact.plausible_wrong_1,
-    fact.funny_wrong_2, fact.close_wrong_2, fact.plausible_wrong_2, fact.plausible_wrong_3,
-  ].filter(Boolean)
-  const qcmOptions = [fact.short_answer, ...wrongAnswers.slice(0, 3)].filter(Boolean)
-
-  return (
-    <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-      <h3 className="text-sm font-black text-slate-400 uppercase tracking-wider mb-4">👁 Aperçu en jeu</h3>
-      {/* Tabs */}
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setTab('question')}
-          className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
-          style={{
-            background: tab === 'question' ? categoryColor : 'transparent',
-            color: tab === 'question' ? (isLightColor(categoryColor) ? '#1a1a1a' : '#fff') : '#94a3b8',
-            border: `2px solid ${tab === 'question' ? categoryColor : '#475569'}`,
-          }}
-        >
-          ❓ Question
-        </button>
-        <button
-          onClick={() => setTab('revelation')}
-          className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
-          style={{
-            background: tab === 'revelation' ? categoryColor : 'transparent',
-            color: tab === 'revelation' ? (isLightColor(categoryColor) ? '#1a1a1a' : '#fff') : '#94a3b8',
-            border: `2px solid ${tab === 'revelation' ? categoryColor : '#475569'}`,
-          }}
-        >
-          💡 Révélation
-        </button>
-      </div>
-
-      {/* Phone frame */}
-      <div
-        className="mx-auto rounded-[2rem] overflow-hidden border-4 border-slate-600 shadow-2xl max-w-[320px] w-full"
-        style={{ aspectRatio: '320/580', fontFamily: 'Nunito, sans-serif' }}
-      >
-        {tab === 'question' ? (
-          /* ───── QUESTION TAB ───── */
-          <div className="relative w-full h-full flex flex-col" style={{ background: bg }}>
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 pt-4 pb-2">
-              <span style={{ color: textColor, opacity: 0.7, fontSize: 18 }}>✕</span>
-              <span style={{ color: textColor, fontSize: 13, fontWeight: 700 }}>{categoryEmoji} {categoryLabel}</span>
-              <span style={{ color: textColor, opacity: 0.7, fontSize: 16 }}>💰</span>
-            </div>
-
-            {/* Progress bar */}
-            <div className="flex gap-1.5 px-5 mb-3">
-              {[0, 1, 2, 3, 4].map(i => (
-                <div
-                  key={i}
-                  className="flex-1 h-1.5 rounded-full"
-                  style={{ background: i === 0 ? categoryColor : `${textColor}33` }}
-                />
-              ))}
-            </div>
-
-            {/* Question */}
-            <div className="flex-1 flex items-center justify-center px-6">
-              <p style={{ color: textColor, fontWeight: 900, fontSize: 18, textAlign: 'center', lineHeight: 1.4 }}>
-                {fact.question || 'Aucune question…'}
-              </p>
-            </div>
-
-            {/* QCM grid */}
-            <div className="grid grid-cols-2 gap-2 px-4 mb-3">
-              {qcmOptions.length > 0 ? qcmOptions.map((opt, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl text-center py-2.5 px-2 text-xs font-bold truncate"
-                  style={{
-                    background: opt === fact.short_answer ? '#16a34a' : 'rgba(255,255,255,0.15)',
-                    color: opt === fact.short_answer ? '#fff' : textColor,
-                    border: opt === fact.short_answer ? '2px solid #22c55e' : `1px solid ${textColor}22`,
-                  }}
-                >
-                  {opt}
-                </div>
-              )) : (
-                <>
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="rounded-xl text-center py-2.5 px-2 text-xs" style={{ background: `${textColor}15`, color: `${textColor}44` }}>
-                      Option {i}
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-
-            {/* Timer + hints */}
-            <div className="flex items-center justify-between px-5 pb-4">
-              {/* Hint buttons */}
-              <div className="flex gap-2">
-                {fact.hint1 && (
-                  <div className="rounded-full px-3 py-1.5 text-[10px] font-bold" style={{ background: `${textColor}20`, color: textColor }}>
-                    💡 Indice 1
-                  </div>
-                )}
-                {fact.hint2 && (
-                  <div className="rounded-full px-3 py-1.5 text-[10px] font-bold" style={{ background: `${textColor}20`, color: textColor }}>
-                    💡 Indice 2
-                  </div>
-                )}
-              </div>
-              {/* Timer */}
-              <div className="relative" style={{ width: 44, height: 44 }}>
-                <svg viewBox="0 0 44 44" width="44" height="44">
-                  <circle cx="22" cy="22" r="19" fill="none" stroke={`${textColor}33`} strokeWidth="3" />
-                  <circle cx="22" cy="22" r="19" fill="none" stroke={textColor} strokeWidth="3"
-                    strokeDasharray={`${2 * Math.PI * 19}`} strokeDashoffset="0"
-                    strokeLinecap="round" transform="rotate(-90 22 22)" />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-xs font-black" style={{ color: textColor }}>
-                  30
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* ───── REVELATION TAB ───── */
-          <div className="relative w-full h-full flex flex-col overflow-y-auto" style={{ background: bg }}>
-            {/* Image */}
-            <div className="mx-auto mt-4 rounded-xl overflow-hidden flex items-center justify-center" style={{ width: 180, height: 180, background: 'rgba(0,0,0,0.2)' }}>
-              {fact.image_url ? (
-                <img
-                  src={resolveImageUrl(fact.image_url)}
-                  alt="fact"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-1" style={{ color: `${textColor}66` }}>
-                  <span style={{ fontSize: 32 }}>📷</span>
-                  <span style={{ fontSize: 11, fontWeight: 700 }}>Pas d'image</span>
-                </div>
-              )}
-            </div>
-
-            {/* Result badges */}
-            <div className="flex flex-col items-center gap-2 mt-3 px-4">
-              <div className="rounded-full px-4 py-1.5 text-xs font-black" style={{ background: 'rgba(34,197,94,0.2)', color: '#22c55e', border: '2px solid #22c55e' }}>
-                ✅ BONNE RÉPONSE
-              </div>
-              <div className="rounded-full px-4 py-1.5 text-xs font-black" style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444', border: '2px solid #ef4444' }}>
-                ❌ PAS CETTE FOIS
-              </div>
-            </div>
-
-            {/* Answer */}
-            <div className="text-center mt-3 px-5">
-              <p style={{ color: categoryColor, fontWeight: 900, fontSize: 22, textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
-                {fact.short_answer || '—'}
-              </p>
-            </div>
-
-            {/* Explanation */}
-            <div className="px-5 mt-2 flex-1">
-              <p style={{ color: textColor, fontSize: 12, lineHeight: 1.5, opacity: 0.85 }}>
-                {fact.explanation || 'Aucune explication…'}
-              </p>
-            </div>
-
-            {/* Bottom buttons */}
-            <div className="flex gap-2 px-4 pb-4 mt-3">
-              <div
-                className="flex-1 rounded-xl text-center py-2.5 text-xs font-bold"
-                style={{ background: `${textColor}20`, color: textColor }}
-              >
-                🔗 Partager
-              </div>
-              <div
-                className="flex-1 rounded-xl text-center py-2.5 text-xs font-bold"
-                style={{ background: categoryColor, color: isLightColor(categoryColor) ? '#1a1a1a' : '#fff' }}
-              >
-                Suivant →
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
 export default function FactEditorPage({ toast }) {
   const { id } = useParams()
@@ -256,8 +51,6 @@ export default function FactEditorPage({ toast }) {
   const [imageUploading, setImageUploading] = useState(false)
   const [generatingImage, setGeneratingImage] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [enriching, setEnriching] = useState(false)
-  const [generatingStatements, setGeneratingStatements] = useState(false)
   const imageTimerRef = useRef(null)
   const imageInputRef = useRef(null)
 
@@ -560,6 +353,9 @@ export default function FactEditorPage({ toast }) {
       setOriginalFact(JSON.parse(JSON.stringify(fact)))
       toast?.(`✓ Fact #${id} sauvegardé`)
 
+      // Scroll en haut de la page après sauvegarde
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+
       if (fact.is_vip && fact.vip_usage === 'available') {
         toast?.('⚠ Ce Fact Quête n\'a pas d\'usage assigné', 'warn', 5000)
       }
@@ -568,57 +364,6 @@ export default function FactEditorPage({ toast }) {
       toast?.('Erreur sauvegarde', 'error')
     } finally {
       setSaving(false)
-    }
-  }
-
-  async function enrichFact() {
-    setEnriching(true)
-    try {
-      const data = await callEdgeFunction('enrich-fact', {
-        question: fact.question,
-        short_answer: fact.short_answer,
-        explanation: fact.explanation,
-        category: fact.category,
-        hint1: fact.hint1,
-        hint2: fact.hint2,
-      })
-
-      set('hint1', data.hint1)
-      set('hint2', data.hint2)
-      set('hint3', data.hint3)
-      set('hint4', data.hint4)
-      set('funny_wrong_1', data.funny_wrong_1)
-      set('funny_wrong_2', data.funny_wrong_2)
-      set('funny_wrong_3', data.funny_wrong_3)
-      set('close_wrong_1', data.close_wrong_1)
-      set('close_wrong_2', data.close_wrong_2)
-      set('plausible_wrong_1', data.plausible_wrong_1)
-      set('plausible_wrong_2', data.plausible_wrong_2)
-      set('plausible_wrong_3', data.plausible_wrong_3)
-
-      toast?.('✓ Fact enrichi par Claude — vérifiez avant de sauvegarder')
-    } catch (err) {
-      console.error(err)
-      toast?.('Erreur enrichissement : ' + (err.message || ''), 'error')
-    } finally {
-      setEnriching(false)
-    }
-  }
-
-  async function generateStatements() {
-    if (generatingStatements) return
-    setGeneratingStatements(true)
-    try {
-      const result = await generateStatementsForFact(fact)
-      set('statement_true', result.statement_true)
-      set('statement_false_funny', result.statement_false_funny)
-      set('statement_false_plausible', result.statement_false_plausible)
-      toast?.('✓ 3 affirmations générées — relis et sauvegarde')
-    } catch (err) {
-      console.error('[generateStatements]', err)
-      toast?.('Erreur génération : ' + (err.message || ''), 'error')
-    } finally {
-      setGeneratingStatements(false)
     }
   }
 
@@ -711,14 +456,13 @@ export default function FactEditorPage({ toast }) {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        {/* COLONNE GAUCHE */}
-        <div className="w-full lg:w-80 lg:flex-shrink-0 space-y-4">
+      {/* STRUCTURE LINÉAIRE — ordre priorité : ID > Cat > Question > Réponse > Explication > Réponses > Indices > VoF */}
+      <div className="space-y-4 max-w-3xl mx-auto">
         {/* Warning bandeau si fausses réponses incomplètes */}
         {(() => {
           const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
           const filled = wrongFields.filter(f => fact[f]?.trim()).length
-          if (filled < 7) return (
+          if (filled < 8) return (
             <div className="px-4 py-3 rounded-xl border border-amber-600/50 text-sm font-semibold" style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }}>
               ⚠️ Ce f*ct est incomplet — ID #{fact.id}. Notez cet ID pour mise à jour manuelle.
             </div>
@@ -726,17 +470,16 @@ export default function FactEditorPage({ toast }) {
           return null
         })()}
 
-        {/* IDENTIFICATION */}
+        {/* IDENTIFICATION — ID + Catégorie + Pack + Usage Quête (si VIP) + Mode jeu */}
         <Section title="🆔 Identification">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          {/* Row 1 : ID · Catégorie · Pack */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">ID</label>
               <div className="px-3 py-2.5 rounded-xl bg-slate-900/50 border border-slate-700 text-slate-500 font-mono text-sm">
                 {fact.id}
               </div>
             </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">
                 Catégorie {errors.category && <span className="text-red-400 normal-case">— {errors.category}</span>}
@@ -761,37 +504,58 @@ export default function FactEditorPage({ toast }) {
             </div>
           </div>
 
-          {/* Mode de jeu toggle */}
-          <div className="mt-3">
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Mode de jeu</label>
-            <div className="flex rounded-xl overflow-hidden border border-slate-700">
-              <button
-                onClick={() => { set('is_vip', true); set('type', 'vip') }}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
-                style={{
-                  background: fact.is_vip ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'transparent',
-                  color: fact.is_vip ? 'white' : '#9CA3AF',
-                }}
-              >
-                <span>⭐</span> <span>⚔️ Quête WTF!</span>
-              </button>
-              <button
-                onClick={() => { set('is_vip', false); set('type', 'generated') }}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
-                style={{
-                  background: !fact.is_vip ? 'linear-gradient(135deg, #7C3AED, #5B21B6)' : 'transparent',
-                  color: !fact.is_vip ? 'white' : '#9CA3AF',
-                }}
-              >
-                <span>⚡</span> <span>Quickie / Flash</span>
-              </button>
+          {/* Row 2 : Mode jeu · Usage Quête (si VIP) */}
+          <div className={`grid grid-cols-1 ${fact.is_vip ? 'sm:grid-cols-2' : ''} gap-3`}>
+            <div>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Mode de jeu</label>
+              <div className="flex rounded-xl overflow-hidden border border-slate-700">
+                <button
+                  onClick={() => { set('is_vip', true); set('type', 'vip') }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
+                  style={{
+                    background: fact.is_vip ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'transparent',
+                    color: fact.is_vip ? 'white' : '#9CA3AF',
+                  }}
+                >
+                  <span>⭐</span> <span>WTF!</span>
+                </button>
+                <button
+                  onClick={() => { set('is_vip', false); set('type', 'generated') }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
+                  style={{
+                    background: !fact.is_vip ? 'linear-gradient(135deg, #7C3AED, #5B21B6)' : 'transparent',
+                    color: !fact.is_vip ? 'white' : '#9CA3AF',
+                  }}
+                >
+                  <span>⚡</span> <span>Fun Facts</span>
+                </button>
+              </div>
             </div>
-            <p className="text-xs text-slate-500 mt-1.5">
-              {fact.is_vip
-                ? 'Disponible uniquement comme boss Quest (VIP)'
-                : 'Disponible en Quickie, Vrai ou Fou, Quest, Flash, Blitz, Race'}
-            </p>
+
+            {fact.is_vip && (
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Usage Quête</label>
+                <select
+                  value={fact.vip_usage || 'available'}
+                  onChange={e => set('vip_usage', e.target.value)}
+                  className={inputCls}
+                >
+                  {VIP_USAGES.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
+                </select>
+              </div>
+            )}
           </div>
+
+          <p className="text-xs text-slate-500 mt-2">
+            {fact.is_vip
+              ? 'WTF! — disponible uniquement comme boss Quest (VIP)'
+              : 'Fun Facts — disponibles en Quickie, Vrai ou Fou, Quest, Flash, Blitz, Race'}
+          </p>
+          {fact.is_vip && fact.vip_usage === 'available' && (
+            <p className="text-amber-400 text-xs mt-1.5 font-semibold">
+              ⚠ Ce Fact WTF! n'a pas d'usage assigné
+            </p>
+          )}
         </Section>
 
         {/* CONTENU */}
@@ -864,77 +628,6 @@ export default function FactEditorPage({ toast }) {
           </Field>
         </Section>
 
-        {/* 🤔 VRAI OU FOU — 3 affirmations par fact */}
-        <Section title="🤔 Vrai ou Fou">
-          <p className="text-xs text-slate-500 mb-3">
-            Le jeu tire au hasard une des 3 variantes à chaque draw (50% vrai, 50% faux).
-            Les 3 champs doivent être remplis pour que le fact soit jouable.
-          </p>
-
-          <button
-            type="button"
-            onClick={generateStatements}
-            disabled={generatingStatements || !fact.question || !fact.short_answer}
-            className="w-full mb-4 py-3 rounded-xl font-bold text-sm transition-all"
-            style={{
-              background: generatingStatements ? '#475569' : '#9B59B6',
-              color: '#fff',
-              border: 'none',
-              cursor: (generatingStatements || !fact.question || !fact.short_answer) ? 'not-allowed' : 'pointer',
-              opacity: (!fact.question || !fact.short_answer) ? 0.5 : 1,
-            }}
-            title={(!fact.question || !fact.short_answer) ? 'Remplis question et short_answer d\'abord' : 'Générer les 3 affirmations via Claude'}
-          >
-            {generatingStatements ? '⏳ Génération…' : '🤖 Générer les 3 affirmations via Claude'}
-          </button>
-
-          <Field
-            label="✓ Affirmation VRAIE (reformulation de short_answer)"
-            hint={<CharCounter value={fact.statement_true} max={140} />}
-          >
-            <textarea
-              value={fact.statement_true || ''}
-              onChange={e => set('statement_true', e.target.value)}
-              rows={2}
-              className={(fact.statement_true || '').length > 140 ? inputClsErr : inputCls}
-              placeholder="Ex : « La pieuvre a trois cœurs. »"
-              maxLength={200}
-            />
-          </Field>
-
-          <Field
-            label="✗ Affirmation FAUSSE DRÔLE (reformulation d'un funny_wrong)"
-            hint={<CharCounter value={fact.statement_false_funny} max={140} />}
-          >
-            <textarea
-              value={fact.statement_false_funny || ''}
-              onChange={e => set('statement_false_funny', e.target.value)}
-              rows={2}
-              className={(fact.statement_false_funny || '').length > 140 ? inputClsErr : inputCls}
-              placeholder="Ex : « La pieuvre rote de l'encre. »"
-              maxLength={200}
-            />
-          </Field>
-
-          <Field
-            label="✗ Affirmation FAUSSE PLAUSIBLE (reformulation d'un plausible_wrong)"
-            hint={<CharCounter value={fact.statement_false_plausible} max={140} />}
-          >
-            <textarea
-              value={fact.statement_false_plausible || ''}
-              onChange={e => set('statement_false_plausible', e.target.value)}
-              rows={2}
-              className={(fact.statement_false_plausible || '').length > 140 ? inputClsErr : inputCls}
-              placeholder="Ex : « La pieuvre a des os dans les tentacules. »"
-              maxLength={200}
-            />
-          </Field>
-        </Section>
-
-        </div>{/* END COLONNE GAUCHE */}
-
-        {/* COLONNE DROITE — sticky */}
-        <div className="flex-1 min-w-0 space-y-4 lg:sticky lg:top-4">
         {/* RÉPONSES (8 au total) */}
         <Section title="🎯 Réponses (8 au total)">
           {/* Vraie réponse — lecture seule */}
@@ -952,12 +645,12 @@ export default function FactEditorPage({ toast }) {
           {(() => {
             const wrongFields = ['funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3', 'close_wrong_1', 'close_wrong_2', 'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3']
             const filled = wrongFields.filter(f => fact[f]?.trim()).length
-            const badgeColor = filled === 7 ? '#22C55E' : filled >= 4 ? '#F59E0B' : '#EF4444'
-            const badgeBg = filled === 7 ? 'rgba(34,197,94,0.15)' : filled >= 4 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)'
+            const badgeColor = filled === 8 ? '#22C55E' : filled >= 4 ? '#F59E0B' : '#EF4444'
+            const badgeBg = filled === 8 ? 'rgba(34,197,94,0.15)' : filled >= 4 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)'
             return (
               <div className="mb-4 flex items-center gap-2">
                 <span className="text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: badgeBg, color: badgeColor }}>
-                  {filled}/7 fausses réponses renseignées
+                  {filled}/8 fausses réponses renseignées
                 </span>
               </div>
             )
@@ -1102,63 +795,82 @@ export default function FactEditorPage({ toast }) {
             </Field>
           </div>
         </Section>
-        </div>{/* END COLONNE DROITE */}
-      </div>{/* END FLEX 2 COLONNES */}
 
-      <div className="space-y-4 mt-4">
-        {/* STATUTS */}
-        <Section title="⚙️ Statuts">
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl border" style={{ background: fact.is_vip ? 'rgba(255,215,0,0.08)' : 'rgba(255,255,255,0.03)', borderColor: fact.is_vip ? 'rgba(255,215,0,0.3)' : '#334155' }}>
-              <Toggle
-                on={fact.is_vip}
-                onChange={v => set('is_vip', v)}
-                label="⭐ Fact Quête — Récompense exclusive"
-                color="#FFD700"
-              />
-            </div>
+        {/* 🤔 VRAI OU FOU — 3 affirmations par fact (après les indices) */}
+        <Section title="🤔 Vrai ou Fou">
+          <p className="text-xs text-slate-500 mb-3">
+            Le jeu tire au hasard une des 3 variantes à chaque draw (50% vrai, 50% faux).
+            Les 3 champs doivent être remplis pour que le fact soit jouable.
+            <br />
+            <span className="text-violet-400">
+              Génération en batch disponible dans l'onglet <strong>Générer → Vrai ou Fou</strong>.
+            </span>
+          </p>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">Statut de publication</label>
-              <div className="flex gap-2">
-                {STATUSES.map(s => {
-                  const active = fact.status === s.value
-                  return (
-                    <button
-                      key={s.value}
-                      onClick={() => set('status', s.value)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all"
-                      style={{
-                        background: active ? s.color : 'transparent',
-                        color: active ? 'white' : s.color,
-                        border: `2px solid ${s.color}`,
-                      }}
-                    >
-                      <span>{s.icon}</span>
-                      <span>{s.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+          <Field
+            label="✓ Affirmation VRAIE (reformulation de short_answer)"
+            hint={<CharCounter value={fact.statement_true} max={140} />}
+          >
+            <textarea
+              value={fact.statement_true || ''}
+              onChange={e => set('statement_true', e.target.value)}
+              rows={2}
+              className={(fact.statement_true || '').length > 140 ? inputClsErr : inputCls}
+              placeholder="Ex : « La pieuvre a trois cœurs. »"
+              maxLength={200}
+            />
+          </Field>
 
-            {fact.is_vip && (
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Usage Quête</label>
-                <select
-                  value={fact.vip_usage || 'available'}
-                  onChange={e => set('vip_usage', e.target.value)}
-                  className={inputCls}
+          <Field
+            label="✗ Affirmation FAUSSE DRÔLE (reformulation d'un funny_wrong)"
+            hint={<CharCounter value={fact.statement_false_funny} max={140} />}
+          >
+            <textarea
+              value={fact.statement_false_funny || ''}
+              onChange={e => set('statement_false_funny', e.target.value)}
+              rows={2}
+              className={(fact.statement_false_funny || '').length > 140 ? inputClsErr : inputCls}
+              placeholder="Ex : « La pieuvre rote de l'encre. »"
+              maxLength={200}
+            />
+          </Field>
+
+          <Field
+            label="✗ Affirmation FAUSSE PLAUSIBLE (reformulation d'un plausible_wrong)"
+            hint={<CharCounter value={fact.statement_false_plausible} max={140} />}
+          >
+            <textarea
+              value={fact.statement_false_plausible || ''}
+              onChange={e => set('statement_false_plausible', e.target.value)}
+              rows={2}
+              className={(fact.statement_false_plausible || '').length > 140 ? inputClsErr : inputCls}
+              placeholder="Ex : « La pieuvre a des os dans les tentacules. »"
+              maxLength={200}
+            />
+          </Field>
+        </Section>
+
+        {/* STATUT DE PUBLICATION (is_vip et vip_usage déjà dans Identification) */}
+        <Section title="⚙️ Statut de publication">
+          <div className="flex gap-2">
+            {STATUSES.map(s => {
+              const active = fact.status === s.value
+              return (
+                <button
+                  key={s.value}
+                  onClick={() => set('status', s.value)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all"
+                  style={{
+                    background: active ? s.color : 'transparent',
+                    color: active ? 'white' : s.color,
+                    border: `2px solid ${s.color}`,
+                  }}
                 >
-                  {VIP_USAGES.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
-                </select>
-                {fact.vip_usage === 'available' && (
-                  <p className="text-amber-400 text-xs mt-1.5 font-semibold">
-                    ⚠ Ce Fact Quête n'a pas d'usage assigné
-                  </p>
-                )}
-              </div>
-            )}
+                  <span>{s.icon}</span>
+                  <span>{s.label}</span>
+                </button>
+              )
+            })}
           </div>
         </Section>
 
@@ -1244,9 +956,6 @@ export default function FactEditorPage({ toast }) {
           )}
         </Section>
 
-        {/* APERÇU EN JEU — synchronisé en temps réel avec le formulaire */}
-        <FactPreviewStandalone fact={fact} />
-
         {/* HISTORIQUE */}
         <div className="bg-slate-800 rounded-2xl border border-slate-700">
           <button
@@ -1298,14 +1007,6 @@ export default function FactEditorPage({ toast }) {
             className="px-5 py-3.5 rounded-2xl font-black text-sm text-red-400 bg-red-900/20 border border-red-800/40 hover:bg-red-900/40 transition-all"
           >
             🗑 Supprimer
-          </button>
-          <button
-            onClick={enrichFact}
-            disabled={enriching || !fact.question || !fact.short_answer}
-            className="px-5 py-3.5 rounded-2xl font-black text-sm text-white transition-all disabled:opacity-40 active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
-          >
-            {enriching ? '⟳ Enrichissement…' : '🧠 Enrichir ce f*ct'}
           </button>
           <Link
             to="/facts"

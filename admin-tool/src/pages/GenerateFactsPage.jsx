@@ -606,6 +606,95 @@ export default function GenerateFactsPage({ toast }) {
     }
   }
 
+  // ── Retire tous les emojis du champ explanation sur tous les facts ────────
+  async function runStripEmojisExplanations() {
+    if (enrichRunState === 'running') return
+
+    // Regex Unicode : emojis classiques + dingbats + sélecteurs de variation
+    const stripEmojis = (text) => {
+      if (!text || typeof text !== 'string') return text
+      return text
+        .replace(/\p{Extended_Pictographic}/gu, '')
+        .replace(/[\uFE00-\uFE0F]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+    }
+
+    enrichCancelRef.current = false
+    setEnrichRunState('running')
+    setEnrichErrorCount(0)
+    setEnrichMessage('⏳ Chargement des facts avec explication...')
+
+    try {
+      const all = []
+      let from = 0
+      const PAGE = 1000
+      while (true) {
+        const { data, error } = await supabase
+          .from('facts')
+          .select('id, explanation')
+          .not('explanation', 'is', null)
+          .neq('explanation', '')
+          .range(from, from + PAGE - 1)
+        if (error) throw error
+        if (!data || data.length === 0) break
+        all.push(...data)
+        if (data.length < PAGE) break
+        from += PAGE
+      }
+
+      // Filtre seulement les facts dont l'explication contient effectivement des emojis
+      const toProcess = all
+        .map(f => ({ id: f.id, before: f.explanation, after: stripEmojis(f.explanation) }))
+        .filter(f => f.before !== f.after)
+
+      if (toProcess.length === 0) {
+        setEnrichRunState('done')
+        setEnrichMessage(`✅ Aucun emoji trouvé — ${all.length} explications déjà propres.`)
+        return
+      }
+
+      if (!confirm(`Retirer les emojis de ${toProcess.length} explication${toProcess.length > 1 ? 's' : ''} (sur ${all.length} facts scannés) ?\n\nAction réversible via git/restore de la DB. Pas d'appel IA.`)) {
+        setEnrichRunState('done')
+        setEnrichMessage('⏹ Annulé.')
+        return
+      }
+
+      setEnrichProgress({ current: 0, total: toProcess.length })
+      let okCount = 0, koCount = 0
+
+      for (let i = 0; i < toProcess.length; i++) {
+        if (enrichCancelRef.current) {
+          setEnrichRunState('done')
+          setEnrichMessage(`⏹ Arrêté — ${okCount}/${toProcess.length}`)
+          return
+        }
+        const f = toProcess[i]
+        setEnrichMessage(`🧹 Nettoyage ${i + 1}/${toProcess.length} — fact #${f.id}...`)
+        setEnrichProgress({ current: i + 1, total: toProcess.length })
+
+        try {
+          const { error: updErr } = await supabase
+            .from('facts')
+            .update({ explanation: f.after, updated_at: new Date().toISOString() })
+            .eq('id', f.id)
+          if (updErr) throw updErr
+          okCount++
+        } catch (err) {
+          console.error(`strip-emojis #${f.id}:`, err)
+          koCount++
+          setEnrichErrorCount(prev => prev + 1)
+        }
+      }
+
+      setEnrichRunState('done')
+      setEnrichMessage(`✅ Nettoyage terminé — ${okCount} explications nettoyées, ${koCount} erreurs.`)
+    } catch (err) {
+      setEnrichRunState('error')
+      setEnrichMessage(`❌ Erreur : ${err.message}`)
+    }
+  }
+
   // ── Mode chirurgical hints : vides OU > 20 chars (appelé quand seul le groupe
   //    "hints" est coché dans Enrichir les incomplets) ──────────────────────
   async function runHintsSurgical(limit) {
@@ -1450,6 +1539,30 @@ export default function GenerateFactsPage({ toast }) {
                 style={{ background: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' }}
               >
                 {enrichRunState === 'running' ? 'Enrichissement…' : '🧠 Enrichir les incomplets'}
+              </button>
+              {enrichRunState === 'running' && (
+                <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">
+                  ⏹ Arrêter
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Card — Nettoyer emojis des explications */}
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#10B98130' }}>
+            <h2 className="text-base font-black mb-2" style={{ color: '#10B981' }}>🧹 Nettoyer les emojis du « Le saviez-vous »</h2>
+            <p className="text-slate-400 text-sm mb-4">
+              Retire tous les emojis du champ <code>explanation</code> de la base (sur tous les facts).
+              Pas d'appel IA, pas de coût — simple regex Unicode côté client.
+            </p>
+            <div className="flex gap-3 flex-wrap">
+              <button
+                disabled={enrichRunState === 'running'}
+                onClick={runStripEmojisExplanations}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 hover:opacity-90 active:scale-95"
+                style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}
+              >
+                {enrichRunState === 'running' ? 'Nettoyage…' : '🧹 Nettoyer emojis des explications'}
               </button>
               {enrichRunState === 'running' && (
                 <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">

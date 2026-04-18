@@ -10,7 +10,6 @@ const TABS = [
   { id: 'vip',      label: 'VIP',         icon: '⭐', desc: 'Qualité WTF!' },
   { id: 'vof',      label: 'Vrai ou Fou', icon: '🎴', desc: 'Affirmations' },
   { id: 'enrich',   label: 'Enrichir',    icon: '🧠', desc: 'Facts incomplets' },
-  { id: 'urls',     label: 'URLs sources',icon: '🔗', desc: 'Sources auto' },
 ]
 
 const VOF_MAX = 300
@@ -131,20 +130,16 @@ export default function GenerateFactsPage({ toast }) {
     close:       true,
     plausible:   true,
     explanation: true,
+    urls:        true,
   })
   const toggleEnrichGroup = (g) => setEnrichGroups(prev => ({ ...prev, [g]: !prev[g] }))
 
   // Nombre de facts concernés par chaque groupe (live)
-  const [enrichCounts, setEnrichCounts] = useState({ hints: null, funny: null, close: null, plausible: null, explanation: null })
+  const [enrichCounts, setEnrichCounts] = useState({ hints: null, funny: null, close: null, plausible: null, explanation: null, urls: null })
   const [enrichCountsLoading, setEnrichCountsLoading] = useState(false)
 
   // Limite optionnelle du nombre de facts à enrichir (test / batch réduit)
   const [enrichLimit, setEnrichLimit] = useState('')
-
-  // ── Fill URLs state ──────────────────────────────────────────────────────
-  const [fillUrlsStatus, setFillUrlsStatus] = useState(null)
-  const [fillUrlsResult, setFillUrlsResult] = useState(null)
-  const [fillUrlsError, setFillUrlsError] = useState('')
 
   // ── Standard generation ────────────────────────────────────────────────
   async function generateStandard() {
@@ -367,6 +362,7 @@ export default function GenerateFactsPage({ toast }) {
     close:       'close_wrong_1.is.null,close_wrong_1.eq.,close_wrong_2.is.null,close_wrong_2.eq.',
     plausible:   'plausible_wrong_1.is.null,plausible_wrong_1.eq.,plausible_wrong_2.is.null,plausible_wrong_2.eq.,plausible_wrong_3.is.null,plausible_wrong_3.eq.',
     explanation: 'explanation.is.null,explanation.eq.',
+    urls:        'source_url.is.null,source_url.eq.',
   }
 
   // Compte les facts avec au moins un indice "problématique" (vide OU > 20 chars).
@@ -540,6 +536,20 @@ export default function GenerateFactsPage({ toast }) {
       return
     }
 
+    // Mode URLs : seul "urls" coché → complete-urls (gpt-4o-search + validation HTTP)
+    if (activeGroups.length === 1 && activeGroups[0] === 'urls') {
+      enrichCancelRef.current = false
+      setEnrichRunState('running')
+      setEnrichErrorCount(0)
+      try {
+        await runUrlsComplete(limit)
+      } catch (err) {
+        setEnrichRunState('error')
+        setEnrichMessage(`❌ Erreur : ${err.message}`)
+      }
+      return
+    }
+
     // Mode classique : enrich-fact sur les groupes cochés
     const orClause = buildEnrichOrClause(enrichGroups)
     if (!orClause) {
@@ -595,36 +605,79 @@ export default function GenerateFactsPage({ toast }) {
     }
   }
 
-  async function runEnrichShortHints() {
+  // ── Deep Research URLs pour les facts restés INTROUVABLE après complete-urls ─
+  async function runDeepResearchUrls() {
     if (enrichRunState === 'running') return
     enrichCancelRef.current = false
     setEnrichRunState('running')
     setEnrichErrorCount(0)
-    setEnrichMessage('⏳ Récupération des indices courts...')
+    setEnrichMessage('⏳ Recherche des facts sans URL...')
+
     try {
-      const all = []
-      let from = 0
-      const PAGE = 1000
-      while (true) {
-        const { data, error } = await supabase
-          .from('facts')
-          .select('id, question, short_answer, explanation, category, hint1, hint2')
-          .not('hint1', 'is', null)
-          .neq('hint1', '')
-          .range(from, from + PAGE - 1)
-        if (error) throw error
-        if (!data || data.length === 0) break
-        all.push(...data)
-        if (data.length < PAGE) break
-        from += PAGE
+      const { data: facts, error } = await supabase
+        .from('facts')
+        .select('id, question, short_answer, explanation, category')
+        .or('source_url.is.null,source_url.eq.')
+        .order('id')
+      if (error) throw error
+
+      if (!facts || facts.length === 0) {
+        setEnrichRunState('done')
+        setEnrichMessage('✅ Aucun fact sans URL — tout est déjà renseigné.')
+        return
       }
-      const shortHints = all.filter(f => {
-        const h1Short = f.hint1 && !f.hint1.includes(' ')
-        const h2Short = f.hint2 && !f.hint2.includes(' ')
-        return h1Short || h2Short
-      })
-      // Reformulation ne touche que les indices
-      await enrichLoop(shortHints, 'Reformulation', { hints: true, funny: false, close: false, plausible: false, explanation: false })
+
+      const estimatedMinutes = Math.ceil(facts.length * 5)
+      const estimatedCost = (facts.length * 0.16).toFixed(2)
+      if (!confirm(`Deep Research o4-mini pour ${facts.length} fact${facts.length > 1 ? 's' : ''} sans URL.\n\nCoût estimé : ~${estimatedCost} $ (~${(parseFloat(estimatedCost) * 0.92).toFixed(2)} €)\nDurée estimée : ~${estimatedMinutes} min (séquentiel, 2-8 min/fact)\n\nTu peux stopper à tout moment.`)) {
+        setEnrichRunState('done')
+        setEnrichMessage('⏹ Annulé.')
+        return
+      }
+
+      setEnrichProgress({ current: 0, total: facts.length })
+      let okCount = 0, notFoundCount = 0, errCount = 0
+
+      for (let i = 0; i < facts.length; i++) {
+        if (enrichCancelRef.current) {
+          setEnrichRunState('done')
+          setEnrichMessage(`⏹ Arrêté — ${okCount} ok · ${notFoundCount} introuvables · ${errCount} erreurs (${i}/${facts.length})`)
+          loadEnrichCounts()
+          return
+        }
+        const fact = facts[i]
+        setEnrichMessage(`🔬 Deep Research ${i + 1}/${facts.length} — fact #${fact.id} (peut prendre 2-8 min)...`)
+        setEnrichProgress({ current: i + 1, total: facts.length })
+
+        try {
+          const res = await callEdgeFunction('deep-research-url', {
+            fact_id: fact.id,
+            question: fact.question,
+            short_answer: fact.short_answer,
+            explanation: fact.explanation,
+            category: fact.category,
+          })
+
+          if (res.status === 'ok' && res.url) {
+            const { error: updErr } = await supabase
+              .from('facts')
+              .update({ source_url: res.url, updated_at: new Date().toISOString() })
+              .eq('id', fact.id)
+            if (updErr) throw updErr
+            okCount++
+          } else {
+            notFoundCount++
+          }
+        } catch (err) {
+          console.error(`deep-research-url #${fact.id}:`, err)
+          errCount++
+          setEnrichErrorCount(prev => prev + 1)
+        }
+      }
+
+      setEnrichRunState('done')
+      setEnrichMessage(`✅ Deep Research terminé — ${okCount} ajoutées · ${notFoundCount} toujours introuvables · ${errCount} erreurs`)
+      loadEnrichCounts()
     } catch (err) {
       setEnrichRunState('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
@@ -718,20 +771,75 @@ export default function GenerateFactsPage({ toast }) {
     loadEnrichCounts()
   }
 
-  // ── Fill URLs ──────────────────────────────────────────────────────────
-  async function runFillUrls() {
-    if (fillUrlsStatus === 'running') return
-    setFillUrlsStatus('running')
-    setFillUrlsResult(null)
-    setFillUrlsError('')
-    try {
-      const data = await callEdgeFunction('fill-missing-urls')
-      setFillUrlsStatus('done')
-      setFillUrlsResult(data)
-    } catch (err) {
-      setFillUrlsStatus('error')
-      setFillUrlsError(err.message || 'Erreur réseau')
+  // ── Complétion URLs (gpt-4o-search-preview + validation HTTP HEAD) ─────
+  // Ne traite que les facts où source_url est null ou vide.
+  async function runUrlsComplete(limit) {
+    setEnrichMessage('⏳ Recherche des facts sans URL...')
+
+    const { data: facts, error } = await supabase
+      .from('facts')
+      .select('id, question, short_answer, explanation, category')
+      .or('source_url.is.null,source_url.eq.')
+      .order('id')
+    if (error) throw error
+
+    if (!facts || facts.length === 0) {
+      setEnrichRunState('done')
+      setEnrichMessage('✅ Aucun fact sans URL — tout est déjà renseigné.')
+      return
     }
+
+    const subset = limit ? facts.slice(0, limit) : facts
+    const limitNote = limit && facts.length > limit ? ` (limité à ${limit} sur ${facts.length})` : ''
+    if (!confirm(`Rechercher une URL source pour ${subset.length} fact${subset.length > 1 ? 's' : ''}${limitNote} ?\n\nGPT-4o search + validation HTTP (jusqu'à 3 tentatives par fact). Durée estimée : ~${Math.ceil(subset.length * 8 / 60)} min.`)) {
+      setEnrichRunState('done')
+      setEnrichMessage('⏹ Annulé.')
+      return
+    }
+
+    setEnrichProgress({ current: 0, total: subset.length })
+    let okCount = 0, notFoundCount = 0, errCount = 0
+
+    for (let i = 0; i < subset.length; i++) {
+      if (enrichCancelRef.current) {
+        setEnrichRunState('done')
+        setEnrichMessage(`⏹ Arrêté — ${okCount} ok · ${notFoundCount} introuvables · ${errCount} erreurs (${i}/${subset.length})`)
+        loadEnrichCounts()
+        return
+      }
+      const fact = subset[i]
+      setEnrichMessage(`🔗 URL ${i + 1}/${subset.length} — fact #${fact.id}...`)
+      setEnrichProgress({ current: i + 1, total: subset.length })
+
+      try {
+        const res = await callEdgeFunction('complete-urls', {
+          fact_id: fact.id,
+          question: fact.question,
+          short_answer: fact.short_answer,
+          explanation: fact.explanation,
+          category: fact.category,
+        })
+
+        if (res.status === 'ok' && res.url) {
+          const { error: updErr } = await supabase
+            .from('facts')
+            .update({ source_url: res.url, updated_at: new Date().toISOString() })
+            .eq('id', fact.id)
+          if (updErr) throw updErr
+          okCount++
+        } else {
+          notFoundCount++
+        }
+      } catch (err) {
+        console.error(`complete-urls #${fact.id}:`, err)
+        errCount++
+        setEnrichErrorCount(prev => prev + 1)
+      }
+    }
+
+    setEnrichRunState('done')
+    setEnrichMessage(`✅ URLs terminé — ${okCount} ajoutées · ${notFoundCount} introuvables · ${errCount} erreurs`)
+    loadEnrichCounts()
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -1284,6 +1392,11 @@ export default function GenerateFactsPage({ toast }) {
                 🎯 Mode chirurgical pour les indices : si <strong>seule la case « Indices » est cochée</strong>,
                 seuls les indices vides OU dépassant 20 caractères sont regénérés — les indices valides sont préservés à 100%.
               </span>
+              <br />
+              <span className="text-violet-400">
+                🔗 Mode URLs : si <strong>seule la case « URL source » est cochée</strong>,
+                les URLs manquantes sont recherchées via GPT-4o search et <strong>validées HTTP</strong> (HEAD request, jusqu'à 3 tentatives).
+              </span>
             </p>
 
             {/* Filtres par groupe + counts live */}
@@ -1294,6 +1407,7 @@ export default function GenerateFactsPage({ toast }) {
                 { key: 'close',       label: 'Fausses proches',   color: '#F97316' },
                 { key: 'plausible',   label: 'Fausses plausibles', color: '#EF4444' },
                 { key: 'explanation', label: 'Le saviez-vous',    color: '#22C55E' },
+                { key: 'urls',        label: 'URL source',        color: '#A78BFA' },
               ].map(({ key, label, color }) => {
                 const on = enrichGroups[key]
                 const count = enrichCounts[key]
@@ -1386,20 +1500,20 @@ export default function GenerateFactsPage({ toast }) {
             </div>
           </div>
 
-          {/* Card 2 — reformuler indices courts */}
-          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-            <h2 className="text-base font-black text-white mb-2">📝 Reformuler les indices courts</h2>
+          {/* Card 2 — Deep Research pour URLs introuvables */}
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#A78BFA30' }}>
+            <h2 className="text-base font-black mb-2" style={{ color: '#A78BFA' }}>🔬 Deep Research — URLs introuvables</h2>
             <p className="text-slate-400 text-sm mb-4">
-              Reformule les indices d'un seul mot (ancien format) en phrases courtes via Claude.
+              Pour les facts où GPT-4o search n'a rien trouvé après 3 tentatives, lance <strong>o4-mini Deep Research</strong> (recherche exhaustive, archives, bases académiques, PDFs scientifiques). ~0,16 $/fact · 2-8 min par fact.
             </p>
             <div className="flex gap-3 flex-wrap">
               <button
                 disabled={enrichRunState === 'running'}
-                onClick={runEnrichShortHints}
+                onClick={runDeepResearchUrls}
                 className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 hover:opacity-90 active:scale-95"
-                style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
+                style={{ background: 'linear-gradient(135deg, #A78BFA, #7C3AED)' }}
               >
-                {enrichRunState === 'running' ? 'Reformulation…' : '📝 Reformuler les indices'}
+                {enrichRunState === 'running' ? 'Deep Research…' : '🔬 Lancer Deep Research'}
               </button>
               {enrichRunState === 'running' && (
                 <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">
@@ -1412,69 +1526,6 @@ export default function GenerateFactsPage({ toast }) {
         </div>
       )}
 
-      {/* ══════════ URLS SOURCES ══════════ */}
-      {tab === 'urls' && (
-        <div className="space-y-6">
-          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#38BDF830' }}>
-            <h2 className="text-base font-black mb-1" style={{ color: '#38BDF8' }}>🔗 Remplir les URLs sources manquantes</h2>
-            <p className="text-slate-400 text-sm mb-4">
-              Recherche automatique de sources via Claude Opus pour tous les facts sans URL.
-              Peut prendre 2-3 min selon le volume.
-            </p>
-
-            <button
-              onClick={runFillUrls}
-              disabled={fillUrlsStatus === 'running'}
-              className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-50"
-              style={{ background: '#38BDF8' }}
-            >
-              {fillUrlsStatus === 'running'
-                ? <><span className="inline-block animate-spin mr-2">⟳</span>Recherche en cours…</>
-                : '🔍 Remplir les URLs manquantes (Opus)'}
-            </button>
-
-            {fillUrlsStatus === 'error' && fillUrlsError && (
-              <div className="mt-3 px-4 py-2.5 rounded-xl border border-red-700 text-sm font-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>
-                ❌ Erreur : {fillUrlsError}
-              </div>
-            )}
-
-            {fillUrlsStatus === 'done' && fillUrlsResult && (
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="px-3 py-1 rounded-full text-xs font-black" style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
-                    ✅ {fillUrlsResult.updated} URLs ajoutées
-                  </span>
-                  {fillUrlsResult.not_found > 0 && (
-                    <span className="px-3 py-1 rounded-full text-xs font-black" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }}>
-                      ⚠️ {fillUrlsResult.not_found} sans source trouvée
-                    </span>
-                  )}
-                  <span className="text-xs text-slate-500">{fillUrlsResult.processed} traités au total</span>
-                </div>
-                {fillUrlsResult.details?.length > 0 && (
-                  <div className="border border-slate-700 rounded-xl overflow-hidden mt-2">
-                    <div className="divide-y divide-slate-700 max-h-60 overflow-y-auto">
-                      {fillUrlsResult.details.map(d => (
-                        <div key={d.id} className="flex items-center gap-3 px-4 py-2 text-xs hover:bg-slate-700/50 transition-colors">
-                          <span className="font-black shrink-0" style={{ color: '#FF6B1A' }}>#{d.id}</span>
-                          {d.url === 'INTROUVABLE' ? (
-                            <span className="text-amber-400 font-semibold">INTROUVABLE</span>
-                          ) : (
-                            <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white truncate flex-1 min-w-0">
-                              {d.url}
-                            </a>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

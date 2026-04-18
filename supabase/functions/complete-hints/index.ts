@@ -96,10 +96,10 @@ ${hintsBlock}
 Un indice est un PONT vers la réponse : il aide à éliminer des mauvaises réponses sans dévoiler.
 
 CONTRAINTES STRICTES :
-- MAX 20 caractères exact
-- Phrase courte (pas UN seul mot)
-- En français
-- Cohérent avec les indices préservés (ton, niveau d'aide, style)
+- **PRIVILÉGIE UN SEUL MOT évocateur** quand c'est possible (c'est le format préféré).
+- Si un mot seul n'est pas assez clair, phrase TRÈS courte max 20 caractères.
+- En français.
+- Cohérent avec les indices préservés (ton, niveau d'aide, style).
 
 INTERDIT :
 - Répéter un mot ou concept de la question
@@ -107,11 +107,12 @@ INTERDIT :
 - Détail ultra expert que personne ne devinerait
 - Révéler directement la réponse
 
-EXEMPLES :
-❌ Question "cartons rouges" → "Expulsion"           (= définition)
-✅ Question "cartons rouges" → "Match 5e div."       (= oriente vers amateur/chaos)
-❌ Question "cadeau Noël"   → "Argentine"            (= expert seulement)
-✅ Question "cadeau Noël"   → "Suivi temps réel"     (= oriente vers tracking)
+EXEMPLES (1 mot privilégié) :
+❌ Question "cartons rouges" → "Expulsion"   (= définition)
+✅ Question "cartons rouges" → "Amateur"     (= oriente vers contexte amateur/chaos)
+❌ Question "cadeau Noël"   → "Argentine"    (= expert seulement)
+✅ Question "cadeau Noël"   → "Tracking"     (= oriente vers objet connecté)
+✅ Question "Walt Disney"    → "Phobie"       (= oriente sans dire souris)
 
 === TÂCHE ===
 

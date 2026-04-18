@@ -56,7 +56,8 @@ FACT :
 
 === RÈGLES INDICES ===
 
-Les indices hint1 et hint2 doivent etre des PHRASES COURTES (MAX 20 CARACTERES), PAS un seul mot.
+**PRIVILÉGIE UN SEUL MOT évocateur** pour hint1 et hint2 quand c'est possible (format préféré).
+Si un mot seul n'est pas suffisant, phrase TRÈS courte max 20 caractères.
 Un indice est un PONT vers la reponse : il aide le joueur a eliminer des mauvaises reponses.
 
 INTERDIT :
@@ -68,11 +69,12 @@ BON INDICE :
 - Reduit le champ des possibles
 - Cree une image mentale
 
-Exemples :
-❌ Question "cartons rouges" → Indice "Expulsion" = definition du carton rouge
-✅ Question "cartons rouges" → Indice "Match 5eme div." = oriente vers amateur/chaos
-❌ Question "cadeau Noel" → Indice "Argentine" = seul un expert saurait
-✅ Question "cadeau Noel" → Indice "Suivi temps reel" = oriente vers tracking/connecte
+Exemples (1 mot privilegie) :
+❌ Question "cartons rouges" → "Expulsion"   (= definition)
+✅ Question "cartons rouges" → "Amateur"     (= oriente vers chaos)
+❌ Question "cadeau Noel"    → "Argentine"   (= expert seulement)
+✅ Question "cadeau Noel"    → "Tracking"    (= oriente vers objet connecte)
+✅ Question "Walt Disney"    → "Phobie"      (= oriente sans dire souris)
 
 === EXPLICATION ===
 
@@ -94,8 +96,8 @@ La bonne reponse doit etre celle qui semble la MOINS probable (effet WTF!).
 === TÂCHE ===
 
 Genere un objet JSON avec :
-1. "hint1" : Phrase courte MAX 20 caracteres. Si vide, invente-en une. Sinon reformule en respectant les regles.
-2. "hint2" : Idem.
+1. "hint1" : 1 SEUL MOT privilegie (ou phrase TRES courte max 20 chars). Si vide, invente-en un. Sinon reformule en respectant la nouvelle regle 1 mot.
+2. "hint2" : Idem, privilegier 1 mot.
 3. "hint3" : "" (vide, pour compatibilite)
 4. "hint4" : "" (vide, pour compatibilite)
 5. "funny_wrong_1" : Fausse reponse drole (1-5 mots max)

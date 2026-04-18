@@ -75,95 +75,105 @@ serve(async (req) => {
       ? `\n\nFACTS EXISTANTS (NE PAS DUPLIQUER — si un sujet/réponse est trop similaire, choisis un autre sujet) :\n${existingList}`
       : ''
 
-    // ── Build prompt ────────────────────────────────────────────────────
+    // ── Build prompt (unifié pipeline 4 étapes + 2 formulations par fact) ─
     const themeContext = theme
-      ? `\n\nTHEME PERSONNALISE : "${theme}" — utilise ce theme comme contexte additionnel et inspiration pour generer les facts. Les facts doivent rester dans la categorie "${categoryLabel || category}", mais s'inspirer fortement du theme propose.`
+      ? `\n\nTHÈME PERSONNALISÉ : "${theme}" — utilise ce thème comme inspiration. Les faits restent dans la catégorie "${categoryLabel || category}" mais s'inspirent fortement du thème.`
       : ''
 
-    const prompt = `Tu es le redacteur en chef de "What The F*ct!", un jeu de trivia mobile francais ou chaque question doit provoquer une reaction forte chez le joueur. Ce n'est PAS un quiz scolaire. C'est un jeu de faits incroyables, absurdes, droles et surprenants.
+    const prompt = `Tu es l'auteur en chef de "What The F*ct!", jeu de trivia mobile français. Objectif : des faits qui font ARRÊTER LE SCROLL, lever un sourcil, déclencher un "sérieux ?!" et être racontés à des potes le soir même.
 
-Genere exactement ${safeCount} facts sur la categorie "${categoryLabel || category}".${themeContext}
+=== TEST DE VALIDATION UNIQUE ===
 
-=== REGLES DE FORMULATION ===
+Pour chaque fait : "Est-ce qu'un joueur raconterait ce fact à ses potes au bar ce soir ?"
+Si NON → passe, trouves-en un autre.
 
-1. CHAQUE fact doit provoquer une REACTION FORTE : rire, surprise, choc, incredulite, etonnement ou absurdite.
+=== PIPELINE EN 4 ÉTAPES ===
 
-2. PRIORISE des questions qui ne soient PAS des quiz d'identification ("Quel animal...", "Quel pays...", "Qui a invente..."). Ces formats sont autorises occasionnellement si le fact est suffisamment fou en lui-meme, mais la majorite des questions doivent creer une image mentale absurde ou intrigante.
+ÉTAPE 1 — RECHERCHE FACTUELLE (utilise le tool web_search)
+Trouve ${safeCount} faits RÉELS, VÉRIFIABLES et surprenants sur la catégorie "${categoryLabel || category}".${themeContext}
+- Sources prioritaires : Wikipedia, .gov / .edu / .org, musées, presse établie.
+- SPÉCIFICITÉ : noms propres, dates, lieux, chiffres exacts.
+- ÉVITE : fun facts déjà ultra-viraux (Walt Disney peur des souris, Cléopâtre contemporaine des iPhones…).
+- PRIVILÉGIE : faits obscurs mais vérifiables qui déclenchent l'effet WTF.
+- Les ${safeCount} faits doivent être sur des SUJETS DIFFÉRENTS (pas 3 facts sur le même personnage).
 
-Le WTF! doit etre dans la REPONSE, pas dans la QUESTION. La question plante le decor et intrigue. La reponse fait "WTF!".
-Exemple MAUVAIS : "Quel criminel a ete trahi par le GPS de sa chaussure connectee ?" (tu devoiles tout!)
-Exemple BON : "Pourquoi un criminel en fuite a-t-il maudit son cadeau de Noel ?" (suspense → reponse "ses chaussures connectees" = WTF!)
+ÉTAPE 2 — 7 ARCHÉTYPES DE FORMULATION
+Pour chaque fait, choisis les 2 ARCHÉTYPES qui le mettent le MIEUX en scène :
+1. ABSURDE INSTITUTIONNEL — Institution sérieuse + chose ridicule (ex: interdit en Suisse d'avoir 1 seul cochon d'Inde)
+2. RETOURNEMENT TRAGIQUE — Setup héroïque → chute absurde (ex: survit aux chutes du Niagara, meurt d'une peau de banane)
+3. PROXIMITÉ DÉRANGEANTE — Touche le corps, quotidien, nourriture (ex: 90% des billets US ont des traces de cocaïne)
+4. EXISTENCE IMPOSSIBLE — Ne devrait pas exister mais existe (ex: Lolito a mangé un avion)
+5. SURVIE / MORT ABSURDE — Survit à l'impossible ou meurt bêtement (ex: implants mammaires déviant une balle)
+6. ANIMAL HUMAIN — Animal fait un truc très humain (ex: dauphins se droguant avec poissons-globes)
+7. FORMULATION PIÈGE — Question oriente, réponse détruit l'attente (ex: célébrité videur de bar → pape François)
 
-3. TECHNIQUES A UTILISER (au moins 1 par fact) :
-   a) ABSURDE HUMANISANT : personnifier un animal/objet dans une situation humaine absurde
-   b) RETOURNEMENT : la reponse est completement inattendue par rapport a la question
-   c) EXAGERATION VISUELLE : comparaison avec le quotidien qui cree une image mentale WTF
-   d) HUMOUR DECALE : question formulee avec ironie, derision ou absurdite
-   e) CHIFFRE INCONCEVABLE : un nombre tellement extreme qu'il semble impossible
+ÉTAPE 3 — CHOISIR LE MEILLEUR ARCHÉTYPE
+Pour chaque fait, teste mentalement 2 archétypes de l'étape 2.
+Retiens celui qui produit la formulation la plus percutante (wtf_score le plus élevé).
 
-4. Le "LE SAVIEZ-VOUS" (explanation) doit etre FUN, pas encyclopedique (ENTRE 200 ET 300 CARACTERES).
-   INTERDIT : "Selon une etude publiee dans le Journal of..."
-   BON : "A ce rythme-la, si tu battais des bras aussi vite, tu t'envolerais... ou tu te deboiterais les epaules"
-   Le ton est celui d'un pote qui raconte un truc dingue au bar, PAS un prof.
+QUESTION (max 100 chars) :
+- Crée une PRÉDICTION → la réponse la CONTREDIT (WTF DANS la réponse, pas dans la question)
+- JAMAIS les mots "étonnant/surprenant/incroyable"
+- Spécificité : dates/noms/lieux/chiffres exacts
+- MAUVAIS : "Quel criminel a été trahi par son GPS ?" (spoile la réponse)
+- BON : "Pourquoi un fugitif a-t-il maudit son cadeau de Noël ?" (suspense → chaussures connectées)
 
-5. LES FAUSSES REPONSES :
-   - "funny_wrong_1", "funny_wrong_2" : DROLES et absurdes, font sourire ou rire
-   - "close_wrong_1", "close_wrong_2" : PROCHES de la vraie, credibles et piegeuses
-   - "plausible_wrong_1", "plausible_wrong_2", "plausible_wrong_3" : PLAUSIBLES dans l'univers WTF, fausses mais sonnent vraies
-   La bonne reponse doit etre celle qui semble la MOINS probable (effet WTF!)
+SHORT_ANSWER (max 8 mots, idéal 3-5) :
+- Punchline qui fait "sérieux ?!"
 
-6. LES INDICES — REGLES CRITIQUES :
-   Chaque indice est une PHRASE COURTE (MAX 20 CARACTERES), PAS un mot isole.
-   Un indice est un PONT vers la reponse : il aide le joueur a eliminer des mauvaises reponses.
+ÉTAPE 4 — ENRICHISSEMENTS (par formulation)
 
-   INTERDIT — Indice qui repete la question :
-   Question contient "GPS" → Indice "Geolocalisation" = INUTILE, le joueur le sait deja
+INDICES (hint1 + hint2) — NOUVELLE RÈGLE CRITIQUE :
+- **PRIVILÉGIER UN SEUL MOT ÉVOCATEUR** quand c'est possible (c'est préféré).
+- Si un mot seul n'est pas assez clair, phrase TRÈS courte max 20 chars.
+- hint1 : SUBTIL — oriente sans donner la direction exacte
+- hint2 : PLUS DIRECT — réduit à 2-3 choix possibles
+- JAMAIS répéter un mot ou concept de la question
+- JAMAIS la définition du terme cherché
+- BON : "Noël" / "Tracking" / "Amateur" / "Chute"
+- MAUVAIS : "Geolocalisation" (répète GPS de la question)
 
-   INTERDIT — Indice trop evident :
-   Question "cartons rouges" → Indice "Expulsion" ou "Arbitre" = c'est la definition meme d'un carton rouge
+FAUSSES RÉPONSES (1-5 mots max) :
+- funny_wrong_1/2 : drôles et absurdes (font sourire)
+- close_wrong_1/2 : proches de la vraie, piégeuses
+- plausible_wrong_1/2/3 : plausibles, fausses mais sonnent vraies
 
-   INTERDIT — Indice qui n'aide que celui qui connait deja :
-   Indice "Argentine" quand le match etait en Argentine = seul un expert connaitrait ce detail
+EXPLANATION (200-300 chars, ton "pote au bar", PAS académique) :
+- INTERDIT : "Selon une étude publiée dans le Journal of…"
+- BON : "À ce rythme, si tu battais des bras aussi vite, tu décollerais... ou tu te démolirais les épaules"
 
-   BON INDICE — Reduit le champ des possibles :
-   "Match de 5eme div." (oriente vers amateur/chaos)
-   "Plus que 22 joueurs" (aide a comprendre l'echelle)
+WTF_SCORE (1-5, auto-évaluation honnête, INDICATIF uniquement) :
+- 1 = banal, 2 = sympa, 3 = bon fact, 4 = très WTF, 5 = légendaire
 
-   BON INDICE — Cree une image mentale :
-   "Cadeau de Noel" (oriente vers objet connecte)
-   "Suivi en temps reel" (le joueur comprend : tracking)
+SOURCE_URL : URL vérifiable trouvée à l'étape 1 (sinon "")
 
-   hint1 : SUBTIL — oriente sans donner la direction exacte (MAX 20 CARACTERES)
-   hint2 : PLUS DIRECT — reduit a 2-3 choix possibles (MAX 20 CARACTERES)
-   Un indice ne doit JAMAIS repeter un mot ou concept de la question.
-   Un indice doit apporter une NOUVELLE information.
-
-=== VERIFICATION DOUBLONS ===
-
-Les facts suivants existent deja dans TOUTES les categories. Ne PAS generer de fact sur le meme sujet, meme si la categorie est differente. Exemple : un fact sur un fugitif et ses chaussures connectees dans "Crimes" et dans "Lois et Regles" = DOUBLON a eviter.
+=== DÉDUPLICATION ===
 ${dedupBlock}
 
 === FORMAT DE SORTIE ===
 
-POUR CHAQUE FACT, retourne un objet JSON avec ces champs :
-1. "question" : question qui intrigue et cree du suspense (max 100 caracteres)
-2. "short_answer" : la bonne reponse, courte et percutante (max 50 caracteres)
-3. "explanation" : le "Saviez-vous" fun et decale (ENTRE 200 ET 300 CARACTERES, ton pote au bar)
-4. "hint1" : indice subtil, phrase courte (MAX 20 CARACTERES, PAS un seul mot)
-5. "hint2" : indice plus direct, phrase courte (MAX 20 CARACTERES, PAS un seul mot)
-6. "hint3" : "" (vide, reserve pour usage futur)
-7. "hint4" : "" (vide, reserve pour usage futur)
-8. "funny_wrong_1", "funny_wrong_2" : 2 fausses reponses DROLES et absurdes (1 a 5 mots max)
-9. "close_wrong_1", "close_wrong_2" : 2 fausses reponses PROCHES, credibles (1 a 5 mots max)
-10. "plausible_wrong_1", "plausible_wrong_2", "plausible_wrong_3" : 3 fausses reponses PLAUSIBLES (1 a 5 mots max)
-11. "source_url" : URL source verifiable si trouvable, sinon ""
+Tableau JSON de ${safeCount} faits. Chaque élément = UN fact avec la meilleure formulation choisie :
 
-Chaque fact doit etre VERIFIE et VRAI. Un fact faux = disqualification.
-Les facts doivent etre VARIES — pas 3 facts sur le meme theme.
-Privilegie les facts que la plupart des gens NE CONNAISSENT PAS.
-Si un fact est trop connu, il n'est pas WTF! → passe.
+[
+  {
+    "question": "...",
+    "short_answer": "...",
+    "explanation": "Le saviez-vous fun 200-300 chars",
+    "hint1": "...",
+    "hint2": "...",
+    "hint3": "",
+    "hint4": "",
+    "funny_wrong_1": "...", "funny_wrong_2": "...",
+    "close_wrong_1": "...", "close_wrong_2": "...",
+    "plausible_wrong_1": "...", "plausible_wrong_2": "...", "plausible_wrong_3": "...",
+    "source_url": "https://... vérifiée ou ''",
+    "archetype": 4,
+    "archetype_name": "Existence Impossible",
+    "wtf_score": 4
+  }
+]
 
-Retourne UNIQUEMENT un tableau JSON valide de ${safeCount} objets, SANS texte avant ni apres.`
+Retourne UNIQUEMENT le tableau JSON valide, SANS texte avant ni après.`
 
     // ── Call Anthropic (Opus) ────────────────────────────────────────────
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -176,6 +186,7 @@ Retourne UNIQUEMENT un tableau JSON valide de ${safeCount} objets, SANS texte av
       body: JSON.stringify({
         model: 'claude-opus-4-6',
         max_tokens: 16384,
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 15 }],
         messages: [{ role: 'user', content: prompt }],
       }),
     })
@@ -189,7 +200,11 @@ Retourne UNIQUEMENT un tableau JSON valide de ${safeCount} objets, SANS texte av
     }
 
     const data = await anthropicRes.json()
-    const text = data.content[0].text.trim()
+    // Avec web_search, la réponse contient plusieurs blocks (tool_use, tool_result, text).
+    // Le JSON final est dans le DERNIER block de type 'text'.
+    const contentBlocks = Array.isArray(data.content) ? data.content : []
+    const textBlocks = contentBlocks.filter((b: any) => b.type === 'text' && typeof b.text === 'string')
+    const text = (textBlocks[textBlocks.length - 1]?.text || '').trim()
     const stopReason = data.stop_reason // 'end_turn' or 'max_tokens'
 
     // Extract JSON array

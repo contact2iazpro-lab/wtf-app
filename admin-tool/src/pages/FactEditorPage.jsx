@@ -9,7 +9,7 @@ import { callEdgeFunction } from '../utils/helpers'
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
   'source_url', 'options', 'correct_index', 'image_url',
-  'is_vip', 'type', 'status', 'pack_id', 'vip_usage',
+  'is_vip', 'type', 'status', 'vip_usage',
   'funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3', 'close_wrong_1', 'close_wrong_2',
   'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
   'statement_true', 'statement_false_funny', 'statement_false_plausible',
@@ -22,6 +22,29 @@ const CHAR_LIMITS = {
   short_answer: { max: 50 },
   explanation:  { min: 100, max: 300 },
   option:       { max: 50 },
+}
+
+// Input compact avec compteur N/Y en bas-droite DANS l'encadré.
+function InputCompact({ value, onChange, placeholder, max, error }) {
+  const len = (value || '').length
+  const overLimit = len > max
+  return (
+    <div className="relative">
+      <input
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        maxLength={max + 5}
+        className={(overLimit || error) ? inputClsErr + ' pr-14' : inputCls + ' pr-14'}
+      />
+      <span
+        className="absolute right-2 bottom-1.5 text-[10px] font-bold pointer-events-none select-none"
+        style={{ color: overLimit ? '#EF4444' : '#64748B' }}
+      >
+        {len}/{max}
+      </span>
+    </div>
+  )
 }
 
 function fmt(dateStr) {
@@ -470,10 +493,10 @@ export default function FactEditorPage({ toast }) {
           return null
         })()}
 
-        {/* IDENTIFICATION — ID + Catégorie + Pack + Usage Quête (si VIP) + Mode jeu */}
+        {/* IDENTIFICATION — ID + Catégorie + Mode jeu + Usage Quête (si VIP) + Statut */}
         <Section title="🆔 Identification">
-          {/* Row 1 : ID · Catégorie · Pack */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+          {/* Row 1 : ID · Catégorie */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">ID</label>
               <div className="px-3 py-2.5 rounded-xl bg-slate-900/50 border border-slate-700 text-slate-500 font-mono text-sm">
@@ -493,19 +516,10 @@ export default function FactEditorPage({ toast }) {
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
               </select>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Pack</label>
-              <input
-                value={fact.pack_id || 'free'}
-                onChange={e => set('pack_id', e.target.value)}
-                className={inputCls}
-                placeholder="free"
-              />
-            </div>
           </div>
 
           {/* Row 2 : Mode jeu · Usage Quête (si VIP) */}
-          <div className={`grid grid-cols-1 ${fact.is_vip ? 'sm:grid-cols-2' : ''} gap-3`}>
+          <div className={`grid grid-cols-1 ${fact.is_vip ? 'sm:grid-cols-2' : ''} gap-3 mb-3`}>
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Mode de jeu</label>
               <div className="flex rounded-xl overflow-hidden border border-slate-700">
@@ -546,13 +560,33 @@ export default function FactEditorPage({ toast }) {
             )}
           </div>
 
-          <p className="text-xs text-slate-500 mt-2">
-            {fact.is_vip
-              ? 'WTF! — disponible uniquement comme boss Quest (VIP)'
-              : 'Fun Facts — disponibles en Quickie, Vrai ou Fou, Quest, Flash, Blitz, Race'}
-          </p>
+          {/* Row 3 : Statut de publication (juste sous le Mode jeu) */}
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Statut de publication</label>
+            <div className="flex gap-2">
+              {STATUSES.map(s => {
+                const active = fact.status === s.value
+                return (
+                  <button
+                    key={s.value}
+                    onClick={() => set('status', s.value)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all"
+                    style={{
+                      background: active ? s.color : 'transparent',
+                      color: active ? 'white' : s.color,
+                      border: `2px solid ${s.color}`,
+                    }}
+                  >
+                    <span>{s.icon}</span>
+                    <span>{s.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           {fact.is_vip && fact.vip_usage === 'available' && (
-            <p className="text-amber-400 text-xs mt-1.5 font-semibold">
+            <p className="text-amber-400 text-xs mt-2 font-semibold">
               ⚠ Ce Fact WTF! n'a pas d'usage assigné
             </p>
           )}
@@ -656,143 +690,71 @@ export default function FactEditorPage({ toast }) {
             )
           })()}
 
-          {/* 😂 Fausses drôles */}
-          <div className="mb-4">
-            <div className="text-xs font-bold text-slate-400 mb-2">😂 Fausses drôles</div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Field label="Drôle 1" hint={<CharCounter value={fact.funny_wrong_1} max={50} />}>
-                <input
-                  value={fact.funny_wrong_1 || ''}
-                  onChange={e => set('funny_wrong_1', e.target.value)}
-                  className={(fact.funny_wrong_1 || '').length > 50 ? inputClsErr : inputCls}
-                  placeholder="Une réponse absurde et marrante…"
-                  maxLength={55}
+          {/* Helper : input compact avec compteur bas-droite DANS l'encadré */}
+          {(() => null)()}
+
+          {/* 😂 Fausses drôles (3) */}
+          <div className="mb-3">
+            <div className="text-xs font-bold text-slate-400 mb-1.5">😂 Fausses drôles</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {['funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3'].map(key => (
+                <InputCompact
+                  key={key}
+                  value={fact[key]}
+                  onChange={v => set(key, v)}
+                  placeholder="Absurde et marrante…"
+                  max={50}
                 />
-              </Field>
-              <Field label="Drôle 2" hint={<CharCounter value={fact.funny_wrong_2} max={50} />}>
-                <input
-                  value={fact.funny_wrong_2 || ''}
-                  onChange={e => set('funny_wrong_2', e.target.value)}
-                  className={(fact.funny_wrong_2 || '').length > 50 ? inputClsErr : inputCls}
-                  placeholder="Une réponse absurde et marrante…"
-                  maxLength={55}
-                />
-              </Field>
-              <Field label="Drôle 3" hint={<CharCounter value={fact.funny_wrong_3} max={50} />}>
-                <input
-                  value={fact.funny_wrong_3 || ''}
-                  onChange={e => set('funny_wrong_3', e.target.value)}
-                  className={(fact.funny_wrong_3 || '').length > 50 ? inputClsErr : inputCls}
-                  placeholder="Une réponse absurde et marrante…"
-                  maxLength={55}
-                />
-              </Field>
+              ))}
             </div>
           </div>
 
-          {/* 🎯 Fausses proches */}
-          <div className="mb-4">
-            <div className="text-xs font-bold text-slate-400 mb-2">🎯 Fausses proches</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Proche 1" hint={<CharCounter value={fact.close_wrong_1} max={50} />}>
-                <input
-                  value={fact.close_wrong_1 || ''}
-                  onChange={e => set('close_wrong_1', e.target.value)}
-                  className={(fact.close_wrong_1 || '').length > 50 ? inputClsErr : inputCls}
-                  placeholder="Une réponse crédible mais fausse…"
-                  maxLength={55}
+          {/* 🎯 Fausses proches (2) */}
+          <div className="mb-3">
+            <div className="text-xs font-bold text-slate-400 mb-1.5">🎯 Fausses proches</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {['close_wrong_1', 'close_wrong_2'].map(key => (
+                <InputCompact
+                  key={key}
+                  value={fact[key]}
+                  onChange={v => set(key, v)}
+                  placeholder="Crédible mais fausse…"
+                  max={50}
                 />
-              </Field>
-              <Field label="Proche 2" hint={<CharCounter value={fact.close_wrong_2} max={50} />}>
-                <input
-                  value={fact.close_wrong_2 || ''}
-                  onChange={e => set('close_wrong_2', e.target.value)}
-                  className={(fact.close_wrong_2 || '').length > 50 ? inputClsErr : inputCls}
-                  placeholder="Une réponse crédible mais fausse…"
-                  maxLength={55}
-                />
-              </Field>
+              ))}
             </div>
           </div>
 
-          {/* 🤔 Fausses plausibles */}
+          {/* 🤔 Fausses plausibles (3) */}
           <div>
-            <div className="text-xs font-bold text-slate-400 mb-2">🤔 Fausses plausibles</div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Field label="Plausible 1" hint={<CharCounter value={fact.plausible_wrong_1} max={50} />}>
-                <input
-                  value={fact.plausible_wrong_1 || ''}
-                  onChange={e => set('plausible_wrong_1', e.target.value)}
-                  className={(fact.plausible_wrong_1 || '').length > 50 ? inputClsErr : inputCls}
-                  placeholder="Une réponse qui semble logique…"
-                  maxLength={55}
+            <div className="text-xs font-bold text-slate-400 mb-1.5">🤔 Fausses plausibles</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {['plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3'].map(key => (
+                <InputCompact
+                  key={key}
+                  value={fact[key]}
+                  onChange={v => set(key, v)}
+                  placeholder="Semble logique…"
+                  max={50}
                 />
-              </Field>
-              <Field label="Plausible 2" hint={<CharCounter value={fact.plausible_wrong_2} max={50} />}>
-                <input
-                  value={fact.plausible_wrong_2 || ''}
-                  onChange={e => set('plausible_wrong_2', e.target.value)}
-                  className={(fact.plausible_wrong_2 || '').length > 50 ? inputClsErr : inputCls}
-                  placeholder="Une réponse qui semble logique…"
-                  maxLength={55}
-                />
-              </Field>
-              <Field label="Plausible 3" hint={<CharCounter value={fact.plausible_wrong_3} max={50} />}>
-                <input
-                  value={fact.plausible_wrong_3 || ''}
-                  onChange={e => set('plausible_wrong_3', e.target.value)}
-                  className={(fact.plausible_wrong_3 || '').length > 50 ? inputClsErr : inputCls}
-                  placeholder="Une réponse qui semble logique…"
-                  maxLength={55}
-                />
-              </Field>
+              ))}
             </div>
           </div>
         </Section>
 
         {/* INDICES (4 au total) */}
-        <Section title="💡 Indices (4 au total)">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field
-              label={`Indice 1 (20 max)${errors.hint1 ? ' — ' + errors.hint1 : ''}`}
-              hint={<CharCounter value={fact.hint1} max={CHAR_LIMITS.hint1.max} />}
-            >
-              <input
-                value={fact.hint1 || ''}
-                onChange={e => set('hint1', e.target.value)}
-                className={isOverLimit('hint1', fact.hint1) || errors.hint1 ? inputClsErr : inputCls}
-                placeholder="Premier indice…"
-                maxLength={25}
+        <Section title="💡 Indices">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {['hint1', 'hint2', 'hint3', 'hint4'].map(key => (
+              <InputCompact
+                key={key}
+                value={fact[key]}
+                onChange={v => set(key, v)}
+                placeholder="Indice…"
+                max={20}
+                error={errors[key]}
               />
-            </Field>
-            <Field
-              label={`Indice 2 (20 max)${errors.hint2 ? ' — ' + errors.hint2 : ''}`}
-              hint={<CharCounter value={fact.hint2} max={CHAR_LIMITS.hint2.max} />}
-            >
-              <input
-                value={fact.hint2 || ''}
-                onChange={e => set('hint2', e.target.value)}
-                className={isOverLimit('hint2', fact.hint2) || errors.hint2 ? inputClsErr : inputCls}
-                placeholder="Deuxième indice…"
-                maxLength={25}
-              />
-            </Field>
-            <Field label="Indice 3">
-              <input
-                value={fact.hint3 || ''}
-                onChange={e => set('hint3', e.target.value)}
-                className={inputCls}
-                placeholder="Troisième indice…"
-              />
-            </Field>
-            <Field label="Indice 4">
-              <input
-                value={fact.hint4 || ''}
-                onChange={e => set('hint4', e.target.value)}
-                className={inputCls}
-                placeholder="Quatrième indice…"
-              />
-            </Field>
+            ))}
           </div>
         </Section>
 
@@ -850,29 +812,6 @@ export default function FactEditorPage({ toast }) {
           </Field>
         </Section>
 
-        {/* STATUT DE PUBLICATION (is_vip et vip_usage déjà dans Identification) */}
-        <Section title="⚙️ Statut de publication">
-          <div className="flex gap-2">
-            {STATUSES.map(s => {
-              const active = fact.status === s.value
-              return (
-                <button
-                  key={s.value}
-                  onClick={() => set('status', s.value)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all"
-                  style={{
-                    background: active ? s.color : 'transparent',
-                    color: active ? 'white' : s.color,
-                    border: `2px solid ${s.color}`,
-                  }}
-                >
-                  <span>{s.icon}</span>
-                  <span>{s.label}</span>
-                </button>
-              )
-            })}
-          </div>
-        </Section>
 
         {/* IMAGE */}
         <Section title="🖼 Image">

@@ -136,6 +136,19 @@ export default function FactsListPage({ toast }) {
   // Load facts
   useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, sortField, sortDir])
 
+  // Construit l'URL d'un fact avec les filtres actifs → permet à FactEditorPage
+  // de calculer le fact précédent/suivant dans la même liste filtrée.
+  const buildFactUrl = useCallback((factId, base = '/facts') => {
+    const params = new URLSearchParams()
+    if (filterCategories.length) params.set('categories', filterCategories.join(','))
+    if (filterVip !== 'all') params.set('vip', filterVip)
+    if (filterStatus !== 'all') params.set('status', filterStatus)
+    if (filterPack !== 'all') params.set('pack', filterPack)
+    if (filterImage !== 'all') params.set('image', filterImage)
+    const qs = params.toString()
+    return `${base}/${factId}${qs ? '?' + qs : ''}`
+  }, [filterCategories, filterVip, filterStatus, filterPack, filterImage])
+
 
   const loadFacts = useCallback(async () => {
     setLoading(true)
@@ -1226,14 +1239,14 @@ export default function FactsListPage({ toast }) {
                         </button>
                       )}
                       <Link
-                        to={`/facts/${fact.id}`}
+                        to={buildFactUrl(fact.id)}
                         className="px-3 py-1 rounded-lg text-xs font-bold text-white transition-all hover:opacity-80"
                         style={{ background: '#FF6B1A' }}
                       >
                         Éditer
                       </Link>
                       <Link
-                        to={`/facts-mobile/${fact.id}`}
+                        to={buildFactUrl(fact.id, '/facts-mobile')}
                         className="px-2 py-1 rounded-lg text-xs font-bold text-white transition-all hover:opacity-80"
                         style={{ background: '#64748B' }}
                         title="Éditeur mobile"
@@ -1300,14 +1313,14 @@ export default function FactsListPage({ toast }) {
               {/* Edit buttons : desktop + mobile */}
               <div className="flex gap-2">
                 <Link
-                  to={`/facts/${fact.id}`}
+                  to={buildFactUrl(fact.id)}
                   className="flex-1 text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
                   style={{ background: '#FF6B1A' }}
                 >
                   Editer
                 </Link>
                 <Link
-                  to={`/facts-mobile/${fact.id}`}
+                  to={buildFactUrl(fact.id, '/facts-mobile')}
                   className="px-4 text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
                   style={{ background: '#64748B' }}
                   title="Éditeur mobile"

@@ -24,9 +24,13 @@ const MODELS = [
   { id: 'gemini-3-pro',     label: 'Gemini 3 Pro',  hint: '~0,12 $/img' },
 ]
 
-export default function FactImageGenerator({ factId, activeImageUrl, onActivate, toast }) {
-  // Directions
-  const [directions, setDirections] = useState([])          // [{id, titre, description}]
+export default function FactImageGenerator({ factId, activeImageUrl, initialDirections, onActivate, toast }) {
+  // Directions — pré-chargées depuis fact.image_directions si dispo
+  const [directions, setDirections] = useState(
+    Array.isArray(initialDirections) && initialDirections.length > 0
+      ? initialDirections.map(d => ({ id: d.id, titre: d.titre, description: d.description, was_used: d.was_used }))
+      : [],
+  )
   const [selectedDirectionId, setSelectedDirectionId] = useState(null) // number | 'custom'
   const [customDirectionTitle, setCustomDirectionTitle] = useState('')
   const [customDirectionDesc, setCustomDirectionDesc]   = useState('')
@@ -263,8 +267,21 @@ export default function FactImageGenerator({ factId, activeImageUrl, onActivate,
                   color: '#fff', cursor: 'pointer',
                 }}
               >
-                <div style={{ fontSize: 11, fontWeight: 900, color: '#FF6B1A', marginBottom: 2 }}>
-                  {d.titre}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <span style={{ fontSize: 11, fontWeight: 900, color: '#FF6B1A' }}>
+                    {d.titre}
+                  </span>
+                  {d.was_used && (
+                    <span style={{
+                      fontSize: 9, fontWeight: 800,
+                      color: '#10B981',
+                      background: 'rgba(16,185,129,0.15)',
+                      padding: '1px 6px',
+                      borderRadius: 4,
+                    }}>
+                      ✅ utilisée
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>
                   {d.description}

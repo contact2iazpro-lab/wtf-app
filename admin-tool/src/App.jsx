@@ -10,7 +10,6 @@ import FactEditorPage from './pages/FactEditorPage'
 import FactMobilePickerPage from './pages/FactMobilePickerPage'
 import FactMobileEditorPage from './pages/FactMobileEditorPage'
 import ArchivedFactsPage from './pages/ArchivedFactsPage'
-import ImagePipelinePage from './pages/ImagePipelinePage'
 import GenerateFactsPage from './pages/GenerateFactsPage'
 
 export default function App() {
@@ -36,7 +35,6 @@ export default function App() {
           <Route path="facts-mobile/:id" element={<FactMobileEditorPage toast={toast} />} />
           <Route path="generate" element={<GenerateFactsPage toast={toast} />} />
           <Route path="archived" element={<ArchivedFactsPage toast={toast} />} />
-          <Route path="images" element={<ImagePipelinePage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

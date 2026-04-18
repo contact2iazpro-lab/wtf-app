@@ -46,7 +46,7 @@ Retourne UNIQUEMENT un JSON avec UN SEUL objet (pas un array) :
 
 AUCUN texte avant ou après le JSON.`
 
-const buildPrompt = (fact: any) => `Tu es directeur artistique pour What The F*ct!, un jeu mobile de trivia basé sur des faits surprenants, absurdes ou inattendus. Ton rôle : imaginer des images qui provoquent un effet "WTF" immédiat — celui qui fait arrêter le scroll, lever un sourcil, déclencher un "sérieux ?!".
+const buildPrompt = (fact: any, autoPick: boolean = false) => `Tu es directeur artistique pour What The F*ct!, un jeu mobile de trivia basé sur des faits surprenants, absurdes ou inattendus. Ton rôle : imaginer des images qui provoquent un effet "WTF" immédiat — celui qui fait arrêter le scroll, lever un sourcil, déclencher un "sérieux ?!".
 
 L'ADN WTF :
 - Surprendre avant d'expliquer. L'image doit INTRIGUER, pas illustrer platement.
@@ -78,12 +78,25 @@ CONTRAINTES STRICTES :
 - AUCUN téléphone, écran, interface, référence à un jeu ou un quiz
 - Scène visuellement lisible sur un petit écran
 
-Retourne UNIQUEMENT un JSON :
-[
+${autoPick ? `ÉTAPE SUPPLÉMENTAIRE (auto_pick) :
+Après avoir proposé les 3 idées, CHOISIS celle qui produit l'effet WTF le plus fort — la plus mémorable, celle qu'un joueur raconterait à ses potes.
+Indique son id dans le champ "picked_id".` : ''}
+
+Retourne UNIQUEMENT un JSON ${autoPick ? 'objet' : 'array'} :
+${autoPick
+  ? `{
+  "directions": [
+    {"id": 1, "titre": "3-5 mots accrocheurs", "description": "..."},
+    {"id": 2, "titre": "...", "description": "..."},
+    {"id": 3, "titre": "...", "description": "..."}
+  ],
+  "picked_id": 2
+}`
+  : `[
   {"id": 1, "titre": "3-5 mots accrocheurs", "description": "..."},
   {"id": 2, "titre": "...", "description": "..."},
   {"id": 3, "titre": "...", "description": "..."}
-]
+]`}
 AUCUN texte avant ou après le JSON.`
 
 serve(async (req) => {
@@ -101,7 +114,7 @@ serve(async (req) => {
       })
     }
 
-    const { fact_id, raw_idea } = await req.json()
+    const { fact_id, raw_idea, auto_pick } = await req.json()
     if (!fact_id) {
       return new Response(JSON.stringify({ error: 'fact_id requis' }), {
         status: 400,
@@ -109,6 +122,7 @@ serve(async (req) => {
       })
     }
     const isRefineMode = typeof raw_idea === 'string' && raw_idea.trim().length > 0
+    const isAutoPick = !!auto_pick
 
     const anthropicKey = Deno.env.get('ANTHROPIC_KEY')
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
@@ -134,10 +148,10 @@ serve(async (req) => {
       })
     }
 
-    // Call Opus — soit 3 idées fraîches, soit refine d'une idée utilisateur
+    // Call Opus — soit 3 idées fraîches (avec ou sans auto_pick), soit refine d'une idée utilisateur
     const promptToSend = isRefineMode
       ? buildRefinePrompt(fact, raw_idea.trim())
-      : buildPrompt(fact)
+      : buildPrompt(fact, isAutoPick)
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -148,7 +162,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: OPUS_MODEL,
-        max_tokens: isRefineMode ? 600 : 1200,
+        max_tokens: isRefineMode ? 600 : 1400,
         messages: [{ role: 'user', content: promptToSend }],
       }),
     })
@@ -189,6 +203,41 @@ serve(async (req) => {
         })
       }
       return new Response(JSON.stringify({ success: true, refined }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Mode auto_pick → objet { directions: [...], picked_id: N }
+    if (isAutoPick) {
+      const objMatch = text.match(/\{[\s\S]*\}/)
+      if (!objMatch) {
+        return new Response(JSON.stringify({ error: 'JSON absent de la réponse Opus', raw: text }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      let parsed
+      try {
+        parsed = JSON.parse(objMatch[0])
+      } catch (e) {
+        return new Response(JSON.stringify({ error: 'JSON invalide', raw: objMatch[0] }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      if (!parsed || !Array.isArray(parsed.directions) || parsed.directions.length === 0) {
+        return new Response(JSON.stringify({ error: 'Directions invalides (auto_pick)' }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const pickedId = Number(parsed.picked_id) || parsed.directions[0].id || 1
+      return new Response(JSON.stringify({
+        success: true,
+        directions: parsed.directions,
+        picked_id: pickedId,
+      }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { CATEGORIES, VIP_USAGES } from '../constants/categories'
+import { CATEGORIES } from '../constants/categories'
 import { resolveImageUrl, optimizeSupabaseImageUrl } from '../utils/imageUrl'
 import { STATUSES, CharCounter, Section, Field, inputCls, inputClsErr } from '../components/shared'
 import { callEdgeFunction } from '../utils/helpers'
@@ -9,7 +9,7 @@ import { callEdgeFunction } from '../utils/helpers'
 const EDITABLE_FIELDS = [
   'category', 'question', 'hint1', 'hint2', 'hint3', 'hint4', 'short_answer', 'explanation',
   'source_url', 'options', 'correct_index', 'image_url',
-  'is_vip', 'type', 'status', 'vip_usage',
+  'is_vip', 'type', 'status',
   'funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3', 'close_wrong_1', 'close_wrong_2',
   'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
   'statement_true', 'statement_false_funny', 'statement_false_plausible',
@@ -378,10 +378,6 @@ export default function FactEditorPage({ toast }) {
 
       // Scroll en haut de la page après sauvegarde
       window.scrollTo({ top: 0, behavior: 'smooth' })
-
-      if (fact.is_vip && fact.vip_usage === 'available') {
-        toast?.('⚠ Ce Fact Quête n\'a pas d\'usage assigné', 'warn', 5000)
-      }
     } catch (err) {
       console.error(err)
       toast?.('Erreur sauvegarde', 'error')
@@ -465,7 +461,7 @@ export default function FactEditorPage({ toast }) {
             {isDirty && <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>modifié</span>}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {prevId && (
             <Link to={`/facts/${prevId}?${searchParams.toString()}`} className="min-h-[44px] min-w-[44px] flex items-center justify-center px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:bg-slate-700 transition-all">
               ← #{prevId}
@@ -476,6 +472,15 @@ export default function FactEditorPage({ toast }) {
               #{nextId} →
             </Link>
           )}
+          {/* Bouton Sauvegarder — doublon en haut, même action que celui du bas */}
+          <button
+            onClick={save}
+            disabled={saving || !isDirty}
+            className="min-h-[44px] px-4 py-1.5 rounded-xl font-black text-xs text-white transition-all disabled:opacity-40 active:scale-95"
+            style={{ background: isDirty ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : '#475569' }}
+          >
+            {saving ? '⟳…' : isDirty ? '💾 Enregistrer' : '✓ À jour'}
+          </button>
         </div>
       </div>
 
@@ -518,46 +523,31 @@ export default function FactEditorPage({ toast }) {
             </div>
           </div>
 
-          {/* Row 2 : Mode jeu · Usage Quête (si VIP) */}
-          <div className={`grid grid-cols-1 ${fact.is_vip ? 'sm:grid-cols-2' : ''} gap-3 mb-3`}>
-            <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Mode de jeu</label>
-              <div className="flex rounded-xl overflow-hidden border border-slate-700">
-                <button
-                  onClick={() => { set('is_vip', true); set('type', 'vip') }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
-                  style={{
-                    background: fact.is_vip ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'transparent',
-                    color: fact.is_vip ? 'white' : '#9CA3AF',
-                  }}
-                >
-                  <span>⭐</span> <span>WTF!</span>
-                </button>
-                <button
-                  onClick={() => { set('is_vip', false); set('type', 'generated') }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
-                  style={{
-                    background: !fact.is_vip ? 'linear-gradient(135deg, #7C3AED, #5B21B6)' : 'transparent',
-                    color: !fact.is_vip ? 'white' : '#9CA3AF',
-                  }}
-                >
-                  <span>⚡</span> <span>Fun Facts</span>
-                </button>
-              </div>
+          {/* Row 2 : Mode jeu */}
+          <div className="mb-3">
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Mode de jeu</label>
+            <div className="flex rounded-xl overflow-hidden border border-slate-700">
+              <button
+                onClick={() => { set('is_vip', true); set('type', 'vip') }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
+                style={{
+                  background: fact.is_vip ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'transparent',
+                  color: fact.is_vip ? 'white' : '#9CA3AF',
+                }}
+              >
+                <span>⭐</span> <span>WTF!</span>
+              </button>
+              <button
+                onClick={() => { set('is_vip', false); set('type', 'generated') }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold transition-all"
+                style={{
+                  background: !fact.is_vip ? 'linear-gradient(135deg, #7C3AED, #5B21B6)' : 'transparent',
+                  color: !fact.is_vip ? 'white' : '#9CA3AF',
+                }}
+              >
+                <span>⚡</span> <span>Fun Facts</span>
+              </button>
             </div>
-
-            {fact.is_vip && (
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1.5">Usage Quête</label>
-                <select
-                  value={fact.vip_usage || 'available'}
-                  onChange={e => set('vip_usage', e.target.value)}
-                  className={inputCls}
-                >
-                  {VIP_USAGES.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
-                </select>
-              </div>
-            )}
           </div>
 
           {/* Row 3 : Statut de publication (juste sous le Mode jeu) */}
@@ -585,11 +575,6 @@ export default function FactEditorPage({ toast }) {
             </div>
           </div>
 
-          {fact.is_vip && fact.vip_usage === 'available' && (
-            <p className="text-amber-400 text-xs mt-2 font-semibold">
-              ⚠ Ce Fact WTF! n'a pas d'usage assigné
-            </p>
-          )}
         </Section>
 
         {/* CONTENU */}

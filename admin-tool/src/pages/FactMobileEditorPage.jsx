@@ -430,6 +430,7 @@ export default function FactMobileEditorPage({ toast }) {
           <FactImageGenerator
             factId={fact.id}
             activeImageUrl={fact.image_url}
+            initialDirections={fact.image_directions}
             onActivate={(newUrl) => setFact(prev => ({ ...prev, image_url: newUrl }))}
             toast={toast}
           />

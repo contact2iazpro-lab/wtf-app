@@ -9,6 +9,7 @@ const TABS = [
   { id: 'standard', label: 'Générer',     icon: '⚡', desc: 'Volume / VIP' },
   { id: 'vof',      label: 'Vrai ou Fou', icon: '🎴', desc: 'Affirmations' },
   { id: 'enrich',   label: 'Enrichir',    icon: '🧠', desc: 'Facts incomplets' },
+  { id: 'images',   label: 'Images',      icon: '🖼️', desc: 'Batch auto' },
 ]
 
 const VOF_MAX = 300
@@ -141,6 +142,32 @@ export default function GenerateFactsPage({ toast }) {
 
   // Limite optionnelle du nombre de facts à enrichir (test / batch réduit)
   const [enrichLimit, setEnrichLimit] = useState('')
+
+  // ── Batch images state ─────────────────────────────────────────────────
+  const [batchImgCategory, setBatchImgCategory] = useState('')
+  const [batchImgType, setBatchImgType] = useState('all') // 'all' | 'vip' | 'funny'
+  const [batchImgCount, setBatchImgCount] = useState(5)
+  const [batchImgAvailable, setBatchImgAvailable] = useState(null) // null = non calculé
+
+  // Compte les facts sans image qui matchent les filtres (catégorie + type)
+  const loadBatchImgAvailable = useCallback(async () => {
+    try {
+      let q = supabase.from('facts')
+        .select('id', { count: 'exact', head: true })
+        .or('image_url.is.null,image_url.eq.')
+      if (batchImgCategory) q = q.eq('category', batchImgCategory)
+      if (batchImgType === 'vip') q = q.eq('is_vip', true)
+      if (batchImgType === 'funny') q = q.eq('is_vip', false)
+      const { count, error } = await q
+      setBatchImgAvailable(error ? null : (count ?? 0))
+    } catch (err) {
+      setBatchImgAvailable(null)
+    }
+  }, [batchImgCategory, batchImgType])
+
+  useEffect(() => {
+    if (tab === 'images') loadBatchImgAvailable()
+  }, [tab, loadBatchImgAvailable])
 
   // ── Standard generation ────────────────────────────────────────────────
   async function generateStandard() {
@@ -600,6 +627,121 @@ export default function GenerateFactsPage({ toast }) {
       }
 
       await enrichLoop(toProcess, 'Enrichissement', enrichGroups)
+    } catch (err) {
+      setEnrichRunState('error')
+      setEnrichMessage(`❌ Erreur : ${err.message}`)
+    }
+  }
+
+  // ── Batch génération d'images : flow simplifié (Opus auto_pick + Gemini 3 Pro WTF) ──
+  async function runBatchGenerateImages() {
+    if (enrichRunState === 'running') return
+    if (!batchImgCategory) return toast?.('Choisis une catégorie', 'warn')
+
+    enrichCancelRef.current = false
+    setEnrichRunState('running')
+    setEnrichErrorCount(0)
+    setEnrichMessage('⏳ Recherche des facts sans image...')
+
+    try {
+      // Fetch les facts sans image qui matchent catégorie + type
+      let q = supabase.from('facts')
+        .select('id, question, short_answer, explanation, category, is_vip')
+        .or('image_url.is.null,image_url.eq.')
+        .eq('category', batchImgCategory)
+        .order('id', { ascending: true })
+      if (batchImgType === 'vip') q = q.eq('is_vip', true)
+      if (batchImgType === 'funny') q = q.eq('is_vip', false)
+      const { data: allFacts, error } = await q
+      if (error) throw error
+
+      if (!allFacts || allFacts.length === 0) {
+        setEnrichRunState('done')
+        setEnrichMessage(`✅ Aucun fact sans image dans cette catégorie.`)
+        return
+      }
+
+      const n = Math.max(1, Math.min(Number(batchImgCount) || 5, allFacts.length))
+      const facts = allFacts.slice(0, n)
+      const remaining = allFacts.length - facts.length
+      const estimatedCost = (facts.length * 0.15).toFixed(2)
+      const remainingNote = remaining > 0 ? `\n(Reste ${remaining} fact${remaining > 1 ? 's' : ''} sans image après cette passe)` : ''
+      if (!confirm(`Générer ${facts.length} image${facts.length > 1 ? 's' : ''} (sur ${allFacts.length} facts sans image) ?\n\nFlow : Opus → 3 idées → auto-pick la plus WTF → Gemini 3 Pro style WTF → 1 image → activation auto.\n\nCoût estimé : ~${estimatedCost} € (~0,15 €/fact)${remainingNote}`)) {
+        setEnrichRunState('done')
+        setEnrichMessage('⏹ Annulé.')
+        return
+      }
+
+      setEnrichProgress({ current: 0, total: facts.length })
+      let okCount = 0, errCount = 0
+
+      for (let i = 0; i < facts.length; i++) {
+        if (enrichCancelRef.current) {
+          setEnrichRunState('done')
+          setEnrichMessage(`⏹ Arrêté — ${okCount} ok · ${errCount} erreurs (${i}/${facts.length})`)
+          return
+        }
+        const fact = facts[i]
+        setEnrichMessage(`🖼️ Image ${i + 1}/${facts.length} — fact #${fact.id}...`)
+        setEnrichProgress({ current: i + 1, total: facts.length })
+
+        try {
+          // Étape 1 — Opus directions auto_pick
+          const dirRes = await callEdgeFunction('generate-fact-directions-single', {
+            fact_id: fact.id,
+            auto_pick: true,
+          })
+          const directions = dirRes.directions || []
+          const pickedId = dirRes.picked_id
+          const picked = directions.find(d => d.id === pickedId) || directions[0]
+          if (!picked) throw new Error('Aucune direction pickée')
+
+          // Stocke les 3 directions en DB avec flag was_used
+          const directionsToStore = directions.map(d => ({
+            id: d.id,
+            titre: d.titre,
+            description: d.description,
+            was_used: d.id === picked.id,
+          }))
+          await supabase.from('facts')
+            .update({ image_directions: directionsToStore })
+            .eq('id', fact.id)
+
+          // Étape 2 — Gemini 3 Pro style WTF, 1 variante
+          const imgRes = await callEdgeFunction('generate-fact-image-single', {
+            fact_id: fact.id,
+            direction_title: picked.titre,
+            direction_description: picked.description,
+            styles: ['wtf'],
+            model: 'gemini-3-pro',
+            variants_per_style: 1,
+          })
+          const variant = (imgRes.variants || [])[0]
+          if (!variant) throw new Error('Aucune variante générée')
+
+          // Étape 3 — Activer auto (désactive autres + set active + update facts.image_url)
+          await supabase.from('fact_image_variants')
+            .update({ is_active: false })
+            .eq('fact_id', fact.id)
+            .eq('is_active', true)
+          await supabase.from('fact_image_variants')
+            .update({ is_active: true })
+            .eq('id', variant.id)
+          await supabase.from('facts')
+            .update({ image_url: variant.image_url, updated_at: new Date().toISOString() })
+            .eq('id', fact.id)
+
+          okCount++
+        } catch (err) {
+          console.error(`batch-image #${fact.id}:`, err)
+          errCount++
+          setEnrichErrorCount(prev => prev + 1)
+        }
+      }
+
+      setEnrichRunState('done')
+      setEnrichMessage(`✅ Batch images terminé — ${okCount} générées · ${errCount} erreurs`)
+      loadBatchImgAvailable()
     } catch (err) {
       setEnrichRunState('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
@@ -1459,6 +1601,127 @@ export default function GenerateFactsPage({ toast }) {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* ══════════ IMAGES — Batch (flow simplifié Opus auto_pick + Gemini 3 Pro WTF) ══════════ */}
+      {tab === 'images' && (
+        <div className="space-y-6">
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#FF6B1A30' }}>
+            <h2 className="text-base font-black mb-2" style={{ color: '#FF6B1A' }}>🖼️ Générer les images manquantes (batch)</h2>
+            <p className="text-slate-400 text-sm mb-4">
+              Flow auto : <strong>Opus</strong> propose 3 idées, choisit lui-même la plus WTF →
+              <strong> Gemini 3 Pro</strong> style WTF → 1 image → activation auto.
+              Les 3 idées sont stockées dans le fact pour retravail ultérieur dans l'éditeur mobile.
+              <br />
+              <span className="text-[11px] text-slate-500">
+                Cible : uniquement les facts <strong>sans image</strong> dans la catégorie choisie. ~0,15 €/fact.
+              </span>
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Catégorie</label>
+                <select
+                  value={batchImgCategory}
+                  onChange={e => setBatchImgCategory(e.target.value)}
+                  disabled={enrichRunState === 'running'}
+                  className={selectCls}
+                >
+                  <option value="">Choisir…</option>
+                  {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Type</label>
+                <div className="flex gap-1">
+                  {[
+                    { id: 'all',   label: 'Tous' },
+                    { id: 'vip',   label: 'WTF!' },
+                    { id: 'funny', label: 'Fun Facts' },
+                  ].map(t => {
+                    const active = batchImgType === t.id
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => setBatchImgType(t.id)}
+                        disabled={enrichRunState === 'running'}
+                        className="flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
+                        style={{
+                          background: active ? 'rgba(255,107,26,0.2)' : 'rgba(15,23,42,1)',
+                          color: active ? '#FF6B1A' : '#94A3B8',
+                          border: `1px solid ${active ? '#FF6B1A66' : '#334155'}`,
+                        }}
+                      >
+                        {t.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nombre</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    value={batchImgCount}
+                    onChange={e => setBatchImgCount(e.target.value)}
+                    disabled={enrichRunState === 'running'}
+                    className="w-20 px-2 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm font-bold text-white outline-none focus:border-orange-500 disabled:opacity-40"
+                  />
+                  <div className="flex gap-1">
+                    {[5, 10, 20].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setBatchImgCount(n)}
+                        disabled={enrichRunState === 'running'}
+                        className="px-2 py-1 rounded-md text-[10px] font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 transition-all"
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-slate-400 mb-3">
+              {batchImgAvailable === null
+                ? '…'
+                : batchImgAvailable === 0
+                  ? '✅ Aucun fact sans image avec ces filtres'
+                  : <>📊 <strong>{batchImgAvailable}</strong> fact{batchImgAvailable > 1 ? 's' : ''} sans image disponibles · coût total ~{(batchImgAvailable * 0.15).toFixed(2)} €</>}
+            </div>
+
+            <div className="flex gap-3 flex-wrap">
+              <button
+                disabled={enrichRunState === 'running' || !batchImgCategory || batchImgAvailable === 0}
+                onClick={runBatchGenerateImages}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 hover:opacity-90 active:scale-95"
+                style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
+              >
+                {enrichRunState === 'running' ? 'Génération…' : `🚀 Générer ${batchImgCount} image${Number(batchImgCount) > 1 ? 's' : ''}`}
+              </button>
+              {enrichRunState === 'running' && (
+                <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">
+                  ⏹ Arrêter
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Message en cours d'exécution */}
+          {enrichMessage && (
+            <div className="px-4 py-3 rounded-xl border text-sm font-semibold"
+              style={{
+                background: 'rgba(255,107,26,0.08)',
+                borderColor: 'rgba(255,107,26,0.3)',
+                color: '#FF6B1A',
+              }}>
+              {enrichMessage}
+            </div>
+          )}
         </div>
       )}
 

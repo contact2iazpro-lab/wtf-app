@@ -63,7 +63,7 @@ export default function FactsListPage({ toast }) {
 
   // Sort
   const [sortField, setSortField] = useState('id')
-  const [sortDir, setSortDir] = useState('desc')
+  const [sortDir, setSortDir] = useState('asc')
   const [filterRecent, setFilterRecent] = useState(false)
 
   // Batch

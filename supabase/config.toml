@@ -1,0 +1,26 @@
+project_id = "znoceotakhynqcqhpwgz"
+
+# ─── Edge Functions ──────────────────────────────────────────────────
+# verify_jwt = false → Supabase skip le check JWT, seule l'auth custom
+# (Bearer ADMIN_PASSWORD) est vérifiée dans la function.
+
+[functions.generate-fact-directions-single]
+verify_jwt = false
+
+[functions.generate-fact-image-single]
+verify_jwt = false
+
+[functions.generate-image-directions]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.generate-facts]
+verify_jwt = false
+
+[functions.complete-hints]
+verify_jwt = false
+
+[functions.enrich-fact]
+verify_jwt = false

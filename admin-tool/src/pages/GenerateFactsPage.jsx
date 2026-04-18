@@ -369,12 +369,42 @@ export default function GenerateFactsPage({ toast }) {
     explanation: 'explanation.is.null,explanation.eq.',
   }
 
+  // Compte les facts avec au moins un indice "problématique" (vide OU > 20 chars).
+  // Nécessite un fetch côté client car Supabase .or(...) ne permet pas la longueur.
+  const countHintsProblematic = useCallback(async () => {
+    const MAX = 20
+    const isProblematic = (v) => !v || String(v).trim() === '' || String(v).length > MAX
+    const all = []
+    let from = 0
+    const PAGE = 1000
+    while (true) {
+      const { data, error } = await supabase
+        .from('facts')
+        .select('hint1, hint2, hint3, hint4')
+        .range(from, from + PAGE - 1)
+      if (error) return null
+      if (!data || data.length === 0) break
+      all.push(...data)
+      if (data.length < PAGE) break
+      from += PAGE
+    }
+    return all.filter(f =>
+      isProblematic(f.hint1) || isProblematic(f.hint2) ||
+      isProblematic(f.hint3) || isProblematic(f.hint4),
+    ).length
+  }, [])
+
   // Charge le count de facts concernés par chaque groupe
   const loadEnrichCounts = useCallback(async () => {
     setEnrichCountsLoading(true)
     try {
       const entries = await Promise.all(
         Object.entries(GROUP_CLAUSES).map(async ([key, clause]) => {
+          // Hints : comptage spécial qui inclut les trop longs
+          if (key === 'hints') {
+            const n = await countHintsProblematic()
+            return [key, n]
+          }
           const { count, error } = await supabase
             .from('facts')
             .select('id', { count: 'exact', head: true })
@@ -388,7 +418,7 @@ export default function GenerateFactsPage({ toast }) {
     } finally {
       setEnrichCountsLoading(false)
     }
-  }, [])
+  }, [countHintsProblematic])
 
   // Charge les counts au montage
   useEffect(() => { loadEnrichCounts() }, [loadEnrichCounts])
@@ -491,15 +521,31 @@ export default function GenerateFactsPage({ toast }) {
       toast?.('Sélectionne au moins un groupe de champs', 'warn')
       return
     }
+
+    // Parse la limite (0 ou vide = tous)
+    const parsedLimit = parseInt(enrichLimit, 10)
+    const limit = !isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : null
+
+    // Mode CHIRURGICAL : seul "hints" coché → complete-hints (préserve les hints valides, cible vides + > 20 chars)
+    if (activeGroups.length === 1 && activeGroups[0] === 'hints') {
+      enrichCancelRef.current = false
+      setEnrichRunState('running')
+      setEnrichErrorCount(0)
+      try {
+        await runHintsSurgical(limit)
+      } catch (err) {
+        setEnrichRunState('error')
+        setEnrichMessage(`❌ Erreur : ${err.message}`)
+      }
+      return
+    }
+
+    // Mode classique : enrich-fact sur les groupes cochés
     const orClause = buildEnrichOrClause(enrichGroups)
     if (!orClause) {
       toast?.('Filtre vide', 'warn')
       return
     }
-
-    // Parse la limite (0 ou vide = tous)
-    const parsedLimit = parseInt(enrichLimit, 10)
-    const limit = !isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : null
 
     enrichCancelRef.current = false
     setEnrichRunState('running')
@@ -583,6 +629,93 @@ export default function GenerateFactsPage({ toast }) {
       setEnrichRunState('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
     }
+  }
+
+  // ── Mode chirurgical hints : vides OU > 20 chars (appelé quand seul le groupe
+  //    "hints" est coché dans Enrichir les incomplets) ──────────────────────
+  async function runHintsSurgical(limit) {
+    const MAX = 20
+    const isProblematic = (v) => !v || String(v).trim() === '' || String(v).length > MAX
+
+    setEnrichMessage('⏳ Recherche des indices à compléter...')
+    const all = []
+    let from = 0
+    const PAGE = 1000
+    while (true) {
+      const { data, error } = await supabase
+        .from('facts')
+        .select('id, question, short_answer, explanation, category, hint1, hint2, hint3, hint4')
+        .order('id')
+        .range(from, from + PAGE - 1)
+      if (error) throw error
+      if (!data || data.length === 0) break
+      all.push(...data)
+      if (data.length < PAGE) break
+      from += PAGE
+    }
+
+    const toProcess = all.filter(f =>
+      isProblematic(f.hint1) || isProblematic(f.hint2) ||
+      isProblematic(f.hint3) || isProblematic(f.hint4),
+    )
+
+    if (toProcess.length === 0) {
+      setEnrichRunState('done')
+      setEnrichMessage('✅ Aucun indice à compléter : tous sont non-vides et ≤ 20 caractères.')
+      return
+    }
+
+    const subset = limit ? toProcess.slice(0, limit) : toProcess
+    const limitNote = limit && toProcess.length > limit ? ` (limité à ${limit} sur ${toProcess.length})` : ''
+    if (!confirm(`Compléter les indices de ${subset.length} fact${subset.length > 1 ? 's' : ''}${limitNote} ?\n\nSeuls les indices vides ou dépassant 20 caractères seront modifiés. Les indices valides sont préservés.`)) {
+      setEnrichRunState('done')
+      setEnrichMessage('⏹ Annulé.')
+      return
+    }
+
+    setEnrichProgress({ current: 0, total: subset.length })
+    let okCount = 0, koCount = 0, touched = 0
+
+    for (let i = 0; i < subset.length; i++) {
+      if (enrichCancelRef.current) {
+        setEnrichRunState('done')
+        setEnrichMessage(`⏹ Arrêté — ${okCount}/${subset.length}`)
+        loadEnrichCounts()
+        return
+      }
+      const fact = subset[i]
+      setEnrichMessage(`🎯 Complétion ${i + 1}/${subset.length} — fact #${fact.id}...`)
+      setEnrichProgress({ current: i + 1, total: subset.length })
+
+      try {
+        const res = await callEdgeFunction('complete-hints', {
+          question: fact.question,
+          short_answer: fact.short_answer,
+          explanation: fact.explanation,
+          category: fact.category,
+          hint1: fact.hint1, hint2: fact.hint2,
+          hint3: fact.hint3, hint4: fact.hint4,
+        })
+
+        const updated = res.updated || {}
+        const keys = Object.keys(updated)
+        if (keys.length === 0) { okCount++; continue }
+
+        const payload = { updated_at: new Date().toISOString(), ...updated }
+        const { error: updErr } = await supabase.from('facts').update(payload).eq('id', fact.id)
+        if (updErr) throw updErr
+        okCount++
+        touched += keys.length
+      } catch (err) {
+        console.error(`complete-hints #${fact.id}:`, err)
+        koCount++
+        setEnrichErrorCount(prev => prev + 1)
+      }
+    }
+
+    setEnrichRunState('done')
+    setEnrichMessage(`✅ Complétion terminée — ${okCount}/${subset.length} facts traités, ${touched} indice(s) mis à jour (${koCount} erreurs)`)
+    loadEnrichCounts()
   }
 
   // ── Fill URLs ──────────────────────────────────────────────────────────
@@ -1146,6 +1279,11 @@ export default function GenerateFactsPage({ toast }) {
             <p className="text-slate-400 text-sm mb-4">
               Coche les groupes de champs à traiter. Les facts avec au moins un champ vide dans un groupe coché seront ciblés ;
               seuls les champs cochés seront réécrits (les autres sont préservés).
+              <br />
+              <span className="text-emerald-400">
+                🎯 Mode chirurgical pour les indices : si <strong>seule la case « Indices » est cochée</strong>,
+                seuls les indices vides OU dépassant 20 caractères sont regénérés — les indices valides sont préservés à 100%.
+              </span>
             </p>
 
             {/* Filtres par groupe + counts live */}
@@ -1270,6 +1408,7 @@ export default function GenerateFactsPage({ toast }) {
               )}
             </div>
           </div>
+
         </div>
       )}
 

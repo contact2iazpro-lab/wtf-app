@@ -1,7 +1,9 @@
 export const CATEGORIES = [
   { id: 'animaux',            label: 'Animaux',                  emoji: '🦁', color: '#6BCB77' },
+  { id: 'animaux-ciel',       label: 'Animaux du ciel',          emoji: '',   color: '#B8A5E8' },
   { id: 'animaux-marins',     label: 'Animaux Marins',           emoji: '🐬', color: '#40B4D8' },
-  { id: 'animaux-terrestres', label: 'Animaux Terrestres',       emoji: '🦁', color: '#E8712A' },
+  { id: 'animaux-sauvages',   label: 'Animaux sauvages',         emoji: '🦁', color: '#E8712A' },
+  { id: 'bestioles',          label: 'Bestioles',                emoji: '',   color: '#7A9F35' },
   { id: 'architecture',       label: 'Architecture',             emoji: '🏛️', color: '#A0826D' },
   { id: 'art',                label: 'Art',                      emoji: '🎨', color: '#A07CD8' },
   { id: 'celebrites',         label: 'Célébrités',               emoji: '🌟', color: '#FFD700' },

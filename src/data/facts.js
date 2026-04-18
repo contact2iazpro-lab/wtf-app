@@ -1,7 +1,9 @@
 export const CATEGORIES = [
   { id: 'animaux',           label: 'Animaux',                  emoji: '🦁', color: '#6BCB77', bg: '#0A2A0E', image: 'Carte WTF Animaux.png' },
+  { id: 'animaux-ciel',      label: 'Animaux du ciel',          emoji: '',   color: '#B8A5E8', bg: '#1F1A2E' },
   { id: 'animaux-marins',    label: 'Animaux Marins',           emoji: '🐬', color: '#40B4D8', bg: '#0A2035' },
-  { id: 'animaux-terrestres',label: 'Animaux Terrestres',       emoji: '🦁', color: '#E8712A', bg: '#3A1A05' },
+  { id: 'animaux-sauvages',  label: 'Animaux sauvages',         emoji: '🦁', color: '#E8712A', bg: '#3A1A05' },
+  { id: 'bestioles',         label: 'Bestioles',                emoji: '',   color: '#7A9F35', bg: '#1F2A0A' },
   { id: 'architecture',      label: 'Architecture',             emoji: '🏛️', color: '#A0826D', bg: '#2A1A0F', image: 'Carte WTF Architecture.png' },
   { id: 'art',               label: 'Art',                      emoji: '🎨', color: '#A07CD8', bg: '#1A0A35', image: 'Carte WTF Art.png' },
   { id: 'celebrites',        label: 'Célébrités',               emoji: '🌟', color: '#FFD700', bg: '#2A2000' },

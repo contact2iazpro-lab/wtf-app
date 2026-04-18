@@ -79,6 +79,14 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
 - ✅ **Session 15/04/2026** : HomeScreen cleanup + refonte visuelle + ResultsScreen Phase A+B + **Modèle D étudié puis abandonné au profit du Modèle A+ (décision 15/04/2026)**
 - ✅ **Session 16/04/2026 matin** : Fix JSON admin-tool (`generateStatements` balanced-brace extractor) + MarathonScreen refonte complète (gate 20 unlocked, tiered bg, record `marathonBestScore`, animations shake/gold/extreme, share/replay) + Blitz refactor Solo/Défi (variant prop, soloDuration 60s descendant, defiWrongPenalty 5s, `blitzSoloBestScore`, BlitzLobbyScreen toggle Solo/Défi, BlitzResultsScreen vue solo dédiée) + FlashScreen refonte (WEEKDAY_THEMES fixe lun-sam, dimanche 1 VIP cible + 4 Funny distracteurs seed ISO-week, unlock conditionnel `fact.id === vipTargetId`, reveal VIP dans done screen)
 - ✅ **Session 16/04/2026 soir** : VraiOuFouScreen refonte complète (layout calqué 1:1 sur QuestionScreen Quickie, timer 15s variant "vof" vert→orange→rouge, CircularTimer fond blanc) + RevelationScreen unifiée (VOF utilise le même composant que Quickie via système d'accent : violet Quickie / vert VOF, `accentColor`/`accentGradient`/`accentShadow`) + Encadrés hauteur fixe (question 3 lignes, réponse 2 lignes, explication flex:1, texte auto-size) + FallbackImage SVG inline dynamique (couleur catégorie, viewBox carré 680×680) + Effets holo/shiny sur toutes les images revelation (y compris fallback) + Fix bug achat énergie Quickie (route directe vers CATEGORY) + HomeScreen cercle VOF vert (#6BCB77) + Suppression emoji 🧠 des encadrés "Le saviez-vous" (4 fichiers)
+- ✅ **Session 18/04/2026 — Génération images individuelles admin-tool** :
+  - **Edge Functions** `generate-fact-directions-single` (Opus 4.5 → 3 idées de scène + mode refine pour retravailler une idée brute de l'utilisateur) et `generate-fact-image-single` (gpt-image-1 low / Gemini Flash / Gemini 3 Pro, 1 à 4 variantes × styles cochés Réaliste/WTF/Cinéma, upload storage `facts/{id}/variants/{ts}-{style}-{rand}`)
+  - **Table DB** `fact_image_variants` (historique par fact, flag `is_active` unique par fact via index partiel, RLS service_role)
+  - **Composant** `FactImageGenerator` injecté sous l'image de `FactMobileEditorPage` : 3 directions Opus + slot perso (avec bouton "Retravailler avec Opus" qui refine l'idée brute) + checkboxes styles + toggle modèle + sélecteur variantes/style + historique 10 dernières + modal zoom + bouton Activer (sync `facts.image_url` via 3 UPDATE client, pas de RPC car parser Supabase SQL Editor buggué sur dollar-quote) + Supprimer
+  - **Config Supabase** `supabase/config.toml` créé avec `verify_jwt = false` pour les Edge Functions admin (sinon 401 du gateway avant le check password custom)
+  - **Upload manuel d'images** (FactEditorPage + FactsListPage) : nom de fichier stable `facts/{id}.{ext}` avec upsert (plus de timestamps), URL absolue Supabase (conversion depuis proxy `/supabase-proxy/` via helper `optimizeSupabaseImageUrl` dans `imageUrl.js`), renommage post-création pour les nouveaux facts (move `facts/new-{ts}.{ext}` → `facts/{id}.{ext}`). Image Transformations (WebP `render/image/public/`) commenté car feature **Supabase Pro** — à activer en basculant `transform: true` si upgrade plan
+  - **Edge Function `complete-hints`** : mode chirurgical qui regénère UNIQUEMENT les indices vides OU > 20 chars, préserve les valides à 100%. Intégrée dans `GenerateFactsPage` → onglet "Enrichir les incomplets" : si seul le groupe `hints` est coché, route vers `complete-hints` (sinon `enrich-fact` comme avant). Le compteur "Indices" utilise maintenant un fetch+filter client pour inclure les trop longs (Supabase `.or()` ne supporte pas `char_length > 20`)
+  - **Catégories** : `animaux-terrestres` renommé en `animaux-sauvages` (id ET label, migration DB `UPDATE facts SET category`) + 2 nouvelles catégories sans emoji (à créer demain) : `animaux-ciel` (#B8A5E8 lilas) et `bestioles` (#7A9F35 vert mousse)
 
 ## ⚠️ Sécurité — ne jamais exposer dans le bundle client
 Toute variable préfixée `VITE_` est inlinée dans le JS public et lisible via DevTools.
@@ -371,8 +379,9 @@ séparé, sous-domaine privé, ou en local uniquement).
 | Catégorie | Couleur | Catégorie | Couleur |
 |-----------|---------|-----------|---------|
 | Animaux | #6BCB77 | Lois | #6366B8 |
-| Animaux Marins | #40B4D8 | Musique | #E84B8A |
-| Animaux Terrestres | #E8712A | Mythologie | #C8A84B |
+| Animaux du ciel | #B8A5E8 | Musique | #E84B8A |
+| Animaux Marins | #40B4D8 | Mythologie | #C8A84B |
+| Animaux sauvages | #E8712A | Bestioles | #7A9F35 |
 | Architecture | #A0826D | Phobies | #7B5EA7 |
 | Art | #A07CD8 | Politique | #B24B4B |
 | Célébrités | #FFD700 | Psychologie | #8E44AD |

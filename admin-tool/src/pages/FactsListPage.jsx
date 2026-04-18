@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, getCategoryEmoji } from '../constants/categories'
 import { STATUSES, StatusBadge, DIFFICULTIES, difficultyStyle, DifficultyBadge, Toggle, SortIcon, inputCls as sharedInputCls, inputClsErr as sharedInputClsErr } from '../components/shared'
 import { fmtDate, callEdgeFunction } from '../utils/helpers'
+import { optimizeSupabaseImageUrl } from '../utils/imageUrl'
 
 const PAGE_SIZE_OPTIONS = [50, 100, 200, 500]
 
@@ -296,8 +297,10 @@ export default function FactsListPage({ toast }) {
       if (uploadError) throw uploadError
 
       const { data: { publicUrl } } = supabase.storage.from('fact-images').getPublicUrl(path)
-      setNewFactField('image_url', publicUrl)
-      toast?.('✓ Image uploadée')
+      // URL optimisée WebP via Supabase Image Transformations
+      const optimizedUrl = optimizeSupabaseImageUrl(publicUrl)
+      setNewFactField('image_url', optimizedUrl)
+      toast?.('✓ Image uploadée et optimisée')
     } catch (err) {
       console.error(err)
       const msg = err.message || ''
@@ -352,6 +355,29 @@ export default function FactsListPage({ toast }) {
 
       const { error } = await supabase.from('facts').insert(payload)
       if (error) throw error
+
+      // Renommage post-création : si une image temporaire "facts/new-xxx" a été uploadée,
+      // on la renomme vers "facts/{newId}.{ext}" et on met à jour l'URL optimisée.
+      if (newFact.image_url) {
+        const tempMatch = newFact.image_url.match(/\/fact-images\/(facts\/new-[^?]+)/)
+        if (tempMatch) {
+          const oldPath = tempMatch[1]
+          const ext = oldPath.split('.').pop()
+          const newPath = `facts/${newId}.${ext}`
+          const { error: moveError } = await supabase.storage
+            .from('fact-images')
+            .move(oldPath, newPath)
+          if (moveError) {
+            console.warn('Renommage image échoué, URL temporaire conservée :', moveError.message)
+          } else {
+            const { data: { publicUrl } } = supabase.storage.from('fact-images').getPublicUrl(newPath)
+            const optimizedUrl = optimizeSupabaseImageUrl(publicUrl)
+            await supabase.from('facts')
+              .update({ image_url: optimizedUrl, updated_at: new Date().toISOString() })
+              .eq('id', newId)
+          }
+        }
+      }
 
       toast?.(`✓ Fact #${newId} créé (non publié)`)
       setShowAddModal(false)

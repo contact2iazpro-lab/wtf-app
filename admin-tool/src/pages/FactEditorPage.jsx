@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES, VIP_USAGES } from '../constants/categories'
-import { resolveImageUrl } from '../utils/imageUrl'
+import { resolveImageUrl, optimizeSupabaseImageUrl } from '../utils/imageUrl'
 import { generateStatementsForFact } from '../lib/generateStatements'
 import { STATUSES, CharCounter, Toggle, Section, Field, inputCls, inputClsErr } from '../components/shared'
 import { callEdgeFunction } from '../utils/helpers'
@@ -367,7 +367,8 @@ export default function FactEditorPage({ toast }) {
       await supabase.storage.createBucket('fact-images', { public: true }).catch(() => {})
 
       const ext = file.name.split('.').pop().toLowerCase()
-      const path = `facts/${id}-${Date.now()}.${ext}`
+      // Nom stable basé sur le fact id — upsert écrase automatiquement l'ancienne
+      const path = `facts/${id}.${ext}`
 
       const { error: uploadError } = await supabase.storage
         .from('fact-images')
@@ -376,12 +377,15 @@ export default function FactEditorPage({ toast }) {
 
       const { data: { publicUrl } } = supabase.storage.from('fact-images').getPublicUrl(path)
 
-      set('image_url', publicUrl)
-      checkImage(publicUrl)
+      // URL optimisée WebP via Supabase Image Transformations
+      const optimizedUrl = optimizeSupabaseImageUrl(publicUrl)
+
+      set('image_url', optimizedUrl)
+      checkImage(optimizedUrl)
 
       // Save to DB immediately so URL is persisted without needing to click Sauvegarder
-      await supabase.from('facts').update({ image_url: publicUrl, updated_at: new Date().toISOString() }).eq('id', id)
-      toast?.('✓ Image uploadée et sauvegardée')
+      await supabase.from('facts').update({ image_url: optimizedUrl, updated_at: new Date().toISOString() }).eq('id', id)
+      toast?.('✓ Image uploadée, optimisée et sauvegardée')
     } catch (err) {
       console.error(err)
       setImageStatus('error')

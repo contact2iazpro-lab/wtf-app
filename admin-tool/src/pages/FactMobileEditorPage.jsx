@@ -14,6 +14,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES } from '../constants/categories'
+import FactImageGenerator from '../components/FactImageGenerator'
 
 const isLightColor = (hex) => {
   if (!hex) return false
@@ -398,7 +399,7 @@ export default function FactMobileEditorPage({ toast }) {
             />
           </div>
 
-          {/* Image du fact — en tout fin (lecture seule) */}
+          {/* Image du fact — active */}
           <div style={{
             marginBottom: 12,
             borderRadius: 10,
@@ -424,6 +425,14 @@ export default function FactMobileEditorPage({ toast }) {
               </span>
             )}
           </div>
+
+          {/* Matrice de génération d'images */}
+          <FactImageGenerator
+            factId={fact.id}
+            activeImageUrl={fact.image_url}
+            onActivate={(newUrl) => setFact(prev => ({ ...prev, image_url: newUrl }))}
+            toast={toast}
+          />
 
         </div>{/* end scroll */}
 

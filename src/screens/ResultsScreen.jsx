@@ -184,7 +184,7 @@ export default function ResultsScreen({
   ]
   const bgRef = useRef(PASTEL_GRADIENTS[Math.floor(Math.random() * PASTEL_GRADIENTS.length)])
   const screenBg = isQuickie
-    ? 'linear-gradient(160deg, #4A3FA3, #7F77DD)'
+    ? 'linear-gradient(160deg, #FF7518, #FFA500)'
     : isVof
       ? 'linear-gradient(160deg, #3A8A4A, #6BCB77)'
       : bgRef.current
@@ -498,7 +498,7 @@ export default function ResultsScreen({
             total={animatedScore}
             totalColor={catColor}
             textColor={textOnBg}
-            borderColor={isQuickie ? '#7F77DD' : null}
+            borderColor={isQuickie ? '#FFA500' : null}
             footerStats={[
               { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
               { label: `${precision}% précision`, color: catColor },

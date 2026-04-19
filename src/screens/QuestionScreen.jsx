@@ -176,14 +176,14 @@ export default function QuestionScreen({
         padding: `${S(12)} ${S(16)}`,
         borderRadius: S(16),
         background: cardBg,
-        border: `${isQuickieMode ? 3 : 1}px solid ${isQuickieMode ? '#7F77DD' : (cat?.color + '70')}`,
+        border: `${isQuickieMode ? 3 : 1}px solid ${isQuickieMode ? '#FFA500' : (cat?.color + '70')}`,
         backdropFilter: 'blur(12px)',
         boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`,
         height: S(90), flexShrink: 0, overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
-      <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>{renderFormattedText(fact.question, isQuickieMode ? '#B5AFEB' : undefined)}</p>
+      <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>{renderFormattedText(fact.question, isQuickieMode ? '#FFD4A3' : undefined)}</p>
     </div>
   )
 
@@ -197,7 +197,7 @@ export default function QuestionScreen({
       overflow: 'hidden',
       margin: '0 auto',
       background: 'rgba(0,0,0,0.3)',
-      border: '3px solid #7F77DD',
+      border: '3px solid #FFA500',
       flexShrink: 0,
     }}>
       {fact.imageUrl && !imgFailed ? (
@@ -221,7 +221,7 @@ export default function QuestionScreen({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <span style={{
-          fontSize: S(48), fontWeight: 900, color: '#B5AFEB',
+          fontSize: S(48), fontWeight: 900, color: '#FFD4A3',
           textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
           animation: 'quickie-pulse-btn 2s ease-in-out infinite',
           lineHeight: 1,
@@ -285,7 +285,7 @@ export default function QuestionScreen({
             key={hintNum}
             num={hintNum}
             hint={hintText}
-            catColor={isQuickieMode ? '#7F77DD' : (cat?.color || '#FF6B1A')}
+            catColor={isQuickieMode ? '#FFA500' : (cat?.color || '#FF6B1A')}
             isFree={isFree}
             cost={cost}
             canAfford={canAfford}
@@ -297,7 +297,7 @@ export default function QuestionScreen({
                 console.warn('[QuestionScreen] buy hint RPC failed:', e?.message || e)
               )
             } : null}
-            revealedTextColor={isQuickieMode ? '#7F77DD' : undefined}
+            revealedTextColor={isQuickieMode ? '#FFA500' : undefined}
           />
         )
       })}
@@ -457,7 +457,7 @@ export default function QuestionScreen({
             {isQuickieMode && <img src="/assets/modes/icon-quickie.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />}
             <span style={{
               fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: isQuickieMode ? '#B5AFEB' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              color: isQuickieMode ? '#FFD4A3' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
             }}>
               {modeLabel}
             </span>
@@ -466,7 +466,7 @@ export default function QuestionScreen({
         {/* Compteur */}
         {isQuickieMode && (
           <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: S(12), fontWeight: 900, color: '#B5AFEB' }}>
+            <span style={{ fontSize: S(12), fontWeight: 900, color: '#FFD4A3' }}>
               {factIndex + 1}/{displayTotalFacts}
             </span>
           </div>
@@ -482,7 +482,7 @@ export default function QuestionScreen({
                   flex: 1,
                   height: isActive ? S(12) : S(8),
                   borderRadius: S(4),
-                  background: isActive ? (isQuickieMode ? '#7F77DD' : 'white') : 'rgba(255,255,255,0.2)',
+                  background: isActive ? (isQuickieMode ? '#FFA500' : 'white') : 'rgba(255,255,255,0.2)',
                   transition: 'all 0.3s ease',
                 }}
               />
@@ -572,7 +572,7 @@ export default function QuestionScreen({
                     className="btn-press active:scale-95"
                     style={{
                       background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
-                      border: isQuickieMode ? '3px solid #7F77DD' : devBorder,
+                      border: isQuickieMode ? '3px solid #FFA500' : devBorder,
                       borderRadius: S(12),
                       color: isQuickieMode ? (cat?.color || '#4A3FA3') : 'white',
                       fontWeight: isQuickieMode ? 800 : 700,

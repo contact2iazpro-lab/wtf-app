@@ -91,7 +91,7 @@ export const SCREENS = {
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
   quickie: {
-    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png', color: '#7F77DD',
+    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png', color: '#FFA500',
     rules: [
       { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
       { icon: 'icon:set', text: '**Set** : 5 questions / set' },

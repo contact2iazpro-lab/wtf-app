@@ -19,7 +19,7 @@ const EMOJI_IMG = {
   ...CURRENCY_EMOJI_MAP,
 }
 
-const QUICKIE_VIOLET = '#7F77DD'
+const QUICKIE_VIOLET = '#FFA500'
 const QUICKIE_GOLD = '#FFD700'
 const VOF_GREEN = '#6BCB77'
 const VOF_RED = '#E84535'
@@ -164,7 +164,7 @@ function renderIcon(value, size, color, modeId) {
 // ── Couleurs par chapitre ────────────────────────────────────────────────────
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6',
-  quickie: '#7F77DD', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
+  quickie: '#FFA500', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
   race: '#00E5FF', blitz: '#FF1744', flash: '#FFD700', multi: '#6B2D8E',
   energy: '#10B981', hints: '#6366F1', coins: '#F59E0B',
   streak: '#F97316', roulette: '#A855F7', shop: '#06B6D4',
@@ -549,7 +549,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 } else if (chapter.id === 'multi') {
                   iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
                 }
-                const BORDER_OVERRIDES = { quickie: '#9400D3', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444', multi: MULTI_VIOLET }
+                const BORDER_OVERRIDES = { quickie: '#FF7518', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444', multi: MULTI_VIOLET }
                 const TEXT_OVERRIDES = { quickie: QUICKIE_VIOLET, vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444', multi: MULTI_VIOLET }
                 const modeColor = CHAPTER_COLORS[chapter.id] || '#FF6B1A'
                 const borderCol = isStyledMode ? (BORDER_OVERRIDES[chapter.id] || modeColor) : '#E5E7EB'

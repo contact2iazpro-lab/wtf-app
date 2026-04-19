@@ -19,7 +19,7 @@ export default function FeaturedFactCard({
   if (!fact) return null
   const fCat = CATEGORIES.find(c => c.id === fact.category)
   const fColor = fCat?.color || fallbackColor
-  const glowColor = isQuickie ? '#7F77DD' : fColor
+  const glowColor = isQuickie ? '#FFA500' : fColor
 
   return (
     <div

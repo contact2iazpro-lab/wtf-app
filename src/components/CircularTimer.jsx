@@ -55,7 +55,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
     }
     if (textRef.current) {
       textRef.current.textContent = duration
-      textRef.current.style.fill = isQuickie ? '#7F77DD' : '#22C55E'
+      textRef.current.style.fill = isQuickie ? '#FFA500' : '#22C55E'
     }
 
     intervalRef.current = setInterval(() => {
@@ -74,7 +74,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
 
       if (textRef.current) {
         textRef.current.textContent = t
-        textRef.current.style.fill = isQuickie ? (t <= 5 ? '#EF4444' : '#7F77DD') : (isVof ? color : '#FFFFFF')
+        textRef.current.style.fill = isQuickie ? (t <= 5 ? '#EF4444' : '#FFA500') : (isVof ? color : '#FFFFFF')
       }
 
       // Bip sounds
@@ -144,7 +144,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
           fontSize={fontSize}
           fontWeight="900"
           fontFamily="Inter, sans-serif"
-          fill={isQuickie ? '#7F77DD' : (isVof ? '#22C55E' : '#FFFFFF')}
+          fill={isQuickie ? '#FFA500' : (isVof ? '#22C55E' : '#FFFFFF')}
         >
           {duration}
         </text>

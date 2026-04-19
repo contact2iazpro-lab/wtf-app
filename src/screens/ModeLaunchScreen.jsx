@@ -21,13 +21,13 @@ const EMOJI_IMG = {
   ...CURRENCY_EMOJI_MAP,
 }
 
-const QUICKIE_VIOLET = '#7F77DD'
+const QUICKIE_VIOLET = '#FFA500'
 const QUICKIE_GOLD = '#FFD700'
 const VOF_GREEN = '#6BCB77'
 const VOF_RED = '#E84535'
 
 const MODE_COLORS = {
-  quickie: '#9400D3',
+  quickie: '#FF7518',
   vrai_ou_fou: '#008000',
   race: '#0F52BA',
   blitz: '#FF4444',
@@ -212,7 +212,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
 
   const isStyled = STYLED_MODES.includes(modeId)
   const modeColor = MODE_COLORS[modeId] || color
-  const textColor = modeId === 'quickie' ? '#7F77DD'
+  const textColor = modeId === 'quickie' ? '#FFA500'
     : modeId === 'vrai_ou_fou' ? '#6BCB77'
     : modeId === 'race' ? '#23D5D5'
     : modeId === 'multi' ? MULTI_VIOLET
@@ -222,12 +222,12 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'race' ? '#0F52BA'
     : modeId === 'blitz' ? '#CC0000'
     : modeId === 'multi' ? MULTI_VIOLET
-    : '#9400D3'
+    : '#FF7518'
   const btnShadow = modeId === 'vrai_ou_fou' ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'race' ? '0 8px 30px rgba(0,255,255,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'blitz' ? '0 8px 30px rgba(204,0,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'multi' ? '0 8px 30px rgba(107,45,142,0.5), 0 4px 0 rgba(0,0,0,0.15)'
-    : '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : '0 8px 30px rgba(255,117,24,0.5), 0 4px 0 rgba(0,0,0,0.15)'
 
   return (
     <div style={{

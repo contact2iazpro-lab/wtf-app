@@ -138,15 +138,17 @@ export default function App() {
       // Multi venant de MultiPage ou revanche : lance directement la partie.
       // pendingDuel.variant ('rush'|'speedrun') + pendingDuel.questionCount (palier
       // pour speedrun, ou null pour rush tout-pool).
-      if (pendingDuel.categoryId && pendingDuel.categoryId !== 'all') {
+      // 'all' autorisé pour Rush (toutes catégories) ; handleBlitzStart gère
+      // le filtre par cat si categoryId ≠ 'all'.
+      if (pendingDuel.categoryId) {
         handleBlitzStart(pendingDuel.categoryId, pendingDuel.questionCount, pendingDuel.variant || 'rush')
         return
       }
-      // Fallback legacy (pas de categoryId précisé) → ouvre le BlitzLobby
+      // Fallback legacy (pas de categoryId du tout) → ouvre le BlitzLobby
       setGameMode('blitz')
       setSessionType('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
-      setSelectedCategory(pendingDuel.categoryId || 'all')
+      setSelectedCategory(null)
       setScreen(SCREENS.BLITZ_LOBBY)
     } else if (pendingDuel.mode === 'accept' && pendingDuel.facts) {
       // User accepte un défi : lance directement le Blitz avec les facts préparés

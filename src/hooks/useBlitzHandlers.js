@@ -65,12 +65,24 @@ export function useBlitzHandlers({
       }
     }
 
-    const count = isSpeedrun
-      ? questionCount
-      : Math.min(BLITZ_RUSH_POOL_SIZE, pool.length)
-    const shuffled = shuffle(pool)
-      .slice(0, count)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
+    // Rush : on vise BLITZ_RUSH_POOL_SIZE (150) questions. Si pool < 150
+    // (cat limitée, ex : 15 facts), on boucle le pool pour que le chrono
+    // ne s'arrête jamais par manque de questions avant la fin des 60s.
+    // Speedrun : pool obligatoirement ≥ questionCount (vérifié plus haut).
+    let shuffled
+    if (isSpeedrun) {
+      shuffled = shuffle(pool)
+        .slice(0, questionCount)
+        .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
+    } else {
+      const target = BLITZ_RUSH_POOL_SIZE
+      const loops = Math.ceil(target / pool.length)
+      const expanded = []
+      for (let i = 0; i < loops; i++) expanded.push(...shuffle(pool))
+      shuffled = expanded
+        .slice(0, target)
+        .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
+    }
 
     setSessionType('blitz')
     setGameMode('blitz')

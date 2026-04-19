@@ -183,11 +183,11 @@ export default function MultiPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
             {friends.map(f => {
-              const selected = opponentId === f.id
+              const selected = opponentId === f.userId
               return (
                 <button
-                  key={f.id}
-                  onClick={() => { audio.play('click'); setOpponentId(f.id) }}
+                  key={f.userId}
+                  onClick={() => { audio.play('click'); setOpponentId(f.userId) }}
                   style={{
                     padding: '10px 14px', borderRadius: 12,
                     background: selected ? 'linear-gradient(135deg, #7C3AED, #3B82F6)' : 'rgba(255,255,255,0.06)',

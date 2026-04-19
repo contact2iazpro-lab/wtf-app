@@ -73,7 +73,7 @@ export function useBlitzHandlers({
   }, [setBlitzVariant])
 
   const handleBlitzFinish = useCallback((results) => {
-    const { finalTime, correctCount, totalAnswered, penalties, variant = 'defi' } = results
+    const { finalTime, correctCount, totalAnswered, variant = 'defi' } = results
 
     // ─── Branche SOLO : record = nombre de bonnes réponses en 60s ───
     if (variant === 'solo') {
@@ -86,7 +86,7 @@ export function useBlitzHandlers({
       setBlitzResults({
         variant: 'solo',
         correctCount,
-        totalAnswered: correctCount,
+        totalAnswered,
         finalTime: finalTime || 60,
         bestScore,
         isNewRecord,
@@ -95,6 +95,8 @@ export function useBlitzHandlers({
       return
     }
 
+    // Défi : format best-score (nb bonnes). "isNewRecord" = nouveau meilleur score
+    // par catégorie, remplace l'ancien record basé sur le temps final.
     let isNewRecord = false
     let bestTime = null
     try {
@@ -108,17 +110,19 @@ export function useBlitzHandlers({
       ms.totalCorrect += correctCount
       ms.totalAnswered += totalAnswered
       if (correctCount > ms.bestStreak) ms.bestStreak = correctCount
-      if (!wtfData.bestBlitzTime || finalTime < wtfData.bestBlitzTime) {
-        wtfData.bestBlitzTime = finalTime
+      // Record = nb max de bonnes réponses en Défi (legacy: bestBlitzTime gardé
+      // pour compat, mais = nb bonnes max maintenant, pas un temps)
+      if (!wtfData.bestBlitzScore || correctCount > wtfData.bestBlitzScore) {
+        wtfData.bestBlitzScore = correctCount
         isNewRecord = true
       }
-      bestTime = wtfData.bestBlitzTime
+      bestTime = wtfData.bestBlitzScore // réutilisé pour l'UI results
       if (!wtfData.blitzRecords) wtfData.blitzRecords = {}
       const catKey = selectedCategory || 'all'
-      const palierKey = `${catKey}_${totalAnswered}`
-      const existingRecord = wtfData.blitzRecords[palierKey]
-      if (!existingRecord || finalTime < existingRecord) {
-        wtfData.blitzRecords[palierKey] = finalTime
+      const palierKey = `${catKey}_defi`
+      const existingRecord = wtfData.blitzRecords[palierKey] || 0
+      if (correctCount > existingRecord) {
+        wtfData.blitzRecords[palierKey] = correctCount
       }
       wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
       wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount
@@ -138,7 +142,7 @@ export function useBlitzHandlers({
       // A.9.3/A.9.6 — 1 seule RPC atomique : blitzRecords + stats + totaux + badges
       mergeFlags?.({
         blitzRecords: refreshed.blitzRecords,
-        bestBlitzTime: refreshed.bestBlitzTime,
+        bestBlitzScore: refreshed.bestBlitzScore,
         statsByMode: refreshed.statsByMode,
         gamesPlayed: refreshed.gamesPlayed,
         totalCorrect: refreshed.totalCorrect,
@@ -158,6 +162,7 @@ export function useBlitzHandlers({
           await completeDuelRound({
             roundId,
             playerTime: finalTime,
+            playerCorrect: correctCount,
             playerId: user.id,
             playerName: user.user_metadata?.name || 'Joueur WTF!',
           })
@@ -173,7 +178,7 @@ export function useBlitzHandlers({
 
     if (isChallengeMode) {
       const challengeData = {
-        finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord,
+        finalTime, correctCount, totalAnswered, bestTime, isNewRecord,
         categoryId: selectedCategory,
         categoryLabel: selectedCategory ? (getCategoryById(selectedCategory)?.label || selectedCategory) : 'Toutes catégories',
         questionCount: totalAnswered,
@@ -195,6 +200,7 @@ export function useBlitzHandlers({
             categoryLabel: challengeData.categoryLabel,
             questionCount: totalAnswered,
             player1Time: finalTime,
+            player1Correct: correctCount,
             player1Name: user.user_metadata?.name || 'Joueur WTF!',
           }))
           .then((result) => {
@@ -210,6 +216,7 @@ export function useBlitzHandlers({
               player1_id: user.id,
               player1_name: user.user_metadata?.name || 'Joueur WTF!',
               player1_time: finalTime,
+              player1_correct: correctCount,
               player2_id: opponentId || null,
               status: 'pending',
             }
@@ -231,7 +238,7 @@ export function useBlitzHandlers({
       return
     }
 
-    setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
+    setBlitzResults({ finalTime, correctCount, totalAnswered, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)
   }, [user, isChallengeMode, selectedCategory, pendingDuel, setLastCreatedDuel, setLastCreatedDuelError, clearPendingDuel, mergeFlags, applyCurrencyDelta])
 

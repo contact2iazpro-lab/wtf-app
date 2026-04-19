@@ -47,12 +47,15 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
-    // Sous-modes Blitz (spec 15/04/2026) :
-    // - solo : chrono 60s DESCENDANT, pas de pénalité erreur, score = bonnes réponses
-    // - defi : chrono MONTANT, +5s pénalité erreur, score = temps final (le plus bas gagne)
-    soloDuration: 60,
-    defiWrongPenalty: 5,
-    defiCost: 200, // coins pour créer un défi
+    // Sous-modes Blitz (spec 19/04/2026) :
+    // Format UNIFIÉ : chrono 60s DESCENDANT pour Solo ET Défi, erreur = -5s de pénalité,
+    // score = nombre de bonnes réponses. Tie-break Défi : temps de la dernière bonne
+    // réponse (plus tôt = plus rapide au même score), puis créateur (P1) gagne.
+    // - solo : 60s descendant, paliers 5/10/20/30/50/100 bonnes réponses
+    // - defi : 60s descendant par joueur, même set, plus de bonnes gagne
+    duration_s: 60,
+    wrongPenalty: 5, // secondes retirées du chrono sur erreur (partagé Solo + Défi)
+    defiCost: 200,   // coins pour créer un défi
     soloMinUnlocked: 20,
     wrongDistribution: { type: 'counts', counts: { funny: 1, close: 1, plausible: 1 } },
   },

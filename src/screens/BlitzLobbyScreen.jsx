@@ -8,7 +8,7 @@ const S = (px) => `calc(${px}px * var(--scale))`
 
 const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 
-export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTime = null, bestSoloScore = 0, opponentId = null, playerCoins = 0 }) {
+export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzScore = 0, bestSoloScore = 0, opponentId = null, playerCoins = 0 }) {
   const scale = useScale()
   const isChallenge = !!opponentId
   // En acceptation de défi : forced 'defi'. Sinon : solo par défaut.
@@ -143,9 +143,9 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
             </div>
           )
         ) : (
-          bestBlitzTime ? (
+          bestBlitzScore > 0 ? (
             <div style={{ fontSize: S(18), fontWeight: 900, color: '#FFD700' }}>
-              🏆 Meilleur temps : {bestBlitzTime < 60 ? bestBlitzTime.toFixed(2) + 's' : Math.floor(bestBlitzTime / 60) + ':' + (bestBlitzTime % 60).toFixed(2).padStart(5, '0')}
+              🏆 Meilleur score : {bestBlitzScore} bonnes en 60s
             </div>
           ) : (
             <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>

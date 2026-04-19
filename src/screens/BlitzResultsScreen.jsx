@@ -7,9 +7,8 @@ export default function BlitzResultsScreen({
   finalTime = 0,
   correctCount = 0,
   totalAnswered = 0,
-  penalties = 0,
-  bestTime = null,
-  bestScore = 0,
+  bestTime = null,        // en Défi : nb bonnes max (legacy name, contient un score)
+  bestScore = 0,          // en Solo : nb bonnes max
   variant = 'defi',
   isNewRecord = false,
   categoryId = null,
@@ -67,7 +66,7 @@ export default function BlitzResultsScreen({
   const handleShareChallenge = () => {
     if (!autoChallenge) return
     const challengeUrl = `${window.location.origin}/challenge/${autoChallenge.code}`
-    const text = `🎯 Défi WTF! Blitz !\n\n${questionCount} questions en ${finalTime.toFixed(2)}s. Tu fais mieux ? 😏\n\nRelève le défi :`
+    const text = `🎯 Défi WTF! Blitz !\n\nJ'ai fait ${correctCount} bonne${correctCount > 1 ? 's' : ''} réponse${correctCount > 1 ? 's' : ''} en 60s. Tu fais mieux ? 😏\n\nRelève le défi :`
     if (navigator.share) {
       navigator.share({ title: 'Défi WTF! Blitz ⚡', text, url: challengeUrl }).catch(() => {})
     } else {
@@ -77,11 +76,12 @@ export default function BlitzResultsScreen({
     }
   }
 
-  const rank = accuracy === 100 && finalTime < 30 ? { emoji: '🏆', label: 'Légende Blitz !' }
-    : accuracy === 100 ? { emoji: '⚡', label: 'Sans faute !' }
-    : accuracy >= 80 ? { emoji: '🔥', label: 'Impressionnant !' }
-    : accuracy >= 60 ? { emoji: '💪', label: 'Bien joué !' }
-    : { emoji: '🎮', label: 'Continue comme ça !' }
+  // Rang basé sur le nb de bonnes réponses en 60s (spec best-score 19/04/2026)
+  const rank = correctCount >= 30 ? { emoji: '🏆', label: 'Légende Blitz !' }
+    : correctCount >= 20 ? { emoji: '⚡', label: 'Impressionnant !' }
+    : correctCount >= 10 ? { emoji: '🔥', label: 'Bien joué !' }
+    : correctCount >= 5  ? { emoji: '💪', label: 'Continue !' }
+    : { emoji: '🎮', label: 'Entraîne-toi !' }
 
   const handleCreateChallenge = async () => {
     if (!user || isCreating) return
@@ -114,7 +114,7 @@ export default function BlitzResultsScreen({
   const handleShare = () => {
     if (!challengeCreated) return
     const challengeUrl = `${window.location.origin}/challenge/${challengeCreated.code}`
-    const text = `🎯 Défi WTF! Blitz !\n\n${questionCount} questions en ${finalTime.toFixed(2)}s. Tu fais mieux ? 😏\n\nRelève le défi :`
+    const text = `🎯 Défi WTF! Blitz !\n\nJ'ai fait ${correctCount} bonne${correctCount > 1 ? 's' : ''} réponse${correctCount > 1 ? 's' : ''} en 60s. Tu fais mieux ? 😏\n\nRelève le défi :`
     if (navigator.share) {
       navigator.share({ title: 'Défi WTF! Blitz ⚡', text, url: challengeUrl }).catch(() => {})
     } else {
@@ -233,15 +233,16 @@ export default function BlitzResultsScreen({
             {autoChallenge ? 'Défi créé !' : 'Création du défi...'}
           </h1>
 
-          {/* Résumé du score */}
+          {/* Résumé du score (Défi best-score 19/04/2026) */}
           <div className="rounded-3xl w-full p-5" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
             <div className="text-center mb-3">
-              <span style={{ fontSize: S(40), fontWeight: 900, color: '#FF6B1A', fontVariantNumeric: 'tabular-nums' }}>{formatTime(finalTime)}</span>
+              <span style={{ fontSize: S(48), fontWeight: 900, color: '#FFD700', fontVariantNumeric: 'tabular-nums' }}>{correctCount}</span>
+              <span style={{ fontSize: S(14), color: 'rgba(255,255,255,0.5)', fontWeight: 700, display: 'block', marginTop: 4 }}>bonne{correctCount > 1 ? 's' : ''} en 60s</span>
             </div>
             <div className="flex justify-center gap-6">
               <div className="text-center">
-                <span style={{ fontSize: S(16), fontWeight: 900, color: 'white' }}>{correctCount}/{totalAnswered}</span>
-                <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block' }}>Bonnes réponses</span>
+                <span style={{ fontSize: S(16), fontWeight: 900, color: 'white' }}>{totalAnswered}</span>
+                <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block' }}>Répondues</span>
               </div>
               <div className="text-center">
                 <span style={{ fontSize: S(16), fontWeight: 900, color: 'white' }}>{accuracy}%</span>
@@ -323,36 +324,31 @@ export default function BlitzResultsScreen({
           </div>
         )}
 
-        {/* Time */}
+        {/* Score (best-score 19/04/2026) */}
         <div className="rounded-3xl w-full p-5" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
           <div className="text-center mb-3">
-            <span style={{ fontSize: S(14), color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>⏱️ Temps final</span>
+            <span style={{ fontSize: S(14), color: 'rgba(255,255,255,0.5)', fontWeight: 700 }}>🎯 Score final</span>
           </div>
           <div className="text-center mb-3">
-            <span style={{ fontSize: S(48), fontWeight: 900, color: '#FF6B1A', fontVariantNumeric: 'tabular-nums' }}>{formatTime(displayTime)}</span>
+            <span style={{ fontSize: S(56), fontWeight: 900, color: '#FFD700', fontVariantNumeric: 'tabular-nums' }}>{correctCount}</span>
+            <span style={{ fontSize: S(14), color: 'rgba(255,255,255,0.5)', fontWeight: 700, display: 'block', marginTop: 4 }}>bonne{correctCount > 1 ? 's' : ''} en 60s</span>
           </div>
           <div className="flex justify-center gap-6">
             <div className="text-center">
-              <span style={{ fontSize: S(16), fontWeight: 900, color: 'white', display: 'block' }}>{correctCount}/{totalAnswered}</span>
-              <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)' }}>Bonnes réponses</span>
+              <span style={{ fontSize: S(16), fontWeight: 900, color: 'white', display: 'block' }}>{totalAnswered}</span>
+              <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)' }}>Répondues</span>
             </div>
             <div className="text-center">
               <span style={{ fontSize: S(16), fontWeight: 900, color: 'white', display: 'block' }}>{accuracy}%</span>
               <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)' }}>Précision</span>
             </div>
-            {penalties > 0 && (
-              <div className="text-center">
-                <span style={{ fontSize: S(16), fontWeight: 900, color: '#EF4444', display: 'block' }}>+{penalties}s</span>
-                <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)' }}>Pénalités</span>
-              </div>
-            )}
           </div>
         </div>
 
-        {bestTime !== null && (
+        {bestTime !== null && bestTime > 0 && (
           <div className="rounded-2xl w-full p-4 flex items-center justify-between" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)' }}>
             <span style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
-            <span style={{ fontSize: S(20), fontWeight: 900, color: '#FFD700' }}>{formatTime(bestTime)}</span>
+            <span style={{ fontSize: S(20), fontWeight: 900, color: '#FFD700' }}>{bestTime} bonnes</span>
           </div>
         )}
 

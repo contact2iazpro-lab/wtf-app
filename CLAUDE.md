@@ -177,19 +177,26 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Déblocage f*cts : Non (facts déjà connus)
 - UX : Compteur de série en gros, fond qui change de couleur, 1ère erreur = game over dramatique
 
-### 5. BLITZ — "Défie tes potes" (2 sous-modes)
+### 5. BLITZ — "Défie tes potes" (2 sous-modes, **format unifié best-score 19/04/2026**)
+
+**Format commun aux 2 sous-modes** :
+- QCM **4 choix** (1 vraie + 1 drôle + 1 proche + 1 plausible)
+- Chrono **60s DESCENDANT** (unifié Solo + Défi)
+- Erreur = **−5s** de pénalité retirée du chrono
+- Score = **nombre de bonnes réponses** en 60s (plus = mieux)
+- Le pool de facts est large (> 60) : on enchaîne jusqu'à ce que le chrono atteigne 0
 
 #### 5a. Blitz Solo
-- QCM **4 choix** (1 vraie + 1 drôle + 2 plausibles), chrono global **60s** descendant
 - Indices : Aucun · Contenu : Funny + VIP débloqués
-- Gains : 0 coins · Paliers : 5/10/20/30/50/100
+- Gains : 0 coins · **Paliers visuels** 5 / 10 / 20 / 30 / 50 / 100 bonnes (indicateurs en jeu)
+- Record local : `bestBlitzScore` (nb bonnes max atteint en 60s)
 
 #### 5b. Blitz Défi
-- QCM **4 choix**, même set 5-10 questions pour les 2 joueurs
-- Chrono montant global (+5s par erreur)
 - Contenu : Funny facts (catégorie choisie par créateur)
 - Coût : **200 coins** pour créer · Gratuit pour relever · 48h expiration
 - Gains : 0 coins · Partage résultat WhatsApp
+- **Tie-break** : en cas d'égalité sur le nb de bonnes → temps de la dernière bonne réponse (plus petit = plus rapide au même score = gagnant). Si encore égalité, **créateur (P1) gagne**.
+- DB : `challenges.player1_correct/player2_correct` (nb bonnes), `player1_time/player2_time` (temps de la dernière bonne, pour tie-break). Trigger `calculate_challenge_winner` compare correct puis time.
 
 ### 6. FLASH — "Le rendez-vous quotidien" (ex-Hunt + Puzzle du Jour)
 - QCM **2 choix**, 5 questions, timer **15s**

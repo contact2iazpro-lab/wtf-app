@@ -163,8 +163,8 @@ export default function DuelHistoryScreen() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {rounds.map(r => {
                 const isMe1 = r.player1_id === user.id
-                const myTime = isMe1 ? r.player1_time : r.player2_time
-                const theirTime = isMe1 ? r.player2_time : r.player1_time
+                const myCorrect = isMe1 ? r.player1_correct : r.player2_correct
+                const theirCorrect = isMe1 ? r.player2_correct : r.player1_correct
                 const iWon = r.winner_id === user.id
                 const theyWon = r.winner_id === opponentId
                 return (
@@ -198,8 +198,8 @@ export default function DuelHistoryScreen() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: iWon ? '#22C55E' : '#1a1a2e' }}>{formatTime(myTime)}</div>
-                      <div style={{ fontSize: 10, color: theyWon ? '#EF4444' : '#6B7280' }}>{formatTime(theirTime)}</div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: iWon ? '#22C55E' : '#1a1a2e' }}>{myCorrect ?? '—'} bonnes</div>
+                      <div style={{ fontSize: 10, color: theyWon ? '#EF4444' : '#6B7280' }}>vs {theirCorrect ?? '—'}</div>
                     </div>
                   </button>
                 )

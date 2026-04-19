@@ -68,9 +68,9 @@ const STREAK_TROPHIES = [
 // ===== TROPHÉES BLITZ (5 trophées) =====
 const BLITZ_TROPHIES = [
   { id: 'blitz_rookie', label: 'Blitz Rookie', emoji: '⏱️', section: 'blitz', description: 'Termine ta première partie Blitz', condition: (data) => (data.statsByMode?.blitz?.gamesPlayed || 0) >= 1, target: 1, getCurrent: (data) => data.statsByMode?.blitz?.gamesPlayed || 0 },
-  { id: 'blitz_pro', label: 'Blitz Pro', emoji: '🚀', section: 'blitz', description: 'Finis un Blitz en moins de 30 secondes', condition: (data) => (data.bestBlitzTime || 999) <= 30 && data.bestBlitzTime > 0, target: 30, getCurrent: (data) => data.bestBlitzTime > 0 ? Math.max(0, 30 - data.bestBlitzTime) : 0, invertedProgress: true },
-  { id: 'blitz_master', label: 'Blitz Master', emoji: '⚡', section: 'blitz', description: 'Finis un Blitz en moins de 20 secondes', condition: (data) => (data.bestBlitzTime || 999) <= 20 && data.bestBlitzTime > 0, target: 20, getCurrent: (data) => data.bestBlitzTime > 0 ? Math.max(0, 20 - data.bestBlitzTime) : 0, invertedProgress: true },
-  { id: 'blitz_legend', label: 'Blitz Légende', emoji: '👑', section: 'blitz', description: 'Finis un Blitz en moins de 15 secondes', condition: (data) => (data.bestBlitzTime || 999) <= 15 && data.bestBlitzTime > 0, target: 15, getCurrent: (data) => data.bestBlitzTime > 0 ? Math.max(0, 15 - data.bestBlitzTime) : 0, invertedProgress: true },
+  { id: 'blitz_pro', label: 'Blitz Pro', emoji: '🚀', section: 'blitz', description: 'Fais 15 bonnes réponses en 60s (Blitz)', condition: (data) => (data.bestBlitzScore || 0) >= 15, target: 15, getCurrent: (data) => data.bestBlitzScore || 0 },
+  { id: 'blitz_master', label: 'Blitz Master', emoji: '⚡', section: 'blitz', description: 'Fais 25 bonnes réponses en 60s (Blitz)', condition: (data) => (data.bestBlitzScore || 0) >= 25, target: 25, getCurrent: (data) => data.bestBlitzScore || 0 },
+  { id: 'blitz_legend', label: 'Blitz Légende', emoji: '👑', section: 'blitz', description: 'Fais 40 bonnes réponses en 60s (Blitz)', condition: (data) => (data.bestBlitzScore || 0) >= 40, target: 40, getCurrent: (data) => data.bestBlitzScore || 0 },
   { id: 'blitz_perfect', label: 'Sans faute Blitz', emoji: '💯', section: 'blitz', description: 'Termine un Blitz sans aucune erreur', condition: (data) => (data.blitzPerfects || 0) >= 1, target: 1, getCurrent: (data) => data.blitzPerfects || 0 },
 ]
 

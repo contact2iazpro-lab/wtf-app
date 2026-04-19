@@ -175,7 +175,7 @@ export default function ScreenRenderer({
           <BlitzLobbyScreen
             onSelectCategory={handleBlitzStart}
             onBack={handleHome}
-            bestBlitzTime={wd.bestBlitzTime || null}
+            bestBlitzScore={wd.bestBlitzScore || 0}
             bestSoloScore={wd.blitzSoloBestScore || 0}
             playerCoins={wd.wtfCoins || 0}
             opponentId={isChallengeMode ? pendingDuel?.opponentId : null}

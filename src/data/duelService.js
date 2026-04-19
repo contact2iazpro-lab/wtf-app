@@ -217,7 +217,7 @@ export function computeDuelState(duel, lastRound, meId) {
  */
 export async function createDuelChallenge({
   opponentId, categoryId, categoryLabel, questionCount,
-  player1Time, player1Name,
+  player1Time, player1Correct, player1Name,
 }) {
   const { data, error } = await supabase.rpc('create_duel_challenge', {
     p_opponent_id: opponentId || null,
@@ -225,6 +225,7 @@ export async function createDuelChallenge({
     p_category_label: categoryLabel,
     p_question_count: questionCount,
     p_player1_time: player1Time,
+    p_player1_correct: player1Correct,
     p_player1_name: player1Name,
   })
   if (error) {
@@ -238,13 +239,14 @@ export async function createDuelChallenge({
  * Complète un round (appelé quand player2 joue son Blitz en relevant le défi).
  * Le trigger SQL auto-calcule winner + met à jour duels stats.
  */
-export async function completeDuelRound({ roundId, playerTime, playerId, playerName }) {
+export async function completeDuelRound({ roundId, playerTime, playerCorrect, playerId, playerName }) {
   const { data, error } = await supabase
     .from('challenges')
     .update({
       player2_id: playerId,
       player2_name: playerName,
       player2_time: playerTime,
+      player2_correct: playerCorrect,
       status: 'completed',
     })
     .eq('id', roundId)

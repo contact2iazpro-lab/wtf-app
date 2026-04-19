@@ -10,6 +10,7 @@ import FactDetailView from '../components/FactDetailView'
 import ResultsRankHeader from '../components/results/ResultsRankHeader'
 import GainsBreakdown from '../components/results/GainsBreakdown'
 import FeaturedFactCard from '../components/results/FeaturedFactCard'
+import FallbackImage from '../components/FallbackImage'
 import ResultsActionButtons from '../components/results/ResultsActionButtons'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
@@ -581,8 +582,8 @@ export default function ResultsScreen({
                             filter: isDiscovered ? 'none' : 'blur(4px) brightness(0.45)',
                           }} onError={e => { e.target.style.display = 'none' }} />
                         ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: isDiscovered ? 'none' : 'brightness(0.45)' }}>
-                            <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: '55%', height: '55%', objectFit: 'contain', opacity: 0.85 }} onError={e => { e.target.style.display = 'none' }} />
+                          <div style={{ width: '100%', height: '100%', filter: isDiscovered ? 'none' : 'blur(4px) brightness(0.45)' }}>
+                            <FallbackImage categoryColor={fcColor} />
                           </div>
                         )}
                         {/* Non-découvert (manqué) : cadenas centré plein sur miniature floutée */}

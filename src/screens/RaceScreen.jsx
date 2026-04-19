@@ -318,19 +318,14 @@ export default function RaceScreen({ onHome }) {
                   )
                 })}
               </div>
-              {runFacts.length > 12 && (
-                <p style={{ fontSize: 10, opacity: 0.6, marginTop: 4, fontStyle: 'italic' }}>
-                  (12 derniers affichés sur {runFacts.length})
-                </p>
-              )}
             </div>
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <button onClick={replay} style={{ padding: '14px 28px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
+            <button onClick={replay} style={{ padding: '14px 28px', background: '#FF6B1A', color: '#fff', border: '3px solid #ffffff', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
               Rejouer
             </button>
-            <button onClick={handleShare} style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '2px solid rgba(255,255,255,0.35)', borderRadius: 16, fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>
+            <button onClick={handleShare} style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '3px solid #ffffff', borderRadius: 16, fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>
               Partager
             </button>
             <button onClick={onHome} style={{ padding: '12px 28px', background: 'transparent', color: 'rgba(255,255,255,0.7)', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>

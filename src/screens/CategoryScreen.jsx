@@ -213,18 +213,19 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
         </button>
       </div>
 
-      {/* Categories list */}
+      {/* Categories list — grille 2 colonnes, Aléatoire en pleine largeur */}
       <div style={{
         flex: 1, overflowY: 'auto',
         padding: `0 ${S(12)} ${S(8)}`,
         WebkitOverflowScrolling: 'touch',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: S(4) }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(6) }}>
 
-          {/* Aléatoire — toujours proposé */}
+          {/* Aléatoire — pleine largeur (span les 2 colonnes) */}
           <button
             onClick={() => handleCategoryClick('random')}
             style={{
+              gridColumn: '1 / -1',
               background: selectedCatId === 'random'
                 ? (isLockedMode ? 'linear-gradient(135deg, #FF7518, #FFA500)' : 'linear-gradient(135deg, rgba(255,107,26,0.95) 0%, rgba(255,51,133,0.95) 30%, rgba(155,89,182,0.95) 60%, rgba(52,152,219,0.95) 80%, rgba(46,204,113,0.95) 100%)')
                 : (isLockedMode ? 'linear-gradient(135deg, #FF7518cc, #FFA500cc)' : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)'),

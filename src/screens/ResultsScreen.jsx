@@ -564,16 +564,16 @@ export default function ResultsScreen({
                     if (isDiscovered) {
                       setViewingFact({ ...fact, _isLocked: !isUnlocked })
                     } else {
-                      // Non-découvert → modal d'achat direct (pas d'accès à la page détaillée)
                       setSelectedFact({ ...fact, _locked: true, _catColor: fcColor, _catEmoji: fc?.emoji, _catLabel: fc?.label })
                     }
                   }
                   return (
                     <div key={`${idx}-${fact.id}`} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
                       onClick={handleClick}>
+                      {/* Miniature avec cadre catégorie (format Quickie) */}
                       <div style={{
-                        aspectRatio: '1', borderRadius: S(6), overflow: 'hidden', position: 'relative',
-                        border: `2px solid ${wasCorrect ? '#6BCB77' : '#E84535'}`,
+                        aspectRatio: '1', borderRadius: `${S(8)} ${S(8)} 0 0`, overflow: 'hidden', position: 'relative',
+                        border: `2px solid ${fcColor}`, borderBottom: 'none',
                         background: `linear-gradient(135deg, ${fcColor}44, ${fcColor})`,
                       }}>
                         {fact.imageUrl ? (
@@ -586,21 +586,31 @@ export default function ResultsScreen({
                             <FallbackImage categoryColor={fcColor} />
                           </div>
                         )}
-                        {/* Non-découvert (manqué) : cadenas centré plein sur miniature floutée */}
+                        {/* Non-découvert (manqué) : cadenas centré sur miniature floutée */}
                         {!isDiscovered && (
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span style={{ fontSize: S(18), filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}>🔒</span>
                           </div>
                         )}
-                        {/* Découvert mais pas encore unlocked : petit cadenas top-left */}
+                        {/* Découvert mais pas encore dans la collection : petit 🔒 top-left */}
                         {isDiscovered && !isUnlocked && (
                           <div style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.55)', borderRadius: '50%', width: S(16), height: S(16), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span style={{ fontSize: S(10), opacity: 0.9 }}>🔒</span>
                           </div>
                         )}
+                        {/* Badge ✓/✗ top-right */}
                         <div style={{ position: 'absolute', top: 2, right: 2, width: S(14), height: S(14), borderRadius: '50%', background: wasCorrect ? '#6BCB77' : '#E84535', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(10), fontWeight: 900, color: '#fff', lineHeight: 1 }}>
                           {wasCorrect ? '✓' : '✗'}
                         </div>
+                      </div>
+                      {/* Footer icône catégorie (format Quickie) */}
+                      <div style={{
+                        background: fcColor, borderRadius: `0 0 ${S(6)} ${S(6)}`,
+                        padding: `${S(2)} 0`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <img src={`/assets/categories/${fact.category}.png`} alt=""
+                          style={{ width: S(14), height: S(14), borderRadius: S(3), objectFit: 'cover' }}
+                          onError={e => { e.target.style.display = 'none' }} />
                       </div>
                     </div>
                   )

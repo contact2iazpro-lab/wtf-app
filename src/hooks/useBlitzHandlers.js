@@ -82,6 +82,92 @@ export function useBlitzHandlers({
   const handleBlitzFinish = useCallback((results) => {
     const { finalTime, correctCount, totalAnswered, variant = 'defi', sessionAnswers = [] } = results
 
+    // ─── BRANCHE MULTI prioritaire (19/04/2026) ──────────────────────────────
+    // Un défi Multi (mode=create ou accept) peut avoir variant='rush' ou
+    // 'speedrun'. Il faut le détecter AVANT les branches solo rush/speedrun
+    // pour ne pas déclencher saveBlitzRecord + return prématuré.
+
+    // Mode ACCEPT : l'utilisateur vient de finir un défi reçu → RPC atomique
+    // complete_duel_round (debit 100c accepteur + update + credit 150c ou refund)
+    if (pendingDuel?.mode === 'accept' && pendingDuel.roundId && user) {
+      const roundId = pendingDuel.roundId
+      const code = pendingDuel.code
+      clearPendingDuel?.()
+      import('../data/duelService').then(async ({ completeDuelRound }) => {
+        try {
+          await completeDuelRound({
+            roundId,
+            playerTime: finalTime,
+            playerCorrect: correctCount,
+            playerId: user.id,
+            playerName: user.user_metadata?.name || 'Joueur WTF!',
+          })
+          if (code) navigate(`/challenge/${code}`)
+        } catch (e) {
+          console.error('Duel round complete error:', e?.message || e)
+          setGameAlert({ emoji: '⚠️', title: 'Erreur', message: 'Impossible de finaliser le défi : ' + (e?.message || 'erreur serveur') })
+        }
+      })
+      return
+    }
+
+    // Mode CREATE : l'utilisateur vient de jouer son tour d'un défi qu'il
+    // initie → RPC create_duel_challenge (debit 100c + insert challenge)
+    if (isChallengeMode && user) {
+      const challengeData = {
+        finalTime, correctCount, totalAnswered,
+        categoryId: selectedCategory,
+        categoryLabel: selectedCategory ? (getCategoryById(selectedCategory)?.label || selectedCategory) : 'Toutes catégories',
+        questionCount: totalAnswered,
+      }
+      setBlitzResults(challengeData)
+      setScreen(SCREENS.BLITZ_RESULTS)
+
+      const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
+      const duelVariant = pendingDuel?.variant === 'speedrun' ? 'speedrun' : 'rush'
+      // Débit 100c fait ATOMIQUEMENT côté RPC create_duel_challenge. Pas de
+      // applyCurrencyDelta client en amont (sinon double-débit 200c).
+      import('../data/duelService')
+        .then(({ createDuelChallenge }) => createDuelChallenge({
+          opponentId,
+          categoryId: selectedCategory || 'all',
+          categoryLabel: challengeData.categoryLabel,
+          questionCount: totalAnswered,
+          player1Time: finalTime,
+          player1Correct: correctCount,
+          player1Name: user.user_metadata?.name || 'Joueur WTF!',
+          variant: duelVariant,
+        }))
+        .then((result) => {
+          const round = {
+            id: result.challenge_id,
+            code: result.code,
+            duel_id: result.duel_id,
+            category_id: selectedCategory || 'all',
+            category_label: challengeData.categoryLabel,
+            question_count: totalAnswered,
+            variant: duelVariant,
+            player1_id: user.id,
+            player1_name: user.user_metadata?.name || 'Joueur WTF!',
+            player1_time: finalTime,
+            player1_correct: correctCount,
+            player2_id: opponentId || null,
+            status: 'pending',
+          }
+          setLastCreatedDuel?.(round)
+          // Notifier le miroir coins (RPC a débité 100c)
+          window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
+        })
+        .catch((e) => {
+          console.error('[useBlitzHandlers] create_duel_challenge failed:', e?.message || e)
+          const msg = e?.message?.includes('Insufficient')
+            ? 'Pas assez de coins.'
+            : e?.message || 'Erreur lors de la création du défi'
+          setLastCreatedDuelError?.(msg)
+        })
+      return
+    }
+
     // ─── Branche RUSH (ex-solo) : record = nombre de bonnes réponses en 60s ───
     if (variant === 'rush' || variant === 'solo') { // 'solo' gardé en fallback legacy
       const prevBest = readWtfData().blitzSoloBestScore || 0
@@ -212,94 +298,6 @@ export function useBlitzHandlers({
         badgesEarned: refreshed.badgesEarned || [],
       }).catch(e => console.warn('[useBlitzHandlers] session end mergeFlags failed:', e?.message || e))
     } catch {}
-
-    // Complete duel round si l'user vient d'accepter un défi (mode accept)
-    if (pendingDuel?.mode === 'accept' && pendingDuel.roundId && user) {
-      const roundId = pendingDuel.roundId
-      const code = pendingDuel.code
-      clearPendingDuel?.()
-      import('../data/duelService').then(async ({ completeDuelRound }) => {
-        try {
-          await completeDuelRound({
-            roundId,
-            playerTime: finalTime,
-            playerCorrect: correctCount,
-            playerId: user.id,
-            playerName: user.user_metadata?.name || 'Joueur WTF!',
-          })
-          // Redirection auto vers ChallengeScreen pour voir la comparaison
-          if (code) navigate(`/challenge/${code}`)
-        } catch (e) {
-          console.error('Duel round complete error:', e?.message || e)
-          setGameAlert({ emoji: '⚠️', title: 'Erreur', message: 'Impossible de finaliser le défi : ' + (e?.message || 'erreur serveur') })
-        }
-      })
-      return
-    }
-
-    if (isChallengeMode) {
-      const challengeData = {
-        finalTime, correctCount, totalAnswered, bestTime, isNewRecord,
-        categoryId: selectedCategory,
-        categoryLabel: selectedCategory ? (getCategoryById(selectedCategory)?.label || selectedCategory) : 'Toutes catégories',
-        questionCount: totalAnswered,
-      }
-      setBlitzResults(challengeData)
-      setScreen(SCREENS.BLITZ_RESULTS)
-
-      if (user) {
-        const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
-        const duelVariant = pendingDuel?.variant === 'speedrun' ? 'speedrun' : 'rush'
-        // RPC atomique : 1 seul round-trip serveur, debit 200 coins + upsert
-        // duel + insert challenge en 1 txn. Plus besoin de timeout/race/fire-forget.
-        // 100c débité atomiquement côté RPC create_duel_challenge (vs 200c avant —
-        // l'accepteur paie les 100c restants au moment de relever le défi).
-        applyCurrencyDelta?.({ coins: -100 }, 'challenge_create')?.catch?.(e =>
-          console.warn('[useBlitzHandlers] challenge cost RPC failed:', e?.message || e)
-        )
-        import('../data/duelService')
-          .then(({ createDuelChallenge }) => createDuelChallenge({
-            opponentId,
-            categoryId: selectedCategory || 'all',
-            categoryLabel: challengeData.categoryLabel,
-            questionCount: totalAnswered,
-            player1Time: finalTime,
-            player1Correct: correctCount,
-            player1Name: user.user_metadata?.name || 'Joueur WTF!',
-            variant: duelVariant,
-          }))
-          .then((result) => {
-            const round = {
-              id: result.challenge_id,
-              code: result.code,
-              duel_id: result.duel_id,
-              category_id: selectedCategory || 'all',
-              category_label: challengeData.categoryLabel,
-              question_count: totalAnswered,
-              variant: duelVariant,
-              player1_id: user.id,
-              player1_name: user.user_metadata?.name || 'Joueur WTF!',
-              player1_time: finalTime,
-              player1_correct: correctCount,
-              player2_id: opponentId || null,
-              status: 'pending',
-            }
-            setLastCreatedDuel?.(round)
-            window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
-          })
-          .catch((e) => {
-            console.error('[useBlitzHandlers] create_duel_challenge failed:', e?.message || e)
-            const msg = e?.message?.includes('Insufficient')
-              ? 'Pas assez de coins.'
-              : e?.message || 'Erreur lors de la création du défi'
-            setLastCreatedDuelError?.(msg)
-          })
-      }
-      // isChallengeMode est dérivé de pendingDuel — on ne le touche pas ici.
-      // Tant que pendingDuel reste en place, BlitzResultsScreen affiche la vue
-      // "Création du défi..." / "Défi créé !". Le clear se fait à l'unmount.
-      return
-    }
 
     setBlitzResults({ finalTime, correctCount, totalAnswered, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)

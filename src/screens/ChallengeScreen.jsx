@@ -142,9 +142,23 @@ export default function ChallengeScreen() {
       alert(msg)
       return
     }
-    const shuffled = shuffle(playerFacts)
-      .slice(0, Math.min(challenge.question_count, playerFacts.length))
-    const factsWithOptions = shuffled.map(f => ({ ...f, ...getAnswerOptions(f, DIFFICULTY_LEVELS.BLITZ) }))
+    // Rush : pool bouclé jusqu'à 150 facts (chrono 60s peu importe le nb)
+    // Speedrun : exactement question_count facts (= palier)
+    const isSpeedrunChal = challenge.variant === 'speedrun'
+    const target = isSpeedrunChal
+      ? Math.min(challenge.question_count, playerFacts.length)
+      : 150
+    let expanded
+    if (isSpeedrunChal) {
+      expanded = shuffle(playerFacts).slice(0, target)
+    } else {
+      // Boucle le pool pour remplir 150 (évite la fin prématurée du chrono Rush)
+      const loops = Math.ceil(target / Math.max(1, playerFacts.length))
+      const buf = []
+      for (let i = 0; i < loops; i++) buf.push(...shuffle(playerFacts))
+      expanded = buf.slice(0, target)
+    }
+    const factsWithOptions = expanded.map(f => ({ ...f, ...getAnswerOptions(f, DIFFICULTY_LEVELS.BLITZ) }))
     startAcceptDefi(challenge, factsWithOptions)
     navigate('/')
   }

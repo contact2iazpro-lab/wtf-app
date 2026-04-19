@@ -121,34 +121,62 @@ export default function ProfilPage() {
     if (resetting) return
     setResetting(true)
 
+    console.log('[reset] start', { hasSession, userId: user?.id })
+
     // 1) Reset serveur atomique AVANT le reload — sinon pullFromServer
     // re-hydrate l'ancien état depuis profiles.flags + collections.
     // Await obligatoire : un fire-and-forget serait tué par window.location.reload().
     if (hasSession) {
       try {
-        const { error } = await supabase.rpc('reset_player_progression')
+        const { data, error } = await supabase.rpc('reset_player_progression')
         if (error) throw error
+        console.log('[reset] RPC OK', data)
       } catch (err) {
         console.error('[reset] RPC reset_player_progression failed:', err)
-        alert('Impossible de réinitialiser côté serveur. Réessaie dans un instant.')
+        alert('Impossible de réinitialiser côté serveur : ' + (err?.message || 'erreur inconnue') + '\n\nRéessaie dans un instant.')
         setResetting(false)
         setResetStep(0)
         return
       }
+    } else {
+      console.warn('[reset] no session — skipping RPC, wiping local only')
     }
 
-    // 2) Clear localStorage (garder auth + version + skip_launch)
+    // 2) Nettoyer IndexedDB (cache SWR/requêtes utilisés par l'app)
+    try {
+      if (typeof indexedDB !== 'undefined' && indexedDB.databases) {
+        const dbs = await indexedDB.databases()
+        for (const db of dbs) {
+          if (db.name && !db.name.startsWith('supabase-auth')) {
+            indexedDB.deleteDatabase(db.name)
+            console.log('[reset] deleted idb', db.name)
+          }
+        }
+      }
+    } catch (e) { console.warn('[reset] idb wipe failed', e) }
+
+    // 3) Clear localStorage (garder UNIQUEMENT la session auth Supabase + version app)
+    // On ne garde PAS skip_launch_* → l'utilisateur revoit les splash comme un nouveau joueur.
     const kept = {}
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
-      if (k && (k.startsWith('sb-') || k.startsWith('supabase.auth') || k === 'wtf_app_version' || k.startsWith('skip_launch_'))) {
+      if (k && (k.startsWith('sb-') || k.startsWith('supabase.auth') || k === 'wtf_app_version')) {
         kept[k] = localStorage.getItem(k)
       }
     }
     localStorage.clear()
     Object.entries(kept).forEach(([k, v]) => localStorage.setItem(k, v))
+    console.log('[reset] localStorage wiped, kept keys:', Object.keys(kept))
 
-    window.location.reload()
+    // 4) Nettoyer sessionStorage (caches éphémères)
+    try { sessionStorage.clear() } catch {}
+
+    // 5) Reload dur avec cache-bust — évite qu'un bundle JS / réponse
+    // mise en cache par le navigateur/service worker serve l'ancien état.
+    const bust = Date.now()
+    const url = new URL(window.location.href)
+    url.searchParams.set('reset', String(bust))
+    window.location.replace(url.toString())
   }
 
   const playerData = useMemo(() => readWtfData(), [])

@@ -7,6 +7,8 @@ import { audio } from '../utils/audio'
 import { markRoundSeen, declineRound, expirePendingChallenges } from '../data/duelService'
 import { getCategoryById } from '../data/factsService'
 import { useDuelContext } from '../features/duels/context/DuelContext'
+import { getMyBlitzRecords } from '../data/blitzRecordService'
+import { supabase } from '../lib/supabase'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -28,35 +30,32 @@ function Initial({ name, size = 32 }) {
   )
 }
 
-function getProcessedBlitzRecords() {
-  try {
-    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    const blitzRecords = wtfData.blitzRecords || {}
-    const bestBlitzTime = wtfData.bestBlitzTime || null
-
-    if (Object.keys(blitzRecords).length === 0) return { records: [], bestTime: null }
-
-    const recordsArray = Object.entries(blitzRecords).map(([key, time]) => {
-      const [catKey, palier] = key.split('_')
-      const categoryData = catKey === 'all'
-        ? { id: 'all', label: 'Toutes catégories', emoji: '🌍' }
-        : (getCategoryById(catKey) || { id: catKey, label: catKey, emoji: '📚' })
-
-      return {
-        key,
-        categoryLabel: categoryData.label,
-        categoryEmoji: categoryData.emoji,
-        palier: parseInt(palier) || 0,
-        time,
-        isBestTime: bestBlitzTime && Math.abs(time - bestBlitzTime) < 0.01,
-      }
-    })
-
-    recordsArray.sort((a, b) => a.time - b.time)
-    return { records: recordsArray, bestTime: bestBlitzTime }
-  } catch {
-    return { records: [], bestTime: null }
+// Enrichit une ligne blitz_records (Supabase) avec cat label/emoji/color.
+function decorateRecord(r) {
+  const catKey = r.category_id || 'all'
+  const catData = catKey === 'all'
+    ? { id: 'all', label: 'Toutes catégories', emoji: '🌍', color: '#9CA3AF' }
+    : (getCategoryById(catKey) || { id: catKey, label: catKey, emoji: '📚', color: '#9CA3AF' })
+  return {
+    id: r.id,
+    variant: r.variant,
+    categoryId: r.category_id,
+    categoryLabel: catData.label,
+    categoryEmoji: catData.emoji,
+    categoryColor: catData.color,
+    palier: r.palier,
+    score: r.score,
+    time: r.time_seconds,
+    createdAt: r.created_at,
   }
+}
+
+const formatSecHundredths = (t) => {
+  if (t == null) return '—'
+  if (t < 60) return t.toFixed(2) + 's'
+  const m = Math.floor(t / 60)
+  const s = (t % 60).toFixed(2)
+  return `${m}:${s.padStart(5, '0')}`
 }
 
 export default function SocialPage() {
@@ -76,6 +75,7 @@ export default function SocialPage() {
   } = useDuelContext()
 
   const [showBlitzRecordsSection, setShowBlitzRecordsSection] = useState(false)
+  const [myBlitzRecords, setMyBlitzRecords] = useState([])
   const [toast, setToast] = useState(null)
   const [confirmRemove, setConfirmRemove] = useState(null)
   const [expandedFriend, setExpandedFriend] = useState(null) // friendId du ami dont on voit les défis
@@ -84,6 +84,30 @@ export default function SocialPage() {
 
   // Au mount : expire les défis > 48h et rembourse 100c créateur (idempotent)
   useEffect(() => { expirePendingChallenges().then(n => { if (n > 0) refreshDuels?.() }).catch(() => {}) }, [refreshDuels])
+
+  // Fetch records Blitz depuis Supabase + subscribe realtime (auto-refresh
+  // quand une nouvelle run est insérée par moi sur un autre device, ou par
+  // le save post-game courant).
+  useEffect(() => {
+    if (!user?.id) { setMyBlitzRecords([]); return }
+    let cancelled = false
+    const load = async () => {
+      const rows = await getMyBlitzRecords(user.id)
+      if (!cancelled) setMyBlitzRecords(rows.map(decorateRecord))
+    }
+    load()
+    const channel = supabase
+      .channel(`blitz-records-${user.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'blitz_records',
+        filter: `user_id=eq.${user.id}`,
+      }, () => load())
+      .subscribe()
+    return () => {
+      cancelled = true
+      try { supabase.removeChannel(channel) } catch {}
+    }
+  }, [user?.id])
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 
@@ -143,7 +167,16 @@ export default function SocialPage() {
     }
   }
 
-  const { records: blitzRecords } = getProcessedBlitzRecords()
+  // Split rush / speedrun — speedrun trié par temps asc, rush par score desc
+  const blitzRushRecords = myBlitzRecords
+    .filter(r => r.variant === 'rush')
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+  const blitzSpeedrunRecords = myBlitzRecords
+    .filter(r => r.variant === 'speedrun')
+    .sort((a, b) => (a.time ?? Infinity) - (b.time ?? Infinity))
+  const bestRushScore = blitzRushRecords[0]?.score || 0
+  const bestSpeedrunTime = blitzSpeedrunRecords[0]?.time ?? null
+  const blitzRecords = [...blitzRushRecords, ...blitzSpeedrunRecords]
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
@@ -549,27 +582,70 @@ export default function SocialPage() {
                 blitzRecords.length === 0 ? (
                   <p style={{ fontSize: S(12), color: '#9CA3AF', textAlign: 'center', padding: '12px 0', margin: 0, marginTop: 12 }}>Joue en Blitz pour établir tes premiers records !</p>
                 ) : (
-                  <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {blitzRecords.map(record => (
-                      <div
-                        key={record.key}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 10, padding: 10,
-                          borderRadius: 12, background: record.isBestTime ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
-                          border: record.isBestTime ? '1px solid #FFD700' : 'none',
-                        }}
-                      >
-                        <span style={{ fontSize: 18 }}>{record.categoryEmoji}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{record.categoryLabel}</span>
-                          <span style={{ fontSize: 10, color: '#9CA3AF', display: 'block' }}>{record.palier} question{record.palier !== 1 ? 's' : ''}</span>
+                  <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {/* ── Rush (score = nb bonnes) ───────────────────────── */}
+                    {blitzRushRecords.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 900, color: '#CC0000', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+                          ⚡ Rush · 60s
                         </div>
-                        <span style={{ fontSize: 16, fontWeight: 900, color: record.isBestTime ? '#FFD700' : '#FF6B1A' }}>
-                          {formatBlitzTime(record.time)}
-                        </span>
-                        {record.isBestTime && <span style={{ fontSize: 12, fontWeight: 900, color: '#FFD700' }}>👑</span>}
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: 10, padding: 10,
+                          borderRadius: 12,
+                          background: 'rgba(255,215,0,0.1)',
+                          border: '1px solid #FFD700',
+                        }}>
+                          <span style={{ fontSize: 18 }}>🏆</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>Meilleur score</span>
+                            <span style={{ fontSize: 10, color: '#9CA3AF', display: 'block' }}>bonnes réponses en 60s</span>
+                          </div>
+                          <span style={{ fontSize: 18, fontWeight: 900, color: '#FFD700', fontVariantNumeric: 'tabular-nums' }}>
+                            {bestRushScore}
+                          </span>
+                          <span style={{ fontSize: 12, fontWeight: 900, color: '#FFD700' }}>👑</span>
+                        </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* ── Speedrun (records au centième par cat + palier) ── */}
+                    {blitzSpeedrunRecords.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 900, color: '#0097A7', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+                          🚀 Speedrun · records au centième
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {blitzSpeedrunRecords.map(record => {
+                            const isBest = bestSpeedrunTime != null && record.time === bestSpeedrunTime
+                            return (
+                              <div
+                                key={record.id}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 10, padding: 10,
+                                  borderRadius: 12,
+                                  background: isBest ? 'rgba(0,229,255,0.1)' : 'rgba(255,255,255,0.05)',
+                                  border: isBest ? '1px solid #00E5FF' : '1px solid rgba(0,0,0,0.05)',
+                                }}
+                              >
+                                <span style={{ width: 10, height: 10, borderRadius: '50%', background: record.categoryColor, flexShrink: 0 }} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {record.categoryLabel}
+                                  </span>
+                                  <span style={{ fontSize: 10, color: '#9CA3AF', display: 'block' }}>
+                                    {record.palier} question{record.palier !== 1 ? 's' : ''}
+                                  </span>
+                                </div>
+                                <span style={{ fontSize: 16, fontWeight: 900, color: isBest ? '#00E5FF' : '#0097A7', fontVariantNumeric: 'tabular-nums' }}>
+                                  {formatSecHundredths(record.time)}
+                                </span>
+                                {isBest && <span style={{ fontSize: 12, fontWeight: 900, color: '#00E5FF' }}>👑</span>}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               )}

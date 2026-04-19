@@ -11,6 +11,7 @@ import { shuffle } from '../utils/shuffle'
 import { updateTrophyData, updateWtfData, readWtfData } from '../utils/storageHelper'
 import { checkBadges } from '../utils/badgeManager'
 import { audio } from '../utils/audio'
+import { saveBlitzRecord } from '../data/blitzRecordService'
 
 const BLITZ_RUSH_MIN_UNLOCKED = 5 // minimum pour lancer Rush
 const BLITZ_RUSH_POOL_SIZE = 150  // marge confortable pour 60s
@@ -87,6 +88,18 @@ export function useBlitzHandlers({
       const isNewRecord = correctCount > prevBest
       if (isNewRecord) {
         updateWtfData(wd => { wd.blitzSoloBestScore = correctCount })
+        // Cross-device : push dans profiles.flags
+        mergeFlags?.({ blitzSoloBestScore: correctCount }).catch(e =>
+          console.warn('[useBlitzHandlers] rush mergeFlags failed:', e?.message || e)
+        )
+      }
+      // Historise la run dans blitz_records (chaque partie = 1 insert)
+      if (user?.id) {
+        saveBlitzRecord({
+          userId: user.id, variant: 'rush',
+          categoryId: null, palier: null,
+          score: correctCount, timeSeconds: null,
+        })
       }
       const bestScore = Math.max(prevBest, correctCount)
       setBlitzResults({
@@ -120,6 +133,14 @@ export function useBlitzHandlers({
       mergeFlags?.({ speedrunRecords: refreshed.speedrunRecords }).catch(e =>
         console.warn('[useBlitzHandlers] speedrun mergeFlags failed:', e?.message || e)
       )
+      // Historise la run dans blitz_records
+      if (user?.id) {
+        saveBlitzRecord({
+          userId: user.id, variant: 'speedrun',
+          categoryId: selectedCategory, palier,
+          score: correctCount, timeSeconds: finalTime,
+        })
+      }
       setBlitzResults({
         variant: 'speedrun',
         correctCount,

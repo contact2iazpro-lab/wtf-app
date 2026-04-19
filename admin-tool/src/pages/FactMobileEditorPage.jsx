@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES } from '../constants/categories'
 import FactImageGenerator from '../components/FactImageGenerator'
@@ -167,7 +167,6 @@ function SectionHeader({ label, onClick, loading, textColor }) {
 export default function FactMobileEditorPage({ toast }) {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const [fact, setFact] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -180,34 +179,12 @@ export default function FactMobileEditorPage({ toast }) {
   const [genStatementsLoading, setGenStatementsLoading] = useState(false)
 
   // ── Load ────────────────────────────────────────────────────────────
-  // Calque le pattern de FactEditorPage : applique les mêmes filtres URL
-  // (categories, vip, status, pack, image) pour que prev/next navigue au sein
-  // de la liste filtrée.
+  // prev/next = voisins directs par ID (pas de filtres appliqués).
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const filterCats = searchParams.get('categories')?.split(',').filter(Boolean)
-        || (() => { try { const s = localStorage.getItem('selectedCategories'); return s ? JSON.parse(s) : [] } catch { return [] } })()
-      const filterVip = searchParams.get('vip') || 'all'
-      const filterStatus = searchParams.get('status') || 'all'
-      const filterPack = searchParams.get('pack') || 'all'
-      const filterImage = searchParams.get('image') || 'all'
-
-      function applyFilters(q) {
-        if (filterCats.length) q = q.in('category', filterCats)
-        if (filterVip === 'vip') q = q.eq('is_vip', true)
-        if (filterVip === 'non-vip') q = q.eq('is_vip', false)
-        if (filterStatus !== 'all') q = q.eq('status', filterStatus)
-        if (filterPack !== 'all') q = q.eq('pack_id', filterPack)
-        if (filterImage === 'with') q = q.not('image_url', 'is', null).neq('image_url', '')
-        if (filterImage === 'without') q = q.or('image_url.is.null,image_url.eq.')
-        return q
-      }
-
-      let prevQ = supabase.from('facts').select('id').lt('id', id).order('id', { ascending: false }).limit(1)
-      let nextQ = supabase.from('facts').select('id').gt('id', id).order('id', { ascending: true }).limit(1)
-      prevQ = applyFilters(prevQ)
-      nextQ = applyFilters(nextQ)
+      const prevQ = supabase.from('facts').select('id').lt('id', id).order('id', { ascending: false }).limit(1)
+      const nextQ = supabase.from('facts').select('id').gt('id', id).order('id', { ascending: true }).limit(1)
 
       const [
         { data, error },
@@ -229,7 +206,7 @@ export default function FactMobileEditorPage({ toast }) {
     } finally {
       setLoading(false)
     }
-  }, [id, toast, searchParams])
+  }, [id, toast])
 
   useEffect(() => { load() }, [load])
 
@@ -468,7 +445,7 @@ export default function FactMobileEditorPage({ toast }) {
             {/* Prev fact (filtres URL préservés) */}
             {prevId ? (
               <Link
-                to={`/facts-mobile/${prevId}?${searchParams.toString()}`}
+                to={`/facts-mobile/${prevId}`}
                 style={{
                   height: 30, padding: '0 8px', borderRadius: 8,
                   background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.35)',
@@ -500,7 +477,7 @@ export default function FactMobileEditorPage({ toast }) {
             {/* Next fact (filtres URL préservés) */}
             {nextId ? (
               <Link
-                to={`/facts-mobile/${nextId}?${searchParams.toString()}`}
+                to={`/facts-mobile/${nextId}`}
                 style={{
                   height: 30, padding: '0 8px', borderRadius: 8,
                   background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.35)',

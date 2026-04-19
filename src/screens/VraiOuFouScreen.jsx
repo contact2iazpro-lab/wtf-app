@@ -33,7 +33,7 @@ function lerpColor(ratio) {
 export default function VraiOuFouScreen({ onHome }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _cCoins } = usePlayerProfile()
+  const { coins: _cCoins, unlockFact, applyCurrencyDelta } = usePlayerProfile()
 
   const [seed, setSeed] = useState(0)
   const pool = useMemo(
@@ -53,15 +53,16 @@ export default function VraiOuFouScreen({ onHome }) {
   const [showReveal, setShowReveal] = useState(false)
   const [revealFact, setRevealFact] = useState(null)
 
-  // VoF est un mode "vitrine" — aucun fact n'est débloqué ici (spec CLAUDE.md).
-  // On calcule `isRevealed` depuis les f*cts déjà unlocked via d'autres modes
-  // (Quickie / Quest / Flash), lus depuis localStorage wtf_data.
+  // VoF = mode vitrine, le simple swipe ne débloque PAS le fact. Le joueur
+  // peut toutefois l'ACHETER explicitement via le bouton "Ajouter à ma
+  // collection" (50c Funny / 250c VIP — même tarif que Collection/Results).
   const alreadyUnlocked = useMemo(() => {
     try {
       const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
       return new Set(wd.unlockedFacts || [])
     } catch { return new Set() }
-  }, [index]) // recalcule à chaque carte (au cas où)
+  }, [index])
+  const [purchasedIds, setPurchasedIds] = useState(new Set())
 
   const startX = useRef(0)
   const feedbackTimer = useRef(null)
@@ -150,7 +151,33 @@ export default function VraiOuFouScreen({ onHome }) {
     else setDrag({ x: 0, active: false })
   }
 
-  // Pas de handleUnlockConfirm en VoF : mode vitrine, aucun unlock possible ici.
+  // Achat explicite du fact (bouton "Ajouter à ma collection") — même tarif
+  // que Collection/Results : 50c Funny / 250c VIP. Contrairement à Quickie,
+  // le swipe lui-même ne débloque rien — il faut cliquer ce bouton.
+  const handleBuyFact = () => {
+    if (!fact) return
+    const cost = fact.isVip ? 250 : 50
+    if (_cCoins < cost) return
+
+    applyCurrencyDelta?.({ coins: -cost }, 'unlock_fact_vof')?.catch?.(e =>
+      console.warn('[VOF] unlock currency failed:', e?.message || e)
+    )
+    unlockFact?.(fact.id, fact.category, 'unlock_fact_vof').catch(e =>
+      console.warn('[VOF] unlockFact RPC failed:', e?.message || e)
+    )
+    try {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      const unlocked = wd.unlockedFacts || []
+      if (!unlocked.includes(fact.id)) unlocked.push(fact.id)
+      wd.unlockedFacts = unlocked
+      wd.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(wd))
+      window.dispatchEvent(new Event('wtf_storage_sync'))
+    } catch { /* ignore */ }
+
+    setPurchasedIds(prev => { const n = new Set(prev); n.add(fact.id); return n })
+    audio.play?.('correct')
+  }
 
   const handleTimeout = useCallback(() => {
     if (feedback || !draw) return
@@ -238,7 +265,7 @@ export default function VraiOuFouScreen({ onHome }) {
   const dragIntensity = Math.min(Math.abs(drag.x) / SWIPE_THRESHOLD, 1)
   const swipingRight = !feedback && drag.x > 10
   const swipingLeft = !feedback && drag.x < -10
-  const isRevealed = alreadyUnlocked.has(fact?.id)
+  const isRevealed = alreadyUnlocked.has(fact?.id) || purchasedIds.has(fact?.id)
   const counterColor = correct === 0 ? VOF_RED : lerpColor(correct / pool.length)
 
   return (
@@ -361,17 +388,37 @@ export default function VraiOuFouScreen({ onHome }) {
               <FallbackImage categoryColor={catBg} />
             </div>
           )}
-          {!isRevealed && (
-            <>
-              <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
-              <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(6) }}>
-                <span style={{ fontSize: S(36), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
-                <span style={{ fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.85)', textAlign: 'center', padding: `0 ${S(16)}`, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
-                  Débloque-le en Quickie ou Quest
-                </span>
-              </div>
-            </>
-          )}
+          {!isRevealed && (() => {
+            const cost = fact?.isVip ? 250 : 50
+            const canBuy = _cCoins >= cost
+            return (
+              <>
+                <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
+                <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(8) }}>
+                  <span style={{ fontSize: S(32), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
+                  <button
+                    onClick={handleBuyFact}
+                    disabled={!canBuy}
+                    className="btn-press active:scale-95"
+                    style={{
+                      background: canBuy ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.4)',
+                      backdropFilter: 'blur(8px)',
+                      border: `2px solid ${canBuy ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)'}`,
+                      borderRadius: S(12), padding: `${S(7)} ${S(14)}`,
+                      color: canBuy ? '#ffffff' : '#9CA3AF',
+                      fontWeight: 800, fontSize: S(11),
+                      cursor: canBuy ? 'pointer' : 'not-allowed',
+                      opacity: canBuy ? 1 : 0.6,
+                      display: 'flex', alignItems: 'center', gap: S(5),
+                      textAlign: 'center', lineHeight: 1.2,
+                    }}
+                  >
+                    + Ajouter · {cost} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(12), height: S(12), display: 'inline', verticalAlign: 'middle' }} />
+                  </button>
+                </div>
+              </>
+            )
+          })()}
         </div>
         <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <CircularTimer

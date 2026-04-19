@@ -27,7 +27,7 @@ const SEGMENTS = [
   { label: '150', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 150 }, color: '#22C55E', weight: 7  }, // vert
   { label: '1',   icon: null, emoji: '🔓',                reward: { type: 'factUnlock', amount: 1 },    color: '#14B8A6', weight: 4 }, // turquoise — 1 f*ct débloqué
   { label: '2',   icon: '/assets/ui/icon-hint.png?v=2',   reward: { type: 'hints', amount: 2   }, color: '#EC4899', weight: 4  }, // fuchsia — 2 indices
-  { label: '1',   icon: null, emoji: '🎯',                reward: { type: 'freeSpin', amount: 1 },      color: '#F472B6', weight: 5 }, // rose pâle — 1 relance gratuite
+  { label: '1',   icon: '/assets/ui/emoji-roulette.png',  reward: { type: 'freeSpin', amount: 1 },      color: '#F472B6', weight: 5 }, // rose pâle — 1 relance gratuite
   { label: '300', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 300 }, color: '#EAB308', weight: 3  }, // jaune
   { label: '1',   icon: null, emoji: '🛡️',               reward: { type: 'streakFreeze', amount: 1 }, color: '#6366F1', weight: 3 }, // indigo — 1 streak freeze
   { label: '750', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 750 }, color: '#EF4444', weight: 2  }, // rouge — jackpot

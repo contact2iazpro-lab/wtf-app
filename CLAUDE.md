@@ -121,7 +121,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts
 - WTF toujours avec ! (sauf "What The F*ct")
-- Les 6 modes : **Quickie · Vrai ou Fou · Quest · Race · Blitz · Flash**
+- Les 7 modes (depuis 19/04/2026) : **Quickie · Vrai ou Fou · Quest · Race · Blitz · Flash · Multi**
 - Snack → **Quickie** (renommé 16/04/2026)
 - No Limit → **Race** (renommé 17/04/2026)
 - Cool/Hot/WTF! → **SUPPRIMÉS** (difficulté = nb QCM par mode)
@@ -177,33 +177,40 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Déblocage f*cts : Non (facts déjà connus)
 - UX : Compteur de série en gros, fond qui change de couleur, 1ère erreur = game over dramatique
 
-### 5. BLITZ — "Défie tes potes" (2 sous-modes, **format unifié best-score 19/04/2026**)
+### 5. BLITZ — "Défonce le chrono" (solo, 2 sous-modes — refonte 19/04/2026)
 
-**Format commun aux 2 sous-modes** :
+**Blitz est désormais un mode SOLO uniquement**. Le format asynchrone contre un ami migre vers le nouveau mode **Multi** (voir §7).
+
+#### 5a. Blitz Rush
 - QCM **4 choix** (1 vraie + 1 drôle + 1 proche + 1 plausible)
-- Chrono **60s DESCENDANT** (unifié Solo + Défi)
-- Erreur = **−5s** de pénalité retirée du chrono
+- Chrono **60s DESCENDANT**, erreur = **−5s** de pénalité
 - Score = **nombre de bonnes réponses** en 60s (plus = mieux)
-- Le pool de facts est large (> 60) : on enchaîne jusqu'à ce que le chrono atteigne 0
+- Pas de choix de catégorie — pool = tous les f*cts débloqués (Funny + VIP)
+- Seuil minimum : 5 f*cts unlocked
+- **Paliers visuels** en jeu : 5 / 10 / 20 / 30 / 50 / 100 bonnes (feedback progression)
+- Record local : `wtfData.blitzSoloBestScore` (nb max bonnes atteint)
 
-#### 5a. Blitz Solo
-- Indices : Aucun · Contenu : Funny + VIP débloqués
-- Gains : 0 coins · **Paliers visuels** 5 / 10 / 20 / 30 / 50 / 100 bonnes (indicateurs en jeu)
-- Record local : `bestBlitzScore` (nb bonnes max atteint en 60s)
+#### 5b. Blitz Speedrun
+- **Gate** : uniquement sur une catégorie **100% complétée** (Funny + VIP tous unlocked)
+- QCM **4 choix**, chrono **MONTANT** depuis 0s, erreur = **+5s** de pénalité
+- Score = **temps final** (plus bas = mieux)
+- Palier (nb questions) : **5 / 10 / 20 / 30 / 50 / 100** — le joueur choisit
+- Record local : `wtfData.speedrunRecords[${catId}_${palier}]` = temps en secondes
+- Persistance cross-device via `mergeFlags({ speedrunRecords })`
 
-#### 5b. Blitz Défi
-- Contenu : Funny facts (catégorie choisie par créateur)
-- Coût : **200 coins** pour créer · Gratuit pour relever · 48h expiration
-- Gains : 0 coins · Partage résultat WhatsApp
-- **Tie-break** : en cas d'égalité sur le nb de bonnes → temps de la dernière bonne réponse (plus petit = plus rapide au même score = gagnant). Si encore égalité, **créateur (P1) gagne**.
-- DB : `challenges.player1_correct/player2_correct` (nb bonnes), `player1_time/player2_time` (temps de la dernière bonne, pour tie-break). Trigger `calculate_challenge_winner` compare correct puis time.
+### 7. MULTI — "Défie tes amis" (nouveau mode 19/04/2026)
 
-#### 5c. Blitz Speedrun (ROADMAP — non implémenté)
-- **Déclencheur** : débloqué pour une catégorie **uniquement** quand le joueur a **100% des f*cts** de la catégorie (Funny + WTF) dans sa collection.
-- **Format** : chrono montant sur un set fixe de questions, score = temps final (plus bas = gagnant). Erreur = +5s de pénalité (symétrique à la logique descendante du best-score).
-- **Défi ami** : le joueur peut défier un ami qui a AUSSI débloqué 100% de cette catégorie (même conditions de départ).
-- **Restriction** : Speedrun impossible en mode "toutes catégories" (aléatoire) — uniquement par catégorie dont on maîtrise tout le contenu.
-- **Raison UX** : récompense de complétion → passage au mode "maîtrise" où on sait déjà les réponses, on joue la vitesse pure.
+**Mode dédié au défi asynchrone contre un ami** — remplace l'ancien Blitz Défi.
+Les 2 variantes Rush et Speedrun sont disponibles.
+
+- **Flow** : MultiPage (lobby) → choix variant → ami → catégorie → (palier si Speedrun) → lancement
+- **Coût** : 200 coins pour créer · gratuit pour relever · 48h expiration
+- **Speedrun Multi** : créateur doit avoir cat 100% pour proposer. Accepteur doit aussi avoir cat 100% (sinon message "défi indisponible").
+- **DB** : `challenges.variant` ENUM('rush', 'speedrun'). Trigger `calculate_challenge_winner` switch :
+  - **Rush** : plus de `correct` gagne · tie-break `time` (plus bas = plus rapide)
+  - **Speedrun** : `time` plus bas gagne (les 2 finissent le palier)
+  - Égalité complète → créateur (P1) gagne
+- **Stats / historique** : **onglet Amis** de la navbar (pas dans Multi lui-même)
 
 ### 6. FLASH — "Le rendez-vous quotidien" (ex-Hunt + Puzzle du Jour)
 - QCM **2 choix**, 5 questions, timer **15s**

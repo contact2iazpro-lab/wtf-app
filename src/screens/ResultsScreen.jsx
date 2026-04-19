@@ -558,10 +558,12 @@ export default function ResultsScreen({
                   const fc = CATEGORIES.find(c => c.id === fact.category)
                   const fcColor = fc?.color || catColor
                   const isUnlocked = globalUnlocked.has(fact.id)
+                  // En VoF : les facts répondus sont "découverts" — miniature defloutée
+                  // et click ouvre toujours le détail (bouton "Ajouter à ma collection"
+                  // à l'intérieur si pas encore débloqué).
                   const handleClick = () => {
                     audio.play?.('click')
-                    if (isUnlocked) setViewingFact(fact)
-                    else setSelectedFact({ ...fact, _locked: true, _catColor: fcColor, _catEmoji: fc?.emoji, _catLabel: fc?.label })
+                    setViewingFact({ ...fact, _isLocked: !isUnlocked })
                   }
                   return (
                     <div key={`${idx}-${fact.id}`} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
@@ -574,16 +576,15 @@ export default function ResultsScreen({
                         {fact.imageUrl ? (
                           <img src={fact.imageUrl} alt="" style={{
                             width: '100%', height: '100%', objectFit: 'cover',
-                            filter: isUnlocked ? 'none' : 'blur(4px) brightness(0.4)',
                           }} onError={e => { e.target.style.display = 'none' }} />
                         ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: isUnlocked ? 'none' : 'brightness(0.4)' }}>
-                            <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: '55%', height: '55%', objectFit: 'contain', opacity: 0.7 }} onError={e => { e.target.style.display = 'none' }} />
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: '55%', height: '55%', objectFit: 'contain', opacity: 0.85 }} onError={e => { e.target.style.display = 'none' }} />
                           </div>
                         )}
                         {!isUnlocked && (
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontSize: S(14), opacity: 0.85 }}>🔒</span>
+                          <div style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.55)', borderRadius: '50%', width: S(16), height: S(16), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: S(10), opacity: 0.9 }}>🔒</span>
                           </div>
                         )}
                         <div style={{ position: 'absolute', top: 2, right: 2, width: S(14), height: S(14), borderRadius: '50%', background: wasCorrect ? '#6BCB77' : '#E84535', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(10), fontWeight: 900, color: '#fff', lineHeight: 1 }}>
@@ -601,7 +602,7 @@ export default function ResultsScreen({
               {renderRow(right, `✅ ${right.length} Trouvé${right.length > 1 ? 's' : ''}`, '#6BCB77')}
               {renderRow(wrong, `❌ ${wrong.length} Raté${wrong.length > 1 ? 's' : ''}`, '#E84535')}
               <span style={{ fontSize: S(10), color: textOnBg, opacity: 0.7, textAlign: 'center', fontStyle: 'italic', marginTop: S(2) }}>
-                🔒 Clique un f*ct verrouillé pour le débloquer (25 <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle' }} />)
+                🔒 Clique un f*ct pour le détail · ajoute à ta collection pour 50 <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle' }} />
               </span>
             </div>
           )
@@ -853,9 +854,17 @@ export default function ResultsScreen({
 
       {/* Google banner supprimé — utilise ConnectBanner unique */}
 
-      {/* Détail d'un f*ct débloqué (overlay, reste sur ResultsScreen) */}
+      {/* Détail d'un f*ct (débloqué ou découvert en VoF). Si _isLocked,
+          le bouton "Ajouter à ma collection" déclenche le modal d'achat. */}
       {viewingFact && (
-        <FactDetailView fact={viewingFact} onClose={() => setViewingFact(null)} />
+        <FactDetailView
+          fact={viewingFact}
+          onClose={() => setViewingFact(null)}
+          onUnlockRequest={(f) => {
+            const fc = CATEGORIES.find(c => c.id === f.category)
+            setSelectedFact({ ...f, _locked: true, _catColor: fc?.color, _catEmoji: fc?.emoji, _catLabel: fc?.label })
+          }}
+        />
       )}
     </div>
   )

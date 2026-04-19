@@ -5,12 +5,16 @@ import { stripEmojis } from '../utils/stripEmojis'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
-export default function FactDetailView({ fact, onClose }) {
+export default function FactDetailView({ fact, onClose, onUnlockRequest = null }) {
   const [showLightbox, setShowLightbox] = useState(false)
   const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
   const catGradient = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
   const isVip = !!fact.isVip
+  // _isLocked: fact visible en détail mais pas encore dans la collection
+  // (flow VoF post-session). Affiche "Ajouter à ma collection" au lieu de Partager.
+  const isLocked = !!fact._isLocked
+  const unlockCost = isVip ? 250 : 50
 
   // Partage Funny uniquement (pas les VIP). Message : teaser + fact détaillé.
   const shortAnswer = fact.shortAnswer || fact.options?.[fact.correctIndex] || ''
@@ -152,8 +156,25 @@ export default function FactDetailView({ fact, onClose }) {
             </div>
           </div>
 
-          {/* Bouton partager — Funny uniquement (VIP non partageables) */}
-          {!isVip && (
+          {/* Bouton en bas : "Ajouter à ma collection" si locked, sinon "Partager" (Funny only) */}
+          {isLocked ? (
+            <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
+              <button
+                onClick={() => { onUnlockRequest?.(fact); onClose?.() }}
+                className="active:scale-95 transition-all"
+                style={{
+                  width: '100%', height: S(44), borderRadius: S(14),
+                  fontWeight: 900, fontSize: S(13), color: '#1a1a2e',
+                  border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                  boxShadow: '0 4px 16px rgba(255,165,0,0.4)',
+                }}
+              >
+                + Ajouter à ma collection · {unlockCost} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
+              </button>
+            </div>
+          ) : !isVip && (
             <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
               <button
                 onClick={share}

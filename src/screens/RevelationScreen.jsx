@@ -652,16 +652,19 @@ export default function RevelationScreen({
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
-          <button
-            onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
-            style={{
-              position: 'absolute', top: S(8), right: S(8), zIndex: 10,
-              width: 36, height: 36, borderRadius: '50%',
-              background: 'rgba(0,0,0,0.5)', border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', fontSize: 18,
-            }}
-          >🔍</button>
+          {/* Loupe masquée en VoF (mode vitrine — pas de zoom) */}
+          {!isVofMode && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+              style={{
+                position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'rgba(0,0,0,0.5)', border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: 18,
+              }}
+            >🔍</button>
+          )}
           {/* Holo shimmer — toujours visible (pokemon glow) */}
           <div style={{
             position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
@@ -681,15 +684,17 @@ export default function RevelationScreen({
               animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
             }} />
           </div>
-          {/* Stamp Unlocked — toujours visible */}
-          <div style={{
-            position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
-            background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6),
-            padding: `${S(3)} ${S(8)}`,
-            pointerEvents: 'none',
-          }}>
-            <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
-          </div>
+          {/* Stamp Unlocked — masqué en VoF (fact non débloqué même si bonne réponse) */}
+          {!isVofMode && (
+            <div style={{
+              position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
+              background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6),
+              padding: `${S(3)} ${S(8)}`,
+              pointerEvents: 'none',
+            }}>
+              <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
+            </div>
+          )}
         </div>
       </div>
 

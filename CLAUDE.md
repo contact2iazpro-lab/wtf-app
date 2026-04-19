@@ -205,10 +205,10 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Record local : `wtfData.blitzSoloBestScore` (nb max bonnes atteint)
 
 #### 5b. Blitz Speedrun
-- **Gate** : uniquement sur une catégorie **100% complétée** (Funny + VIP tous unlocked)
+- **Gate** (maj 19/04/2026) : **≥10 f*cts débloqués** dans la catégorie (aligné Rush)
 - QCM **4 choix**, chrono **MONTANT** depuis 0s, erreur = **+5s** de pénalité
 - Score = **temps final** (plus bas = mieux)
-- Palier (nb questions) : **5 / 10 / 20 / 30 / 50 / 100** — le joueur choisit
+- Palier (nb questions) : **5 / 10 / 20 / 30 / 50 / 100** — le joueur choisit (limité par le nb f*cts débloqués)
 - Record local : `wtfData.speedrunRecords[${catId}_${palier}]` = temps en secondes
 - Persistance cross-device via `mergeFlags({ speedrunRecords })`
 
@@ -221,7 +221,7 @@ Les 2 variantes Rush et Speedrun sont disponibles.
 - **Économie (19/04/2026)** : **100 coins misés par chaque joueur** (total pot = 200c). **Gagnant reçoit 150c** (profit net +50c, perdant −100c, house +50c). Sink net ≈ 50c par défi terminé.
 - **Égalité parfaite** (même score + même temps au centième) : `winner_id = NULL`, **chacun récupère ses 100c** (pas de gain ni de perte).
 - **Expiration (48h)** : créateur **remboursé 100c**, défi passe en `status='expired'`. RPC `expire_pending_challenges()` idempotente appelée au mount de MultiPage / SocialPage.
-- **Speedrun Multi** : créateur doit avoir cat 100% pour proposer. Accepteur doit aussi avoir cat 100% (sinon message "défi indisponible").
+- **Speedrun Multi** : créateur doit avoir ≥10 f*cts dans la cat pour proposer (maj 19/04/2026). Accepteur doit aussi avoir ≥10 f*cts dans la cat (sinon message d'erreur "pas assez de f*cts").
 - **DB** : `challenges.variant` ENUM('rush', 'speedrun'). Trigger `calculate_challenge_winner` switch :
   - **Rush** : plus de `correct` gagne · tie-break `time` (plus bas = plus rapide)
   - **Speedrun** : `time` plus bas gagne

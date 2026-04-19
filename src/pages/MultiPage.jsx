@@ -14,7 +14,7 @@ const DEFI_COST = 100 // mise créateur (accepteur mise 100 de son côté, gagna
 /**
  * MultiPage — Mode Multi (défier un ami en Rush ou Speedrun)
  * Flow :
- *  1. Choix variant (Rush / Speedrun — gate cat 100% pour Speedrun)
+ *  1. Choix variant (Rush / Speedrun — gate ≥10 f*cts dans la cat)
  *  2. Choix ami (liste des friends acceptés)
  *  3. Choix catégorie (en Rush : toutes dispo. En Speedrun : seulement 100%)
  *  4. Si Speedrun : choix palier (5/10/20/30/50/100)
@@ -51,11 +51,11 @@ export default function MultiPage() {
       .sort((a, b) => (b.isComplete - a.isComplete) || b.unlocked - a.unlocked)
   }, [allFacts, unlockedFacts])
 
-  const completedCats = categories.filter(c => c.isComplete)
-  const RUSH_MIN_FACTS = 10 // aligné avec solo (19/04)
-  const availableCats = variant === 'speedrun'
-    ? completedCats
-    : categories.filter(c => c.unlocked >= RUSH_MIN_FACTS)
+  // Gate unifiée Rush + Speedrun : cat doit avoir ≥10 f*cts débloqués
+  // (aligné 19/04/2026 — plus besoin d'avoir 100% pour Speedrun)
+  const RUSH_MIN_FACTS = 10
+  const availableCats = categories.filter(c => c.unlocked >= RUSH_MIN_FACTS)
+  const completedCats = availableCats // compat legacy toggle Speedrun
 
   const selectedCat = categoryId ? categories.find(c => c.id === categoryId) : null
   const maxPalier = selectedCat?.unlocked || 0
@@ -158,7 +158,7 @@ export default function MultiPage() {
           >
             Speedrun
             <div style={{ fontSize: 9, fontWeight: 600, opacity: 0.85, marginTop: 2 }}>
-              {completedCats.length === 0 ? '🔒 catégorie 100%' : 'le + rapide gagne'}
+              {completedCats.length === 0 ? `🔒 ${RUSH_MIN_FACTS} f*cts min` : 'le + rapide gagne'}
             </div>
           </button>
         </div>
@@ -217,13 +217,11 @@ export default function MultiPage() {
         {opponentId && (
           <>
             <div style={{ fontSize: 12, fontWeight: 900, color: 'rgba(255,255,255,0.7)', padding: '8px 4px 6px', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Catégorie {variant === 'speedrun' && '(100% requis)'}
+              Catégorie {variant === 'speedrun' && `(≥${RUSH_MIN_FACTS} f*cts)`}
             </div>
             {availableCats.length === 0 ? (
               <div style={{ padding: '16px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', fontSize: 13, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>
-                {variant === 'speedrun'
-                  ? '🔒 Aucune catégorie 100% complétée.'
-                  : `Débloque au moins ${RUSH_MIN_FACTS} f*cts dans une catégorie.`}
+                {`Débloque au moins ${RUSH_MIN_FACTS} f*cts dans une catégorie.`}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>

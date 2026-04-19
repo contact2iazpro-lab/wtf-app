@@ -42,10 +42,12 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
       })
   }, [allFacts, effectiveUnlocked])
 
-  const completedCats = categories.filter(c => c.isComplete)
-  // Gate Rush : cat doit avoir ≥10 f*cts débloqués (ou aléatoire si totalUnlocked ≥10)
+  // Gate unifiée Rush + Speedrun : cat doit avoir ≥10 f*cts débloqués
+  // (aligné Rush/Speedrun 19/04/2026 — plus besoin d'avoir 100% pour Speedrun)
   const RUSH_MIN_FACTS = 10
-  const rushCats = categories.filter(c => c.unlocked >= RUSH_MIN_FACTS)
+  const availableCats = categories.filter(c => c.unlocked >= RUSH_MIN_FACTS)
+  const rushCats = availableCats
+  const speedrunCats = availableCats
 
   // Records Speedrun par (cat, palier) — stockés dans wtfData.speedrunRecords[`${catId}_${palier}`] = temps en s
   const speedrunRecords = useMemo(() => {
@@ -151,23 +153,23 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
           </button>
           <button
             onClick={() => { audio.play('click'); setVariant('speedrun') }}
-            disabled={completedCats.length === 0}
+            disabled={speedrunCats.length === 0}
             style={{
               padding: `${S(12)} 0`, borderRadius: S(12),
               background: variant === 'speedrun'
                 ? 'linear-gradient(135deg, #8B0000, #500000)'
-                : completedCats.length === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)',
+                : speedrunCats.length === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)',
               border: variant === 'speedrun' ? '2.5px solid white' : '2.5px solid transparent',
-              color: completedCats.length === 0 ? 'rgba(255,255,255,0.3)' : 'white',
+              color: speedrunCats.length === 0 ? 'rgba(255,255,255,0.3)' : 'white',
               fontWeight: 900, fontSize: S(14),
-              cursor: completedCats.length === 0 ? 'not-allowed' : 'pointer',
+              cursor: speedrunCats.length === 0 ? 'not-allowed' : 'pointer',
               fontFamily: 'Nunito, sans-serif', transition: 'all 0.2s ease',
               position: 'relative',
             }}
           >
             Speedrun
             <div style={{ fontSize: S(9), fontWeight: 600, opacity: 0.85, marginTop: 2 }}>
-              {completedCats.length === 0 ? '🔒 catégorie 100%' : 'le + rapide gagne'}
+              {speedrunCats.length === 0 ? `🔒 ${RUSH_MIN_FACTS} f*cts min` : 'le + rapide gagne'}
             </div>
           </button>
         </div>
@@ -331,17 +333,17 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
         </div>
       ) : (
         <>
-          {/* Liste catégories (Speedrun) — toutes affichées, celles non-100% grisées */}
+          {/* Liste catégories (Speedrun) — ≥10 f*cts débloqués (aligné Rush 19/04) */}
           <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(12)} ${S(8)}`, WebkitOverflowScrolling: 'touch' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
-              {completedCats.length === 0 && (
+              {speedrunCats.length === 0 && (
                 <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.5)', fontSize: S(13), fontWeight: 700 }}>
-                  🔒 Complète 100% d'une catégorie pour débloquer le Speedrun.
+                  🔒 Débloque {RUSH_MIN_FACTS} f*cts dans une catégorie pour le Speedrun.
                 </div>
               )}
               {categories.map(cat => {
                 const isSelected = selectedCatId === cat.id
-                const available = cat.isComplete
+                const available = cat.unlocked >= RUSH_MIN_FACTS
                 return (
                   <button
                     key={cat.id}
@@ -373,7 +375,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
                       </div>
                     </div>
                     <span style={{ fontWeight: 800, fontSize: S(11), color: available ? '#FFD700' : 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
-                      {available ? '✓ 100%' : `${Math.round((cat.unlocked / (cat.total || 1)) * 100)}%`}
+                      {cat.isComplete ? '✓ 100%' : `${Math.round((cat.unlocked / (cat.total || 1)) * 100)}%`}
                     </span>
                   </button>
                 )

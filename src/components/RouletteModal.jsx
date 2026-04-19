@@ -15,20 +15,22 @@ const S = (px) => `calc(${px}px * var(--scale))`
 // Nouvelles récompenses : +1 énergie, 1 f*ct débloqué, relance gratuite, streak freeze.
 // Couleurs : 8 distinctes classiques + 4 nouvelles (cyan/turquoise/rose/indigo)
 // Icône par segment — coins.png uniquement pour les rewards de type 'coins'.
-// Les autres utilisent une icône dédiée ou aucune (le label emoji suffit).
+// Energy = emoji-lightning.png. Les 3 segments sans asset PNG (factUnlock,
+// freeSpin, streakFreeze) utilisent un `emoji` rendu via ctx.fillText en
+// lieu et place de l'icône — le label devient le nombre du gain (1).
 const SEGMENTS = [
-  { label: '20',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 20  }, color: '#9CA3AF', weight: 22 }, // gris
-  { label: '50',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 50  }, color: '#F97316', weight: 18 }, // orange
-  { label: '1',   icon: '/assets/ui/icon-hint.png?v=2', reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 14 }, // violet
-  { label: '100', icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 100 }, color: '#3B82F6', weight: 10 }, // bleu
-  { label: '+1',  icon: '/assets/ui/emoji-lightning.png', reward: { type: 'energy', amount: 1 }, color: '#06B6D4', weight: 8 }, // cyan — énergie
-  { label: '150', icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 150 }, color: '#22C55E', weight: 7  }, // vert
-  { label: '🔓',  icon: null,                           reward: { type: 'factUnlock', amount: 1 }, color: '#14B8A6', weight: 4 }, // turquoise — fact
-  { label: '2',   icon: '/assets/ui/icon-hint.png?v=2', reward: { type: 'hints', amount: 2   }, color: '#EC4899', weight: 4  }, // fuchsia
-  { label: '🎯',  icon: null,                           reward: { type: 'freeSpin', amount: 1 }, color: '#F472B6', weight: 5 }, // rose pâle — relance
-  { label: '300', icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 300 }, color: '#EAB308', weight: 3  }, // jaune
-  { label: '🛡️', icon: null,                           reward: { type: 'streakFreeze', amount: 1 }, color: '#6366F1', weight: 3 }, // indigo — streak freeze
-  { label: '750', icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 750 }, color: '#EF4444', weight: 2  }, // rouge — jackpot
+  { label: '20',  icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 20  }, color: '#9CA3AF', weight: 22 }, // gris
+  { label: '50',  icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 50  }, color: '#F97316', weight: 18 }, // orange
+  { label: '1',   icon: '/assets/ui/icon-hint.png?v=2',   reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 14 }, // violet — 1 indice
+  { label: '100', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 100 }, color: '#3B82F6', weight: 10 }, // bleu
+  { label: '1',   icon: '/assets/ui/emoji-lightning.png', reward: { type: 'energy', amount: 1 },  color: '#06B6D4', weight: 8  }, // cyan — 1 énergie
+  { label: '150', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 150 }, color: '#22C55E', weight: 7  }, // vert
+  { label: '1',   icon: null, emoji: '🔓',                reward: { type: 'factUnlock', amount: 1 },    color: '#14B8A6', weight: 4 }, // turquoise — 1 f*ct débloqué
+  { label: '2',   icon: '/assets/ui/icon-hint.png?v=2',   reward: { type: 'hints', amount: 2   }, color: '#EC4899', weight: 4  }, // fuchsia — 2 indices
+  { label: '1',   icon: null, emoji: '🎯',                reward: { type: 'freeSpin', amount: 1 },      color: '#F472B6', weight: 5 }, // rose pâle — 1 relance gratuite
+  { label: '300', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 300 }, color: '#EAB308', weight: 3  }, // jaune
+  { label: '1',   icon: null, emoji: '🛡️',               reward: { type: 'streakFreeze', amount: 1 }, color: '#6366F1', weight: 3 }, // indigo — 1 streak freeze
+  { label: '750', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 750 }, color: '#EF4444', weight: 2  }, // rouge — jackpot
 ]
 
 const TOTAL_WEIGHT = SEGMENTS.reduce((sum, s) => sum + s.weight, 0)
@@ -110,7 +112,7 @@ export default function RouletteModal({ onClose, scale }) {
         ctx.translate(center, center)
         ctx.rotate(midAngle)
 
-        // Icône PNG si chargée (null → pas d'icône, seul le label s'affiche)
+        // Icône PNG si disponible, sinon emoji rendu en texte, sinon rien.
         const img = seg.icon ? imagesRef.current[seg.icon] : null
         const iconSize = 20 // réduit de 28 → 20 (spec 19/04/2026)
         const iconX = radius * 0.58
@@ -119,6 +121,15 @@ export default function RouletteModal({ onClose, scale }) {
           ctx.translate(iconX, 0)
           ctx.rotate(-midAngle)
           ctx.drawImage(img, -iconSize / 2, -iconSize / 2, iconSize, iconSize)
+          ctx.restore()
+        } else if (seg.emoji) {
+          ctx.save()
+          ctx.translate(iconX, 0)
+          ctx.rotate(-midAngle)
+          ctx.font = 'bold 20px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(seg.emoji, 0, 1)
           ctx.restore()
         }
 

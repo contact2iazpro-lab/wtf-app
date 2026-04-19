@@ -139,6 +139,7 @@ export default function FactMobileEditorPage({ toast }) {
   const [dirty, setDirty] = useState(false)
   const [prevId, setPrevId] = useState(null)
   const [nextId, setNextId] = useState(null)
+  const [zoomOpen, setZoomOpen] = useState(false)
 
   // ── Load ────────────────────────────────────────────────────────────
   // Calque le pattern de FactEditorPage : applique les mêmes filtres URL
@@ -491,6 +492,7 @@ export default function FactMobileEditorPage({ toast }) {
 
           {/* Image du fact — active */}
           <div style={{
+            position: 'relative',
             marginBottom: 12,
             borderRadius: 10,
             overflow: 'hidden',
@@ -503,12 +505,33 @@ export default function FactMobileEditorPage({ toast }) {
             justifyContent: 'center',
           }}>
             {fact.image_url ? (
-              <img
-                src={fact.image_url}
-                alt="Fact"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                onError={e => { e.target.style.display = 'none' }}
-              />
+              <>
+                <img
+                  src={fact.image_url}
+                  alt="Fact"
+                  onClick={() => setZoomOpen(true)}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
+                  onError={e => { e.target.style.display = 'none' }}
+                />
+                {/* Loupe — zoom fullscreen */}
+                <button
+                  onClick={() => setZoomOpen(true)}
+                  title="Agrandir l'image"
+                  style={{
+                    position: 'absolute', top: 8, right: 8,
+                    width: 32, height: 32, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.55)', border: '1.5px solid rgba(255,255,255,0.4)',
+                    backdropFilter: 'blur(4px)',
+                    color: '#fff', fontSize: 14, fontWeight: 900,
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                    padding: 0,
+                  }}
+                >
+                  🔍
+                </button>
+              </>
             ) : (
               <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: 12 }}>
                 Pas d'image
@@ -545,6 +568,46 @@ export default function FactMobileEditorPage({ toast }) {
         >
           {saving ? '⟳ Sauvegarde…' : dirty ? '💾 Sauvegarder' : '✓ À jour'}
         </button>
+
+        {/* ══ Modal zoom image ══════════════════════════════════════════ */}
+        {zoomOpen && fact.image_url && (
+          <div
+            onClick={() => setZoomOpen(false)}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.92)',
+              zIndex: 9999,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 20,
+              cursor: 'zoom-out',
+            }}
+          >
+            <img
+              src={fact.image_url}
+              alt=""
+              onClick={e => e.stopPropagation()}
+              style={{
+                maxWidth: '95vw', maxHeight: '95vh',
+                objectFit: 'contain',
+                borderRadius: 8,
+                boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
+              }}
+            />
+            <button
+              onClick={() => setZoomOpen(false)}
+              style={{
+                position: 'absolute', top: 16, right: 16,
+                width: 40, height: 40, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: '#fff', fontSize: 18, fontWeight: 900,
+                cursor: 'pointer',
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

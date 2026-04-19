@@ -14,19 +14,21 @@ const S = (px) => `calc(${px}px * var(--scale))`
 // Total weight = 100. EV = 85.4 coins/spin. Sink net = 14.6 coins (14.6%).
 // Nouvelles récompenses : +1 énergie, 1 f*ct débloqué, relance gratuite, streak freeze.
 // Couleurs : 8 distinctes classiques + 4 nouvelles (cyan/turquoise/rose/indigo)
+// Icône par segment — coins.png uniquement pour les rewards de type 'coins'.
+// Les autres utilisent une icône dédiée ou aucune (le label emoji suffit).
 const SEGMENTS = [
-  { label: '20',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 20  }, color: '#9CA3AF', weight: 22 }, // gris
-  { label: '50',  icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 50  }, color: '#F97316', weight: 18 }, // orange
-  { label: '1',   icon: '/assets/ui/icon-hint.png?v=2',  reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 14 }, // violet
-  { label: '100', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 100 }, color: '#3B82F6', weight: 10 }, // bleu
-  { label: '+1', icon: '/assets/ui/icon-coins.png', reward: { type: 'energy', amount: 1   }, color: '#06B6D4', weight: 8  }, // cyan — énergie
-  { label: '150', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 150 }, color: '#22C55E', weight: 7  }, // vert
-  { label: '🔓',  icon: '/assets/ui/icon-coins.png', reward: { type: 'factUnlock', amount: 1 }, color: '#14B8A6', weight: 4  }, // turquoise — fact
-  { label: '2',   icon: '/assets/ui/icon-hint.png?v=2',  reward: { type: 'hints', amount: 2   }, color: '#EC4899', weight: 4  }, // fuchsia
-  { label: '🎯',  icon: '/assets/ui/icon-coins.png', reward: { type: 'freeSpin', amount: 1 }, color: '#F472B6', weight: 5  }, // rose pâle — relance
-  { label: '300', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 300 }, color: '#EAB308', weight: 3  }, // jaune
-  { label: '🛡️', icon: '/assets/ui/icon-coins.png', reward: { type: 'streakFreeze', amount: 1 }, color: '#6366F1', weight: 3  }, // indigo — streak freeze
-  { label: '750', icon: '/assets/ui/icon-coins.png', reward: { type: 'coins', amount: 750 }, color: '#EF4444', weight: 2  }, // rouge — jackpot
+  { label: '20',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 20  }, color: '#9CA3AF', weight: 22 }, // gris
+  { label: '50',  icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 50  }, color: '#F97316', weight: 18 }, // orange
+  { label: '1',   icon: '/assets/ui/icon-hint.png?v=2', reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 14 }, // violet
+  { label: '100', icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 100 }, color: '#3B82F6', weight: 10 }, // bleu
+  { label: '+1',  icon: '/assets/ui/emoji-lightning.png', reward: { type: 'energy', amount: 1 }, color: '#06B6D4', weight: 8 }, // cyan — énergie
+  { label: '150', icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 150 }, color: '#22C55E', weight: 7  }, // vert
+  { label: '🔓',  icon: null,                           reward: { type: 'factUnlock', amount: 1 }, color: '#14B8A6', weight: 4 }, // turquoise — fact
+  { label: '2',   icon: '/assets/ui/icon-hint.png?v=2', reward: { type: 'hints', amount: 2   }, color: '#EC4899', weight: 4  }, // fuchsia
+  { label: '🎯',  icon: null,                           reward: { type: 'freeSpin', amount: 1 }, color: '#F472B6', weight: 5 }, // rose pâle — relance
+  { label: '300', icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 300 }, color: '#EAB308', weight: 3  }, // jaune
+  { label: '🛡️', icon: null,                           reward: { type: 'streakFreeze', amount: 1 }, color: '#6366F1', weight: 3 }, // indigo — streak freeze
+  { label: '750', icon: '/assets/ui/icon-coins.png',    reward: { type: 'coins', amount: 750 }, color: '#EF4444', weight: 2  }, // rouge — jackpot
 ]
 
 const TOTAL_WEIGHT = SEGMENTS.reduce((sum, s) => sum + s.weight, 0)
@@ -68,6 +70,7 @@ export default function RouletteModal({ onClose, scale }) {
   const [rotation, setRotation] = useState(0)
   const [spinData, setSpinData] = useState(getSpinData)
   const [notEnough, setNotEnough] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false) // confirmation avant spin (19/04/2026)
   const canvasRef = useRef(null)
   const tickIntervalRef = useRef(null)
   const imagesRef = useRef({})
@@ -107,14 +110,14 @@ export default function RouletteModal({ onClose, scale }) {
         ctx.translate(center, center)
         ctx.rotate(midAngle)
 
-        // Icône PNG si chargée, sinon fallback texte
-        const img = imagesRef.current[seg.icon]
-        const iconSize = 28
+        // Icône PNG si chargée (null → pas d'icône, seul le label s'affiche)
+        const img = seg.icon ? imagesRef.current[seg.icon] : null
+        const iconSize = 20 // réduit de 28 → 20 (spec 19/04/2026)
         const iconX = radius * 0.58
         if (img && img.complete && img.naturalWidth > 0) {
           ctx.save()
           ctx.translate(iconX, 0)
-          ctx.rotate(-midAngle) // garder l'icône droite
+          ctx.rotate(-midAngle)
           ctx.drawImage(img, -iconSize / 2, -iconSize / 2, iconSize, iconSize)
           ctx.restore()
         }
@@ -147,8 +150,9 @@ export default function RouletteModal({ onClose, scale }) {
       ctx.stroke()
     }
 
-    // Précharger toutes les icônes uniques
-    const uniqueIcons = [...new Set(SEGMENTS.map(s => s.icon))]
+    // Précharger toutes les icônes uniques (filtre les null — segments sans icône)
+    const uniqueIcons = [...new Set(SEGMENTS.map(s => s.icon).filter(Boolean))]
+    if (uniqueIcons.length === 0) { drawWheel(); return }
     let loadedCount = 0
     uniqueIcons.forEach(src => {
       if (imagesRef.current[src]) { loadedCount++; if (loadedCount === uniqueIcons.length) drawWheel(); return }
@@ -333,9 +337,17 @@ export default function RouletteModal({ onClose, scale }) {
           </div>
         )}
 
-        {/* Bouton spin */}
+        {/* Bouton spin — affiche une confirmation avant de lancer (évite clics accidentels) */}
         <button
-          onClick={handleSpin}
+          onClick={() => {
+            if (spinning) return
+            if (!isFree && (coins ?? 0) < EXTRA_SPIN_COST) {
+              setNotEnough(true)
+              setTimeout(() => setNotEnough(false), 2000)
+              return
+            }
+            setShowConfirm(true)
+          }}
           disabled={spinning}
           style={{
             width: '100%', padding: '14px 0', borderRadius: 14, fontWeight: 900, fontSize: 16,
@@ -349,6 +361,62 @@ export default function RouletteModal({ onClose, scale }) {
         >
           {spinning ? 'En cours...' : isFree ? 'Spin gratuit !' : `Spin (${EXTRA_SPIN_COST} coins)`}
         </button>
+
+        {/* Modal de confirmation avant spin */}
+        {showConfirm && !spinning && (
+          <div
+            onClick={() => setShowConfirm(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 10000, padding: 20, backdropFilter: 'blur(4px)',
+            }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: '#fff', borderRadius: 20, padding: '24px 20px',
+                maxWidth: 320, width: '100%', textAlign: 'center',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                fontFamily: 'Nunito, sans-serif',
+              }}
+            >
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🎰</div>
+              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>
+                Lancer la roue ?
+              </h3>
+              <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 20px', lineHeight: 1.5 }}>
+                {isFree
+                  ? 'C\'est ton spin gratuit du jour — prêt ?'
+                  : `${EXTRA_SPIN_COST} coins seront débités. Prêt ?`}
+              </p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  onClick={() => setShowConfirm(false)}
+                  style={{
+                    flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14,
+                    border: '1px solid #E5E7EB', background: '#F3F4F6', color: '#6B7280',
+                    cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={() => { setShowConfirm(false); handleSpin() }}
+                  style={{
+                    flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 900, fontSize: 14,
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: '#fff',
+                    cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+                    boxShadow: '0 4px 12px rgba(255,107,26,0.4)',
+                  }}
+                >
+                  C'est parti !
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
 
         {/* Fermer */}

@@ -146,7 +146,7 @@ function SectionHeader({ label, onClick, loading, textColor }) {
       <button
         onClick={onClick}
         disabled={loading}
-        title={`Régénérer ${label.toLowerCase()} via IA`}
+        title={`Compléter les ${label.toLowerCase()} vides via IA (préserve les valeurs existantes)`}
         style={{
           height: 22, padding: '0 8px', borderRadius: 6,
           background: loading ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.35)',
@@ -157,7 +157,7 @@ function SectionHeader({ label, onClick, loading, textColor }) {
           opacity: loading ? 0.7 : 1,
         }}
       >
-        {loading ? '⟳ Génération…' : '✨ Régénérer'}
+        {loading ? '⟳ Génération…' : '✨ Compléter'}
       </button>
     </div>
   )
@@ -271,11 +271,19 @@ export default function FactMobileEditorPage({ toast }) {
     }
   }
 
-  // ── Régénération solo : indices (complete-hints chirurgical) ───────
+  // ── Helper : un champ est "vide" si null/undefined ou que des espaces
+  const isEmpty = (v) => !v || !String(v).trim()
+
+  // ── Complétion solo : indices — remplit UNIQUEMENT les vides ───────
   async function regenHints() {
     if (genHintsLoading || !fact) return
     if (!fact.question || !fact.short_answer) {
       toast?.('Question ou réponse manquante', 'warn')
+      return
+    }
+    const emptyKeys = ['hint1', 'hint2', 'hint3', 'hint4'].filter(k => isEmpty(fact[k]))
+    if (emptyKeys.length === 0) {
+      toast?.('Tous les indices sont déjà remplis')
       return
     }
     setGenHintsLoading(true)
@@ -289,27 +297,42 @@ export default function FactMobileEditorPage({ toast }) {
         hint3: fact.hint3, hint4: fact.hint4,
       })
       const updated = res.updated || {}
-      const keys = Object.keys(updated)
-      if (keys.length === 0) {
-        toast?.('Indices déjà valides — rien à changer')
+      // Filtre strict : on n'écrit QUE sur les champs locaux encore vides.
+      const filtered = {}
+      for (const k of emptyKeys) {
+        if (updated[k] && !isEmpty(updated[k])) filtered[k] = updated[k]
+      }
+      const n = Object.keys(filtered).length
+      if (n === 0) {
+        toast?.('Rien à compléter (l\'IA n\'a rien renvoyé pour les champs vides)')
         return
       }
-      setFact(prev => ({ ...prev, ...updated }))
+      setFact(prev => ({ ...prev, ...filtered }))
       setDirty(true)
-      toast?.(`✓ ${keys.length} indice(s) régénéré(s) — pense à sauvegarder`)
+      toast?.(`✓ ${n} indice(s) complété(s) — pense à sauvegarder`)
     } catch (err) {
       console.error('[regenHints]', err)
-      toast?.('Erreur génération indices : ' + err.message, 'error')
+      toast?.('Erreur complétion indices : ' + err.message, 'error')
     } finally {
       setGenHintsLoading(false)
     }
   }
 
-  // ── Régénération solo : 8 mauvaises réponses (enrich-fact) ─────────
+  // ── Complétion solo : 8 réponses — remplit UNIQUEMENT les vides ────
   async function regenAnswers() {
     if (genAnswersLoading || !fact) return
     if (!fact.question || !fact.short_answer) {
       toast?.('Question ou réponse manquante', 'warn')
+      return
+    }
+    const ANSWER_KEYS = [
+      'funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3',
+      'close_wrong_1', 'close_wrong_2',
+      'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
+    ]
+    const emptyKeys = ANSWER_KEYS.filter(k => isEmpty(fact[k]))
+    if (emptyKeys.length === 0) {
+      toast?.('Toutes les réponses sont déjà remplies')
       return
     }
     setGenAnswersLoading(true)
@@ -321,28 +344,28 @@ export default function FactMobileEditorPage({ toast }) {
         category: fact.category,
         hint1: fact.hint1, hint2: fact.hint2,
       })
-      const updates = {
-        funny_wrong_1:     res.funny_wrong_1,
-        funny_wrong_2:     res.funny_wrong_2,
-        funny_wrong_3:     res.funny_wrong_3,
-        close_wrong_1:     res.close_wrong_1,
-        close_wrong_2:     res.close_wrong_2,
-        plausible_wrong_1: res.plausible_wrong_1,
-        plausible_wrong_2: res.plausible_wrong_2,
-        plausible_wrong_3: res.plausible_wrong_3,
+      // Filtre strict : on n'écrit QUE sur les champs locaux encore vides.
+      const filtered = {}
+      for (const k of emptyKeys) {
+        if (res[k] && !isEmpty(res[k])) filtered[k] = res[k]
       }
-      setFact(prev => ({ ...prev, ...updates }))
+      const n = Object.keys(filtered).length
+      if (n === 0) {
+        toast?.('Rien à compléter (l\'IA n\'a rien renvoyé pour les champs vides)')
+        return
+      }
+      setFact(prev => ({ ...prev, ...filtered }))
       setDirty(true)
-      toast?.('✓ 8 réponses régénérées — pense à sauvegarder')
+      toast?.(`✓ ${n} réponse(s) complétée(s) — pense à sauvegarder`)
     } catch (err) {
       console.error('[regenAnswers]', err)
-      toast?.('Erreur génération réponses : ' + err.message, 'error')
+      toast?.('Erreur complétion réponses : ' + err.message, 'error')
     } finally {
       setGenAnswersLoading(false)
     }
   }
 
-  // ── Régénération solo : 3 affirmations VoF (generateStatements) ────
+  // ── Complétion solo : 3 affirmations — remplit UNIQUEMENT les vides
   async function regenStatements() {
     if (genStatementsLoading || !fact) return
     if (!fact.question || !fact.short_answer) {
@@ -350,18 +373,34 @@ export default function FactMobileEditorPage({ toast }) {
       return
     }
     if (!fact.funny_wrong_1 || !fact.plausible_wrong_1) {
-      toast?.('Il faut au moins 1 funny_wrong et 1 plausible_wrong. Régénère d\'abord les réponses.', 'warn')
+      toast?.('Il faut au moins 1 funny_wrong et 1 plausible_wrong. Complète d\'abord les réponses.', 'warn')
+      return
+    }
+    const STATEMENT_KEYS = ['statement_true', 'statement_false_funny', 'statement_false_plausible']
+    const emptyKeys = STATEMENT_KEYS.filter(k => isEmpty(fact[k]))
+    if (emptyKeys.length === 0) {
+      toast?.('Toutes les affirmations sont déjà remplies')
       return
     }
     setGenStatementsLoading(true)
     try {
       const res = await generateStatementsForFact(fact)
-      setFact(prev => ({ ...prev, ...res }))
+      // Filtre strict : on n'écrit QUE sur les champs locaux encore vides.
+      const filtered = {}
+      for (const k of emptyKeys) {
+        if (res[k] && !isEmpty(res[k])) filtered[k] = res[k]
+      }
+      const n = Object.keys(filtered).length
+      if (n === 0) {
+        toast?.('Rien à compléter (l\'IA n\'a rien renvoyé pour les champs vides)')
+        return
+      }
+      setFact(prev => ({ ...prev, ...filtered }))
       setDirty(true)
-      toast?.('✓ 3 affirmations régénérées — pense à sauvegarder')
+      toast?.(`✓ ${n} affirmation(s) complétée(s) — pense à sauvegarder`)
     } catch (err) {
       console.error('[regenStatements]', err)
-      toast?.('Erreur affirmations : ' + err.message, 'error')
+      toast?.('Erreur complétion affirmations : ' + err.message, 'error')
     } finally {
       setGenStatementsLoading(false)
     }

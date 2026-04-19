@@ -285,11 +285,11 @@ export default function RaceScreen({ onHome }) {
             <div style={{ marginBottom: 18 }}>
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: `repeat(${Math.min(Math.max(runFacts.length, 1), 12)}, 1fr)`,
+                gridTemplateColumns: 'repeat(10, 1fr)',
                 gap: 4,
                 width: '100%',
               }}>
-                {runFacts.slice(-12).map(({ fact, ok }, i) => {
+                {runFacts.map(({ fact, ok }, i) => {
                   const fc = CATEGORIES.find(c => c.id === fact.category)
                   const fcColor = fc?.color || '#23D5D5'
                   return (

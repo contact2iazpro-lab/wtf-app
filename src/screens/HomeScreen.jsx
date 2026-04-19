@@ -24,9 +24,9 @@ import NewBadgeModal from '../components/home/NewBadgeModal'
 import BatteryIcon from '../components/home/BatteryIcon'
 
 const HOME_BG_COLOR = [
-  'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(107,45,142,0.55) 0%, transparent 65%)',
-  'radial-gradient(ellipse 135% 115% at 50% 50%, transparent 38%, rgba(0,0,0,0.55) 100%)',
-  '#4A3A9C',
+  'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(107,45,142,0.40) 0%, transparent 65%)',
+  'radial-gradient(ellipse 135% 115% at 50% 50%, transparent 38%, rgba(0,0,0,0.50) 100%)',
+  '#3B5BA5',
 ].join(', ')
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -361,7 +361,7 @@ export default function HomeScreen({
           className="btn-press"
           style={{
             backgroundColor: 'transparent',
-            backgroundImage: "url('/assets/modes/home-button.png')",
+            backgroundImage: "url('/assets/modes/home-button.png?v=2')",
             backgroundSize: '100% 100%',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',

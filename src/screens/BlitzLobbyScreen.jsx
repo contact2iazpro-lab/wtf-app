@@ -125,46 +125,6 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
         </h1>
       </div>
 
-      {/* Mes records (Rush + top 3 Speedrun au centième) */}
-      {(bestBlitzScore > 0 || topRecords.length > 0) && (
-        <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(10)}` }}>
-          <div style={{
-            background: 'rgba(0,0,0,0.25)', borderRadius: S(12),
-            border: '1px solid rgba(255,215,0,0.25)',
-            padding: `${S(8)} ${S(12)}`,
-          }}>
-            <div style={{ fontSize: S(10), fontWeight: 900, color: '#FFD700', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: S(6) }}>
-              🏆 Mes records
-            </div>
-            {bestBlitzScore > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: S(12), padding: `${S(3)} 0` }}>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 700 }}>⚡ Rush · 60s</span>
-                <span style={{ color: '#FFD700', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>
-                  {bestBlitzScore} bonne{bestBlitzScore > 1 ? 's' : ''}
-                </span>
-              </div>
-            )}
-            {topRecords.map(r => (
-              <div key={r.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: S(12), padding: `${S(3)} 0` }}>
-                <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: S(6), minWidth: 0 }}>
-                  <span style={{ width: S(8), height: S(8), borderRadius: '50%', background: r.catColor, flexShrink: 0 }} />
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.catLabel}</span>
-                  <span style={{ opacity: 0.55, fontSize: S(10), flexShrink: 0 }}>· {r.palier}q</span>
-                </span>
-                <span style={{ color: '#00E5FF', fontWeight: 900, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
-                  {r.time.toFixed(2)}s
-                </span>
-              </div>
-            ))}
-            {bestBlitzScore === 0 && topRecords.length === 0 && (
-              <div style={{ fontSize: S(11), color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: `${S(4)} 0` }}>
-                Pas encore de record
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Toggle Rush / Speedrun */}
       <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(10)}` }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8) }}>
@@ -206,6 +166,41 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
           </button>
         </div>
       </div>
+
+      {/* Mes records (Rush + top 3 Speedrun au centième) — SOUS les cards */}
+      {(bestBlitzScore > 0 || topRecords.length > 0) && (
+        <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(10)}` }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.25)', borderRadius: S(12),
+            border: '1px solid rgba(255,215,0,0.25)',
+            padding: `${S(8)} ${S(12)}`,
+          }}>
+            <div style={{ fontSize: S(10), fontWeight: 900, color: '#FFD700', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: S(6) }}>
+              🏆 Mes records
+            </div>
+            {bestBlitzScore > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: S(12), padding: `${S(3)} 0` }}>
+                <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 700 }}>⚡ Rush · 60s</span>
+                <span style={{ color: '#FFD700', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>
+                  {bestBlitzScore} bonne{bestBlitzScore > 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
+            {topRecords.map(r => (
+              <div key={r.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: S(12), padding: `${S(3)} 0` }}>
+                <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: S(6), minWidth: 0 }}>
+                  <span style={{ width: S(8), height: S(8), borderRadius: '50%', background: r.catColor, flexShrink: 0 }} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.catLabel}</span>
+                  <span style={{ opacity: 0.55, fontSize: S(10), flexShrink: 0 }}>· {r.palier}q</span>
+                </span>
+                <span style={{ color: '#00E5FF', fontWeight: 900, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                  {r.time.toFixed(2)}s
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Record contextuel */}
       <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${S(16)} ${S(8)}` }}>

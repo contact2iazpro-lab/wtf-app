@@ -433,7 +433,7 @@ export default function ResultsScreen({
         {/* Badge mode + difficulté */}
         {isQuickie ? (
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0 }}>
-            <img src="/assets/modes/quickie.png?v=2" alt="Quickie" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
+            <img src="/assets/modes/icon-quickie.png?v=2" alt="Quickie" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
             <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>Résultats — Mode Quickie</span>
           </div>
         ) : isVof ? (

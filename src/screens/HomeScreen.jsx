@@ -355,30 +355,31 @@ export default function HomeScreen({
           </div>
         </div>
 
-        {/* Bouton Partie rapide (bg home-button.png + icon-quickie + texte blanc) */}
+        {/* Bouton Partie rapide — ratio natif du PNG (790 × 388 ≈ 2.036:1)
+            icon-quickie + texte orange overlay à l'intérieur */}
         <button
           onClick={() => nav('quickie_random')}
           className="btn-press"
           style={{
             backgroundColor: 'transparent',
             backgroundImage: "url('/assets/modes/home-button.png?v=4')",
-            backgroundSize: '100% 100%',
+            backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
             border: 'none', padding: 0,
-            width: '70%', maxWidth: S(260), aspectRatio: '260 / 56',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8),
+            width: '70%', maxWidth: S(260), aspectRatio: '790 / 388',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(10),
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
           }}
         >
           <img
             src="/assets/modes/icon-quickie.png?v=2"
             alt=""
-            style={{ width: S(24), height: S(24), objectFit: 'contain', flexShrink: 0 }}
+            style={{ width: S(36), height: S(36), objectFit: 'contain', flexShrink: 0 }}
           />
           <span style={{
-            fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(14),
-            color: '#ffffff', letterSpacing: '0.08em', textTransform: 'uppercase',
+            fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(16),
+            color: '#FFA500', letterSpacing: '0.08em', textTransform: 'uppercase',
             textShadow: '0 2px 4px rgba(0,0,0,0.35)',
           }}>
             Partie rapide

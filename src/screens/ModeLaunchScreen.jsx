@@ -26,8 +26,9 @@ const FLASH_DARK = '#AD1457'
 const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi', 'quest', 'flash']
 
 function renderText(text) {
-  const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*)/g)
+  const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*|\n)/g)
   return parts.map((part, i) => {
+    if (part === '\n') return <br key={i} />
     const redMatch = part.match(/^\{\{red\}\}(.*?)\{\{\/red\}\}$/)
     if (redMatch) return <span key={i} style={{ color: '#E84535' }}>{redMatch[1]}</span>
     const boldMatch = part.match(/^\*\*(.*?)\*\*$/)
@@ -140,6 +141,10 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
         rowGap: isStyled ? S(4) : S(5),
       }}>
         {(rules || []).map((rule, i) => {
+          // Spacer : séparation visuelle entre groupes de règles (ex : Blitz communes vs variants)
+          if (rule.spacer) {
+            return <div key={`sp-${i}`} style={{ height: S(10) }} aria-hidden />
+          }
           let iconColor = undefined
           if (modeId === 'quickie') {
             iconColor = rule.icon === 'icon:energy' ? '#22C55E' : '#FFD700'

@@ -568,6 +568,9 @@ export default function BlitzResultsScreen({
             }}>
               <div style={{ color: '#22C55E', fontWeight: 900, marginBottom: 2 }}>✅ Défi envoyé !</div>
               Tu seras notifié dès que ton ami aura relevé le défi (ou l'aura refusé). Il a 48 h pour y jouer.
+              <div style={{ marginTop: S(6), fontSize: S(11), opacity: 0.85 }}>
+                💰 En cas de refus ou d'expiration des 48 h, tes <strong>100 coins sont remboursés</strong> automatiquement.
+              </div>
             </div>
           )}
           {challengeError && (

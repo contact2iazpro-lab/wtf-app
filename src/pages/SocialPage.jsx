@@ -105,9 +105,17 @@ export default function SocialPage() {
         // Refusé : declined_by a été ajouté (size passe de 0 à >0)
         const oldLen = Array.isArray(oldRow.declined_by) ? oldRow.declined_by.length : 0
         const newLen = Array.isArray(newRow.declined_by) ? newRow.declined_by.length : 0
-        if (newLen > oldLen && newRow.status === 'pending') {
+        // Refusé (via decline_round qui passe aussi status → expired + refund 100c créateur)
+        if (newLen > oldLen) {
           const name = newRow.player2_name || 'Ton ami'
-          showToast(`✗ ${name} a refusé ton défi`)
+          showToast(`✗ ${name} a refusé ton défi · +100 coins remboursés`)
+          window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
+        }
+        // Expiration 48h sans refus explicite : même toast refund
+        if (oldRow.status === 'pending' && newRow.status === 'expired'
+            && Array.isArray(newRow.declined_by) && newRow.declined_by.length === (Array.isArray(oldRow.declined_by) ? oldRow.declined_by.length : 0)) {
+          showToast(`⏰ Défi expiré · +100 coins remboursés`)
+          window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
         }
       })
       .subscribe()

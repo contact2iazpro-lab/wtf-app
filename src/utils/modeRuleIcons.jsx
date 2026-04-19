@@ -30,6 +30,7 @@ export const MULTI_GOLD = '#FFD700'
 export const QUEST_ORANGE = '#FF6B1A'
 export const QUEST_DARK = '#D94A10'
 export const BLITZ_RED = '#FF4444'
+export const FLASH_PINK = '#E91E63'
 
 const EMOJI_IMG = {
   '🎰': '/assets/ui/emoji-roulette.png?v=2',
@@ -80,12 +81,17 @@ export function PenaltyIcon({ size = 64, color = '#ffffff', accent = null, text 
   )
 }
 
-export function TargetIcon({ size = 64, color = '#ffffff' }) {
+export function TargetIcon({ size = 64, color = '#ffffff', questionMark = false, questionColor = null }) {
+  // questionMark : remplace le cercle central par un "?" (ex : Quest boss, Flash set)
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
       <circle cx="50" cy="50" r="24" stroke={color} strokeWidth="5" fill="none" />
-      <circle cx="50" cy="50" r="10" fill={color} />
+      {questionMark ? (
+        <text x="50" y="64" textAnchor="middle" fill={questionColor || color} fontSize="34" fontWeight="900" fontFamily="Nunito, sans-serif">?</text>
+      ) : (
+        <circle cx="50" cy="50" r="10" fill={color} />
+      )}
     </svg>
   )
 }
@@ -100,16 +106,20 @@ export function StepsIcon({ size = 64, color = '#ffffff' }) {
   )
 }
 
-export function SwordsIcon({ size = 64, color = '#ffffff', accent = null }) {
-  const blade = accent || color
+export function SwordsIcon({ size = 64, color = '#ffffff', accent = null, accent2 = null }) {
+  // color = épée 1 (principale), accent2 = épée 2 (si fournie, sinon accent ou color)
+  const blade1 = color
+  const blade2 = accent2 || accent || color
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <line x1="18" y1="18" x2="70" y2="70" stroke={blade} strokeWidth="8" strokeLinecap="round" />
-      <circle cx="14" cy="14" r="5" fill={color} />
-      <line x1="72" y1="72" x2="86" y2="86" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <line x1="82" y1="18" x2="30" y2="70" stroke={blade} strokeWidth="8" strokeLinecap="round" />
-      <circle cx="86" cy="14" r="5" fill={color} />
-      <line x1="28" y1="72" x2="14" y2="86" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      {/* Épée 1 — haut-gauche → bas-droite */}
+      <line x1="18" y1="18" x2="70" y2="70" stroke={blade1} strokeWidth="8" strokeLinecap="round" />
+      <circle cx="14" cy="14" r="5" fill={blade1} />
+      <line x1="72" y1="72" x2="86" y2="86" stroke={blade1} strokeWidth="5" strokeLinecap="round" />
+      {/* Épée 2 — haut-droite → bas-gauche */}
+      <line x1="82" y1="18" x2="30" y2="70" stroke={blade2} strokeWidth="8" strokeLinecap="round" />
+      <circle cx="86" cy="14" r="5" fill={blade2} />
+      <line x1="28" y1="72" x2="14" y2="86" stroke={blade2} strokeWidth="5" strokeLinecap="round" />
       <circle cx="50" cy="50" r="4" fill={accent || color} />
     </svg>
   )
@@ -131,40 +141,67 @@ export const COMPONENT_ICONS = {
   'icon:qcm': (size, color, modeId) => {
     if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
     if (modeId === 'blitz') return <MultipleChoiceIcon size={size} color={BLITZ_RED} accent={QUICKIE_GOLD} />
-    if (modeId === 'multi') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
+    // Multi : lignes 1 & 3 violettes, ligne 2 sélectionnée en gold
+    if (modeId === 'multi') return <MultipleChoiceIcon size={size} color={MULTI_VIOLET} accent={MULTI_GOLD} />
+    // Quest : lignes 1 & 3 orange Quest, ligne 2 gold
+    if (modeId === 'quest') return <MultipleChoiceIcon size={size} color={QUEST_ORANGE} accent={QUICKIE_GOLD} />
+    // Flash : lignes 1 & 3 pink, ligne 2 gold
+    if (modeId === 'flash') return <MultipleChoiceIcon size={size} color={FLASH_PINK} accent={QUICKIE_GOLD} />
     return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:set': (size, color, modeId) => {
     if (modeId === 'vrai_ou_fou') return <QuestionTargetIcon size={size} color={'#ffffff'} accent={VOF_GREEN} questionColor={VOF_RED} />
+    // Flash : "?" en gold
+    if (modeId === 'flash') return <QuestionTargetIcon size={size} color={FLASH_PINK} accent={FLASH_PINK} questionColor={QUICKIE_GOLD} />
+    // Quest : "?" en gold
+    if (modeId === 'quest') return <QuestionTargetIcon size={size} color={QUEST_ORANGE} accent={QUEST_ORANGE} questionColor={QUICKIE_GOLD} />
     return <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />
   },
   'icon:timer': (size, color, modeId) => {
     if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
     if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
     if (modeId === 'blitz') return <TimerIcon size={size} color={BLITZ_RED} accent={QUICKIE_GOLD} />
-    if (modeId === 'multi') return <TimerIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
+    // Multi : cercle blanc, intérieur (aiguilles + bouton) violet
+    if (modeId === 'multi') return <TimerIcon size={size} color={'#ffffff'} accent={MULTI_VIOLET} />
+    // Quest : cercle orange Quest, aiguilles/bouton en gold
+    if (modeId === 'quest') return <TimerIcon size={size} color={QUEST_ORANGE} accent={QUICKIE_GOLD} />
+    // Flash : cercle pink, aiguilles/bouton en gold
+    if (modeId === 'flash') return <TimerIcon size={size} color={FLASH_PINK} accent={QUICKIE_GOLD} />
     return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
   'icon:star': (size) => <img src="/assets/ui/wtf-star.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
-  'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
+  'icon:energy': (size, color, modeId) => {
+    // Quest : toujours vert (énergie asset) — pas d'alternance avec couleur du mode
+    if (modeId === 'quest') return <EnergyIcon size={size} color={'#22C55E'} />
+    return <EnergyIcon size={size} color={color || '#22C55E'} />
+  },
   'icon:hint': (size) => <img src="/assets/ui/icon-hint.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
   'icon:coins': (size) => <img src="/assets/ui/icon-coins.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
   'picto:infinity': (size, color) => <InfinityIcon size={size} color={color || '#6BCB77'} />,
   'picto:swipe': (size) => <SwipeArrowsIcon size={size} />,
-  'picto:share': (size) => <ShareIcon size={size} />,
+  'picto:share': (size, color, modeId) => {
+    if (modeId === 'multi') return <ShareIcon size={size} color={MULTI_VIOLET} />
+    return <ShareIcon size={size} color={color} />
+  },
   'picto:no-hint': (size, color) => <NoHintIcon size={size} color={color || '#ffffff'} />,
   'picto:free': (size, color) => <FreeIcon size={size} color={color || '#ffffff'} />,
   'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
   'picto:penalty': (size, color, modeId) => {
     if (modeId === 'blitz') return <PenaltyIcon size={size} color={BLITZ_RED} accent={BLITZ_RED} text="−5s" />
-    if (modeId === 'multi') return <PenaltyIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} text="±5s" />
+    // Multi : cercle + texte "±5s" en violet
+    if (modeId === 'multi') return <PenaltyIcon size={size} color={MULTI_VIOLET} accent={MULTI_VIOLET} text="±5s" />
     return <PenaltyIcon size={size} color={color || '#ffffff'} />
   },
-  'picto:target': (size, color) => <TargetIcon size={size} color={color || '#ffffff'} />,
+  'picto:target': (size, color, modeId) => {
+    // Quest : cible avec "?" gold à l'intérieur (sur contour orange Quest)
+    if (modeId === 'quest') return <TargetIcon size={size} color={QUEST_ORANGE} questionMark questionColor={QUICKIE_GOLD} />
+    return <TargetIcon size={size} color={color || '#ffffff'} />
+  },
   'picto:steps': (size, color) => <StepsIcon size={size} color={color || '#ffffff'} />,
   'picto:swords': (size, color, modeId) => {
-    if (modeId === 'multi') return <SwordsIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
+    // Multi : une épée bleue + une épée rouge (lutte 2 joueurs)
+    if (modeId === 'multi') return <SwordsIcon size={size} color={'#3B82F6'} accent2={'#EF4444'} accent={MULTI_GOLD} />
     return <SwordsIcon size={size} color={color || '#ffffff'} />
   },
   'picto:survival': (size, color) => <SurvivalIcon size={size} color={color || '#ffffff'} />,

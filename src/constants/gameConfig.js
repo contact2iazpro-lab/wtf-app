@@ -117,13 +117,13 @@ export const MODE_CONFIGS = {
   quest: {
     modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png', color: '#FF6B1A',
     rules: [
-      { icon: 'icon:energy', text: '**Coût** : 1 énergie par bloc' },
-      { icon: 'icon:set', text: '**Bloc** : 5 Funny + 1 boss VIP' },
+      { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
+      { icon: 'icon:set', text: '**Bloc** : 5 fun facts + 1 WTF!' },
       { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
       { icon: 'icon:timer', text: '**Timer** : 20s / question' },
       { icon: 'icon:hint', text: '**Indices** : 2 / question' },
-      { icon: 'icon:star', text: '**Boss** : 3 / 5 bonnes → VIP' },
-      { icon: 'icon:coins', text: '**Gains** : 20c / bonne · +100c / boss' },
+      { icon: 'picto:target', text: '**Boss** : WTF! f*act ! toutes les 5 questions' },
+      { icon: 'icon:coins', text: '**Gains** : +20c / q. · +100c / WTF!' },
     ],
   },
   race: {
@@ -145,10 +145,12 @@ export const MODE_CONFIGS = {
       { icon: 'icon:hint', text: '**Indices** : Aucun' },
       { icon: 'icon:coins', text: '**Coût** : Gratuit illimité' },
       { icon: 'picto:steps', text: '**Paliers** : 5, 10, 20, 30, 50, 100' },
-      // ── Rush (mode par défaut) ──
-      { icon: 'icon:timer', text: '**Rush** : 60s descendant · erreur = −5s · score = bonnes réponses' },
-      // ── Speedrun (cat 100%) ──
-      { icon: 'picto:survival', text: '**Speedrun** : chrono montant · erreur = +5s · score = temps final · cat 100% requise' },
+      // ── Séparateur visuel entre règles communes et variants ──
+      { spacer: true },
+      // ── Rush ──
+      { icon: 'icon:timer', text: '**Rush** : Répondez au plus grand nombre de questions\n(−5s / mauvaise réponse)' },
+      // ── Speedrun ──
+      { icon: 'picto:survival', text: '**Speedrun** : Répondez à un set de questions\n(+5s / mauvaise réponse)' },
     ],
   },
   multi: {
@@ -159,7 +161,7 @@ export const MODE_CONFIGS = {
       { icon: 'icon:timer', text: '**Chrono** : 60s (Rush) · libre (Speedrun)' },
       { icon: 'picto:penalty', text: '**Pénalité** : ±5 s par erreur' },
       { icon: 'icon:coins', text: '**Mise** : 100 Coins chacun · +150 au gagnant' },
-      { icon: 'picto:share', text: '**Social** : défi asynchrone · 48 h pour relever' },
+      { icon: 'picto:share', text: '**Social** : 48 h pour relever le défi' },
     ],
   },
   flash: {
@@ -169,9 +171,9 @@ export const MODE_CONFIGS = {
       { icon: 'icon:set', text: '**Set** : 5 questions / set' },
       { icon: 'icon:qcm', text: '**QCM** : 2 / question' },
       { icon: 'icon:timer', text: '**Timer** : 15s / question' },
-      { icon: 'icon:hint', text: '**Indices** : Aucun (Lun-Sam) · 2 max (Dim)' },
+      { icon: 'icon:hint', text: '**Indices** : Aucun · 2 / WTF!' },
       { icon: 'picto:target', text: '**Lun-Sam** : thème du jour · **Dim** : Hunt VIP' },
-      { icon: 'icon:coins', text: '**Gains** : 30 Coins (Lun-Sam) · 1 VIP débloqué (Dim)' },
+      { icon: 'icon:coins', text: '**Gains** : +30c / jour · 1 WTF! débloqué / sem.' },
     ],
   },
 }

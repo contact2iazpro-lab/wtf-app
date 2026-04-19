@@ -237,11 +237,13 @@ const CHAPTERS = [
 
 // Bold + {{red}} markdown renderer
 function renderText(text) {
-  const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*)/g)
+  const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*|\n)/g)
   return parts.map((p, i) => {
+    if (p === '\n') return <br key={i} />
     const redMatch = p.match(/^\{\{red\}\}(.*?)\{\{\/red\}\}$/)
     if (redMatch) return <span key={i} style={{ color: '#E84535' }}>{redMatch[1]}</span>
-    if (i % 2 === 1 && p.startsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>
+    const boldMatch = p.match(/^\*\*(.*?)\*\*$/)
+    if (boldMatch) return <strong key={i}>{boldMatch[1]}</strong>
     return p
   })
 }
@@ -391,6 +393,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
             {/* Rules items */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: STYLED_MODE_IDS.includes(chapter.id) ? 4 : 6, flexShrink: 0 }}>
               {(chapter.content || []).map((item, i) => {
+                if (item.spacer) return <div key={`sp-${i}`} style={{ height: 10 }} aria-hidden />
                 const isStyledMode = STYLED_MODE_IDS.includes(chapter.id)
                 let iconColor = undefined
                 if (chapter.id === 'quickie') {

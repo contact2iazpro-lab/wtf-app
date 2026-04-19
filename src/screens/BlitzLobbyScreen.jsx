@@ -231,21 +231,8 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
             <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
               Pas encore de record sur ce palier — go !
             </div>
-          ) : (
-            <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
-              Choisis une catégorie 100% + un palier
-            </div>
-          )
+          ) : null
         )}
-      </div>
-
-      {/* Description */}
-      <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${S(20)} ${S(12)}` }}>
-        <p style={{ fontSize: S(12), fontWeight: 600, color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.4 }}>
-          {variant === 'rush'
-            ? 'Réponds au max de questions en 60 secondes. Erreur = −5s. Enchaîne sans filet !'
-            : 'Termine N questions le plus vite possible. Chrono montant. Erreur = +5s de pénalité. Catégorie 100% requise.'}
-        </p>
       </div>
 
       {/* Contenu principal (varie selon variant) */}

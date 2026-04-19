@@ -458,14 +458,14 @@ export default function QuestionScreen({
             textAlign: 'center',
             animation: 'vipSurprisePop 2.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
           }}>
-            <div style={{ fontSize: S(48), marginBottom: S(4) }}>✨</div>
+            <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(56), height: S(56), objectFit: 'contain', marginBottom: S(6), filter: 'drop-shadow(0 0 16px rgba(255,215,0,0.8))' }} />
             <div style={{
-              fontSize: S(32), fontWeight: 900, letterSpacing: '0.08em',
+              fontSize: S(28), fontWeight: 900, letterSpacing: '0.06em',
               color: '#FFD700',
               textShadow: '0 0 24px rgba(255,215,0,0.8), 0 2px 8px rgba(0,0,0,0.5)',
               textTransform: 'uppercase',
             }}>
-              Bonus VIP
+              Bonus f*ct WTF!
             </div>
             <div style={{
               fontSize: S(13), fontWeight: 800, marginTop: S(6),
@@ -502,12 +502,12 @@ export default function QuestionScreen({
         {/* Mode label (variante texte gold si VIP surprise, même dimensions) */}
         {isVipSurprise ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6), animation: 'vipBadgePulse 1.6s ease-in-out infinite', borderRadius: S(999) }}>
-            <span style={{ fontSize: S(18), lineHeight: 1 }}>⭐</span>
+            <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />
             <span style={{
               fontSize: S(11), fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase',
               color: '#FFD700', textShadow: '0 1px 3px rgba(0,0,0,0.4)',
             }}>
-              Bonus VIP
+              Bonus f*ct WTF!
             </span>
           </div>
         ) : modeLabel && (

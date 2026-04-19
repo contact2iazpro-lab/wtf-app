@@ -129,9 +129,9 @@ export default function App() {
     if (!pendingDuel) return
 
     if (pendingDuel.mode === 'create') {
-      // Défi Multi coûte 200 coins (rush et speedrun)
-      if ((profileCoins ?? 0) < 200) {
-        setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: 'Il te faut 200 coins pour lancer un défi !' })
+      // Défi Multi : créateur mise 100c (accepteur mise 100c à l'acceptation · gagnant +150c)
+      if ((profileCoins ?? 0) < 100) {
+        setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: 'Il te faut 100 coins pour lancer un défi !' })
         clearPendingDuel()
         return
       }

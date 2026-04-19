@@ -229,7 +229,9 @@ export function useBlitzHandlers({
         const duelVariant = pendingDuel?.variant === 'speedrun' ? 'speedrun' : 'rush'
         // RPC atomique : 1 seul round-trip serveur, debit 200 coins + upsert
         // duel + insert challenge en 1 txn. Plus besoin de timeout/race/fire-forget.
-        applyCurrencyDelta?.({ coins: -200 }, 'challenge_create')?.catch?.(e =>
+        // 100c débité atomiquement côté RPC create_duel_challenge (vs 200c avant —
+        // l'accepteur paie les 100c restants au moment de relever le défi).
+        applyCurrencyDelta?.({ coins: -100 }, 'challenge_create')?.catch?.(e =>
           console.warn('[useBlitzHandlers] challenge cost RPC failed:', e?.message || e)
         )
         import('../data/duelService')

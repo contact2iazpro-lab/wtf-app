@@ -240,24 +240,35 @@ export async function createDuelChallenge({
  * Complète un round (appelé quand player2 joue son Blitz en relevant le défi).
  * Le trigger SQL auto-calcule winner + met à jour duels stats.
  */
-export async function completeDuelRound({ roundId, playerTime, playerCorrect, playerId, playerName }) {
-  const { data, error } = await supabase
-    .from('challenges')
-    .update({
-      player2_id: playerId,
-      player2_name: playerName,
-      player2_time: playerTime,
-      player2_correct: playerCorrect,
-      status: 'completed',
-    })
-    .eq('id', roundId)
-    .select()
-    .single()
+export async function completeDuelRound({ roundId, playerTime, playerCorrect, playerId: _playerId, playerName }) {
+  // Passe par la RPC atomique `complete_duel_round` : debit 100c accepteur +
+  // update challenge + trigger winner + credit 150c winner (ou refund 100c
+  // chacun si égalité parfaite). Tout en 1 transaction.
+  const { data, error } = await supabase.rpc('complete_duel_round', {
+    p_challenge_id: roundId,
+    p_player_time: playerTime,
+    p_player_correct: playerCorrect,
+    p_player_name: playerName,
+  })
   if (error) {
-    console.error('[duelService] completeDuelRound error:', error.message)
+    console.error('[duelService] complete_duel_round RPC error:', error.message)
     throw error
   }
   return data
+}
+
+/**
+ * Marque tous les challenges pending dont expires_at < NOW() comme 'expired'
+ * et rembourse les 100c misés au créateur. Idempotent — peut être appelé
+ * sans risque à chaque mount de SocialPage / MultiPage.
+ */
+export async function expirePendingChallenges() {
+  const { data, error } = await supabase.rpc('expire_pending_challenges')
+  if (error) {
+    console.warn('[duelService] expire_pending_challenges failed:', error.message)
+    return 0
+  }
+  return data || 0
 }
 
 /**

@@ -9,6 +9,9 @@ import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
 import { useDuelContext } from '../features/duels/context/DuelContext'
 import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
+import { usePlayerProfile } from '../hooks/usePlayerProfile'
+
+const ACCEPT_COST = 100 // mise accepteur (créateur a déjà misé 100 à la création)
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -26,6 +29,7 @@ export default function ChallengeScreen() {
   const scale = useScale()
   const { user, isConnected, signInWithGoogle } = useAuth()
   const { startAcceptDefi } = useDuelContext()
+  const { coins: playerCoins } = usePlayerProfile()
 
   const [challenge, setChallenge] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -100,11 +104,13 @@ export default function ChallengeScreen() {
   }, [isCompleted, user, challenge])
 
   const handleAcceptChallenge = () => {
-    // Gate minimum : il faut au moins 5 f*cts (palier Blitz minimum, CLAUDE.md).
-    // Si playerFacts.length < question_count mais >= 5, on joue en mode
-    // "adapté" (le défi tourne sur le nb de f*cts dispo). La gate ancienne
-    // `!hasEnoughFacts` bloquait ce cas et laissait le bouton sans effet.
     if (!user || !challenge || playerFacts.length < 5) return
+    // Guard client : 100c requis pour relever (le RPC complete_duel_round
+    // fait aussi le guard serveur, mais on veut bloquer avant de jouer).
+    if ((playerCoins ?? 0) < ACCEPT_COST) {
+      alert(`Il te faut ${ACCEPT_COST} coins pour relever ce défi.`)
+      return
+    }
     audio.play('click')
 
     // Prepare facts for the Blitz

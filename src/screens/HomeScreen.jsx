@@ -351,7 +351,7 @@ export default function HomeScreen({
           {/* Ligne 2 : Blitz · Multi */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: S(48) }}>
             <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} sizeOverride={72} />
-            <ModeIcon emoji="⚔️" name="Multi" color="#FFD700" bgColor="linear-gradient(135deg, #FF1744, #FFD700)" onClick={() => nav('multi')} sizeOverride={72} />
+            <ModeIcon icon="/assets/modes/multi.png" name="Multi" color="#6B2D8E" onClick={() => nav('multi')} sizeOverride={72} />
           </div>
         </div>
 

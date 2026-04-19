@@ -50,9 +50,10 @@ export function useNavigationHandlers({
       case 'flash':        handleStartFlashSession(); break
       case 'vrai_ou_fou':  setScreen(SCREENS.VRAI_OU_FOU); break
       case 'race':         setScreen(SCREENS.RACE); break
+      case 'multi':        navigate('/multi'); break
       default: break
     }
-  }, [handleStartFlashSession])
+  }, [handleStartFlashSession, navigate])
 
   const handleLaunchStart = useCallback(() => {
     launchModeDestination(launchMode)
@@ -108,7 +109,7 @@ export function useNavigationHandlers({
         showOrSkipLaunch('vrai_ou_fou')
         break
       case 'multi':
-        navigate('/multi')
+        showOrSkipLaunch('multi')
         break
       default: break
     }

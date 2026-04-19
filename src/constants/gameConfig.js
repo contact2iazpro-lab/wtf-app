@@ -137,14 +137,25 @@ export const MODE_CONFIGS = {
     ],
   },
   blitz: {
-    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défie tes potes', emoji: '⚡', icon: '/assets/modes/icon-blitz.png', color: '#FF4444',
+    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défonce le chrono', emoji: '⚡', icon: '/assets/modes/icon-blitz.png', color: '#FF4444',
     rules: [
       { icon: 'icon:timer', text: '**Chrono** : 60s descendant' },
       { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
       { icon: 'icon:hint', text: '**Indices** : Aucun' },
       { icon: 'picto:penalty', text: '**Pénalité** : −5 secondes par erreur' },
-      { icon: 'icon:coins', text: '**Coût** : Solo gratuit · Défi 200 coins' },
+      { icon: 'icon:coins', text: '**Coût** : Gratuit · bats ton record' },
       { icon: 'picto:steps', text: '**Paliers** : 5, 10, 20, 30, 50, 100 questions' },
+    ],
+  },
+  multi: {
+    modeId: 'multi', modeName: 'Multi', subtitle: 'Défie tes amis', emoji: '⚔️', icon: '/assets/modes/icon-multi.png', color: '#6B2D8E',
+    rules: [
+      { icon: 'picto:swords', text: '**Mode** : Rush ou Speedrun' },
+      { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
+      { icon: 'icon:timer', text: '**Chrono** : 60s (Rush) · libre (Speedrun)' },
+      { icon: 'picto:penalty', text: '**Pénalité** : ±5 s par erreur' },
+      { icon: 'icon:coins', text: '**Mise** : 100 Coins chacun · +150 au gagnant' },
+      { icon: 'picto:share', text: '**Social** : défi asynchrone · 48 h pour relever' },
     ],
   },
   flash: {

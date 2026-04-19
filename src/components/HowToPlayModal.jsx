@@ -84,6 +84,21 @@ function StepsIcon({ size = 64, color = '#ffffff' }) {
   )
 }
 
+function SwordsIcon({ size = 64, color = '#ffffff', accent = null }) {
+  const blade = accent || color
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="18" y1="18" x2="70" y2="70" stroke={blade} strokeWidth="8" strokeLinecap="round" />
+      <circle cx="14" cy="14" r="5" fill={color} />
+      <line x1="72" y1="72" x2="86" y2="86" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      <line x1="82" y1="18" x2="30" y2="70" stroke={blade} strokeWidth="8" strokeLinecap="round" />
+      <circle cx="86" cy="14" r="5" fill={color} />
+      <line x1="28" y1="72" x2="14" y2="86" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      <circle cx="50" cy="50" r="4" fill={accent || color} />
+    </svg>
+  )
+}
+
 function SurvivalIcon({ size = 64, color = '#ffffff' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -98,6 +113,7 @@ const COMPONENT_ICONS = {
   'icon:qcm': (size, color, modeId) => {
     if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
     if (modeId === 'blitz') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} />
+    if (modeId === 'multi') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
     return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:set': (size, color, modeId) => {
@@ -108,6 +124,7 @@ const COMPONENT_ICONS = {
     if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
     if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
     if (modeId === 'blitz') return <TimerIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} />
+    if (modeId === 'multi') return <TimerIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
     return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
@@ -123,10 +140,15 @@ const COMPONENT_ICONS = {
   'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
   'picto:penalty': (size, color, modeId) => {
     if (modeId === 'blitz') return <PenaltyIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} text="−5s" />
+    if (modeId === 'multi') return <PenaltyIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} text="±5s" />
     return <PenaltyIcon size={size} color={color || '#ffffff'} />
   },
   'picto:target': (size, color) => <TargetIcon size={size} color={color || '#ffffff'} />,
   'picto:steps': (size, color) => <StepsIcon size={size} color={color || '#ffffff'} />,
+  'picto:swords': (size, color, modeId) => {
+    if (modeId === 'multi') return <SwordsIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
+    return <SwordsIcon size={size} color={color || '#ffffff'} />
+  },
   'picto:survival': (size, color) => <SurvivalIcon size={size} color={color || '#ffffff'} />,
 }
 
@@ -143,12 +165,15 @@ function renderIcon(value, size, color, modeId) {
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6',
   quickie: '#7F77DD', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
-  race: '#00E5FF', blitz: '#FF1744', flash: '#FFD700',
+  race: '#00E5FF', blitz: '#FF1744', flash: '#FFD700', multi: '#6B2D8E',
   energy: '#10B981', hints: '#6366F1', coins: '#F59E0B',
   streak: '#F97316', roulette: '#A855F7', shop: '#06B6D4',
   collection: '#14B8A6', trophies: '#EAB308', profile: '#64748B',
   tips: '#22C55E',
 }
+
+const MULTI_VIOLET = '#6B2D8E'
+const MULTI_GOLD = '#FFD700'
 
 // ── Mode icon mapping — utilise les icon-* pour les modes ────────────────────
 const MODE_ICON_MAP = {
@@ -158,10 +183,11 @@ const MODE_ICON_MAP = {
   blitz: '/assets/modes/icon-blitz.png',
   race: '/assets/modes/icon-race.png',
   vrai_ou_fou: '/assets/modes/icon-vrai-et-fou.png',
+  multi: '/assets/modes/icon-multi.png',
 }
 
 // Modes qui utilisent un style "white card" dans le livret (identique à ModeLaunchScreen)
-const STYLED_MODE_IDS = ['quickie', 'vrai_ou_fou', 'race', 'blitz']
+const STYLED_MODE_IDS = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi']
 
 // ── Chapters data ───────────────────────────────────────────────────────────
 const CHAPTERS = [
@@ -199,6 +225,7 @@ const CHAPTERS = [
   { id: 'quest', shortTitle: 'Quest', dynamic: true },
   { id: 'race', shortTitle: 'Race', dynamic: true },
   { id: 'blitz', shortTitle: 'Blitz', dynamic: true },
+  { id: 'multi', shortTitle: 'Multi', dynamic: true },
   { id: 'flash', shortTitle: 'Flash', dynamic: true },
 
   // ═══ ÉNERGIE ═══
@@ -519,9 +546,11 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   iconColor = i % 2 === 0 ? '#00E5FF' : '#0097A7'
                 } else if (chapter.id === 'blitz') {
                   iconColor = i % 2 === 0 ? '#FF4444' : '#CC0000'
+                } else if (chapter.id === 'multi') {
+                  iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
                 }
-                const BORDER_OVERRIDES = { quickie: '#9400D3', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444' }
-                const TEXT_OVERRIDES = { quickie: QUICKIE_VIOLET, vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444' }
+                const BORDER_OVERRIDES = { quickie: '#9400D3', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444', multi: MULTI_VIOLET }
+                const TEXT_OVERRIDES = { quickie: QUICKIE_VIOLET, vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444', multi: MULTI_VIOLET }
                 const modeColor = CHAPTER_COLORS[chapter.id] || '#FF6B1A'
                 const borderCol = isStyledMode ? (BORDER_OVERRIDES[chapter.id] || modeColor) : '#E5E7EB'
                 const textCol = isStyledMode ? (TEXT_OVERRIDES[chapter.id] || '#1a1a2e') : '#374151'

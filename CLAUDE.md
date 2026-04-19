@@ -204,12 +204,15 @@ séparé, sous-domaine privé, ou en local uniquement).
 Les 2 variantes Rush et Speedrun sont disponibles.
 
 - **Flow** : MultiPage (lobby) → choix variant → ami → catégorie → (palier si Speedrun) → lancement
-- **Coût** : 200 coins pour créer · gratuit pour relever · 48h expiration
+- **Économie (19/04/2026)** : **100 coins misés par chaque joueur** (total pot = 200c). **Gagnant reçoit 150c** (profit net +50c, perdant −100c, house +50c). Sink net ≈ 50c par défi terminé.
+- **Égalité parfaite** (même score + même temps au centième) : `winner_id = NULL`, **chacun récupère ses 100c** (pas de gain ni de perte).
+- **Expiration (48h)** : créateur **remboursé 100c**, défi passe en `status='expired'`. RPC `expire_pending_challenges()` idempotente appelée au mount de MultiPage / SocialPage.
 - **Speedrun Multi** : créateur doit avoir cat 100% pour proposer. Accepteur doit aussi avoir cat 100% (sinon message "défi indisponible").
 - **DB** : `challenges.variant` ENUM('rush', 'speedrun'). Trigger `calculate_challenge_winner` switch :
   - **Rush** : plus de `correct` gagne · tie-break `time` (plus bas = plus rapide)
-  - **Speedrun** : `time` plus bas gagne (les 2 finissent le palier)
-  - Égalité complète → créateur (P1) gagne
+  - **Speedrun** : `time` plus bas gagne
+  - Égalité parfaite sur score ET temps → `winner_id = NULL`
+- **RPC atomique `complete_duel_round`** : debit 100c accepteur + UPDATE challenge (trigger calcule winner) + credit 150c gagnant (ou refund 100c × 2 si égalité), tout en 1 transaction.
 - **Stats / historique** : **onglet Amis** de la navbar (pas dans Multi lui-même)
 
 ### 6. FLASH — "Le rendez-vous quotidien" (ex-Hunt + Puzzle du Jour)

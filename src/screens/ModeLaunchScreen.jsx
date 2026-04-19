@@ -33,9 +33,13 @@ const MODE_COLORS = {
   blitz: '#FF4444',
   quest: '#FF6B1A',
   flash: '#E91E63',
+  multi: '#6B2D8E',
 }
 
-const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz']
+const MULTI_VIOLET = '#6B2D8E'
+const MULTI_GOLD = '#FFD700'
+
+const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi']
 
 function NoHintIcon({ size = 64, color = '#ffffff' }) {
   return (
@@ -98,6 +102,25 @@ function StepsIcon({ size = 64, color = '#ffffff' }) {
   )
 }
 
+// Épées croisées — Mode Multi
+function SwordsIcon({ size = 64, color = '#ffffff', accent = null }) {
+  const blade = accent || color
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Lame 1 (NW→SE) */}
+      <line x1="18" y1="18" x2="70" y2="70" stroke={blade} strokeWidth="8" strokeLinecap="round" />
+      <circle cx="14" cy="14" r="5" fill={color} />
+      <line x1="72" y1="72" x2="86" y2="86" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      {/* Lame 2 (NE→SW) */}
+      <line x1="82" y1="18" x2="30" y2="70" stroke={blade} strokeWidth="8" strokeLinecap="round" />
+      <circle cx="86" cy="14" r="5" fill={color} />
+      <line x1="28" y1="72" x2="14" y2="86" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      {/* Point central */}
+      <circle cx="50" cy="50" r="4" fill={accent || color} />
+    </svg>
+  )
+}
+
 function SurvivalIcon({ size = 64, color = '#ffffff' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -112,6 +135,7 @@ const COMPONENT_ICONS = {
   'icon:qcm': (size, color, modeId) => {
     if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
     if (modeId === 'blitz') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} />
+    if (modeId === 'multi') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
     return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:set': (size, color, modeId) => {
@@ -122,6 +146,7 @@ const COMPONENT_ICONS = {
     if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
     if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
     if (modeId === 'blitz') return <TimerIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} />
+    if (modeId === 'multi') return <TimerIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
     return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
@@ -137,10 +162,15 @@ const COMPONENT_ICONS = {
   'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
   'picto:penalty': (size, color, modeId) => {
     if (modeId === 'blitz') return <PenaltyIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} text="−5s" />
+    if (modeId === 'multi') return <PenaltyIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} text="±5s" />
     return <PenaltyIcon size={size} color={color || '#ffffff'} />
   },
   'picto:target': (size, color) => <TargetIcon size={size} color={color || '#ffffff'} />,
   'picto:steps': (size, color) => <StepsIcon size={size} color={color || '#ffffff'} />,
+  'picto:swords': (size, color, modeId) => {
+    if (modeId === 'multi') return <SwordsIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
+    return <SwordsIcon size={size} color={color || '#ffffff'} />
+  },
   'picto:survival': (size, color) => <SurvivalIcon size={size} color={color || '#ffffff'} />,
 }
 
@@ -182,15 +212,21 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
 
   const isStyled = STYLED_MODES.includes(modeId)
   const modeColor = MODE_COLORS[modeId] || color
-  const textColor = modeId === 'quickie' ? '#7F77DD' : modeId === 'vrai_ou_fou' ? '#6BCB77' : modeId === 'race' ? '#23D5D5' : modeColor
+  const textColor = modeId === 'quickie' ? '#7F77DD'
+    : modeId === 'vrai_ou_fou' ? '#6BCB77'
+    : modeId === 'race' ? '#23D5D5'
+    : modeId === 'multi' ? MULTI_VIOLET
+    : modeColor
 
   const btnBg = modeId === 'vrai_ou_fou' ? '#008000'
     : modeId === 'race' ? '#0F52BA'
     : modeId === 'blitz' ? '#CC0000'
+    : modeId === 'multi' ? MULTI_VIOLET
     : '#9400D3'
   const btnShadow = modeId === 'vrai_ou_fou' ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'race' ? '0 8px 30px rgba(0,255,255,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'blitz' ? '0 8px 30px rgba(204,0,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : modeId === 'multi' ? '0 8px 30px rgba(107,45,142,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)'
 
   return (
@@ -265,6 +301,8 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
             iconColor = i % 2 === 0 ? '#00E5FF' : '#0097A7'
           } else if (modeId === 'blitz') {
             iconColor = i % 2 === 0 ? '#FF4444' : '#CC0000'
+          } else if (modeId === 'multi') {
+            iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
           }
           return (
             <div key={i} style={{

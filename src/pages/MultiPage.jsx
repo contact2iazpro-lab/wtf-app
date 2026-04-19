@@ -1,14 +1,15 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useScale } from '../hooks/useScale'
 import { useAuth } from '../context/AuthContext'
 import { useDuelContext } from '../features/duels/context/DuelContext'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
+import { expirePendingChallenges } from '../data/duelService'
 import { audio } from '../utils/audio'
 
 const SPEEDRUN_PALIERS = [5, 10, 20, 30, 50, 100]
-const DEFI_COST = 200
+const DEFI_COST = 100 // mise créateur (accepteur mise 100 de son côté, gagnant reçoit 150)
 
 /**
  * MultiPage — Mode Multi (défier un ami en Rush ou Speedrun)
@@ -31,6 +32,9 @@ export default function MultiPage() {
   const [opponentId, setOpponentId] = useState(null)
   const [categoryId, setCategoryId] = useState(null)
   const [palier, setPalier] = useState(null)
+
+  // Au mount : expire les défis > 48h et rembourse les créateurs (idempotent serveur)
+  useEffect(() => { expirePendingChallenges().catch(() => {}) }, [])
 
   const allFacts = getValidFacts()
   const totalUnlocked = allFacts.filter(f => unlockedFacts.has(f.id)).length

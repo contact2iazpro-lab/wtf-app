@@ -4,7 +4,7 @@ import GameModal from '../components/GameModal'
 import { useAuth } from '../context/AuthContext'
 import { acceptFriendRequest, rejectFriendRequest, removeFriend } from '../data/friendService'
 import { audio } from '../utils/audio'
-import { markRoundSeen, declineRound } from '../data/duelService'
+import { markRoundSeen, declineRound, expirePendingChallenges } from '../data/duelService'
 import { getCategoryById } from '../data/factsService'
 import { useDuelContext } from '../features/duels/context/DuelContext'
 
@@ -81,6 +81,9 @@ export default function SocialPage() {
   const [expandedFriend, setExpandedFriend] = useState(null) // friendId du ami dont on voit les défis
   const [friendsListCollapsed, setFriendsListCollapsed] = useState(false) // accordéon "Mes amis"
   const [friendModal, setFriendModal] = useState(null) // { friendshipId, userId, displayName }
+
+  // Au mount : expire les défis > 48h et rembourse 100c créateur (idempotent)
+  useEffect(() => { expirePendingChallenges().then(n => { if (n > 0) refreshDuels?.() }).catch(() => {}) }, [refreshDuels])
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000) }
 

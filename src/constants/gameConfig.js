@@ -12,7 +12,7 @@ export const DIFFICULTY_LEVELS = {
   },
   VRAI_OU_FOU: {
     id: 'vrai_ou_fou', label: 'Vrai ET Fou', emoji: '🤔',
-    choices: 0, duration: 15, questionsCount: 20,
+    choices: 0, duration: 15, questionsCount: 10,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
@@ -93,7 +93,7 @@ export const MODE_CONFIGS = {
     ctaLabel: 'VAS-Y, SWIPE !',
     rules: [
       { icon: 'picto:infinity', text: '**Coût** : Illimité' },
-      { icon: 'icon:set', text: '**Set** : 20 affirmations / set' },
+      { icon: 'icon:set', text: '**Set** : 10 affirmations / set' },
       { icon: 'picto:swipe', text: '**Swipe** : {{red}}Faux à gauche{{/red}}, Vrai à droite' },
       { icon: 'icon:timer', text: '**Timer** : 15s / question' },
       { icon: 'picto:share', text: '**Social** : Partage ton score' },

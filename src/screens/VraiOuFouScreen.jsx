@@ -308,7 +308,7 @@ export default function VraiOuFouScreen({ onHome }) {
             VRAI ET FOU
           </span>
         </div>
-        {/* Compteur N/20 */}
+        {/* Compteur N/10 */}
         <div style={{ textAlign: 'center' }}>
           <span style={{ fontSize: S(12), fontWeight: 900, letterSpacing: 1 }}>
             <span style={{ color: counterColor }}>{index + 1}</span>

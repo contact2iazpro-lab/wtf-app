@@ -35,7 +35,7 @@ RÈGLES DES MODES (homogénéité) :
 | Blitz chrono 60s | **Blitz Solo** | Sous-mode de Blitz |
 | Défi Blitz async | **Blitz Défi** | Sous-mode de Blitz |
 | Hunt + Puzzle du Jour | **Flash** | Événement quotidien + Hunt dimanche |
-| *(nouveau)* | **Vrai ou Fou** | Swipe Vrai/Faux, 20 affirmations |
+| *(nouveau)* | **Vrai ou Fou** | Swipe Vrai/Faux, 10 affirmations |
 | *(nouveau)* | ~~No Limit~~ → **Race** (17/04/2026) | Survie jusqu'à erreur, 4 QCM, pas de timer |
 | Quest ancien (ticket+Cool/Hot) | **SUPPRIMÉ** | Remplacé par Quest (Route) |
 | Mode Série | **SUPPRIMÉ** | Absorbé dans le streak |
@@ -149,7 +149,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Coût : Gratuit illimité
 - Gains : **0 coins** (mode viralité/acquisition, pas farming)
 - Déblocage f*cts : **Non** — mode vitrine/viral. Le joueur découvre les affirmations mais ne les collecte pas. Pour posséder un f*ct, jouer Quickie ou Quest.
-- Partage score X/20 (WhatsApp/story) — levier acquisition
+- Partage score X/10 (WhatsApp/story) — levier acquisition
 
 ### 3. QUEST — "Le chemin des WTF!" (ex-Route WTF!)
 - QCM **4 choix**, blocs de **10 Funny + 1 boss VIP conditionnel**

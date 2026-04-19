@@ -20,8 +20,10 @@ const MULTI_VIOLET = '#6B2D8E'
 const MULTI_GOLD = '#FFD700'
 const QUEST_ORANGE = '#FF6B1A'
 const QUEST_DARK = '#D94A10'
+const FLASH_PINK = '#E91E63'
+const FLASH_DARK = '#AD1457'
 
-const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi', 'quest']
+const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi', 'quest', 'flash']
 
 function renderText(text) {
   const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*)/g)
@@ -57,6 +59,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'race' ? '#23D5D5'
     : modeId === 'multi' ? MULTI_VIOLET
     : modeId === 'quest' ? QUEST_ORANGE
+    : modeId === 'flash' ? FLASH_PINK
     : modeColor
 
   const btnBg = modeId === 'vrai_ou_fou' ? '#008000'
@@ -64,12 +67,14 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'blitz' ? '#CC0000'
     : modeId === 'multi' ? MULTI_VIOLET
     : modeId === 'quest' ? QUEST_DARK
+    : modeId === 'flash' ? FLASH_DARK
     : '#FF7518'
   const btnShadow = modeId === 'vrai_ou_fou' ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'race' ? '0 8px 30px rgba(0,255,255,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'blitz' ? '0 8px 30px rgba(204,0,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'multi' ? '0 8px 30px rgba(107,45,142,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'quest' ? '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : modeId === 'flash' ? '0 8px 30px rgba(173,20,87,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : '0 8px 30px rgba(255,117,24,0.5), 0 4px 0 rgba(0,0,0,0.15)'
 
   return (
@@ -148,6 +153,8 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
             iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
           } else if (modeId === 'quest') {
             iconColor = i % 2 === 0 ? QUEST_ORANGE : QUEST_DARK
+          } else if (modeId === 'flash') {
+            iconColor = i % 2 === 0 ? FLASH_PINK : FLASH_DARK
           }
           return (
             <div key={i} style={{

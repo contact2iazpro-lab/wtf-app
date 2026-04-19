@@ -168,9 +168,9 @@ export const MODE_CONFIGS = {
       { icon: 'icon:set', text: '**Set** : 5 questions / set' },
       { icon: 'icon:qcm', text: '**QCM** : 2 / question' },
       { icon: 'icon:timer', text: '**Timer** : 15s / question' },
-      { icon: '💡', text: '**Indices** : 0 (Lun-Sam) · 2 max (Dim)' },
-      { icon: '🎯', text: '**Lun-Sam** : thème du jour · **Dim** : Hunt VIP' },
-      { icon: '🪙', text: '**Gains** : 30 Coins (Lun-Sam) · 1 VIP débloqué (Dim)' },
+      { icon: 'icon:hint', text: '**Indices** : Aucun (Lun-Sam) · 2 max (Dim)' },
+      { icon: 'picto:target', text: '**Lun-Sam** : thème du jour · **Dim** : Hunt VIP' },
+      { icon: 'icon:coins', text: '**Gains** : 30 Coins (Lun-Sam) · 1 VIP débloqué (Dim)' },
     ],
   },
 }

@@ -367,7 +367,7 @@ export default function HomeScreen({
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
             border: 'none', padding: 0,
-            width: '46%', maxWidth: S(170), aspectRatio: '790 / 388',
+            width: '51%', maxWidth: S(187), aspectRatio: '790 / 388',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(7),
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
           }}
@@ -380,7 +380,6 @@ export default function HomeScreen({
           <span style={{
             fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(10),
             color: '#FFA500', letterSpacing: '0.08em', textTransform: 'uppercase',
-            textShadow: '0 2px 4px rgba(0,0,0,0.35)',
           }}>
             Partie rapide
           </span>

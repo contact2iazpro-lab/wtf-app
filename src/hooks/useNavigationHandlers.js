@@ -43,8 +43,7 @@ export function useNavigationHandlers({
     switch (mode) {
       case 'blitz':        setScreen(SCREENS.BLITZ_LOBBY); break
       case 'quickie': {
-        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
+        if (!canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
         setScreen(SCREENS.CATEGORY); break
       }
       case 'flash':        handleStartFlashSession(); break
@@ -83,8 +82,7 @@ export function useNavigationHandlers({
         break
       }
       case 'quickie_random': {
-        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
+        if (!canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
         setGameMode('quickie'); setSessionType('quickie'); setSelectedDifficulty(DIFFICULTY_LEVELS.QUICKIE); setSelectedCategory(null)
         showOrSkipLaunch('quickie')
         break
@@ -177,9 +175,8 @@ export function useNavigationHandlers({
 
   const handleReplay = useCallback(() => {
     if (sessionType === 'quickie') {
-      // Check énergie avant de relancer — sinon le replay court-circuite la vérif
-      const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-      if (!isDevOrTest && !canPlayQuickieCheck()) {
+      // Check énergie avant de relancer
+      if (!canPlayQuickieCheck()) {
         setNoEnergyOrigin('quickie')
         setShowNoEnergyModal(true)
         return

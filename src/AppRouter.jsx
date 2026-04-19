@@ -23,7 +23,6 @@ function UnlockProvider({ children }) {
   const unlockValue = useMemo(() => {
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
 
       // Données brutes
       const gamesPlayed = wtfData.gamesPlayed || 0

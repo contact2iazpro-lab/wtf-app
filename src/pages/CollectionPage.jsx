@@ -128,7 +128,7 @@ export default function CollectionPage() {
         return {
           cat, facts, unlocked: unlockedCount, total: facts.length,
           percentage: pct, isCompleted: facts.length > 0 && unlockedCount === facts.length,
-          isLocked: !isCatUnlocked && localStorage.getItem('wtf_dev_mode') !== 'true' && localStorage.getItem('wtf_test_mode') !== 'true',
+          isLocked: !isCatUnlocked,
         }
       })
       .filter(s => s.total > 0)

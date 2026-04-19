@@ -25,17 +25,13 @@ export function useSelectionHandlers({
 
   const handleSelectDifficulty = useCallback((difficulty) => {
     setSelectedDifficulty(difficulty)
-    const skipUnlockM = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
 
     if (gameMode === 'quickie') {
       // Quickie utilise toujours sa difficulté dédiée (20s / 1 coin / 4 QCM)
       // peu importe celle passée en argument (legacy)
       const quickieDiff = DIFFICULTY_LEVELS.QUICKIE
       setSelectedDifficulty(quickieDiff)
-      let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
-      if (pool.length < 4 && skipUnlockM) {
-        pool = getGeneratedFactsByCategory(selectedCategory)
-      }
+      const pool = getGeneratedFactsByCategory(selectedCategory).filter(f => !unlockedFacts.has(f.id))
       if (pool.length === 0) {
         setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' })
         return
@@ -66,9 +62,7 @@ export function useSelectionHandlers({
 
     if (gameMode === 'quickie') {
       const difficulty = DIFFICULTY_LEVELS.QUICKIE
-      const skipUnlockE = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-      let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
-      if (pool.length < 4 && skipUnlockE) pool = getGeneratedFactsByCategory(categoryId)
+      const pool = getGeneratedFactsByCategory(categoryId).filter(f => !unlockedFacts.has(f.id))
       if (pool.length === 0) { setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' }); return }
       // Mini-parcours : catégorie presque terminée (< 5 f*cts restants)
       // Économie ×10 (décision 17/04/2026) : 50 coins par fact.

@@ -51,22 +51,14 @@ export function useModeStarters({
 
   const handleStartFlashSession = useCallback(() => {
     audio.play('click')
-    let flashFact = effectiveDailyFact
+    const flashFact = effectiveDailyFact
     if (!flashFact) {
-      const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-      if (isDevOrTest) {
-        const allValid = getQuestFacts()
-        flashFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
-      }
-      if (!flashFact) {
-        setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct de la semaine n\'est pas encore chargé. Réessaie dans quelques secondes !' })
-        return
-      }
+      setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct de la semaine n\'est pas encore chargé. Réessaie dans quelques secondes !' })
+      return
     }
     const category = flashFact.category
-    const skipUnlock = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     const sameCat = getGeneratedFacts().filter(f => f.category === category && f.id !== flashFact.id)
-    let pool = sameCat.filter(f => skipUnlock || !unlockedFacts.has(f.id))
+    let pool = sameCat.filter(f => !unlockedFacts.has(f.id))
     if (pool.length < 5) {
       const already = sameCat.filter(f => !pool.some(p => p.id === f.id))
       pool = [...pool, ...already]
@@ -87,18 +79,14 @@ export function useModeStarters({
 
   const handleQuickie = useCallback(() => {
     audio.play('click')
-    const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
-    const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
-    const skipUnlock = isDevMode || isTestMode
     // Ne montrer que des facts des catégories débloquées
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     const unlockedCats = new Set(wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition'])
     const pool = getGeneratedFacts().filter(f =>
-      (skipUnlock || !unlockedFacts.has(f.id)) && (skipUnlock || unlockedCats.has(f.category))
+      !unlockedFacts.has(f.id) && unlockedCats.has(f.category)
     )
 
     if (pool.length < 5) {
-      if (isDevMode) pool.push(...getGeneratedFacts().filter(f => !pool.some(p => p.id === f.id)))
       if (pool.length === 0) {
         setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt. Reviens vite !' })
         return
@@ -116,7 +104,7 @@ export function useModeStarters({
     // par un VIP non-débloqué. Flag _isVipSurprise pour UX dédiée.
     // TEMPORAIRE : rate 100% pour test grandeur nature. À repasser à 0.03 ensuite.
     const VIP_SURPRISE_RATE = 1.0
-    const vipPool = getVipFacts().filter(f => skipUnlock || !unlockedFacts.has(f.id))
+    const vipPool = getVipFacts().filter(f => !unlockedFacts.has(f.id))
     const baseFacts = shuffle(pool).slice(0, 5)
     const usedVipIds = new Set()
     const mixedFacts = baseFacts.map(fact => {

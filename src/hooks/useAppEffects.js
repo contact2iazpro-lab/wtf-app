@@ -44,10 +44,7 @@ export function useAppEffects({
   // Refresh storage on auth sync
   useEffect(() => {
     const handleSync = () => {
-      const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
-      const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
       setStorage(loadStorage())
-      if (isDevMode || isTestMode) return
 
       const tempFactsJson = localStorage.getItem('wtf_temp_facts')
       if (tempFactsJson) {
@@ -90,33 +87,6 @@ export function useAppEffects({
     window.addEventListener('wtf_currency_updated', handleCurrencyUpdate)
     return () => window.removeEventListener('wtf_currency_updated', handleCurrencyUpdate)
   }, [])
-
-  // Dev/Test mode: unlock all facts
-  useEffect(() => {
-    if (!factsReady) return
-    const isDev = localStorage.getItem('wtf_dev_mode') === 'true'
-    const isTest = localStorage.getItem('wtf_test_mode') === 'true'
-    const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-
-    if (isDev || isTest) {
-      if (!wtfData._savedUnlockedFacts) {
-        wtfData._savedUnlockedFacts = wtfData.unlockedFacts || []
-      }
-      const allIds = [...new Set(getValidFacts().map(f => f.id))]
-      wtfData.unlockedFacts = allIds
-      wtfData.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(wtfData))
-      setStorage(prev => ({ ...prev, unlockedFacts: new Set(allIds) }))
-    } else {
-      if (wtfData._savedUnlockedFacts) {
-        wtfData.unlockedFacts = wtfData._savedUnlockedFacts
-        delete wtfData._savedUnlockedFacts
-        wtfData.lastModified = Date.now()
-        localStorage.setItem('wtf_data', JSON.stringify(wtfData))
-        setStorage(prev => ({ ...prev, unlockedFacts: new Set(wtfData.unlockedFacts) }))
-      }
-    }
-  }, [factsReady])
 
   // Auto-dismiss streak reward toast
   useEffect(() => {

@@ -237,8 +237,26 @@ export async function createDuelChallenge({
 }
 
 /**
+ * Accepte un défi et débite immédiatement les 100 coins du player2.
+ * Appelé AVANT de lancer la partie (ChallengeScreen → start Blitz).
+ * Idempotent : si déjà accepté (reload), retourne { already_accepted: true }.
+ */
+export async function acceptDuelChallenge(challengeId) {
+  const { data, error } = await supabase.rpc('accept_duel_challenge', {
+    p_challenge_id: challengeId,
+  })
+  if (error) {
+    console.error('[duelService] accept_duel_challenge RPC error:', error.message)
+    throw error
+  }
+  return data
+}
+
+/**
  * Complète un round (appelé quand player2 joue son Blitz en relevant le défi).
  * Le trigger SQL auto-calcule winner + met à jour duels stats.
+ * Note : si accept_duel_challenge a déjà débité 100c, complete_duel_round
+ * skip le débit (détecte via player2_accepted_at).
  */
 export async function completeDuelRound({ roundId, playerTime, playerCorrect, playerId: _playerId, playerName }) {
   // Passe par la RPC atomique `complete_duel_round` : debit 100c accepteur +

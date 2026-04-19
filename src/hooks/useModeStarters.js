@@ -114,7 +114,8 @@ export function useModeStarters({
 
     // Bonus surprise VIP en Quickie (19/04/2026) : 3% par question de remplacer
     // un Funny par un VIP non-débloqué. Flag _isVipSurprise pour UX dédiée.
-    const VIP_SURPRISE_RATE = 0.03
+    // En DEV mode (wtf_dev_mode=true), rate = 100% → force le spawn pour tester l'UI.
+    const VIP_SURPRISE_RATE = isDevMode ? 1.0 : 0.03
     const vipPool = getVipFacts().filter(f => skipUnlock || !unlockedFacts.has(f.id))
     const baseFacts = shuffle(pool).slice(0, 5)
     const usedVipIds = new Set()

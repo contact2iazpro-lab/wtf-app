@@ -19,6 +19,7 @@ export default function GameModal({
   title,
   message,
   confirmLabel = 'OK',
+  confirmIcon = null, // optionnel : URL image affichée à droite du label (ex : coins)
   cancelLabel = null,
   onConfirm,
   onCancel,
@@ -76,9 +77,11 @@ export default function GameModal({
               background: btnColor, border: 'none',
               color: 'white', fontSize: 14, fontWeight: 800,
               fontFamily: 'Nunito, sans-serif', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}
           >
-            {confirmLabel}
+            <span>{confirmLabel}</span>
+            {confirmIcon && <img src={confirmIcon} alt="" style={{ width: 16, height: 16 }} />}
           </button>
         </div>
       </div>

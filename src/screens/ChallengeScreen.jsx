@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useScale } from '../hooks/useScale'
 import { useAuth } from '../context/AuthContext'
 import { getChallenge } from '../data/challengeService'
-import { declineRound } from '../data/duelService'
+import { declineRound, acceptDuelChallenge } from '../data/duelService'
 import { getBlitzFacts, initFacts } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
@@ -122,11 +122,26 @@ export default function ChallengeScreen() {
     setShowAcceptModal(true)
   }
 
-  // Étape 2 : confirmation → débit 100c + lancement Blitz
-  const handleAcceptConfirm = () => {
+  // Étape 2 : confirmation → RPC accept (débit immédiat 100c) + lancement Blitz
+  const handleAcceptConfirm = async () => {
     if (!user || !challenge) return
     setShowAcceptModal(false)
     audio.play('click')
+    try {
+      const result = await acceptDuelChallenge(challenge.id)
+      if (!result?.ok) throw new Error('accept failed')
+      // Notifier le miroir coins (RPC a débité 100c)
+      window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
+    } catch (e) {
+      console.error('Accept duel error:', e)
+      const msg = e?.message?.includes('insufficient')
+        ? 'Pas assez de coins pour relever.'
+        : e?.message?.includes('already_completed_or_expired')
+        ? 'Ce défi n\'est plus disponible.'
+        : 'Impossible de relever le défi : ' + (e?.message || 'erreur')
+      alert(msg)
+      return
+    }
     const shuffled = shuffle(playerFacts)
       .slice(0, Math.min(challenge.question_count, playerFacts.length))
     const factsWithOptions = shuffled.map(f => ({ ...f, ...getAnswerOptions(f, DIFFICULTY_LEVELS.BLITZ) }))
@@ -352,7 +367,7 @@ export default function ChallengeScreen() {
           <img src="/assets/modes/icon-multi.png" alt="Multi" style={{ width: S(24), height: S(24), objectFit: 'contain' }}
             onError={e => { e.target.style.display = 'none' }} />
           <span style={{ fontSize: S(12), fontWeight: 900, color: MULTI_GOLD, letterSpacing: '0.06em' }}>
-            DÉFI MULTI
+            DÉFI · {challenge.variant === 'speedrun' ? 'SPEEDRUN' : 'RUSH'}
           </span>
         </div>
         <div style={{ fontSize: S(13), fontWeight: 900, color: MULTI_GOLD, display: 'flex', alignItems: 'center', gap: S(4) }}>
@@ -453,25 +468,37 @@ export default function ChallengeScreen() {
               </p>
             </div>
           )}
-          <button
-            onClick={handleAcceptChallenge}
-            disabled={!canAfford || !hasEnoughFactsForAccept}
-            style={{
-              padding: `${S(14)} 0`, borderRadius: S(14),
-              background: canAfford ? `linear-gradient(135deg, ${MULTI_VIOLET}, #4A1E63)` : 'rgba(255,255,255,0.12)',
-              color: canAfford ? 'white' : 'rgba(255,255,255,0.4)',
-              border: '3px solid #ffffff', fontWeight: 900, fontSize: S(16), cursor: canAfford ? 'pointer' : 'not-allowed',
-              fontFamily: 'Nunito, sans-serif', letterSpacing: '0.03em',
-            }}
-          >
-            {canAfford ? `⚔️ RELEVER · −${ACCEPT_COST}c` : `${ACCEPT_COST}c requis`}
-          </button>
-          <button
-            onClick={handleDeclineOpen}
-            style={{ padding: `${S(10)} 0`, borderRadius: S(12), background: 'rgba(239,68,68,0.12)', color: '#FCA5A5', border: '2px solid rgba(239,68,68,0.4)', fontWeight: 800, fontSize: S(13), cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
-          >
-            ✗ Refuser le défi
-          </button>
+          {/* Boutons côte à côte : Refuser (rouge) à gauche · Accepter (vert) à droite */}
+          <div style={{ display: 'flex', gap: S(8) }}>
+            <button
+              onClick={handleDeclineOpen}
+              style={{
+                flex: 1, padding: `${S(12)} 0`, borderRadius: S(14),
+                background: 'rgba(239,68,68,0.12)', color: '#FCA5A5',
+                border: '2px solid rgba(239,68,68,0.5)',
+                fontWeight: 800, fontSize: S(13), cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+              }}
+            >
+              ✗ Refuser
+            </button>
+            <button
+              onClick={handleAcceptChallenge}
+              disabled={!canAfford}
+              style={{
+                flex: 1.5, padding: `${S(12)} ${S(8)}`, borderRadius: S(14),
+                background: canAfford ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.06)',
+                color: canAfford ? '#86EFAC' : 'rgba(255,255,255,0.35)',
+                border: canAfford ? '2px solid rgba(34,197,94,0.65)' : '2px solid rgba(255,255,255,0.15)',
+                fontWeight: 900, fontSize: S(13), cursor: canAfford ? 'pointer' : 'not-allowed',
+                fontFamily: 'Nunito, sans-serif',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
+              }}
+            >
+              <span>{canAfford ? `Accepter le défi : ${ACCEPT_COST}` : `${ACCEPT_COST} requis`}</span>
+              {canAfford && <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(16), height: S(16) }} />}
+            </button>
+          </div>
         </div>
       )}
 
@@ -482,15 +509,16 @@ export default function ChallengeScreen() {
       )}
       </div>
 
-      {/* Modal confirmation acceptation (−100c) */}
+      {/* Modal confirmation acceptation (−100c débité immédiatement) */}
       {showAcceptModal && (
         <GameModal
           emoji="⚔️"
           title="Relever le défi ?"
-          message={`${ACCEPT_COST} coins seront misés. Si tu gagnes, tu récupères ${WIN_REWARD} coins (profit net +${WIN_REWARD - ACCEPT_COST}). Si tu perds, tu perds ta mise.`}
-          confirmLabel={`Accepter · −${ACCEPT_COST}c`}
+          message={`Relève le défi pour ${ACCEPT_COST} coins. Remporte le défi et empoche les ${WIN_REWARD} coins de victoire`}
+          confirmLabel={`Accepter : ${ACCEPT_COST}`}
+          confirmIcon="/assets/ui/icon-coins.png"
           cancelLabel="Annuler"
-          confirmColor={MULTI_VIOLET}
+          confirmColor="#22C55E"
           onConfirm={handleAcceptConfirm}
           onCancel={() => setShowAcceptModal(false)}
         />

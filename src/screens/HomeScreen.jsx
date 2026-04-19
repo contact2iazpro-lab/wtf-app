@@ -367,7 +367,7 @@ export default function HomeScreen({
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
             border: 'none', padding: 0,
-            width: '51%', maxWidth: S(187), aspectRatio: '790 / 388',
+            width: '51%', maxWidth: S(187), aspectRatio: '790 / 310',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(7),
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
           }}

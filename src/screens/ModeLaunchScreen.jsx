@@ -147,7 +147,7 @@ const COMPONENT_ICONS = {
   'icon:timer': (size, color, modeId) => {
     if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
     if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
-    if (modeId === 'blitz') return <TimerIcon size={size} color={'#FF4444'} accent={'#FF4444'} />
+    if (modeId === 'blitz') return <TimerIcon size={size} color={'#FF4444'} accent={QUICKIE_GOLD} />
     if (modeId === 'multi') return <TimerIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
     return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },

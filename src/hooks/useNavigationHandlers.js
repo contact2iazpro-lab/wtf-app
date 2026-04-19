@@ -50,6 +50,7 @@ export function useNavigationHandlers({
       case 'flash':        handleStartFlashSession(); break
       case 'vrai_ou_fou':  setScreen(SCREENS.VRAI_OU_FOU); break
       case 'race':         setScreen(SCREENS.RACE); break
+      case 'quest':        setScreen(SCREENS.QUEST); break
       case 'multi':        navigate('/multi'); break
       default: break
     }
@@ -99,7 +100,7 @@ export function useNavigationHandlers({
         showOrSkipLaunch('blitz')
         break
       case 'quest':
-        setScreen(SCREENS.QUEST)
+        showOrSkipLaunch('quest')
         break
       case 'race':
         setGameMode('race'); setSessionType('race'); setSelectedDifficulty(DIFFICULTY_LEVELS.RACE); setSelectedCategory(null)

@@ -40,7 +40,19 @@ export default function QuestionScreen({
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [coinFlash, setCoinFlash] = useState(null)
   const [imgFailed, setImgFailed] = useState(false)
+  const [showVipSurprise, setShowVipSurprise] = useState(false)
   useEffect(() => { setImgFailed(false) }, [fact.id])
+
+  // Bonus VIP surprise en Quickie (19/04/2026) — overlay + jingle jackpot
+  const isVipSurprise = !!fact._isVipSurprise
+  useEffect(() => {
+    if (!isVipSurprise) return
+    setShowVipSurprise(true)
+    audio.play('roulette_jackpot')
+    audio.vibrate?.([40, 30, 80])
+    const t = setTimeout(() => setShowVipSurprise(false), 2200)
+    return () => clearTimeout(t)
+  }, [fact.id, isVipSurprise])
   // Phase A.6 — miroir Supabase pour achat indice en session
   const { coins: _cCoins, hints: _cHints, applyCurrencyDelta } = usePlayerProfile()
   const prevCoinsRef = useRef(_cCoins)
@@ -449,10 +461,84 @@ export default function QuestionScreen({
       {quitModal}
       {header}
 
+      {/* Overlay Bonus VIP Surprise (Quickie, 19/04/2026) — 2.2s puis fade */}
+      {showVipSurprise && (
+        <div
+          style={{
+            position: 'absolute', inset: 0, zIndex: 60,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'radial-gradient(circle at center, rgba(255,215,0,0.25) 0%, rgba(0,0,0,0.7) 70%)',
+            backdropFilter: 'blur(3px)',
+            pointerEvents: 'none',
+            animation: 'vipSurpriseFade 2.2s ease-out forwards',
+          }}
+        >
+          <div style={{
+            textAlign: 'center',
+            animation: 'vipSurprisePop 2.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+          }}>
+            <div style={{ fontSize: S(48), marginBottom: S(4) }}>✨</div>
+            <div style={{
+              fontSize: S(32), fontWeight: 900, letterSpacing: '0.08em',
+              color: '#FFD700',
+              textShadow: '0 0 24px rgba(255,215,0,0.8), 0 2px 8px rgba(0,0,0,0.5)',
+              textTransform: 'uppercase',
+            }}>
+              Bonus VIP
+            </div>
+            <div style={{
+              fontSize: S(13), fontWeight: 800, marginTop: S(6),
+              color: '#FFE8A0', letterSpacing: '0.06em',
+              textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+            }}>
+              Un f*ct rare vient d'apparaître !
+            </div>
+          </div>
+        </div>
+      )}
+      <style>{`
+        @keyframes vipSurpriseFade {
+          0%   { opacity: 0 }
+          15%  { opacity: 1 }
+          85%  { opacity: 1 }
+          100% { opacity: 0 }
+        }
+        @keyframes vipSurprisePop {
+          0%   { transform: scale(0.3) rotate(-10deg) }
+          25%  { transform: scale(1.15) rotate(3deg) }
+          45%  { transform: scale(0.95) rotate(-1deg) }
+          60%  { transform: scale(1) rotate(0deg) }
+          100% { transform: scale(1) rotate(0deg) }
+        }
+        @keyframes vipBadgePulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.6) }
+          50%      { box-shadow: 0 0 18px 6px rgba(255,215,0,0.25) }
+        }
+      `}</style>
+
       {/* Bloc mode label + info + progress — hauteur fixe identique aux 3 modes */}
       <div style={{ height: S(56), flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: `${S(2)} ${S(16)} ${S(4)}` }}>
-        {/* Mode label */}
-        {modeLabel && (
+        {/* Mode label (remplacé par badge gold si VIP surprise) */}
+        {isVipSurprise ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+            padding: `${S(3)} ${S(10)}`,
+            background: 'linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,165,0,0.35))',
+            border: '1.5px solid #FFD700',
+            borderRadius: S(999),
+            alignSelf: 'center',
+            animation: 'vipBadgePulse 1.6s ease-in-out infinite',
+          }}>
+            <span style={{ fontSize: S(14) }}>⭐</span>
+            <span style={{
+              fontSize: S(11), fontWeight: 900, letterSpacing: '0.08em',
+              color: '#FFD700', textTransform: 'uppercase',
+              textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+            }}>
+              Bonus VIP
+            </span>
+          </div>
+        ) : modeLabel && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6) }}>
             {isQuickieMode && <img src="/assets/modes/icon-quickie.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />}
             <span style={{

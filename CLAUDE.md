@@ -95,6 +95,15 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - **Navigation facts filtrée** : helper `buildFactUrl` injecte filtres actifs dans URL → prev/next corrects au sein de la liste filtrée
   - **89 emojis supprimés** du champ `explanation` via script Node one-shot (`admin-tool/scripts/strip-emojis-explanation.mjs`)
   - **Edge Function `deep-research-url` abandonnée** (o4-mini Deep Research, trop lent/cher pour un gain marginal sur les URLs)
+- ✅ **Session 19/04/2026 soir — Refonte VIP drops (Quickie 3% + Quest 5+1) + SocialPage Blitz dynamique + Flash harmonisée** :
+  - **Quickie — Bonus VIP 3%** : chaque question a 3% chance d'être un VIP non-débloqué aléatoire (pool global, catégories confondues). Injection dans `useModeStarters.handleQuickie`. Flag `_isVipSurprise:true` → overlay doré 2.2s (`vipSurprisePop` + `vipSurpriseFade`) + jingle `roulette_jackpot` + vibration + badge ⭐ "Bonus VIP" pulsant pendant la question (remplace modeLabel). Règle ajoutée dans `MODE_CONFIGS.quickie`.
+  - **Quest — Blocs courts** : `QUEST_BLOCK_SIZE` 10 → **5**, `BOSS_THRESHOLD` 5 → **3**. Nombre de blocs passe de 77 à 154 (770 Funny ÷ 5). Gains/bloc 300c → 200c mais 2× plus de blocs = volume identique, consommation énergie ×2 (pression achat accrue). Règles MODE_CONFIGS.quest mises à jour (bloc 5+1, boss 3/5).
+  - **Rythme VIP estimé** (500 VIP à découvrir) : Grinder Quest = 5 mois · Mix équilibré = 9 mois · Casual = 1.5 an · Fun-only Quickie = 2 ans. Monétisation Y2 (achat direct 0.99€/VIP) non cannibalisée.
+  - **Blitz records Supabase** (Phase 1+2) : table `blitz_records` (variant, category_id, palier, score, time_seconds) + service `blitzRecordService` (save / getMy / leaderboard / history). Chaque run Rush/Speedrun historisée. `blitzSoloBestScore` pushé dans `profiles.flags` (cross-device). SocialPage lit via fetch + realtime subscription INSERT → auto-refresh. Rush/Speedrun affichés séparément (gold / cyan). Fix clé morte `wtfData.blitzRecords`.
+  - **BlitzLobbyScreen** : panneau "🏆 Mes records" (best Rush + top 3 Speedrun centième) au-dessus du toggle. Tri cats Speedrun : 100% > ratio desc > alphabétique. Contour blanc 2px sur toutes cartes cat (3px si sélectionnée).
+  - **BlitzResultsScreen** : Rush + Speedrun partagent le même pattern (header icône Blitz, FeaturedFactCard, `BlitzSessionMiniatures` 10/ligne format Quickie/VoF avec footer cat, click → `FactDetailView` avec `_isLocked`, contour blanc 3px sur Rejouer/Partager).
+  - **BlitzScreen** : layout aligné sur RaceScreen (ligne 1 icône+nom · ligne 2 score · ligne 3 barre progression · card question blanche contour rouge Blitz texte couleur cat · QCM 2×2 · image 55% contour cat · gros timer dégradé vert→rouge).
+  - **Flash — règles harmonisées** : remplace 3 emojis bruts (💡🎯🪙) par `icon:hint` / `picto:target` / `icon:coins` (source partagée avec livret). Flash ajouté à `STYLED_MODES` (textColor pink `#E91E63`, btnBg dark pink `#AD1457`, alternance iconColor).
 - ✅ **Session 18/04/2026 — Génération images individuelles admin-tool** :
   - **Edge Functions** `generate-fact-directions-single` (Opus 4.5 → 3 idées de scène + mode refine pour retravailler une idée brute de l'utilisateur) et `generate-fact-image-single` (gpt-image-1 low / Gemini Flash / Gemini 3 Pro, 1 à 4 variantes × styles cochés Réaliste/WTF/Cinéma, upload storage `facts/{id}/variants/{ts}-{style}-{rand}`)
   - **Table DB** `fact_image_variants` (historique par fact, flag `is_active` unique par fact via index partiel, RLS service_role)
@@ -133,13 +142,16 @@ séparé, sous-domaine privé, ou en local uniquement).
 ### 1. QUICKIE — "Court. Bon. Sans engagement."
 - QCM **2 choix**, 5 questions, timer **15s**
 - Indices : 1 max (stock perso, coût 50 coins en boutique)
-- Contenu : Funny facts uniquement
+- Contenu : Funny facts **+ 3% chance / question d'un VIP surprise** (19/04/2026)
 - Coût : 1 énergie (cap 5, régén +1/8h, extra = 75 coins)
 - Gains : 10 coins/bonne réponse · Perfect (5/5) : +50 coins
-- Déblocage f*cts : Oui (Funny)
+- Déblocage f*cts : Oui (Funny + VIP si bien répondu)
 - Catégories : 5 gratuites (sport, records, animaux, kids, définition) + débloquables 1 500 coins
 - **Mini-parcours catégorie presque terminée (< 5 f*cts restants, éco ×10 17/04/2026)** :
   - 1 fact = 50 coins · 2 facts = 100c · 3 facts = 150c · 4 facts = 200c
+- **VIP Surprise (19/04/2026)** : chaque question a 3% chance d'être un VIP non-débloqué.
+  Overlay doré 2.2s + jingle `roulette_jackpot` au mount + badge ⭐ "Bonus VIP" pendant la question.
+  Implémentation : `useModeStarters.handleQuickie` (injection au tirage) · `QuestionScreen` (overlay + badge).
 
 ### 2. VRAI OU FOU — "Swipe si t'oses"
 - **Swipe cards Vrai/Faux** (PAS de QCM), 10 affirmations par session (passé de 20 le 18/04/2026)
@@ -152,20 +164,22 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Partage score X/10 (WhatsApp/story) — levier acquisition
 
 ### 3. QUEST — "Le chemin des WTF!" (ex-Route WTF!)
-- QCM **4 choix**, blocs de **10 Funny + 1 boss VIP conditionnel**
+- QCM **4 choix**, blocs de **5 Funny + 1 boss VIP conditionnel** (refonte 19/04/2026, ex-10+1)
 - Timer : **20s** · Indices : 2/question (stock perso, achat 50 coins si vide)
 - Coût : 1 énergie par tentative de bloc (extra = 75 coins)
-- **Seuil boss : ≥5/10 bonnes réponses** sur les Funny pour affronter le boss VIP
-- `<5/10` → bloc raté, pas de boss, joueur bloqué au même niveau (refaire)
-- `≥5/10 + boss réussi` → passe au niveau suivant, VIP débloqué
-- `≥5/10 + boss raté` → reste bloqué, VIP verrouillé, retry boss depuis la carte
+- **Seuil boss : ≥3/5 bonnes réponses** sur les Funny pour affronter le boss VIP (ex-5/10)
+- `<3/5` → bloc raté, pas de boss, joueur bloqué au même niveau (refaire)
+- `≥3/5 + boss réussi` → passe au niveau suivant, VIP débloqué
+- `≥3/5 + boss raté` → reste bloqué, VIP verrouillé, retry boss depuis la carte
 - Gains : 20 coins/bonne Funny · +100 coins/boss vaincu (coins versés même si bloc raté)
 - Déblocage f*cts : Funny correctes (toujours) + VIP (si boss réussi)
 - Anti-déduction boss : fausses tirées parmi 7 à chaque retry, 2 indices parmi 4 (seed par retry)
-- Diversité : 10 Funny tirées avec catégories variées, exclut les facts déjà débloqués
+- Diversité : 5 Funny tirées avec catégories variées, exclut les facts déjà débloqués
 - UX : Header complet (retour/cat/coins/indices/paramètres), image floutée + 🔒, barre progression, timer visible, révélation inline après bonne réponse, modal achat énergie/indice
-- Map de progression : Niveau X/~847, Bloc X/~77
-- ~770 Funny ÷ 10 par bloc = **~77 blocs × 11 niveaux** (10 Funny + 1 boss)
+- Map de progression : Niveau X/~924, Bloc X/~154
+- ~770 Funny ÷ 5 par bloc = **~154 blocs × 6 niveaux** (5 Funny + 1 boss)
+- Rythme : gains/bloc passent de 200c (Funny) +100c (boss) = 300c à **100c + 100c = 200c**,
+  mais 2× plus de blocs → **volume coins identique**, consommation énergie ×2 (plus d'achats énergie attendus)
 - Spec source : `docs/QUEST_MODE_UPDATE.md`
 
 ### 4. NO LIMIT — "Zéro droit à l'erreur"

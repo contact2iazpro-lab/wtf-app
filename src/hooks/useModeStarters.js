@@ -8,7 +8,7 @@
 import { useCallback } from 'react'
 import { DIFFICULTY_LEVELS, SCREENS, QUESTIONS_PER_GAME } from '../constants/gameConfig'
 import {
-  getValidFacts, getQuestFacts, getGeneratedFacts,
+  getValidFacts, getQuestFacts, getGeneratedFacts, getVipFacts,
   getPlayableCategories,
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
@@ -112,8 +112,24 @@ export function useModeStarters({
       }
     }
 
-    const facts = shuffle(pool)
-      .slice(0, 5)
+    // Bonus surprise VIP en Quickie (19/04/2026) : 3% par question de remplacer
+    // un Funny par un VIP non-débloqué. Flag _isVipSurprise pour UX dédiée.
+    const VIP_SURPRISE_RATE = 0.03
+    const vipPool = getVipFacts().filter(f => skipUnlock || !unlockedFacts.has(f.id))
+    const baseFacts = shuffle(pool).slice(0, 5)
+    const usedVipIds = new Set()
+    const mixedFacts = baseFacts.map(fact => {
+      if (vipPool.length > 0 && Math.random() < VIP_SURPRISE_RATE) {
+        const candidates = vipPool.filter(v => !usedVipIds.has(v.id))
+        if (candidates.length > 0) {
+          const vip = candidates[Math.floor(Math.random() * candidates.length)]
+          usedVipIds.add(vip.id)
+          return { ...vip, _isVipSurprise: true }
+        }
+      }
+      return fact
+    })
+    const facts = mixedFacts
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.QUICKIE) }))
 
     setSessionType('quickie')

@@ -100,6 +100,7 @@ export const MODE_CONFIGS = {
       { icon: '💡', text: '**Indices** : 1 max / question' },
       { icon: '🪙', text: '**Gains** : 10 Coins / bonne réponse' },
       { icon: 'icon:star', text: '**Perfect** : (5 / 5) +50 Coins' },
+      { icon: 'icon:star', text: '**Bonus VIP** : 3% de chance / question ⭐' },
     ],
   },
   vrai_ou_fou: {
@@ -117,11 +118,11 @@ export const MODE_CONFIGS = {
     modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png', color: '#FF6B1A',
     rules: [
       { icon: 'icon:energy', text: '**Coût** : 1 énergie par bloc' },
-      { icon: 'icon:set', text: '**Bloc** : 10 Funny + 1 boss VIP' },
+      { icon: 'icon:set', text: '**Bloc** : 5 Funny + 1 boss VIP' },
       { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
       { icon: 'icon:timer', text: '**Timer** : 20s / question' },
       { icon: 'icon:hint', text: '**Indices** : 2 / question' },
-      { icon: 'icon:star', text: '**Boss** : 5 / 10 bonnes → VIP' },
+      { icon: 'icon:star', text: '**Boss** : 3 / 5 bonnes → VIP' },
       { icon: 'icon:coins', text: '**Gains** : 20c / bonne · +100c / boss' },
     ],
   },

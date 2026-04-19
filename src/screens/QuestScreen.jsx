@@ -19,9 +19,9 @@ import RevelationScreen from './RevelationScreen'
 import renderFormattedText from '../utils/renderFormattedText'
 import GainsBreakdown from '../components/results/GainsBreakdown'
 
-// ── Constantes Quest (spec QUEST_MODE_UPDATE 15/04/2026) ────────────────────
-const QUEST_BLOCK_SIZE = 10                 // 10 Funny par bloc
-const BOSS_THRESHOLD = 5                    // boss débloqué à ≥5/10
+// ── Constantes Quest (refonte 19/04/2026 : blocs courts pour rythme soutenu) ─
+const QUEST_BLOCK_SIZE = 5                  // 5 Funny par bloc (ex-10)
+const BOSS_THRESHOLD = 3                    // boss débloqué à ≥3/5 (ex-5/10)
 const COINS_PER_CORRECT = 20
 const BOSS_BONUS = 100
 const HINT_COST = 50

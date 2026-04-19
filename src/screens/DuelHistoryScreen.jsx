@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useScale } from '../hooks/useScale'
 import { getDuelHistory, computeDuelStatsByCategory, computeDuelStatsByQuestionCount } from '../data/duelService'
+import { getMyBlitzRecords } from '../data/blitzRecordService'
+import { getCategoryById } from '../data/factsService'
 import { supabase } from '../lib/supabase'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -20,12 +22,15 @@ export default function DuelHistoryScreen() {
   const navigate = useNavigate()
   const scale = useScale()
   const { user, isConnected } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = searchParams.get('tab') === 'records' ? 'records' : 'history'
 
   const [loading, setLoading] = useState(true)
   const [duel, setDuel] = useState(null)
   const [rounds, setRounds] = useState([])
   const [opponentName, setOpponentName] = useState('Adversaire')
   const [statsTab, setStatsTab] = useState('category') // 'category' | 'parcours'
+  const [opponentBlitzRecords, setOpponentBlitzRecords] = useState([])
 
   useEffect(() => {
     let cancelled = false
@@ -49,6 +54,16 @@ export default function DuelHistoryScreen() {
     load()
     return () => { cancelled = true }
   }, [user?.id, opponentId])
+
+  // Fetch records Blitz de l'ami (onglet Records)
+  useEffect(() => {
+    if (!opponentId || tab !== 'records') return
+    let cancelled = false
+    getMyBlitzRecords(opponentId).then(rows => {
+      if (!cancelled) setOpponentBlitzRecords(rows || [])
+    }).catch(() => {})
+    return () => { cancelled = true }
+  }, [opponentId, tab])
 
   if (!isConnected) {
     return (
@@ -78,9 +93,96 @@ export default function DuelHistoryScreen() {
       {/* Header */}
       <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <button onClick={() => navigate('/social')} style={{ width: 36, height: 36, borderRadius: 12, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151', fontSize: 16, cursor: 'pointer' }}>←</button>
-        <h1 style={{ flex: 1, fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: 0 }}>Duel vs {opponentName}</h1>
+        <h1 style={{ flex: 1, fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: 0 }}>
+          {tab === 'records' ? `Records · ${opponentName}` : `Duel vs ${opponentName}`}
+        </h1>
       </div>
 
+      {/* Tabs Historique / Records */}
+      <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8, flexShrink: 0 }}>
+        <button
+          onClick={() => setSearchParams({})}
+          style={{
+            flex: 1, padding: '8px 0', borderRadius: 10,
+            background: tab === 'history' ? '#FF6B1A' : '#fff',
+            color: tab === 'history' ? '#fff' : '#6B7280',
+            border: tab === 'history' ? 'none' : '1px solid #E5E7EB',
+            fontWeight: 800, fontSize: 12, cursor: 'pointer',
+          }}
+        >📜 Historique défis</button>
+        <button
+          onClick={() => setSearchParams({ tab: 'records' })}
+          style={{
+            flex: 1, padding: '8px 0', borderRadius: 10,
+            background: tab === 'records' ? '#FF6B1A' : '#fff',
+            color: tab === 'records' ? '#fff' : '#6B7280',
+            border: tab === 'records' ? 'none' : '1px solid #E5E7EB',
+            fontWeight: 800, fontSize: 12, cursor: 'pointer',
+          }}
+        >⚡ Records Blitz</button>
+      </div>
+
+      {/* Vue Records Blitz de l'ami */}
+      {tab === 'records' && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 16px' }}>
+          {opponentBlitzRecords.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px 12px', color: '#9CA3AF', fontSize: 13, fontWeight: 600 }}>
+              {opponentName} n'a pas encore de record Blitz.
+            </div>
+          ) : (() => {
+            const rush = opponentBlitzRecords.filter(r => r.variant === 'rush').sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+            const speedrun = opponentBlitzRecords.filter(r => r.variant === 'speedrun').sort((a, b) => (a.time_seconds ?? Infinity) - (b.time_seconds ?? Infinity))
+            const fmtTime = (t) => t == null ? '—' : t < 60 ? `${t.toFixed(2)}s` : `${Math.floor(t/60)}:${(t%60).toFixed(2).padStart(5,'0')}`
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {rush.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: '#CC0000', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>⚡ Rush · 60s</div>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 12,
+                      background: 'rgba(255,215,0,0.1)', border: '1px solid #FFD700',
+                    }}>
+                      <span style={{ fontSize: 18 }}>🏆</span>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>Meilleur score</span>
+                        <span style={{ fontSize: 10, color: '#9CA3AF' }}>bonnes réponses en 60s</span>
+                      </div>
+                      <span style={{ fontSize: 18, fontWeight: 900, color: '#FFD700' }}>{rush[0].score}</span>
+                    </div>
+                  </div>
+                )}
+                {speedrun.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: '#0097A7', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>🚀 Speedrun · centième</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {speedrun.map(r => {
+                        const cat = r.category_id ? getCategoryById(r.category_id) : null
+                        return (
+                          <div key={r.id} style={{
+                            display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 12,
+                            background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.25)',
+                          }}>
+                            <span style={{ width: 10, height: 10, borderRadius: '50%', background: cat?.color || '#888' }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {cat?.label || r.category_id}
+                              </span>
+                              <span style={{ fontSize: 10, color: '#9CA3AF' }}>{r.palier} questions</span>
+                            </div>
+                            <span style={{ fontSize: 16, fontWeight: 900, color: '#0097A7', fontVariantNumeric: 'tabular-nums' }}>{fmtTime(r.time_seconds)}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })()}
+        </div>
+      )}
+
+      {tab === 'history' && (
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px' }}>
         {/* Score global */}
         <div style={{
@@ -208,6 +310,7 @@ export default function DuelHistoryScreen() {
           )}
         </div>
       </div>
+      )}
     </div>
   )
 }

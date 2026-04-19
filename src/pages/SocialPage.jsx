@@ -85,6 +85,36 @@ export default function SocialPage() {
   // Au mount : expire les défis > 48h et rembourse 100c créateur (idempotent)
   useEffect(() => { expirePendingChallenges().then(n => { if (n > 0) refreshDuels?.() }).catch(() => {}) }, [refreshDuels])
 
+  // Notifications realtime : ami a relevé / refusé un défi (créateur notifié)
+  useEffect(() => {
+    if (!user?.id) return
+    const channel = supabase
+      .channel(`social-notif-${user.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'challenges',
+        filter: `player1_id=eq.${user.id}`,
+      }, (payload) => {
+        const newRow = payload.new
+        const oldRow = payload.old || {}
+        // Relevé : status pending → completed
+        if (oldRow.status === 'pending' && newRow.status === 'completed') {
+          const name = newRow.player2_name || 'Ton ami'
+          showToast(`🎯 ${name} a relevé ton défi !`)
+          audio.play?.('reveal')
+        }
+        // Refusé : declined_by a été ajouté (size passe de 0 à >0)
+        const oldLen = Array.isArray(oldRow.declined_by) ? oldRow.declined_by.length : 0
+        const newLen = Array.isArray(newRow.declined_by) ? newRow.declined_by.length : 0
+        if (newLen > oldLen && newRow.status === 'pending') {
+          const name = newRow.player2_name || 'Ton ami'
+          showToast(`✗ ${name} a refusé ton défi`)
+        }
+      })
+      .subscribe()
+    return () => { try { supabase.removeChannel(channel) } catch {} }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
+
   // Fetch records Blitz depuis Supabase + subscribe realtime (auto-refresh
   // quand une nouvelle run est insérée par moi sur un autre device, ou par
   // le save post-game courant).

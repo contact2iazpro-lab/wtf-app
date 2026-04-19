@@ -506,19 +506,16 @@ export default function ResultsScreen({
           />
         )}
 
-        {/* Fact le plus WTF — pour VOF, limité aux facts déjà débloqués (globalement) */}
+        {/* Fact le plus WTF — en VOF, sélectionné UNIQUEMENT parmi les facts
+            "découverts" (bien répondus / wasCorrect=true). Priorité VIP, sinon
+            dernier bien répondu. */}
         {(() => {
           let shownFact = featuredFact
           if (isVof) {
-            const globalUnlocked = new Set([
-              ...((wtfData.unlockedFacts) || []),
-              ...extraUnlockedIds,
-            ])
-            const sessionUnlocked = allSessionFacts
+            const correctFacts = allSessionFacts
+              .filter(e => e.wasCorrect === true)
               .map(e => e.fact || e)
-              .filter(f => globalUnlocked.has(f.id))
-            // Priorise VIP parmi débloqués, sinon dernier débloqué, sinon null
-            shownFact = sessionUnlocked.find(f => f.isVip) || sessionUnlocked[sessionUnlocked.length - 1] || null
+            shownFact = correctFacts.find(f => f.isVip) || correctFacts[correctFacts.length - 1] || null
           }
           return (
             <FeaturedFactCard
@@ -558,12 +555,17 @@ export default function ResultsScreen({
                   const fc = CATEGORIES.find(c => c.id === fact.category)
                   const fcColor = fc?.color || catColor
                   const isUnlocked = globalUnlocked.has(fact.id)
-                  // En VoF : les facts répondus sont "découverts" — miniature defloutée
-                  // et click ouvre toujours le détail (bouton "Ajouter à ma collection"
-                  // à l'intérieur si pas encore débloqué).
+                  // VoF : "découvert" = bien répondu. Les manqués restent verrouillés
+                  // (miniature floutée + cadenas centré, pas de détail, modal d'achat direct).
+                  const isDiscovered = wasCorrect === true
                   const handleClick = () => {
                     audio.play?.('click')
-                    setViewingFact({ ...fact, _isLocked: !isUnlocked })
+                    if (isDiscovered) {
+                      setViewingFact({ ...fact, _isLocked: !isUnlocked })
+                    } else {
+                      // Non-découvert → modal d'achat direct (pas d'accès à la page détaillée)
+                      setSelectedFact({ ...fact, _locked: true, _catColor: fcColor, _catEmoji: fc?.emoji, _catLabel: fc?.label })
+                    }
                   }
                   return (
                     <div key={`${idx}-${fact.id}`} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
@@ -576,13 +578,21 @@ export default function ResultsScreen({
                         {fact.imageUrl ? (
                           <img src={fact.imageUrl} alt="" style={{
                             width: '100%', height: '100%', objectFit: 'cover',
+                            filter: isDiscovered ? 'none' : 'blur(4px) brightness(0.45)',
                           }} onError={e => { e.target.style.display = 'none' }} />
                         ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: isDiscovered ? 'none' : 'brightness(0.45)' }}>
                             <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: '55%', height: '55%', objectFit: 'contain', opacity: 0.85 }} onError={e => { e.target.style.display = 'none' }} />
                           </div>
                         )}
-                        {!isUnlocked && (
+                        {/* Non-découvert (manqué) : cadenas centré plein sur miniature floutée */}
+                        {!isDiscovered && (
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: S(18), filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}>🔒</span>
+                          </div>
+                        )}
+                        {/* Découvert mais pas encore unlocked : petit cadenas top-left */}
+                        {isDiscovered && !isUnlocked && (
                           <div style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.55)', borderRadius: '50%', width: S(16), height: S(16), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span style={{ fontSize: S(10), opacity: 0.9 }}>🔒</span>
                           </div>
@@ -600,7 +610,7 @@ export default function ResultsScreen({
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), flexShrink: 0 }}>
               {renderRow(right, `✅ ${right.length} Trouvé${right.length > 1 ? 's' : ''}`, '#6BCB77')}
-              {renderRow(wrong, `❌ ${wrong.length} Raté${wrong.length > 1 ? 's' : ''}`, '#E84535')}
+              {renderRow(wrong, `❌ ${wrong.length} Manqué${wrong.length > 1 ? 's' : ''}`, '#E84535')}
             </div>
           )
         })()}

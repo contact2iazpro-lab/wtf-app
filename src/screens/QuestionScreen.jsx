@@ -499,22 +499,13 @@ export default function QuestionScreen({
 
       {/* Bloc mode label + info + progress — hauteur fixe identique aux 3 modes */}
       <div style={{ height: S(56), flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: `${S(2)} ${S(16)} ${S(4)}` }}>
-        {/* Mode label (remplacé par badge gold si VIP surprise) */}
+        {/* Mode label (variante texte gold si VIP surprise, même dimensions) */}
         {isVipSurprise ? (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
-            padding: `${S(3)} ${S(10)}`,
-            background: 'linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,165,0,0.35))',
-            border: '1.5px solid #FFD700',
-            borderRadius: S(999),
-            alignSelf: 'center',
-            animation: 'vipBadgePulse 1.6s ease-in-out infinite',
-          }}>
-            <span style={{ fontSize: S(14) }}>⭐</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6), animation: 'vipBadgePulse 1.6s ease-in-out infinite', borderRadius: S(999) }}>
+            <span style={{ fontSize: S(18), lineHeight: 1 }}>⭐</span>
             <span style={{
-              fontSize: S(11), fontWeight: 900, letterSpacing: '0.08em',
-              color: '#FFD700', textTransform: 'uppercase',
-              textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+              fontSize: S(11), fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase',
+              color: '#FFD700', textShadow: '0 1px 3px rgba(0,0,0,0.4)',
             }}>
               Bonus VIP
             </span>

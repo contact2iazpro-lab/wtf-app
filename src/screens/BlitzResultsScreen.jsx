@@ -1,7 +1,91 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useScale } from '../hooks/useScale'
 import { createChallenge } from '../data/challengeService'
 import { audio } from '../utils/audio'
+import { CATEGORIES } from '../data/facts'
+import FallbackImage from '../components/FallbackImage'
+import FactDetailView from '../components/FactDetailView'
+import FeaturedFactCard from '../components/results/FeaturedFactCard'
+
+// ─── Miniatures facts session Blitz (format Quickie/VoF, 10 max par ligne) ─────
+function BlitzSessionMiniatures({ sessionAnswers, globalUnlocked, setViewingFact, S }) {
+  const answered = sessionAnswers.map((entry, i) => ({
+    fact: entry.fact || entry,
+    wasCorrect: entry.wasCorrect ?? false,
+    idx: i,
+  })).filter(a => a.fact)
+  const right = answered.filter(a => a.wasCorrect)
+  const wrong = answered.filter(a => !a.wasCorrect)
+
+  const renderRow = (items, label, color) => items.length > 0 && (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: S(4) }}>
+      <span style={{ fontSize: S(10), fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {label}
+      </span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: S(3), width: '100%' }}>
+        {items.map(({ fact, wasCorrect, idx }) => {
+          const fc = CATEGORIES.find(c => c.id === fact.category)
+          const fcColor = fc?.color || '#FF4444'
+          const isUnlocked = globalUnlocked.has(fact.id)
+          const isDiscovered = wasCorrect === true
+          const handleClick = () => {
+            audio.play?.('click')
+            setViewingFact({ ...fact, _isLocked: !isUnlocked })
+          }
+          return (
+            <div key={`${idx}-${fact.id}`} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+              onClick={handleClick}>
+              <div style={{
+                aspectRatio: '1', borderRadius: `${S(8)} ${S(8)} 0 0`, overflow: 'hidden', position: 'relative',
+                border: `2px solid ${fcColor}`, borderBottom: 'none',
+                background: `linear-gradient(135deg, ${fcColor}44, ${fcColor})`,
+              }}>
+                {fact.imageUrl ? (
+                  <img src={fact.imageUrl} alt="" style={{
+                    width: '100%', height: '100%', objectFit: 'cover',
+                    filter: isDiscovered ? 'none' : 'blur(4px) brightness(0.45)',
+                  }} onError={e => { e.target.style.display = 'none' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', filter: isDiscovered ? 'none' : 'blur(4px) brightness(0.45)' }}>
+                    <FallbackImage categoryColor={fcColor} />
+                  </div>
+                )}
+                {!isDiscovered && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: S(16), filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}>🔒</span>
+                  </div>
+                )}
+                {isDiscovered && !isUnlocked && (
+                  <div style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.55)', borderRadius: '50%', width: S(14), height: S(14), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: S(9), opacity: 0.9 }}>🔒</span>
+                  </div>
+                )}
+                <div style={{ position: 'absolute', top: 2, right: 2, width: S(12), height: S(12), borderRadius: '50%', background: wasCorrect ? '#6BCB77' : '#E84535', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(9), fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+                  {wasCorrect ? '✓' : '✗'}
+                </div>
+              </div>
+              <div style={{
+                background: fcColor, borderRadius: `0 0 ${S(6)} ${S(6)}`,
+                padding: `${S(2)} 0`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <img src={`/assets/categories/${fact.category}.png`} alt=""
+                  style={{ width: S(12), height: S(12), borderRadius: S(3), objectFit: 'cover' }}
+                  onError={e => { e.target.style.display = 'none' }} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), width: '100%', maxWidth: 340 }}>
+      {renderRow(right, `✅ ${right.length} Trouvé${right.length > 1 ? 's' : ''}`, '#6BCB77')}
+      {renderRow(wrong, `❌ ${wrong.length} Manqué${wrong.length > 1 ? 's' : ''}`, '#E84535')}
+    </div>
+  )
+}
 
 export default function BlitzResultsScreen({
   finalTime = 0,
@@ -14,6 +98,8 @@ export default function BlitzResultsScreen({
   categoryId = null,
   categoryLabel = '',
   questionCount = 0,
+  sessionAnswers = [],    // [{ fact, wasCorrect }, ...]
+  palier = null,
   user = null,
   isChallengeMode = false,
   onHome,
@@ -33,6 +119,45 @@ export default function BlitzResultsScreen({
   const [challengeCreated, setChallengeCreated] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [viewingFact, setViewingFact] = useState(null)
+  const [extraUnlockedIds, setExtraUnlockedIds] = useState(() => new Set())
+
+  // Set des f*cts déjà dans la collection (lu depuis localStorage)
+  const globalUnlocked = useMemo(() => {
+    try {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      return new Set([...(wd.unlockedFacts || []), ...extraUnlockedIds])
+    } catch { return new Set(extraUnlockedIds) }
+  }, [extraUnlockedIds])
+
+  // Fact le plus WTF : priorité VIP parmi les bien répondus, sinon dernier correct
+  const featuredFact = useMemo(() => {
+    const correct = sessionAnswers.filter(a => a.wasCorrect).map(a => a.fact).filter(Boolean)
+    if (correct.length === 0) return null
+    return correct.find(f => f.isVip) || correct[correct.length - 1]
+  }, [sessionAnswers])
+
+  const handleUnlockFact = (fact) => {
+    if (!fact) return
+    const cost = fact.isVip ? 250 : 50
+    try {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      const currentCoins = wd.wtfCoins || 0
+      if (currentCoins < cost) {
+        alert(`Il te faut ${cost} coins pour débloquer ce fact.`)
+        return
+      }
+      wd.wtfCoins = currentCoins - cost
+      const unlocked = wd.unlockedFacts || []
+      if (!unlocked.includes(fact.id)) unlocked.push(fact.id)
+      wd.unlockedFacts = unlocked
+      wd.lastModified = Date.now()
+      localStorage.setItem('wtf_data', JSON.stringify(wd))
+      window.dispatchEvent(new Event('wtf_storage_sync'))
+      setExtraUnlockedIds(prev => { const n = new Set(prev); n.add(fact.id); return n })
+      audio.play?.('correct')
+    } catch { /* ignore */ }
+  }
 
   // Cleanup du résultat créé au unmount (handler stable via useCallback dans ScreenRenderer).
   useEffect(() => {
@@ -156,49 +281,79 @@ export default function BlitzResultsScreen({
         className="absolute inset-0 flex flex-col overflow-hidden"
         style={{ '--scale': scale, background: 'linear-gradient(160deg, #1a0a2e 0%, #3a0a4e 100%)', fontFamily: 'Nunito, sans-serif' }}
       >
-        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-4 pb-2 min-h-0" style={{ gap: S(14) }}>
-          <div style={{ fontSize: S(56) }}>{soloRank.emoji}</div>
-          <h1 style={{ fontSize: S(22), fontWeight: 900, color: 'white', textAlign: 'center' }}>{soloRank.label}</h1>
+        {/* Header : icône Blitz + titre */}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0, paddingTop: S(12) }}>
+          <img src="/assets/modes/icon-blitz.png" alt="Blitz" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
+          <span style={{ fontSize: S(13), fontWeight: 900, color: '#FF4444' }}>Résultats — Blitz Rush</span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 pb-2 pt-2" style={{ display: 'flex', flexDirection: 'column', gap: S(10), alignItems: 'center' }}>
+          <div style={{ fontSize: S(48) }}>{soloRank.emoji}</div>
+          <h1 style={{ fontSize: S(20), fontWeight: 900, color: 'white', textAlign: 'center', margin: 0 }}>{soloRank.label}</h1>
 
           {isNewRecord && (
-            <div className="rounded-2xl w-full py-3 text-center" style={{
+            <div className="rounded-2xl w-full py-2 text-center" style={{
               background: 'linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,165,0,0.3))',
               border: '2px solid rgba(255,215,0,0.6)', animation: 'blitzRecordPulse 1.5s ease-in-out infinite',
               maxWidth: 340,
             }}>
-              <span style={{ fontSize: S(16), fontWeight: 900, color: '#FFD700' }}>🎉 NOUVEAU RECORD !</span>
+              <span style={{ fontSize: S(14), fontWeight: 900, color: '#FFD700' }}>🎉 NOUVEAU RECORD !</span>
             </div>
           )}
 
-          <div className="rounded-3xl w-full p-6" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
-            <div className="text-center" style={{ marginBottom: S(6) }}>
-              <span style={{ fontSize: S(12), color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Bonnes réponses en 60s</span>
+          <div className="rounded-3xl w-full p-4" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
+            <div className="text-center" style={{ marginBottom: S(2) }}>
+              <span style={{ fontSize: S(11), color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>Bonnes réponses en 60s</span>
             </div>
             <div className="text-center">
-              <span style={{ fontSize: S(96), fontWeight: 900, color: '#FFD700', lineHeight: 1, fontVariantNumeric: 'tabular-nums', textShadow: '0 4px 20px rgba(255,215,0,0.3)' }}>
+              <span style={{ fontSize: S(64), fontWeight: 900, color: '#FFD700', lineHeight: 1, fontVariantNumeric: 'tabular-nums', textShadow: '0 4px 20px rgba(255,215,0,0.3)' }}>
                 {correctCount}
               </span>
             </div>
           </div>
 
-          <div className="rounded-2xl w-full p-4 flex items-center justify-between" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)', maxWidth: 340 }}>
-            <span style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
-            <span style={{ fontSize: S(20), fontWeight: 900, color: '#FFD700' }}>{Math.max(bestScore, correctCount)}</span>
+          <div className="rounded-2xl w-full p-3 flex items-center justify-between" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)', maxWidth: 340 }}>
+            <span style={{ fontSize: S(12), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
+            <span style={{ fontSize: S(16), fontWeight: 900, color: '#FFD700' }}>{Math.max(bestScore, correctCount)}</span>
           </div>
+
+          {/* Fact le plus WTF (parmi bien répondus) */}
+          {featuredFact && (
+            <div style={{ width: '100%', maxWidth: 340 }}>
+              <FeaturedFactCard
+                fact={featuredFact}
+                fallbackColor="#FF4444"
+                textColor="#ffffff"
+                isQuickie={false}
+                onClick={() => { audio.play?.('click'); setViewingFact({ ...featuredFact, _isLocked: !globalUnlocked.has(featuredFact.id) }) }}
+              />
+            </div>
+          )}
+
+          {/* Miniatures des facts répondus (format VoF/Quickie) */}
+          {sessionAnswers.length > 0 && (
+            <BlitzSessionMiniatures
+              sessionAnswers={sessionAnswers}
+              globalUnlocked={globalUnlocked}
+              setViewingFact={setViewingFact}
+              onUnlockRequest={handleUnlockFact}
+              S={S}
+            />
+          )}
         </div>
 
         <div className="shrink-0 w-full px-6 pb-4 pt-2 flex flex-col gap-2">
           <button
             onClick={onReplay}
             className="w-full py-3 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
-            style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16) }}
+            style={{ background: 'linear-gradient(135deg, #FF4444, #CC0000)', color: 'white', fontSize: S(16), border: '3px solid #ffffff' }}
           >
             ⚡ Rejouer
           </button>
           <button
             onClick={handleShareSolo}
             className="w-full py-2.5 rounded-2xl font-bold text-sm"
-            style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '2px solid rgba(255,255,255,0.3)', fontSize: S(14) }}
+            style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '3px solid #ffffff', fontSize: S(14) }}
           >
             📤 Partager
           </button>
@@ -217,6 +372,14 @@ export default function BlitzResultsScreen({
             50% { transform: scale(1.03) }
           }
         `}</style>
+
+        {viewingFact && (
+          <FactDetailView
+            fact={viewingFact}
+            onClose={() => setViewingFact(null)}
+            onUnlockRequest={handleUnlockFact}
+          />
+        )}
       </div>
     )
   }
@@ -236,48 +399,88 @@ export default function BlitzResultsScreen({
       return `${m}:${s.padStart(5, '0')}`
     }
 
+    const handleShareSpeedrun = () => {
+      const text = `⚡ J'ai bouclé ${totalAnswered} palier${totalAnswered > 1 ? 's' : ''} en ${formatSpeedrunTime(finalTime)} au Blitz Speedrun WTF! Tu fais mieux ?`
+      const url = window.location.origin
+      if (navigator.share) {
+        navigator.share({ title: 'Blitz Speedrun WTF! ⚡', text, url }).catch(() => {})
+      } else {
+        navigator.clipboard?.writeText(`${text}\n${url}`)
+      }
+    }
+
     return (
       <div
         className="absolute inset-0 flex flex-col overflow-hidden"
         style={{ '--scale': scale, background: 'linear-gradient(160deg, #0a2e3e 0%, #1a5060 50%, #0a2e3e 100%)', fontFamily: 'Nunito, sans-serif' }}
       >
-        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-4 pb-2 min-h-0" style={{ gap: S(14) }}>
-          <div style={{ fontSize: S(56) }}>{speedrunRank.emoji}</div>
-          <h1 style={{ fontSize: S(22), fontWeight: 900, color: 'white', textAlign: 'center' }}>{speedrunRank.label}</h1>
+        {/* Header : icône Blitz + titre */}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0, paddingTop: S(12) }}>
+          <img src="/assets/modes/icon-blitz.png" alt="Blitz" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
+          <span style={{ fontSize: S(13), fontWeight: 900, color: '#00E5FF' }}>Résultats — Blitz Speedrun</span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 pb-2 pt-2" style={{ display: 'flex', flexDirection: 'column', gap: S(10), alignItems: 'center' }}>
+          <div style={{ fontSize: S(48) }}>{speedrunRank.emoji}</div>
+          <h1 style={{ fontSize: S(20), fontWeight: 900, color: 'white', textAlign: 'center', margin: 0 }}>{speedrunRank.label}</h1>
 
           {isNewRecord && (
-            <div className="rounded-2xl w-full py-3 text-center" style={{
+            <div className="rounded-2xl w-full py-2 text-center" style={{
               background: 'linear-gradient(135deg, rgba(0,229,255,0.25), rgba(0,151,167,0.3))',
               border: '2px solid rgba(0,229,255,0.6)', animation: 'blitzRecordPulse 1.5s ease-in-out infinite',
               maxWidth: 340,
             }}>
-              <span style={{ fontSize: S(16), fontWeight: 900, color: '#00E5FF' }}>🎉 NOUVEAU RECORD !</span>
+              <span style={{ fontSize: S(14), fontWeight: 900, color: '#00E5FF' }}>🎉 NOUVEAU RECORD !</span>
             </div>
           )}
 
-          <div className="rounded-3xl w-full p-6" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
-            <div className="text-center" style={{ marginBottom: S(6) }}>
-              <span style={{ fontSize: S(12), color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
+          <div className="rounded-3xl w-full p-4" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
+            <div className="text-center" style={{ marginBottom: S(2) }}>
+              <span style={{ fontSize: S(11), color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
                 Temps final · palier {totalAnswered}
               </span>
             </div>
             <div className="text-center">
-              <span style={{ fontSize: S(72), fontWeight: 900, color: '#00E5FF', lineHeight: 1, fontVariantNumeric: 'tabular-nums', textShadow: '0 4px 20px rgba(0,229,255,0.3)' }}>
+              <span style={{ fontSize: S(56), fontWeight: 900, color: '#00E5FF', lineHeight: 1, fontVariantNumeric: 'tabular-nums', textShadow: '0 4px 20px rgba(0,229,255,0.3)' }}>
                 {formatSpeedrunTime(finalTime)}
               </span>
             </div>
-            <div className="text-center" style={{ marginTop: S(8) }}>
-              <span style={{ fontSize: S(12), color: 'rgba(255,255,255,0.5)' }}>
+            <div className="text-center" style={{ marginTop: S(6) }}>
+              <span style={{ fontSize: S(11), color: 'rgba(255,255,255,0.5)' }}>
                 {correctCount} / {totalAnswered} bonnes · {categoryLabel || 'Catégorie'}
               </span>
             </div>
           </div>
 
           {bestTime !== null && bestTime !== undefined && (
-            <div className="rounded-2xl w-full p-4 flex items-center justify-between" style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', maxWidth: 340 }}>
-              <span style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
-              <span style={{ fontSize: S(20), fontWeight: 900, color: '#00E5FF' }}>{formatSpeedrunTime(bestTime)}</span>
+            <div className="rounded-2xl w-full p-3 flex items-center justify-between" style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', maxWidth: 340 }}>
+              <span style={{ fontSize: S(12), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
+              <span style={{ fontSize: S(16), fontWeight: 900, color: '#00E5FF' }}>{formatSpeedrunTime(bestTime)}</span>
             </div>
+          )}
+
+          {/* Fact le plus WTF (parmi bien répondus) */}
+          {featuredFact && (
+            <div style={{ width: '100%', maxWidth: 340 }}>
+              <FeaturedFactCard
+                fact={featuredFact}
+                fallbackColor="#00E5FF"
+                textColor="#ffffff"
+                isQuickie={false}
+                onClick={() => { audio.play?.('click'); setViewingFact({ ...featuredFact, _isLocked: !globalUnlocked.has(featuredFact.id) }) }}
+              />
+            </div>
+          )}
+
+          {/* Miniatures des facts répondus */}
+          {sessionAnswers.length > 0 && (
+            <BlitzSessionMiniatures
+              sessionAnswers={sessionAnswers}
+              globalUnlocked={globalUnlocked}
+              setViewingFact={setViewingFact}
+              onUnlockRequest={handleUnlockFact}
+              S={S}
+            />
           )}
         </div>
 
@@ -285,9 +488,16 @@ export default function BlitzResultsScreen({
           <button
             onClick={onReplay}
             className="w-full py-3 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
-            style={{ background: 'linear-gradient(135deg, #00E5FF, #0097A7)', color: 'white', fontSize: S(16) }}
+            style={{ background: 'linear-gradient(135deg, #00E5FF, #0097A7)', color: 'white', fontSize: S(16), border: '3px solid #ffffff' }}
           >
             ⚡ Rejouer
+          </button>
+          <button
+            onClick={handleShareSpeedrun}
+            className="w-full py-2.5 rounded-2xl font-bold text-sm"
+            style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '3px solid #ffffff', fontSize: S(14) }}
+          >
+            📤 Partager
           </button>
           <button
             onClick={onHome}
@@ -304,6 +514,14 @@ export default function BlitzResultsScreen({
             50% { transform: scale(1.03) }
           }
         `}</style>
+
+        {viewingFact && (
+          <FactDetailView
+            fact={viewingFact}
+            onClose={() => setViewingFact(null)}
+            onUnlockRequest={handleUnlockFact}
+          />
+        )}
       </div>
     )
   }

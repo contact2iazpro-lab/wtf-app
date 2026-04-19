@@ -79,7 +79,7 @@ export function useBlitzHandlers({
   }, [setBlitzVariant])
 
   const handleBlitzFinish = useCallback((results) => {
-    const { finalTime, correctCount, totalAnswered, variant = 'defi' } = results
+    const { finalTime, correctCount, totalAnswered, variant = 'defi', sessionAnswers = [] } = results
 
     // ─── Branche RUSH (ex-solo) : record = nombre de bonnes réponses en 60s ───
     if (variant === 'rush' || variant === 'solo') { // 'solo' gardé en fallback legacy
@@ -96,6 +96,7 @@ export function useBlitzHandlers({
         finalTime: finalTime || 60,
         bestScore,
         isNewRecord,
+        sessionAnswers,
       })
       setScreen(SCREENS.BLITZ_RESULTS)
       return
@@ -128,6 +129,7 @@ export function useBlitzHandlers({
         isNewRecord,
         categoryId: selectedCategory,
         palier,
+        sessionAnswers,
       })
       setScreen(SCREENS.BLITZ_RESULTS)
       return

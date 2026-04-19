@@ -70,6 +70,12 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
     clearInterval(intervalRef.current)
     setTimeout(() => {
       const elapsed = (Date.now() - startTimeRef.current) / 1000 + penaltiesRef.current
+      // sessionAnswers = liste de { fact, wasCorrect } pour chaque question répondue
+      // (utilisé par BlitzResultsScreen pour afficher les miniatures)
+      const sessionAnswers = answeredResults.map((r, i) => ({
+        fact: facts[i],
+        wasCorrect: r === 'correct',
+      })).filter(a => a.fact)
       onFinish({
         variant,
         correctCount: correctRef.current,
@@ -77,9 +83,10 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
         finalTime: isSpeedrun
           ? Math.round(elapsed * 100) / 100
           : lastCorrectTimeRef.current,
+        sessionAnswers,
       })
     }, 200)
-  }, [onFinish, variant, answeredResults, isSpeedrun])
+  }, [onFinish, variant, answeredResults, isSpeedrun, facts])
 
   // ── Chrono ──────────────────────────────────────────────────────────────
   //  Rush : décompte depuis RUSH_DURATION, fin à 0s

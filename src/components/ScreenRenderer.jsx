@@ -204,6 +204,8 @@ export default function ScreenRenderer({
           categoryId={selectedCategory}
           categoryLabel={getCategoryById(selectedCategory)?.label || ''}
           questionCount={blitzResults.totalAnswered}
+          sessionAnswers={blitzResults.sessionAnswers || []}
+          palier={blitzResults.palier || null}
           user={user}
           isChallengeMode={isChallengeMode}
           onHome={handleHome}

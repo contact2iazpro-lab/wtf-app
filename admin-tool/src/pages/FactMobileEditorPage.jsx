@@ -15,6 +15,8 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES } from '../constants/categories'
 import FactImageGenerator from '../components/FactImageGenerator'
+import { callEdgeFunction } from '../utils/helpers'
+import { generateStatementsForFact } from '../lib/generateStatements'
 
 const isLightColor = (hex) => {
   if (!hex) return false
@@ -128,6 +130,39 @@ function CenteredTextarea({ value, onChange, placeholder, bg, border, color, fon
   )
 }
 
+// ── Mini-header de section : label + bouton régénérer (solo, IA) ───────
+function SectionHeader({ label, onClick, loading, textColor }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      marginBottom: 6, paddingLeft: 2,
+    }}>
+      <span style={{
+        fontSize: 10, fontWeight: 900, letterSpacing: '0.05em',
+        textTransform: 'uppercase', color: textColor, opacity: 0.7,
+      }}>
+        {label}
+      </span>
+      <button
+        onClick={onClick}
+        disabled={loading}
+        title={`Régénérer ${label.toLowerCase()} via IA`}
+        style={{
+          height: 22, padding: '0 8px', borderRadius: 6,
+          background: loading ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.35)',
+          border: '1px solid rgba(255,255,255,0.35)',
+          color: '#fff', fontSize: 10, fontWeight: 800,
+          cursor: loading ? 'wait' : 'pointer',
+          display: 'flex', alignItems: 'center', gap: 4,
+          opacity: loading ? 0.7 : 1,
+        }}
+      >
+        {loading ? '⟳ Génération…' : '✨ Régénérer'}
+      </button>
+    </div>
+  )
+}
+
 // ══════════════════════════════════════════════════════════════════════
 export default function FactMobileEditorPage({ toast }) {
   const { id } = useParams()
@@ -140,6 +175,9 @@ export default function FactMobileEditorPage({ toast }) {
   const [prevId, setPrevId] = useState(null)
   const [nextId, setNextId] = useState(null)
   const [zoomOpen, setZoomOpen] = useState(false)
+  const [genHintsLoading, setGenHintsLoading] = useState(false)
+  const [genAnswersLoading, setGenAnswersLoading] = useState(false)
+  const [genStatementsLoading, setGenStatementsLoading] = useState(false)
 
   // ── Load ────────────────────────────────────────────────────────────
   // Calque le pattern de FactEditorPage : applique les mêmes filtres URL
@@ -227,6 +265,102 @@ export default function FactMobileEditorPage({ toast }) {
       toast?.('Erreur sauvegarde', 'error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // ── Régénération solo : indices (complete-hints chirurgical) ───────
+  async function regenHints() {
+    if (genHintsLoading || !fact) return
+    if (!fact.question || !fact.short_answer) {
+      toast?.('Question ou réponse manquante', 'warn')
+      return
+    }
+    setGenHintsLoading(true)
+    try {
+      const res = await callEdgeFunction('complete-hints', {
+        question: fact.question,
+        short_answer: fact.short_answer,
+        explanation: fact.explanation,
+        category: fact.category,
+        hint1: fact.hint1, hint2: fact.hint2,
+        hint3: fact.hint3, hint4: fact.hint4,
+      })
+      const updated = res.updated || {}
+      const keys = Object.keys(updated)
+      if (keys.length === 0) {
+        toast?.('Indices déjà valides — rien à changer')
+        return
+      }
+      setFact(prev => ({ ...prev, ...updated }))
+      setDirty(true)
+      toast?.(`✓ ${keys.length} indice(s) régénéré(s) — pense à sauvegarder`)
+    } catch (err) {
+      console.error('[regenHints]', err)
+      toast?.('Erreur génération indices : ' + err.message, 'error')
+    } finally {
+      setGenHintsLoading(false)
+    }
+  }
+
+  // ── Régénération solo : 8 mauvaises réponses (enrich-fact) ─────────
+  async function regenAnswers() {
+    if (genAnswersLoading || !fact) return
+    if (!fact.question || !fact.short_answer) {
+      toast?.('Question ou réponse manquante', 'warn')
+      return
+    }
+    setGenAnswersLoading(true)
+    try {
+      const res = await callEdgeFunction('enrich-fact', {
+        question: fact.question,
+        short_answer: fact.short_answer,
+        explanation: fact.explanation,
+        category: fact.category,
+        hint1: fact.hint1, hint2: fact.hint2,
+      })
+      const updates = {
+        funny_wrong_1:     res.funny_wrong_1,
+        funny_wrong_2:     res.funny_wrong_2,
+        funny_wrong_3:     res.funny_wrong_3,
+        close_wrong_1:     res.close_wrong_1,
+        close_wrong_2:     res.close_wrong_2,
+        plausible_wrong_1: res.plausible_wrong_1,
+        plausible_wrong_2: res.plausible_wrong_2,
+        plausible_wrong_3: res.plausible_wrong_3,
+      }
+      setFact(prev => ({ ...prev, ...updates }))
+      setDirty(true)
+      toast?.('✓ 8 réponses régénérées — pense à sauvegarder')
+    } catch (err) {
+      console.error('[regenAnswers]', err)
+      toast?.('Erreur génération réponses : ' + err.message, 'error')
+    } finally {
+      setGenAnswersLoading(false)
+    }
+  }
+
+  // ── Régénération solo : 3 affirmations VoF (generateStatements) ────
+  async function regenStatements() {
+    if (genStatementsLoading || !fact) return
+    if (!fact.question || !fact.short_answer) {
+      toast?.('Question ou réponse manquante', 'warn')
+      return
+    }
+    if (!fact.funny_wrong_1 || !fact.plausible_wrong_1) {
+      toast?.('Il faut au moins 1 funny_wrong et 1 plausible_wrong. Régénère d\'abord les réponses.', 'warn')
+      return
+    }
+    setGenStatementsLoading(true)
+    try {
+      const res = await generateStatementsForFact(fact)
+      setFact(prev => ({ ...prev, ...res }))
+      setDirty(true)
+      toast?.('✓ 3 affirmations régénérées — pense à sauvegarder')
+    } catch (err) {
+      console.error('[regenStatements]', err)
+      toast?.('Erreur affirmations : ' + err.message, 'error')
+    } finally {
+      setGenStatementsLoading(false)
     }
   }
 
@@ -391,6 +525,12 @@ export default function FactMobileEditorPage({ toast }) {
 
           {/* 8 mauvaises réponses — grid 2 col, taille jeu */}
           <div style={{ marginBottom: 12 }}>
+            <SectionHeader
+              label="Réponses"
+              onClick={regenAnswers}
+              loading={genAnswersLoading}
+              textColor={textOnCat}
+            />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
               {WRONG_ANSWERS.map(({ key, color }) => {
                 const invalid = isFieldInvalid(fact[key], key)
@@ -417,6 +557,12 @@ export default function FactMobileEditorPage({ toast }) {
 
           {/* 4 Indices — grid 2 col, taille jeu (fond blanc, 28h) */}
           <div style={{ marginBottom: 12 }}>
+            <SectionHeader
+              label="Indices"
+              onClick={regenHints}
+              loading={genHintsLoading}
+              textColor={textOnCat}
+            />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[1, 2, 3, 4].map(n => {
                 const key = `hint${n}`
@@ -444,6 +590,12 @@ export default function FactMobileEditorPage({ toast }) {
 
           {/* 3 Affirmations (Vrai ou Fou) */}
           <div style={{ marginBottom: 12 }}>
+            <SectionHeader
+              label="Affirmations"
+              onClick={regenStatements}
+              loading={genStatementsLoading}
+              textColor={textOnCat}
+            />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {[
                 { key: 'statement_true',              color: COLOR_VRAIE },

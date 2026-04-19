@@ -146,7 +146,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Coût : 1 énergie (cap 5, régén +1/8h, extra = 75 coins)
 - Gains : 10 coins/bonne réponse · Perfect (5/5) : +50 coins
 - Déblocage f*cts : Oui (Funny + VIP si bien répondu)
-- Catégories : 5 gratuites (sport, records, animaux, kids, définition) + débloquables 1 500 coins
+- Catégories : 5 gratuites (sport, records, animaux, kids, définition) + débloquables 200 coins (baissé de 1 500 le 19/04/2026 — priorité découverte via Quickie random)
 - **Mini-parcours catégorie presque terminée (< 5 f*cts restants, éco ×10 17/04/2026)** :
   - 1 fact = 50 coins · 2 facts = 100c · 3 facts = 150c · 4 facts = 200c
 - **VIP Surprise (19/04/2026)** : chaque question a 3% chance d'être un VIP non-débloqué.
@@ -350,7 +350,7 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 | Énergie max (stock) | 5 (régén +1/8h) |
 | Énergie extra | 75 coins |
 | Indice (boutique) | 50 coins |
-| Débloquer catégorie | 1 500 coins |
+| Débloquer catégorie | 200 coins |
 | Cosmétique profil (moyen) | 500 coins |
 | Ticket Blitz Défi (créer) | 200 coins |
 | Spin roulette (payant) | 100 coins |

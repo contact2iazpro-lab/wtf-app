@@ -1,11 +1,11 @@
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 
-export const UNLOCK_CATEGORY_PRICE = 1500
+export const UNLOCK_CATEGORY_PRICE = 200
 
 const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 
-// Débloque une catégorie : débite 1500 coins (local + Supabase) et persiste
+// Débloque une catégorie : débite 200 coins (local + Supabase) et persiste
 // l'id dans `wtf_data.unlockedCategories` + `flags.unlockedCategories`.
 // Retourne true si l'op a réussi, false sinon (coins insuffisants).
 export function unlockCategoryNow(catId, { applyCurrencyDelta, mergeFlags, currentCoins }) {

@@ -64,7 +64,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
 
   // Catégories débloquées :
   //   1. 5 de base (GUEST_CATEGORIES)
-  //   2. Celles persistées (achat 1500 coins ou progression Quest)
+  //   2. Celles persistées (achat 200 coins ou progression Quest)
   //   3. Celles de la session courante
   //   4. Toute catégorie où le joueur a déjà ≥ 1 fact débloqué
   //      (migration douce : comptes existants qui ont des f*cts dans des catégories

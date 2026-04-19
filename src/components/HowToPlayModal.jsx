@@ -1,165 +1,8 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 import { MODE_CONFIGS } from '../constants/gameConfig'
-import EnergyIcon from './icons/EnergyIcon'
-import MultipleChoiceIcon from './icons/MultipleChoiceIcon'
-import QuestionTargetIcon from './icons/QuestionTargetIcon'
-import TimerIcon from './icons/TimerIcon'
-import PerfectIcon from './icons/PerfectIcon'
-import InfinityIcon from './icons/InfinityIcon'
-import SwipeArrowsIcon from './icons/SwipeArrowsIcon'
-import ShareIcon from './icons/ShareIcon'
-
-import { CURRENCY_EMOJI_MAP } from '../utils/renderEmoji'
-
-const EMOJI_IMG = {
-  '🎰': '/assets/ui/emoji-roulette.png?v=2',
-  '🗺️': '/assets/ui/emoji-route.png',
-  '🧩': '/assets/ui/emoji-puzzle.png',
-  ...CURRENCY_EMOJI_MAP,
-}
-
-const QUICKIE_VIOLET = '#FFA500'
-const QUICKIE_GOLD = '#FFD700'
-const VOF_GREEN = '#6BCB77'
-const VOF_RED = '#E84535'
-
-function NoHintIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <text x="50" y="58" textAnchor="middle" fill={color} fontSize="40" fontWeight="900" fontFamily="Nunito, sans-serif">💡</text>
-      <line x1="22" y1="78" x2="78" y2="22" stroke={color} strokeWidth="6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function FreeIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <text x="50" y="66" textAnchor="middle" fill={color} fontSize="44" fontWeight="900" fontFamily="Nunito, sans-serif">∞</text>
-    </svg>
-  )
-}
-
-function TrophyIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M30 25h40v30c0 12-8 20-20 20s-20-8-20-20V25z" stroke={color} strokeWidth="6" fill="none" strokeLinejoin="round" />
-      <path d="M30 35H18c0 14 6 20 12 22" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M70 35h12c0 14-6 20-12 22" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <line x1="50" y1="75" x2="50" y2="85" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <line x1="36" y1="85" x2="64" y2="85" stroke={color} strokeWidth="5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function PenaltyIcon({ size = 64, color = '#ffffff', accent = null, text = '−5s' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <text x="50" y="64" textAnchor="middle" fill={accent || color} fontSize="38" fontWeight="900" fontFamily="Nunito, sans-serif">{text}</text>
-    </svg>
-  )
-}
-
-function TargetIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <circle cx="50" cy="50" r="24" stroke={color} strokeWidth="5" fill="none" />
-      <circle cx="50" cy="50" r="10" fill={color} />
-    </svg>
-  )
-}
-
-function StepsIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="12" y="65" width="26" height="22" rx="2" fill={color} />
-      <rect x="37" y="45" width="26" height="42" rx="2" fill={color} />
-      <rect x="62" y="25" width="26" height="62" rx="2" fill={color} />
-    </svg>
-  )
-}
-
-function SwordsIcon({ size = 64, color = '#ffffff', accent = null }) {
-  const blade = accent || color
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <line x1="18" y1="18" x2="70" y2="70" stroke={blade} strokeWidth="8" strokeLinecap="round" />
-      <circle cx="14" cy="14" r="5" fill={color} />
-      <line x1="72" y1="72" x2="86" y2="86" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <line x1="82" y1="18" x2="30" y2="70" stroke={blade} strokeWidth="8" strokeLinecap="round" />
-      <circle cx="86" cy="14" r="5" fill={color} />
-      <line x1="28" y1="72" x2="14" y2="86" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <circle cx="50" cy="50" r="4" fill={accent || color} />
-    </svg>
-  )
-}
-
-function SurvivalIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M50 15L15 85h70L50 15z" stroke={color} strokeWidth="6" fill="none" strokeLinejoin="round" />
-      <line x1="50" y1="40" x2="50" y2="60" stroke={color} strokeWidth="6" strokeLinecap="round" />
-      <circle cx="50" cy="72" r="4" fill={color} />
-    </svg>
-  )
-}
-
-const COMPONENT_ICONS = {
-  'icon:qcm': (size, color, modeId) => {
-    if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
-    if (modeId === 'blitz') return <MultipleChoiceIcon size={size} color={'#FF4444'} accent={QUICKIE_GOLD} />
-    if (modeId === 'multi') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
-    return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
-  },
-  'icon:set': (size, color, modeId) => {
-    if (modeId === 'vrai_ou_fou') return <QuestionTargetIcon size={size} color={'#ffffff'} accent={VOF_GREEN} questionColor={VOF_RED} />
-    return <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />
-  },
-  'icon:timer': (size, color, modeId) => {
-    if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
-    if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
-    if (modeId === 'blitz') return <TimerIcon size={size} color={'#FF4444'} accent={QUICKIE_GOLD} />
-    if (modeId === 'multi') return <TimerIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
-    return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
-  },
-  'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
-  'icon:star': (size) => <img src="/assets/ui/wtf-star.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
-  'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
-  'icon:hint': (size) => <img src="/assets/ui/icon-hint.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
-  'icon:coins': (size) => <img src="/assets/ui/icon-coins.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
-  'picto:infinity': (size, color) => <InfinityIcon size={size} color={color || '#6BCB77'} />,
-  'picto:swipe': (size, color) => <SwipeArrowsIcon size={size} />,
-  'picto:share': (size, color) => <ShareIcon size={size} />,
-  'picto:no-hint': (size, color) => <NoHintIcon size={size} color={color || '#ffffff'} />,
-  'picto:free': (size, color) => <FreeIcon size={size} color={color || '#ffffff'} />,
-  'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
-  'picto:penalty': (size, color, modeId) => {
-    if (modeId === 'blitz') return <PenaltyIcon size={size} color={'#FF4444'} accent={'#FF4444'} text="−5s" />
-    if (modeId === 'multi') return <PenaltyIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} text="±5s" />
-    return <PenaltyIcon size={size} color={color || '#ffffff'} />
-  },
-  'picto:target': (size, color) => <TargetIcon size={size} color={color || '#ffffff'} />,
-  'picto:steps': (size, color) => <StepsIcon size={size} color={color || '#ffffff'} />,
-  'picto:swords': (size, color, modeId) => {
-    if (modeId === 'multi') return <SwordsIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
-    return <SwordsIcon size={size} color={color || '#ffffff'} />
-  },
-  'picto:survival': (size, color) => <SurvivalIcon size={size} color={color || '#ffffff'} />,
-}
-
-function renderIcon(value, size, color, modeId) {
-  const compFn = COMPONENT_ICONS[value]
-  if (compFn) return compFn(size || 18, color, modeId)
-  if (value === '🔋') return <EnergyIcon size={size || 16} color={color} />
-  const src = EMOJI_IMG[value]
-  if (!src) return value
-  return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
-}
+// Icons + renderIcon partagés avec ModeLaunchScreen (source unique de vérité)
+import { renderIcon, QUICKIE_VIOLET } from '../utils/modeRuleIcons'
 
 // ── Couleurs par chapitre ────────────────────────────────────────────────────
 const CHAPTER_COLORS = {
@@ -222,13 +65,29 @@ const CHAPTERS = [
   },
 
   // ═══ MODES DE JEU — contenu dynamique depuis MODE_CONFIGS ═══
+  // Ordre officiel (19/04/2026) : Quest · Quickie · VoF · Race · Blitz · Multi · Flash
+  { id: 'quest', shortTitle: 'Quest', dynamic: true },
   { id: 'quickie', shortTitle: 'Quickie', dynamic: true },
   { id: 'vrai_ou_fou', shortTitle: 'Vrai ET Fou', dynamic: true },
-  { id: 'quest', shortTitle: 'Quest', dynamic: true },
   { id: 'race', shortTitle: 'Race', dynamic: true },
   { id: 'blitz', shortTitle: 'Blitz', dynamic: true },
   { id: 'multi', shortTitle: 'Multi', dynamic: true },
   { id: 'flash', shortTitle: 'Flash', dynamic: true },
+
+  // ═══ ROULETTE (juste après les modes) ═══
+  {
+    id: 'roulette',
+    emoji: '🎰',
+    shortTitle: 'Roulette',
+    title: 'Roulette Quotidienne',
+    content: [
+      { icon: '🆓', text: '**1 tour gratuit** par jour — reviens chaque jour !' },
+      { icon: '🪙', text: 'Tours supplémentaires : **100 Coins**.' },
+      { icon: '🎯', text: 'La roue contient : **20 · 50 · 100 · 150 · 300 · 750 Coins** ou **1-2 indices**.' },
+      { icon: '💎', text: 'Jackpot **750 Coins** : ultra-rare — tente ta chance !' },
+      { icon: '📊', text: 'Combine la roulette avec ta série pour **maximiser tes gains quotidiens**.' },
+    ],
+  },
 
   // ═══ ÉNERGIE ═══
   {
@@ -292,21 +151,6 @@ const CHAPTERS = [
       { icon: '🥇', text: '**Fidèle (J14)** : 500 Coins' },
       { icon: '👑', text: '**Légende (J30)** : 1 000 Coins + cadre exclusif' },
       { icon: '🛡️', text: 'Achète un **Streak Freeze** (150 Coins) pour protéger ta série.' },
-    ],
-  },
-
-  // ═══ ROULETTE ═══
-  {
-    id: 'roulette',
-    emoji: '🎰',
-    shortTitle: 'Roulette',
-    title: 'Roulette Quotidienne',
-    content: [
-      { icon: '🆓', text: '**1 tour gratuit** par jour — reviens chaque jour !' },
-      { icon: '🪙', text: 'Tours supplémentaires : **100 Coins**.' },
-      { icon: '🎯', text: 'La roue contient : **20 · 50 · 100 · 150 · 300 · 750 Coins** ou **1-2 indices**.' },
-      { icon: '💎', text: 'Jackpot **750 Coins** : ultra-rare — tente ta chance !' },
-      { icon: '📊', text: 'Combine la roulette avec ta série pour **maximiser tes gains quotidiens**.' },
     ],
   },
 

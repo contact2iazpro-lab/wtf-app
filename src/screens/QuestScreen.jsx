@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { getFunnyFacts, getVipFacts, getCategoryById } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
+import { shuffle } from '../utils/shuffle'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
 import {
@@ -118,7 +119,7 @@ function buildBossOptions(fact, excludeWrongs = []) {
     const used = new Set(picked)
     const fallbackPool = [...close, ...funny]
       .filter(w => !used.has(w) && !excludeSet.has(w))
-    const extra = [...fallbackPool].sort(() => Math.random() - 0.5)
+    const extra = shuffle(fallbackPool)
     for (const w of extra) { if (picked.length >= 3) break; picked.push(w) }
   }
 
@@ -126,11 +127,11 @@ function buildBossOptions(fact, excludeWrongs = []) {
   if (picked.length < 3) {
     const used = new Set(picked)
     const anyExtra = [...funny, ...close, ...plausible].filter(w => !used.has(w))
-    const extra = [...anyExtra].sort(() => Math.random() - 0.5)
+    const extra = shuffle(anyExtra)
     for (const w of extra) { if (picked.length >= 3) break; picked.push(w) }
   }
 
-  const all = [correct, ...picked.slice(0, 3)].sort(() => Math.random() - 0.5)
+  const all = shuffle([correct, ...picked.slice(0, 3)])
   return { options: all, correctIndex: all.indexOf(correct) }
 }
 

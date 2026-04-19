@@ -198,6 +198,13 @@ séparé, sous-domaine privé, ou en local uniquement).
 - **Tie-break** : en cas d'égalité sur le nb de bonnes → temps de la dernière bonne réponse (plus petit = plus rapide au même score = gagnant). Si encore égalité, **créateur (P1) gagne**.
 - DB : `challenges.player1_correct/player2_correct` (nb bonnes), `player1_time/player2_time` (temps de la dernière bonne, pour tie-break). Trigger `calculate_challenge_winner` compare correct puis time.
 
+#### 5c. Blitz Speedrun (ROADMAP — non implémenté)
+- **Déclencheur** : débloqué pour une catégorie **uniquement** quand le joueur a **100% des f*cts** de la catégorie (Funny + WTF) dans sa collection.
+- **Format** : chrono montant sur un set fixe de questions, score = temps final (plus bas = gagnant). Erreur = +5s de pénalité (symétrique à la logique descendante du best-score).
+- **Défi ami** : le joueur peut défier un ami qui a AUSSI débloqué 100% de cette catégorie (même conditions de départ).
+- **Restriction** : Speedrun impossible en mode "toutes catégories" (aléatoire) — uniquement par catégorie dont on maîtrise tout le contenu.
+- **Raison UX** : récompense de complétion → passage au mode "maîtrise" où on sait déjà les réponses, on joue la vitesse pure.
+
 ### 6. FLASH — "Le rendez-vous quotidien" (ex-Hunt + Puzzle du Jour)
 - QCM **2 choix**, 5 questions, timer **15s**
 - Lun-Sam : Funny thème du jour, 0 indices, **30 coins fixe**

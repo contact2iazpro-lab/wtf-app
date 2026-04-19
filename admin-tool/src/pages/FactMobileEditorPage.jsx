@@ -244,6 +244,9 @@ export default function FactMobileEditorPage({ toast }) {
     setSaving(true)
     try {
       const payload = {
+        category: fact.category,
+        is_vip: !!fact.is_vip,
+        type: fact.is_vip ? 'vip' : 'generated',
         question: fact.question,
         hint1: fact.hint1, hint2: fact.hint2, hint3: fact.hint3, hint4: fact.hint4,
         short_answer: fact.short_answer,
@@ -448,16 +451,11 @@ export default function FactMobileEditorPage({ toast }) {
             )}
 
             <div style={{
-              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              fontSize: 11, fontWeight: 900, color: textOnCat, letterSpacing: '0.02em',
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 12, fontWeight: 900, color: textOnCat, letterSpacing: '0.02em',
               minWidth: 0,
             }}>
               <span>#{fact.id}</span>
-              <span style={{ opacity: 0.6 }}>·</span>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {cat?.label || fact.category || '—'}
-              </span>
-              {fact.is_vip && <span style={{ marginLeft: 4 }}>⭐</span>}
             </div>
 
             {/* Next fact (filtres URL préservés) */}
@@ -483,6 +481,70 @@ export default function FactMobileEditorPage({ toast }) {
                 display: 'flex', alignItems: 'center', flexShrink: 0,
               }}>→</span>
             )}
+          </div>
+
+          {/* Row Catégorie + Mode (WTF! / Fun) — effectif à la sauvegarde */}
+          <div style={{ display: 'flex', alignItems: 'stretch', gap: 6, marginBottom: 8 }}>
+            <select
+              value={fact.category || ''}
+              onChange={e => set('category', e.target.value)}
+              style={{
+                flex: 1, minWidth: 0,
+                height: 30, padding: '0 8px', borderRadius: 8,
+                background: 'rgba(0,0,0,0.5)',
+                border: '1.5px solid rgba(255,255,255,0.35)',
+                color: '#fff', fontSize: 11, fontWeight: 800,
+                cursor: 'pointer',
+                appearance: 'none',
+                backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='white' d='M5 7L1 3h8z'/%3E%3C/svg%3E\")",
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 8px center',
+                paddingRight: 22,
+              }}
+            >
+              <option value="">— Catégorie —</option>
+              {CATEGORIES.map(c => (
+                <option key={c.id} value={c.id} style={{ background: '#1e293b', color: '#fff' }}>
+                  {c.emoji ? `${c.emoji} ` : ''}{c.label}
+                </option>
+              ))}
+            </select>
+
+            <div style={{
+              display: 'flex', height: 30, borderRadius: 8, overflow: 'hidden',
+              border: '1.5px solid rgba(255,255,255,0.35)',
+              flexShrink: 0,
+            }}>
+              <button
+                onClick={() => set('is_vip', true)}
+                style={{
+                  padding: '0 10px',
+                  background: fact.is_vip ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'rgba(0,0,0,0.35)',
+                  color: fact.is_vip ? '#fff' : 'rgba(255,255,255,0.55)',
+                  fontSize: 10, fontWeight: 900, letterSpacing: '0.02em',
+                  border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 3,
+                }}
+                title="WTF! (VIP)"
+              >
+                ⭐ WTF!
+              </button>
+              <button
+                onClick={() => set('is_vip', false)}
+                style={{
+                  padding: '0 10px',
+                  background: !fact.is_vip ? 'linear-gradient(135deg, #7C3AED, #5B21B6)' : 'rgba(0,0,0,0.35)',
+                  color: !fact.is_vip ? '#fff' : 'rgba(255,255,255,0.55)',
+                  fontSize: 10, fontWeight: 900, letterSpacing: '0.02em',
+                  border: 'none', cursor: 'pointer',
+                  borderLeft: '1px solid rgba(255,255,255,0.25)',
+                  display: 'flex', alignItems: 'center', gap: 3,
+                }}
+                title="Fun Facts (non-VIP)"
+              >
+                ⚡ Fun
+              </button>
+            </div>
           </div>
 
           {/* Question */}

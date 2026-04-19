@@ -423,8 +423,17 @@ function resolveChapter(ch) {
 }
 
 // ── Main component ──────────────────────────────────────────────────────────
+// Modes qui ont une page de règles déclenchée par skip_launch_${mode}
+const MODES_WITH_LAUNCH_RULES = ['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'multi']
+
 export default function HowToPlayModal({ onClose, onRestartTutorial }) {
-  const [showRulesOnLaunch, setShowRulesOnLaunch] = useState(false)
+  // État initial : coché si AUCUN mode n'a de skip_launch_* = 'true' (les règles
+  // s'affichent par défaut). Décoché dès qu'un mode est flaggé skip.
+  const [showRulesOnLaunch, setShowRulesOnLaunch] = useState(() => {
+    try {
+      return !MODES_WITH_LAUNCH_RULES.some(m => localStorage.getItem(`skip_launch_${m}`) === 'true')
+    } catch { return true }
+  })
 
   const visibleChapters = CHAPTERS
   const [activeId, setActiveId] = useState(visibleChapters[0]?.id || 'goal')
@@ -607,17 +616,24 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 audio.play('click')
                 setShowRulesOnLaunch(e.target.checked)
                 if (e.target.checked) {
+                  // Coché → les règles doivent s'afficher → on efface tous les skip flags
                   const keysToRemove = []
                   for (let i = 0; i < localStorage.length; i++) {
                     const k = localStorage.key(i)
                     if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
                   }
                   keysToRemove.forEach(k => localStorage.removeItem(k))
+                } else {
+                  // Décoché → les règles NE doivent PAS s'afficher → on pose le flag
+                  // skip_launch_${mode} = 'true' pour chaque mode ayant une page de règles.
+                  MODES_WITH_LAUNCH_RULES.forEach(m => {
+                    localStorage.setItem(`skip_launch_${m}`, 'true')
+                  })
                 }
               }}
               style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
             />
-            <span>Réafficher les règles au lancement</span>
+            <span>Afficher les règles au lancement</span>
           </label>
         )}
 

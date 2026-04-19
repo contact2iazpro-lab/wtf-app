@@ -36,7 +36,7 @@ RÈGLES DES MODES (homogénéité) :
 | Défi Blitz async | **Blitz Défi** | Sous-mode de Blitz |
 | Hunt + Puzzle du Jour | **Flash** | Événement quotidien + Hunt dimanche |
 | *(nouveau)* | **Vrai ou Fou** | Swipe Vrai/Faux, 10 affirmations |
-| *(nouveau)* | ~~No Limit~~ → **Race** (17/04/2026) | Survie jusqu'à erreur, 4 QCM, pas de timer |
+| *(nouveau)* | ~~No Limit~~ → **Race** (17/04/2026) | Survie jusqu'à erreur, 6 QCM, pas de timer |
 | Quest ancien (ticket+Cool/Hot) | **SUPPRIMÉ** | Remplacé par Quest (Route) |
 | Mode Série | **SUPPRIMÉ** | Absorbé dans le streak |
 | Multi | **SUPPRIMÉ** | Non prévu V1 |
@@ -169,7 +169,7 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Spec source : `docs/QUEST_MODE_UPDATE.md`
 
 ### 4. NO LIMIT — "Zéro droit à l'erreur"
-- QCM **4 choix**, questions illimitées jusqu'à la première erreur
+- QCM **6 choix**, questions illimitées jusqu'à la première erreur
 - Timer : **Aucun** · Indices : **Aucun**
 - Contenu : Funny + VIP facts déjà débloqués (mélangés)
 - Coût : Gratuit illimité
@@ -212,7 +212,8 @@ séparé, sous-domaine privé, ou en local uniquement).
 
 ### Règles communes
 - QCM facile (2 choix) : Quickie, Flash
-- QCM difficile (4 choix) : Quest, Race, Blitz
+- QCM difficile (4 choix) : Quest, Blitz
+- QCM hardcore (6 choix) : Race
 - Swipe (0 QCM) : Vrai ou Fou
 - Indices = stock perso, coût 50 coins boutique. Bouton grisé si stock vide, JAMAIS de pause timer.
 - Énergie : cap 5, régén +1/8h, extra = 75 coins
@@ -227,7 +228,7 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 | Quest (niveaux Funny) | 4 | 3 | **1 drôle + 2 plausible** (jamais proche) |
 | Quest (boss VIP) | 4 | 3 | **3 plausible** — hardcore, pas d'indices funny/proche (fallback close puis funny si pool plausible < 3) |
 | Blitz (Solo & Défi) | 4 | 3 | **1 drôle + 1 proche + 1 plausible** |
-| Race | 4 | 3 | **1 drôle + 2 plausible** (jamais proche) |
+| Race | 6 | 5 | **2 drôles + 3 plausible** (jamais proche) |
 | Vrai ou Fou | swipe | — | `statement_false` : 75% plausible / 25% drôle (pondéré) — dans `VraiOuFouScreen` |
 
 - Un fact "complet" a 3 funny + 2 close + 3 plausible (8 fausses réponses au total).
@@ -241,7 +242,7 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 | Quickie | Funny | 2 | 1 énergie | 10c/bonne, +50 perfect | ✅ Implémenté (ex-Snack) |
 | Vrai ou Fou | Funny (statements) | Swipe | Gratuit | 0 coins | NOUVEAU |
 | Quest | Funny + VIP boss | 4 | 1 énergie/bloc | 20c/niv + 100c/boss | Renommé (ex-Route) |
-| Race | Funny+VIP débloqués | 4 | Gratuit | 0 coins (record) | Renommé (ex-No Limit) |
+| Race | Funny+VIP débloqués | 6 | Gratuit | 0 coins (record) | Renommé (ex-No Limit) |
 | Blitz Solo | Funny+VIP débloqués | 4 | Gratuit | 0 coins (paliers) | Modifié (QCM 2→4, 17/04/2026) |
 | Blitz Défi | Funny (catég ami) | 4 | 200 coins (créer) | 0 coins | Modifié (QCM 2→4, 17/04/2026) |
 | Flash (lun-sam) | Funny thème | 2 | Gratuit 1×/j | 30 coins fixe | Renommé (ex-Hunt+Puzzle) |

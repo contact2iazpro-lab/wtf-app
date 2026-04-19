@@ -35,11 +35,11 @@ export const DIFFICULTY_LEVELS = {
   },
   RACE: {
     id: 'race', label: 'Race', emoji: '🏎️',
-    choices: 4, duration: 0, questionsCount: Infinity,
+    choices: 6, duration: 0, questionsCount: Infinity,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
-    wrongDistribution: { type: 'counts', counts: { funny: 1, plausible: 2 } },
+    wrongDistribution: { type: 'counts', counts: { funny: 2, plausible: 3 } },
   },
   BLITZ: {
     id: 'blitz', label: 'Blitz', emoji: '⚡',

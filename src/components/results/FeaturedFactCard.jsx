@@ -6,6 +6,7 @@
  */
 
 import { CATEGORIES } from '../../data/facts'
+import FallbackImage from '../FallbackImage'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -39,7 +40,7 @@ export default function FeaturedFactCard({
         0%, 100% { box-shadow: 0 0 14px ${glowColor}33; }
         50%      { box-shadow: 0 0 30px ${glowColor}88; }
       }`}</style>
-      {/* Image carrée */}
+      {/* Image carrée — FallbackImage si pas d'imageUrl (cohérent avec ResultsScreen/FactDetailView) */}
       <div style={{
         width: S(64), height: S(64), borderRadius: S(10),
         background: `linear-gradient(135deg, ${fColor}66, ${fColor})`,
@@ -54,15 +55,10 @@ export default function FeaturedFactCard({
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={e => { e.target.style.display = 'none' }}
           />
-        ) : fCat?.id ? (
-          <img
-            src={`/assets/categories/${fCat.id}.png`}
-            alt=""
-            style={{ width: '70%', height: '70%', objectFit: 'contain' }}
-            onError={e => { e.target.style.display = 'none' }}
-          />
         ) : (
-          <span style={{ fontSize: S(22) }}>❓</span>
+          <div style={{ width: '100%', height: '100%' }}>
+            <FallbackImage categoryColor={fColor} />
+          </div>
         )}
       </div>
       {/* Texte */}

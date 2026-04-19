@@ -139,12 +139,15 @@ export const MODE_CONFIGS = {
   blitz: {
     modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défonce le chrono', emoji: '⚡', icon: '/assets/modes/icon-blitz.png', color: '#FF4444',
     rules: [
-      { icon: 'icon:timer', text: '**Chrono** : 60s descendant' },
+      // ── Règles communes (Rush + Speedrun) ──
       { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
       { icon: 'icon:hint', text: '**Indices** : Aucun' },
-      { icon: 'picto:penalty', text: '**Pénalité** : −5 secondes par erreur' },
-      { icon: 'icon:coins', text: '**Coût** : Gratuit · bats ton record' },
-      { icon: 'picto:steps', text: '**Paliers** : 5, 10, 20, 30, 50, 100 questions' },
+      { icon: 'icon:coins', text: '**Coût** : Gratuit illimité' },
+      { icon: 'picto:steps', text: '**Paliers** : 5, 10, 20, 30, 50, 100' },
+      // ── Rush (mode par défaut) ──
+      { icon: 'icon:timer', text: '**Rush** : 60s descendant · erreur = −5s · score = bonnes réponses' },
+      // ── Speedrun (cat 100%) ──
+      { icon: 'picto:survival', text: '**Speedrun** : chrono montant · erreur = +5s · score = temps final · cat 100% requise' },
     ],
   },
   multi: {

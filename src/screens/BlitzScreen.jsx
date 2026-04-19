@@ -123,16 +123,15 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
     }, FLASH_DURATION)
   }, [currentFact, currentIndex, flashAnswer, totalQuestions, endGame])
 
-  // ── Background by progress ──────────────────────────────────────────
-  // Rush : progress = fraction du chrono écoulé
-  // Speedrun : progress = fraction du nb de questions répondues
+  // ── Background ── Rush : couleur de la catégorie du fact courant (pool mixte)
+  //                 Speedrun : couleur de la catégorie choisie (stable)
+  // Progress reste calculé pour le chrono/barre UI mais ne pilote plus le bg.
   const progress = isSpeedrun
     ? (totalQuestions > 0 ? currentIndex / totalQuestions : 0)
     : 1 - (timeLeft / RUSH_DURATION)
-  const screenBg = progress >= 0.8 ? 'linear-gradient(160deg, #6a0a0a 0%, #8a1a1a 100%)'
-    : progress >= 0.5 ? 'linear-gradient(160deg, #4a1a0a 0%, #6a2a0a 100%)'
-    : progress >= 0.25 ? 'linear-gradient(160deg, #1a0a2e 0%, #3a0a4e 100%)'
-    : 'linear-gradient(160deg, #0a0a1a 0%, #1a0a2e 100%)'
+  const currentFactCat = currentFact ? getCategoryById(currentFact.category) : null
+  const bgColor = currentFactCat?.color || cat?.color || '#FF4444'
+  const screenBg = `linear-gradient(160deg, ${bgColor}55 0%, ${bgColor} 100%)`
 
   // Palier atteint en solo (5/10/20/30/50/100 bonnes réponses)
   const soloTierReached = SOLO_TIERS.filter(t => correctCount >= t).pop() || 0

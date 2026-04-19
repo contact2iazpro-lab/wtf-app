@@ -74,7 +74,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
       overflow: 'hidden', boxSizing: 'border-box',
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
-      background: 'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)',
+      background: 'linear-gradient(160deg, #8a1a1a 0%, #CC0000 40%, #FF4444 70%, #8a1a1a 100%)',
       color: '#ffffff',
     }}>
 
@@ -104,7 +104,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
             onClick={() => { audio.play('click'); setVariant('rush') }}
             style={{
               padding: `${S(12)} 0`, borderRadius: S(12),
-              background: variant === 'rush' ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : 'rgba(255,255,255,0.08)',
+              background: variant === 'rush' ? 'linear-gradient(135deg, #FF4444, #CC0000)' : 'rgba(255,255,255,0.08)',
               border: variant === 'rush' ? '2.5px solid white' : '2.5px solid transparent',
               color: 'white', fontWeight: 900, fontSize: S(14), cursor: 'pointer',
               fontFamily: 'Nunito, sans-serif', transition: 'all 0.2s ease',
@@ -121,7 +121,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
             style={{
               padding: `${S(12)} 0`, borderRadius: S(12),
               background: variant === 'speedrun'
-                ? 'linear-gradient(135deg, #00E5FF, #0097A7)'
+                ? 'linear-gradient(135deg, #8B0000, #500000)'
                 : completedCats.length === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)',
               border: variant === 'speedrun' ? '2.5px solid white' : '2.5px solid transparent',
               color: completedCats.length === 0 ? 'rgba(255,255,255,0.3)' : 'white',
@@ -289,16 +289,17 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzSc
             width: '100%', padding: S(14),
             borderRadius: S(14), fontSize: S(18), fontWeight: 900,
             textTransform: 'uppercase', letterSpacing: '0.04em',
-            border: 'none', fontFamily: 'Nunito, sans-serif',
+            border: canGo ? '3px solid #ffffff' : 'none',
+            fontFamily: 'Nunito, sans-serif',
             cursor: canGo ? 'pointer' : 'default',
             pointerEvents: canGo ? 'auto' : 'none',
             background: canGo
               ? (variant === 'rush'
-                  ? 'linear-gradient(135deg, #FF6B1A, #D94A10)'
-                  : 'linear-gradient(135deg, #00E5FF, #0097A7)')
+                  ? '#CC0000'
+                  : '#8B0000')
               : 'rgba(255,255,255,0.15)',
             color: canGo ? 'white' : 'rgba(255,255,255,0.4)',
-            boxShadow: canGo ? '0 6px 24px rgba(255,107,26,0.4)' : 'none',
+            boxShadow: canGo ? '0 6px 24px rgba(204,0,0,0.5)' : 'none',
           }}
         >
           {variant === 'rush' ? 'GO ! ⚡' : (selectedPalier ? `GO SPEEDRUN · ${selectedPalier} QUESTIONS` : 'CHOISIS UN PALIER')}

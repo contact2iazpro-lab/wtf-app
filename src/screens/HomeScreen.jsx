@@ -129,10 +129,10 @@ export default function HomeScreen({
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Overlay dégradé bas */}
+      {/* Overlay dégradé haut (foncé en haut → clair en bas, inversé 19/04) */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
-        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 100%)',
+        position: 'absolute', top: 0, left: 0, right: 0, height: '40%',
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 100%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
 

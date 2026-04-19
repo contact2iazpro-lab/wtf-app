@@ -180,15 +180,22 @@ export default function QuestionScreen({
   )
 
   // ── Question card ──────────────────────────────────────────────────────────
+  // Couleur cadre question/image : gold brillant si VIP surprise, sinon couleur cat/mode
+  const vipGold = '#FFD700'
+  const vipGoldGlow = '0 0 20px rgba(255,215,0,0.65), 0 0 8px rgba(255,215,0,0.9)'
+  const cardBorderColor = isVipSurprise ? vipGold : (isQuickieMode ? '#FFA500' : (cat?.color + '70'))
+  const cardBoxShadow = isVipSurprise ? vipGoldGlow
+    : (isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`)
+
   const questionCard = (
     <div
       style={{
         padding: `${S(12)} ${S(16)}`,
         borderRadius: S(16),
         background: cardBg,
-        border: `${isQuickieMode ? 3 : 1}px solid ${isQuickieMode ? '#FFA500' : (cat?.color + '70')}`,
+        border: `${isQuickieMode ? 3 : 1}px solid ${cardBorderColor}`,
         backdropFilter: 'blur(12px)',
-        boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`,
+        boxShadow: cardBoxShadow,
         height: S(90), flexShrink: 0, overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
@@ -207,7 +214,8 @@ export default function QuestionScreen({
       overflow: 'hidden',
       margin: '0 auto',
       background: 'rgba(0,0,0,0.3)',
-      border: '3px solid #FFA500',
+      border: `3px solid ${isVipSurprise ? vipGold : '#FFA500'}`,
+      boxShadow: isVipSurprise ? vipGoldGlow : undefined,
       flexShrink: 0,
     }}>
       {fact.imageUrl && !imgFailed ? (
@@ -230,12 +238,24 @@ export default function QuestionScreen({
         position: 'absolute', inset: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{
-          fontSize: S(48), fontWeight: 900, color: '#FFD4A3',
-          textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
-          animation: 'quickie-pulse-btn 2s ease-in-out infinite',
-          lineHeight: 1,
-        }}>?</span>
+        {isVipSurprise ? (
+          <img
+            src="/assets/ui/wtf-star.png"
+            alt=""
+            style={{
+              width: '52%', height: '52%', objectFit: 'contain',
+              filter: 'drop-shadow(0 0 16px rgba(255,215,0,0.8)) drop-shadow(0 0 30px rgba(255,215,0,0.4))',
+              animation: 'quickie-pulse-btn 2s ease-in-out infinite',
+            }}
+          />
+        ) : (
+          <span style={{
+            fontSize: S(48), fontWeight: 900, color: '#FFD4A3',
+            textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
+            animation: 'quickie-pulse-btn 2s ease-in-out infinite',
+            lineHeight: 1,
+          }}>?</span>
+        )}
       </div>
     </div>
   )
@@ -580,7 +600,10 @@ export default function QuestionScreen({
                   className="btn-press active:scale-95"
                   style={{
                     background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
-                    border: isQuickieMode ? '3px solid #FFA500' : '1.5px solid rgba(255,255,255,0.4)',
+                    border: isQuickieMode
+                      ? `3px solid ${isVipSurprise ? vipGold : '#FFA500'}`
+                      : '1.5px solid rgba(255,255,255,0.4)',
+                    boxShadow: isVipSurprise && isQuickieMode ? vipGoldGlow : undefined,
                     borderRadius: S(12),
                     color: isQuickieMode ? (cat?.color || '#4A3FA3') : 'white',
                     fontWeight: isQuickieMode ? 800 : 700,

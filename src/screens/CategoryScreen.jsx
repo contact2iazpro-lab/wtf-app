@@ -280,14 +280,14 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                 }}
                 style={{
                   background: isLocked ? 'rgba(255,255,255,0.08)' : isSelected ? bgColor : `${bgColor}99`,
-                  borderRadius: S(12),
-                  padding: `${S(7)} ${S(10)}`,
-                  width: '100%', boxSizing: 'border-box',
-                  display: 'flex', alignItems: 'center', gap: S(10),
+                  borderRadius: S(10),
+                  padding: `${S(6)} ${S(8)}`,
+                  width: '100%', boxSizing: 'border-box', minWidth: 0,
+                  display: 'flex', flexDirection: 'column', gap: S(3),
                   border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
                   boxShadow: isSelected
-                    ? '0 0 20px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
-                    : '0 2px 8px rgba(0,0,0,0.15)',
+                    ? '0 0 16px rgba(255,255,255,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
+                    : '0 2px 6px rgba(0,0,0,0.15)',
                   opacity: isLocked ? 0.35 : (selectedCatId === null || isSelected ? 1 : 0.6),
                   transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                   cursor: 'pointer',
@@ -298,53 +298,44 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                   textAlign: 'left',
                 }}
               >
-                <img
-                  src={getCategoryIcon(cat.id)}
-                  alt={cat.label}
-                  style={{
-                    width: S(30), height: S(30),
-                    objectFit: 'contain', flexShrink: 0,
-                    borderRadius: S(8),
-                  }}
-                  onError={(e) => { e.target.style.display = 'none' }}
-                />
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    marginBottom: S(3),
+                {/* Row 1 : icône + label + badge */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: S(6), minWidth: 0, width: '100%' }}>
+                  <img
+                    src={getCategoryIcon(cat.id)}
+                    alt={cat.label}
+                    style={{
+                      width: S(22), height: S(22),
+                      objectFit: 'contain', flexShrink: 0,
+                      borderRadius: S(6),
+                    }}
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                  <span style={{
+                    flex: 1, minWidth: 0,
+                    fontWeight: 900, fontSize: S(11), color: 'white',
+                    lineHeight: 1.1,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.25)',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
+                    {cat.label}
+                  </span>
+                  {isComplete ? (
                     <span style={{
-                      fontWeight: 900, fontSize: S(13), color: 'white',
-                      lineHeight: 1.2,
-                      textShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      flexShrink: 1, minWidth: 0,
+                      fontSize: S(9), fontWeight: 900, color: '#FFD700',
+                      flexShrink: 0,
+                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                    }}>⭐</span>
+                  ) : (
+                    <span style={{
+                      fontSize: S(9), color: 'rgba(255,255,255,0.85)',
+                      fontWeight: 800, flexShrink: 0,
                     }}>
-                      {cat.label}
+                      {isLocked ? '🔒' : `${unlocked}/${total}`}
                     </span>
-                    {isComplete ? (
-                      <span style={{
-                        fontSize: S(9), fontWeight: 900, color: '#FFD700',
-                        flexShrink: 0, marginLeft: S(6), textAlign: 'right',
-                        lineHeight: 1.1, letterSpacing: '0.02em',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                      }}>
-                        ⭐ Catégorie complète<br />
-                        <span style={{ fontSize: S(8), fontWeight: 700, opacity: 0.85 }}>
-                          Bientôt de nouveaux f*cts
-                        </span>
-                      </span>
-                    ) : (
-                      <span style={{
-                        fontSize: S(10), color: 'rgba(255,255,255,0.75)',
-                        fontWeight: 700, flexShrink: 0, marginLeft: S(6),
-                      }}>
-                        {isLocked ? '🔒' : `${unlocked}/${total}`}
-                      </span>
-                    )}
-                  </div>
-                  {!isComplete && (
+                  )}
+                </div>
+                {/* Row 2 : progress bar (cachée si complète) */}
+                {!isComplete && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: S(6) }}>
                       <div style={{
                         flex: 1, height: S(3), background: 'rgba(255,255,255,0.3)',
@@ -366,7 +357,6 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                       </span>
                     </div>
                   )}
-                </div>
               </button>
             )
           })}

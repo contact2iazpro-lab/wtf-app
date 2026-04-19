@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES } from '../constants/categories'
 import FactImageGenerator from '../components/FactImageGenerator'
@@ -132,18 +132,57 @@ function CenteredTextarea({ value, onChange, placeholder, bg, border, color, fon
 export default function FactMobileEditorPage({ toast }) {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [fact, setFact] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const [prevId, setPrevId] = useState(null)
+  const [nextId, setNextId] = useState(null)
 
   // ── Load ────────────────────────────────────────────────────────────
+  // Calque le pattern de FactEditorPage : applique les mêmes filtres URL
+  // (categories, vip, status, pack, image) pour que prev/next navigue au sein
+  // de la liste filtrée.
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase.from('facts').select('*').eq('id', id).single()
+      const filterCats = searchParams.get('categories')?.split(',').filter(Boolean)
+        || (() => { try { const s = localStorage.getItem('selectedCategories'); return s ? JSON.parse(s) : [] } catch { return [] } })()
+      const filterVip = searchParams.get('vip') || 'all'
+      const filterStatus = searchParams.get('status') || 'all'
+      const filterPack = searchParams.get('pack') || 'all'
+      const filterImage = searchParams.get('image') || 'all'
+
+      function applyFilters(q) {
+        if (filterCats.length) q = q.in('category', filterCats)
+        if (filterVip === 'vip') q = q.eq('is_vip', true)
+        if (filterVip === 'non-vip') q = q.eq('is_vip', false)
+        if (filterStatus !== 'all') q = q.eq('status', filterStatus)
+        if (filterPack !== 'all') q = q.eq('pack_id', filterPack)
+        if (filterImage === 'with') q = q.not('image_url', 'is', null).neq('image_url', '')
+        if (filterImage === 'without') q = q.or('image_url.is.null,image_url.eq.')
+        return q
+      }
+
+      let prevQ = supabase.from('facts').select('id').lt('id', id).order('id', { ascending: false }).limit(1)
+      let nextQ = supabase.from('facts').select('id').gt('id', id).order('id', { ascending: true }).limit(1)
+      prevQ = applyFilters(prevQ)
+      nextQ = applyFilters(nextQ)
+
+      const [
+        { data, error },
+        { data: prevData },
+        { data: nextData },
+      ] = await Promise.all([
+        supabase.from('facts').select('*').eq('id', id).single(),
+        prevQ,
+        nextQ,
+      ])
       if (error) throw error
       setFact(data)
+      setPrevId(prevData?.[0]?.id ?? null)
+      setNextId(nextData?.[0]?.id ?? null)
       setDirty(false)
     } catch (err) {
       console.error(err)
@@ -151,7 +190,7 @@ export default function FactMobileEditorPage({ toast }) {
     } finally {
       setLoading(false)
     }
-  }, [id, toast])
+  }, [id, toast, searchParams])
 
   useEffect(() => { load() }, [load])
 
@@ -235,7 +274,7 @@ export default function FactMobileEditorPage({ toast }) {
           boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
           padding: '8px 10px 10px',
         }}>
-          {/* Header : retour + id + cat + vip */}
+          {/* Header : retour + prev + id/cat/vip + next */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
             <button
               onClick={() => navigate(-1)}
@@ -244,12 +283,39 @@ export default function FactMobileEditorPage({ toast }) {
                 background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.35)',
                 color: '#fff', fontSize: 14, fontWeight: 900, cursor: 'pointer', flexShrink: 0,
               }}
+              title="Retour"
             >
               ←
             </button>
+
+            {/* Prev fact (filtres URL préservés) */}
+            {prevId ? (
+              <Link
+                to={`/facts-mobile/${prevId}?${searchParams.toString()}`}
+                style={{
+                  height: 30, padding: '0 8px', borderRadius: 8,
+                  background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.35)',
+                  color: '#fff', fontSize: 11, fontWeight: 900,
+                  display: 'flex', alignItems: 'center', gap: 3,
+                  textDecoration: 'none', flexShrink: 0,
+                }}
+                title={`Fact précédent #${prevId}`}
+              >
+                ← #{prevId}
+              </Link>
+            ) : (
+              <span style={{
+                height: 30, padding: '0 8px', borderRadius: 8,
+                background: 'rgba(0,0,0,0.15)', border: '1.5px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 900,
+                display: 'flex', alignItems: 'center', flexShrink: 0,
+              }}>←</span>
+            )}
+
             <div style={{
-              flex: 1, display: 'flex', alignItems: 'center', gap: 6,
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               fontSize: 11, fontWeight: 900, color: textOnCat, letterSpacing: '0.02em',
+              minWidth: 0,
             }}>
               <span>#{fact.id}</span>
               <span style={{ opacity: 0.6 }}>·</span>
@@ -258,6 +324,30 @@ export default function FactMobileEditorPage({ toast }) {
               </span>
               {fact.is_vip && <span style={{ marginLeft: 4 }}>⭐</span>}
             </div>
+
+            {/* Next fact (filtres URL préservés) */}
+            {nextId ? (
+              <Link
+                to={`/facts-mobile/${nextId}?${searchParams.toString()}`}
+                style={{
+                  height: 30, padding: '0 8px', borderRadius: 8,
+                  background: 'rgba(0,0,0,0.35)', border: '1.5px solid rgba(255,255,255,0.35)',
+                  color: '#fff', fontSize: 11, fontWeight: 900,
+                  display: 'flex', alignItems: 'center', gap: 3,
+                  textDecoration: 'none', flexShrink: 0,
+                }}
+                title={`Fact suivant #${nextId}`}
+              >
+                #{nextId} →
+              </Link>
+            ) : (
+              <span style={{
+                height: 30, padding: '0 8px', borderRadius: 8,
+                background: 'rgba(0,0,0,0.15)', border: '1.5px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 900,
+                display: 'flex', alignItems: 'center', flexShrink: 0,
+              }}>→</span>
+            )}
           </div>
 
           {/* Question */}

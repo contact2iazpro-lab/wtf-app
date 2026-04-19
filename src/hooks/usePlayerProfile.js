@@ -84,6 +84,16 @@ export function usePlayerProfile() {
     enabled: hasSession && !!userId,
   })
 
+  // Authentifiés : refetch profile quand une RPC serveur a débité/crédité
+  // (ex : create_duel_challenge débite 100c côté RPC sans passer par le mutate
+  // client de applyCurrencyDelta). L'émetteur doit dispatch wtf_currency_updated.
+  useEffect(() => {
+    if (!hasSession || !userId) return
+    const refresh = () => { refetch?.() }
+    window.addEventListener('wtf_currency_updated', refresh)
+    return () => window.removeEventListener('wtf_currency_updated', refresh)
+  }, [hasSession, userId, refetch])
+
   /**
    * applyCurrencyDelta — applique un delta atomique via RPC serveur.
    *

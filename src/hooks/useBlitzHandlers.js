@@ -41,7 +41,7 @@ export function useBlitzHandlers({
     if (isSpeedrun) {
       // Speedrun : catégorie obligatoire + doit être 100% complétée côté joueur
       // (la gate est déjà vérifiée dans BlitzLobbyScreen, ici on protège juste).
-      if (!categoryId) {
+      if (!categoryId || categoryId === 'all') {
         setGameAlert({ emoji: '🔒', title: 'Catégorie requise', message: 'Le Speedrun se joue uniquement sur une catégorie complète.' })
         return
       }
@@ -51,12 +51,15 @@ export function useBlitzHandlers({
         return
       }
     } else {
-      // Rush : pool = tous les f*cts débloqués (Funny + VIP), min RUSH_MIN
+      // Rush : si categoryId défini et ≠ 'all' → filtre par cat. Sinon pool global.
+      if (categoryId && categoryId !== 'all') {
+        pool = pool.filter(f => f.category === categoryId)
+      }
       if (pool.length < BLITZ_RUSH_MIN_UNLOCKED) {
         setGameAlert({
           emoji: '🔓',
           title: 'Blitz Rush verrouillé',
-          message: `Débloque au moins ${BLITZ_RUSH_MIN_UNLOCKED} f*cts pour jouer en Blitz Rush.`,
+          message: `Débloque au moins ${BLITZ_RUSH_MIN_UNLOCKED} f*cts${categoryId && categoryId !== 'all' ? ' dans cette catégorie' : ''} pour jouer en Blitz Rush.`,
         })
         return
       }

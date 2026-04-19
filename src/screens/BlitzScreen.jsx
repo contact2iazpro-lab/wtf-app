@@ -292,7 +292,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
             if (flashAnswer) {
               if (isFlashed && flashAnswer.correct) { btnBg = 'rgba(34,197,94,0.4)'; btnBorder = '#22C55E'; txtColor = '#ffffff' }
               else if (isFlashed && !flashAnswer.correct) { btnBg = 'rgba(239,68,68,0.4)'; btnBorder = '#EF4444'; txtColor = '#ffffff' }
-              else if (isAnswer && !flashAnswer.correct) { btnBg = 'rgba(34,197,94,0.25)'; btnBorder = '#22C55E'; txtColor = '#ffffff' }
+              // Blitz Rush/Speedrun : on ne highlight PAS la bonne réponse sur mauvaise (user spec 19/04)
             }
             return (
               <button
@@ -303,7 +303,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
                 style={{
                   background: btnBg, border: `2px solid ${btnBorder}`,
                   height: S(60), padding: `${S(8)} ${S(10)}`, borderRadius: S(12),
-                  opacity: flashAnswer && !isFlashed && !(isAnswer && !flashAnswer.correct) ? 0.5 : 1,
+                  opacity: flashAnswer && !isFlashed ? 0.5 : 1,
                   transition: 'all 0.15s ease',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: flashAnswer ? 'default' : 'pointer',
@@ -332,24 +332,40 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
           boxShadow: '0 6px 24px rgba(0,0,0,0.35)',
           background: 'rgba(0,0,0,0.3)',
         }}>
-          {currentFact?.imageUrl ? (
-            <img
-              src={currentFact.imageUrl} alt=""
-              style={{
-                width: '100%', height: '100%', objectFit: 'cover',
-                filter: 'blur(18px) brightness(0.6)',
-                transform: 'scale(1.15)',
-              }}
-              onError={e => { e.target.style.display = 'none' }}
-            />
-          ) : (
-            <div style={{ width: '100%', height: '100%', filter: 'blur(14px) brightness(0.65)', transform: 'scale(1.1)' }}>
-              <FallbackImage categoryColor={factCatColor} />
-            </div>
-          )}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
-            <span style={{ fontSize: S(40), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
-          </div>
+          {(() => {
+            // Défloutage image + retrait cadenas sur bonne réponse (spec 19/04)
+            const isUnlocked = flashAnswer?.correct === true
+            return (
+              <>
+                {currentFact?.imageUrl ? (
+                  <img
+                    src={currentFact.imageUrl} alt=""
+                    style={{
+                      width: '100%', height: '100%', objectFit: 'cover',
+                      filter: isUnlocked ? 'none' : 'blur(18px) brightness(0.6)',
+                      transform: isUnlocked ? 'none' : 'scale(1.15)',
+                      transition: 'filter 0.25s ease, transform 0.25s ease',
+                    }}
+                    onError={e => { e.target.style.display = 'none' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%', height: '100%',
+                    filter: isUnlocked ? 'none' : 'blur(14px) brightness(0.65)',
+                    transform: isUnlocked ? 'none' : 'scale(1.1)',
+                    transition: 'filter 0.25s ease, transform 0.25s ease',
+                  }}>
+                    <FallbackImage categoryColor={factCatColor} />
+                  </div>
+                )}
+                {!isUnlocked && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
+                    <span style={{ fontSize: S(40), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
+                  </div>
+                )}
+              </>
+            )
+          })()}
         </div>
 
         {/* Gros timer compte à rebours (vert → rouge en dégradé) */}
@@ -360,7 +376,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
             textShadow: `0 0 20px ${timerColor}80`,
             lineHeight: 1,
           }}>
-            {isSpeedrun ? timeLeft.toFixed(2) : timeLeft.toFixed(1)}s
+            {timeLeft.toFixed(2)}s
           </div>
           <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.55)', fontWeight: 700, marginTop: S(3), letterSpacing: '0.04em' }}>
             ❌ erreur = {isSpeedrun ? '+' : '−'}{WRONG_PENALTY}s

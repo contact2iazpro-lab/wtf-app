@@ -226,6 +226,30 @@ export default function MultiPage() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                {/* Option Aléatoire (Rush uniquement) — toutes catégories */}
+                {variant === 'rush' && totalUnlocked >= 5 && (() => {
+                  const selected = categoryId === 'all'
+                  return (
+                    <button
+                      key="all"
+                      onClick={() => { audio.play('click'); setCategoryId('all'); setPalier(null) }}
+                      style={{
+                        padding: '10px 14px', borderRadius: 12,
+                        background: selected ? 'linear-gradient(135deg, #7C3AED, #3B82F6)' : 'rgba(124,58,237,0.35)',
+                        border: selected ? '2.5px solid white' : '2.5px solid transparent',
+                        display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textAlign: 'left',
+                      }}
+                    >
+                      <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🎲</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>Aléatoire</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+                          {totalUnlocked} f*cts · toutes catégories
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })()}
                 {availableCats.map(cat => {
                   const selected = categoryId === cat.id
                   return (

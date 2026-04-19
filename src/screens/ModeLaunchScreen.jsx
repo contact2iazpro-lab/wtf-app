@@ -136,7 +136,7 @@ function SurvivalIcon({ size = 64, color = '#ffffff' }) {
 const COMPONENT_ICONS = {
   'icon:qcm': (size, color, modeId) => {
     if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
-    if (modeId === 'blitz') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} />
+    if (modeId === 'blitz') return <MultipleChoiceIcon size={size} color={'#FF4444'} accent={QUICKIE_GOLD} />
     if (modeId === 'multi') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
     return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
@@ -147,7 +147,7 @@ const COMPONENT_ICONS = {
   'icon:timer': (size, color, modeId) => {
     if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
     if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
-    if (modeId === 'blitz') return <TimerIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} />
+    if (modeId === 'blitz') return <TimerIcon size={size} color={'#FF4444'} accent={'#FF4444'} />
     if (modeId === 'multi') return <TimerIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} />
     return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
@@ -163,7 +163,7 @@ const COMPONENT_ICONS = {
   'picto:free': (size, color) => <FreeIcon size={size} color={color || '#ffffff'} />,
   'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
   'picto:penalty': (size, color, modeId) => {
-    if (modeId === 'blitz') return <PenaltyIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} text="−5s" />
+    if (modeId === 'blitz') return <PenaltyIcon size={size} color={'#FF4444'} accent={'#FF4444'} text="−5s" />
     if (modeId === 'multi') return <PenaltyIcon size={size} color={'#ffffff'} accent={MULTI_GOLD} text="±5s" />
     return <PenaltyIcon size={size} color={color || '#ffffff'} />
   },

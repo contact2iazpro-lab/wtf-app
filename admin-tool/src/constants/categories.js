@@ -19,7 +19,7 @@ export const CATEGORIES = [
   { id: 'internet',           label: 'Internet & Réseaux',       emoji: '📡', color: '#5B8DBE' },
   { id: 'inventions',         label: 'Inventions & Découvertes', emoji: '💡', color: '#5BC0DE' },
   { id: 'jeux-jouets',        label: 'Jeux & Jouets',            emoji: '🎮', color: '#9B59B6' },
-  { id: 'kids',               label: 'Kids',                     emoji: '🎈', color: '#FFEF60' },
+  { id: 'kids',               label: 'Kids',                     emoji: '🎈', color: '#E8C000' },
   { id: 'lois',               label: 'Lois & Règles',            emoji: '⚖️', color: '#6366B8' },
   { id: 'meteo',              label: 'Météo',                    emoji: '',   color: '#6FC0D8' },
   { id: 'musique',            label: 'Musique',                  emoji: '🎵', color: '#E84B8A' },

@@ -451,7 +451,7 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 | Espace | #2E1A47 | Internet | #5B8DBE |
 | Gastronomie | #FFA500 | Inventions | #5BC0DE |
 | Géographie | #40D9C8 | Jeux & Jouets | #9B59B6 |
-| Histoire | #E8A030 | Kids | #FFEF60 |
+| Histoire | #E8A030 | Kids | #E8C000 |
 | Météo | #6FC0D8 | Transports | #3A6FA0 |
 
 ## Toggle Mode Dev

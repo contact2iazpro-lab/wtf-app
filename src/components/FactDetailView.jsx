@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { getPlayableCategories } from '../data/factsService'
 import renderFormattedText from '../utils/renderFormattedText'
 import { stripEmojis } from '../utils/stripEmojis'
+import FallbackImage from './FallbackImage'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -99,36 +100,60 @@ export default function FactDetailView({ fact, onClose, onUnlockRequest = null }
             </div>
           </div>
 
-          {/* Image */}
+          {/* Image — avec pokemon holo glow + loupe (comme RevelationScreen) */}
           <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
             <div
-              onClick={() => fact.imageUrl && setShowLightbox(true)}
+              onClick={() => setShowLightbox(true)}
+              className="relative overflow-hidden"
               style={{
-                width: '100%', maxHeight: '35vh', borderRadius: S(16), overflow: 'hidden',
+                width: '100%', maxHeight: '35vh', borderRadius: S(16),
                 border: `3px solid ${catColor}`, position: 'relative',
-                background: catGradient, cursor: fact.imageUrl ? 'pointer' : 'default',
+                background: catGradient, cursor: 'pointer',
               }}
             >
               {fact.imageUrl ? (
-                <>
-                  <img src={fact.imageUrl} alt={fact.question} style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }} />
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
-                    style={{
-                      position: 'absolute', top: S(8), right: S(8), zIndex: 10,
-                      width: 36, height: 36, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.5)', border: 'none',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', fontSize: 18,
-                    }}
-                  >🔍</button>
-                </>
+                <img src={fact.imageUrl} alt={fact.question}
+                  style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
+                  onError={e => { e.target.style.display = 'none' }} />
               ) : (
-                <div style={{ width: '100%', height: 'calc(35vh - 6px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  <div style={{ fontSize: 72, fontWeight: 900, color: 'white', lineHeight: 1, opacity: 0.3 }}>?</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Image bientôt disponible</div>
+                <div style={{ width: '100%', height: 'calc(35vh - 6px)', overflow: 'hidden' }}>
+                  <FallbackImage categoryColor={catColor} />
                 </div>
               )}
+              {/* Loupe */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+                style={{
+                  position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.5)', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', fontSize: 18,
+                }}
+              >🔍</button>
+              {/* Holo shimmer (pokemon glow) */}
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+                background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(127,119,221,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(127,119,221,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
+                backgroundSize: '200% 100%',
+                animation: 'factDetailHoloShimmer 3s linear infinite',
+                mixBlendMode: 'screen',
+              }} />
+              {/* Lame de lumière blanche qui balaie */}
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden',
+              }}>
+                <div style={{
+                  position: 'absolute', top: '-20%', bottom: '-20%',
+                  width: '45%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                  animation: 'factDetailHoloSweep 2.5s 0.5s ease-in-out infinite',
+                }} />
+              </div>
+              <style>{`
+                @keyframes factDetailHoloShimmer { 0% { background-position: 0% 0% } 100% { background-position: 200% 0% } }
+                @keyframes factDetailHoloSweep { 0% { left: -50% } 100% { left: 150% } }
+              `}</style>
             </div>
           </div>
 
@@ -143,7 +168,7 @@ export default function FactDetailView({ fact, onClose, onUnlockRequest = null }
 
             <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: S(12), padding: `${S(8)} ${S(10)}`, flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
-                <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+                <span style={{ color: '#4CAF50', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: S(14), lineHeight: 1.45, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>
                 {renderFormattedText(stripEmojis(fact.explanation), catColor)}
@@ -165,7 +190,7 @@ export default function FactDetailView({ fact, onClose, onUnlockRequest = null }
                 style={{
                   width: '100%', height: S(44), borderRadius: S(14),
                   fontWeight: 900, fontSize: S(13), color: '#1a1a2e',
-                  border: 'none',
+                  border: '3px solid #ffffff',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
                   background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                   boxShadow: '0 4px 16px rgba(255,165,0,0.4)',

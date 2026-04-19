@@ -601,9 +601,6 @@ export default function ResultsScreen({
             <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), flexShrink: 0 }}>
               {renderRow(right, `✅ ${right.length} Trouvé${right.length > 1 ? 's' : ''}`, '#6BCB77')}
               {renderRow(wrong, `❌ ${wrong.length} Raté${wrong.length > 1 ? 's' : ''}`, '#E84535')}
-              <span style={{ fontSize: S(10), color: textOnBg, opacity: 0.7, textAlign: 'center', fontStyle: 'italic', marginTop: S(2) }}>
-                🔒 Clique un f*ct pour le détail · ajoute à ta collection pour 50 <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle' }} />
-              </span>
             </div>
           )
         })()}

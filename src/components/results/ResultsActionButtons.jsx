@@ -74,7 +74,8 @@ export default function ResultsActionButtons({
           style={{
             flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
             background: useAccent ? accentGradient : 'linear-gradient(135deg, #FFD700, #FFA500)',
-            border: 'none', color: useAccent ? 'white' : '#1a1a2e', fontWeight: 900, fontSize: S(11),
+            border: '3px solid #ffffff',
+            color: useAccent ? 'white' : '#1a1a2e', fontWeight: 900, fontSize: S(11),
             cursor: 'pointer', boxShadow: useAccent ? accentShadow : '0 4px 16px rgba(255,215,0,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
           }}>

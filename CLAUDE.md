@@ -217,6 +217,23 @@ séparé, sous-domaine privé, ou en local uniquement).
 - Indices = stock perso, coût 50 coins boutique. Bouton grisé si stock vide, JAMAIS de pause timer.
 - Énergie : cap 5, régén +1/8h, extra = 75 coins
 
+### Tirage des fausses réponses — Source de vérité (19/04/2026)
+Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `src/utils/answers.js` (branche `weighted` / `counts`).
+
+| Mode | QCM | Nb fausses | Tirage |
+|------|-----|-----------|--------|
+| Quickie | 2 | 1 | **Pondéré** : 70% plausible / 20% drôle / 10% proche |
+| Flash | 2 | 1 | **Pondéré** : 70% plausible / 20% drôle / 10% proche (idem Quickie) |
+| Quest (niveaux Funny) | 4 | 3 | **1 drôle + 2 plausible** (jamais proche) |
+| Quest (boss VIP) | 4 | 3 | **3 plausible** — hardcore, pas d'indices funny/proche (fallback close puis funny si pool plausible < 3) |
+| Blitz (Solo & Défi) | 4 | 3 | **1 drôle + 1 proche + 1 plausible** |
+| Race | 4 | 3 | **1 drôle + 2 plausible** (jamais proche) |
+| Vrai ou Fou | swipe | — | `statement_false` : 75% plausible / 25% drôle (pondéré) — dans `VraiOuFouScreen` |
+
+- Un fact "complet" a 3 funny + 2 close + 3 plausible (8 fausses réponses au total).
+- Si un type est insuffisant : fallback sur les types déjà spécifiés dans la distribution (jamais de contamination par un type absent de la spec, ex : Quest n'utilise PAS close même en fallback).
+- Anti-déduction : localStorage `wtf_last_wrong_{factId}` persiste 1 fausse entre sessions pour éviter l'élimination par répétition.
+
 ## Modes de jeu — Résumé (15/04/2026)
 
 | Mode | Contenu | QCM | Coût | Gains | Statut |

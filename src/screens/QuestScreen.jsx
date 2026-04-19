@@ -96,36 +96,37 @@ function pickBossForBlock(blockIdx) {
   return sorted[(blockIdx - 1) % sorted.length]
 }
 
-// ── Boss anti-déduction : 4 choix en excluant anciennes fausses réponses ──
+// ── Boss Quest : 3 plausible (spec 19/04/2026) — hardcore, pas d'indices funny ──
+// Anti-déduction : exclut les fausses déjà vues lors d'un retry du même boss.
+// Si plausible < 3 dispo après exclusion, fallback sur close puis funny.
 function buildBossOptions(fact, excludeWrongs = []) {
   const correct = fact.shortAnswer || fact.options?.[fact.correctIndex]
   if (!correct) return getAnswerOptions(fact, QUEST_QCM)
 
   const excludeSet = new Set(excludeWrongs)
-  const funny     = [fact.funnyWrong1, fact.funnyWrong2].filter(Boolean)
+  const funny     = [fact.funnyWrong1, fact.funnyWrong2, fact.funnyWrong3].filter(Boolean)
   const close     = [fact.closeWrong1, fact.closeWrong2].filter(Boolean)
   const plausible = [fact.plausibleWrong1, fact.plausibleWrong2, fact.plausibleWrong3].filter(Boolean)
 
-  const pickFromType = (arr, alreadyPicked) => {
-    const cands = arr.filter(w => !excludeSet.has(w) && !alreadyPicked.includes(w))
-    if (!cands.length) return null
-    return cands[Math.floor(Math.random() * cands.length)]
-  }
+  // 1) Tenter 3 plausible, en excluant les fausses déjà vues
+  const availablePlausible = plausible.filter(w => !excludeSet.has(w))
+  const shuffledPlausible = [...availablePlausible].sort(() => Math.random() - 0.5)
+  const picked = shuffledPlausible.slice(0, 3)
 
-  const picked = []
-  const f = pickFromType(funny, picked);     if (f) picked.push(f)
-  const c = pickFromType(close, picked);     if (c) picked.push(c)
-  const p = pickFromType(plausible, picked); if (p) picked.push(p)
-
+  // 2) Fallback si < 3 : compléter par close, puis funny (hors exclusions)
   if (picked.length < 3) {
-    const all = [...funny, ...close, ...plausible]
-    const fallback = all.filter(w => !picked.includes(w) && !excludeSet.has(w))
-    const extra = [...fallback].sort(() => Math.random() - 0.5)
+    const used = new Set(picked)
+    const fallbackPool = [...close, ...funny]
+      .filter(w => !used.has(w) && !excludeSet.has(w))
+    const extra = [...fallbackPool].sort(() => Math.random() - 0.5)
     for (const w of extra) { if (picked.length >= 3) break; picked.push(w) }
   }
+
+  // 3) Ultime fallback — toutes les fausses (incluant excludeSet) si toujours < 3
   if (picked.length < 3) {
-    const all = [...funny, ...close, ...plausible].filter(w => !picked.includes(w))
-    const extra = [...all].sort(() => Math.random() - 0.5)
+    const used = new Set(picked)
+    const anyExtra = [...funny, ...close, ...plausible].filter(w => !used.has(w))
+    const extra = [...anyExtra].sort(() => Math.random() - 0.5)
     for (const w of extra) { if (picked.length >= 3) break; picked.push(w) }
   }
 

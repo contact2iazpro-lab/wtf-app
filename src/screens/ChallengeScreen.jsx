@@ -8,6 +8,7 @@ import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
 import { audio } from '../utils/audio'
 import { useDuelContext } from '../features/duels/context/DuelContext'
+import { DIFFICULTY_LEVELS } from '../constants/gameConfig'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -98,7 +99,7 @@ export default function ChallengeScreen() {
     // Prepare facts for the Blitz
     const shuffled = shuffle(playerFacts)
       .slice(0, Math.min(challenge.question_count, playerFacts.length))
-    const factsWithOptions = shuffled.map(f => ({ ...f, ...getAnswerOptions(f, { id: 'blitz', choices: 4 }) }))
+    const factsWithOptions = shuffled.map(f => ({ ...f, ...getAnswerOptions(f, DIFFICULTY_LEVELS.BLITZ) }))
 
     // Nouveau : passer par le DuelContext en mémoire. Plus de localStorage
     // pour transférer le state entre routes.

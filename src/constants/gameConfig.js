@@ -2,6 +2,10 @@
 // Quickie · Vrai ET Fou · Quest · Race · Blitz · Flash
 // Économie ×10 appliquée.
 
+// ── Distributions de fausses réponses par mode (CLAUDE.md 19/04/2026) ──
+// type 'weighted'  → tirage pondéré (somme des weights = 1). Utilisé pour numWrong=1.
+// type 'counts'    → tirage déterministe : prend exactement N de chaque type. Pour numWrong>1.
+// Si un pool manque, fallback sur les autres types selon logique buildPools dans answers.js.
 export const DIFFICULTY_LEVELS = {
   QUICKIE: {
     id: 'quickie', label: 'Quickie', emoji: '🎯',
@@ -9,6 +13,7 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 50,
     coinsPerCorrect: 10, perfectBonus: 50,
     scoring: { correct: 10, wrong: 0 },
+    wrongDistribution: { type: 'weighted', weights: { plausible: 0.7, funny: 0.2, close: 0.1 } },
   },
   VRAI_OU_FOU: {
     id: 'vrai_ou_fou', label: 'Vrai ET Fou', emoji: '🤔',
@@ -17,6 +22,7 @@ export const DIFFICULTY_LEVELS = {
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
     swipe: true,
+    // Tirage du statement_false : 75% plausible / 25% funny — géré dans VraiOuFouScreen
   },
   QUEST: {
     id: 'quest', label: 'Quest', emoji: '🗺️',
@@ -24,13 +30,16 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 20, bossBonus: 100, perfectBonus: 0,
     scoring: { correct: 20, wrong: 0 },
+    wrongDistribution: { type: 'counts', counts: { funny: 1, plausible: 2 } },
+    // Boss VIP : 3 plausible — traité séparément dans QuestScreen.buildBossOptions
   },
   RACE: {
     id: 'race', label: 'Race', emoji: '🏎️',
-    choices: 6, duration: 0, questionsCount: Infinity,
+    choices: 4, duration: 0, questionsCount: Infinity,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
+    wrongDistribution: { type: 'counts', counts: { funny: 1, plausible: 2 } },
   },
   BLITZ: {
     id: 'blitz', label: 'Blitz', emoji: '⚡',
@@ -45,6 +54,7 @@ export const DIFFICULTY_LEVELS = {
     defiWrongPenalty: 5,
     defiCost: 200, // coins pour créer un défi
     soloMinUnlocked: 20,
+    wrongDistribution: { type: 'counts', counts: { funny: 1, close: 1, plausible: 1 } },
   },
   FLASH: {
     id: 'flash', label: 'Flash', emoji: '🔥',
@@ -52,6 +62,7 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: true, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, flashDailyCoins: 30, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
+    wrongDistribution: { type: 'weighted', weights: { plausible: 0.7, funny: 0.2, close: 0.1 } },
   },
 }
 

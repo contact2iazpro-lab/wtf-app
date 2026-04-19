@@ -355,13 +355,13 @@ export default function HomeScreen({
           </div>
         </div>
 
-        {/* Bouton Partie rapide (background asset home-button.png, texte blanc) */}
+        {/* Bouton Partie rapide (bg home-button.png + icon-quickie + texte blanc) */}
         <button
           onClick={() => nav('quickie_random')}
           className="btn-press"
           style={{
             backgroundColor: 'transparent',
-            backgroundImage: "url('/assets/modes/home-button.png?v=3')",
+            backgroundImage: "url('/assets/modes/home-button.png?v=4')",
             backgroundSize: '100% 100%',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
@@ -371,6 +371,11 @@ export default function HomeScreen({
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
           }}
         >
+          <img
+            src="/assets/modes/icon-quickie.png?v=2"
+            alt=""
+            style={{ width: S(24), height: S(24), objectFit: 'contain', flexShrink: 0 }}
+          />
           <span style={{
             fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(14),
             color: '#ffffff', letterSpacing: '0.08em', textTransform: 'uppercase',

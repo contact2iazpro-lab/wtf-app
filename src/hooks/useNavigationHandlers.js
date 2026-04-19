@@ -107,6 +107,9 @@ export function useNavigationHandlers({
       case 'vrai_ou_fou':
         showOrSkipLaunch('vrai_ou_fou')
         break
+      case 'multi':
+        navigate('/multi')
+        break
       default: break
     }
   }, [handleQuickie, handleStartFlashSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])

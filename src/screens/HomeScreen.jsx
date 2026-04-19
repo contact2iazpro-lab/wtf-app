@@ -337,16 +337,22 @@ export default function HomeScreen({
           style={{ width: '60%', maxWidth: S(220), height: 'auto', objectFit: 'contain', WebkitUserSelect: 'none', userSelect: 'none' }}
         />
 
-        {/* Grille 2×2 */}
+        {/* Grille 3 + 2 (spec 19/04/2026) */}
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: S(16), justifyItems: 'center', alignItems: 'center',
-          width: '100%', maxWidth: S(260),
+          display: 'flex', flexDirection: 'column', gap: S(12),
+          width: '100%', maxWidth: S(320),
         }}>
-          <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} />
-          <ModeIcon icon="/assets/modes/vrai-et-fou.png" name="Vrai ET Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} />
-          <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} />
-          <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} />
+          {/* Ligne 1 : Quest · VoF · Race */}
+          <div style={{ display: 'flex', justifyContent: 'space-evenly', gap: S(8) }}>
+            <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} sizeOverride={72} />
+            <ModeIcon icon="/assets/modes/vrai-et-fou.png" name="Vrai ET Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} sizeOverride={72} />
+            <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} sizeOverride={72} />
+          </div>
+          {/* Ligne 2 : Blitz · Multi */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: S(48) }}>
+            <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} sizeOverride={72} />
+            <ModeIcon emoji="⚔️" name="Multi" color="#FFD700" bgColor="linear-gradient(135deg, #FF1744, #FFD700)" onClick={() => nav('multi')} sizeOverride={72} />
+          </div>
         </div>
 
         {/* Bouton Partie rapide */}

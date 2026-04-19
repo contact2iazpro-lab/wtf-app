@@ -527,84 +527,149 @@ export default function BlitzResultsScreen({
   }
 
   if (isChallengeMode) {
+    const MULTI_VIOLET = '#6B2D8E'
+    const MULTI_GOLD = '#FFD700'
+    const isSpeedrunMulti = variant === 'speedrun'
+    const scoreLabel = isSpeedrunMulti ? formatTime(finalTime) : `${correctCount}`
+    const scoreUnit = isSpeedrunMulti
+      ? `${correctCount} / ${totalAnswered} bonnes`
+      : `bonne${correctCount > 1 ? 's' : ''} en 60s`
+
     return (
       <div
         className="absolute inset-0 flex flex-col overflow-hidden"
-        style={{ '--scale': scale, background: 'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)', fontFamily: 'Nunito, sans-serif' }}
+        style={{ '--scale': scale, background: `linear-gradient(160deg, #2a1050 0%, ${MULTI_VIOLET} 50%, #1a0a2e 100%)`, fontFamily: 'Nunito, sans-serif' }}
       >
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8" style={{ gap: S(20) }}>
-          <div style={{ fontSize: S(56) }}>🎯</div>
-          <h1 style={{ fontSize: S(26), fontWeight: 900, color: 'white', textAlign: 'center' }}>
-            {autoChallenge ? 'Défi créé !' : 'Création du défi...'}
+        {/* Header : icône Multi + titre */}
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0, paddingTop: S(12) }}>
+          <img src="/assets/modes/icon-multi.png" alt="Multi" style={{ width: S(28), height: S(28), objectFit: 'contain' }}
+            onError={e => { e.target.style.display = 'none' }} />
+          <span style={{ fontSize: S(13), fontWeight: 900, color: MULTI_GOLD, letterSpacing: '0.06em' }}>
+            Défi Multi · {isSpeedrunMulti ? 'Speedrun' : 'Rush'}
+          </span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 pb-2 pt-2" style={{ display: 'flex', flexDirection: 'column', gap: S(10), alignItems: 'center' }}>
+          {/* État du défi */}
+          <div style={{ fontSize: S(40) }}>
+            {challengeError ? '❌' : autoChallenge ? '⚔️' : '⏳'}
+          </div>
+          <h1 style={{ fontSize: S(20), fontWeight: 900, color: 'white', textAlign: 'center', margin: 0 }}>
+            {challengeError ? 'Erreur' : autoChallenge ? 'Défi envoyé !' : 'Création du défi...'}
           </h1>
 
-          {/* Résumé du score (Défi best-score 19/04/2026) */}
-          <div className="rounded-3xl w-full p-5" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
-            <div className="text-center mb-3">
-              <span style={{ fontSize: S(48), fontWeight: 900, color: '#FFD700', fontVariantNumeric: 'tabular-nums' }}>{correctCount}</span>
-              <span style={{ fontSize: S(14), color: 'rgba(255,255,255,0.5)', fontWeight: 700, display: 'block', marginTop: 4 }}>bonne{correctCount > 1 ? 's' : ''} en 60s</span>
+          {/* Badge statut */}
+          {autoChallenge && opponentId && !challengeError && (
+            <div style={{
+              fontSize: S(12), fontWeight: 800, color: '#22C55E',
+              background: 'rgba(34,197,94,0.12)', border: '1.5px solid rgba(34,197,94,0.5)',
+              padding: `${S(6)} ${S(14)}`, borderRadius: S(999),
+              maxWidth: 340,
+            }}>
+              ✅ Ton ami a 48 h pour relever
             </div>
-            <div className="flex justify-center gap-6">
-              <div className="text-center">
-                <span style={{ fontSize: S(16), fontWeight: 900, color: 'white' }}>{totalAnswered}</span>
-                <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block' }}>Répondues</span>
+          )}
+          {challengeError && (
+            <div style={{
+              fontSize: S(12), color: '#FCA5A5', textAlign: 'center', padding: `${S(8)} ${S(12)}`,
+              background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.4)',
+              borderRadius: S(12), maxWidth: 340,
+            }}>
+              {challengeError}
+            </div>
+          )}
+
+          {/* Ton score (grosse card) */}
+          <div className="rounded-3xl w-full p-4" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
+            <div className="text-center" style={{ marginBottom: S(2) }}>
+              <span style={{ fontSize: S(11), color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
+                Ton score
+              </span>
+            </div>
+            <div className="text-center">
+              <span style={{ fontSize: S(56), fontWeight: 900, color: MULTI_GOLD, lineHeight: 1, fontVariantNumeric: 'tabular-nums', textShadow: `0 4px 20px ${MULTI_GOLD}4D` }}>
+                {scoreLabel}
+              </span>
+            </div>
+            <div className="text-center" style={{ marginTop: S(4) }}>
+              <span style={{ fontSize: S(11), color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
+                {scoreUnit}
+              </span>
+            </div>
+            {!isSpeedrunMulti && (
+              <div className="flex justify-center gap-6" style={{ marginTop: S(8) }}>
+                <div className="text-center">
+                  <span style={{ fontSize: S(14), fontWeight: 900, color: 'white', display: 'block' }}>{totalAnswered}</span>
+                  <span style={{ fontSize: S(9), color: 'rgba(255,255,255,0.5)' }}>Répondues</span>
+                </div>
+                <div className="text-center">
+                  <span style={{ fontSize: S(14), fontWeight: 900, color: 'white', display: 'block' }}>{accuracy}%</span>
+                  <span style={{ fontSize: S(9), color: 'rgba(255,255,255,0.5)' }}>Précision</span>
+                </div>
               </div>
-              <div className="text-center">
-                <span style={{ fontSize: S(16), fontWeight: 900, color: 'white' }}>{accuracy}%</span>
-                <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.4)', display: 'block' }}>Précision</span>
-              </div>
+            )}
+          </div>
+
+          {/* Économie : -100c / +150c gagnant */}
+          <div className="rounded-2xl w-full p-3" style={{ background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.25)', maxWidth: 340 }}>
+            <div style={{ fontSize: S(11), color: 'rgba(255,255,255,0.7)', textAlign: 'center', fontWeight: 700 }}>
+              💰 <span style={{ color: '#FCA5A5' }}>−100 coins</span> misés · <span style={{ color: '#22C55E' }}>+150 au gagnant</span>
+              <div style={{ fontSize: S(10), opacity: 0.65, marginTop: 2 }}>Égalité parfaite = chacun récupère ses 100c</div>
             </div>
           </div>
 
-          {/* Bouton partager / état — caché si défi lancé depuis ami (opponentId existe) */}
-          {autoChallenge && opponentId ? (
-            <div style={{
-              color: '#22C55E', fontSize: S(14), textAlign: 'center', padding: '12px 16px',
-              background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
-              borderRadius: 12, maxWidth: 340, fontWeight: 700,
-            }}>
-              ✅ Défi envoyé à ton ami !
+          {/* FeaturedFact si bien répondu */}
+          {featuredFact && (
+            <div style={{ width: '100%', maxWidth: 340 }}>
+              <FeaturedFactCard
+                fact={featuredFact}
+                fallbackColor={MULTI_VIOLET}
+                textColor="#ffffff"
+                isQuickie={false}
+                onClick={() => { audio.play?.('click'); setViewingFact({ ...featuredFact, _isLocked: !globalUnlocked.has(featuredFact.id) }) }}
+              />
             </div>
-          ) : autoChallenge ? (
-            <>
-              <div style={{
-                fontSize: S(13), fontWeight: 700, color: 'white',
-                background: 'rgba(0,0,0,0.3)', padding: '10px 16px', borderRadius: 12,
-                fontFamily: 'monospace', letterSpacing: 3, textAlign: 'center',
-                maxWidth: 340, width: '100%',
-              }}>
-                Code : <span style={{ fontSize: S(18), color: '#FFD700' }}>{autoChallenge.code}</span>
-              </div>
-              <button
-                onClick={handleShareChallenge}
-                className="w-full py-4 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
-                style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: 'white', fontSize: S(16), maxWidth: 340 }}
-              >
-                {copied ? '✅ Lien copié !' : '📤 Partager le défi'}
-              </button>
-            </>
-          ) : challengeError ? (
-            <div style={{
-              color: '#EF4444', fontSize: S(13), textAlign: 'center', padding: '12px 16px',
-              background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-              borderRadius: 12, maxWidth: 340,
-            }}>
-              ❌ Erreur création défi<br />
-              <span style={{ fontSize: S(11), opacity: 0.8 }}>{challengeError}</span>
-            </div>
-          ) : (
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: S(14) }}>⏳ Création en cours...</div>
           )}
 
-          {/* Bouton accueil */}
+          {/* Miniatures facts */}
+          {sessionAnswers.length > 0 && (
+            <BlitzSessionMiniatures
+              sessionAnswers={sessionAnswers}
+              globalUnlocked={globalUnlocked}
+              setViewingFact={setViewingFact}
+              onUnlockRequest={handleUnlockFact}
+              S={S}
+            />
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="shrink-0 w-full px-6 pb-4 pt-2 flex flex-col gap-2">
+          {autoChallenge && !opponentId && (
+            <button
+              onClick={handleShareChallenge}
+              className="w-full py-3 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
+              style={{ background: `linear-gradient(135deg, ${MULTI_VIOLET}, #4A1E63)`, color: 'white', fontSize: S(16), border: '3px solid #ffffff' }}
+            >
+              {copied ? '✅ Lien copié !' : '📤 Partager le défi'}
+            </button>
+          )}
           <button
             onClick={onHome}
-            className="w-full py-3 rounded-2xl font-bold text-sm active:scale-[0.97] transition-transform"
-            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', fontSize: S(14), maxWidth: 340 }}
+            className="w-full py-2.5 rounded-2xl font-bold text-sm"
+            style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '3px solid #ffffff', fontSize: S(14) }}
           >
-            🏠 Revenir à l'accueil
+            🏠 Accueil
           </button>
         </div>
+
+        {viewingFact && (
+          <FactDetailView
+            fact={viewingFact}
+            onClose={() => setViewingFact(null)}
+            onUnlockRequest={handleUnlockFact}
+          />
+        )}
       </div>
     )
   }

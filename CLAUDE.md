@@ -95,6 +95,60 @@ L'**admin-tool** (gestion Supabase, création facts, audit) est un **système co
   - **Navigation facts filtrée** : helper `buildFactUrl` injecte filtres actifs dans URL → prev/next corrects au sein de la liste filtrée
   - **89 emojis supprimés** du champ `explanation` via script Node one-shot (`admin-tool/scripts/strip-emojis-explanation.mjs`)
   - **Edge Function `deep-research-url` abandonnée** (o4-mini Deep Research, trop lent/cher pour un gain marginal sur les URLs)
+- ✅ **Session 19/04/2026 nuit — Mode Multi end-to-end + VIP Quickie UX + règles harmonisées + cleanup dev mode** :
+  - **Mode Multi — fix bloquants + UX complète** :
+    - Bug #1 `handleBlitzFinish` : ordre des checks cassé (branches solo return avant Multi) → RPC create/complete jamais appelées. Réordonné : Multi prioritaire.
+    - Bug #2 double-débit 100c créateur (RPC débite déjà côté serveur) → suppression applyCurrencyDelta client.
+    - Bug #3 MultiPage `f.id` undefined → utilise `f.userId`.
+    - `usePlayerProfile` : listener `wtf_currency_updated` ajouté pour users auth (refresh solde après RPC).
+    - Option **"Aléatoire"** 🎲 en Rush Multi + solo (pool ≥10 f*cts globaux).
+    - handleBlitzStart Rush : filtre par categoryId si cat spécifique + boucle pool à 150 pour cat limitée (chrono va jusqu'au bout).
+    - handleBlitzReplay conserve variant + cat précédente (plus de rematch random).
+    - Gate Rush/Speedrun unifiée **≥10 f*cts** (fin du 100% requis Speedrun).
+  - **ChallengeScreen refonte complète** :
+    - Pending : header `DÉFI · RUSH/SPEEDRUN`, variant explicite, rappel économie 100/150, boutons côte à côte Refuser (rouge, gauche) + Accepter (vert, droite) avec icône coins, label `Accepter le défi : 100 ⛀`.
+    - Modal GameModal : `confirmIcon` prop ajouté · "Relève le défi pour 100 coins. Remporte le défi et empoche les 150 coins de victoire".
+    - **Débit immédiat 100c** à l'acceptation via nouvelle RPC `accept_duel_challenge` (colonne `player2_accepted_at`). `complete_duel_round` skip le débit si déjà accepté.
+    - Bouton **Refuser** câblé avec RPC `decline_round` v2 (refund 100c créateur + status='expired' si non accepté).
+    - Completed : header icône Multi + solde, badge delta **+150 / −100 / 0** (égalité refund), 3 actions (Rematch variant+cat préservés · Historique · Accueil).
+  - **BlitzResultsScreen Multi** : header icône + "Défi envoyé" + message explicite "En cas de refus ou expiration 48h, 100c remboursés". Bouton Partager retiré (opponentId toujours présent).
+  - **SocialPage realtime** : toast "X a relevé ton défi" (son reveal) + "X a refusé · +100c remboursés" + refresh solde. Toast expiration 48h idem.
+  - **DuelHistoryScreen onglets** : `?tab=records` lu via useSearchParams → bascule Historique défis / Records Blitz de l'ami (Rush gold + Speedrun cyan triés).
+  - **BlitzScreen UX Rush/Speedrun** : timer dans rectangle blanc contour rouge BLITZ_RED (lisible sur toute cat) · chrono centième partout · défloutage image + retrait cadenas sur bonne réponse · plus de highlight vert sur la bonne quand mauvaise cliquée.
+  - **VIP Quickie surprise — visuels finalisés** :
+    - Rate **100% temporaire** (test grandeur nature, à repasser à 3%).
+    - Injection propagée à `handleSelectCategory` (Quickie via CategoryScreen) — manquait auparavant.
+    - Badge "**Bonus f*ct WTF!**" + étoile asset `wtf-star.png` (plus d'emoji ⭐/✨).
+    - Overlay fullscreen 2.2s : étoile WTF + "Bonus f*ct WTF!" + glow gold double-couche.
+    - Contours **gold brillant** sur carte question + image + 2 QCM quand VIP surprise.
+    - Image floutée placeholder : "?" remplacé par étoile WTF avec pulse.
+  - **Règles modes refondues (MODE_CONFIGS)** :
+    - Blitz : `spacer` entre règles communes et variants · Rush "Répondez au plus grand nombre de questions (−5s / mauvaise)" · Speedrun "Répondez à un set de questions (+5s / mauvaise)" avec retour ligne `\n` supporté.
+    - Quest : Coût "1 énergie" (sans "par bloc") · Bloc "5 fun facts + 1 WTF!" · Boss "WTF! f*act ! toutes les 5 questions" via `picto:target` questionMark · Gains "+20c / q. · +100c / WTF!".
+    - Flash : Indices "Aucun · 2 / WTF!" · Gains "+30c / jour · 1 WTF! débloqué / sem.".
+    - Multi : Social "48 h pour relever le défi".
+    - Support `\n` (retour à ligne) + `rule.spacer` dans ModeLaunchScreen ET HowToPlayModal.
+  - **Icônes refactor** :
+    - SwordsIcon : nouveau prop `accent2` pour 2e épée (Multi : épée bleue + épée rouge).
+    - TargetIcon : nouveau prop `questionMark` + `questionColor` (remplace cercle central par "?" coloré).
+    - Multi : QCM color violet, timer accent violet, penalty violet, share violet.
+    - Quest : QCM/timer/target couleurs Quest + gold, energy toujours vert.
+    - Flash : QCM/timer/set couleurs Flash + gold, "?" gold sur cercle pink.
+  - **Blitz Rush gate min 10 f*cts** (solo + Multi) au lieu de 5.
+  - **Prix déblocage catégorie** : 1 500 → **200 coins**.
+  - **HomeScreen** : dégradé inversé (foncé en haut → clair en bas).
+  - **Mode dev nettoyé** (~180 lignes retirées) :
+    - Bypass unlock retirés : CollectionPage, useSelectionHandlers, useNavigationHandlers, useModeStarters, AppRouter, useAppEffects.
+    - UI debug QuestionScreen retirée : plus de 4 types VRAIE/DRÔLE/PROCHE/PLAUSIBLE en colonne, plus de badge devType, plus de boutons indices pré-révélés.
+    - Restent actifs : crédits 9 999 coins / 100 indices au mount + toggle Settings Normal/Dev/Test.
+  - **Assets catégories** : ajout icônes `animaux-ciel.png`, `transports.png`, `meteo.png`, `bestioles.png` + renommage `bugs.png` → `bestioles.png` et `animaux-terrestres.png` → `animaux-sauvages.png`.
+  - **VoF batch 1-350** : 309 facts avec 3 affirmations générées (OK 309 / SKIP 0 / FAIL 0) via script Node `admin-tool/scripts/generate-vof-batch.mjs` + Claude Opus 4.6 (~$6, 17 min).
+  - **DB Supabase** :
+    - Rebalance 50/50 VIP/Funny sur `status='published'` (57 flips, 308 VIP / 301 Funny final).
+    - Colonne `player2_accepted_at` + RPC `accept_duel_challenge` (débit 100c accepteur).
+    - RPC `decline_round` v2 (refund 100c créateur + status='expired' si refusé avant acceptation).
+    - Policies RLS sur `blitz_records` (SELECT all + INSERT own) + ajout à publication realtime (historique SocialPage fonctionne).
+  - **Audit collection fantômes** : diagnostic user `cb649e9f` → 24 facts dépubliés après unlock restent dans `collections.facts_completed[]`. Pas de fix (user va republier). **Analyse changement cat** : impact fonctionnel UI = 0 (le fact bascule correctement via `factsIndex` filtré par cat actuelle), seul effet = ligne DB résiduelle cosmétique.
 - ✅ **Session 19/04/2026 soir — Refonte VIP drops (Quickie 3% + Quest 5+1) + SocialPage Blitz dynamique + Flash harmonisée** :
   - **Quickie — Bonus VIP 3%** : chaque question a 3% chance d'être un VIP non-débloqué aléatoire (pool global, catégories confondues). Injection dans `useModeStarters.handleQuickie`. Flag `_isVipSurprise:true` → overlay doré 2.2s (`vipSurprisePop` + `vipSurpriseFade`) + jingle `roulette_jackpot` + vibration + badge ⭐ "Bonus VIP" pulsant pendant la question (remplace modeLabel). Règle ajoutée dans `MODE_CONFIGS.quickie`.
   - **Quest — Blocs courts** : `QUEST_BLOCK_SIZE` 10 → **5**, `BOSS_THRESHOLD` 5 → **3**. Nombre de blocs passe de 77 à 154 (770 Funny ÷ 5). Gains/bloc 300c → 200c mais 2× plus de blocs = volume identique, consommation énergie ×2 (pression achat accrue). Règles MODE_CONFIGS.quest mises à jour (bloc 5+1, boss 3/5).

@@ -395,7 +395,7 @@ export default function App() {
     handleShare, handleShareDailyFact, handleShowRules,
   } = useNavigationHandlers({
     launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
-    selectedDifficulty,
+    selectedDifficulty, blitzVariant,
     quickiePool, unlockedFacts, user, sessionCorrectFacts,
     handleStartFlashSession, handleQuickie, handleSelectDifficulty,
     handleSelectCategory, handleBlitzStart, initSessionState,

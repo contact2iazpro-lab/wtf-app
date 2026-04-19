@@ -13,8 +13,8 @@ import { checkBadges } from '../utils/badgeManager'
 import { audio } from '../utils/audio'
 import { saveBlitzRecord } from '../data/blitzRecordService'
 
-const BLITZ_RUSH_MIN_UNLOCKED = 5 // minimum pour lancer Rush
-const BLITZ_RUSH_POOL_SIZE = 150  // marge confortable pour 60s
+const BLITZ_RUSH_MIN_UNLOCKED = 10 // minimum de f*cts pour lancer Rush (19/04)
+const BLITZ_RUSH_POOL_SIZE = 150   // marge confortable pour 60s
 
 export function useBlitzHandlers({
   user, selectedCategory, isChallengeMode,
@@ -86,7 +86,8 @@ export function useBlitzHandlers({
 
     setSessionType('blitz')
     setGameMode('blitz')
-    setSelectedCategory(isSpeedrun ? categoryId : null)
+    // Rush : garde categoryId si choisi (pour rejouer / affichage), sinon null
+    setSelectedCategory(categoryId && categoryId !== 'all' ? categoryId : null)
     setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
     setBlitzVariant?.(variant)
     setBlitzFacts(shuffled)

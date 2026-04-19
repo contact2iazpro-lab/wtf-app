@@ -368,17 +368,25 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
           })()}
         </div>
 
-        {/* Gros timer compte à rebours (vert → rouge en dégradé) */}
+        {/* Gros timer : rectangle blanc contour rouge Blitz, texte dégradé vert→rouge */}
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            fontSize: S(48), fontWeight: 900, color: timerColor,
-            fontVariantNumeric: 'tabular-nums',
-            textShadow: `0 0 20px ${timerColor}80`,
-            lineHeight: 1,
+            display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+            background: '#ffffff',
+            border: `3px solid ${BLITZ_RED}`,
+            borderRadius: S(14),
+            padding: `${S(6)} ${S(18)}`,
+            boxShadow: '0 4px 18px rgba(0,0,0,0.3)',
           }}>
-            {timeLeft.toFixed(2)}s
+            <div style={{
+              fontSize: S(42), fontWeight: 900, color: timerColor,
+              fontVariantNumeric: 'tabular-nums',
+              lineHeight: 1,
+            }}>
+              {timeLeft.toFixed(2)}s
+            </div>
           </div>
-          <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.55)', fontWeight: 700, marginTop: S(3), letterSpacing: '0.04em' }}>
+          <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.65)', fontWeight: 700, marginTop: S(4), letterSpacing: '0.04em' }}>
             ❌ erreur = {isSpeedrun ? '+' : '−'}{WRONG_PENALTY}s
           </div>
         </div>

@@ -558,15 +558,16 @@ export default function BlitzResultsScreen({
             {challengeError ? 'Erreur' : autoChallenge ? 'Défi envoyé !' : 'Création du défi...'}
           </h1>
 
-          {/* Badge statut */}
+          {/* Message statut envoi */}
           {autoChallenge && opponentId && !challengeError && (
             <div style={{
-              fontSize: S(12), fontWeight: 800, color: '#22C55E',
+              fontSize: S(12), fontWeight: 700, color: 'white',
               background: 'rgba(34,197,94,0.12)', border: '1.5px solid rgba(34,197,94,0.5)',
-              padding: `${S(6)} ${S(14)}`, borderRadius: S(999),
-              maxWidth: 340,
+              padding: `${S(10)} ${S(14)}`, borderRadius: S(12),
+              maxWidth: 340, textAlign: 'center', lineHeight: 1.45,
             }}>
-              ✅ Ton ami a 48 h pour relever
+              <div style={{ color: '#22C55E', fontWeight: 900, marginBottom: 2 }}>✅ Défi envoyé !</div>
+              Tu seras notifié dès que ton ami aura relevé le défi (ou l'aura refusé). Il a 48 h pour y jouer.
             </div>
           )}
           {challengeError && (
@@ -645,19 +646,10 @@ export default function BlitzResultsScreen({
 
         {/* Actions */}
         <div className="shrink-0 w-full px-6 pb-4 pt-2 flex flex-col gap-2">
-          {autoChallenge && !opponentId && (
-            <button
-              onClick={handleShareChallenge}
-              className="w-full py-3 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
-              style={{ background: `linear-gradient(135deg, ${MULTI_VIOLET}, #4A1E63)`, color: 'white', fontSize: S(16), border: '3px solid #ffffff' }}
-            >
-              {copied ? '✅ Lien copié !' : '📤 Partager le défi'}
-            </button>
-          )}
           <button
             onClick={onHome}
-            className="w-full py-2.5 rounded-2xl font-bold text-sm"
-            style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '3px solid #ffffff', fontSize: S(14) }}
+            className="w-full py-3 rounded-2xl font-bold text-base"
+            style={{ background: `linear-gradient(135deg, ${MULTI_VIOLET}, #4A1E63)`, color: 'white', border: '3px solid #ffffff', fontSize: S(16) }}
           >
             🏠 Accueil
           </button>

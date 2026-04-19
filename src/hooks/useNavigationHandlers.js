@@ -17,7 +17,7 @@ import { syncAfterAction } from '../services/playerSyncService'
 export function useNavigationHandlers({
   // State
   launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
-  selectedDifficulty,
+  selectedDifficulty, blitzVariant,
   quickiePool, unlockedFacts, user, sessionCorrectFacts,
   // Hooks extraits
   handleStartFlashSession, handleQuickie, handleSelectDifficulty,
@@ -153,8 +153,12 @@ export function useNavigationHandlers({
   }, [clearPendingDuel])
 
   const handleBlitzReplay = useCallback(() => {
-    handleBlitzStart(selectedCategory)
-  }, [selectedCategory, handleBlitzStart])
+    // Conserve le variant (rush/speedrun) ET la cat choisie à la partie
+    // précédente. Pour Speedrun, questionCount = nb facts (palier).
+    const variant = blitzVariant || 'rush'
+    const qc = variant === 'speedrun' ? (selectedCategory ? undefined : 10) : null
+    handleBlitzStart(selectedCategory, qc, variant)
+  }, [selectedCategory, blitzVariant, handleBlitzStart])
 
   const handleQuickieContinue = useCallback(() => {
     const filteredPool = quickiePool.filter(f => !unlockedFacts.has(f.id))

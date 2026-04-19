@@ -52,9 +52,10 @@ export default function MultiPage() {
   }, [allFacts, unlockedFacts])
 
   const completedCats = categories.filter(c => c.isComplete)
+  const RUSH_MIN_FACTS = 10 // aligné avec solo (19/04)
   const availableCats = variant === 'speedrun'
     ? completedCats
-    : categories.filter(c => c.unlocked >= 5)
+    : categories.filter(c => c.unlocked >= RUSH_MIN_FACTS)
 
   const selectedCat = categoryId ? categories.find(c => c.id === categoryId) : null
   const maxPalier = selectedCat?.unlocked || 0
@@ -222,12 +223,12 @@ export default function MultiPage() {
               <div style={{ padding: '16px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', fontSize: 13, color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>
                 {variant === 'speedrun'
                   ? '🔒 Aucune catégorie 100% complétée.'
-                  : 'Débloque au moins 5 f*cts dans une catégorie.'}
+                  : `Débloque au moins ${RUSH_MIN_FACTS} f*cts dans une catégorie.`}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                 {/* Option Aléatoire (Rush uniquement) — toutes catégories */}
-                {variant === 'rush' && totalUnlocked >= 5 && (() => {
+                {variant === 'rush' && totalUnlocked >= RUSH_MIN_FACTS && (() => {
                   const selected = categoryId === 'all'
                   return (
                     <button

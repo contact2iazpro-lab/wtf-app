@@ -21,7 +21,7 @@ const MODE_LABELS = {
 
 export default function ProfilPage() {
   const goBack = useGoBack()
-  const { isConnected, user, signInWithGoogle, signOut } = useAuth()
+  const { isConnected, hasSession, user, signInWithGoogle, signOut } = useAuth()
   const [showSettings, setShowSettings] = useState(false)
 
   // Edit name
@@ -115,19 +115,29 @@ export default function ProfilPage() {
   }
 
   const [resetStep, setResetStep] = useState(0) // 0=hidden, 1=first confirm, 2=second confirm
+  const [resetting, setResetting] = useState(false)
 
-  function executeReset() {
-    setResetStep(0)
+  async function executeReset() {
+    if (resetting) return
+    setResetting(true)
 
-    // Reset Supabase en fire-and-forget (ne pas bloquer le reload)
-    if (isConnected && user) {
-      supabase.from('profiles').update({
-        coins: 500, total_score: 0, streak_current: 0, streak_max: 0,
-        hints: 3, energy: 5, updated_at: new Date().toISOString(),
-      }).eq('id', user.id).catch(() => {})
+    // 1) Reset serveur atomique AVANT le reload — sinon pullFromServer
+    // re-hydrate l'ancien état depuis profiles.flags + collections.
+    // Await obligatoire : un fire-and-forget serait tué par window.location.reload().
+    if (hasSession) {
+      try {
+        const { error } = await supabase.rpc('reset_player_progression')
+        if (error) throw error
+      } catch (err) {
+        console.error('[reset] RPC reset_player_progression failed:', err)
+        alert('Impossible de réinitialiser côté serveur. Réessaie dans un instant.')
+        setResetting(false)
+        setResetStep(0)
+        return
+      }
     }
 
-    // Clear localStorage (garder auth + version)
+    // 2) Clear localStorage (garder auth + version + skip_launch)
     const kept = {}
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
@@ -137,6 +147,7 @@ export default function ProfilPage() {
     }
     localStorage.clear()
     Object.entries(kept).forEach(([k, v]) => localStorage.setItem(k, v))
+
     window.location.reload()
   }
 

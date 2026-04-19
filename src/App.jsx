@@ -129,35 +129,35 @@ export default function App() {
     if (!pendingDuel) return
 
     if (pendingDuel.mode === 'create') {
-      // Défi Blitz coûte 200 coins
+      // Défi Multi coûte 200 coins (rush et speedrun)
       if ((profileCoins ?? 0) < 200) {
         setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: 'Il te faut 200 coins pour lancer un défi !' })
         clearPendingDuel()
         return
       }
-      // Revanche dans mêmes conditions → skip le BlitzLobby et lance directement.
-      if (pendingDuel.questionCount && pendingDuel.categoryId && pendingDuel.categoryId !== 'all') {
-        handleBlitzStart(pendingDuel.categoryId, pendingDuel.questionCount)
-        // pendingDuel reste en place pour handleBlitzFinish (opponentId + categoryId)
+      // Multi venant de MultiPage ou revanche : lance directement la partie.
+      // pendingDuel.variant ('rush'|'speedrun') + pendingDuel.questionCount (palier
+      // pour speedrun, ou null pour rush tout-pool).
+      if (pendingDuel.categoryId && pendingDuel.categoryId !== 'all') {
+        handleBlitzStart(pendingDuel.categoryId, pendingDuel.questionCount, pendingDuel.variant || 'rush')
         return
       }
+      // Fallback legacy (pas de categoryId précisé) → ouvre le BlitzLobby
       setGameMode('blitz')
       setSessionType('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
       setSelectedCategory(pendingDuel.categoryId || 'all')
       setScreen(SCREENS.BLITZ_LOBBY)
-      // NOTE: Les 200 coins sont débités atomiquement par le RPC create_duel_challenge.
-      // On laisse pendingDuel en place pour que handleBlitzFinish puisse
-      // lire opponentId + categoryId. Sera cleared par handleHome ou après création du round.
     } else if (pendingDuel.mode === 'accept' && pendingDuel.facts) {
       // User accepte un défi : lance directement le Blitz avec les facts préparés
+      // variant (rush/speedrun) hérité du challenge row
       setSessionType('blitz')
       setGameMode('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
+      setBlitzVariant?.(pendingDuel.variant || 'rush')
       setBlitzFacts(pendingDuel.facts)
       setBlitzResults(null)
       setScreen(SCREENS.BLITZ)
-      // pendingDuel.roundId sera consommé par handleBlitzFinish pour completeDuelRound
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingDuel, applyCurrencyDelta, clearPendingDuel])
@@ -249,7 +249,7 @@ export default function App() {
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
-  const [blitzVariant, setBlitzVariant] = useState('solo') // 'solo' | 'defi'
+  const [blitzVariant, setBlitzVariant] = useState('rush') // 'rush' | 'speedrun'
   const [launchMode, setLaunchMode] = useState(null)
   const [quickiePool, setQuickiePool] = useState([])
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])

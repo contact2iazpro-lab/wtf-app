@@ -217,7 +217,7 @@ export function computeDuelState(duel, lastRound, meId) {
  */
 export async function createDuelChallenge({
   opponentId, categoryId, categoryLabel, questionCount,
-  player1Time, player1Correct, player1Name,
+  player1Time, player1Correct, player1Name, variant = 'rush',
 }) {
   const { data, error } = await supabase.rpc('create_duel_challenge', {
     p_opponent_id: opponentId || null,
@@ -227,6 +227,7 @@ export async function createDuelChallenge({
     p_player1_time: player1Time,
     p_player1_correct: player1Correct,
     p_player1_name: player1Name,
+    p_variant: variant,
   })
   if (error) {
     console.error('[duelService] create_duel_challenge RPC error:', error.message)

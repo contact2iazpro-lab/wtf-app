@@ -226,6 +226,7 @@ export function useBlitzHandlers({
 
       if (user) {
         const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
+        const duelVariant = pendingDuel?.variant === 'speedrun' ? 'speedrun' : 'rush'
         // RPC atomique : 1 seul round-trip serveur, debit 200 coins + upsert
         // duel + insert challenge en 1 txn. Plus besoin de timeout/race/fire-forget.
         applyCurrencyDelta?.({ coins: -200 }, 'challenge_create')?.catch?.(e =>
@@ -240,10 +241,9 @@ export function useBlitzHandlers({
             player1Time: finalTime,
             player1Correct: correctCount,
             player1Name: user.user_metadata?.name || 'Joueur WTF!',
+            variant: duelVariant,
           }))
           .then((result) => {
-            // Le RPC renvoie { challenge_id, code, duel_id, ... }.
-            // On synthétise un "round" compatible avec l'ancien format pour BlitzResultsScreen.
             const round = {
               id: result.challenge_id,
               code: result.code,
@@ -251,6 +251,7 @@ export function useBlitzHandlers({
               category_id: selectedCategory || 'all',
               category_label: challengeData.categoryLabel,
               question_count: totalAnswered,
+              variant: duelVariant,
               player1_id: user.id,
               player1_name: user.user_metadata?.name || 'Joueur WTF!',
               player1_time: finalTime,
@@ -259,7 +260,6 @@ export function useBlitzHandlers({
               status: 'pending',
             }
             setLastCreatedDuel?.(round)
-            // Notifier l'UI du débit des 200 coins
             window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
           })
           .catch((e) => {

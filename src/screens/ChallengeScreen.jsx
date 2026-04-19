@@ -80,13 +80,20 @@ export default function ChallengeScreen() {
   const isSelf = user && challenge?.player1_id === user.id
 
   // Bloc 3.6 — Vibration à la révélation du résultat (pattern long si victoire)
-  // Compare best-score (plus de bonnes gagne), tie-break time (plus bas = plus rapide)
+  // Rush : plus de bonnes gagne (tie-break time bas).
+  // Speedrun : temps le plus bas gagne.
   useEffect(() => {
     if (!isCompleted || !user || !challenge) return
-    const p1Correct = challenge.player1_correct ?? 0
-    const p2Correct = challenge.player2_correct ?? 0
-    const p1Won = p1Correct > p2Correct
-      || (p1Correct === p2Correct && (challenge.player1_time ?? 0) <= (challenge.player2_time ?? 0))
+    const isSpeedrun = challenge.variant === 'speedrun'
+    let p1Won
+    if (isSpeedrun) {
+      p1Won = (challenge.player1_time ?? 0) <= (challenge.player2_time ?? 0)
+    } else {
+      const p1Correct = challenge.player1_correct ?? 0
+      const p2Correct = challenge.player2_correct ?? 0
+      p1Won = p1Correct > p2Correct
+        || (p1Correct === p2Correct && (challenge.player1_time ?? 0) <= (challenge.player2_time ?? 0))
+    }
     const meIsP1 = challenge.player1_id === user.id
     const meWon = (meIsP1 && p1Won) || (!meIsP1 && !p1Won)
     audio.vibrate(meWon ? [80, 50, 80, 50, 150] : [40])
@@ -133,13 +140,22 @@ export default function ChallengeScreen() {
     )
   }
 
-  // Completed — show results (format best-score 19/04/2026 : bonnes d'abord, temps tie-break)
+  // Completed — show results (rush = best-score, speedrun = best-time)
   if (isCompleted) {
+    const isSpeedrun = challenge.variant === 'speedrun'
     const p1Correct = challenge.player1_correct ?? 0
     const p2Correct = challenge.player2_correct ?? 0
-    const p1Won = p1Correct > p2Correct
-      || (p1Correct === p2Correct && (challenge.player1_time ?? 0) <= (challenge.player2_time ?? 0))
-    const isTie = p1Correct === p2Correct && challenge.player1_time === challenge.player2_time
+    const p1Time = challenge.player1_time ?? 0
+    const p2Time = challenge.player2_time ?? 0
+    let p1Won, isTie
+    if (isSpeedrun) {
+      p1Won = p1Time <= p2Time
+      isTie = p1Time === p2Time
+    } else {
+      p1Won = p1Correct > p2Correct
+        || (p1Correct === p2Correct && p1Time <= p2Time)
+      isTie = p1Correct === p2Correct && p1Time === p2Time
+    }
     return (
       <div style={{ '--scale': scale, height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: S(16), background: 'linear-gradient(160deg, #1a0a2e, #0a0a3e)', fontFamily: 'Nunito, sans-serif', padding: 20 }}>
         <span style={{ fontSize: S(48) }}>🏆</span>
@@ -153,9 +169,18 @@ export default function ChallengeScreen() {
           }}>
             {p1Won && <div style={{ fontSize: 12, fontWeight: 900, color: '#FFD700', marginBottom: 4 }}>GAGNANT</div>}
             <div style={{ fontSize: 14, fontWeight: 800, color: 'white', marginBottom: 8 }}>{challenge.player1_name}</div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: p1Won ? '#FFD700' : '#FF6B1A' }}>{p1Correct}</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>bonne{p1Correct > 1 ? 's' : ''}</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{formatTime(challenge.player1_time)}</div>
+            {isSpeedrun ? (
+              <>
+                <div style={{ fontSize: 22, fontWeight: 900, color: p1Won ? '#FFD700' : '#FF6B1A' }}>{formatTime(p1Time)}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>{p1Correct} bonne{p1Correct > 1 ? 's' : ''}</div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 28, fontWeight: 900, color: p1Won ? '#FFD700' : '#FF6B1A' }}>{p1Correct}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>bonne{p1Correct > 1 ? 's' : ''}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{formatTime(p1Time)}</div>
+              </>
+            )}
           </div>
           {/* VS */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -169,13 +194,22 @@ export default function ChallengeScreen() {
           }}>
             {!p1Won && <div style={{ fontSize: 12, fontWeight: 900, color: '#FFD700', marginBottom: 4 }}>GAGNANT</div>}
             <div style={{ fontSize: 14, fontWeight: 800, color: 'white', marginBottom: 8 }}>{challenge.player2_name}</div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: !p1Won ? '#FFD700' : '#FF6B1A' }}>{p2Correct}</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>bonne{p2Correct > 1 ? 's' : ''}</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{formatTime(challenge.player2_time)}</div>
+            {isSpeedrun ? (
+              <>
+                <div style={{ fontSize: 22, fontWeight: 900, color: !p1Won ? '#FFD700' : '#FF6B1A' }}>{formatTime(p2Time)}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>{p2Correct} bonne{p2Correct > 1 ? 's' : ''}</div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 28, fontWeight: 900, color: !p1Won ? '#FFD700' : '#FF6B1A' }}>{p2Correct}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>bonne{p2Correct > 1 ? 's' : ''}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{formatTime(p2Time)}</div>
+              </>
+            )}
           </div>
         </div>
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
-          {challenge.category_label} · 60s chrono
+          {challenge.category_label} · {isSpeedrun ? `Speedrun · palier ${challenge.question_count}` : '60s chrono'}
           {isTie && <div style={{ fontSize: 11, color: '#FFD700', marginTop: 4 }}>Égalité parfaite — créateur gagne</div>}
         </div>
         <button
@@ -239,11 +273,19 @@ export default function ChallengeScreen() {
             <div style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>{challenge.question_count}</div>
           </div>
         </div>
-        <div style={{ textAlign: 'center', padding: '12px 0', borderRadius: 12, background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)' }}>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>🎯 Score à battre</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#FFD700' }}>{challenge.player1_correct ?? 0} bonnes</div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>en 60s (chrono descendant)</div>
-        </div>
+        {challenge.variant === 'speedrun' ? (
+          <div style={{ textAlign: 'center', padding: '12px 0', borderRadius: 12, background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>⏱️ Temps à battre</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: '#00E5FF' }}>{formatTime(challenge.player1_time)}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>Speedrun · palier {challenge.question_count}</div>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '12px 0', borderRadius: 12, background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>🎯 Score à battre</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: '#FFD700' }}>{challenge.player1_correct ?? 0} bonnes</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>Rush · 60s chrono</div>
+          </div>
+        )}
       </div>
 
       {/* Actions */}

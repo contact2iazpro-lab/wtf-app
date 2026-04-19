@@ -131,8 +131,8 @@ export default function BlitzResultsScreen({
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // ─── Vue Blitz Solo : score = bonnes réponses en 60s + record ───
-  if (variant === 'solo') {
+  // ─── Vue Blitz Rush (ex-Solo) : score = bonnes réponses en 60s + record ───
+  if (variant === 'rush' || variant === 'solo') {
     const soloRank = correctCount >= 100 ? { emoji: '👑', label: 'Légende Blitz !' }
       : correctCount >= 50 ? { emoji: '🏆', label: 'Maître du Blitz' }
       : correctCount >= 30 ? { emoji: '🔥', label: 'Impressionnant !' }
@@ -201,6 +201,93 @@ export default function BlitzResultsScreen({
             style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '2px solid rgba(255,255,255,0.3)', fontSize: S(14) }}
           >
             📤 Partager
+          </button>
+          <button
+            onClick={onHome}
+            className="w-full py-2 rounded-2xl font-bold text-sm"
+            style={{ background: 'transparent', color: 'rgba(255,255,255,0.7)', border: 'none', fontSize: S(13) }}
+          >
+            🏠 Accueil
+          </button>
+        </div>
+
+        <style>{`
+          @keyframes blitzRecordPulse {
+            0%, 100% { transform: scale(1) }
+            50% { transform: scale(1.03) }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  // ─── Vue Blitz Speedrun : record = temps final par palier ──────────────
+  if (variant === 'speedrun') {
+    const speedrunRank = finalTime < 30 ? { emoji: '👑', label: 'Vitesse lumière !' }
+      : finalTime < 60 ? { emoji: '🏆', label: 'Ultra-rapide' }
+      : finalTime < 120 ? { emoji: '⚡', label: 'Rapide' }
+      : finalTime < 180 ? { emoji: '🔥', label: 'Bien joué' }
+      : { emoji: '🎮', label: 'Continue à t\'entraîner' }
+
+    const formatSpeedrunTime = (t) => {
+      if (t < 60) return `${t.toFixed(2)}s`
+      const m = Math.floor(t / 60)
+      const s = (t % 60).toFixed(2)
+      return `${m}:${s.padStart(5, '0')}`
+    }
+
+    return (
+      <div
+        className="absolute inset-0 flex flex-col overflow-hidden"
+        style={{ '--scale': scale, background: 'linear-gradient(160deg, #0a2e3e 0%, #1a5060 50%, #0a2e3e 100%)', fontFamily: 'Nunito, sans-serif' }}
+      >
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-4 pb-2 min-h-0" style={{ gap: S(14) }}>
+          <div style={{ fontSize: S(56) }}>{speedrunRank.emoji}</div>
+          <h1 style={{ fontSize: S(22), fontWeight: 900, color: 'white', textAlign: 'center' }}>{speedrunRank.label}</h1>
+
+          {isNewRecord && (
+            <div className="rounded-2xl w-full py-3 text-center" style={{
+              background: 'linear-gradient(135deg, rgba(0,229,255,0.25), rgba(0,151,167,0.3))',
+              border: '2px solid rgba(0,229,255,0.6)', animation: 'blitzRecordPulse 1.5s ease-in-out infinite',
+              maxWidth: 340,
+            }}>
+              <span style={{ fontSize: S(16), fontWeight: 900, color: '#00E5FF' }}>🎉 NOUVEAU RECORD !</span>
+            </div>
+          )}
+
+          <div className="rounded-3xl w-full p-6" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', maxWidth: 340 }}>
+            <div className="text-center" style={{ marginBottom: S(6) }}>
+              <span style={{ fontSize: S(12), color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' }}>
+                Temps final · palier {totalAnswered}
+              </span>
+            </div>
+            <div className="text-center">
+              <span style={{ fontSize: S(72), fontWeight: 900, color: '#00E5FF', lineHeight: 1, fontVariantNumeric: 'tabular-nums', textShadow: '0 4px 20px rgba(0,229,255,0.3)' }}>
+                {formatSpeedrunTime(finalTime)}
+              </span>
+            </div>
+            <div className="text-center" style={{ marginTop: S(8) }}>
+              <span style={{ fontSize: S(12), color: 'rgba(255,255,255,0.5)' }}>
+                {correctCount} / {totalAnswered} bonnes · {categoryLabel || 'Catégorie'}
+              </span>
+            </div>
+          </div>
+
+          {bestTime !== null && bestTime !== undefined && (
+            <div className="rounded-2xl w-full p-4 flex items-center justify-between" style={{ background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', maxWidth: 340 }}>
+              <span style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>🏆 Ton record</span>
+              <span style={{ fontSize: S(20), fontWeight: 900, color: '#00E5FF' }}>{formatSpeedrunTime(bestTime)}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="shrink-0 w-full px-6 pb-4 pt-2 flex flex-col gap-2">
+          <button
+            onClick={onReplay}
+            className="w-full py-3 rounded-2xl font-black text-base active:scale-[0.97] transition-transform"
+            style={{ background: 'linear-gradient(135deg, #00E5FF, #0097A7)', color: 'white', fontSize: S(16) }}
+          >
+            ⚡ Rejouer
           </button>
           <button
             onClick={onHome}

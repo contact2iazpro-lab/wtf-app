@@ -12,8 +12,8 @@ import { updateTrophyData, updateWtfData, readWtfData } from '../utils/storageHe
 import { checkBadges } from '../utils/badgeManager'
 import { audio } from '../utils/audio'
 
-const BLITZ_SOLO_MIN_UNLOCKED = 20
-const BLITZ_SOLO_POOL_SIZE = 150 // marge confortable pour 60s
+const BLITZ_RUSH_MIN_UNLOCKED = 5 // minimum pour lancer Rush
+const BLITZ_RUSH_POOL_SIZE = 150  // marge confortable pour 60s
 
 export function useBlitzHandlers({
   user, selectedCategory, isChallengeMode,
@@ -32,39 +32,45 @@ export function useBlitzHandlers({
 }) {
   const navigate = useNavigate()
 
-  const handleBlitzStart = useCallback((categoryId, questionCount, variant = 'defi') => {
+  const handleBlitzStart = useCallback((categoryId, questionCount, variant = 'rush') => {
     audio.play('click')
-    const isSolo = variant === 'solo'
+    const isSpeedrun = variant === 'speedrun'
 
     let pool = getBlitzFacts()
-    if (isSolo) {
-      // Solo : pool = tous les f*cts débloqués (Funny + VIP), min 20
-      if (pool.length < BLITZ_SOLO_MIN_UNLOCKED) {
-        setGameAlert({
-          emoji: '🔓',
-          title: 'Blitz Solo verrouillé',
-          message: `Débloque au moins ${BLITZ_SOLO_MIN_UNLOCKED} f*cts (Quickie, Quest, Flash) pour jouer en Blitz Solo.`,
-        })
+    if (isSpeedrun) {
+      // Speedrun : catégorie obligatoire + doit être 100% complétée côté joueur
+      // (la gate est déjà vérifiée dans BlitzLobbyScreen, ici on protège juste).
+      if (!categoryId) {
+        setGameAlert({ emoji: '🔒', title: 'Catégorie requise', message: 'Le Speedrun se joue uniquement sur une catégorie complète.' })
+        return
+      }
+      pool = pool.filter(f => f.category === categoryId)
+      if (pool.length < questionCount) {
+        setGameAlert({ emoji: '🔒', title: 'Pas assez de f*cts', message: `Il te faut ${questionCount} f*cts débloqués dans cette catégorie.` })
         return
       }
     } else {
-      if (categoryId) pool = pool.filter(f => f.category === categoryId)
-      if (pool.length < 5) {
-        setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Quickie ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
+      // Rush : pool = tous les f*cts débloqués (Funny + VIP), min RUSH_MIN
+      if (pool.length < BLITZ_RUSH_MIN_UNLOCKED) {
+        setGameAlert({
+          emoji: '🔓',
+          title: 'Blitz Rush verrouillé',
+          message: `Débloque au moins ${BLITZ_RUSH_MIN_UNLOCKED} f*cts pour jouer en Blitz Rush.`,
+        })
         return
       }
     }
 
-    const count = isSolo
-      ? Math.min(BLITZ_SOLO_POOL_SIZE, pool.length)
-      : (questionCount || pool.length)
+    const count = isSpeedrun
+      ? questionCount
+      : Math.min(BLITZ_RUSH_POOL_SIZE, pool.length)
     const shuffled = shuffle(pool)
       .slice(0, count)
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
 
     setSessionType('blitz')
     setGameMode('blitz')
-    setSelectedCategory(isSolo ? null : categoryId)
+    setSelectedCategory(isSpeedrun ? categoryId : null)
     setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
     setBlitzVariant?.(variant)
     setBlitzFacts(shuffled)
@@ -75,8 +81,8 @@ export function useBlitzHandlers({
   const handleBlitzFinish = useCallback((results) => {
     const { finalTime, correctCount, totalAnswered, variant = 'defi' } = results
 
-    // ─── Branche SOLO : record = nombre de bonnes réponses en 60s ───
-    if (variant === 'solo') {
+    // ─── Branche RUSH (ex-solo) : record = nombre de bonnes réponses en 60s ───
+    if (variant === 'rush' || variant === 'solo') { // 'solo' gardé en fallback legacy
       const prevBest = readWtfData().blitzSoloBestScore || 0
       const isNewRecord = correctCount > prevBest
       if (isNewRecord) {
@@ -84,12 +90,44 @@ export function useBlitzHandlers({
       }
       const bestScore = Math.max(prevBest, correctCount)
       setBlitzResults({
-        variant: 'solo',
+        variant: 'rush',
         correctCount,
         totalAnswered,
         finalTime: finalTime || 60,
         bestScore,
         isNewRecord,
+      })
+      setScreen(SCREENS.BLITZ_RESULTS)
+      return
+    }
+
+    // ─── Branche SPEEDRUN : record = temps final par (cat, palier) ───────
+    if (variant === 'speedrun') {
+      const palier = totalAnswered // le palier est égal au nb questions répondues
+      const catKey = selectedCategory || 'all'
+      const recordKey = `${catKey}_${palier}`
+      const wd = readWtfData()
+      const prevRecord = wd.speedrunRecords?.[recordKey] || null
+      const isNewRecord = !prevRecord || finalTime < prevRecord
+      if (isNewRecord) {
+        updateWtfData(w => {
+          w.speedrunRecords = { ...(w.speedrunRecords || {}), [recordKey]: finalTime }
+        })
+      }
+      // Push vers Supabase pour cross-device
+      const refreshed = readWtfData()
+      mergeFlags?.({ speedrunRecords: refreshed.speedrunRecords }).catch(e =>
+        console.warn('[useBlitzHandlers] speedrun mergeFlags failed:', e?.message || e)
+      )
+      setBlitzResults({
+        variant: 'speedrun',
+        correctCount,
+        totalAnswered,
+        finalTime,
+        bestTime: isNewRecord ? finalTime : prevRecord,
+        isNewRecord,
+        categoryId: selectedCategory,
+        palier,
       })
       setScreen(SCREENS.BLITZ_RESULTS)
       return

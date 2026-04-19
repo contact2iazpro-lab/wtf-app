@@ -5,65 +5,74 @@ import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
 import GameHeader from '../components/GameHeader'
 
-const WRONG_PENALTY = 5       // secondes retirées du chrono sur erreur
+const WRONG_PENALTY = 5       // secondes retirées/ajoutées sur erreur (inverse selon variant)
 const FLASH_DURATION = 300
-const DURATION = 60           // secondes (chrono descendant, Solo ET Défi — spec 19/04/2026)
+const RUSH_DURATION = 60      // Rush : chrono descendant 60s
 const SOLO_TIERS = [5, 10, 20, 30, 50, 100]
 
-export default function BlitzScreen({ facts, category, onFinish, onQuit, playerCoins, variant = 'defi' }) {
+export default function BlitzScreen({ facts, category, onFinish, onQuit, playerCoins, variant = 'rush' }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
 
   const cat = getCategoryById(category)
-  const isSolo = variant === 'solo'
+  const isSpeedrun = variant === 'speedrun'
   const totalQuestions = facts.length
 
-  // Game state — format unifié : chrono 60s descendant, erreur = -5s pénalité
-  const [timeLeft, setTimeLeft] = useState(DURATION)
+  // Game state
+  //  - Rush : timeLeft descend de 60s jusqu'à 0, erreur = -5s
+  //  - Speedrun : elapsed monte depuis 0, erreur = +5s, fin à totalQuestions
+  const [timeLeft, setTimeLeft] = useState(isSpeedrun ? 0 : RUSH_DURATION)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
   const [flashAnswer, setFlashAnswer] = useState(null)
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
-  const [answeredResults, setAnsweredResults] = useState([]) // 'correct' | 'wrong' per question
+  const [answeredResults, setAnsweredResults] = useState([])
 
   // Refs
   const startTimeRef = useRef(null)
-  const penaltiesRef = useRef(0)           // total secondes retirées par pénalités
+  const penaltiesRef = useRef(0)
   const intervalRef = useRef(null)
   const gameOverRef = useRef(false)
   const flashTimeoutRef = useRef(null)
   const correctRef = useRef(0)
-  // Temps écoulé (depuis début, en secondes) au moment de la DERNIÈRE bonne réponse.
-  // Sert de tie-break côté Défi : au même score, plus bas = plus rapide = gagnant.
-  const lastCorrectTimeRef = useRef(DURATION)
+  const lastCorrectTimeRef = useRef(isSpeedrun ? 0 : RUSH_DURATION)
 
   const currentFact = currentIndex < totalQuestions ? facts[currentIndex] : null
 
-  // Termine la partie — envoie correctCount + totalAnswered + finalTime (= temps à la dernière bonne)
+  // Termine la partie :
+  //  Rush : finalTime = temps à la dernière bonne réponse (tie-break Défi)
+  //  Speedrun : finalTime = temps total écoulé (élapsed + pénalités)
   const endGame = useCallback(() => {
     if (gameOverRef.current) return
     gameOverRef.current = true
     clearInterval(intervalRef.current)
     setTimeout(() => {
+      const elapsed = (Date.now() - startTimeRef.current) / 1000 + penaltiesRef.current
       onFinish({
         variant,
         correctCount: correctRef.current,
         totalAnswered: correctRef.current + answeredResults.filter(r => r === 'wrong').length,
-        finalTime: lastCorrectTimeRef.current,
+        finalTime: isSpeedrun
+          ? Math.round(elapsed * 100) / 100
+          : lastCorrectTimeRef.current,
       })
     }, 200)
-  }, [onFinish, variant, answeredResults])
+  }, [onFinish, variant, answeredResults, isSpeedrun])
 
-  // ── Chrono UNIFIÉ : descendant 60s, pénalité -5s sur erreur ─────────────
+  // ── Chrono ──────────────────────────────────────────────────────────────
+  //  Rush : décompte depuis RUSH_DURATION, fin à 0s
+  //  Speedrun : décompte montant depuis 0, pas de fin automatique (fin à totalQuestions)
   useEffect(() => {
     startTimeRef.current = Date.now()
     intervalRef.current = setInterval(() => {
       if (gameOverRef.current) return
       const spent = (Date.now() - startTimeRef.current) / 1000 + penaltiesRef.current
-      const left = Math.max(0, DURATION - spent)
-      setTimeLeft(left)
-      if (left <= 0) {
-        endGame()
+      if (isSpeedrun) {
+        setTimeLeft(Math.round(spent * 100) / 100)
+      } else {
+        const left = Math.max(0, RUSH_DURATION - spent)
+        setTimeLeft(left)
+        if (left <= 0) endGame()
       }
     }, 50)
 
@@ -85,12 +94,15 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
       correctRef.current += 1
       setCorrectCount(c => c + 1)
       setAnsweredResults(prev => [...prev, 'correct'])
-      // Enregistre le temps écoulé pour le tie-break du Défi
+      // Tie-break Défi Rush : mémorise le temps à la dernière bonne
       const spentNow = (Date.now() - startTimeRef.current) / 1000 + penaltiesRef.current
-      lastCorrectTimeRef.current = Math.min(DURATION, Math.round(spentNow * 100) / 100)
+      lastCorrectTimeRef.current = Math.min(RUSH_DURATION, Math.round(spentNow * 100) / 100)
       audio.play('correct')
     } else {
-      // Pénalité -5s appliquée au chrono descendant (via accumulation dans penaltiesRef)
+      // Rush : -5s (pénalité descendante, retire du chrono)
+      // Speedrun : +5s (pénalité montante, ajoute au chrono)
+      // Dans les 2 cas, accumulation dans penaltiesRef avec le même signe —
+      // l'effet est inversé via le calcul (RUSH_DURATION - spent) vs spent.
       penaltiesRef.current += WRONG_PENALTY
       setAnsweredResults(prev => [...prev, 'wrong'])
       audio.play('buzzer')
@@ -111,8 +123,12 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
     }, FLASH_DURATION)
   }, [currentFact, currentIndex, flashAnswer, totalQuestions, endGame])
 
-  // ── Background by progress (proportion du chrono écoulé) ──────────────
-  const progress = 1 - (timeLeft / DURATION)
+  // ── Background by progress ──────────────────────────────────────────
+  // Rush : progress = fraction du chrono écoulé
+  // Speedrun : progress = fraction du nb de questions répondues
+  const progress = isSpeedrun
+    ? (totalQuestions > 0 ? currentIndex / totalQuestions : 0)
+    : 1 - (timeLeft / RUSH_DURATION)
   const screenBg = progress >= 0.8 ? 'linear-gradient(160deg, #6a0a0a 0%, #8a1a1a 100%)'
     : progress >= 0.5 ? 'linear-gradient(160deg, #4a1a0a 0%, #6a2a0a 100%)'
     : progress >= 0.25 ? 'linear-gradient(160deg, #1a0a2e 0%, #3a0a4e 100%)'
@@ -158,37 +174,56 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
         onQuit={() => setShowQuitConfirm(true)}
       />
 
-      {/* ── Barre chrono + score (UNIFIÉ Solo + Défi) ──────────────────── */}
+      {/* ── Barre + chrono + score ───────────────────────────────────── */}
       <div style={{ padding: `0 ${S(12)} ${S(4)}`, flexShrink: 0 }}>
         <div className="flex items-center gap-2">
-          <div style={{ flex: 1, height: S(8), background: 'rgba(255,255,255,0.1)', borderRadius: 4, overflow: 'hidden' }}>
-            <div style={{
-              width: `${(timeLeft / DURATION) * 100}%`,
-              height: '100%',
-              background: timeLeft < 10 ? '#EF4444' : timeLeft < 20 ? '#F59E0B' : '#22C55E',
-              transition: 'width 0.1s linear, background 0.3s',
-            }} />
-          </div>
+          {isSpeedrun ? (
+            <div style={{ flex: 1, display: 'flex', gap: 1, height: S(8) }}>
+              {Array.from({ length: totalQuestions }, (_, i) => {
+                const result = answeredResults[i]
+                const isCurrent = i === currentIndex && !gameOverRef.current
+                return (
+                  <div key={i} style={{
+                    flex: 1, borderRadius: 2,
+                    background: result === 'correct' ? '#22C55E'
+                      : result === 'wrong' ? '#EF4444'
+                      : isCurrent ? 'rgba(255,255,255,0.6)'
+                      : 'rgba(255,255,255,0.1)',
+                    transition: 'background 0.3s',
+                  }} />
+                )
+              })}
+            </div>
+          ) : (
+            <div style={{ flex: 1, height: S(8), background: 'rgba(255,255,255,0.1)', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{
+                width: `${(timeLeft / RUSH_DURATION) * 100}%`,
+                height: '100%',
+                background: timeLeft < 10 ? '#EF4444' : timeLeft < 20 ? '#F59E0B' : '#22C55E',
+                transition: 'width 0.1s linear, background 0.3s',
+              }} />
+            </div>
+          )}
           <span style={{
             fontSize: S(20), fontWeight: 900, color: '#ffffff',
-            minWidth: S(56), textAlign: 'right',
+            minWidth: S(64), textAlign: 'right',
             fontVariantNumeric: 'tabular-nums',
           }}>
-            {timeLeft.toFixed(1)}s
+            {timeLeft.toFixed(isSpeedrun ? 2 : 1)}s
           </span>
         </div>
         <div className="flex items-center justify-center" style={{ marginTop: S(6), gap: S(8) }}>
           <span style={{ fontSize: S(28), fontWeight: 900, color: '#FFD700', fontVariantNumeric: 'tabular-nums', textShadow: '0 2px 10px rgba(0,0,0,0.4)' }}>
-            {correctCount}
+            {isSpeedrun ? `${currentIndex}/${totalQuestions}` : correctCount}
           </span>
           <span style={{ fontSize: S(11), fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, textTransform: 'uppercase' }}>
-            bonne{correctCount > 1 ? 's' : ''}
-            {isSolo && ` · palier ${soloTierReached || '—'}`}
+            {isSpeedrun ? 'questions' : `bonne${correctCount > 1 ? 's' : ''}`}
+            {!isSpeedrun && ` · palier ${soloTierReached || '—'}`}
           </span>
         </div>
         <div className="flex items-center justify-center mt-1">
           <span style={{ fontSize: S(10), color: 'rgba(255,255,255,0.45)' }}>
-            ❌ erreur = −{WRONG_PENALTY}s
+            ❌ erreur = {isSpeedrun ? '+' : '−'}{WRONG_PENALTY}s
           </span>
         </div>
       </div>
@@ -249,7 +284,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
           </div>
         </div>
 
-        {/* ── Penalty flash (Solo + Défi, pénalité unifiée -5s) ───────────── */}
+        {/* ── Penalty flash (Rush : -5s / Speedrun : +5s) ─────────────────── */}
         {flashAnswer && !flashAnswer.correct && (
           <div className="flex justify-center" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', pointerEvents: 'none' }}>
             <span style={{
@@ -257,7 +292,7 @@ export default function BlitzScreen({ facts, category, onFinish, onQuit, playerC
               textShadow: '0 0 20px rgba(239,68,68,0.5)',
               animation: 'blitzFlash 0.4s ease-out',
             }}>
-              −{WRONG_PENALTY}s
+              {isSpeedrun ? '+' : '−'}{WRONG_PENALTY}s
             </span>
           </div>
         )}

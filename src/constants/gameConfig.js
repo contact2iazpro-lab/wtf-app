@@ -139,12 +139,12 @@ export const MODE_CONFIGS = {
   blitz: {
     modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défie tes potes', emoji: '⚡', icon: '/assets/modes/icon-blitz.png', color: '#FF4444',
     rules: [
-      { icon: 'icon:timer', text: '**Chrono** : 60s descendant · 2 QCM' },
-      { icon: 'icon:qcm', text: '**QCM** : 2 / question' },
-      { icon: 'picto:no-hint', text: '**Indices** : Aucun' },
-      { icon: 'picto:penalty', text: '**Pénalité** : +5 secondes par erreur' },
-      { icon: 'picto:free', text: '**Coût** : Solo gratuit · Défi 200 coins' },
-      { icon: 'picto:target', text: '**Paliers** : 5, 10, 20, 30, 50, 100 questions' },
+      { icon: 'icon:timer', text: '**Chrono** : 60s descendant' },
+      { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
+      { icon: 'icon:hint', text: '**Indices** : Aucun' },
+      { icon: 'picto:penalty', text: '**Pénalité** : −5 secondes par erreur' },
+      { icon: 'icon:coins', text: '**Coût** : Solo gratuit · Défi 200 coins' },
+      { icon: 'picto:steps', text: '**Paliers** : 5, 10, 20, 30, 50, 100 questions' },
     ],
   },
   flash: {

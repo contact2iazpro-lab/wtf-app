@@ -55,11 +55,11 @@ function TrophyIcon({ size = 64, color = '#ffffff' }) {
   )
 }
 
-function PenaltyIcon({ size = 64, color = '#ffffff' }) {
+function PenaltyIcon({ size = 64, color = '#ffffff', accent = null, text = '−5s' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <text x="50" y="64" textAnchor="middle" fill={color} fontSize="38" fontWeight="900" fontFamily="Nunito, sans-serif">+5s</text>
+      <text x="50" y="64" textAnchor="middle" fill={accent || color} fontSize="38" fontWeight="900" fontFamily="Nunito, sans-serif">{text}</text>
     </svg>
   )
 }
@@ -70,6 +70,16 @@ function TargetIcon({ size = 64, color = '#ffffff' }) {
       <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
       <circle cx="50" cy="50" r="24" stroke={color} strokeWidth="5" fill="none" />
       <circle cx="50" cy="50" r="10" fill={color} />
+    </svg>
+  )
+}
+
+function StepsIcon({ size = 64, color = '#ffffff' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="12" y="65" width="26" height="22" rx="2" fill={color} />
+      <rect x="37" y="45" width="26" height="42" rx="2" fill={color} />
+      <rect x="62" y="25" width="26" height="62" rx="2" fill={color} />
     </svg>
   )
 }
@@ -87,6 +97,7 @@ function SurvivalIcon({ size = 64, color = '#ffffff' }) {
 const COMPONENT_ICONS = {
   'icon:qcm': (size, color, modeId) => {
     if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
+    if (modeId === 'blitz') return <MultipleChoiceIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} />
     return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:set': (size, color, modeId) => {
@@ -96,19 +107,26 @@ const COMPONENT_ICONS = {
   'icon:timer': (size, color, modeId) => {
     if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
     if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
+    if (modeId === 'blitz') return <TimerIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} />
     return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
   },
   'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
   'icon:star': (size) => <img src="/assets/ui/wtf-star.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
   'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
+  'icon:hint': (size) => <img src="/assets/ui/icon-hint.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
+  'icon:coins': (size) => <img src="/assets/ui/icon-coins.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
   'picto:infinity': (size, color) => <InfinityIcon size={size} color={color || '#6BCB77'} />,
   'picto:swipe': (size, color) => <SwipeArrowsIcon size={size} />,
   'picto:share': (size, color) => <ShareIcon size={size} />,
   'picto:no-hint': (size, color) => <NoHintIcon size={size} color={color || '#ffffff'} />,
   'picto:free': (size, color) => <FreeIcon size={size} color={color || '#ffffff'} />,
   'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
-  'picto:penalty': (size, color) => <PenaltyIcon size={size} color={color || '#ffffff'} />,
+  'picto:penalty': (size, color, modeId) => {
+    if (modeId === 'blitz') return <PenaltyIcon size={size} color={'#ffffff'} accent={QUICKIE_GOLD} text="−5s" />
+    return <PenaltyIcon size={size} color={color || '#ffffff'} />
+  },
   'picto:target': (size, color) => <TargetIcon size={size} color={color || '#ffffff'} />,
+  'picto:steps': (size, color) => <StepsIcon size={size} color={color || '#ffffff'} />,
   'picto:survival': (size, color) => <SurvivalIcon size={size} color={color || '#ffffff'} />,
 }
 

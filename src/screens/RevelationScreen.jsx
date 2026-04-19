@@ -424,14 +424,14 @@ export default function RevelationScreen({
                         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
                         border: isBrandedMode ? `2px solid ${accentColor}` : '2px solid rgba(255,255,255,0.5)',
                         borderRadius: S(12), padding: `${S(8)} ${S(16)}`,
-                        color: _currencyCoins >= 25 ? '#ffffff' : '#9CA3AF',
+                        color: _currencyCoins >= (fact.isVip ? 250 : 50) ? '#ffffff' : '#9CA3AF',
                         fontWeight: 800, fontSize: S(13),
-                        cursor: _currencyCoins >= 25 ? 'pointer' : 'not-allowed',
-                        opacity: _currencyCoins >= 25 ? 1 : 0.6,
+                        cursor: _currencyCoins >= (fact.isVip ? 250 : 50) ? 'pointer' : 'not-allowed',
+                        opacity: _currencyCoins >= (fact.isVip ? 250 : 50) ? 1 : 0.6,
                         display: 'flex', alignItems: 'center', gap: S(6),
                       }}
                     >
-                      🔓 Débloquer — 25 <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
+                      🔓 Débloquer — {fact.isVip ? 250 : 50} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
                   </button>
                 </div>
               )}
@@ -479,7 +479,7 @@ export default function RevelationScreen({
                 Débloquer ce f*ct ?
               </h3>
               <p style={{ fontSize: S(13), fontWeight: 600, color: '#6B7280', margin: `0 0 ${S(20)}`, lineHeight: 1.4 }}>
-                Tu pourras voir l'image et l'explication pour <span style={{ fontWeight: 900, color: '#1a1a2e' }}>25</span> <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
+                Tu pourras voir l'image et l'explication pour <span style={{ fontWeight: 900, color: '#1a1a2e' }}>{fact.isVip ? 250 : 50}</span> <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
               </p>
               <div style={{ display: 'flex', gap: S(10) }}>
                 <button
@@ -494,8 +494,9 @@ export default function RevelationScreen({
                 </button>
                 <button
                   onClick={() => {
-                    if (_currencyCoins < 25) return
-                    applyCurrencyDelta?.({ coins: -25 }, 'unlock_fact_wrong_answer')
+                    const cost = fact.isVip ? 250 : 50
+                    if (_currencyCoins < cost) return
+                    applyCurrencyDelta?.({ coins: -cost }, 'unlock_fact_wrong_answer')
                     audio.play('correct')
                     setShowUnlockConfirm(false)
                     setUnlockedByCoins(true)

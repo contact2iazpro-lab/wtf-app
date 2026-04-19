@@ -789,7 +789,9 @@ export default function ResultsScreen({
               {selectedFact._catLabel || 'Catégorie'}
             </div>
             {(() => {
-              const unlockCost = 25
+              // Option A (19/04/2026) : 50c Funny / 250c VIP — aligné avec
+              // CategoryFactsView (Collection) et CLAUDE.md mini-parcours.
+              const unlockCost = selectedFact.isVip ? 250 : 50
               const canUnlock = _cCoins >= unlockCost
               return (
                 <>

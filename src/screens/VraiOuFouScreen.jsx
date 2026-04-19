@@ -19,7 +19,6 @@ const SWIPE_THRESHOLD = 60
 const WRONG_DELAY_MS = 1200
 const VOF_GREEN = '#6BCB77'
 const VOF_RED = '#E84535'
-const UNLOCK_COST = 25
 const TIMER_DURATION = 15
 
 function lerpColor(ratio) {
@@ -34,7 +33,7 @@ function lerpColor(ratio) {
 export default function VraiOuFouScreen({ onHome }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _cCoins, unlockFact, applyCurrencyDelta } = usePlayerProfile()
+  const { coins: _cCoins } = usePlayerProfile()
 
   const [seed, setSeed] = useState(0)
   const pool = useMemo(
@@ -54,8 +53,15 @@ export default function VraiOuFouScreen({ onHome }) {
   const [showReveal, setShowReveal] = useState(false)
   const [revealFact, setRevealFact] = useState(null)
 
-  // Unlock
-  const [unlockedIds, setUnlockedIds] = useState(new Set())
+  // VoF est un mode "vitrine" — aucun fact n'est débloqué ici (spec CLAUDE.md).
+  // On calcule `isRevealed` depuis les f*cts déjà unlocked via d'autres modes
+  // (Quickie / Quest / Flash), lus depuis localStorage wtf_data.
+  const alreadyUnlocked = useMemo(() => {
+    try {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      return new Set(wd.unlockedFacts || [])
+    } catch { return new Set() }
+  }, [index]) // recalcule à chaque carte (au cas où)
 
   const startX = useRef(0)
   const feedbackTimer = useRef(null)
@@ -144,32 +150,7 @@ export default function VraiOuFouScreen({ onHome }) {
     else setDrag({ x: 0, active: false })
   }
 
-  // Unlock via bouton sur l'image — même flow que Quickie/RevelationScreen
-  const handleUnlockConfirm = async () => {
-    if (!fact || _cCoins < UNLOCK_COST) return
-
-    applyCurrencyDelta?.({ coins: -UNLOCK_COST }, 'unlock_fact_vof')?.catch?.(e =>
-      console.warn('[VOF] unlock currency failed:', e?.message || e)
-    )
-    unlockFact?.(fact.id, fact.category, 'unlock_fact_vof').catch(e =>
-      console.warn('[VOF] unlockFact RPC failed:', e?.message || e)
-    )
-    try {
-      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      const unlocked = wd.unlockedFacts || []
-      if (!unlocked.includes(fact.id)) unlocked.push(fact.id)
-      wd.unlockedFacts = unlocked
-      wd.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(wd))
-      window.dispatchEvent(new Event('wtf_storage_sync'))
-    } catch { /* ignore */ }
-
-    setUnlockedIds(prev => { const n = new Set(prev); n.add(fact.id); return n })
-    audio.play?.('correct')
-    // Ouvrir la revelation après unlock
-    setRevealFact({ fact, trueStatement: fact.statementTrue })
-    setShowReveal(true)
-  }
+  // Pas de handleUnlockConfirm en VoF : mode vitrine, aucun unlock possible ici.
 
   const handleTimeout = useCallback(() => {
     if (feedback || !draw) return
@@ -257,7 +238,7 @@ export default function VraiOuFouScreen({ onHome }) {
   const dragIntensity = Math.min(Math.abs(drag.x) / SWIPE_THRESHOLD, 1)
   const swipingRight = !feedback && drag.x > 10
   const swipingLeft = !feedback && drag.x < -10
-  const isRevealed = unlockedIds.has(fact?.id)
+  const isRevealed = alreadyUnlocked.has(fact?.id)
   const counterColor = correct === 0 ? VOF_RED : lerpColor(correct / pool.length)
 
   return (
@@ -383,34 +364,13 @@ export default function VraiOuFouScreen({ onHome }) {
           {!isRevealed && (
             <>
               <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
-              <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(10) }}>
-                <span style={{ fontSize: S(48), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
-                <button
-                  onClick={() => {
-                    if (_cCoins < UNLOCK_COST) return
-                    handleUnlockConfirm()
-                  }}
-                  className="btn-press active:scale-95"
-                  style={{
-                    background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-                    border: '2px solid rgba(255,255,255,0.5)',
-                    borderRadius: S(12), padding: `${S(8)} ${S(16)}`,
-                    color: _cCoins >= UNLOCK_COST ? '#ffffff' : '#9CA3AF',
-                    fontWeight: 800, fontSize: S(13),
-                    cursor: _cCoins >= UNLOCK_COST ? 'pointer' : 'not-allowed',
-                    opacity: _cCoins >= UNLOCK_COST ? 1 : 0.6,
-                    display: 'flex', alignItems: 'center', gap: S(6),
-                  }}
-                >
-                  🔓 Débloquer — {UNLOCK_COST} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
-                </button>
+              <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(6) }}>
+                <span style={{ fontSize: S(36), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
+                <span style={{ fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.85)', textAlign: 'center', padding: `0 ${S(16)}`, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
+                  Débloque-le en Quickie ou Quest
+                </span>
               </div>
             </>
-          )}
-          {isRevealed && (
-            <div style={{ position: 'absolute', bottom: S(8), right: S(8), zIndex: 5, background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6), padding: `${S(3)} ${S(8)}`, pointerEvents: 'none' }}>
-              <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
-            </div>
           )}
         </div>
         <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>

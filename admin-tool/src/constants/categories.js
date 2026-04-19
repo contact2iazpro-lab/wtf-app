@@ -21,6 +21,7 @@ export const CATEGORIES = [
   { id: 'jeux-jouets',        label: 'Jeux & Jouets',            emoji: '🎮', color: '#9B59B6' },
   { id: 'kids',               label: 'Kids',                     emoji: '🎈', color: '#FFEF60' },
   { id: 'lois',               label: 'Lois & Règles',            emoji: '⚖️', color: '#6366B8' },
+  { id: 'meteo',              label: 'Météo',                    emoji: '',   color: '#6FC0D8' },
   { id: 'musique',            label: 'Musique',                  emoji: '🎵', color: '#E84B8A' },
   { id: 'mythologie',         label: 'Mythologie',               emoji: '⚡', color: '#C8A84B' },
   { id: 'phobies',            label: 'Phobies',                  emoji: '😱', color: '#7B5EA7' },
@@ -31,6 +32,7 @@ export const CATEGORIES = [
   { id: 'sciences',           label: 'Sciences',                 emoji: '🔬', color: '#80C8E8' },
   { id: 'sport',              label: 'Sport',                    emoji: '⚽', color: '#E84535' },
   { id: 'technologie',        label: 'Technologie',              emoji: '🤖', color: '#7B8FA0' },
+  { id: 'transports',         label: 'Transports',               emoji: '',   color: '#3A6FA0' },
 ]
 
 export const CATEGORY_MAP = Object.fromEntries(CATEGORIES.map(c => [c.id, c]))

@@ -21,6 +21,7 @@ export const CATEGORIES = [
   { id: 'jeux-jouets',       label: 'Jeux & Jouets',            emoji: '🎮', color: '#9B59B6', bg: '#1A0A2A' },
   { id: 'kids',              label: 'Kids',                     emoji: '🎈', color: '#FFEF60', bg: '#3A3300', image: 'Carte WTF Kids.png' },
   { id: 'lois',              label: 'Lois & Règles',       emoji: '⚖️', color: '#6366B8', bg: '#1A0A35', image: 'Carte WTF Lois et regles.png' },
+  { id: 'meteo',             label: 'Météo',                    emoji: '',   color: '#6FC0D8', bg: '#0A2530' },
   { id: 'musique',           label: 'Musique',                  emoji: '🎵', color: '#E84B8A', bg: '#2A0A1A', image: 'Carte WTF Musique.png' },
   { id: 'mythologie',        label: 'Mythologie',               emoji: '⚡', color: '#C8A84B', bg: '#2A2000' },
   { id: 'phobies',           label: 'Phobies',                  emoji: '😱', color: '#7B5EA7', bg: '#1A0A2A', image: 'Carte WTF Phobies.png' },
@@ -31,6 +32,7 @@ export const CATEGORIES = [
   { id: 'sciences',          label: 'Sciences',                 emoji: '🔬', color: '#80C8E8', bg: '#0A2035', image: 'Carte WTF Sciences.png' },
   { id: 'sport',             label: 'Sport',                    emoji: '⚽', color: '#E84535', bg: '#3A0A05', image: 'Carte WTF Sport.png' },
   { id: 'technologie',       label: 'Technologie',              emoji: '🤖', color: '#7B8FA0', bg: '#0A1520', image: 'Carte WTF Technologie.png' },
+  { id: 'transports',        label: 'Transports',               emoji: '',   color: '#3A6FA0', bg: '#0A1A2E' },
 ]
 
 export const FACTS = [

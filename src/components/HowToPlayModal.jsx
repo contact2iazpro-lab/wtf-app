@@ -174,6 +174,8 @@ const CHAPTER_COLORS = {
 
 const MULTI_VIOLET = '#6B2D8E'
 const MULTI_GOLD = '#FFD700'
+const QUEST_ORANGE = '#FF6B1A'
+const QUEST_DARK = '#D94A10'
 
 // ── Mode icon mapping — utilise les icon-* pour les modes ────────────────────
 const MODE_ICON_MAP = {
@@ -187,7 +189,7 @@ const MODE_ICON_MAP = {
 }
 
 // Modes qui utilisent un style "white card" dans le livret (identique à ModeLaunchScreen)
-const STYLED_MODE_IDS = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi']
+const STYLED_MODE_IDS = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi', 'quest']
 
 // ── Chapters data ───────────────────────────────────────────────────────────
 const CHAPTERS = [
@@ -548,9 +550,11 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   iconColor = i % 2 === 0 ? '#FF4444' : '#CC0000'
                 } else if (chapter.id === 'multi') {
                   iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
+                } else if (chapter.id === 'quest') {
+                  iconColor = i % 2 === 0 ? QUEST_ORANGE : QUEST_DARK
                 }
-                const BORDER_OVERRIDES = { quickie: '#FF7518', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444', multi: MULTI_VIOLET }
-                const TEXT_OVERRIDES = { quickie: QUICKIE_VIOLET, vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444', multi: MULTI_VIOLET }
+                const BORDER_OVERRIDES = { quickie: '#FF7518', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444', multi: MULTI_VIOLET, quest: QUEST_DARK }
+                const TEXT_OVERRIDES = { quickie: QUICKIE_VIOLET, vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444', multi: MULTI_VIOLET, quest: QUEST_ORANGE }
                 const modeColor = CHAPTER_COLORS[chapter.id] || '#FF6B1A'
                 const borderCol = isStyledMode ? (BORDER_OVERRIDES[chapter.id] || modeColor) : '#E5E7EB'
                 const textCol = isStyledMode ? (TEXT_OVERRIDES[chapter.id] || '#1a1a2e') : '#374151'

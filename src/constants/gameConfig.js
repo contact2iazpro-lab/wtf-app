@@ -116,13 +116,13 @@ export const MODE_CONFIGS = {
   quest: {
     modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png', color: '#FF6B1A',
     rules: [
-      { icon: 'icon:energy', text: 'Coût : 1 énergie par bloc' },
-      { icon: 'icon:set', text: 'Bloc : 10 Funny + 1 boss VIP' },
-      { icon: 'icon:qcm', text: 'QCM : 4 / question' },
-      { icon: 'icon:timer', text: 'Timer : 20s / question' },
-      { icon: '💡', text: 'Indices : 2 / question' },
-      { icon: '👑', text: 'Boss débloqué : 5 / 10 bonnes réponses' },
-      { icon: '🪙', text: 'Gains : 20 WTFCoins / bonne · +100 WTFCoins / boss' },
+      { icon: 'icon:energy', text: '**Coût** : 1 énergie par bloc' },
+      { icon: 'icon:set', text: '**Bloc** : 10 Funny + 1 boss VIP' },
+      { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
+      { icon: 'icon:timer', text: '**Timer** : 20s / question' },
+      { icon: 'icon:hint', text: '**Indices** : 2 / question' },
+      { icon: 'icon:star', text: '**Boss** : 5 / 10 bonnes → VIP' },
+      { icon: 'icon:coins', text: '**Gains** : 20c / bonne · +100c / boss' },
     ],
   },
   race: {

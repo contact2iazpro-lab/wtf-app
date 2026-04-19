@@ -31,15 +31,17 @@ const MODE_COLORS = {
   vrai_ou_fou: '#008000',
   race: '#0F52BA',
   blitz: '#FF4444',
-  quest: '#FF6B1A',
+  quest: '#D94A10',
   flash: '#E91E63',
   multi: '#6B2D8E',
 }
 
 const MULTI_VIOLET = '#6B2D8E'
 const MULTI_GOLD = '#FFD700'
+const QUEST_ORANGE = '#FF6B1A'
+const QUEST_DARK = '#D94A10'
 
-const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi']
+const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi', 'quest']
 
 function NoHintIcon({ size = 64, color = '#ffffff' }) {
   return (
@@ -216,17 +218,20 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'vrai_ou_fou' ? '#6BCB77'
     : modeId === 'race' ? '#23D5D5'
     : modeId === 'multi' ? MULTI_VIOLET
+    : modeId === 'quest' ? QUEST_ORANGE
     : modeColor
 
   const btnBg = modeId === 'vrai_ou_fou' ? '#008000'
     : modeId === 'race' ? '#0F52BA'
     : modeId === 'blitz' ? '#CC0000'
     : modeId === 'multi' ? MULTI_VIOLET
+    : modeId === 'quest' ? QUEST_DARK
     : '#FF7518'
   const btnShadow = modeId === 'vrai_ou_fou' ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'race' ? '0 8px 30px rgba(0,255,255,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'blitz' ? '0 8px 30px rgba(204,0,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'multi' ? '0 8px 30px rgba(107,45,142,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : modeId === 'quest' ? '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : '0 8px 30px rgba(255,117,24,0.5), 0 4px 0 rgba(0,0,0,0.15)'
 
   return (
@@ -303,6 +308,8 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
             iconColor = i % 2 === 0 ? '#FF4444' : '#CC0000'
           } else if (modeId === 'multi') {
             iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
+          } else if (modeId === 'quest') {
+            iconColor = i % 2 === 0 ? QUEST_ORANGE : QUEST_DARK
           }
           return (
             <div key={i} style={{

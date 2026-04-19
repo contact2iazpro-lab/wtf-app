@@ -355,28 +355,26 @@ export default function HomeScreen({
           </div>
         </div>
 
-        {/* Bouton Partie rapide — taille native du PNG (pas de stretch) */}
+        {/* Bouton Partie rapide (background asset home-button.png, texte blanc) */}
         <button
           onClick={() => nav('quickie_random')}
           className="btn-press"
           style={{
-            background: 'transparent', border: 'none', padding: 0,
+            backgroundColor: 'transparent',
+            backgroundImage: "url('/assets/modes/home-button.png?v=3')",
+            backgroundSize: '100% 100%',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            border: 'none', padding: 0,
+            width: '70%', maxWidth: S(260), aspectRatio: '260 / 56',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8),
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-            position: 'relative', display: 'inline-block',
           }}
         >
-          <img
-            src="/assets/modes/home-button.png?v=3"
-            alt="Partie rapide"
-            style={{ display: 'block', maxWidth: '80vw', height: 'auto' }}
-          />
           <span style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(14),
             color: '#ffffff', letterSpacing: '0.08em', textTransform: 'uppercase',
             textShadow: '0 2px 4px rgba(0,0,0,0.35)',
-            pointerEvents: 'none',
           }}>
             Partie rapide
           </span>

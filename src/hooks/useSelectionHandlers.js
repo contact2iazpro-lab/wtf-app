@@ -7,7 +7,7 @@
 import { useCallback } from 'react'
 import { DIFFICULTY_LEVELS, SCREENS, QUESTIONS_PER_GAME } from '../constants/gameConfig'
 import {
-  getGeneratedFacts, getGeneratedFactsByCategory,
+  getGeneratedFacts, getGeneratedFactsByCategory, getVipFacts,
   getPlayableCategories,
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
@@ -76,8 +76,25 @@ export function useSelectionHandlers({
         setMiniParcours({ pool: preparedFacts, price, mode: 'quickie', categoryId, difficulty })
         return
       }
+      // Bonus VIP surprise (19/04/2026) — même logique que handleQuickie
+      // TEMPORAIRE rate=1.0 pour test. À repasser à 0.03 ensuite.
+      const VIP_SURPRISE_RATE = 1.0
+      const vipPool = getVipFacts().filter(f => !unlockedFacts.has(f.id))
       const shuffled = shuffle(pool)
-      const sessionFacts = shuffled.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+      const base = shuffled.slice(0, 5)
+      const usedVipIds = new Set()
+      const mixed = base.map(fact => {
+        if (vipPool.length > 0 && Math.random() < VIP_SURPRISE_RATE) {
+          const candidates = vipPool.filter(v => !usedVipIds.has(v.id))
+          if (candidates.length > 0) {
+            const vip = candidates[Math.floor(Math.random() * candidates.length)]
+            usedVipIds.add(vip.id)
+            return { ...vip, _isVipSurprise: true }
+          }
+        }
+        return fact
+      })
+      const sessionFacts = mixed.map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
       const remaining = shuffled.slice(5)
       setQuickiePool(remaining)
       setSelectedCategory(categoryId)

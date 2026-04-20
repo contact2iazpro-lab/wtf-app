@@ -254,7 +254,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                 Surprends-moi !
               </div>
               <div style={{ fontSize: S(10), color: 'rgba(255,255,255,0.75)', fontWeight: 700, marginTop: S(2) }}>
-                Catégorie aléatoire
+                Découvre des f*cts de catégories pas encore débloquées !
               </div>
             </div>
           </button>

@@ -12,5 +12,8 @@ sources_temp.json
 supabase/.temp/
 .claude/worktrees/
 
+# Scripts one-shot avec credentials
+scripts/batch-*.mjs
+
 # Images facts migrées vers Supabase Storage
 public/assets/facts/

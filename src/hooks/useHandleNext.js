@@ -86,8 +86,8 @@ export function useHandleNext({
       }
       setCompletedLevels(newlyCompleted)
 
-      // Unlock categories
-      if (sessionType === 'parcours') {
+      // Unlock categories (Quickie + Quest débloquent des facts → catégories)
+      if (sessionType === 'parcours' || sessionType === 'quickie') {
         const unlockedCategories = wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition']
         const newlyUnlockedCats = []
         for (const fact of toSync) {
@@ -101,6 +101,7 @@ export function useHandleNext({
           wd.lastModified = Date.now()
           localStorage.setItem('wtf_data', JSON.stringify(wd))
           setNewlyUnlockedCategories(newlyUnlockedCats)
+          setShowNewCategoriesModal(true)
         }
       }
 
@@ -152,7 +153,7 @@ export function useHandleNext({
 
       const streakRewardCoins = streakReward?.coins ?? 0
       const newWtfDuJourDate = sessionType === 'drop' ? TODAY() : wtfDuJourDate
-      const quickieSessionsToday = sessionType === 'quickie' ? sessionsToday : newSessionsToday
+      const quickieSessionsToday = newSessionsToday
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
       // Phase A : 1 seule RPC atomique coins+hints via usePlayerProfile

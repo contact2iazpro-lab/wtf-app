@@ -173,9 +173,8 @@ export function useNavigationHandlers({
 
   const handleReplay = useCallback(() => {
     if (sessionType === 'quickie') {
-      // Check énergie avant de relancer
       if (!canPlayQuickieCheck()) {
-        setNoEnergyOrigin('quickie')
+        setNoEnergyOrigin(selectedCategory ? 'quickie' : 'quickie_random')
         setShowNoEnergyModal(true)
         return
       }

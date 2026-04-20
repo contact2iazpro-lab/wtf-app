@@ -31,9 +31,11 @@ export default function NewCategoriesModal({ categories, onClose }) {
       onClick={handleClose}
     >
       <div
-        className="bg-white rounded-2xl p-8 max-w-md w-11/12"
+        className="rounded-2xl p-8 max-w-md w-11/12"
         style={{
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
           animation: 'slideUp 0.3s ease-out',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -59,14 +61,14 @@ export default function NewCategoriesModal({ categories, onClose }) {
                 alignItems: 'center',
                 padding: S(12),
                 marginBottom: S(8),
-                backgroundColor: '#F3F4F6',
+                backgroundColor: 'rgba(255,255,255,0.08)',
                 borderRadius: S(12),
                 fontSize: S(16),
                 fontWeight: 700,
               }}
             >
               <span style={{ marginRight: S(12), fontSize: S(24) }}>{cat.emoji}</span>
-              <span>{cat.label}</span>
+              <span style={{ color: '#ffffff' }}>{cat.label}</span>
             </div>
           ))}
         </div>
@@ -74,12 +76,12 @@ export default function NewCategoriesModal({ categories, onClose }) {
         {/* Message */}
         <p style={{
           fontSize: S(14),
-          color: '#666',
+          color: 'rgba(255,255,255,0.6)',
           lineHeight: 1.5,
           marginBottom: S(24),
           textAlign: 'center',
         }}>
-          Tu peux maintenant voir {categories.length > 1 ? 'ces catégories' : 'cette catégorie'} dans ta collection !
+          Tu peux maintenant jouer {categories.length > 1 ? 'ces catégories' : 'cette catégorie'} en Quickie et les retrouver dans ta collection !
         </p>
 
         {/* Bouton Continuer */}

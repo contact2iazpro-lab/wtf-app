@@ -149,7 +149,8 @@ export default function AppModals({
           onConfirm={() => {
             if (buyExtraSession({ coins: coinsForGate, applyCurrencyDelta })) {
               setShowNoEnergyModal(false)
-              if (noEnergyOrigin === 'quickie') { setGameMode('quickie'); setSessionType('quickie'); setScreen(SCREENS.CATEGORY) }
+              if (noEnergyOrigin === 'quickie_random') { handleQuickie() }
+              else if (noEnergyOrigin === 'quickie') { setGameMode('quickie'); setSessionType('quickie'); setScreen(SCREENS.CATEGORY) }
               else { setGameMode('solo'); setSessionType('quickie'); setSelectedCategory(null); setScreen(SCREENS.CATEGORY) }
             } else { setShowNoEnergyModal(false); setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: `Il te faut ${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins pour acheter une session.` }) }
           }}
@@ -161,13 +162,13 @@ export default function AppModals({
       {miniParcours && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
           onClick={() => setMiniParcours(null)}>
-          <div style={{ background: 'white', borderRadius: 20, padding: 24, maxWidth: 320, width: '100%', textAlign: 'center', fontFamily: 'Nunito, sans-serif' }}
+          <div style={{ background: 'linear-gradient(135deg, #1a1a2e, #16213e)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 20, padding: 24, maxWidth: 320, width: '100%', textAlign: 'center', fontFamily: 'Nunito, sans-serif' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
-            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>Plus que {miniParcours.pool.length} f*ct{miniParcours.pool.length > 1 ? 's' : ''} !</h3>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', margin: '0 0 8px' }}>Plus que {miniParcours.pool.length} f*ct{miniParcours.pool.length > 1 ? 's' : ''} !</h3>
             <p style={{ fontSize: 16, fontWeight: 900, color: '#FF6B1A', margin: '0 0 16px' }}>{miniParcours.price} <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /></p>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setMiniParcours(null)} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280', cursor: 'pointer' }}>Plus tard</button>
+              <button onClick={() => setMiniParcours(null)} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>Plus tard</button>
               <button disabled={coinsForGate < miniParcours.price} onClick={() => {
                 if (coinsForGate < miniParcours.price) return
                 setStorage(prev => { const next = { ...prev, wtfCoins: prev.wtfCoins - miniParcours.price }; saveStorage(next); return next })
@@ -179,7 +180,7 @@ export default function AppModals({
                 else if (mode === 'quickie') { setSessionType('quickie'); setGameMode('quickie'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId); setQuickiePool([]) }
                 else if (mode === 'quest') { setSessionType('parcours'); setGameMode('solo'); setIsQuickPlay(false); setSelectedDifficulty(difficulty); setSelectedCategory(categoryId) }
                 initSessionState(pool); setMiniParcours(null); setScreen(SCREENS.QUESTION)
-              }} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: coinsForGate >= miniParcours.price ? '#FF6B1A' : '#E5E7EB', border: 'none', color: coinsForGate >= miniParcours.price ? 'white' : '#9CA3AF', cursor: coinsForGate >= miniParcours.price ? 'pointer' : 'not-allowed' }}>
+              }} style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: coinsForGate >= miniParcours.price ? '#FF6B1A' : 'rgba(255,255,255,0.1)', border: 'none', color: coinsForGate >= miniParcours.price ? 'white' : 'rgba(255,255,255,0.3)', cursor: coinsForGate >= miniParcours.price ? 'pointer' : 'not-allowed' }}>
                 Lancer ! 🚀
               </button>
             </div>

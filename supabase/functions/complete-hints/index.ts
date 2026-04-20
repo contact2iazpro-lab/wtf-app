@@ -9,11 +9,12 @@ const corsHeaders = {
 const MAX_HINT_LEN = 20
 const HINT_KEYS = ['hint1', 'hint2', 'hint3', 'hint4'] as const
 
-function needsGeneration(value: unknown): boolean {
+function needsGeneration(value: unknown, forceSingleWord = false): boolean {
   if (typeof value !== 'string') return true
   const v = value.trim()
   if (v === '') return true
   if (v.length > MAX_HINT_LEN) return true
+  if (forceSingleWord && v.includes(' ')) return true
   return false
 }
 
@@ -33,7 +34,7 @@ serve(async (req) => {
       })
     }
 
-    const { question, short_answer, explanation, category, hint1, hint2, hint3, hint4 } = await req.json()
+    const { question, short_answer, explanation, category, hint1, hint2, hint3, hint4, forceSingleWord } = await req.json()
     if (!question || !short_answer) {
       return new Response(JSON.stringify({ error: 'question et short_answer requis' }), {
         status: 400,
@@ -43,7 +44,7 @@ serve(async (req) => {
 
     // Détecte les hints à régénérer
     const current: Record<string, string | null | undefined> = { hint1, hint2, hint3, hint4 }
-    const toFix: string[] = HINT_KEYS.filter(k => needsGeneration(current[k]))
+    const toFix: string[] = HINT_KEYS.filter(k => needsGeneration(current[k], !!forceSingleWord))
 
     // Rien à faire : tous les hints sont valides
     if (toFix.length === 0) {
@@ -72,7 +73,9 @@ serve(async (req) => {
       if (toFix.includes(k)) {
         const reason = !v || String(v).trim() === ''
           ? 'VIDE — à générer'
-          : `TROP LONG (${String(v).length} chars) — à reformuler`
+          : String(v).includes(' ')
+            ? `MULTI-MOTS — reformuler en 1 MOT : "${v}"`
+            : `TROP LONG (${String(v).length} chars) — à reformuler`
         return `- ${k} : ${reason}${v ? ` — actuel : "${v}"` : ''}`
       }
       return `- ${k} : "${v}" — À PRÉSERVER, ne pas toucher`
@@ -133,7 +136,7 @@ AUCUN texte avant ni après le JSON.`
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-5',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }],
       }),

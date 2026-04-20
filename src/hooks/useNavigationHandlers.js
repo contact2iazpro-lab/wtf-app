@@ -91,7 +91,7 @@ export function useNavigationHandlers({
       case 'amis':          navigate('/social'); break
       case 'streak':        navigate('/recompenses'); break
       case 'blitz': {
-        const blitzUnlocked = unlockedFacts?.length || 0
+        const blitzUnlocked = unlockedFacts?.size || 0
         if (blitzUnlocked < 10) {
           setGameAlert?.({ emoji: '⚡', title: 'Mode Blitz verrouillé', message: `Il te faut au moins 10 f*cts débloqués pour jouer en Blitz. Tu en as ${blitzUnlocked}.` })
           break
@@ -104,7 +104,7 @@ export function useNavigationHandlers({
         showOrSkipLaunch('quest')
         break
       case 'race': {
-        const unlockedCount = unlockedFacts?.length || 0
+        const unlockedCount = unlockedFacts?.size || 0
         if (unlockedCount < 10) {
           setGameAlert?.({ emoji: '🏎️', title: 'Mode Race verrouillé', message: `Il te faut au moins 10 f*cts débloqués pour jouer en Race. Tu en as ${unlockedCount}.` })
           break

@@ -77,8 +77,8 @@ export function useSelectionHandlers({
         return
       }
       // Bonus VIP surprise (19/04/2026) — même logique que handleQuickie
-      // TEMPORAIRE rate=1.0 pour test. À repasser à 0.03 ensuite.
-      const VIP_SURPRISE_RATE = 1.0
+      // Désactivé (20/04/2026) — repasser à 0.03 pour réactiver à 3% / question.
+      const VIP_SURPRISE_RATE = 0
       const vipPool = getVipFacts().filter(f => !unlockedFacts.has(f.id))
       const shuffled = shuffle(pool)
       const base = shuffled.slice(0, 5)

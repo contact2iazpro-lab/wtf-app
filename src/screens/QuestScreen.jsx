@@ -897,7 +897,7 @@ export default function QuestScreen({ onHome, setStorage }) {
             onClick={launchBlock}
             style={{
               width: '85%', padding: '14px 0',
-              background: '#D94A10',
+              background: '#FF5C00',
               border: '3px solid #ffffff',
               borderRadius: 16,
               fontFamily: 'Nunito, sans-serif',

@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { audio } from '../utils/audio'
-import { useAuth } from '../context/AuthContext'
 import HowToPlayModal from './HowToPlayModal'
 import { version } from '../../package.json'
 
@@ -90,88 +89,6 @@ function GameModeSelector() {
   )
 }
 
-// ─── Save progress modal ────────────────────────────────────────────────────
-function SaveProgressModal({ onClose }) {
-  const { user, isConnected, signInWithGoogle, signOut } = useAuth()
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(null)
-  const [pendingProvider, setPendingProvider] = useState(null)
-
-  const email = user?.email ?? ''
-
-  const handleSignOut = async () => {
-    setLoading('signout')
-    await signOut()
-    window.location.reload()
-  }
-
-  const confirmSignIn = async () => {
-    setError(null)
-    setLoading('google')
-    setPendingProvider(null)
-    try {
-      await signInWithGoogle()
-    } catch (e) { setError(e.message); setLoading(null) }
-  }
-
-  if (pendingProvider) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center p-5" style={{ zIndex: 200, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>
-        <div className="w-full rounded-3xl overflow-hidden" style={{ maxWidth: 340, background: '#FAFAF8', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
-          <div className="flex items-center justify-between px-5 py-3" style={{ background: '#FEE2E2' }}>
-            <span className="font-black text-base" style={{ color: '#1a1a2e' }}>Attention</span>
-            <button onClick={() => setPendingProvider(null)} className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90" style={{ background: '#EF4444' }}>✕</button>
-          </div>
-          <div className="p-5">
-            <p className="text-sm mb-5 font-bold text-center" style={{ color: '#374151', lineHeight: '1.6' }}>
-              La connexion à Google réinitialisera ta progression locale
-              <span style={{ color: '#EF4444' }}> (série, points, f*cts débloqués)</span>.
-              <br /><br />
-              Cette action est <strong style={{ color: '#EF4444' }}>irréversible</strong>. Continuer ?
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setPendingProvider(null)} className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280' }}>Annuler</button>
-              <button onClick={confirmSignIn} className="flex-1 py-3 rounded-2xl font-black text-sm active:scale-95 transition-all" style={{ background: '#EF4444', color: 'white' }}>Confirmer</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center p-5" style={{ zIndex: 200, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
-      <div className="w-full rounded-3xl overflow-hidden" style={{ maxWidth: 340, background: '#FAFAF8', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }} onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-3" style={{ background: '#D1FAE5', borderBottom: '1px solid #A7F3D0' }}>
-          <span className="font-black text-base" style={{ color: '#1a1a2e' }}>Progression</span>
-          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center font-black text-white active:scale-90" style={{ background: '#EF4444' }}>✕</button>
-        </div>
-        <div className="p-5">
-          {isConnected ? (
-            <>
-              <div className="flex flex-col items-center gap-2 mb-5 p-4 rounded-2xl" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                <span className="font-black text-sm" style={{ color: '#1a1a2e' }}>Connecté avec Google</span>
-                {email && <span className="text-xs font-semibold" style={{ color: '#6B7280' }}>{email}</span>}
-                <span className="text-xs font-bold" style={{ color: '#22C55E' }}>Progression sauvegardée</span>
-              </div>
-              <button onClick={handleSignOut} disabled={loading === 'signout'} className="w-full py-3.5 rounded-2xl font-black text-white active:scale-95 transition-all" style={{ background: loading === 'signout' ? '#6B7280' : '#EF4444' }}>
-                {loading === 'signout' ? '...' : 'Se déconnecter'}
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-center text-sm mb-5 font-bold" style={{ color: '#374151' }}>Connecte-toi pour sauvegarder ta progression !</p>
-              <button onClick={() => { setError(null); setPendingProvider('google') }} disabled={!!loading} className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-black text-white active:scale-95 transition-all" style={{ background: '#FF8C00', opacity: loading ? 0.5 : 1 }}>
-                Se connecter avec Google
-              </button>
-              {error && <p className="text-xs text-center mt-3" style={{ color: '#EF4444' }}>{error}</p>}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // ─── Main settings modal ────────────────────────────────────────────────────
 export default function SettingsModal({ onClose, onRestartTutorial }) {

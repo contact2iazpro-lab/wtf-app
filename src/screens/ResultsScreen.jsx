@@ -10,6 +10,7 @@ import FactDetailView from '../components/FactDetailView'
 import ResultsRankHeader from '../components/results/ResultsRankHeader'
 import GainsBreakdown from '../components/results/GainsBreakdown'
 import FeaturedFactCard from '../components/results/FeaturedFactCard'
+import FallbackImage from '../components/FallbackImage'
 import ResultsActionButtons from '../components/results/ResultsActionButtons'
 
 // ── isLightColor ────────────────────────────────────────────────────────────
@@ -46,6 +47,20 @@ const QUICKIE_RANKINGS = [
   { score: 4, label: "T'es un crack !" },
   { score: 5, label: 'Yes ! Perfect !' },
 ]
+
+// Vrai ET Fou — 6 paliers sur /10 (mode viralité, pas de coins)
+// Migré 20→10 le 18/04/2026
+const VOF_RANKINGS = [
+  { max: 2,  emoji: '😅', label: 'Aïe… retente ta chance !' },
+  { max: 4,  emoji: '🤔', label: 'Tu chauffes, continue !' },
+  { max: 6,  emoji: '👍', label: 'Pas mal, tu peux mieux.' },
+  { max: 7,  emoji: '😎', label: 'Bon flair !' },
+  { max: 9,  emoji: '🎯', label: 'Excellent score !' },
+  { max: 10, emoji: '🔥', label: 'Perfect ! Tu es une machine.' },
+]
+function getVofRank(correct) {
+  return VOF_RANKINGS.find(r => correct <= r.max) || VOF_RANKINGS[0]
+}
 
 function getStars(correct, total) {
   const ratio = correct / total
@@ -103,6 +118,17 @@ export default function ResultsScreen({
   // F*cts débloqués par achat depuis ce ResultsScreen (pour refresh immédiat du carrousel)
   const [extraUnlockedIds, setExtraUnlockedIds] = useState(() => new Set())
 
+  // Back physique : si un overlay est ouvert (FactDetailView / modal unlock), fermer au lieu de quitter
+  useEffect(() => {
+    const prev = window.__wtfBackHandler
+    window.__wtfBackHandler = () => {
+      if (viewingFact) { setViewingFact(null); return true }
+      if (selectedFact) { setSelectedFact(null); return true }
+      return false
+    }
+    return () => { window.__wtfBackHandler = prev || null }
+  }, [viewingFact, selectedFact])
+
   // Persister les facts temporaires quand le joueur se connecte depuis ResultsScreen
   useEffect(() => {
     if (isConnected && !savedAfterConnect && onSaveTempFacts && sessionType === 'quickie') {
@@ -140,9 +166,12 @@ export default function ResultsScreen({
 
   // MOD 5 — Rank based on correct answers
   const isQuickie = sessionType === 'quickie'
-  const currentRank = isQuickie
-    ? QUICKIE_RANKINGS[Math.min(Math.max(correctCount, 0), 5)]
-    : RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
+  const isVof = sessionType === 'vrai_ou_fou'
+  const currentRank = isVof
+    ? getVofRank(correctCount)
+    : isQuickie
+      ? QUICKIE_RANKINGS[Math.min(Math.max(correctCount, 0), 5)]
+      : RANKINGS[Math.min(Math.max(correctCount, 0), 10)]
   const stars = correctCount
   const isPerfect = totalFacts > 0 && correctCount >= totalFacts
 
@@ -155,9 +184,11 @@ export default function ResultsScreen({
     'linear-gradient(160deg, #7b8b9a 0%, #9dadbb 40%, #b5c5d2 70%, #7b8b9a 100%)',
   ]
   const bgRef = useRef(PASTEL_GRADIENTS[Math.floor(Math.random() * PASTEL_GRADIENTS.length)])
-  const screenBg = sessionType === 'quickie'
-    ? 'linear-gradient(160deg, #4A3FA3, #7F77DD)'
-    : bgRef.current
+  const screenBg = isQuickie
+    ? 'linear-gradient(160deg, #FF7518, #FFA500)'
+    : isVof
+      ? 'linear-gradient(160deg, #3A8A4A, #6BCB77)'
+      : bgRef.current
 
   // COR 6 — Taux moyen pseudo-aléatoire stable par catégorie
   const avgSuccessRate = 15 + ((categoryId ? categoryId.split('').reduce((a, c) => a + c.charCodeAt(0), 0) : 50) % 40)
@@ -291,13 +322,13 @@ export default function ResultsScreen({
   }, [coinsEarned])
 
 
-  // COR 5 — Share handler natif avec message défi
+  // Share handler natif avec message défi
   const handleShare = () => {
     const diffLabel = difficulty ? (DIFFICULTY_LABELS[difficulty.id] || DIFFICULTY_LABELS[difficulty] || difficulty.label || sessionType) : sessionType
-    const text = `J'ai fait ${correctCount}/${totalQuestions || 10} en mode ${diffLabel} sur What The F*ct !\nTu peux faire mieux ? ${window.location.origin}`
-    if (onShare) {
-      onShare(text)
-    } else if (navigator.share) {
+    const text = isVof
+      ? `J'ai eu ${correctCount}/${totalFacts} au Vrai ET Fou WTF! 🤯 Tu peux faire mieux ? ${window.location.origin}`
+      : `J'ai fait ${correctCount}/${totalFacts} en mode ${diffLabel} sur What The F*ct !\nTu peux faire mieux ? ${window.location.origin}`
+    if (navigator.share) {
       navigator.share({ title: 'What The F*ct!', text }).catch(() => {})
     } else if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text)
@@ -401,9 +432,14 @@ export default function ResultsScreen({
 
         {/* Badge mode + difficulté */}
         {isQuickie ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(4), flexShrink: 0 }}>
-            <img src="/assets/modes/quickie.png?v=2" alt="Quickie" style={{ width: S(40), height: S(40), objectFit: 'contain' }} />
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0 }}>
+            <img src="/assets/modes/icon-quickie.png?v=2" alt="Quickie" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
             <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>Résultats — Mode Quickie</span>
+          </div>
+        ) : isVof ? (
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0 }}>
+            <img src="/assets/modes/icon-vrai-et-fou.png" alt="Vrai ET Fou" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
+            <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>Résultats — Mode Vrai ET Fou</span>
           </div>
         ) : difficulty && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: S(6), flexShrink: 0 }}>
@@ -422,45 +458,176 @@ export default function ResultsScreen({
           stars={stars}
           visibleStars={visibleStars}
           rankVisible={rankVisible}
-          catColor={catColor}
+          catColor={isVof ? '#6BCB77' : catColor}
           textOnBg={textOnBg}
           isPerfect={isPerfect}
           hideEmoji={isQuickie}
+          hideStars={isVof}
           largeLabelFont={isQuickie}
         />
 
-        {/* Récap gains structuré — composant extrait (Phase 5.2 A) */}
-        <GainsBreakdown
-          correctCount={correctCount}
-          coinsPerCorrect={coinsPerCorrect}
-          baseCoins={baseCoins}
-          bonusCoins={bonusCoins}
-          isPerfect={isPerfect}
-          total={animatedScore}
-          totalColor={catColor}
-          textColor={textOnBg}
-          borderColor={isQuickie ? '#7F77DD' : null}
-          footerStats={[
-            { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
-            { label: `${precision}% précision`, color: catColor },
-          ]}
-        />
+        {/* Récap gains structuré (Quickie/Quest/...) ou bloc Score X/20 (VOF) */}
+        {isVof ? (
+          <div style={{
+            background: 'rgba(0,0,0,0.35)', border: '2.5px solid #6BCB77',
+            borderRadius: S(12), padding: `${S(10)} ${S(14)}`, flexShrink: 0,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(4),
+            textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+          }}>
+            <span style={{ fontSize: S(10), fontWeight: 800, color: textOnBg, opacity: 0.75, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Score final
+            </span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: S(2) }}>
+              <span style={{ fontSize: S(36), fontWeight: 900, color: correctCount >= totalFacts * 0.5 ? '#6BCB77' : '#E84535', lineHeight: 1 }}>
+                {correctCount}
+              </span>
+              <span style={{ fontSize: S(20), fontWeight: 900, color: '#6BCB77', opacity: 0.8 }}>
+                /{totalFacts}
+              </span>
+            </div>
+            <span style={{ fontSize: S(11), fontWeight: 700, color: textOnBg, opacity: 0.85 }}>
+              {precision}% de bonnes réponses
+            </span>
+          </div>
+        ) : (
+          <GainsBreakdown
+            correctCount={correctCount}
+            coinsPerCorrect={coinsPerCorrect}
+            baseCoins={baseCoins}
+            bonusCoins={bonusCoins}
+            isPerfect={isPerfect}
+            total={animatedScore}
+            totalColor={catColor}
+            textColor={textOnBg}
+            borderColor={isQuickie ? '#FFA500' : null}
+            footerStats={[
+              { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
+              { label: `${precision}% précision`, color: catColor },
+            ]}
+          />
+        )}
 
-        {/* Fact le plus WTF — composant extrait (Phase 5.2 A) */}
-        <FeaturedFactCard
-          fact={featuredFact}
-          fallbackColor={catColor}
-          textColor={textOnBg}
-          isQuickie={sessionType === 'quickie'}
-          onClick={() => {
-            if (!featuredFact) return
-            audio.play?.('click')
-            setViewingFact(featuredFact)
-          }}
-        />
+        {/* Fact le plus WTF — en VOF, sélectionné UNIQUEMENT parmi les facts
+            "découverts" (bien répondus / wasCorrect=true). Priorité VIP, sinon
+            dernier bien répondu. */}
+        {(() => {
+          let shownFact = featuredFact
+          if (isVof) {
+            const correctFacts = allSessionFacts
+              .filter(e => e.wasCorrect === true)
+              .map(e => e.fact || e)
+            shownFact = correctFacts.find(f => f.isVip) || correctFacts[correctFacts.length - 1] || null
+          }
+          return (
+            <FeaturedFactCard
+              fact={shownFact}
+              fallbackColor={catColor}
+              textColor={textOnBg}
+              isQuickie={isQuickie || isVof}
+              onClick={() => {
+                if (!shownFact) return
+                audio.play?.('click')
+                setViewingFact(shownFact)
+              }}
+            />
+          )
+        })()}
 
-        {/* Carrousel facts — max 80px height */}
-        {allSessionFacts.length > 0 && (() => {
+        {/* Carrousel facts VOF : ✓/✗ + facts lockés achetables (comme Quickie) */}
+        {allSessionFacts.length > 0 && isVof && (() => {
+          const globalUnlocked = new Set([
+            ...((wtfData.unlockedFacts) || []),
+            ...extraUnlockedIds,
+          ])
+          const answered = allSessionFacts.map((entry, i) => ({
+            fact: entry.fact || entry,
+            wasCorrect: entry.wasCorrect ?? false,
+            idx: i,
+          }))
+          const right = answered.filter(a => a.wasCorrect)
+          const wrong = answered.filter(a => !a.wasCorrect)
+          const renderRow = (items, label, color) => items.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: S(4) }}>
+              <span style={{ fontSize: S(10), fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                {label}
+              </span>
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.max(items.length, 1)}, 1fr)`, gap: S(3), width: '100%' }}>
+                {items.map(({ fact, wasCorrect, idx }) => {
+                  const fc = CATEGORIES.find(c => c.id === fact.category)
+                  const fcColor = fc?.color || catColor
+                  const isUnlocked = globalUnlocked.has(fact.id)
+                  // VoF : "découvert" = bien répondu. Les manqués restent verrouillés
+                  // (miniature floutée + cadenas centré, pas de détail, modal d'achat direct).
+                  const isDiscovered = wasCorrect === true
+                  const handleClick = () => {
+                    audio.play?.('click')
+                    if (isDiscovered) {
+                      setViewingFact({ ...fact, _isLocked: !isUnlocked })
+                    } else {
+                      setSelectedFact({ ...fact, _locked: true, _catColor: fcColor, _catEmoji: fc?.emoji, _catLabel: fc?.label })
+                    }
+                  }
+                  return (
+                    <div key={`${idx}-${fact.id}`} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+                      onClick={handleClick}>
+                      {/* Miniature avec cadre catégorie (format Quickie) */}
+                      <div style={{
+                        aspectRatio: '1', borderRadius: `${S(8)} ${S(8)} 0 0`, overflow: 'hidden', position: 'relative',
+                        border: `2px solid ${fcColor}`, borderBottom: 'none',
+                        background: `linear-gradient(135deg, ${fcColor}44, ${fcColor})`,
+                      }}>
+                        {fact.imageUrl ? (
+                          <img src={fact.imageUrl} alt="" style={{
+                            width: '100%', height: '100%', objectFit: 'cover',
+                            filter: isDiscovered ? 'none' : 'blur(4px) brightness(0.45)',
+                          }} onError={e => { e.target.style.display = 'none' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', filter: isDiscovered ? 'none' : 'blur(4px) brightness(0.45)' }}>
+                            <FallbackImage categoryColor={fcColor} />
+                          </div>
+                        )}
+                        {/* Non-découvert (manqué) : cadenas centré sur miniature floutée */}
+                        {!isDiscovered && (
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: S(18), filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}>🔒</span>
+                          </div>
+                        )}
+                        {/* Découvert mais pas encore dans la collection : petit 🔒 top-left */}
+                        {isDiscovered && !isUnlocked && (
+                          <div style={{ position: 'absolute', top: 2, left: 2, background: 'rgba(0,0,0,0.55)', borderRadius: '50%', width: S(16), height: S(16), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: S(10), opacity: 0.9 }}>🔒</span>
+                          </div>
+                        )}
+                        {/* Badge ✓/✗ top-right */}
+                        <div style={{ position: 'absolute', top: 2, right: 2, width: S(14), height: S(14), borderRadius: '50%', background: wasCorrect ? '#6BCB77' : '#E84535', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(10), fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+                          {wasCorrect ? '✓' : '✗'}
+                        </div>
+                      </div>
+                      {/* Footer icône catégorie (format Quickie) */}
+                      <div style={{
+                        background: fcColor, borderRadius: `0 0 ${S(6)} ${S(6)}`,
+                        padding: `${S(2)} 0`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <img src={`/assets/categories/${fact.category}.png`} alt=""
+                          style={{ width: S(14), height: S(14), borderRadius: S(3), objectFit: 'cover' }}
+                          onError={e => { e.target.style.display = 'none' }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: S(8), flexShrink: 0 }}>
+              {renderRow(right, `✅ ${right.length} Trouvé${right.length > 1 ? 's' : ''}`, '#6BCB77')}
+              {renderRow(wrong, `❌ ${wrong.length} Manqué${wrong.length > 1 ? 's' : ''}`, '#E84535')}
+            </div>
+          )
+        })()}
+
+        {/* Carrousel facts Quickie/autres — max 80px height */}
+        {allSessionFacts.length > 0 && !isVof && (() => {
           const unlockedIds = new Set([
             ...unlockedFactsThisSession.map(f => f.id),
             ...extraUnlockedIds,
@@ -641,7 +808,9 @@ export default function ResultsScreen({
               {selectedFact._catLabel || 'Catégorie'}
             </div>
             {(() => {
-              const unlockCost = 25
+              // Option A (19/04/2026) : 50c Funny / 250c VIP — aligné avec
+              // CategoryFactsView (Collection) et CLAUDE.md mini-parcours.
+              const unlockCost = selectedFact.isVip ? 250 : 50
               const canUnlock = _cCoins >= unlockCost
               return (
                 <>
@@ -703,9 +872,17 @@ export default function ResultsScreen({
 
       {/* Google banner supprimé — utilise ConnectBanner unique */}
 
-      {/* Détail d'un f*ct débloqué (overlay, reste sur ResultsScreen) */}
+      {/* Détail d'un f*ct (débloqué ou découvert en VoF). Si _isLocked,
+          le bouton "Ajouter à ma collection" déclenche le modal d'achat. */}
       {viewingFact && (
-        <FactDetailView fact={viewingFact} onClose={() => setViewingFact(null)} />
+        <FactDetailView
+          fact={viewingFact}
+          onClose={() => setViewingFact(null)}
+          onUnlockRequest={(f) => {
+            const fc = CATEGORIES.find(c => c.id === f.category)
+            setSelectedFact({ ...f, _locked: true, _catColor: fc?.color, _catEmoji: fc?.emoji, _catLabel: fc?.label })
+          }}
+        />
       )}
     </div>
   )

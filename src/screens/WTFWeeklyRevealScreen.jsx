@@ -3,6 +3,7 @@ import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import CoinsIcon from '../components/CoinsIcon'
 import { useScale } from '../hooks/useScale'
+import { stripEmojis } from '../utils/stripEmojis'
 
 export default function WTFWeeklyRevealScreen({
   fact,
@@ -138,7 +139,7 @@ export default function WTFWeeklyRevealScreen({
               <span style={{ color: 'white', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0 }}>
-              {fact.explanation}
+              {stripEmojis(fact.explanation)}
             </p>
           </div>
         </div>

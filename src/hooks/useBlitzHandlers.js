@@ -11,9 +11,10 @@ import { shuffle } from '../utils/shuffle'
 import { updateTrophyData, updateWtfData, readWtfData } from '../utils/storageHelper'
 import { checkBadges } from '../utils/badgeManager'
 import { audio } from '../utils/audio'
+import { saveBlitzRecord } from '../data/blitzRecordService'
 
-const BLITZ_SOLO_MIN_UNLOCKED = 20
-const BLITZ_SOLO_POOL_SIZE = 150 // marge confortable pour 60s
+const BLITZ_RUSH_MIN_UNLOCKED = 10 // minimum de f*cts pour lancer Rush (19/04)
+const BLITZ_RUSH_POOL_SIZE = 150   // marge confortable pour 60s
 
 export function useBlitzHandlers({
   user, selectedCategory, isChallengeMode,
@@ -32,39 +33,61 @@ export function useBlitzHandlers({
 }) {
   const navigate = useNavigate()
 
-  const handleBlitzStart = useCallback((categoryId, questionCount, variant = 'defi') => {
+  const handleBlitzStart = useCallback((categoryId, questionCount, variant = 'rush') => {
     audio.play('click')
-    const isSolo = variant === 'solo'
+    const isSpeedrun = variant === 'speedrun'
 
     let pool = getBlitzFacts()
-    if (isSolo) {
-      // Solo : pool = tous les f*cts débloqués (Funny + VIP), min 20
-      if (pool.length < BLITZ_SOLO_MIN_UNLOCKED) {
-        setGameAlert({
-          emoji: '🔓',
-          title: 'Blitz Solo verrouillé',
-          message: `Débloque au moins ${BLITZ_SOLO_MIN_UNLOCKED} f*cts (Quickie, Quest, Flash) pour jouer en Blitz Solo.`,
-        })
+    if (isSpeedrun) {
+      // Speedrun : catégorie obligatoire + doit être 100% complétée côté joueur
+      // (la gate est déjà vérifiée dans BlitzLobbyScreen, ici on protège juste).
+      if (!categoryId || categoryId === 'all') {
+        setGameAlert({ emoji: '🔒', title: 'Catégorie requise', message: 'Le Speedrun se joue uniquement sur une catégorie complète.' })
+        return
+      }
+      pool = pool.filter(f => f.category === categoryId)
+      if (pool.length < questionCount) {
+        setGameAlert({ emoji: '🔒', title: 'Pas assez de f*cts', message: `Il te faut ${questionCount} f*cts débloqués dans cette catégorie.` })
         return
       }
     } else {
-      if (categoryId) pool = pool.filter(f => f.category === categoryId)
-      if (pool.length < 5) {
-        setGameAlert({ emoji: '🔓', title: 'Pas assez de f*cts', message: 'Joue en mode Quickie ou Quest pour débloquer plus de f*cts avant de jouer en Blitz !' })
+      // Rush : si categoryId défini et ≠ 'all' → filtre par cat. Sinon pool global.
+      if (categoryId && categoryId !== 'all') {
+        pool = pool.filter(f => f.category === categoryId)
+      }
+      if (pool.length < BLITZ_RUSH_MIN_UNLOCKED) {
+        setGameAlert({
+          emoji: '🔓',
+          title: 'Blitz Rush verrouillé',
+          message: `Débloque au moins ${BLITZ_RUSH_MIN_UNLOCKED} f*cts${categoryId && categoryId !== 'all' ? ' dans cette catégorie' : ''} pour jouer en Blitz Rush.`,
+        })
         return
       }
     }
 
-    const count = isSolo
-      ? Math.min(BLITZ_SOLO_POOL_SIZE, pool.length)
-      : (questionCount || pool.length)
-    const shuffled = shuffle(pool)
-      .slice(0, count)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
+    // Rush : on vise BLITZ_RUSH_POOL_SIZE (150) questions. Si pool < 150
+    // (cat limitée, ex : 15 facts), on boucle le pool pour que le chrono
+    // ne s'arrête jamais par manque de questions avant la fin des 60s.
+    // Speedrun : pool obligatoirement ≥ questionCount (vérifié plus haut).
+    let shuffled
+    if (isSpeedrun) {
+      shuffled = shuffle(pool)
+        .slice(0, questionCount)
+        .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
+    } else {
+      const target = BLITZ_RUSH_POOL_SIZE
+      const loops = Math.ceil(target / pool.length)
+      const expanded = []
+      for (let i = 0; i < loops; i++) expanded.push(...shuffle(pool))
+      shuffled = expanded
+        .slice(0, target)
+        .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.BLITZ) }))
+    }
 
     setSessionType('blitz')
     setGameMode('blitz')
-    setSelectedCategory(isSolo ? null : categoryId)
+    // Rush : garde categoryId si choisi (pour rejouer / affichage), sinon null
+    setSelectedCategory(categoryId && categoryId !== 'all' ? categoryId : null)
     setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
     setBlitzVariant?.(variant)
     setBlitzFacts(shuffled)
@@ -73,28 +96,170 @@ export function useBlitzHandlers({
   }, [setBlitzVariant])
 
   const handleBlitzFinish = useCallback((results) => {
-    const { finalTime, correctCount, totalAnswered, penalties, variant = 'defi' } = results
+    const { finalTime, correctCount, totalAnswered, variant = 'defi', sessionAnswers = [] } = results
 
-    // ─── Branche SOLO : record = nombre de bonnes réponses en 60s ───
-    if (variant === 'solo') {
+    // ─── BRANCHE MULTI prioritaire (19/04/2026) ──────────────────────────────
+    // Un défi Multi (mode=create ou accept) peut avoir variant='rush' ou
+    // 'speedrun'. Il faut le détecter AVANT les branches solo rush/speedrun
+    // pour ne pas déclencher saveBlitzRecord + return prématuré.
+
+    // Mode ACCEPT : l'utilisateur vient de finir un défi reçu → RPC atomique
+    // complete_duel_round (debit 100c accepteur + update + credit 150c ou refund)
+    if (pendingDuel?.mode === 'accept' && pendingDuel.roundId && user) {
+      const roundId = pendingDuel.roundId
+      const code = pendingDuel.code
+      clearPendingDuel?.()
+      import('../data/duelService').then(async ({ completeDuelRound }) => {
+        try {
+          await completeDuelRound({
+            roundId,
+            playerTime: finalTime,
+            playerCorrect: correctCount,
+            playerId: user.id,
+            playerName: user.user_metadata?.name || 'Joueur WTF!',
+          })
+          if (code) navigate(`/challenge/${code}`)
+        } catch (e) {
+          console.error('Duel round complete error:', e?.message || e)
+          setGameAlert({ emoji: '⚠️', title: 'Erreur', message: 'Impossible de finaliser le défi : ' + (e?.message || 'erreur serveur') })
+        }
+      })
+      return
+    }
+
+    // Mode CREATE : l'utilisateur vient de jouer son tour d'un défi qu'il
+    // initie → RPC create_duel_challenge (debit 100c + insert challenge)
+    if (isChallengeMode && user) {
+      const challengeData = {
+        finalTime, correctCount, totalAnswered,
+        categoryId: selectedCategory,
+        categoryLabel: selectedCategory ? (getCategoryById(selectedCategory)?.label || selectedCategory) : 'Toutes catégories',
+        questionCount: totalAnswered,
+      }
+      setBlitzResults(challengeData)
+      setScreen(SCREENS.BLITZ_RESULTS)
+
+      const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
+      const duelVariant = pendingDuel?.variant === 'speedrun' ? 'speedrun' : 'rush'
+      // Débit 100c fait ATOMIQUEMENT côté RPC create_duel_challenge. Pas de
+      // applyCurrencyDelta client en amont (sinon double-débit 200c).
+      import('../data/duelService')
+        .then(({ createDuelChallenge }) => createDuelChallenge({
+          opponentId,
+          categoryId: selectedCategory || 'all',
+          categoryLabel: challengeData.categoryLabel,
+          questionCount: totalAnswered,
+          player1Time: finalTime,
+          player1Correct: correctCount,
+          player1Name: user.user_metadata?.name || 'Joueur WTF!',
+          variant: duelVariant,
+        }))
+        .then((result) => {
+          const round = {
+            id: result.challenge_id,
+            code: result.code,
+            duel_id: result.duel_id,
+            category_id: selectedCategory || 'all',
+            category_label: challengeData.categoryLabel,
+            question_count: totalAnswered,
+            variant: duelVariant,
+            player1_id: user.id,
+            player1_name: user.user_metadata?.name || 'Joueur WTF!',
+            player1_time: finalTime,
+            player1_correct: correctCount,
+            player2_id: opponentId || null,
+            status: 'pending',
+          }
+          setLastCreatedDuel?.(round)
+          // Notifier le miroir coins (RPC a débité 100c)
+          window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
+        })
+        .catch((e) => {
+          console.error('[useBlitzHandlers] create_duel_challenge failed:', e?.message || e)
+          const msg = e?.message?.includes('Insufficient')
+            ? 'Pas assez de coins.'
+            : e?.message || 'Erreur lors de la création du défi'
+          setLastCreatedDuelError?.(msg)
+        })
+      return
+    }
+
+    // ─── Branche RUSH (ex-solo) : record = nombre de bonnes réponses en 60s ───
+    if (variant === 'rush' || variant === 'solo') { // 'solo' gardé en fallback legacy
       const prevBest = readWtfData().blitzSoloBestScore || 0
       const isNewRecord = correctCount > prevBest
       if (isNewRecord) {
         updateWtfData(wd => { wd.blitzSoloBestScore = correctCount })
+        // Cross-device : push dans profiles.flags
+        mergeFlags?.({ blitzSoloBestScore: correctCount }).catch(e =>
+          console.warn('[useBlitzHandlers] rush mergeFlags failed:', e?.message || e)
+        )
+      }
+      // Historise la run dans blitz_records (chaque partie = 1 insert)
+      if (user?.id) {
+        saveBlitzRecord({
+          userId: user.id, variant: 'rush',
+          categoryId: null, palier: null,
+          score: correctCount, timeSeconds: null,
+        })
       }
       const bestScore = Math.max(prevBest, correctCount)
       setBlitzResults({
-        variant: 'solo',
+        variant: 'rush',
         correctCount,
-        totalAnswered: correctCount,
+        totalAnswered,
         finalTime: finalTime || 60,
         bestScore,
         isNewRecord,
+        sessionAnswers,
       })
       setScreen(SCREENS.BLITZ_RESULTS)
       return
     }
 
+    // ─── Branche SPEEDRUN : record = temps final par (cat, palier) ───────
+    if (variant === 'speedrun') {
+      const palier = totalAnswered // le palier est égal au nb questions répondues
+      const catKey = selectedCategory || 'all'
+      const recordKey = `${catKey}_${palier}`
+      const wd = readWtfData()
+      const prevRecord = wd.speedrunRecords?.[recordKey] || null
+      const isNewRecord = !prevRecord || finalTime < prevRecord
+      if (isNewRecord) {
+        updateWtfData(w => {
+          w.speedrunRecords = { ...(w.speedrunRecords || {}), [recordKey]: finalTime }
+        })
+      }
+      // Push vers Supabase pour cross-device
+      const refreshed = readWtfData()
+      mergeFlags?.({ speedrunRecords: refreshed.speedrunRecords }).catch(e =>
+        console.warn('[useBlitzHandlers] speedrun mergeFlags failed:', e?.message || e)
+      )
+      // Historise la run dans blitz_records
+      if (user?.id) {
+        saveBlitzRecord({
+          userId: user.id, variant: 'speedrun',
+          categoryId: selectedCategory, palier,
+          score: correctCount, timeSeconds: finalTime,
+        })
+      }
+      setBlitzResults({
+        variant: 'speedrun',
+        correctCount,
+        totalAnswered,
+        finalTime,
+        bestTime: isNewRecord ? finalTime : prevRecord,
+        isNewRecord,
+        categoryId: selectedCategory,
+        palier,
+        sessionAnswers,
+      })
+      setScreen(SCREENS.BLITZ_RESULTS)
+      return
+    }
+
+    // Défi : format best-score (nb bonnes). "isNewRecord" = nouveau meilleur score
+    // par catégorie, remplace l'ancien record basé sur le temps final.
     let isNewRecord = false
     let bestTime = null
     try {
@@ -108,17 +273,19 @@ export function useBlitzHandlers({
       ms.totalCorrect += correctCount
       ms.totalAnswered += totalAnswered
       if (correctCount > ms.bestStreak) ms.bestStreak = correctCount
-      if (!wtfData.bestBlitzTime || finalTime < wtfData.bestBlitzTime) {
-        wtfData.bestBlitzTime = finalTime
+      // Record = nb max de bonnes réponses en Défi (legacy: bestBlitzTime gardé
+      // pour compat, mais = nb bonnes max maintenant, pas un temps)
+      if (!wtfData.bestBlitzScore || correctCount > wtfData.bestBlitzScore) {
+        wtfData.bestBlitzScore = correctCount
         isNewRecord = true
       }
-      bestTime = wtfData.bestBlitzTime
+      bestTime = wtfData.bestBlitzScore // réutilisé pour l'UI results
       if (!wtfData.blitzRecords) wtfData.blitzRecords = {}
       const catKey = selectedCategory || 'all'
-      const palierKey = `${catKey}_${totalAnswered}`
-      const existingRecord = wtfData.blitzRecords[palierKey]
-      if (!existingRecord || finalTime < existingRecord) {
-        wtfData.blitzRecords[palierKey] = finalTime
+      const palierKey = `${catKey}_defi`
+      const existingRecord = wtfData.blitzRecords[palierKey] || 0
+      if (correctCount > existingRecord) {
+        wtfData.blitzRecords[palierKey] = correctCount
       }
       wtfData.gamesPlayed = (wtfData.gamesPlayed || 0) + 1
       wtfData.totalCorrect = (wtfData.totalCorrect || 0) + correctCount
@@ -138,7 +305,7 @@ export function useBlitzHandlers({
       // A.9.3/A.9.6 — 1 seule RPC atomique : blitzRecords + stats + totaux + badges
       mergeFlags?.({
         blitzRecords: refreshed.blitzRecords,
-        bestBlitzTime: refreshed.bestBlitzTime,
+        bestBlitzScore: refreshed.bestBlitzScore,
         statsByMode: refreshed.statsByMode,
         gamesPlayed: refreshed.gamesPlayed,
         totalCorrect: refreshed.totalCorrect,
@@ -148,90 +315,7 @@ export function useBlitzHandlers({
       }).catch(e => console.warn('[useBlitzHandlers] session end mergeFlags failed:', e?.message || e))
     } catch {}
 
-    // Complete duel round si l'user vient d'accepter un défi (mode accept)
-    if (pendingDuel?.mode === 'accept' && pendingDuel.roundId && user) {
-      const roundId = pendingDuel.roundId
-      const code = pendingDuel.code
-      clearPendingDuel?.()
-      import('../data/duelService').then(async ({ completeDuelRound }) => {
-        try {
-          await completeDuelRound({
-            roundId,
-            playerTime: finalTime,
-            playerId: user.id,
-            playerName: user.user_metadata?.name || 'Joueur WTF!',
-          })
-          // Redirection auto vers ChallengeScreen pour voir la comparaison
-          if (code) navigate(`/challenge/${code}`)
-        } catch (e) {
-          console.error('Duel round complete error:', e?.message || e)
-          setGameAlert({ emoji: '⚠️', title: 'Erreur', message: 'Impossible de finaliser le défi : ' + (e?.message || 'erreur serveur') })
-        }
-      })
-      return
-    }
-
-    if (isChallengeMode) {
-      const challengeData = {
-        finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord,
-        categoryId: selectedCategory,
-        categoryLabel: selectedCategory ? (getCategoryById(selectedCategory)?.label || selectedCategory) : 'Toutes catégories',
-        questionCount: totalAnswered,
-      }
-      setBlitzResults(challengeData)
-      setScreen(SCREENS.BLITZ_RESULTS)
-
-      if (user) {
-        const opponentId = pendingDuel?.mode === 'create' ? pendingDuel.opponentId : null
-        // RPC atomique : 1 seul round-trip serveur, debit 200 coins + upsert
-        // duel + insert challenge en 1 txn. Plus besoin de timeout/race/fire-forget.
-        applyCurrencyDelta?.({ coins: -200 }, 'challenge_create')?.catch?.(e =>
-          console.warn('[useBlitzHandlers] challenge cost RPC failed:', e?.message || e)
-        )
-        import('../data/duelService')
-          .then(({ createDuelChallenge }) => createDuelChallenge({
-            opponentId,
-            categoryId: selectedCategory || 'all',
-            categoryLabel: challengeData.categoryLabel,
-            questionCount: totalAnswered,
-            player1Time: finalTime,
-            player1Name: user.user_metadata?.name || 'Joueur WTF!',
-          }))
-          .then((result) => {
-            // Le RPC renvoie { challenge_id, code, duel_id, ... }.
-            // On synthétise un "round" compatible avec l'ancien format pour BlitzResultsScreen.
-            const round = {
-              id: result.challenge_id,
-              code: result.code,
-              duel_id: result.duel_id,
-              category_id: selectedCategory || 'all',
-              category_label: challengeData.categoryLabel,
-              question_count: totalAnswered,
-              player1_id: user.id,
-              player1_name: user.user_metadata?.name || 'Joueur WTF!',
-              player1_time: finalTime,
-              player2_id: opponentId || null,
-              status: 'pending',
-            }
-            setLastCreatedDuel?.(round)
-            // Notifier l'UI du débit des 200 coins
-            window.dispatchEvent(new CustomEvent('wtf_currency_updated'))
-          })
-          .catch((e) => {
-            console.error('[useBlitzHandlers] create_duel_challenge failed:', e?.message || e)
-            const msg = e?.message?.includes('Insufficient')
-              ? 'Pas assez de coins.'
-              : e?.message || 'Erreur lors de la création du défi'
-            setLastCreatedDuelError?.(msg)
-          })
-      }
-      // isChallengeMode est dérivé de pendingDuel — on ne le touche pas ici.
-      // Tant que pendingDuel reste en place, BlitzResultsScreen affiche la vue
-      // "Création du défi..." / "Défi créé !". Le clear se fait à l'unmount.
-      return
-    }
-
-    setBlitzResults({ finalTime, correctCount, totalAnswered, penalties, bestTime, isNewRecord })
+    setBlitzResults({ finalTime, correctCount, totalAnswered, bestTime, isNewRecord })
     setScreen(SCREENS.BLITZ_RESULTS)
   }, [user, isChallengeMode, selectedCategory, pendingDuel, setLastCreatedDuel, setLastCreatedDuelError, clearPendingDuel, mergeFlags, applyCurrencyDelta])
 

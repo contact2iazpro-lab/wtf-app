@@ -17,7 +17,7 @@ import { syncAfterAction } from '../services/playerSyncService'
 export function useNavigationHandlers({
   // State
   launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
-  selectedDifficulty,
+  selectedDifficulty, blitzVariant,
   quickiePool, unlockedFacts, user, sessionCorrectFacts,
   // Hooks extraits
   handleStartFlashSession, handleQuickie, handleSelectDifficulty,
@@ -43,16 +43,17 @@ export function useNavigationHandlers({
     switch (mode) {
       case 'blitz':        setScreen(SCREENS.BLITZ_LOBBY); break
       case 'quickie': {
-        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
+        if (!canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
         setScreen(SCREENS.CATEGORY); break
       }
       case 'flash':        handleStartFlashSession(); break
       case 'vrai_ou_fou':  setScreen(SCREENS.VRAI_OU_FOU); break
       case 'race':         setScreen(SCREENS.RACE); break
+      case 'quest':        setScreen(SCREENS.QUEST); break
+      case 'multi':        navigate('/multi'); break
       default: break
     }
-  }, [handleStartFlashSession])
+  }, [handleStartFlashSession, navigate])
 
   const handleLaunchStart = useCallback(() => {
     launchModeDestination(launchMode)
@@ -70,7 +71,9 @@ export function useNavigationHandlers({
     switch (target) {
       case 'wtfWeekly':
       case 'flash':
-        setScreen(SCREENS.FLASH)
+        // Passe par la page de règles (comme les autres modes) — respect de
+        // skip_launch_flash. Avant : bypass direct vers SCREENS.FLASH.
+        showOrSkipLaunch('flash')
         break
       case 'categoryFlash':
       case 'quickie': {
@@ -79,8 +82,7 @@ export function useNavigationHandlers({
         break
       }
       case 'quickie_random': {
-        const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-        if (!isDevOrTest && !canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
+        if (!canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
         setGameMode('quickie'); setSessionType('quickie'); setSelectedDifficulty(DIFFICULTY_LEVELS.QUICKIE); setSelectedCategory(null)
         showOrSkipLaunch('quickie')
         break
@@ -96,7 +98,7 @@ export function useNavigationHandlers({
         showOrSkipLaunch('blitz')
         break
       case 'quest':
-        setScreen(SCREENS.QUEST)
+        showOrSkipLaunch('quest')
         break
       case 'race':
         setGameMode('race'); setSessionType('race'); setSelectedDifficulty(DIFFICULTY_LEVELS.RACE); setSelectedCategory(null)
@@ -104,6 +106,9 @@ export function useNavigationHandlers({
         break
       case 'vrai_ou_fou':
         showOrSkipLaunch('vrai_ou_fou')
+        break
+      case 'multi':
+        showOrSkipLaunch('multi')
         break
       default: break
     }
@@ -146,8 +151,12 @@ export function useNavigationHandlers({
   }, [clearPendingDuel])
 
   const handleBlitzReplay = useCallback(() => {
-    handleBlitzStart(selectedCategory)
-  }, [selectedCategory, handleBlitzStart])
+    // Conserve le variant (rush/speedrun) ET la cat choisie à la partie
+    // précédente. Pour Speedrun, questionCount = nb facts (palier).
+    const variant = blitzVariant || 'rush'
+    const qc = variant === 'speedrun' ? (selectedCategory ? undefined : 10) : null
+    handleBlitzStart(selectedCategory, qc, variant)
+  }, [selectedCategory, blitzVariant, handleBlitzStart])
 
   const handleQuickieContinue = useCallback(() => {
     const filteredPool = quickiePool.filter(f => !unlockedFacts.has(f.id))
@@ -166,6 +175,12 @@ export function useNavigationHandlers({
 
   const handleReplay = useCallback(() => {
     if (sessionType === 'quickie') {
+      // Check énergie avant de relancer
+      if (!canPlayQuickieCheck()) {
+        setNoEnergyOrigin('quickie')
+        setShowNoEnergyModal(true)
+        return
+      }
       if (selectedCategory) {
         handleSelectCategory(selectedCategory)
       } else {
@@ -173,7 +188,7 @@ export function useNavigationHandlers({
       }
     }
     else handleSelectCategory(selectedCategory)
-  }, [sessionType, selectedCategory, handleSelectCategory, handleQuickie])
+  }, [sessionType, selectedCategory, handleSelectCategory, handleQuickie, setNoEnergyOrigin, setShowNoEnergyModal])
 
   const handleShare = useCallback(() => {
     if (!currentFact) return

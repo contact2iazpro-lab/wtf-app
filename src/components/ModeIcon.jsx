@@ -2,10 +2,10 @@ import { forwardRef } from 'react'
 import { useScale } from '../hooks/useScale'
 import { ICON_SIZES } from '../constants/layoutConfig'
 
-const ModeIcon = forwardRef(({ icon, name, color, onClick }, ref) => {
+const ModeIcon = forwardRef(({ icon, emoji, name, color, bgColor, onClick, sizeOverride }, ref) => {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const size = ICON_SIZES.modeIcon
+  const size = sizeOverride || ICON_SIZES.modeIcon
 
   return (
     <button
@@ -28,14 +28,22 @@ const ModeIcon = forwardRef(({ icon, name, color, onClick }, ref) => {
         boxShadow: 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
+        background: icon ? 'transparent' : (bgColor || 'linear-gradient(135deg, #FF6B1A, #C0392B)'),
       }}>
-        <img
-          src={icon} alt={name}
-          style={{
-            width: '100%', height: '100%',
-            objectFit: 'cover', flexShrink: 0,
-          }}
-        />
+        {icon ? (
+          <img
+            src={icon} alt={name}
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', flexShrink: 0,
+            }}
+          />
+        ) : (
+          <span style={{
+            fontSize: S(size * 0.5),
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+          }}>{emoji}</span>
+        )}
       </div>
       <span style={{
         fontSize: S(11), fontWeight: 700, color: color || '#ffffff',

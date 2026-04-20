@@ -156,14 +156,16 @@ export default function RaceScreen({ onHome }) {
   }, [])
 
   const handleShare = useCallback(() => {
-    const text = `♾️ J'ai fait une série de ${streak} en Race WTF! Et toi ?`
     const url = window.location.origin
+    const text = newRecord
+      ? `🏆 NOUVEAU RECORD : ${streak} en Race WTF! Tu peux faire mieux ?\n${url}`
+      : `♾️ Série de ${streak} en Race WTF! (mon record : ${bestScore}). Et toi ?\n${url}`
     if (navigator.share) {
-      navigator.share({ title: 'Race WTF!', text, url }).catch(() => {})
+      navigator.share({ title: 'Race WTF!', text }).catch(() => {})
     } else {
-      navigator.clipboard?.writeText(`${text}\n${url}`)
+      navigator.clipboard?.writeText(text)
     }
-  }, [streak])
+  }, [streak, newRecord, bestScore])
 
   const bg = `linear-gradient(160deg, ${catBg}88, ${catBg})`
 
@@ -190,15 +192,24 @@ export default function RaceScreen({ onHome }) {
 
   // ─── Game over ───
   if (gameOver) {
+    // Facts de la run pour le carrousel ✓/✗
+    const correctFacts = shuffledPool.slice(0, streak)
+    const wrongFact = index < shuffledPool.length ? shuffledPool[index] : null
+    const runFacts = wrongFact
+      ? [...correctFacts.map(f => ({ fact: f, ok: true })), { fact: wrongFact, ok: false }]
+      : correctFacts.map(f => ({ fact: f, ok: true }))
+    const confettiColors = ['#FFD700', '#FFA500', '#FF6B1A', '#23D5D5', '#ffffff']
+    const confettiCount = newRecord ? 40 : 0
+
     return (
       <div
-        className="absolute inset-0 flex items-center justify-center"
+        className="absolute inset-0 flex flex-col items-center justify-start overflow-y-auto"
         style={{
           '--scale': scale,
           background: bg,
           color: '#fff',
           fontFamily: 'Nunito, sans-serif',
-          padding: 24,
+          padding: '24px 16px 16px',
           animation: shake ? 'raceShake 0.52s ease' : 'none',
         }}
       >
@@ -219,9 +230,32 @@ export default function RaceScreen({ onHome }) {
             0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(255,215,0,0.6)) }
             50% { transform: scale(1.05); filter: drop-shadow(0 0 24px rgba(255,215,0,0.9)) }
           }
+          @keyframes raceConfettiFall {
+            0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+            80%  { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+          }
         `}</style>
-        <div style={{ textAlign: 'center', maxWidth: 340 }}>
-          <div style={{ fontSize: 72, marginBottom: 8 }}>💥</div>
+
+        {/* Confetti overlay — uniquement sur nouveau record */}
+        {confettiCount > 0 && (
+          <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 200, overflow: 'hidden' }}>
+            {Array.from({ length: confettiCount }, (_, i) => (
+              <div key={i} style={{
+                position: 'absolute', top: '-12px',
+                left: `${(i * 37 + 11) % 97}%`,
+                width: i % 3 === 0 ? 8 : 6,
+                height: i % 3 === 0 ? 8 : 6,
+                borderRadius: i % 2 === 0 ? '50%' : '2px',
+                background: confettiColors[i % confettiColors.length],
+                animation: `raceConfettiFall ${(1.8 + (i % 5) * 0.25).toFixed(2)}s ${((i * 0.07) % 1.2).toFixed(2)}s ease-in both`,
+              }} />
+            ))}
+          </div>
+        )}
+
+        <div style={{ textAlign: 'center', maxWidth: 360, width: '100%', position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: newRecord ? 80 : 72, marginBottom: 4 }}>{newRecord ? '🏆' : '💥'}</div>
           {newRecord && (
             <div style={{
               display: 'inline-block',
@@ -232,24 +266,66 @@ export default function RaceScreen({ onHome }) {
               fontWeight: 900,
               fontSize: 13,
               letterSpacing: 1,
-              marginBottom: 14,
+              marginBottom: 10,
               animation: 'raceGoldPulse 1.4s ease-in-out infinite',
             }}>
               <img src="/assets/ui/wtf-star.png" alt="" style={{ width: 16, height: 16, objectFit: 'contain', verticalAlign: 'middle', marginRight: 4 }} /> NOUVEAU RECORD !
             </div>
           )}
           <p style={{ fontSize: 13, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700 }}>Ta série</p>
-          <div style={{ fontSize: 110, fontWeight: 900, lineHeight: 1, margin: '6px 0 14px', textShadow: '0 6px 24px rgba(0,0,0,0.4)' }}>
+          <div style={{ fontSize: 96, fontWeight: 900, lineHeight: 1, margin: '4px 0 10px', textShadow: '0 6px 24px rgba(0,0,0,0.4)' }}>
             {streak}
           </div>
-          <p style={{ fontSize: 14, opacity: 0.85, marginBottom: 24 }}>
+          <p style={{ fontSize: 14, opacity: 0.85, marginBottom: 16 }}>
             Record personnel : <strong>{bestScore}</strong>
           </p>
+
+          {/* Carrousel ✓/✗ facts de la run */}
+          {runFacts.length > 0 && (
+            <div style={{ marginBottom: 18 }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(10, 1fr)',
+                gap: 4,
+                width: '100%',
+              }}>
+                {runFacts.map(({ fact, ok }, i) => {
+                  const fc = CATEGORIES.find(c => c.id === fact.category)
+                  const fcColor = fc?.color || '#23D5D5'
+                  return (
+                    <div key={`${fact.id}-${i}`} style={{
+                      aspectRatio: '1', borderRadius: 6, overflow: 'hidden', position: 'relative',
+                      border: `2px solid ${ok ? '#6BCB77' : '#E84535'}`,
+                      background: `linear-gradient(135deg, ${fcColor}44, ${fcColor})`,
+                    }}>
+                      {fact.imageUrl ? (
+                        <img src={fact.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={e => { e.target.style.display = 'none' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <img src={`/assets/categories/${fact.category}.png`} alt="" style={{ width: '55%', height: '55%', objectFit: 'contain', opacity: 0.7 }} onError={e => { e.target.style.display = 'none' }} />
+                        </div>
+                      )}
+                      <div style={{
+                        position: 'absolute', top: 2, right: 2, width: 14, height: 14, borderRadius: '50%',
+                        background: ok ? '#6BCB77' : '#E84535',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 10, fontWeight: 900, color: '#fff', lineHeight: 1,
+                      }}>
+                        {ok ? '✓' : '✗'}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <button onClick={replay} style={{ padding: '14px 28px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
+            <button onClick={replay} style={{ padding: '14px 28px', background: '#FF6B1A', color: '#fff', border: '3px solid #ffffff', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
               Rejouer
             </button>
-            <button onClick={handleShare} style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '2px solid rgba(255,255,255,0.35)', borderRadius: 16, fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>
+            <button onClick={handleShare} style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '3px solid #ffffff', borderRadius: 16, fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>
               Partager
             </button>
             <button onClick={onHome} style={{ padding: '12px 28px', background: 'transparent', color: 'rgba(255,255,255,0.7)', border: 'none', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
@@ -514,19 +590,9 @@ export default function RaceScreen({ onHome }) {
         <div style={{ width: S(96), height: S(96), visibility: 'hidden' }} />
       </div>
 
-      {/* ── Le saviez-vous + Boutons — absolus, ne décalent pas l'image ── */}
+      {/* ── Boutons — absolus, ne décalent pas l'image ── */}
       {awaitingNext && (
         <div style={{ position: 'absolute', bottom: S(12), left: S(16), right: S(16), display: 'flex', flexDirection: 'column', gap: S(6), zIndex: 10 }}>
-          <div style={{
-            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-            border: '2px solid #23D5D5', borderRadius: S(12), padding: `${S(6)} ${S(10)}`,
-            overflow: 'hidden', height: S(136),
-          }}>
-            <div style={{ fontSize: S(9), fontWeight: 900, color: '#23D5D5', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2) }}>Le saviez-vous ?</div>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(12), lineHeight: 1.4, fontWeight: 500, margin: 0, display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              {preparedFact?.explanation || ''}
-            </p>
-          </div>
           <div style={{ display: 'flex', gap: S(8) }}>
           <button
             onClick={handleShare}

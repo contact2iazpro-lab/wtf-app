@@ -282,7 +282,7 @@
 }
 
 .quickie-bg-animated {
-  background: linear-gradient(160deg, #4A3FA3, #7F77DD, #B5AFEB, #7F77DD, #4A3FA3);
+  background: linear-gradient(160deg, #FF7518, #FFA500, #FFD4A3, #FFA500, #FF7518);
   background-size: 300% 300%;
   animation: quickie-bg-shift 12s ease infinite;
 }
@@ -298,14 +298,14 @@
   position: absolute;
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #B5AFEB;
+  background: #FFD4A3;
   pointer-events: none;
   animation: quickie-sparkle var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
 }
 
 @keyframes quickie-pulse-btn {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(127, 119, 221, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(127, 119, 221, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 165, 0, 0); }
 }
 
 .quickie-pulse-btn {

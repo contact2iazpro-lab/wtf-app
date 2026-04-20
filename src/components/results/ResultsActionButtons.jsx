@@ -21,8 +21,10 @@ export default function ResultsActionButtons({
   onShare,
   onHome,
   sharedCopied = false,
+  shareLabel = null,
 }) {
   const isQuickie = sessionType === 'quickie'
+  const isVof = sessionType === 'vrai_ou_fou'
   const replayInner = (() => {
     if (sessionType === 'parcours') {
       return (
@@ -31,7 +33,7 @@ export default function ResultsActionButtons({
         </>
       )
     }
-    if (sessionType === 'quickie') {
+    if (isQuickie) {
       const catText = categoryLabel ? `Rejouer ${categoryLabel}` : 'Rejouer en aléatoire'
       return (
         <>
@@ -40,8 +42,22 @@ export default function ResultsActionButtons({
         </>
       )
     }
+    if (isVof) return '🔄 Rejouer'
     return '🔄 Rejouer'
   })()
+
+  // VOF : même layout que Quickie mais gradient vert dégradé au lieu de violet
+  const accentGradient = isVof
+    ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
+    : isQuickie
+      ? 'linear-gradient(135deg, #FFA500, #FF7518)'
+      : null
+  const accentShadow = isVof
+    ? '0 8px 30px rgba(107,203,119,0.5)'
+    : isQuickie
+      ? '0 8px 30px rgba(127,119,221,0.5)'
+      : null
+  const useAccent = isQuickie || isVof
 
   return (
     <div style={{
@@ -57,9 +73,10 @@ export default function ResultsActionButtons({
           className="active:scale-95 transition-all"
           style={{
             flex: 1, padding: `${S(12)} ${S(12)}`, borderRadius: S(14),
-            background: isQuickie ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : 'linear-gradient(135deg, #FFD700, #FFA500)',
-            border: 'none', color: isQuickie ? 'white' : '#1a1a2e', fontWeight: 900, fontSize: S(11),
-            cursor: 'pointer', boxShadow: isQuickie ? '0 8px 30px rgba(127,119,221,0.5)' : '0 4px 16px rgba(255,215,0,0.4)',
+            background: useAccent ? accentGradient : 'linear-gradient(135deg, #FFD700, #FFA500)',
+            border: '3px solid #ffffff',
+            color: useAccent ? 'white' : '#1a1a2e', fontWeight: 900, fontSize: S(11),
+            cursor: 'pointer', boxShadow: useAccent ? accentShadow : '0 4px 16px rgba(255,215,0,0.4)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
           }}>
           {replayInner}
@@ -87,8 +104,8 @@ export default function ResultsActionButtons({
           className="active:scale-95 transition-all"
           style={{
             flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-            background: isQuickie ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : 'rgba(255,255,255,0.25)',
-            border: isQuickie ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
+            background: useAccent ? accentGradient : 'rgba(255,255,255,0.25)',
+            border: useAccent ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
             color: '#fff', fontWeight: 800, fontSize: S(11),
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
@@ -100,8 +117,8 @@ export default function ResultsActionButtons({
           className="active:scale-95 transition-all"
           style={{
             flex: 1, padding: `${S(10)} ${S(12)}`, borderRadius: S(14),
-            background: isQuickie ? 'linear-gradient(135deg, #7F77DD, #4A3FA3)' : 'rgba(255,255,255,0.25)',
-            border: isQuickie ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
+            background: useAccent ? accentGradient : 'rgba(255,255,255,0.25)',
+            border: useAccent ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
             color: '#fff', fontWeight: 800, fontSize: S(11),
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),

@@ -2,7 +2,7 @@
  * Answer options generation with new-format wrong answers
  *
  * New format fields on fact:
- *   funnyWrong1, funnyWrong2       — drôles
+ *   funnyWrong1/2/3                — drôles
  *   closeWrong1, closeWrong2       — proches
  *   plausibleWrong1/2/3            — plausibles
  *
@@ -47,7 +47,7 @@ function pickMostDifferentWrong(wrongAnswers, correctAnswer) {
 
 function hasNewFormat(fact) {
   return !!(
-    fact.funnyWrong1 || fact.funnyWrong2 ||
+    fact.funnyWrong1 || fact.funnyWrong2 || fact.funnyWrong3 ||
     fact.closeWrong1 || fact.closeWrong2 ||
     fact.plausibleWrong1 || fact.plausibleWrong2 || fact.plausibleWrong3
   )
@@ -56,7 +56,7 @@ function hasNewFormat(fact) {
 // ── Pool builder ─────────────────────────────────────────────────────────────
 
 function buildPools(fact) {
-  const funny     = [fact.funnyWrong1, fact.funnyWrong2].filter(Boolean)
+  const funny     = [fact.funnyWrong1, fact.funnyWrong2, fact.funnyWrong3].filter(Boolean)
   const close     = [fact.closeWrong1, fact.closeWrong2].filter(Boolean)
   const plausible = [fact.plausibleWrong1, fact.plausibleWrong2, fact.plausibleWrong3].filter(Boolean)
   return { funny, close, plausible }
@@ -64,9 +64,9 @@ function buildPools(fact) {
 
 // ── pickWrongAnswers ─────────────────────────────────────────────────────────
 
-function pickWrongAnswers(fact, numWrong, factId) {
-  const { funny, close, plausible } = buildPools(fact)
-  const allAvailable = [...funny, ...close, ...plausible]
+function pickWrongAnswers(fact, numWrong, factId, distribution) {
+  const pools = buildPools(fact)
+  const allAvailable = [...pools.funny, ...pools.close, ...pools.plausible]
 
   // Fallback if pool too small
   if (allAvailable.length === 0) {
@@ -79,20 +79,60 @@ function pickWrongAnswers(fact, numWrong, factId) {
 
   let picked = []
 
+  // ── numWrong === 1 : tirage pondéré (Quickie, Flash) ──
+  // Distribution par défaut si non fournie : 70% plausible / 20% funny / 10% close
   if (numWrong <= 1) {
-    // 2 QCM total (Quickie/Flash) : 1 drôle OU plausible
-    const funnyOrPlausible = [...funny, ...plausible]
-    const fp = pickRandom(funnyOrPlausible, 1)
-    picked = fp.length ? [...fp] : [allAvailable[0]]
+    const weights = distribution?.type === 'weighted'
+      ? distribution.weights
+      : { plausible: 0.7, funny: 0.2, close: 0.1 }
+    const available = Object.entries(weights)
+      .map(([type, weight]) => ({ type, pool: pools[type] || [], weight }))
+      .filter(b => b.pool.length > 0)
+    let chosen = null
+    if (available.length > 0) {
+      const totalW = available.reduce((s, b) => s + b.weight, 0)
+      const r = Math.random() * totalW
+      let acc = 0
+      for (const b of available) {
+        acc += b.weight
+        if (r <= acc) {
+          chosen = pickRandom(b.pool, 1)[0]
+          break
+        }
+      }
+    }
+    picked = chosen ? [chosen] : [allAvailable[0]]
   } else {
-    // 4 QCM total (Quest/Race/Blitz) : 1 drôle + 2 plausibles (+ proche si dispo)
-    const f = pickRandom(funny, 1)
-    const p = pickRandom(plausible, 2)
-    picked = [...f, ...p]
+    // ── numWrong > 1 : tirage déterministe par type (counts) ──
+    // Spec par mode via difficulty.wrongDistribution.counts (ex : {funny:1, plausible:2}).
+    // Si un type spécifié n'a pas assez d'éléments, fallback vers les autres types
+    // (priorité à ceux déjà demandés > 0 dans la distribution).
+    const counts = distribution?.type === 'counts'
+      ? distribution.counts
+      : { funny: 1, plausible: 2 } // défaut historique
+
+    const used = new Set()
+    // 1re passe : prendre count[type] de chaque type demandé
+    for (const [type, count] of Object.entries(counts)) {
+      const pool = (pools[type] || []).filter(a => !used.has(a))
+      const taken = pickRandom(pool, count)
+      for (const t of taken) used.add(t)
+      picked.push(...taken)
+    }
+    // 2e passe — combler les slots manquants SANS toucher à un type absent
+    // de la distribution demandée (ex : Quest spécifie {funny:1, plausible:2}
+    // → jamais piocher dans close). Priorise les types déjà listés dans counts.
     if (picked.length < numWrong) {
-      const used = new Set(picked)
-      const extra = [...close, ...plausible, ...funny].filter(a => !used.has(a))
-      picked = [...picked, ...pickRandom(extra, numWrong - picked.length)]
+      const allowedTypes = Object.keys(counts)
+      const fallbackPool = allowedTypes.flatMap(t => pools[t] || []).filter(a => !used.has(a))
+      const extra = pickRandom(fallbackPool, numWrong - picked.length)
+      for (const t of extra) used.add(t)
+      picked.push(...extra)
+    }
+    // 3e passe — ultime fallback si toujours pas assez : autorise tous les types
+    if (picked.length < numWrong) {
+      const anyExtra = allAvailable.filter(a => !used.has(a))
+      picked.push(...pickRandom(anyExtra, numWrong - picked.length))
     }
   }
 
@@ -108,9 +148,9 @@ function pickWrongAnswers(fact, numWrong, factId) {
         if (!picked.includes(kept)) {
           // Replace one picked answer (prefer same type)
           let replaceIdx = -1
-          if (funny.includes(kept))     replaceIdx = picked.findIndex(p => funny.includes(p))
-          if (replaceIdx < 0 && close.includes(kept))     replaceIdx = picked.findIndex(p => close.includes(p))
-          if (replaceIdx < 0 && plausible.includes(kept)) replaceIdx = picked.findIndex(p => plausible.includes(p))
+          if (pools.funny.includes(kept))     replaceIdx = picked.findIndex(p => pools.funny.includes(p))
+          if (replaceIdx < 0 && pools.close.includes(kept))     replaceIdx = picked.findIndex(p => pools.close.includes(p))
+          if (replaceIdx < 0 && pools.plausible.includes(kept)) replaceIdx = picked.findIndex(p => pools.plausible.includes(p))
           if (replaceIdx < 0) replaceIdx = picked.length - 1
           picked[replaceIdx] = kept
         }
@@ -146,7 +186,7 @@ export function getAnswerOptions(fact, difficulty) {
     }
 
     const numWrongTarget = Math.max(0, (choices || 4) - 1)
-    const allWrongAnswers = pickWrongAnswers(fact, numWrongTarget, fact.id)
+    const allWrongAnswers = pickWrongAnswers(fact, numWrongTarget, fact.id, difficulty?.wrongDistribution)
     const numWrong = Math.min(numWrongTarget, allWrongAnswers.length)
     let wrongAnswers
     if (numWrong === 1) {

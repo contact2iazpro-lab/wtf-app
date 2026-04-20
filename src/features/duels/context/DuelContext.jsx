@@ -36,9 +36,10 @@ export function DuelProvider({ children }) {
     setLastCreatedDuelError(null)
   }, [])
 
-  const startCreateDefi = useCallback((friendId, categoryId, questionCount = null) => {
-    // questionCount défini → revanche dans mêmes conditions, on skip le lobby.
-    setPendingDuel({ mode: 'create', opponentId: friendId, categoryId, questionCount })
+  const startCreateDefi = useCallback((friendId, categoryId, questionCount = null, variant = 'rush') => {
+    // questionCount défini → revanche/Multi-lobby lance directement la partie sans passer par BlitzLobby.
+    // variant : 'rush' (60s descendant) | 'speedrun' (chrono montant, cat 100%)
+    setPendingDuel({ mode: 'create', opponentId: friendId, categoryId, questionCount, variant })
   }, [])
 
   const startAcceptDefi = useCallback((round, preparedFacts) => {
@@ -49,7 +50,10 @@ export function DuelProvider({ children }) {
       opponentId: round.player1_id,
       facts: preparedFacts,
       player1Time: round.player1_time,
+      player1Correct: round.player1_correct,
       player1Name: round.player1_name,
+      variant: round.variant || 'rush',
+      questionCount: round.question_count,
     })
   }, [])
 

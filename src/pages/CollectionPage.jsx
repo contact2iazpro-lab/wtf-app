@@ -37,7 +37,7 @@ function ProgressBar({ percentage, color }) {
 }
 
 export default function CollectionPage() {
-  const [activeTab, setActiveTab] = useState('vip')
+  const [activeTab, setActiveTab] = useState('generated')
   const [selectedCatId, setSelectedCatId] = useState(null)
   const [selectedFact, setSelectedFact] = useState(null)
   const [unlockTarget, setUnlockTarget] = useState(null)
@@ -128,7 +128,7 @@ export default function CollectionPage() {
         return {
           cat, facts, unlocked: unlockedCount, total: facts.length,
           percentage: pct, isCompleted: facts.length > 0 && unlockedCount === facts.length,
-          isLocked: !isCatUnlocked && localStorage.getItem('wtf_dev_mode') !== 'true' && localStorage.getItem('wtf_test_mode') !== 'true',
+          isLocked: !isCatUnlocked,
         }
       })
       .filter(s => s.total > 0)
@@ -213,18 +213,8 @@ export default function CollectionPage() {
           </div>
         </div>
 
-        {/* WTF / Funny tabs */}
+        {/* Funny / WTF tabs — Fun Facts par défaut (inversion 19/04/2026) */}
         <div className="flex gap-2 mb-2">
-          <button
-            onClick={() => { audio.play('click'); setActiveTab('vip') }}
-            className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
-            style={{
-              background: activeTab === 'vip' ? '#FFD700' : '#F3F4F6',
-              color: activeTab === 'vip' ? '#1a1a2e' : '#9CA3AF',
-              border: activeTab === 'vip' ? 'none' : '1px solid #E5E7EB',
-              boxShadow: activeTab === 'vip' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
-            }}
-          >WTF!</button>
           <button
             onClick={() => { audio.play('click'); setActiveTab('generated') }}
             className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
@@ -235,6 +225,16 @@ export default function CollectionPage() {
               boxShadow: activeTab === 'generated' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
             }}
           >Funny F*cts</button>
+          <button
+            onClick={() => { audio.play('click'); setActiveTab('vip') }}
+            className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
+            style={{
+              background: activeTab === 'vip' ? '#FFD700' : '#F3F4F6',
+              color: activeTab === 'vip' ? '#1a1a2e' : '#9CA3AF',
+              border: activeTab === 'vip' ? 'none' : '1px solid #E5E7EB',
+              boxShadow: activeTab === 'vip' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
+            }}
+          >WTF!</button>
         </div>
 
         {/* Tab progress */}

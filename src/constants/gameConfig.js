@@ -2,6 +2,10 @@
 // Quickie · Vrai ET Fou · Quest · Race · Blitz · Flash
 // Économie ×10 appliquée.
 
+// ── Distributions de fausses réponses par mode (CLAUDE.md 19/04/2026) ──
+// type 'weighted'  → tirage pondéré (somme des weights = 1). Utilisé pour numWrong=1.
+// type 'counts'    → tirage déterministe : prend exactement N de chaque type. Pour numWrong>1.
+// Si un pool manque, fallback sur les autres types selon logique buildPools dans answers.js.
 export const DIFFICULTY_LEVELS = {
   QUICKIE: {
     id: 'quickie', label: 'Quickie', emoji: '🎯',
@@ -9,14 +13,16 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 50,
     coinsPerCorrect: 10, perfectBonus: 50,
     scoring: { correct: 10, wrong: 0 },
+    wrongDistribution: { type: 'weighted', weights: { plausible: 0.7, funny: 0.2, close: 0.1 } },
   },
   VRAI_OU_FOU: {
     id: 'vrai_ou_fou', label: 'Vrai ET Fou', emoji: '🤔',
-    choices: 0, duration: 15, questionsCount: 20,
+    choices: 0, duration: 15, questionsCount: 10,
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
     swipe: true,
+    // Tirage du statement_false : 75% plausible / 25% funny — géré dans VraiOuFouScreen
   },
   QUEST: {
     id: 'quest', label: 'Quest', emoji: '🗺️',
@@ -24,6 +30,8 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 20, bossBonus: 100, perfectBonus: 0,
     scoring: { correct: 20, wrong: 0 },
+    wrongDistribution: { type: 'counts', counts: { funny: 1, plausible: 2 } },
+    // Boss VIP : 3 plausible — traité séparément dans QuestScreen.buildBossOptions
   },
   RACE: {
     id: 'race', label: 'Race', emoji: '🏎️',
@@ -31,6 +39,7 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
+    wrongDistribution: { type: 'counts', counts: { funny: 2, plausible: 3 } },
   },
   BLITZ: {
     id: 'blitz', label: 'Blitz', emoji: '⚡',
@@ -38,13 +47,17 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
-    // Sous-modes Blitz (spec 15/04/2026) :
-    // - solo : chrono 60s DESCENDANT, pas de pénalité erreur, score = bonnes réponses
-    // - defi : chrono MONTANT, +5s pénalité erreur, score = temps final (le plus bas gagne)
-    soloDuration: 60,
-    defiWrongPenalty: 5,
-    defiCost: 200, // coins pour créer un défi
+    // Sous-modes Blitz (spec 19/04/2026) :
+    // Format UNIFIÉ : chrono 60s DESCENDANT pour Solo ET Défi, erreur = -5s de pénalité,
+    // score = nombre de bonnes réponses. Tie-break Défi : temps de la dernière bonne
+    // réponse (plus tôt = plus rapide au même score), puis créateur (P1) gagne.
+    // - solo : 60s descendant, paliers 5/10/20/30/50/100 bonnes réponses
+    // - defi : 60s descendant par joueur, même set, plus de bonnes gagne
+    duration_s: 60,
+    wrongPenalty: 5, // secondes retirées du chrono sur erreur (partagé Solo + Défi)
+    defiCost: 200,   // coins pour créer un défi
     soloMinUnlocked: 20,
+    wrongDistribution: { type: 'counts', counts: { funny: 1, close: 1, plausible: 1 } },
   },
   FLASH: {
     id: 'flash', label: 'Flash', emoji: '🔥',
@@ -52,6 +65,7 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: true, freeHints: 0, paidHints: 0, hintCost: 0,
     coinsPerCorrect: 0, flashDailyCoins: 30, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
+    wrongDistribution: { type: 'weighted', weights: { plausible: 0.7, funny: 0.2, close: 0.1 } },
   },
 }
 
@@ -77,15 +91,16 @@ export const SCREENS = {
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
   quickie: {
-    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png', color: '#7F77DD',
+    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png', color: '#FFA500',
     rules: [
       { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
-      { icon: 'icon:set', text: '**Set** : 5 questions/set' },
-      { icon: 'icon:qcm', text: '**QCM** : 2/question' },
-      { icon: 'icon:timer', text: '**Timer** : 15s/question' },
-      { icon: '💡', text: '**Indices** : 1 max/question' },
-      { icon: '🪙', text: '**Gains** : 10 Coins/bonne réponse' },
-      { icon: 'icon:star', text: '**Perfect** : (5/5) +50 Coins' },
+      { icon: 'icon:set', text: '**Set** : 5 questions / set' },
+      { icon: 'icon:qcm', text: '**QCM** : 2 / question' },
+      { icon: 'icon:timer', text: '**Timer** : 15s / question' },
+      { icon: '💡', text: '**Indices** : 1 max / question' },
+      { icon: '🪙', text: '**Gains** : 10 Coins / bonne réponse' },
+      { icon: 'icon:star', text: '**Perfect** : (5 / 5) +50 Coins' },
+      { icon: 'icon:star', text: '**Bonus VIP** : 3% de chance / question ⭐' },
     ],
   },
   vrai_ou_fou: {
@@ -93,29 +108,29 @@ export const MODE_CONFIGS = {
     ctaLabel: 'VAS-Y, SWIPE !',
     rules: [
       { icon: 'picto:infinity', text: '**Coût** : Illimité' },
-      { icon: 'icon:set', text: '**Set** : 20 affirmations/set' },
+      { icon: 'icon:set', text: '**Set** : 10 affirmations / set' },
       { icon: 'picto:swipe', text: '**Swipe** : {{red}}Faux à gauche{{/red}}, Vrai à droite' },
-      { icon: 'icon:timer', text: '**Timer** : 15s/question' },
+      { icon: 'icon:timer', text: '**Timer** : 15s / question' },
       { icon: 'picto:share', text: '**Social** : Partage ton score' },
     ],
   },
   quest: {
     modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png', color: '#FF6B1A',
     rules: [
-      { icon: 'icon:energy', text: 'Coût : 1 énergie par bloc' },
-      { icon: 'icon:set', text: 'Bloc : 10 Funny + 1 boss VIP' },
-      { icon: 'icon:qcm', text: 'QCM : 4/question' },
-      { icon: 'icon:timer', text: 'Timer : 20s/question' },
-      { icon: '💡', text: 'Indices : 2/question' },
-      { icon: '👑', text: 'Boss débloqué : 5/10 bonnes réponses' },
-      { icon: '🪙', text: 'Gains : 20 WTFCoins/bonne · +100 WTFCoins/boss' },
+      { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
+      { icon: 'icon:set', text: '**Bloc** : 5 fun facts + 1 WTF!' },
+      { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
+      { icon: 'icon:timer', text: '**Timer** : 20s / question' },
+      { icon: 'icon:hint', text: '**Indices** : 2 / question' },
+      { icon: 'picto:target', text: '**Boss** : WTF! f*act ! toutes les 5 questions' },
+      { icon: 'icon:coins', text: '**Gains** : +20c / q. · +100c / WTF!' },
     ],
   },
   race: {
     modeId: 'race', modeName: 'Race', subtitle: 'Zéro droit à l\'erreur', emoji: '🏎️', icon: '/assets/modes/icon-race.png', color: '#00E5FF',
     rules: [
       { icon: 'picto:survival', text: '**Survie** : Illimitées jusqu\'à la 1ʳᵉ erreur' },
-      { icon: 'icon:qcm', text: '**QCM** : 6/question' },
+      { icon: 'icon:qcm', text: '**QCM** : 6 / question' },
       { icon: 'icon:timer', text: '**Timer** : Aucun' },
       { icon: '💡', text: '**Indices** : Aucun' },
       { icon: '🪙', text: '**Coût** : Gratuit' },
@@ -123,23 +138,42 @@ export const MODE_CONFIGS = {
     ],
   },
   blitz: {
-    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défie tes potes', emoji: '⚡', icon: '/assets/modes/icon-blitz.png', color: '#FF4444',
+    modeId: 'blitz', modeName: 'Blitz', subtitle: 'Défonce le chrono', emoji: '⚡', icon: '/assets/modes/icon-blitz.png', color: '#FF4444',
     rules: [
-      { icon: 'icon:timer', text: '**Chrono** : 60s descendant · 2 QCM' },
-      { icon: 'icon:qcm', text: '**QCM** : 2/question' },
-      { icon: 'picto:no-hint', text: '**Indices** : Aucun' },
-      { icon: 'picto:penalty', text: '**Pénalité** : +5 secondes par erreur' },
-      { icon: 'picto:free', text: '**Coût** : Solo gratuit · Défi 200 coins' },
-      { icon: 'picto:target', text: '**Paliers** : 5, 10, 20, 30, 50, 100 questions' },
+      // ── Règles communes (Rush + Speedrun) ──
+      { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
+      { icon: 'icon:hint', text: '**Indices** : Aucun' },
+      { icon: 'icon:coins', text: '**Coût** : Gratuit illimité' },
+      { icon: 'picto:steps', text: '**Paliers** : 5, 10, 20, 30, 50, 100' },
+      // ── Séparateur visuel entre règles communes et variants ──
+      { spacer: true },
+      // ── Rush ──
+      { icon: 'icon:timer', text: '**Rush** : Répondez au plus grand nombre de questions\n(−5s / mauvaise réponse)' },
+      // ── Speedrun ──
+      { icon: 'picto:survival', text: '**Speedrun** : Répondez à un set de questions\n(+5s / mauvaise réponse)' },
+    ],
+  },
+  multi: {
+    modeId: 'multi', modeName: 'Multi', subtitle: 'Défie tes amis', emoji: '⚔️', icon: '/assets/modes/icon-multi.png', color: '#6B2D8E',
+    rules: [
+      { icon: 'picto:swords', text: '**Mode** : Rush ou Speedrun' },
+      { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
+      { icon: 'icon:timer', text: '**Chrono** : 60s (Rush) · libre (Speedrun)' },
+      { icon: 'picto:penalty', text: '**Pénalité** : ±5 s par erreur' },
+      { icon: 'icon:coins', text: '**Mise** : 100 Coins chacun · +150 au gagnant' },
+      { icon: 'picto:share', text: '**Social** : 48 h pour relever le défi' },
     ],
   },
   flash: {
     modeId: 'flash', modeName: 'Flash', subtitle: 'Le rendez-vous quotidien', emoji: '🔥', icon: '/assets/daily.png', color: '#E91E63',
     rules: [
-      { icon: '🆓', text: 'Gratuit — 1 fois par jour' },
-      { icon: 'icon:timer', text: '5 questions · 2 QCM · 15s' },
-      { icon: '🎯', text: 'Lun-Sam : thème du jour · Dim : VIP Hunt de la semaine' },
-      { icon: '🪙', text: '30 coins fixe en semaine · 1 VIP débloqué le dimanche' },
+      { icon: 'picto:free', text: '**Coût** : Gratuit · 1 × / jour' },
+      { icon: 'icon:set', text: '**Set** : 5 questions / set' },
+      { icon: 'icon:qcm', text: '**QCM** : 2 / question' },
+      { icon: 'icon:timer', text: '**Timer** : 15s / question' },
+      { icon: 'icon:hint', text: '**Indices** : Aucun · 2 / WTF!' },
+      { icon: 'picto:target', text: '**Lun-Sam** : thème du jour · **Dim** : Hunt VIP' },
+      { icon: 'icon:coins', text: '**Gains** : +30c / jour · 1 WTF! débloqué / sem.' },
     ],
   },
 }

@@ -8,7 +8,7 @@
 import { useCallback } from 'react'
 import { DIFFICULTY_LEVELS, SCREENS, QUESTIONS_PER_GAME } from '../constants/gameConfig'
 import {
-  getValidFacts, getQuestFacts, getGeneratedFacts,
+  getValidFacts, getQuestFacts, getGeneratedFacts, getVipFacts,
   getPlayableCategories,
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
@@ -51,22 +51,14 @@ export function useModeStarters({
 
   const handleStartFlashSession = useCallback(() => {
     audio.play('click')
-    let flashFact = effectiveDailyFact
+    const flashFact = effectiveDailyFact
     if (!flashFact) {
-      const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-      if (isDevOrTest) {
-        const allValid = getQuestFacts()
-        flashFact = allValid.length > 0 ? allValid[Math.floor(Math.random() * allValid.length)] : getValidFacts()[0]
-      }
-      if (!flashFact) {
-        setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct de la semaine n\'est pas encore chargé. Réessaie dans quelques secondes !' })
-        return
-      }
+      setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct de la semaine n\'est pas encore chargé. Réessaie dans quelques secondes !' })
+      return
     }
     const category = flashFact.category
-    const skipUnlock = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
     const sameCat = getGeneratedFacts().filter(f => f.category === category && f.id !== flashFact.id)
-    let pool = sameCat.filter(f => skipUnlock || !unlockedFacts.has(f.id))
+    let pool = sameCat.filter(f => !unlockedFacts.has(f.id))
     if (pool.length < 5) {
       const already = sameCat.filter(f => !pool.some(p => p.id === f.id))
       pool = [...pool, ...already]
@@ -87,18 +79,14 @@ export function useModeStarters({
 
   const handleQuickie = useCallback(() => {
     audio.play('click')
-    const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
-    const isTestMode = localStorage.getItem('wtf_test_mode') === 'true'
-    const skipUnlock = isDevMode || isTestMode
     // Ne montrer que des facts des catégories débloquées
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
     const unlockedCats = new Set(wd.unlockedCategories || ['sport', 'records', 'animaux', 'kids', 'definition'])
     const pool = getGeneratedFacts().filter(f =>
-      (skipUnlock || !unlockedFacts.has(f.id)) && (skipUnlock || unlockedCats.has(f.category))
+      !unlockedFacts.has(f.id) && unlockedCats.has(f.category)
     )
 
     if (pool.length < 5) {
-      if (isDevMode) pool.push(...getGeneratedFacts().filter(f => !pool.some(p => p.id === f.id)))
       if (pool.length === 0) {
         setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt. Reviens vite !' })
         return
@@ -112,8 +100,25 @@ export function useModeStarters({
       }
     }
 
-    const facts = shuffle(pool)
-      .slice(0, 5)
+    // Bonus surprise VIP en Quickie (19/04/2026) : chaque question remplacée
+    // par un VIP non-débloqué. Flag _isVipSurprise pour UX dédiée.
+    // Désactivé (20/04/2026) — repasser à 0.03 pour réactiver à 3% / question.
+    const VIP_SURPRISE_RATE = 0
+    const vipPool = getVipFacts().filter(f => !unlockedFacts.has(f.id))
+    const baseFacts = shuffle(pool).slice(0, 5)
+    const usedVipIds = new Set()
+    const mixedFacts = baseFacts.map(fact => {
+      if (vipPool.length > 0 && Math.random() < VIP_SURPRISE_RATE) {
+        const candidates = vipPool.filter(v => !usedVipIds.has(v.id))
+        if (candidates.length > 0) {
+          const vip = candidates[Math.floor(Math.random() * candidates.length)]
+          usedVipIds.add(vip.id)
+          return { ...vip, _isVipSurprise: true }
+        }
+      }
+      return fact
+    })
+    const facts = mixedFacts
       .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.QUICKIE) }))
 
     setSessionType('quickie')

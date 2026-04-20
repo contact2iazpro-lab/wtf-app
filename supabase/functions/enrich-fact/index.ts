@@ -56,7 +56,8 @@ FACT :
 
 === RÈGLES INDICES ===
 
-Les indices hint1 et hint2 doivent etre des PHRASES COURTES (MAX 20 CARACTERES), PAS un seul mot.
+**PRIVILÉGIE UN SEUL MOT évocateur** pour hint1 et hint2 quand c'est possible (format préféré).
+Si un mot seul n'est pas suffisant, phrase TRÈS courte max 20 caractères.
 Un indice est un PONT vers la reponse : il aide le joueur a eliminer des mauvaises reponses.
 
 INTERDIT :
@@ -68,11 +69,12 @@ BON INDICE :
 - Reduit le champ des possibles
 - Cree une image mentale
 
-Exemples :
-❌ Question "cartons rouges" → Indice "Expulsion" = definition du carton rouge
-✅ Question "cartons rouges" → Indice "Match 5eme div." = oriente vers amateur/chaos
-❌ Question "cadeau Noel" → Indice "Argentine" = seul un expert saurait
-✅ Question "cadeau Noel" → Indice "Suivi temps reel" = oriente vers tracking/connecte
+Exemples (1 mot privilegie) :
+❌ Question "cartons rouges" → "Expulsion"   (= definition)
+✅ Question "cartons rouges" → "Amateur"     (= oriente vers chaos)
+❌ Question "cadeau Noel"    → "Argentine"   (= expert seulement)
+✅ Question "cadeau Noel"    → "Tracking"    (= oriente vers objet connecte)
+✅ Question "Walt Disney"    → "Phobie"      (= oriente sans dire souris)
 
 === EXPLICATION ===
 
@@ -85,7 +87,7 @@ MAUVAIS : "Selon une etude publiee dans le Journal of..."
 
 === FAUSSES REPONSES ===
 
-"funny_wrong_1", "funny_wrong_2" : DROLES et absurdes, font sourire ou rire
+"funny_wrong_1", "funny_wrong_2", "funny_wrong_3" : DROLES et absurdes, font sourire ou rire. Les 3 doivent etre differentes entre elles (pas de synonymes ou variantes proches)
 "close_wrong_1", "close_wrong_2" : PROCHES de la vraie, credibles et piegeuses
 "plausible_wrong_1", "plausible_wrong_2", "plausible_wrong_3" : PLAUSIBLES, fausses mais sonnent vraies
 
@@ -94,18 +96,19 @@ La bonne reponse doit etre celle qui semble la MOINS probable (effet WTF!).
 === TÂCHE ===
 
 Genere un objet JSON avec :
-1. "hint1" : Phrase courte MAX 20 caracteres. Si vide, invente-en une. Sinon reformule en respectant les regles.
-2. "hint2" : Idem.
+1. "hint1" : 1 SEUL MOT privilegie (ou phrase TRES courte max 20 chars). Si vide, invente-en un. Sinon reformule en respectant la nouvelle regle 1 mot.
+2. "hint2" : Idem, privilegier 1 mot.
 3. "hint3" : "" (vide, pour compatibilite)
 4. "hint4" : "" (vide, pour compatibilite)
 5. "funny_wrong_1" : Fausse reponse drole (1-5 mots max)
-6. "funny_wrong_2" : Fausse reponse drole absurde (1-5 mots max)
-7. "close_wrong_1" : Fausse reponse proche (1-5 mots max)
-8. "close_wrong_2" : Fausse reponse proche (1-5 mots max)
-9. "plausible_wrong_1" : Fausse reponse plausible (1-5 mots max)
-10. "plausible_wrong_2" : Fausse reponse plausible (1-5 mots max)
-11. "plausible_wrong_3" : Fausse reponse plausible (1-5 mots max)
-12. "explanation" : Explication 200-300 caracteres, ton fun decale. Si l'explication fournie >= 200 caracteres, tu peux la garder. Sinon genere-la.
+6. "funny_wrong_2" : Fausse reponse drole absurde, differente de funny_wrong_1 (1-5 mots max)
+7. "funny_wrong_3" : Fausse reponse drole absurde, differente de funny_wrong_1 et funny_wrong_2 (1-5 mots max)
+8. "close_wrong_1" : Fausse reponse proche (1-5 mots max)
+9. "close_wrong_2" : Fausse reponse proche (1-5 mots max)
+10. "plausible_wrong_1" : Fausse reponse plausible (1-5 mots max)
+11. "plausible_wrong_2" : Fausse reponse plausible (1-5 mots max)
+12. "plausible_wrong_3" : Fausse reponse plausible (1-5 mots max)
+13. "explanation" : Explication 200-300 caracteres, ton fun decale. Si l'explication fournie >= 200 caracteres, tu peux la garder. Sinon genere-la.
 
 REGLES STRICTES :
 - Tous les indices en francais
@@ -114,7 +117,7 @@ REGLES STRICTES :
 - Explication ENTRE 200 ET 300 CARACTERES (ne pas depasser)
 - hint3 et hint4 TOUJOURS "" (vide)
 
-Retourne UNIQUEMENT un objet JSON valide avec ces 12 clés, SANS texte avant ni après.`
+Retourne UNIQUEMENT un objet JSON valide avec ces 13 clés, SANS texte avant ni après.`
 
     // Call Anthropic (Opus)
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -156,7 +159,7 @@ Retourne UNIQUEMENT un objet JSON valide avec ces 12 clés, SANS texte avant ni 
     // Validate expected keys
     const expectedKeys = [
       'hint1', 'hint2', 'hint3', 'hint4',
-      'funny_wrong_1', 'funny_wrong_2',
+      'funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3',
       'close_wrong_1', 'close_wrong_2',
       'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
       'explanation',

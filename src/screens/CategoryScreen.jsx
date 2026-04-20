@@ -62,8 +62,13 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
     return counts
   }, [unlockedFacts, factsPool])
 
-  // Catégories débloquées : 5 de base + celles persistées (Quest progression
-  // ou achat 100 coins) + celles débloquées dans la session courante.
+  // Catégories débloquées :
+  //   1. 5 de base (GUEST_CATEGORIES)
+  //   2. Celles persistées (achat 200 coins ou progression Quest)
+  //   3. Celles de la session courante
+  //   4. Toute catégorie où le joueur a déjà ≥ 1 fact débloqué
+  //      (migration douce : comptes existants qui ont des f*cts dans des catégories
+  //       jamais "achetées" restent jouables — décidé 17/04/2026)
   const GUEST_CATEGORIES = ['kids', 'animaux', 'sport', 'records', 'definition']
   const unlockedCatIds = useMemo(() => {
     const cats = new Set(GUEST_CATEGORIES)
@@ -72,23 +77,40 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       for (const id of (wd.unlockedCategories || [])) cats.add(id)
     } catch { /* ignore */ }
     for (const id of sessionUnlockedCats) cats.add(id)
+    // Auto-unlock : catégorie avec au moins 1 fact débloqué
+    for (const [catId, count] of Object.entries(unlockedPerCategory)) {
+      if (count > 0) cats.add(catId)
+    }
     return cats
-  }, [sessionUnlockedCats])
+  }, [sessionUnlockedCats, unlockedPerCategory])
 
   // En mode Quickie/Quickie : seules les catégories débloquées sont jouables
   const isLockedMode = gameMode === 'quickie' || sessionType === 'quickie'
 
-  // Catégories avec au moins 1 fact — débloquées en haut, bloquées en bas, chaque groupe alphabétique
+  // Tri catégories (17/04/2026) :
+  //   1. Verrouillées (Quickie) en bas
+  //   2. Parmi débloquées : complètes (100%) en bas, classées alpha
+  //   3. Parmi non-complètes : % complétion décroissant, puis alpha en cas d'égalité
   const visibleCategories = useMemo(() => {
     const cats = getPlayableCategories().filter(cat => (totalPerCategory[cat.id] || 0) > 0)
+    const pctOf = (id) => {
+      const total = totalPerCategory[id] || 0
+      if (!total) return 0
+      return (unlockedPerCategory[id] || 0) / total
+    }
     cats.sort((a, b) => {
       const aLocked = isLockedMode && !unlockedCatIds.has(a.id)
       const bLocked = isLockedMode && !unlockedCatIds.has(b.id)
       if (aLocked !== bLocked) return aLocked ? 1 : -1
+      const aPct = pctOf(a.id), bPct = pctOf(b.id)
+      const aComplete = aPct >= 1
+      const bComplete = bPct >= 1
+      if (aComplete !== bComplete) return aComplete ? 1 : -1 // complètes en bas
+      if (!aComplete && !bComplete && aPct !== bPct) return bPct - aPct // % desc
       return a.label.localeCompare(b.label, 'fr')
     })
     return cats
-  }, [totalPerCategory, isLockedMode, unlockedCatIds])
+  }, [totalPerCategory, unlockedPerCategory, isLockedMode, unlockedCatIds])
 
   const selectedCat = selectedCatId === 'random'
     ? { label: 'Aléatoire', emoji: '🎲', id: 'random' }
@@ -133,7 +155,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
       ...(isLockedMode
-        ? { background: 'linear-gradient(160deg, #4A3FA3, #7F77DD)' }
+        ? { background: 'linear-gradient(160deg, #FF7518, #FFA500)' }
         : {
             backgroundImage: `url(${BACKGROUNDS[bgIndex.current]})`,
             backgroundSize: 'cover',
@@ -191,21 +213,22 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
         </button>
       </div>
 
-      {/* Categories list */}
+      {/* Categories list — grille 2 colonnes, Aléatoire en pleine largeur */}
       <div style={{
         flex: 1, overflowY: 'auto',
         padding: `0 ${S(12)} ${S(8)}`,
         WebkitOverflowScrolling: 'touch',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: S(4) }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(6) }}>
 
-          {/* Aléatoire — toujours proposé */}
+          {/* Aléatoire — pleine largeur (span les 2 colonnes) */}
           <button
             onClick={() => handleCategoryClick('random')}
             style={{
+              gridColumn: '1 / -1',
               background: selectedCatId === 'random'
-                ? (isLockedMode ? 'linear-gradient(135deg, #4A3FA3, #7F77DD)' : 'linear-gradient(135deg, rgba(255,107,26,0.95) 0%, rgba(255,51,133,0.95) 30%, rgba(155,89,182,0.95) 60%, rgba(52,152,219,0.95) 80%, rgba(46,204,113,0.95) 100%)')
-                : (isLockedMode ? 'linear-gradient(135deg, #4A3FA3cc, #7F77DDcc)' : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)'),
+                ? (isLockedMode ? 'linear-gradient(135deg, #FF7518, #FFA500)' : 'linear-gradient(135deg, rgba(255,107,26,0.95) 0%, rgba(255,51,133,0.95) 30%, rgba(155,89,182,0.95) 60%, rgba(52,152,219,0.95) 80%, rgba(46,204,113,0.95) 100%)')
+                : (isLockedMode ? 'linear-gradient(135deg, #FF7518cc, #FFA500cc)' : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)'),
               borderRadius: S(14),
               padding: `${S(10)} ${S(12)}`,
               width: '100%', boxSizing: 'border-box',
@@ -242,6 +265,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             const pct = total > 0 ? Math.round((unlocked / total) * 100) : 0
             const bgColor = getCategoryColor(cat)
             const isLocked = isLockedMode && !unlockedCatIds.has(cat.id)
+            const isComplete = !isLocked && total > 0 && unlocked >= total
 
             return (
               <button
@@ -256,14 +280,14 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                 }}
                 style={{
                   background: isLocked ? 'rgba(255,255,255,0.08)' : isSelected ? bgColor : `${bgColor}99`,
-                  borderRadius: S(12),
-                  padding: `${S(7)} ${S(10)}`,
-                  width: '100%', boxSizing: 'border-box',
-                  display: 'flex', alignItems: 'center', gap: S(10),
+                  borderRadius: S(10),
+                  padding: `${S(6)} ${S(8)}`,
+                  width: '100%', boxSizing: 'border-box', minWidth: 0,
+                  display: 'flex', flexDirection: 'column', gap: S(3),
                   border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
                   boxShadow: isSelected
-                    ? '0 0 20px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
-                    : '0 2px 8px rgba(0,0,0,0.15)',
+                    ? '0 0 16px rgba(255,255,255,0.3), 0 4px 10px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.15)'
+                    : '0 2px 6px rgba(0,0,0,0.15)',
                   opacity: isLocked ? 0.35 : (selectedCatId === null || isSelected ? 1 : 0.6),
                   transform: isSelected ? 'scale(1.02)' : 'scale(1)',
                   cursor: 'pointer',
@@ -274,58 +298,65 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
                   textAlign: 'left',
                 }}
               >
-                <img
-                  src={getCategoryIcon(cat.id)}
-                  alt={cat.label}
-                  style={{
-                    width: S(30), height: S(30),
-                    objectFit: 'contain', flexShrink: 0,
-                    borderRadius: S(8),
-                  }}
-                  onError={(e) => { e.target.style.display = 'none' }}
-                />
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    marginBottom: S(3),
+                {/* Row 1 : icône + label + badge */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: S(6), minWidth: 0, width: '100%' }}>
+                  <img
+                    src={getCategoryIcon(cat.id)}
+                    alt={cat.label}
+                    style={{
+                      width: S(22), height: S(22),
+                      objectFit: 'contain', flexShrink: 0,
+                      borderRadius: S(6),
+                    }}
+                    onError={(e) => { e.target.style.display = 'none' }}
+                  />
+                  <span style={{
+                    flex: 1, minWidth: 0,
+                    fontWeight: 900, fontSize: S(11), color: 'white',
+                    lineHeight: 1.1,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.25)',
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
+                    {cat.label}
+                  </span>
+                  {isComplete ? (
                     <span style={{
-                      fontWeight: 900, fontSize: S(13), color: 'white',
-                      lineHeight: 1.2,
-                      textShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                      {cat.label}
-                    </span>
+                      fontSize: S(9), fontWeight: 900, color: '#FFD700',
+                      flexShrink: 0,
+                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                    }}>⭐</span>
+                  ) : (
                     <span style={{
-                      fontSize: S(10), color: 'rgba(255,255,255,0.75)',
-                      fontWeight: 700, flexShrink: 0, marginLeft: S(6),
+                      fontSize: S(9), color: 'rgba(255,255,255,0.85)',
+                      fontWeight: 800, flexShrink: 0,
                     }}>
                       {isLocked ? '🔒' : `${unlocked}/${total}`}
                     </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: S(6) }}>
-                    <div style={{
-                      flex: 1, height: S(3), background: 'rgba(255,255,255,0.3)',
-                      borderRadius: 2,
-                    }}>
-                      <div style={{
-                        height: '100%',
-                        width: `${Math.min(pct, 100)}%`,
-                        background: 'white',
-                        borderRadius: 2,
-                        transition: 'width 0.3s ease',
-                      }} />
-                    </div>
-                    <span style={{
-                      fontSize: S(9), color: 'rgba(255,255,255,0.6)',
-                      fontWeight: 700, flexShrink: 0,
-                    }}>
-                      {isLocked ? '' : `${pct}%`}
-                    </span>
-                  </div>
+                  )}
                 </div>
+                {/* Row 2 : progress bar (cachée si complète) */}
+                {!isComplete && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: S(6) }}>
+                      <div style={{
+                        flex: 1, height: S(3), background: 'rgba(255,255,255,0.3)',
+                        borderRadius: 2,
+                      }}>
+                        <div style={{
+                          height: '100%',
+                          width: `${Math.min(pct, 100)}%`,
+                          background: 'white',
+                          borderRadius: 2,
+                          transition: 'width 0.3s ease',
+                        }} />
+                      </div>
+                      <span style={{
+                        fontSize: S(9), color: 'rgba(255,255,255,0.6)',
+                        fontWeight: 700, flexShrink: 0,
+                      }}>
+                        {isLocked ? '' : `${pct}%`}
+                      </span>
+                    </div>
+                  )}
               </button>
             )
           })}
@@ -347,7 +378,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             cursor: hasSelection ? 'pointer' : 'default',
             pointerEvents: hasSelection ? 'auto' : 'none',
             background: hasSelection
-              ? (isLockedMode ? '#9400D3' : `linear-gradient(135deg, ${getCategoryColor(selectedCat) || '#FF6B1A'}, ${getCategoryColor(selectedCat) || '#FF6B1A'}cc)`)
+              ? (isLockedMode ? '#FF7518' : `linear-gradient(135deg, ${getCategoryColor(selectedCat) || '#FF6B1A'}, ${getCategoryColor(selectedCat) || '#FF6B1A'}cc)`)
               : 'rgba(255,255,255,0.25)',
             color: hasSelection ? 'white' : 'rgba(255,255,255,0.5)',
             boxShadow: hasSelection ? (isLockedMode ? '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)' : `0 6px 24px ${getCategoryColor(selectedCat) || '#FF6B1A'}50`) : 'none',

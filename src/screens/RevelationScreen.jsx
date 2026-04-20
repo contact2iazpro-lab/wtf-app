@@ -4,6 +4,7 @@ import CoinsIcon from '../components/CoinsIcon'
 import { getCategoryById } from '../data/facts'
 import { audio } from '../utils/audio'
 import renderFormattedText from '../utils/renderFormattedText'
+import { stripEmojis } from '../utils/stripEmojis'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import FallbackImage from '../components/FallbackImage'
 import BatteryIcon from '../components/home/BatteryIcon'
@@ -183,12 +184,12 @@ export default function RevelationScreen({
   const isQuickieMode = sessionType === 'quickie'
   const isVofMode = sessionType === 'vrai_ou_fou'
   const isBrandedMode = isQuickieMode || isVofMode
-  const accentColor = isVofMode ? '#6BCB77' : '#7F77DD'
-  const MODE_HIGHLIGHT = { quickie: '#B5AFEB', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', flash: '#E91E63' }
+  const accentColor = isVofMode ? '#6BCB77' : '#FFA500'
+  const MODE_HIGHLIGHT = { quickie: '#FFD4A3', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', flash: '#E91E63' }
   const questionHighlight = MODE_HIGHLIGHT[sessionType]
   const accentGradient = isVofMode
     ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
-    : 'linear-gradient(135deg, #7F77DD, #4A3FA3)'
+    : 'linear-gradient(135deg, #FFA500, #FF7518)'
   const accentShadow = isVofMode
     ? '0 4px 16px rgba(107,203,119,0.5)'
     : '0 4px 16px rgba(127,119,221,0.5)'
@@ -241,12 +242,14 @@ export default function RevelationScreen({
   const handleNativeShare = () => {
     const shareMessages = [
       `Mate ce f*ct !\n\n"${fact.question}"\n\n${window.location.origin}`,
-      `Tu savais ça ?!\n\n"${fact.question}"\n\n${window.location.origin}`,
+      `Tu connais ça ?!\n\n"${fact.question}"\n\n${window.location.origin}`,
       `Incroyable !\n\n"${fact.question}"\n\n${window.location.origin}`,
     ]
     const shareMessage = shareMessages[Math.floor(Math.random() * shareMessages.length)]
     if (navigator.share) {
       navigator.share({ text: shareMessage }).catch(() => {})
+    } else if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(shareMessage)
     }
   }
 
@@ -421,14 +424,14 @@ export default function RevelationScreen({
                         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
                         border: isBrandedMode ? `2px solid ${accentColor}` : '2px solid rgba(255,255,255,0.5)',
                         borderRadius: S(12), padding: `${S(8)} ${S(16)}`,
-                        color: _currencyCoins >= 25 ? '#ffffff' : '#9CA3AF',
+                        color: _currencyCoins >= (fact.isVip ? 250 : 50) ? '#ffffff' : '#9CA3AF',
                         fontWeight: 800, fontSize: S(13),
-                        cursor: _currencyCoins >= 25 ? 'pointer' : 'not-allowed',
-                        opacity: _currencyCoins >= 25 ? 1 : 0.6,
+                        cursor: _currencyCoins >= (fact.isVip ? 250 : 50) ? 'pointer' : 'not-allowed',
+                        opacity: _currencyCoins >= (fact.isVip ? 250 : 50) ? 1 : 0.6,
                         display: 'flex', alignItems: 'center', gap: S(6),
                       }}
                     >
-                      🔓 Débloquer — 25 <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
+                      🔓 Débloquer — {fact.isVip ? 250 : 50} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
                   </button>
                 </div>
               )}
@@ -476,7 +479,7 @@ export default function RevelationScreen({
                 Débloquer ce f*ct ?
               </h3>
               <p style={{ fontSize: S(13), fontWeight: 600, color: '#6B7280', margin: `0 0 ${S(20)}`, lineHeight: 1.4 }}>
-                Tu pourras voir l'image et l'explication pour <span style={{ fontWeight: 900, color: '#1a1a2e' }}>25</span> <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
+                Tu pourras voir l'image et l'explication pour <span style={{ fontWeight: 900, color: '#1a1a2e' }}>{fact.isVip ? 250 : 50}</span> <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
               </p>
               <div style={{ display: 'flex', gap: S(10) }}>
                 <button
@@ -491,8 +494,9 @@ export default function RevelationScreen({
                 </button>
                 <button
                   onClick={() => {
-                    if (_currencyCoins < 25) return
-                    applyCurrencyDelta?.({ coins: -25 }, 'unlock_fact_wrong_answer')
+                    const cost = fact.isVip ? 250 : 50
+                    if (_currencyCoins < cost) return
+                    applyCurrencyDelta?.({ coins: -cost }, 'unlock_fact_wrong_answer')
                     audio.play('correct')
                     setShowUnlockConfirm(false)
                     setUnlockedByCoins(true)
@@ -627,38 +631,39 @@ export default function RevelationScreen({
       )}
       <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
         <div
-          onClick={() => fact.imageUrl && !imgFailed && setShowLightbox(true)}
+          onClick={() => setShowLightbox(true)}
           className="relative overflow-hidden"
           style={{
             width: '100%', maxHeight: '35vh', borderRadius: S(16),
             border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${accentColor}`,
-            background: catGradient, cursor: fact.imageUrl && !imgFailed ? 'pointer' : 'default',
+            background: catGradient, cursor: 'pointer',
             ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
           }}
         >
           {fact.imageUrl && !imgFailed ? (
-            <>
-              <img
-                src={fact.imageUrl}
-                alt={fact.question}
-                style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
-                onError={() => setImgFailed(true)}
-              />
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
-                style={{
-                  position: 'absolute', top: S(8), right: S(8), zIndex: 10,
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: 'rgba(0,0,0,0.5)', border: 'none',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', fontSize: 18,
-                }}
-              >🔍</button>
-            </>
+            <img
+              src={fact.imageUrl}
+              alt={fact.question}
+              style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
+              onError={() => setImgFailed(true)}
+            />
           ) : (
             <div style={{ width: '100%', height: 'calc(35vh - 6px)', overflow: 'hidden' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
+          )}
+          {/* Loupe masquée en VoF (mode vitrine — pas de zoom) */}
+          {!isVofMode && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+              style={{
+                position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'rgba(0,0,0,0.5)', border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', fontSize: 18,
+              }}
+            >🔍</button>
           )}
           {/* Holo shimmer — toujours visible (pokemon glow) */}
           <div style={{
@@ -679,15 +684,17 @@ export default function RevelationScreen({
               animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
             }} />
           </div>
-          {/* Stamp Unlocked — toujours visible */}
-          <div style={{
-            position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
-            background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6),
-            padding: `${S(3)} ${S(8)}`,
-            pointerEvents: 'none',
-          }}>
-            <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
-          </div>
+          {/* Stamp Unlocked — masqué en VoF (fact non débloqué même si bonne réponse) */}
+          {!isVofMode && (
+            <div style={{
+              position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
+              background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6),
+              padding: `${S(3)} ${S(8)}`,
+              pointerEvents: 'none',
+            }}>
+              <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -716,7 +723,7 @@ export default function RevelationScreen({
             <span style={{ color: accentColor, fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
           <div ref={explanationContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-            <p ref={explanationRef} style={{ color: 'rgba(255,255,255,0.85)', fontSize: explanationFontSize, lineHeight: 1.45, fontWeight: 500, margin: 0 }}>{fact.explanation}</p>
+            <p ref={explanationRef} style={{ color: 'rgba(255,255,255,0.85)', fontSize: explanationFontSize, lineHeight: 1.45, fontWeight: 500, margin: 0 }}>{stripEmojis(fact.explanation)}</p>
           </div>
         </div>
       </div>
@@ -757,7 +764,7 @@ export default function RevelationScreen({
 
 
       {/* Lightbox image — bonne réponse uniquement */}
-      {showLightbox && fact.imageUrl && (
+      {showLightbox && (
         <div
           onClick={() => setShowLightbox(false)}
           style={{
@@ -778,16 +785,29 @@ export default function RevelationScreen({
               cursor: 'pointer',
             }}
           >✕</button>
-          <img
-            src={fact.imageUrl}
-            alt={fact.question}
-            onClick={e => e.stopPropagation()}
-            style={{
-              width: '95%', maxHeight: '80vh', objectFit: 'contain',
-              borderRadius: 12,
-              animation: 'lightboxZoom 0.2s ease-out',
-            }}
-          />
+          {fact.imageUrl && !imgFailed ? (
+            <img
+              src={fact.imageUrl}
+              alt={fact.question}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '95%', maxHeight: '80vh', objectFit: 'contain',
+                borderRadius: 12,
+                animation: 'lightboxZoom 0.2s ease-out',
+              }}
+            />
+          ) : (
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: 'min(95%, 80vh)', aspectRatio: '1 / 1',
+                borderRadius: 12, overflow: 'hidden',
+                animation: 'lightboxZoom 0.2s ease-out',
+              }}
+            >
+              <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
+            </div>
+          )}
           <style>{`
             @keyframes lightboxZoom {
               from { transform: scale(0.8); opacity: 0; }

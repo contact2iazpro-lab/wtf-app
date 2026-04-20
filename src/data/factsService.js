@@ -73,6 +73,7 @@ function fromRow(row) {
     teaser:       row.teaser       || null,
     funnyWrong1:     row.funny_wrong_1     || null,
     funnyWrong2:     row.funny_wrong_2     || null,
+    funnyWrong3:     row.funny_wrong_3     || null,
     closeWrong1:     row.close_wrong_1     || null,
     closeWrong2:     row.close_wrong_2     || null,
     plausibleWrong1: row.plausible_wrong_1 || null,
@@ -165,7 +166,7 @@ function buildAll(rawFacts) {
 // ─── Cache localStorage ─────────────────────────────────────────────────────
 const CACHE_KEY = 'wtf_facts_cache'
 const CACHE_VERSION_KEY = 'wtf_facts_cache_version'
-const CACHE_VERSION = '4' // bump 15/04/2026 — refonte statements : 3 variantes par fact
+const CACHE_VERSION = '5' // bump 17/04/2026 — ajout funny_wrong_3 (8ème fausse réponse drôle)
 
 function saveCacheToLocal(rawRows) {
   try {
@@ -191,7 +192,7 @@ const MAX_RETRIES = 3
 const RETRY_DELAY = 1500 // ms
 
 async function fetchFromSupabase() {
-  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement_true, statement_false_funny, statement_false_plausible'
+  const SELECT_COLS = 'id, category, question, hint1, hint2, hint3, hint4, short_answer, answer, explanation, source_url, options, correct_index, image_url, difficulty, type, is_vip, teaser, funny_wrong_1, funny_wrong_2, funny_wrong_3, close_wrong_1, close_wrong_2, plausible_wrong_1, plausible_wrong_2, plausible_wrong_3, statement_true, statement_false_funny, statement_false_plausible'
   const all = []
   let from = 0
   const PAGE = 1000
@@ -317,48 +318,40 @@ export function getQuestFacts() {
   return getVipFacts()
 }
 
-/** Mode Vrai ET Fou : Funny facts dont les 3 variantes d'affirmation sont remplies */
+/** Mode Vrai ET Fou : Funny facts avec affirmation vraie + au moins une fausse remplie */
 export function getFunnyFactsWithStatement() {
   return getFunnyFacts().filter(f =>
-    f.statementTrue && f.statementFalseFunny && f.statementFalsePlausible
+    f.statementTrue && (f.statementFalsePlausible || f.statementFalseFunny)
   )
 }
 
 /**
- * Construit un "draw" pour le mode Vrai ET Fou : 2 affirmations sur le même fact
- * (une vraie + une fausse), avec la position vraie/fausse randomisée.
- *
- * @param {object} fact — doit avoir statementTrue, statementFalseFunny, statementFalsePlausible
- * @param {'funny'|'plausible'} falseVariant — quelle fausse affirmation utiliser
- * @returns {{ fact, trueStatement, falseStatement, trueSide: 'left'|'right', falseVariant }}
+ * Construit un "draw" pour le mode Vrai ET Fou : affirmation vraie + fausse,
+ * position vraie/fausse randomisée.
+ * Pondération fausse (décision 18/04/2026) : 75% plausible, 25% drôle.
+ * Si un type manque, fallback sur l'autre.
  */
-export function buildVraiOuFouDraw(fact, falseVariant) {
-  const falseStatement = falseVariant === 'funny'
-    ? fact.statementFalseFunny
-    : fact.statementFalsePlausible
+export function buildVraiOuFouDraw(fact) {
   const trueSide = Math.random() < 0.5 ? 'left' : 'right'
+  const hasPlausible = !!fact.statementFalsePlausible
+  const hasFunny = !!fact.statementFalseFunny
+  let falseStatement
+  if (hasPlausible && hasFunny) {
+    falseStatement = Math.random() < 0.75 ? fact.statementFalsePlausible : fact.statementFalseFunny
+  } else {
+    falseStatement = fact.statementFalsePlausible || fact.statementFalseFunny
+  }
   return {
     fact,
     trueStatement: fact.statementTrue,
     falseStatement,
     trueSide,
-    falseVariant,
   }
 }
 
-/**
- * Construit un pool de N draws à partir d'une liste de facts, avec alternance
- * exacte 50/50 entre fausses drôles et fausses plausibles (pattern mélangé).
- */
+/** Construit un pool de N draws à partir d'une liste de facts. */
 export function buildVraiOuFouSessionPool(facts, size) {
-  const pool = facts.slice(0, size)
-  const half = Math.ceil(pool.length / 2)
-  // Tableau [funny, plausible, funny, plausible, …] mélangé pour éviter les streaks
-  const variants = [
-    ...Array(half).fill('funny'),
-    ...Array(pool.length - half).fill('plausible'),
-  ].sort(() => Math.random() - 0.5)
-  return pool.map((fact, i) => buildVraiOuFouDraw(fact, variants[i]))
+  return facts.slice(0, size).map(buildVraiOuFouDraw)
 }
 
 /** Mode Race : Funny + VIP déjà débloqués, mélangés */

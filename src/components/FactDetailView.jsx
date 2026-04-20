@@ -1,18 +1,35 @@
 import { useState } from 'react'
 import { getPlayableCategories } from '../data/factsService'
 import renderFormattedText from '../utils/renderFormattedText'
+import { stripEmojis } from '../utils/stripEmojis'
+import FallbackImage from './FallbackImage'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
-export default function FactDetailView({ fact, onClose }) {
+export default function FactDetailView({ fact, onClose, onUnlockRequest = null }) {
   const [showLightbox, setShowLightbox] = useState(false)
   const cat = getPlayableCategories().find(c => c.id === fact.category)
   const catColor = cat?.color || '#FF6B1A'
   const catGradient = `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
   const isVip = !!fact.isVip
+  // _isLocked: fact visible en détail mais pas encore dans la collection
+  // (flow VoF post-session). Affiche "Ajouter à ma collection" au lieu de Partager.
+  const isLocked = !!fact._isLocked
+  const unlockCost = isVip ? 250 : 50
 
+  // Partage Funny uniquement (pas les VIP). Message : teaser + fact détaillé.
+  const shortAnswer = fact.shortAnswer || fact.options?.[fact.correctIndex] || ''
   const share = () => {
-    const text = `Le saviez-vous ?\n\n${fact.explanation}\n\nJoue sur What The F*ct ! ${window.location.origin}`
+    const parts = [
+      'Tu savais ça ?!',
+      '',
+      fact.question,
+      '',
+      `👉 ${shortAnswer}`,
+    ]
+    if (fact.explanation) { parts.push('', fact.explanation) }
+    parts.push('', `Joue sur What The F*ct ! ${window.location.origin}`)
+    const text = parts.join('\n')
     if (navigator.share) navigator.share({ text }).catch(() => {})
     else navigator.clipboard?.writeText(text).catch(() => {})
   }
@@ -78,41 +95,65 @@ export default function FactDetailView({ fact, onClose }) {
               border: '1px solid rgba(255,255,255,0.12)',
             }}>
               <span style={{ fontWeight: 900, fontSize: S(14), color: '#ffffff', lineHeight: 1.3, display: 'block', textAlign: 'center' }}>
-                {renderFormattedText(fact.question)}
+                {renderFormattedText(fact.question, catColor)}
               </span>
             </div>
           </div>
 
-          {/* Image */}
+          {/* Image — avec pokemon holo glow + loupe (comme RevelationScreen) */}
           <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
             <div
-              onClick={() => fact.imageUrl && setShowLightbox(true)}
+              onClick={() => setShowLightbox(true)}
+              className="relative overflow-hidden"
               style={{
-                width: '100%', maxHeight: '35vh', borderRadius: S(16), overflow: 'hidden',
+                width: '100%', maxHeight: '35vh', borderRadius: S(16),
                 border: `3px solid ${catColor}`, position: 'relative',
-                background: catGradient, cursor: fact.imageUrl ? 'pointer' : 'default',
+                background: catGradient, cursor: 'pointer',
               }}
             >
               {fact.imageUrl ? (
-                <>
-                  <img src={fact.imageUrl} alt={fact.question} style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }} />
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
-                    style={{
-                      position: 'absolute', top: S(8), right: S(8), zIndex: 10,
-                      width: 36, height: 36, borderRadius: '50%',
-                      background: 'rgba(0,0,0,0.5)', border: 'none',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', fontSize: 18,
-                    }}
-                  >🔍</button>
-                </>
+                <img src={fact.imageUrl} alt={fact.question}
+                  style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
+                  onError={e => { e.target.style.display = 'none' }} />
               ) : (
-                <div style={{ width: '100%', height: 'calc(35vh - 6px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  <div style={{ fontSize: 72, fontWeight: 900, color: 'white', lineHeight: 1, opacity: 0.3 }}>?</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>Image bientôt disponible</div>
+                <div style={{ width: '100%', height: 'calc(35vh - 6px)', overflow: 'hidden' }}>
+                  <FallbackImage categoryColor={catColor} />
                 </div>
               )}
+              {/* Loupe */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowLightbox(true) }}
+                style={{
+                  position: 'absolute', top: S(8), right: S(8), zIndex: 10,
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.5)', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', fontSize: 18,
+                }}
+              >🔍</button>
+              {/* Holo shimmer (pokemon glow) */}
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+                background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(127,119,221,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(127,119,221,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
+                backgroundSize: '200% 100%',
+                animation: 'factDetailHoloShimmer 3s linear infinite',
+                mixBlendMode: 'screen',
+              }} />
+              {/* Lame de lumière blanche qui balaie */}
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden',
+              }}>
+                <div style={{
+                  position: 'absolute', top: '-20%', bottom: '-20%',
+                  width: '45%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                  animation: 'factDetailHoloSweep 2.5s 0.5s ease-in-out infinite',
+                }} />
+              </div>
+              <style>{`
+                @keyframes factDetailHoloShimmer { 0% { background-position: 0% 0% } 100% { background-position: 200% 0% } }
+                @keyframes factDetailHoloSweep { 0% { left: -50% } 100% { left: 150% } }
+              `}</style>
             </div>
           </div>
 
@@ -127,10 +168,10 @@ export default function FactDetailView({ fact, onClose }) {
 
             <div style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: S(12), padding: `${S(8)} ${S(10)}`, flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
-                <span style={{ color: '#ffffff', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+                <span style={{ color: '#4CAF50', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
               </div>
-              <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: S(10), lineHeight: 1.4, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>
-                {fact.explanation}
+              <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: S(14), lineHeight: 1.45, fontWeight: 500, margin: 0, flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                {renderFormattedText(stripEmojis(fact.explanation), catColor)}
               </p>
               {fact.sourceUrl && (
                 <a href={fact.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: S(9), color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: S(4), textDecoration: 'underline', textAlign: 'right', flexShrink: 0 }}>
@@ -140,22 +181,42 @@ export default function FactDetailView({ fact, onClose }) {
             </div>
           </div>
 
-          {/* Bouton partager */}
-          <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
-            <button
-              onClick={share}
-              className="active:scale-95 transition-all"
-              style={{
-                width: '100%', height: S(44), borderRadius: S(14),
-                fontWeight: 900, fontSize: S(13), color: '#ffffff', border: 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
-                background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
-                boxShadow: `0 4px 16px ${catColor}50`,
-              }}
-            >
-              Partager ce F*ct
-            </button>
-          </div>
+          {/* Bouton en bas : "Ajouter à ma collection" si locked, sinon "Partager" (Funny only) */}
+          {isLocked ? (
+            <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
+              <button
+                onClick={() => { onUnlockRequest?.(fact); onClose?.() }}
+                className="active:scale-95 transition-all"
+                style={{
+                  width: '100%', height: S(44), borderRadius: S(14),
+                  fontWeight: 900, fontSize: S(13), color: '#1a1a2e',
+                  border: '3px solid #ffffff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                  boxShadow: '0 4px 16px rgba(255,165,0,0.4)',
+                }}
+              >
+                + Ajouter à ma collection · {unlockCost} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
+              </button>
+            </div>
+          ) : !isVip && (
+            <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(10)}` }}>
+              <button
+                onClick={share}
+                className="active:scale-95 transition-all"
+                style={{
+                  width: '100%', height: S(44), borderRadius: S(14),
+                  fontWeight: 900, fontSize: S(13), color: '#ffffff',
+                  border: '3px solid #ffffff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6),
+                  background: `linear-gradient(135deg, ${catColor} 0%, ${catColor}cc 100%)`,
+                  boxShadow: `0 4px 16px ${catColor}50`,
+                }}
+              >
+                Partager ce F*ct
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

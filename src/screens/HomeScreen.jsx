@@ -24,9 +24,9 @@ import NewBadgeModal from '../components/home/NewBadgeModal'
 import BatteryIcon from '../components/home/BatteryIcon'
 
 const HOME_BG_COLOR = [
-  'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(90,25,90,0.50) 0%, transparent 65%)',
-  'radial-gradient(ellipse 135% 115% at 50% 50%, transparent 38%, rgba(0,0,0,0.65) 100%)',
-  '#1A3A8A',
+  'radial-gradient(ellipse 90% 55% at 50% 105%, rgba(107,45,142,0.40) 0%, transparent 65%)',
+  'radial-gradient(ellipse 135% 115% at 50% 50%, transparent 38%, rgba(0,0,0,0.50) 100%)',
+  '#3B5BA5',
 ].join(', ')
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -129,10 +129,10 @@ export default function HomeScreen({
     >
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
-      {/* Overlay dégradé bas */}
+      {/* Overlay dégradé haut (foncé en haut → clair en bas, inversé 19/04) */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
-        background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 100%)',
+        position: 'absolute', top: 0, left: 0, right: 0, height: '40%',
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 100%)',
         pointerEvents: 'none', zIndex: 0,
       }} />
 
@@ -337,33 +337,50 @@ export default function HomeScreen({
           style={{ width: '60%', maxWidth: S(220), height: 'auto', objectFit: 'contain', WebkitUserSelect: 'none', userSelect: 'none' }}
         />
 
-        {/* Grille 2×2 */}
+        {/* Grille 3 + 2 (spec 19/04/2026) */}
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: S(16), justifyItems: 'center', alignItems: 'center',
-          width: '100%', maxWidth: S(260),
+          display: 'flex', flexDirection: 'column', gap: S(12),
+          width: '100%', maxWidth: S(320),
         }}>
-          <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} />
-          <ModeIcon icon="/assets/modes/vrai-et-fou.png" name="Vrai ET Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} />
-          <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} />
-          <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} />
+          {/* Ligne 1 : Quest · VoF · Race */}
+          <div style={{ display: 'flex', justifyContent: 'space-evenly', gap: S(8) }}>
+            <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} sizeOverride={72} />
+            <ModeIcon icon="/assets/modes/vrai-et-fou.png" name="Vrai ET Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} sizeOverride={72} />
+            <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} sizeOverride={72} />
+          </div>
+          {/* Ligne 2 : Blitz · Multi */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: S(48) }}>
+            <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} sizeOverride={72} />
+            <ModeIcon icon="/assets/modes/multi.png" name="Multi" color="#6B2D8E" onClick={() => nav('multi')} sizeOverride={72} />
+          </div>
         </div>
 
-        {/* Bouton Partie rapide */}
+        {/* Bouton Partie rapide — ratio natif du PNG (790 × 388 ≈ 2.036:1)
+            icon-quickie + texte orange overlay à l'intérieur */}
         <button
           onClick={() => nav('quickie_random')}
           className="btn-press"
           style={{
-            background: 'linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%)',
-            borderRadius: S(14), border: 'none',
-            padding: `${S(12)} ${S(24)}`, width: '70%', maxWidth: S(260),
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8),
+            backgroundColor: 'transparent',
+            backgroundImage: "url('/assets/modes/home-button.png?v=4')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            border: 'none', padding: 0,
+            width: '51%', maxWidth: S(187), aspectRatio: '790 / 310',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(7),
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-            boxShadow: '0 6px 0 #c0c0c0, 0 8px 20px rgba(0,0,0,0.25)',
           }}
         >
-          <img src="/assets/modes/icon-quickie.png" alt="" style={{ width: S(22), height: S(22), objectFit: 'contain', flexShrink: 0 }} />
-          <span style={{ fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(14), color: '#7F77DD', letterSpacing: '0.04em' }}>
+          <img
+            src="/assets/modes/icon-quickie.png?v=2"
+            alt=""
+            style={{ width: S(24), height: S(24), objectFit: 'contain', flexShrink: 0 }}
+          />
+          <span style={{
+            fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(10),
+            color: '#FFA500', letterSpacing: '0.08em', textTransform: 'uppercase',
+          }}>
             Partie rapide
           </span>
         </button>

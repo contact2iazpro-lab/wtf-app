@@ -20,12 +20,15 @@ export default function ResultsRankHeader({
   textOnBg = '#ffffff',
   isPerfect = false,
   hideEmoji = false,
+  hideStars = false,
   largeLabelFont = false,
 }) {
+  // Quand hideEmoji : label + étoiles inline (gagne de la hauteur — ex. Quickie)
+  const inlineStars = hideEmoji
   return (
     <>
       {/* Rang + étoiles */}
-      <div style={{ display: 'flex', flexDirection: hideEmoji ? 'column' : 'row', alignItems: 'center', justifyContent: 'center', gap: hideEmoji ? S(6) : S(10), flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexDirection: hideEmoji ? 'row' : 'row', alignItems: 'center', justifyContent: 'center', gap: S(10), flexShrink: 0, flexWrap: 'wrap' }}>
         {!hideEmoji && (
           <div
             style={{
@@ -40,32 +43,39 @@ export default function ResultsRankHeader({
                 : emoji}
           </div>
         )}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: hideEmoji ? 'center' : 'flex-start', gap: S(4) }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: inlineStars ? 'row' : 'column',
+          alignItems: 'center',
+          gap: inlineStars ? S(10) : S(4),
+        }}>
           <div
             style={{
               fontSize: largeLabelFont ? S(18) : S(13), fontWeight: 900, color: textOnBg, lineHeight: 1.2,
-              textAlign: hideEmoji ? 'center' : 'left',
+              textAlign: 'center',
               transform: rankVisible ? 'scale(1)' : 'scale(0)',
-              transformOrigin: hideEmoji ? 'center center' : 'left center',
+              transformOrigin: 'center center',
               transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s',
             }}>
             {label}
           </div>
-          <div style={{ display: 'flex', gap: S(3), justifyContent: hideEmoji ? 'center' : 'flex-start' }}>
-            {[1, 2, 3, 4, 5].map((s) => (
-              <span
-                key={s}
-                style={{
-                  fontSize: S(16), lineHeight: 1,
-                  transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
-                  transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  filter: s <= stars ? `drop-shadow(0 0 10px ${catColor})` : 'none',
-                  opacity: s <= stars ? 1 : 0.2,
-                }}>
-                <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(16), height: S(16), objectFit: 'contain' }} />
-              </span>
-            ))}
-          </div>
+          {!hideStars && (
+            <div style={{ display: 'flex', gap: S(3), justifyContent: 'center' }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <span
+                  key={s}
+                  style={{
+                    fontSize: S(16), lineHeight: 1,
+                    transform: s <= visibleStars ? 'scale(1)' : 'scale(0)',
+                    transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    filter: s <= stars ? `drop-shadow(0 0 10px ${catColor})` : 'none',
+                    opacity: s <= stars ? 1 : 0.2,
+                  }}>
+                  <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(16), height: S(16), objectFit: 'contain' }} />
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

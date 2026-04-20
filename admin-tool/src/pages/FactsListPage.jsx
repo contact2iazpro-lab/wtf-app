@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { CATEGORIES, getCategoryLabel, getCategoryEmoji } from '../constants/categories'
 import { STATUSES, StatusBadge, DIFFICULTIES, difficultyStyle, DifficultyBadge, Toggle, SortIcon, inputCls as sharedInputCls, inputClsErr as sharedInputClsErr } from '../components/shared'
 import { fmtDate, callEdgeFunction } from '../utils/helpers'
+import { optimizeSupabaseImageUrl } from '../utils/imageUrl'
 
 const PAGE_SIZE_OPTIONS = [50, 100, 200, 500]
 
@@ -62,7 +63,7 @@ export default function FactsListPage({ toast }) {
 
   // Sort
   const [sortField, setSortField] = useState('id')
-  const [sortDir, setSortDir] = useState('desc')
+  const [sortDir, setSortDir] = useState('asc')
   const [filterRecent, setFilterRecent] = useState(false)
 
   // Batch
@@ -135,6 +136,19 @@ export default function FactsListPage({ toast }) {
   // Load facts
   useEffect(() => { loadFacts() }, [page, pageSize, debouncedSearch, filterCategories, filterVip, filterPublished, filterStatus, filterPack, filterImage, filterRecent, sortField, sortDir])
 
+  // Construit l'URL d'un fact avec les filtres actifs → permet à FactEditorPage
+  // de calculer le fact précédent/suivant dans la même liste filtrée.
+  const buildFactUrl = useCallback((factId, base = '/facts') => {
+    const params = new URLSearchParams()
+    if (filterCategories.length) params.set('categories', filterCategories.join(','))
+    if (filterVip !== 'all') params.set('vip', filterVip)
+    if (filterStatus !== 'all') params.set('status', filterStatus)
+    if (filterPack !== 'all') params.set('pack', filterPack)
+    if (filterImage !== 'all') params.set('image', filterImage)
+    const qs = params.toString()
+    return `${base}/${factId}${qs ? '?' + qs : ''}`
+  }, [filterCategories, filterVip, filterStatus, filterPack, filterImage])
+
 
   const loadFacts = useCallback(async () => {
     setLoading(true)
@@ -144,7 +158,18 @@ export default function FactsListPage({ toast }) {
         .select('id, category, question, short_answer, explanation, hint1, hint2, is_vip, is_published, status, pack_id, updated_at, image_url, funny_wrong_1', { count: 'exact' })
 
       if (debouncedSearch) {
-        q = q.or(`question.ilike.%${debouncedSearch}%,explanation.ilike.%${debouncedSearch}%,short_answer.ilike.%${debouncedSearch}%`)
+        // Recherche étendue sur tous les champs texte d'un fact
+        const s = debouncedSearch.replace(/,/g, ' ') // virgule réservée en syntaxe .or
+        const fields = [
+          'question', 'short_answer', 'explanation',
+          'hint1', 'hint2', 'hint3', 'hint4',
+          'funny_wrong_1', 'funny_wrong_2', 'funny_wrong_3',
+          'close_wrong_1', 'close_wrong_2',
+          'plausible_wrong_1', 'plausible_wrong_2', 'plausible_wrong_3',
+          'statement_true', 'statement_false_funny', 'statement_false_plausible',
+          'source_url', 'category',
+        ]
+        q = q.or(fields.map(f => `${f}.ilike.%${s}%`).join(','))
       }
       if (filterCategories.length) q = q.in('category', filterCategories)
       if (filterVip === 'vip') q = q.eq('is_vip', true)
@@ -285,8 +310,10 @@ export default function FactsListPage({ toast }) {
       if (uploadError) throw uploadError
 
       const { data: { publicUrl } } = supabase.storage.from('fact-images').getPublicUrl(path)
-      setNewFactField('image_url', publicUrl)
-      toast?.('✓ Image uploadée')
+      // URL optimisée WebP via Supabase Image Transformations
+      const optimizedUrl = optimizeSupabaseImageUrl(publicUrl)
+      setNewFactField('image_url', optimizedUrl)
+      toast?.('✓ Image uploadée et optimisée')
     } catch (err) {
       console.error(err)
       const msg = err.message || ''
@@ -341,6 +368,29 @@ export default function FactsListPage({ toast }) {
 
       const { error } = await supabase.from('facts').insert(payload)
       if (error) throw error
+
+      // Renommage post-création : si une image temporaire "facts/new-xxx" a été uploadée,
+      // on la renomme vers "facts/{newId}.{ext}" et on met à jour l'URL optimisée.
+      if (newFact.image_url) {
+        const tempMatch = newFact.image_url.match(/\/fact-images\/(facts\/new-[^?]+)/)
+        if (tempMatch) {
+          const oldPath = tempMatch[1]
+          const ext = oldPath.split('.').pop()
+          const newPath = `facts/${newId}.${ext}`
+          const { error: moveError } = await supabase.storage
+            .from('fact-images')
+            .move(oldPath, newPath)
+          if (moveError) {
+            console.warn('Renommage image échoué, URL temporaire conservée :', moveError.message)
+          } else {
+            const { data: { publicUrl } } = supabase.storage.from('fact-images').getPublicUrl(newPath)
+            const optimizedUrl = optimizeSupabaseImageUrl(publicUrl)
+            await supabase.from('facts')
+              .update({ image_url: optimizedUrl, updated_at: new Date().toISOString() })
+              .eq('id', newId)
+          }
+        }
+      }
 
       toast?.(`✓ Fact #${newId} créé (non publié)`)
       setShowAddModal(false)
@@ -417,7 +467,7 @@ export default function FactsListPage({ toast }) {
       })
       await supabase.from('facts').update({
         hint1: data.hint1, hint2: data.hint2, hint3: data.hint3, hint4: data.hint4,
-        funny_wrong_1: data.funny_wrong_1, funny_wrong_2: data.funny_wrong_2,
+        funny_wrong_1: data.funny_wrong_1, funny_wrong_2: data.funny_wrong_2, funny_wrong_3: data.funny_wrong_3,
         close_wrong_1: data.close_wrong_1, close_wrong_2: data.close_wrong_2,
         plausible_wrong_1: data.plausible_wrong_1, plausible_wrong_2: data.plausible_wrong_2,
         plausible_wrong_3: data.plausible_wrong_3, updated_at: new Date().toISOString(),
@@ -438,7 +488,7 @@ export default function FactsListPage({ toast }) {
       const { data: incomplete, error } = await supabase
         .from('facts')
         .select('id, question, short_answer, explanation, category, hint1, hint2')
-        .is('funny_wrong_1', null)
+        .or('funny_wrong_1.is.null,funny_wrong_3.is.null')
         .eq('is_published', true)
         .order('id')
       if (error) throw error
@@ -1189,11 +1239,19 @@ export default function FactsListPage({ toast }) {
                         </button>
                       )}
                       <Link
-                        to={`/facts/${fact.id}`}
+                        to={buildFactUrl(fact.id)}
                         className="px-3 py-1 rounded-lg text-xs font-bold text-white transition-all hover:opacity-80"
                         style={{ background: '#FF6B1A' }}
                       >
                         Éditer
+                      </Link>
+                      <Link
+                        to={buildFactUrl(fact.id, '/facts-mobile')}
+                        className="px-2 py-1 rounded-lg text-xs font-bold text-white transition-all hover:opacity-80"
+                        style={{ background: '#64748B' }}
+                        title="Éditeur mobile"
+                      >
+                        📱
                       </Link>
                     </div>
                   </td>
@@ -1252,14 +1310,24 @@ export default function FactsListPage({ toast }) {
                 </span>
                 <span className="text-slate-500 ml-auto">{fmtDate(fact.updated_at)}</span>
               </div>
-              {/* Edit button */}
-              <Link
-                to={`/facts/${fact.id}`}
-                className="w-full text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
-                style={{ background: '#FF6B1A' }}
-              >
-                Editer
-              </Link>
+              {/* Edit buttons : desktop + mobile */}
+              <div className="flex gap-2">
+                <Link
+                  to={buildFactUrl(fact.id)}
+                  className="flex-1 text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
+                  style={{ background: '#FF6B1A' }}
+                >
+                  Editer
+                </Link>
+                <Link
+                  to={buildFactUrl(fact.id, '/facts-mobile')}
+                  className="px-4 text-center py-2.5 rounded-lg text-sm font-bold text-white transition-all hover:opacity-80 min-h-[44px] flex items-center justify-center"
+                  style={{ background: '#64748B' }}
+                  title="Éditeur mobile"
+                >
+                  📱
+                </Link>
+              </div>
             </div>
           ))
         )}

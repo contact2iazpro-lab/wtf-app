@@ -30,8 +30,6 @@ export default function QuestionScreen({
   playerHints = 0,
   sessionType = 'parcours',
 }) {
-  const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
-
   // Solo et explorer → QCM direct, duel → sélection du mode
   const [answerMode, setAnswerMode] = useState(
     (gameMode === 'solo' || gameMode === 'quickie') ? 'qcm' : null
@@ -40,7 +38,19 @@ export default function QuestionScreen({
   const [showQuitConfirm, setShowQuitConfirm] = useState(false)
   const [coinFlash, setCoinFlash] = useState(null)
   const [imgFailed, setImgFailed] = useState(false)
+  const [showVipSurprise, setShowVipSurprise] = useState(false)
   useEffect(() => { setImgFailed(false) }, [fact.id])
+
+  // Bonus VIP surprise en Quickie (19/04/2026) — overlay + jingle jackpot
+  const isVipSurprise = !!fact._isVipSurprise
+  useEffect(() => {
+    if (!isVipSurprise) return
+    setShowVipSurprise(true)
+    audio.play('roulette_jackpot')
+    audio.vibrate?.([40, 30, 80])
+    const t = setTimeout(() => setShowVipSurprise(false), 2200)
+    return () => clearTimeout(t)
+  }, [fact.id, isVipSurprise])
   // Phase A.6 — miroir Supabase pour achat indice en session
   const { coins: _cCoins, hints: _cHints, applyCurrencyDelta } = usePlayerProfile()
   const prevCoinsRef = useRef(_cCoins)
@@ -75,14 +85,21 @@ export default function QuestionScreen({
   // Progress display — Quickie shows X/10
   const displayTotalFacts = totalFacts
 
-  // Pause ref — synced to quit modal state (no re-render of CircularTimer)
-  const pausedRef = useRef(false)
-  useEffect(() => { pausedRef.current = showQuitConfirm }, [showQuitConfirm])
-
-  // Wrapped timeout — no-op while quit modal is open
+  // Le timer continue même quand la modal quitter est ouverte (décision 17/04/2026)
   const handleTimeout = useCallback(() => {
-    if (!pausedRef.current) onTimeout?.()
+    onTimeout?.()
   }, [onTimeout])
+
+  // Back button physique : ouvre la modal quitter (timer continue)
+  useEffect(() => {
+    const prev = window.__wtfBackHandler
+    window.__wtfBackHandler = () => {
+      if (showQuitConfirm) { setShowQuitConfirm(false); return true }
+      setShowQuitConfirm(true)
+      return true
+    }
+    return () => { window.__wtfBackHandler = prev || null }
+  }, [showQuitConfirm])
 
 
   // ── Style injection: compact screen media query only ───────────────────────
@@ -163,20 +180,27 @@ export default function QuestionScreen({
   )
 
   // ── Question card ──────────────────────────────────────────────────────────
+  // Couleur cadre question/image : gold brillant si VIP surprise, sinon couleur cat/mode
+  const vipGold = '#FFD700'
+  const vipGoldGlow = '0 0 20px rgba(255,215,0,0.65), 0 0 8px rgba(255,215,0,0.9)'
+  const cardBorderColor = isVipSurprise ? vipGold : (isQuickieMode ? '#FFA500' : (cat?.color + '70'))
+  const cardBoxShadow = isVipSurprise ? vipGoldGlow
+    : (isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`)
+
   const questionCard = (
     <div
       style={{
         padding: `${S(12)} ${S(16)}`,
         borderRadius: S(16),
         background: cardBg,
-        border: `${isQuickieMode ? 3 : 1}px solid ${isQuickieMode ? '#7F77DD' : (cat?.color + '70')}`,
+        border: `${isQuickieMode ? 3 : 1}px solid ${cardBorderColor}`,
         backdropFilter: 'blur(12px)',
-        boxShadow: isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`,
+        boxShadow: cardBoxShadow,
         height: S(90), flexShrink: 0, overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
-      <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>{renderFormattedText(fact.question, isQuickieMode ? '#B5AFEB' : undefined)}</p>
+      <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>{renderFormattedText(fact.question, isQuickieMode ? '#FFD4A3' : undefined)}</p>
     </div>
   )
 
@@ -190,7 +214,8 @@ export default function QuestionScreen({
       overflow: 'hidden',
       margin: '0 auto',
       background: 'rgba(0,0,0,0.3)',
-      border: '3px solid #7F77DD',
+      border: `3px solid ${isVipSurprise ? vipGold : '#FFA500'}`,
+      boxShadow: isVipSurprise ? vipGoldGlow : undefined,
       flexShrink: 0,
     }}>
       {fact.imageUrl && !imgFailed ? (
@@ -213,12 +238,24 @@ export default function QuestionScreen({
         position: 'absolute', inset: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{
-          fontSize: S(48), fontWeight: 900, color: '#B5AFEB',
-          textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
-          animation: 'quickie-pulse-btn 2s ease-in-out infinite',
-          lineHeight: 1,
-        }}>?</span>
+        {isVipSurprise ? (
+          <img
+            src="/assets/ui/wtf-star.png"
+            alt=""
+            style={{
+              width: '52%', height: '52%', objectFit: 'contain',
+              filter: 'drop-shadow(0 0 16px rgba(255,215,0,0.8)) drop-shadow(0 0 30px rgba(255,215,0,0.4))',
+              animation: 'quickie-pulse-btn 2s ease-in-out infinite',
+            }}
+          />
+        ) : (
+          <span style={{
+            fontSize: S(48), fontWeight: 900, color: '#FFD4A3',
+            textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
+            animation: 'quickie-pulse-btn 2s ease-in-out infinite',
+            lineHeight: 1,
+          }}>?</span>
+        )}
       </div>
     </div>
   )
@@ -239,25 +276,8 @@ export default function QuestionScreen({
   // Stock restant = hints du context (applyCurrencyDelta a déjà débité à chaque clic)
   const stockRemaining = Math.max(0, _cHints)
 
-  // Dev mode: 4 indices pré-révélés
-  const devHintButtons = isDevMode && (
-    <div className="shrink-0" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-      {[fact.hint1, fact.hint2, fact.hint3, fact.hint4].map((h, i) => (
-        <div key={i} style={{
-          height: 28, width: '100%', borderRadius: 14, background: 'rgba(235,235,235,0.95)',
-          border: `2px solid ${cat?.color || '#FF6B1A'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 6px',
-        }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: '#1a1a2e', textAlign: 'center', lineHeight: 1 }}>
-            {h || '—'}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-
   const hintCost = difficulty?.hintCost || 0
-  const hintButtons = totalHints > 0 && !isDevMode && (
+  const hintButtons = totalHints > 0 && (
     <div
       className="shrink-0"
       style={{ display: 'grid', gridTemplateColumns: totalHints === 1 ? '1fr' : '1fr 1fr', gap: 8 }}
@@ -278,7 +298,7 @@ export default function QuestionScreen({
             key={hintNum}
             num={hintNum}
             hint={hintText}
-            catColor={isQuickieMode ? '#7F77DD' : (cat?.color || '#FF6B1A')}
+            catColor={isQuickieMode ? '#FFA500' : (cat?.color || '#FF6B1A')}
             isFree={isFree}
             cost={cost}
             canAfford={canAfford}
@@ -290,7 +310,7 @@ export default function QuestionScreen({
                 console.warn('[QuestionScreen] buy hint RPC failed:', e?.message || e)
               )
             } : null}
-            revealedTextColor={isQuickieMode ? '#7F77DD' : undefined}
+            revealedTextColor={isQuickieMode ? '#FFA500' : undefined}
           />
         )
       })}
@@ -442,15 +462,80 @@ export default function QuestionScreen({
       {quitModal}
       {header}
 
+      {/* Overlay Bonus VIP Surprise (Quickie, 19/04/2026) — 2.2s puis fade */}
+      {showVipSurprise && (
+        <div
+          style={{
+            position: 'absolute', inset: 0, zIndex: 60,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'radial-gradient(circle at center, rgba(255,215,0,0.25) 0%, rgba(0,0,0,0.7) 70%)',
+            backdropFilter: 'blur(3px)',
+            pointerEvents: 'none',
+            animation: 'vipSurpriseFade 2.2s ease-out forwards',
+          }}
+        >
+          <div style={{
+            textAlign: 'center',
+            animation: 'vipSurprisePop 2.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+          }}>
+            <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(56), height: S(56), objectFit: 'contain', marginBottom: S(6), filter: 'drop-shadow(0 0 16px rgba(255,215,0,0.8))' }} />
+            <div style={{
+              fontSize: S(28), fontWeight: 900, letterSpacing: '0.06em',
+              color: '#FFD700',
+              textShadow: '0 0 24px rgba(255,215,0,0.8), 0 2px 8px rgba(0,0,0,0.5)',
+              textTransform: 'uppercase',
+            }}>
+              Bonus f*ct WTF!
+            </div>
+            <div style={{
+              fontSize: S(13), fontWeight: 800, marginTop: S(6),
+              color: '#FFE8A0', letterSpacing: '0.06em',
+              textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+            }}>
+              Un f*ct rare vient d'apparaître !
+            </div>
+          </div>
+        </div>
+      )}
+      <style>{`
+        @keyframes vipSurpriseFade {
+          0%   { opacity: 0 }
+          15%  { opacity: 1 }
+          85%  { opacity: 1 }
+          100% { opacity: 0 }
+        }
+        @keyframes vipSurprisePop {
+          0%   { transform: scale(0.3) rotate(-10deg) }
+          25%  { transform: scale(1.15) rotate(3deg) }
+          45%  { transform: scale(0.95) rotate(-1deg) }
+          60%  { transform: scale(1) rotate(0deg) }
+          100% { transform: scale(1) rotate(0deg) }
+        }
+        @keyframes vipBadgePulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.6) }
+          50%      { box-shadow: 0 0 18px 6px rgba(255,215,0,0.25) }
+        }
+      `}</style>
+
       {/* Bloc mode label + info + progress — hauteur fixe identique aux 3 modes */}
       <div style={{ height: S(56), flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: `${S(2)} ${S(16)} ${S(4)}` }}>
-        {/* Mode label */}
-        {modeLabel && (
+        {/* Mode label (variante texte gold si VIP surprise, même dimensions) */}
+        {isVipSurprise ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6), animation: 'vipBadgePulse 1.6s ease-in-out infinite', borderRadius: S(999) }}>
+            <img src="/assets/ui/wtf-star.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />
+            <span style={{
+              fontSize: S(11), fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase',
+              color: '#FFD700', textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+            }}>
+              Bonus f*ct WTF!
+            </span>
+          </div>
+        ) : modeLabel && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6) }}>
             {isQuickieMode && <img src="/assets/modes/icon-quickie.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />}
             <span style={{
               fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: isQuickieMode ? '#B5AFEB' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              color: isQuickieMode ? '#FFD4A3' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
             }}>
               {modeLabel}
             </span>
@@ -459,7 +544,7 @@ export default function QuestionScreen({
         {/* Compteur */}
         {isQuickieMode && (
           <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: S(12), fontWeight: 900, color: '#B5AFEB' }}>
+            <span style={{ fontSize: S(12), fontWeight: 900, color: '#FFD4A3' }}>
               {factIndex + 1}/{displayTotalFacts}
             </span>
           </div>
@@ -475,7 +560,7 @@ export default function QuestionScreen({
                   flex: 1,
                   height: isActive ? S(12) : S(8),
                   borderRadius: S(4),
-                  background: isActive ? (isQuickieMode ? '#7F77DD' : 'white') : 'rgba(255,255,255,0.2)',
+                  background: isActive ? (isQuickieMode ? '#FFA500' : 'white') : 'rgba(255,255,255,0.2)',
                   transition: 'all 0.3s ease',
                 }}
               />
@@ -494,107 +579,56 @@ export default function QuestionScreen({
         {questionCard}
 
         {/* Indices — enfant central */}
-        <div>{isDevMode ? devHintButtons : (difficulty?.hintsAllowed && hintButtons)}</div>
+        <div>{difficulty?.hintsAllowed && hintButtons}</div>
 
         {/* Boutons QCM — enfant bas */}
         {(() => {
-          const devAllOptions = isDevMode ? [
-            { text: fact.shortAnswer || fact.options?.[fact.correctIndex] || '?', type: 'VRAIE', color: '#22C55E' },
-            { text: fact.funnyWrong1, type: 'DRÔLE', color: '#EAB308' },
-            { text: fact.funnyWrong2, type: 'DRÔLE', color: '#EAB308' },
-            { text: fact.closeWrong1, type: 'PROCHE', color: '#F97316' },
-            { text: fact.closeWrong2, type: 'PROCHE', color: '#F97316' },
-            { text: fact.plausibleWrong1, type: 'PLAUSIBLE', color: '#EF4444' },
-            { text: fact.plausibleWrong2, type: 'PLAUSIBLE', color: '#EF4444' },
-            { text: fact.plausibleWrong3, type: 'PLAUSIBLE', color: '#EF4444' },
-          ].filter(o => o.text) : null
-
-          if (isDevMode && devAllOptions) {
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(4), flexShrink: 0, position: 'relative', zIndex: 5 }}>
-                {devAllOptions.map((opt, i) => (
-                  <button key={i} onClick={() => { audio.play(i === 0 ? 'correct' : 'wrong'); onSelectAnswer(i === 0 ? fact.correctIndex : -1) }}
-                    className="btn-press active:scale-95"
-                    style={{
-                      background: 'rgba(255,255,255,0.15)', border: `3px solid ${opt.color}`,
-                      borderRadius: S(10), color: 'white', fontWeight: 700, fontSize: S(10), lineHeight: 1.15,
-                      padding: `${S(2)} ${S(4)}`, height: S(44), width: '100%', overflow: 'hidden',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      textAlign: 'center', cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-                    }}
-                  >
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                      {renderFormattedText(opt.text)}
-                    </span>
-                    <span style={{ fontSize: 7, fontWeight: 900, opacity: 0.6, marginTop: 1, letterSpacing: '0.05em', flexShrink: 0 }}>{opt.type}</span>
-                  </button>
-                ))}
-              </div>
-            )
-          }
-
           const is6 = fact.options.length > 4
           const btnH = is6 ? 50 : 64
           const btnFont = is6 ? 11 : 13
           return (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5), flexShrink: 0, position: 'relative', zIndex: 5 }}>
-              {fact.options.map((option, index) => {
-                let devType = null
-                let devBorder = '1.5px solid rgba(255,255,255,0.4)'
-                if (isDevMode) {
-                  try {
-                    const funnyWrongs = [fact?.funnyWrong1, fact?.funnyWrong2].filter(Boolean)
-                    const closeWrongs = [fact?.closeWrong1, fact?.closeWrong2].filter(Boolean)
-                    const plausibleWrongs = [fact?.plausibleWrong1, fact?.plausibleWrong2, fact?.plausibleWrong3].filter(Boolean)
-                    if (index === fact.correctIndex) { devType = 'VRAIE'; devBorder = '3px solid #22C55E' }
-                    else if (funnyWrongs.includes(option)) { devType = 'DRÔLE'; devBorder = '3px solid #EAB308' }
-                    else if (closeWrongs.includes(option)) { devType = 'PROCHE'; devBorder = '3px solid #F97316' }
-                    else if (plausibleWrongs.includes(option)) { devType = 'PLAUSIBLE'; devBorder = '3px solid #EF4444' }
-                    else { devType = 'AUTRE'; devBorder = '2px solid rgba(255,255,255,0.3)' }
-                  } catch { /* ignore */ }
-                }
-                return (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      const correct = index === fact.correctIndex
-                      audio.play(correct ? 'correct' : 'wrong')
-                      audio.vibrate(correct ? [40, 20, 40] : [120])
-                      onSelectAnswer(index)
-                    }}
-                    className="btn-press active:scale-95"
-                    style={{
-                      background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
-                      border: isQuickieMode ? '3px solid #7F77DD' : devBorder,
-                      borderRadius: S(12),
-                      color: isQuickieMode ? (cat?.color || '#4A3FA3') : 'white',
-                      fontWeight: isQuickieMode ? 800 : 700,
-                      fontSize: S(btnFont),
-                      lineHeight: 1.2,
-                      padding: `${S(4)} ${S(6)}`,
-                      height: S(btnH),
-                      width: '100%',
-                      overflow: 'hidden',
-                      wordBreak: 'break-word',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      WebkitTapHighlightColor: 'transparent',
-                      transition: 'transform 0.1s, background 0.15s',
-                    }}
-                  >
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: is6 ? 2 : 3, WebkitBoxOrient: 'vertical' }}>
-                      {renderFormattedText(option)}
-                    </span>
-                    {isDevMode && devType && (
-                      <span style={{ fontSize: 8, fontWeight: 900, opacity: 0.6, marginTop: 1, letterSpacing: '0.05em', flexShrink: 0 }}>{devType}</span>
-                    )}
-                  </button>
-                )
-              })}
+              {fact.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    const correct = index === fact.correctIndex
+                    audio.play(correct ? 'correct' : 'wrong')
+                    audio.vibrate(correct ? [40, 20, 40] : [120])
+                    onSelectAnswer(index)
+                  }}
+                  className="btn-press active:scale-95"
+                  style={{
+                    background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
+                    border: isQuickieMode
+                      ? `3px solid ${isVipSurprise ? vipGold : '#FFA500'}`
+                      : '1.5px solid rgba(255,255,255,0.4)',
+                    boxShadow: isVipSurprise && isQuickieMode ? vipGoldGlow : undefined,
+                    borderRadius: S(12),
+                    color: isQuickieMode ? (cat?.color || '#4A3FA3') : 'white',
+                    fontWeight: isQuickieMode ? 800 : 700,
+                    fontSize: S(btnFont),
+                    lineHeight: 1.2,
+                    padding: `${S(4)} ${S(6)}`,
+                    height: S(btnH),
+                    width: '100%',
+                    overflow: 'hidden',
+                    wordBreak: 'break-word',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    transition: 'transform 0.1s, background 0.15s',
+                  }}
+                >
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: is6 ? 2 : 3, WebkitBoxOrient: 'vertical' }}>
+                    {renderFormattedText(option)}
+                  </span>
+                </button>
+              ))}
             </div>
           )
         })()}

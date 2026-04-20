@@ -1,136 +1,24 @@
 import { useState } from 'react'
 import { audio } from '../utils/audio'
 import { MODE_CONFIGS } from '../constants/gameConfig'
-import EnergyIcon from './icons/EnergyIcon'
-import MultipleChoiceIcon from './icons/MultipleChoiceIcon'
-import QuestionTargetIcon from './icons/QuestionTargetIcon'
-import TimerIcon from './icons/TimerIcon'
-import PerfectIcon from './icons/PerfectIcon'
-import InfinityIcon from './icons/InfinityIcon'
-import SwipeArrowsIcon from './icons/SwipeArrowsIcon'
-import ShareIcon from './icons/ShareIcon'
-
-import { CURRENCY_EMOJI_MAP } from '../utils/renderEmoji'
-
-const EMOJI_IMG = {
-  '🎰': '/assets/ui/emoji-roulette.png?v=2',
-  '🗺️': '/assets/ui/emoji-route.png',
-  '🧩': '/assets/ui/emoji-puzzle.png',
-  ...CURRENCY_EMOJI_MAP,
-}
-
-const QUICKIE_VIOLET = '#7F77DD'
-const QUICKIE_GOLD = '#FFD700'
-const VOF_GREEN = '#6BCB77'
-const VOF_RED = '#E84535'
-
-function NoHintIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <text x="50" y="58" textAnchor="middle" fill={color} fontSize="40" fontWeight="900" fontFamily="Nunito, sans-serif">💡</text>
-      <line x1="22" y1="78" x2="78" y2="22" stroke={color} strokeWidth="6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function FreeIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <text x="50" y="66" textAnchor="middle" fill={color} fontSize="44" fontWeight="900" fontFamily="Nunito, sans-serif">∞</text>
-    </svg>
-  )
-}
-
-function TrophyIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M30 25h40v30c0 12-8 20-20 20s-20-8-20-20V25z" stroke={color} strokeWidth="6" fill="none" strokeLinejoin="round" />
-      <path d="M30 35H18c0 14 6 20 12 22" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M70 35h12c0 14-6 20-12 22" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <line x1="50" y1="75" x2="50" y2="85" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <line x1="36" y1="85" x2="64" y2="85" stroke={color} strokeWidth="5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function PenaltyIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <text x="50" y="64" textAnchor="middle" fill={color} fontSize="38" fontWeight="900" fontFamily="Nunito, sans-serif">+5s</text>
-    </svg>
-  )
-}
-
-function TargetIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="38" stroke={color} strokeWidth="6" fill="none" />
-      <circle cx="50" cy="50" r="24" stroke={color} strokeWidth="5" fill="none" />
-      <circle cx="50" cy="50" r="10" fill={color} />
-    </svg>
-  )
-}
-
-function SurvivalIcon({ size = 64, color = '#ffffff' }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M50 15L15 85h70L50 15z" stroke={color} strokeWidth="6" fill="none" strokeLinejoin="round" />
-      <line x1="50" y1="40" x2="50" y2="60" stroke={color} strokeWidth="6" strokeLinecap="round" />
-      <circle cx="50" cy="72" r="4" fill={color} />
-    </svg>
-  )
-}
-
-const COMPONENT_ICONS = {
-  'icon:qcm': (size, color, modeId) => {
-    if (modeId === 'race') return <MultipleChoiceIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
-    return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
-  },
-  'icon:set': (size, color, modeId) => {
-    if (modeId === 'vrai_ou_fou') return <QuestionTargetIcon size={size} color={'#ffffff'} accent={VOF_GREEN} questionColor={VOF_RED} />
-    return <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />
-  },
-  'icon:timer': (size, color, modeId) => {
-    if (modeId === 'vrai_ou_fou') return <TimerIcon size={size} color={VOF_GREEN} accent={VOF_RED} />
-    if (modeId === 'race') return <TimerIcon size={size} color={'#0F52BA'} accent={QUICKIE_GOLD} />
-    return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
-  },
-  'icon:perfect': (size, color) => <PerfectIcon size={size} accent={color || undefined} />,
-  'icon:star': (size) => <img src="/assets/ui/wtf-star.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
-  'icon:energy': (size, color) => <EnergyIcon size={size} color={color || '#22C55E'} />,
-  'picto:infinity': (size, color) => <InfinityIcon size={size} color={color || '#6BCB77'} />,
-  'picto:swipe': (size, color) => <SwipeArrowsIcon size={size} />,
-  'picto:share': (size, color) => <ShareIcon size={size} />,
-  'picto:no-hint': (size, color) => <NoHintIcon size={size} color={color || '#ffffff'} />,
-  'picto:free': (size, color) => <FreeIcon size={size} color={color || '#ffffff'} />,
-  'picto:trophy': (size, color) => <TrophyIcon size={size} color={color || '#ffffff'} />,
-  'picto:penalty': (size, color) => <PenaltyIcon size={size} color={color || '#ffffff'} />,
-  'picto:target': (size, color) => <TargetIcon size={size} color={color || '#ffffff'} />,
-  'picto:survival': (size, color) => <SurvivalIcon size={size} color={color || '#ffffff'} />,
-}
-
-function renderIcon(value, size, color, modeId) {
-  const compFn = COMPONENT_ICONS[value]
-  if (compFn) return compFn(size || 18, color, modeId)
-  if (value === '🔋') return <EnergyIcon size={size || 16} color={color} />
-  const src = EMOJI_IMG[value]
-  if (!src) return value
-  return <img src={src} alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
-}
+// Icons + renderIcon partagés avec ModeLaunchScreen (source unique de vérité)
+import { renderIcon, QUICKIE_VIOLET, QUICKIE_GOLD } from '../utils/modeRuleIcons'
 
 // ── Couleurs par chapitre ────────────────────────────────────────────────────
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6',
-  quickie: '#7F77DD', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
-  race: '#00E5FF', blitz: '#FF1744', flash: '#FFD700',
+  quickie: '#FFA500', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
+  race: '#00E5FF', blitz: '#FF1744', flash: '#FFD700', multi: '#6B2D8E',
   energy: '#10B981', hints: '#6366F1', coins: '#F59E0B',
   streak: '#F97316', roulette: '#A855F7', shop: '#06B6D4',
   collection: '#14B8A6', trophies: '#EAB308', profile: '#64748B',
   tips: '#22C55E',
 }
+
+const MULTI_VIOLET = '#6B2D8E'
+const MULTI_GOLD = '#FFD700'
+const QUEST_ORANGE = '#FF6B1A'
+const QUEST_DARK = '#D94A10'
 
 // ── Mode icon mapping — utilise les icon-* pour les modes ────────────────────
 const MODE_ICON_MAP = {
@@ -140,10 +28,11 @@ const MODE_ICON_MAP = {
   blitz: '/assets/modes/icon-blitz.png',
   race: '/assets/modes/icon-race.png',
   vrai_ou_fou: '/assets/modes/icon-vrai-et-fou.png',
+  multi: '/assets/modes/icon-multi.png',
 }
 
 // Modes qui utilisent un style "white card" dans le livret (identique à ModeLaunchScreen)
-const STYLED_MODE_IDS = ['quickie', 'vrai_ou_fou', 'race', 'blitz']
+const STYLED_MODE_IDS = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi', 'quest']
 
 // ── Chapters data ───────────────────────────────────────────────────────────
 const CHAPTERS = [
@@ -176,12 +65,29 @@ const CHAPTERS = [
   },
 
   // ═══ MODES DE JEU — contenu dynamique depuis MODE_CONFIGS ═══
+  // Ordre officiel (19/04/2026) : Quest · Quickie · VoF · Race · Blitz · Multi · Flash
+  { id: 'quest', shortTitle: 'Quest', dynamic: true },
   { id: 'quickie', shortTitle: 'Quickie', dynamic: true },
   { id: 'vrai_ou_fou', shortTitle: 'Vrai ET Fou', dynamic: true },
-  { id: 'quest', shortTitle: 'Quest', dynamic: true },
   { id: 'race', shortTitle: 'Race', dynamic: true },
   { id: 'blitz', shortTitle: 'Blitz', dynamic: true },
+  { id: 'multi', shortTitle: 'Multi', dynamic: true },
   { id: 'flash', shortTitle: 'Flash', dynamic: true },
+
+  // ═══ ROULETTE (juste après les modes) ═══
+  {
+    id: 'roulette',
+    emoji: '🎰',
+    shortTitle: 'Roulette',
+    title: 'Roulette Quotidienne',
+    content: [
+      { icon: '🆓', text: '**1 tour gratuit** par jour — reviens chaque jour !' },
+      { icon: '🪙', text: 'Tours supplémentaires : **100 Coins**.' },
+      { icon: '🎯', text: 'La roue contient : **20 · 50 · 100 · 150 · 300 · 750 Coins** ou **1-2 indices**.' },
+      { icon: '💎', text: 'Jackpot **750 Coins** : ultra-rare — tente ta chance !' },
+      { icon: '📊', text: 'Combine la roulette avec ta série pour **maximiser tes gains quotidiens**.' },
+    ],
+  },
 
   // ═══ ÉNERGIE ═══
   {
@@ -206,7 +112,7 @@ const CHAPTERS = [
     content: [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
-      { icon: '🗺️', text: '**Quest** : 2/question · **Quickie** : 1 max · **Flash dimanche** : 2 max' },
+      { icon: '🗺️', text: '**Quest** : 2 / question · **Quickie** : 1 max · **Flash dimanche** : 2 max' },
       { icon: '🚫', text: '**Vrai ET Fou, Race, Blitz, Flash lun-sam** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : **50 Coins** par indice.' },
@@ -245,21 +151,6 @@ const CHAPTERS = [
       { icon: '🥇', text: '**Fidèle (J14)** : 500 Coins' },
       { icon: '👑', text: '**Légende (J30)** : 1 000 Coins + cadre exclusif' },
       { icon: '🛡️', text: 'Achète un **Streak Freeze** (150 Coins) pour protéger ta série.' },
-    ],
-  },
-
-  // ═══ ROULETTE ═══
-  {
-    id: 'roulette',
-    emoji: '🎰',
-    shortTitle: 'Roulette',
-    title: 'Roulette Quotidienne',
-    content: [
-      { icon: '🆓', text: '**1 tour gratuit** par jour — reviens chaque jour !' },
-      { icon: '🪙', text: 'Tours supplémentaires : **100 Coins**.' },
-      { icon: '🎯', text: 'La roue contient : **20 · 50 · 100 · 150 · 300 · 750 Coins** ou **1-2 indices**.' },
-      { icon: '💎', text: 'Jackpot **750 Coins** : ultra-rare — tente ta chance !' },
-      { icon: '📊', text: 'Combine la roulette avec ta série pour **maximiser tes gains quotidiens**.' },
     ],
   },
 
@@ -346,11 +237,13 @@ const CHAPTERS = [
 
 // Bold + {{red}} markdown renderer
 function renderText(text) {
-  const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*)/g)
+  const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*|\n)/g)
   return parts.map((p, i) => {
+    if (p === '\n') return <br key={i} />
     const redMatch = p.match(/^\{\{red\}\}(.*?)\{\{\/red\}\}$/)
     if (redMatch) return <span key={i} style={{ color: '#E84535' }}>{redMatch[1]}</span>
-    if (i % 2 === 1 && p.startsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>
+    const boldMatch = p.match(/^\*\*(.*?)\*\*$/)
+    if (boldMatch) return <strong key={i}>{boldMatch[1]}</strong>
     return p
   })
 }
@@ -376,8 +269,17 @@ function resolveChapter(ch) {
 }
 
 // ── Main component ──────────────────────────────────────────────────────────
+// Modes qui ont une page de règles déclenchée par skip_launch_${mode}
+const MODES_WITH_LAUNCH_RULES = ['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'multi']
+
 export default function HowToPlayModal({ onClose, onRestartTutorial }) {
-  const [showRulesOnLaunch, setShowRulesOnLaunch] = useState(false)
+  // État initial : coché si AUCUN mode n'a de skip_launch_* = 'true' (les règles
+  // s'affichent par défaut). Décoché dès qu'un mode est flaggé skip.
+  const [showRulesOnLaunch, setShowRulesOnLaunch] = useState(() => {
+    try {
+      return !MODES_WITH_LAUNCH_RULES.some(m => localStorage.getItem(`skip_launch_${m}`) === 'true')
+    } catch { return true }
+  })
 
   const visibleChapters = CHAPTERS
   const [activeId, setActiveId] = useState(visibleChapters[0]?.id || 'goal')
@@ -386,15 +288,14 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center p-5"
+      className="fixed inset-0 flex items-center justify-center"
       style={{ zIndex: 300, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full flex flex-col rounded-3xl overflow-hidden"
+        className="w-full h-full flex flex-col overflow-hidden"
         style={{
           maxWidth: 520,
-          height: 'min(92vh, 700px)',
           background: '#FAFAF8',
           boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
         }}
@@ -481,16 +382,18 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
           )
         })()}
 
-        {/* ── Content area - scrollable full width ───────────────────────────── */}
+        {/* ── Content area - fullscreen sans scroll ───────────────────────────── */}
         <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-        <div className="overflow-y-auto p-4" style={{
+        <div className="p-3" style={{
           position: 'absolute', inset: 0,
           display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
         }}>
 
             {/* Rules items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: STYLED_MODE_IDS.includes(chapter.id) ? 5 : 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: STYLED_MODE_IDS.includes(chapter.id) ? 4 : 6, flexShrink: 0 }}>
               {(chapter.content || []).map((item, i) => {
+                if (item.spacer) return <div key={`sp-${i}`} style={{ height: 10 }} aria-hidden />
                 const isStyledMode = STYLED_MODE_IDS.includes(chapter.id)
                 let iconColor = undefined
                 if (chapter.id === 'quickie') {
@@ -501,9 +404,13 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   iconColor = i % 2 === 0 ? '#00E5FF' : '#0097A7'
                 } else if (chapter.id === 'blitz') {
                   iconColor = i % 2 === 0 ? '#FF4444' : '#CC0000'
+                } else if (chapter.id === 'multi') {
+                  iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
+                } else if (chapter.id === 'quest') {
+                  iconColor = i % 2 === 0 ? QUEST_ORANGE : QUEST_DARK
                 }
-                const BORDER_OVERRIDES = { quickie: '#9400D3', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444' }
-                const TEXT_OVERRIDES = { quickie: QUICKIE_VIOLET, vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444' }
+                const BORDER_OVERRIDES = { quickie: '#FF7518', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444', multi: MULTI_VIOLET, quest: QUEST_DARK }
+                const TEXT_OVERRIDES = { quickie: QUICKIE_VIOLET, vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444', multi: MULTI_VIOLET, quest: QUEST_ORANGE }
                 const modeColor = CHAPTER_COLORS[chapter.id] || '#FF6B1A'
                 const borderCol = isStyledMode ? (BORDER_OVERRIDES[chapter.id] || modeColor) : '#E5E7EB'
                 const textCol = isStyledMode ? (TEXT_OVERRIDES[chapter.id] || '#1a1a2e') : '#374151'
@@ -537,43 +444,45 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                   🔄 Relancer le tutoriel
                 </button>
               )}
-
-              {/* Checkbox réafficher les règles des modes */}
-              {['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
-                <label style={{
-                  display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
-                  cursor: 'pointer', marginTop: 12, padding: '8px', background: 'rgba(255,107,26,0.08)',
-                  borderRadius: '8px', border: '1px solid rgba(255,107,26,0.2)', flexShrink: 0
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={showRulesOnLaunch}
-                    onChange={(e) => {
-                      audio.play('click')
-                      setShowRulesOnLaunch(e.target.checked)
-                      if (e.target.checked) {
-                        const keysToRemove = []
-                        for (let i = 0; i < localStorage.length; i++) {
-                          const k = localStorage.key(i)
-                          if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
-                        }
-                        keysToRemove.forEach(k => localStorage.removeItem(k))
-                      }
-                    }}
-                    style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
-                  />
-                  <span>Réafficher les règles au lancement</span>
-                </label>
-              )}
             </div>
           </div>
-          {/* Fade gradient bas */}
-          <div style={{
-            position: 'absolute', left: 0, right: 0, bottom: 0, height: 24,
-            background: 'linear-gradient(to bottom, rgba(250,250,248,0), rgba(250,250,248,1))',
-            pointerEvents: 'none',
-          }} />
         </div>
+
+        {/* ── Checkbox réafficher règles — extraite pour ne jamais être coupée ── */}
+        {['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
+            cursor: 'pointer', margin: '6px 12px 0', padding: '6px 8px',
+            background: 'rgba(255,107,26,0.08)',
+            borderRadius: '8px', border: '1px solid rgba(255,107,26,0.2)', flexShrink: 0,
+          }}>
+            <input
+              type="checkbox"
+              checked={showRulesOnLaunch}
+              onChange={(e) => {
+                audio.play('click')
+                setShowRulesOnLaunch(e.target.checked)
+                if (e.target.checked) {
+                  // Coché → les règles doivent s'afficher → on efface tous les skip flags
+                  const keysToRemove = []
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i)
+                    if (k && k.startsWith('skip_launch_')) keysToRemove.push(k)
+                  }
+                  keysToRemove.forEach(k => localStorage.removeItem(k))
+                } else {
+                  // Décoché → les règles NE doivent PAS s'afficher → on pose le flag
+                  // skip_launch_${mode} = 'true' pour chaque mode ayant une page de règles.
+                  MODES_WITH_LAUNCH_RULES.forEach(m => {
+                    localStorage.setItem(`skip_launch_${m}`, 'true')
+                  })
+                }
+              }}
+              style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }}
+            />
+            <span>Afficher les règles au lancement</span>
+          </label>
+        )}
 
         {/* ── Footer ─────────────────────────────────────────────────────── */}
         <div

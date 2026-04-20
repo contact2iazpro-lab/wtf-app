@@ -217,7 +217,7 @@ export function computeDuelState(duel, lastRound, meId) {
  */
 export async function createDuelChallenge({
   opponentId, categoryId, categoryLabel, questionCount,
-  player1Time, player1Name,
+  player1Time, player1Correct, player1Name, variant = 'rush',
 }) {
   const { data, error } = await supabase.rpc('create_duel_challenge', {
     p_opponent_id: opponentId || null,
@@ -225,7 +225,9 @@ export async function createDuelChallenge({
     p_category_label: categoryLabel,
     p_question_count: questionCount,
     p_player1_time: player1Time,
+    p_player1_correct: player1Correct,
     p_player1_name: player1Name,
+    p_variant: variant,
   })
   if (error) {
     console.error('[duelService] create_duel_challenge RPC error:', error.message)
@@ -235,26 +237,56 @@ export async function createDuelChallenge({
 }
 
 /**
- * Complète un round (appelé quand player2 joue son Blitz en relevant le défi).
- * Le trigger SQL auto-calcule winner + met à jour duels stats.
+ * Accepte un défi et débite immédiatement les 100 coins du player2.
+ * Appelé AVANT de lancer la partie (ChallengeScreen → start Blitz).
+ * Idempotent : si déjà accepté (reload), retourne { already_accepted: true }.
  */
-export async function completeDuelRound({ roundId, playerTime, playerId, playerName }) {
-  const { data, error } = await supabase
-    .from('challenges')
-    .update({
-      player2_id: playerId,
-      player2_name: playerName,
-      player2_time: playerTime,
-      status: 'completed',
-    })
-    .eq('id', roundId)
-    .select()
-    .single()
+export async function acceptDuelChallenge(challengeId) {
+  const { data, error } = await supabase.rpc('accept_duel_challenge', {
+    p_challenge_id: challengeId,
+  })
   if (error) {
-    console.error('[duelService] completeDuelRound error:', error.message)
+    console.error('[duelService] accept_duel_challenge RPC error:', error.message)
     throw error
   }
   return data
+}
+
+/**
+ * Complète un round (appelé quand player2 joue son Blitz en relevant le défi).
+ * Le trigger SQL auto-calcule winner + met à jour duels stats.
+ * Note : si accept_duel_challenge a déjà débité 100c, complete_duel_round
+ * skip le débit (détecte via player2_accepted_at).
+ */
+export async function completeDuelRound({ roundId, playerTime, playerCorrect, playerId: _playerId, playerName }) {
+  // Passe par la RPC atomique `complete_duel_round` : debit 100c accepteur +
+  // update challenge + trigger winner + credit 150c winner (ou refund 100c
+  // chacun si égalité parfaite). Tout en 1 transaction.
+  const { data, error } = await supabase.rpc('complete_duel_round', {
+    p_challenge_id: roundId,
+    p_player_time: playerTime,
+    p_player_correct: playerCorrect,
+    p_player_name: playerName,
+  })
+  if (error) {
+    console.error('[duelService] complete_duel_round RPC error:', error.message)
+    throw error
+  }
+  return data
+}
+
+/**
+ * Marque tous les challenges pending dont expires_at < NOW() comme 'expired'
+ * et rembourse les 100c misés au créateur. Idempotent — peut être appelé
+ * sans risque à chaque mount de SocialPage / MultiPage.
+ */
+export async function expirePendingChallenges() {
+  const { data, error } = await supabase.rpc('expire_pending_challenges')
+  if (error) {
+    console.warn('[duelService] expire_pending_challenges failed:', error.message)
+    return 0
+  }
+  return data || 0
 }
 
 /**

@@ -7,7 +7,7 @@
 import { useCallback } from 'react'
 import { DIFFICULTY_LEVELS, SCREENS, QUESTIONS_PER_GAME } from '../constants/gameConfig'
 import {
-  getGeneratedFacts, getGeneratedFactsByCategory,
+  getGeneratedFacts, getGeneratedFactsByCategory, getVipFacts,
   getPlayableCategories,
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
@@ -25,17 +25,13 @@ export function useSelectionHandlers({
 
   const handleSelectDifficulty = useCallback((difficulty) => {
     setSelectedDifficulty(difficulty)
-    const skipUnlockM = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
 
     if (gameMode === 'quickie') {
       // Quickie utilise toujours sa difficulté dédiée (20s / 1 coin / 4 QCM)
       // peu importe celle passée en argument (legacy)
       const quickieDiff = DIFFICULTY_LEVELS.QUICKIE
       setSelectedDifficulty(quickieDiff)
-      let pool = getGeneratedFactsByCategory(selectedCategory).filter(f => skipUnlockM || !unlockedFacts.has(f.id))
-      if (pool.length < 4 && skipUnlockM) {
-        pool = getGeneratedFactsByCategory(selectedCategory)
-      }
+      const pool = getGeneratedFactsByCategory(selectedCategory).filter(f => !unlockedFacts.has(f.id))
       if (pool.length === 0) {
         setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' })
         return
@@ -66,18 +62,39 @@ export function useSelectionHandlers({
 
     if (gameMode === 'quickie') {
       const difficulty = DIFFICULTY_LEVELS.QUICKIE
-      const skipUnlockE = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
-      let pool = getGeneratedFactsByCategory(categoryId).filter(f => skipUnlockE || !unlockedFacts.has(f.id))
-      if (pool.length < 4 && skipUnlockE) pool = getGeneratedFactsByCategory(categoryId)
+      const pool = getGeneratedFactsByCategory(categoryId).filter(f => !unlockedFacts.has(f.id))
       if (pool.length === 0) { setGameAlert({ emoji: '🎉', title: 'Bientôt !', message: 'De nouveaux f*cts arrivent bientôt dans cette catégorie !' }); return }
-      if (pool.length < 4) {
-        const price = pool.length === 1 ? 5 : 10
+      // Mini-parcours : catégorie presque terminée (< 5 f*cts restants)
+      // Économie ×10 (décision 17/04/2026) : 50 coins par fact.
+      //   1 fact  → 50 coins   (max gain 10 → expérience, perte nette)
+      //   2 facts → 100 coins  (max gain 20)
+      //   3 facts → 150 coins  (max gain 30)
+      //   4 facts → 200 coins  (max gain 40)
+      if (pool.length < 5) {
+        const price = pool.length * 50
         const preparedFacts = shuffle(pool).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
         setMiniParcours({ pool: preparedFacts, price, mode: 'quickie', categoryId, difficulty })
         return
       }
+      // Bonus VIP surprise (19/04/2026) — même logique que handleQuickie
+      // Désactivé (20/04/2026) — repasser à 0.03 pour réactiver à 3% / question.
+      const VIP_SURPRISE_RATE = 0
+      const vipPool = getVipFacts().filter(f => !unlockedFacts.has(f.id))
       const shuffled = shuffle(pool)
-      const sessionFacts = shuffled.slice(0, 5).map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
+      const base = shuffled.slice(0, 5)
+      const usedVipIds = new Set()
+      const mixed = base.map(fact => {
+        if (vipPool.length > 0 && Math.random() < VIP_SURPRISE_RATE) {
+          const candidates = vipPool.filter(v => !usedVipIds.has(v.id))
+          if (candidates.length > 0) {
+            const vip = candidates[Math.floor(Math.random() * candidates.length)]
+            usedVipIds.add(vip.id)
+            return { ...vip, _isVipSurprise: true }
+          }
+        }
+        return fact
+      })
+      const sessionFacts = mixed.map(fact => ({ ...fact, ...getAnswerOptions(fact, difficulty) }))
       const remaining = shuffled.slice(5)
       setQuickiePool(remaining)
       setSelectedCategory(categoryId)

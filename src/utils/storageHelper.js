@@ -106,10 +106,9 @@ export function loadStorage() {
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
 
-    // Si on revient de dev/test en mode joueur, restaurer les vrais unlockedFacts
-    const isDev = localStorage.getItem('wtf_dev_mode') === 'true'
-    const isTest = localStorage.getItem('wtf_test_mode') === 'true'
-    if (!isDev && !isTest && saved._savedUnlockedFacts) {
+    // Nettoyage legacy : restaurer les vrais unlockedFacts si sauvegarde
+    // dev/test présente (le mode "unlock-all en dev" a été retiré 19/04)
+    if (saved._savedUnlockedFacts) {
       saved.unlockedFacts = saved._savedUnlockedFacts
       delete saved._savedUnlockedFacts
       saved.lastModified = Date.now()

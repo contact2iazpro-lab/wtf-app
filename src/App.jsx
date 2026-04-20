@@ -107,18 +107,6 @@ export default function App() {
     }
   }
 
-  // DEV: crédits de test — uniquement si le toggle Mode Dev est actif
-  useState(() => {
-    const isDevMode = localStorage.getItem('wtf_dev_mode') === 'true'
-    if (isDevMode && !sessionStorage.getItem('wtf_dev_credits_done')) {
-      const _d = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      _d.wtfCoins = 9999; _d.hints = 100; _d.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(_d))
-      sessionStorage.setItem('wtf_dev_credits_done', 'true')
-    }
-  })
-
-
   // ── Legacy : le vieux flow wtf_pending_challenge_blitz est retiré,
   // ChallengeScreen passe maintenant par DuelContext.startAcceptDefi qui
   // est consommé dans l'useEffect sur pendingDuel ci-dessous.
@@ -129,35 +117,37 @@ export default function App() {
     if (!pendingDuel) return
 
     if (pendingDuel.mode === 'create') {
-      // Défi Blitz coûte 200 coins
-      if ((profileCoins ?? 0) < 200) {
-        setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: 'Il te faut 200 coins pour lancer un défi !' })
+      // Défi Multi : créateur mise 100c (accepteur mise 100c à l'acceptation · gagnant +150c)
+      if ((profileCoins ?? 0) < 100) {
+        setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: 'Il te faut 100 coins pour lancer un défi !' })
         clearPendingDuel()
         return
       }
-      // Revanche dans mêmes conditions → skip le BlitzLobby et lance directement.
-      if (pendingDuel.questionCount && pendingDuel.categoryId && pendingDuel.categoryId !== 'all') {
-        handleBlitzStart(pendingDuel.categoryId, pendingDuel.questionCount)
-        // pendingDuel reste en place pour handleBlitzFinish (opponentId + categoryId)
+      // Multi venant de MultiPage ou revanche : lance directement la partie.
+      // pendingDuel.variant ('rush'|'speedrun') + pendingDuel.questionCount (palier
+      // pour speedrun, ou null pour rush tout-pool).
+      // 'all' autorisé pour Rush (toutes catégories) ; handleBlitzStart gère
+      // le filtre par cat si categoryId ≠ 'all'.
+      if (pendingDuel.categoryId) {
+        handleBlitzStart(pendingDuel.categoryId, pendingDuel.questionCount, pendingDuel.variant || 'rush')
         return
       }
+      // Fallback legacy (pas de categoryId du tout) → ouvre le BlitzLobby
       setGameMode('blitz')
       setSessionType('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
-      setSelectedCategory(pendingDuel.categoryId || 'all')
+      setSelectedCategory(null)
       setScreen(SCREENS.BLITZ_LOBBY)
-      // NOTE: Les 200 coins sont débités atomiquement par le RPC create_duel_challenge.
-      // On laisse pendingDuel en place pour que handleBlitzFinish puisse
-      // lire opponentId + categoryId. Sera cleared par handleHome ou après création du round.
     } else if (pendingDuel.mode === 'accept' && pendingDuel.facts) {
       // User accepte un défi : lance directement le Blitz avec les facts préparés
+      // variant (rush/speedrun) hérité du challenge row
       setSessionType('blitz')
       setGameMode('blitz')
       setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ)
+      setBlitzVariant?.(pendingDuel.variant || 'rush')
       setBlitzFacts(pendingDuel.facts)
       setBlitzResults(null)
       setScreen(SCREENS.BLITZ)
-      // pendingDuel.roundId sera consommé par handleBlitzFinish pour completeDuelRound
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingDuel, applyCurrencyDelta, clearPendingDuel])
@@ -249,7 +239,7 @@ export default function App() {
   const [isQuickPlay, setIsQuickPlay] = useState(false)
   const [blitzFacts, setBlitzFacts] = useState([])
   const [blitzResults, setBlitzResults] = useState(null)
-  const [blitzVariant, setBlitzVariant] = useState('solo') // 'solo' | 'defi'
+  const [blitzVariant, setBlitzVariant] = useState('rush') // 'rush' | 'speedrun'
   const [launchMode, setLaunchMode] = useState(null)
   const [quickiePool, setQuickiePool] = useState([])
   const [sessionCorrectFacts, setSessionCorrectFacts] = useState([])
@@ -393,7 +383,7 @@ export default function App() {
     handleShare, handleShareDailyFact, handleShowRules,
   } = useNavigationHandlers({
     launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
-    selectedDifficulty,
+    selectedDifficulty, blitzVariant,
     quickiePool, unlockedFacts, user, sessionCorrectFacts,
     handleStartFlashSession, handleQuickie, handleSelectDifficulty,
     handleSelectCategory, handleBlitzStart, initSessionState,

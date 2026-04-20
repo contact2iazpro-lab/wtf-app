@@ -11,16 +11,15 @@ import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import FallbackImage from '../components/FallbackImage'
 import RevelationScreen from './RevelationScreen'
+import ResultsScreen from './ResultsScreen'
 import { CATEGORIES } from '../data/facts'
 
-const SESSION_SIZE = 20
+const SESSION_SIZE = 10
 const SWIPE_THRESHOLD = 60
 const WRONG_DELAY_MS = 1200
 const VOF_GREEN = '#6BCB77'
 const VOF_RED = '#E84535'
-const UNLOCK_COST = 25
 const TIMER_DURATION = 15
-const SHARE_URL = 'https://wtf-app-production.up.railway.app/'
 
 function lerpColor(ratio) {
   const r1 = 0xE8, g1 = 0x45, b1 = 0x35
@@ -34,7 +33,7 @@ function lerpColor(ratio) {
 export default function VraiOuFouScreen({ onHome }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _cCoins, unlockFact, applyCurrencyDelta } = usePlayerProfile()
+  const { coins: _cCoins } = usePlayerProfile()
 
   const [seed, setSeed] = useState(0)
   const pool = useMemo(
@@ -43,19 +42,26 @@ export default function VraiOuFouScreen({ onHome }) {
   )
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
+  const [sessionAnswers, setSessionAnswers] = useState([]) // [{factId, wasCorrect}]
   const [drag, setDrag] = useState({ x: 0, active: false })
   const [feedback, setFeedback] = useState(null) // null | { correct: bool }
   const [done, setDone] = useState(false)
   const [showQuit, setShowQuit] = useState(false)
-  const [shareMsg, setShareMsg] = useState(null)
   const [imgFailed, setImgFailed] = useState(false)
 
   // Revelation (bonne réponse)
   const [showReveal, setShowReveal] = useState(false)
   const [revealFact, setRevealFact] = useState(null)
 
-  // Unlock
-  const [unlockedIds, setUnlockedIds] = useState(new Set())
+  // VoF = mode vitrine. Le swipe ne débloque PAS. Le joueur peut débloquer
+  // un fact APRÈS le parcours depuis ResultsScreen (click sur miniature →
+  // FactDetailView → bouton "Ajouter à ma collection").
+  const alreadyUnlocked = useMemo(() => {
+    try {
+      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+      return new Set(wd.unlockedFacts || [])
+    } catch { return new Set() }
+  }, [index])
 
   const startX = useRef(0)
   const feedbackTimer = useRef(null)
@@ -103,6 +109,7 @@ export default function VraiOuFouScreen({ onHome }) {
 
     setFeedback({ correct: isCorrect })
     audio.play(isCorrect ? 'correct' : 'wrong_vof')
+    setSessionAnswers(prev => [...prev, { factId: draw.fact.id, wasCorrect: isCorrect }])
     if (isCorrect) setCorrect(c => c + 1)
 
     if (isCorrect) {
@@ -143,37 +150,13 @@ export default function VraiOuFouScreen({ onHome }) {
     else setDrag({ x: 0, active: false })
   }
 
-  // Unlock via bouton sur l'image — même flow que Quickie/RevelationScreen
-  const handleUnlockConfirm = async () => {
-    if (!fact || _cCoins < UNLOCK_COST) return
-
-    applyCurrencyDelta?.({ coins: -UNLOCK_COST }, 'unlock_fact_vof')?.catch?.(e =>
-      console.warn('[VOF] unlock currency failed:', e?.message || e)
-    )
-    unlockFact?.(fact.id, fact.category, 'unlock_fact_vof').catch(e =>
-      console.warn('[VOF] unlockFact RPC failed:', e?.message || e)
-    )
-    try {
-      const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      const unlocked = wd.unlockedFacts || []
-      if (!unlocked.includes(fact.id)) unlocked.push(fact.id)
-      wd.unlockedFacts = unlocked
-      wd.lastModified = Date.now()
-      localStorage.setItem('wtf_data', JSON.stringify(wd))
-      window.dispatchEvent(new Event('wtf_storage_sync'))
-    } catch { /* ignore */ }
-
-    setUnlockedIds(prev => { const n = new Set(prev); n.add(fact.id); return n })
-    audio.play?.('correct')
-    // Ouvrir la revelation après unlock
-    setRevealFact({ fact, trueStatement: fact.statementTrue })
-    setShowReveal(true)
-  }
+  // Pas d'achat inline en VoF — le déblocage se fait depuis ResultsScreen.
 
   const handleTimeout = useCallback(() => {
     if (feedback || !draw) return
     setFeedback({ correct: false })
     audio.play('wrong_vof')
+    setSessionAnswers(prev => [...prev, { factId: draw.fact.id, wasCorrect: false }])
     feedbackTimer.current = setTimeout(() => {
       advanceToNext()
     }, WRONG_DELAY_MS)
@@ -181,20 +164,9 @@ export default function VraiOuFouScreen({ onHome }) {
 
   const handleReplay = () => {
     audio.play('click')
-    setIndex(0); setCorrect(0); setFeedback(null); setDrag({ x: 0, active: false })
+    setIndex(0); setCorrect(0); setSessionAnswers([]); setFeedback(null); setDrag({ x: 0, active: false })
     setDone(false); setShowReveal(false); setRevealFact(null)
     setSeed(s => s + 1)
-  }
-
-  const handleShare = async () => {
-    audio.play('click')
-    const text = `J'ai eu ${correct}/${pool.length} au Vrai ET Fou WTF! Et toi ?`
-    try {
-      if (navigator.share) { await navigator.share({ title: 'WTF! — Vrai ET Fou', text, url: SHARE_URL }); return }
-      await navigator.clipboard.writeText(`${text} ${SHARE_URL}`)
-      setShareMsg('Lien copié !')
-      setTimeout(() => setShareMsg(null), 1800)
-    } catch { /* canceled */ }
   }
 
   // ── Écran indisponible ──
@@ -223,7 +195,7 @@ export default function VraiOuFouScreen({ onHome }) {
           pointsEarned={0}
           hintsUsed={0}
           onNext={handleRevealNext}
-          onQuit={handleRevealNext}
+          onQuit={onHome}
           factIndex={index}
           totalFacts={pool.length}
           gameMode="vrai_ou_fou"
@@ -235,61 +207,29 @@ export default function VraiOuFouScreen({ onHome }) {
     )
   }
 
-  // ── Résultats ──
+  // ── Résultats — délégué à ResultsScreen (Option A, 17/04/2026) ──
   if (done) {
-    const total = pool.length
-    const pct = Math.round((correct / total) * 100)
-    const verdict =
-      correct === total ? { emoji: '🔥', line: 'Perfect ! Tu es une machine.' } :
-      correct >= total * 0.8 ? { emoji: '🎯', line: 'Excellent score !' } :
-      correct >= total * 0.5 ? { emoji: '👍', line: 'Pas mal, tu peux mieux.' } :
-      { emoji: '😅', line: 'Aïe… retente ta chance !' }
-
+    const allSessionFacts = sessionAnswers.map(a => {
+      const draw = pool.find(d => d.fact.id === a.factId)
+      return { fact: draw?.fact, wasCorrect: a.wasCorrect }
+    }).filter(e => e.fact)
     return (
-      <div
-        className="absolute inset-0 flex flex-col"
-        style={{ '--scale': scale, background: `linear-gradient(160deg, ${VOF_GREEN}88, ${VOF_GREEN})`, color: '#fff', fontFamily: 'Nunito, sans-serif', padding: `${S(24)} ${S(20)}` }}
-      >
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-          <div style={{ fontSize: S(72), marginBottom: S(4), lineHeight: 1 }}>{verdict.emoji}</div>
-          <p style={{ fontSize: S(12), opacity: 0.65, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 800 }}>Score final</p>
-          <div style={{ fontSize: S(96), fontWeight: 900, lineHeight: 1, margin: `${S(8)} 0 ${S(4)}` }}>
-            <span style={{ color: lerpColor(correct / total) }}>{correct}</span>
-            <span style={{ fontSize: S(40), color: VOF_GREEN }}>/{total}</span>
-          </div>
-          <p style={{ fontSize: S(14), opacity: 0.85, marginBottom: S(8) }}>{pct}% de bonnes réponses</p>
-          <p style={{ fontSize: S(15), fontWeight: 700, opacity: 0.9 }}>{verdict.line}</p>
-          <p style={{ fontSize: S(11), opacity: 0.6, marginTop: S(12), fontStyle: 'italic' }}>
-            🔒 Joue Quickie ou Quest pour débloquer vraiment ces f*cts
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: S(10), flexShrink: 0, position: 'relative' }}>
-          <button onClick={handleShare} className="active:scale-95 transition-transform" style={{
-            padding: `${S(16)} 0`, borderRadius: S(16), background: '#25D366', color: '#fff', border: 'none',
-            fontWeight: 900, fontSize: S(15), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(8),
-            cursor: 'pointer', fontFamily: 'Nunito, sans-serif', boxShadow: '0 4px 16px rgba(37,211,102,0.4)',
-          }}>
-            📣 PARTAGER MON SCORE
-          </button>
-          <button onClick={handleReplay} className="active:scale-95 transition-transform" style={{
-            padding: `${S(16)} 0`, borderRadius: S(16), background: VOF_RED, color: '#fff', border: 'none',
-            fontWeight: 900, fontSize: S(15), cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-          }}>
-            🔄 REJOUER
-          </button>
-          <button onClick={onHome} className="active:scale-95 transition-transform" style={{
-            padding: `${S(14)} 0`, borderRadius: S(16), background: 'rgba(255,255,255,0.12)', color: '#fff',
-            border: '1px solid rgba(255,255,255,0.2)', fontWeight: 800, fontSize: S(13), cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-          }}>
-            Accueil
-          </button>
-          {shareMsg && (
-            <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-              marginBottom: S(8), padding: `${S(6)} ${S(12)}`, borderRadius: S(8), background: 'rgba(0,0,0,0.8)', fontSize: S(12), fontWeight: 700,
-            }}>{shareMsg}</div>
-          )}
-        </div>
+      <div style={{ position: 'relative', width: '100%', height: '100%', '--scale': scale }}>
+        <ResultsScreen
+          score={correct}
+          correctCount={correct}
+          totalFacts={pool.length}
+          coinsEarned={0}
+          sessionType="vrai_ou_fou"
+          difficulty={null}
+          categoryId={null}
+          unlockedFactsThisSession={[]}
+          allSessionFacts={allSessionFacts}
+          sessionsToday={0}
+          onReplay={handleReplay}
+          onReplayHarder={null}
+          onHome={onHome}
+        />
       </div>
     )
   }
@@ -298,7 +238,7 @@ export default function VraiOuFouScreen({ onHome }) {
   const dragIntensity = Math.min(Math.abs(drag.x) / SWIPE_THRESHOLD, 1)
   const swipingRight = !feedback && drag.x > 10
   const swipingLeft = !feedback && drag.x < -10
-  const isRevealed = unlockedIds.has(fact?.id)
+  const isRevealed = alreadyUnlocked.has(fact?.id)
   const counterColor = correct === 0 ? VOF_RED : lerpColor(correct / pool.length)
 
   return (
@@ -306,16 +246,24 @@ export default function VraiOuFouScreen({ onHome }) {
       className="absolute inset-0 flex flex-col overflow-hidden"
       style={{ '--scale': scale, background: `linear-gradient(160deg, ${catBg}88, ${catBg})`, fontFamily: 'Nunito, sans-serif' }}
     >
-      {/* Modal quitter */}
+      {/* Modal quitter — aligné avec RevelationScreen (même wording/style) */}
       {showQuit && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', maxWidth: 360 }}>
-            <div className="text-2xl text-center mb-3">🤔</div>
-            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter Vrai ET Fou ?</h2>
-            <p className="text-sm text-center mb-6" style={{ color: '#6B7280' }}>Tes réponses seront perdues.</p>
-            <div className="flex flex-col gap-3">
-              <button onClick={() => setShowQuit(false)} className="w-full py-4 rounded-2xl font-black text-base" style={{ background: VOF_GREEN, color: 'white' }}>Continuer</button>
-              <button onClick={onHome} className="w-full py-3 rounded-2xl font-bold text-sm" style={{ background: '#F3F4F6', color: '#6B7280' }}>Quitter</button>
+          <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', border: '1px solid #E5E7EB', boxShadow: '0 24px 64px rgba(0,0,0,0.25)', maxWidth: 360 }}>
+            <div className="text-2xl text-center mb-3">🏃</div>
+            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter la partie ?</h2>
+            <p className="text-sm text-center mb-6 leading-relaxed" style={{ color: '#6B7280' }}>
+              Tes réponses ne seront pas sauvegardées.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowQuit(false)} className="flex-1 py-4 rounded-2xl font-black text-base"
+                style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>
+                Annuler
+              </button>
+              <button onClick={() => { audio.stopAll(); onHome() }} className="flex-1 py-4 rounded-2xl font-black text-base"
+                style={{ background: 'rgba(244,67,54,0.1)', border: '1px solid #F44336', color: '#DC2626' }}>
+                Quitter
+              </button>
             </div>
           </div>
         </div>
@@ -341,7 +289,7 @@ export default function VraiOuFouScreen({ onHome }) {
             VRAI ET FOU
           </span>
         </div>
-        {/* Compteur N/20 */}
+        {/* Compteur N/10 */}
         <div style={{ textAlign: 'center' }}>
           <span style={{ fontSize: S(12), fontWeight: 900, letterSpacing: 1 }}>
             <span style={{ color: counterColor }}>{index + 1}</span>
@@ -416,34 +364,13 @@ export default function VraiOuFouScreen({ onHome }) {
           {!isRevealed && (
             <>
               <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
-              <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(10) }}>
-                <span style={{ fontSize: S(48), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
-                <button
-                  onClick={() => {
-                    if (_cCoins < UNLOCK_COST) return
-                    handleUnlockConfirm()
-                  }}
-                  className="btn-press active:scale-95"
-                  style={{
-                    background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-                    border: '2px solid rgba(255,255,255,0.5)',
-                    borderRadius: S(12), padding: `${S(8)} ${S(16)}`,
-                    color: _cCoins >= UNLOCK_COST ? '#ffffff' : '#9CA3AF',
-                    fontWeight: 800, fontSize: S(13),
-                    cursor: _cCoins >= UNLOCK_COST ? 'pointer' : 'not-allowed',
-                    opacity: _cCoins >= UNLOCK_COST ? 1 : 0.6,
-                    display: 'flex', alignItems: 'center', gap: S(6),
-                  }}
-                >
-                  🔓 Débloquer — {UNLOCK_COST} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
-                </button>
+              <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(6) }}>
+                <span style={{ fontSize: S(36), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
+                <span style={{ fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.85)', textAlign: 'center', padding: `0 ${S(16)}`, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
+                  Débloque-le en Quickie ou Quest
+                </span>
               </div>
             </>
-          )}
-          {isRevealed && (
-            <div style={{ position: 'absolute', bottom: S(8), right: S(8), zIndex: 5, background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6), padding: `${S(3)} ${S(8)}`, pointerEvents: 'none' }}>
-              <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
-            </div>
           )}
         </div>
         <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>

@@ -6,6 +6,7 @@ import ProfilPage from './pages/ProfilPage'
 import BoutiquePage from './pages/BoutiquePage'
 import RecompensesPage from './pages/RecompensesPage'
 import SocialPage from './pages/SocialPage'
+import MultiPage from './pages/MultiPage'
 import BottomNav from './components/BottomNav'
 import ChallengeScreen from './screens/ChallengeScreen'
 import DuelHistoryScreen from './screens/DuelHistoryScreen'
@@ -22,7 +23,6 @@ function UnlockProvider({ children }) {
   const unlockValue = useMemo(() => {
     try {
       const wtfData = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-      const isDevOrTest = localStorage.getItem('wtf_dev_mode') === 'true' || localStorage.getItem('wtf_test_mode') === 'true'
 
       // Données brutes
       const gamesPlayed = wtfData.gamesPlayed || 0
@@ -146,6 +146,7 @@ export default function AppRouter() {
           <Route path="/boutique" element={<PageWrapper><BoutiquePage /></PageWrapper>} />
           <Route path="/recompenses" element={<PageWrapper><RecompensesPage /></PageWrapper>} />
           <Route path="/social" element={<PageWrapper><SocialPage /></PageWrapper>} />
+          <Route path="/multi" element={<PageWrapper><MultiPage /></PageWrapper>} />
           <Route path="/challenge/:code" element={<PageWrapper><ChallengeScreen /></PageWrapper>} />
           <Route path="/duels/:opponentId" element={<PageWrapper><DuelHistoryScreen /></PageWrapper>} />
         </Routes>

@@ -1,5 +1,6 @@
 // ─── Player Sync Service — Simplifié & Sécurisé ─────────────────────────────
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { ALL_TROPHIES } from '../utils/badgeManager'
 
 export async function pushToServer(userId) {
   if (!isSupabaseConfigured || !userId) return null
@@ -99,6 +100,20 @@ export async function pullFromServer(userId) {
         // Fallback : si flags.statsByMode absent, utiliser la colonne stats_by_mode
         saved.statsByMode = remote.stats_by_mode
       }
+      // Backfill silencieux des badges : après hydratation depuis Supabase,
+      // tous les trophées dont la condition est déjà remplie sont marqués earned
+      // sans déclencher de modal. Évite le cascade de ~10 modals sur re-login.
+      try {
+        const earned = new Set(saved.badgesEarned || [])
+        let backfilled = 0
+        for (const t of ALL_TROPHIES) {
+          if (!earned.has(t.id) && t.condition(saved)) { earned.add(t.id); backfilled++ }
+        }
+        if (backfilled > 0) {
+          saved.badgesEarned = [...earned]
+          console.log(`[pullFromServer] backfilled ${backfilled} badges (silent)`)
+        }
+      } catch (e) { console.warn('[pullFromServer] badge backfill failed:', e?.message || e) }
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     } else if (localTimestamp > remoteTimestamp) {
       // Local plus récent → push score/streak vers serveur (fire & forget,

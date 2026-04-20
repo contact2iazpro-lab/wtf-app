@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { CATEGORIES } from '../constants/categories'
 import { callEdgeFunction } from '../utils/helpers'
@@ -6,11 +6,10 @@ import { generateStatementsForFact } from '../lib/generateStatements'
 
 // ── Tab definitions ──────────────────────────────────────────────────────────
 const TABS = [
-  { id: 'standard', label: 'Standard',    icon: '⚡', desc: 'Volume rapide' },
-  { id: 'vip',      label: 'VIP',         icon: '⭐', desc: 'Qualité WTF!' },
+  { id: 'standard', label: 'Générer',     icon: '⚡', desc: 'Volume / VIP' },
   { id: 'vof',      label: 'Vrai ou Fou', icon: '🎴', desc: 'Affirmations' },
   { id: 'enrich',   label: 'Enrichir',    icon: '🧠', desc: 'Facts incomplets' },
-  { id: 'urls',     label: 'URLs sources',icon: '🔗', desc: 'Sources auto' },
+  { id: 'images',   label: 'Images',      icon: '🖼️', desc: 'Batch auto' },
 ]
 
 const VOF_MAX = 300
@@ -40,6 +39,8 @@ function wtfColor(score) {
 
 export default function GenerateFactsPage({ toast }) {
   const [tab, setTab] = useState('standard')
+  // Toggle : utilise le flow VIP (3 formulations au choix) au lieu du flow Standard (1 formulation auto)
+  const [useVipMode, setUseVipMode] = useState(false)
 
   // ── Standard mode state ──────────────────────────────────────────────────
   const [stdCategory, setStdCategory] = useState('')
@@ -121,10 +122,52 @@ export default function GenerateFactsPage({ toast }) {
   const [enrichErrorCount, setEnrichErrorCount] = useState(0)
   const enrichCancelRef = useRef(false)
 
-  // ── Fill URLs state ──────────────────────────────────────────────────────
-  const [fillUrlsStatus, setFillUrlsStatus] = useState(null)
-  const [fillUrlsResult, setFillUrlsResult] = useState(null)
-  const [fillUrlsError, setFillUrlsError] = useState('')
+  // ── Enrich filter : groupes de champs à cibler + écrire ────────────────
+  // Une case cochée signifie :
+  //   (A) les facts avec au moins un champ vide dans ce groupe seront ciblés
+  //   (B) seuls les champs de ce groupe seront réécrits (les autres préservés)
+  const [enrichGroups, setEnrichGroups] = useState({
+    hints:       true,
+    funny:       true,
+    close:       true,
+    plausible:   true,
+    explanation: true,
+    urls:        true,
+  })
+  const toggleEnrichGroup = (g) => setEnrichGroups(prev => ({ ...prev, [g]: !prev[g] }))
+
+  // Nombre de facts concernés par chaque groupe (live)
+  const [enrichCounts, setEnrichCounts] = useState({ hints: null, funny: null, close: null, plausible: null, explanation: null, urls: null })
+  const [enrichCountsLoading, setEnrichCountsLoading] = useState(false)
+
+  // Limite optionnelle du nombre de facts à enrichir (test / batch réduit)
+  const [enrichLimit, setEnrichLimit] = useState('')
+
+  // ── Batch images state ─────────────────────────────────────────────────
+  const [batchImgCategory, setBatchImgCategory] = useState('')
+  const [batchImgType, setBatchImgType] = useState('all') // 'all' | 'vip' | 'funny'
+  const [batchImgCount, setBatchImgCount] = useState(5)
+  const [batchImgAvailable, setBatchImgAvailable] = useState(null) // null = non calculé
+
+  // Compte les facts sans image qui matchent les filtres (catégorie + type)
+  const loadBatchImgAvailable = useCallback(async () => {
+    try {
+      let q = supabase.from('facts')
+        .select('id', { count: 'exact', head: true })
+        .or('image_url.is.null,image_url.eq.')
+      if (batchImgCategory) q = q.eq('category', batchImgCategory)
+      if (batchImgType === 'vip') q = q.eq('is_vip', true)
+      if (batchImgType === 'funny') q = q.eq('is_vip', false)
+      const { count, error } = await q
+      setBatchImgAvailable(error ? null : (count ?? 0))
+    } catch (err) {
+      setBatchImgAvailable(null)
+    }
+  }, [batchImgCategory, batchImgType])
+
+  useEffect(() => {
+    if (tab === 'images') loadBatchImgAvailable()
+  }, [tab, loadBatchImgAvailable])
 
   // ── Standard generation ────────────────────────────────────────────────
   async function generateStandard() {
@@ -340,7 +383,109 @@ export default function GenerateFactsPage({ toast }) {
   // ── Enrich (incomplets + short hints) ──────────────────────────────────
   function stopEnrich() { enrichCancelRef.current = true }
 
-  async function enrichLoop(facts, label) {
+  // Clauses .or(...) par groupe — sert à la fois au comptage et au ciblage
+  const GROUP_CLAUSES = {
+    hints:       'hint1.is.null,hint1.eq.,hint2.is.null,hint2.eq.',
+    funny:       'funny_wrong_1.is.null,funny_wrong_1.eq.,funny_wrong_2.is.null,funny_wrong_2.eq.,funny_wrong_3.is.null,funny_wrong_3.eq.',
+    close:       'close_wrong_1.is.null,close_wrong_1.eq.,close_wrong_2.is.null,close_wrong_2.eq.',
+    plausible:   'plausible_wrong_1.is.null,plausible_wrong_1.eq.,plausible_wrong_2.is.null,plausible_wrong_2.eq.,plausible_wrong_3.is.null,plausible_wrong_3.eq.',
+    explanation: 'explanation.is.null,explanation.eq.',
+    urls:        'source_url.is.null,source_url.eq.',
+  }
+
+  // Compte les facts avec au moins un indice "problématique" (vide OU > 20 chars).
+  // Nécessite un fetch côté client car Supabase .or(...) ne permet pas la longueur.
+  const countHintsProblematic = useCallback(async () => {
+    const MAX = 20
+    const isProblematic = (v) => !v || String(v).trim() === '' || String(v).length > MAX
+    const all = []
+    let from = 0
+    const PAGE = 1000
+    while (true) {
+      const { data, error } = await supabase
+        .from('facts')
+        .select('hint1, hint2, hint3, hint4')
+        .range(from, from + PAGE - 1)
+      if (error) return null
+      if (!data || data.length === 0) break
+      all.push(...data)
+      if (data.length < PAGE) break
+      from += PAGE
+    }
+    return all.filter(f =>
+      isProblematic(f.hint1) || isProblematic(f.hint2) ||
+      isProblematic(f.hint3) || isProblematic(f.hint4),
+    ).length
+  }, [])
+
+  // Charge le count de facts concernés par chaque groupe
+  const loadEnrichCounts = useCallback(async () => {
+    setEnrichCountsLoading(true)
+    try {
+      const entries = await Promise.all(
+        Object.entries(GROUP_CLAUSES).map(async ([key, clause]) => {
+          // Hints : comptage spécial qui inclut les trop longs
+          if (key === 'hints') {
+            const n = await countHintsProblematic()
+            return [key, n]
+          }
+          const { count, error } = await supabase
+            .from('facts')
+            .select('id', { count: 'exact', head: true })
+            .or(clause)
+          return [key, error ? null : (count ?? 0)]
+        })
+      )
+      setEnrichCounts(Object.fromEntries(entries))
+    } catch (err) {
+      console.error('[loadEnrichCounts]', err)
+    } finally {
+      setEnrichCountsLoading(false)
+    }
+  }, [countHintsProblematic])
+
+  // Charge les counts au montage
+  useEffect(() => { loadEnrichCounts() }, [loadEnrichCounts])
+
+  // Construit le payload d'update Supabase en ne gardant que les champs des groupes cochés
+  function buildEnrichUpdatePayload(enrichResult, groups) {
+    const payload = { updated_at: new Date().toISOString() }
+    if (groups.hints) {
+      payload.hint1 = enrichResult.hint1
+      payload.hint2 = enrichResult.hint2
+      payload.hint3 = enrichResult.hint3 || ''
+      payload.hint4 = enrichResult.hint4 || ''
+    }
+    if (groups.funny) {
+      payload.funny_wrong_1 = enrichResult.funny_wrong_1
+      payload.funny_wrong_2 = enrichResult.funny_wrong_2
+      payload.funny_wrong_3 = enrichResult.funny_wrong_3
+    }
+    if (groups.close) {
+      payload.close_wrong_1 = enrichResult.close_wrong_1
+      payload.close_wrong_2 = enrichResult.close_wrong_2
+    }
+    if (groups.plausible) {
+      payload.plausible_wrong_1 = enrichResult.plausible_wrong_1
+      payload.plausible_wrong_2 = enrichResult.plausible_wrong_2
+      payload.plausible_wrong_3 = enrichResult.plausible_wrong_3
+    }
+    if (groups.explanation && enrichResult.explanation) {
+      payload.explanation = enrichResult.explanation
+    }
+    return payload
+  }
+
+  // Construit la clause .or(...) qui cible les facts avec au moins un champ vide dans les groupes cochés
+  function buildEnrichOrClause(groups) {
+    return Object.entries(groups)
+      .filter(([, v]) => v)
+      .map(([k]) => GROUP_CLAUSES[k])
+      .filter(Boolean)
+      .join(',')
+  }
+
+  async function enrichLoop(facts, label, groups) {
     if (!facts || facts.length === 0) {
       setEnrichRunState('done')
       setEnrichMessage('✅ Aucun fact à traiter.')
@@ -353,6 +498,7 @@ export default function GenerateFactsPage({ toast }) {
       if (enrichCancelRef.current) {
         setEnrichRunState('done')
         setEnrichMessage(`⏹ Arrêté — ${okCount}/${facts.length}`)
+        loadEnrichCounts()
         return
       }
       const fact = facts[i]
@@ -369,23 +515,13 @@ export default function GenerateFactsPage({ toast }) {
           hint2: fact.hint2,
         })
 
+        const payload = buildEnrichUpdatePayload(enrichResult, groups)
+        // Si aucun champ à écrire (groupes tous vides sauf explication absente), skip
+        if (Object.keys(payload).length <= 1) { okCount++; continue }
+
         const { error: updErr } = await supabase
           .from('facts')
-          .update({
-            hint1: enrichResult.hint1,
-            hint2: enrichResult.hint2,
-            hint3: enrichResult.hint3 || '',
-            hint4: enrichResult.hint4 || '',
-            funny_wrong_1: enrichResult.funny_wrong_1,
-            funny_wrong_2: enrichResult.funny_wrong_2,
-            close_wrong_1: enrichResult.close_wrong_1,
-            close_wrong_2: enrichResult.close_wrong_2,
-            plausible_wrong_1: enrichResult.plausible_wrong_1,
-            plausible_wrong_2: enrichResult.plausible_wrong_2,
-            plausible_wrong_3: enrichResult.plausible_wrong_3,
-            ...(enrichResult.explanation ? { explanation: enrichResult.explanation } : {}),
-            updated_at: new Date().toISOString(),
-          })
+          .update(payload)
           .eq('id', fact.id)
         if (updErr) throw updErr
         okCount++
@@ -398,86 +534,376 @@ export default function GenerateFactsPage({ toast }) {
 
     setEnrichRunState('done')
     setEnrichMessage(`✅ ${label} terminé — ${okCount}/${facts.length} (${koCount} erreurs)`)
+    loadEnrichCounts()
   }
 
   async function runEnrichAll() {
     if (enrichRunState === 'running') return
+    // Vérif : au moins un groupe coché
+    const activeGroups = Object.entries(enrichGroups).filter(([, v]) => v).map(([k]) => k)
+    if (activeGroups.length === 0) {
+      toast?.('Sélectionne au moins un groupe de champs', 'warn')
+      return
+    }
+
+    // Parse la limite (0 ou vide = tous)
+    const parsedLimit = parseInt(enrichLimit, 10)
+    const limit = !isNaN(parsedLimit) && parsedLimit > 0 ? parsedLimit : null
+
+    // Mode CHIRURGICAL : seul "hints" coché → complete-hints (préserve les hints valides, cible vides + > 20 chars)
+    if (activeGroups.length === 1 && activeGroups[0] === 'hints') {
+      enrichCancelRef.current = false
+      setEnrichRunState('running')
+      setEnrichErrorCount(0)
+      try {
+        await runHintsSurgical(limit)
+      } catch (err) {
+        setEnrichRunState('error')
+        setEnrichMessage(`❌ Erreur : ${err.message}`)
+      }
+      return
+    }
+
+    // Mode URLs : seul "urls" coché → complete-urls (gpt-4o-search + validation HTTP)
+    if (activeGroups.length === 1 && activeGroups[0] === 'urls') {
+      enrichCancelRef.current = false
+      setEnrichRunState('running')
+      setEnrichErrorCount(0)
+      try {
+        await runUrlsComplete(limit)
+      } catch (err) {
+        setEnrichRunState('error')
+        setEnrichMessage(`❌ Erreur : ${err.message}`)
+      }
+      return
+    }
+
+    // Mode classique : enrich-fact sur les groupes cochés
+    const orClause = buildEnrichOrClause(enrichGroups)
+    if (!orClause) {
+      toast?.('Filtre vide', 'warn')
+      return
+    }
+
     enrichCancelRef.current = false
     setEnrichRunState('running')
     setEnrichErrorCount(0)
-    setEnrichMessage('⏳ Récupération des facts incomplets...')
+    setEnrichMessage('⏳ Récupération des facts concernés...')
     try {
       const all = []
       let from = 0
       const PAGE = 1000
       while (true) {
-        const { data, error } = await supabase
+        let q = supabase
           .from('facts')
           .select('id, question, short_answer, explanation, category, hint1, hint2')
-          .or('funny_wrong_1.is.null,funny_wrong_1.eq.,hint1.is.null,hint1.eq.,hint2.is.null,hint2.eq.')
+          .or(orClause)
           .range(from, from + PAGE - 1)
+        const { data, error } = await q
         if (error) throw error
         if (!data || data.length === 0) break
         all.push(...data)
+        // Stop dès qu'on a assez pour la limite
+        if (limit && all.length >= limit) break
         if (data.length < PAGE) break
         from += PAGE
       }
-      await enrichLoop(all, 'Enrichissement')
+
+      // Tronque à la limite si nécessaire
+      const toProcess = limit ? all.slice(0, limit) : all
+
+      // Confirm avec le nombre trouvé
+      if (toProcess.length === 0) {
+        setEnrichRunState('done')
+        setEnrichMessage('✅ Aucun fact concerné par ces filtres.')
+        return
+      }
+      const writeGroups = activeGroups.join(', ')
+      const limitNote = limit && all.length > limit ? ` (limité à ${limit} sur ${all.length} concernés)` : ''
+      if (!confirm(`Enrichir ${toProcess.length} fact${toProcess.length > 1 ? 's' : ''}${limitNote} ? Champs réécrits : ${writeGroups}.`)) {
+        setEnrichRunState('done')
+        setEnrichMessage('⏹ Annulé.')
+        return
+      }
+
+      await enrichLoop(toProcess, 'Enrichissement', enrichGroups)
     } catch (err) {
       setEnrichRunState('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
     }
   }
 
-  async function runEnrichShortHints() {
+  // ── Batch génération d'images : flow simplifié (Opus auto_pick + Gemini 3 Pro WTF) ──
+  async function runBatchGenerateImages() {
     if (enrichRunState === 'running') return
+    if (!batchImgCategory) return toast?.('Choisis une catégorie', 'warn')
+
     enrichCancelRef.current = false
     setEnrichRunState('running')
     setEnrichErrorCount(0)
-    setEnrichMessage('⏳ Récupération des indices courts...')
+    setEnrichMessage('⏳ Recherche des facts sans image...')
+
     try {
-      const all = []
-      let from = 0
-      const PAGE = 1000
-      while (true) {
-        const { data, error } = await supabase
-          .from('facts')
-          .select('id, question, short_answer, explanation, category, hint1, hint2')
-          .not('hint1', 'is', null)
-          .neq('hint1', '')
-          .range(from, from + PAGE - 1)
-        if (error) throw error
-        if (!data || data.length === 0) break
-        all.push(...data)
-        if (data.length < PAGE) break
-        from += PAGE
+      // Fetch les facts sans image qui matchent catégorie + type
+      let q = supabase.from('facts')
+        .select('id, question, short_answer, explanation, category, is_vip')
+        .or('image_url.is.null,image_url.eq.')
+        .eq('category', batchImgCategory)
+        .order('id', { ascending: true })
+      if (batchImgType === 'vip') q = q.eq('is_vip', true)
+      if (batchImgType === 'funny') q = q.eq('is_vip', false)
+      const { data: allFacts, error } = await q
+      if (error) throw error
+
+      if (!allFacts || allFacts.length === 0) {
+        setEnrichRunState('done')
+        setEnrichMessage(`✅ Aucun fact sans image dans cette catégorie.`)
+        return
       }
-      const shortHints = all.filter(f => {
-        const h1Short = f.hint1 && !f.hint1.includes(' ')
-        const h2Short = f.hint2 && !f.hint2.includes(' ')
-        return h1Short || h2Short
-      })
-      await enrichLoop(shortHints, 'Reformulation')
+
+      const n = Math.max(1, Math.min(Number(batchImgCount) || 5, allFacts.length))
+      const facts = allFacts.slice(0, n)
+      const remaining = allFacts.length - facts.length
+      const estimatedCost = (facts.length * 0.15).toFixed(2)
+      const remainingNote = remaining > 0 ? `\n(Reste ${remaining} fact${remaining > 1 ? 's' : ''} sans image après cette passe)` : ''
+      if (!confirm(`Générer ${facts.length} image${facts.length > 1 ? 's' : ''} (sur ${allFacts.length} facts sans image) ?\n\nFlow : Opus → 3 idées → auto-pick la plus WTF → Gemini 3 Pro style WTF → 1 image → activation auto.\n\nCoût estimé : ~${estimatedCost} € (~0,15 €/fact)${remainingNote}`)) {
+        setEnrichRunState('done')
+        setEnrichMessage('⏹ Annulé.')
+        return
+      }
+
+      setEnrichProgress({ current: 0, total: facts.length })
+      let okCount = 0, errCount = 0
+
+      for (let i = 0; i < facts.length; i++) {
+        if (enrichCancelRef.current) {
+          setEnrichRunState('done')
+          setEnrichMessage(`⏹ Arrêté — ${okCount} ok · ${errCount} erreurs (${i}/${facts.length})`)
+          return
+        }
+        const fact = facts[i]
+        setEnrichMessage(`🖼️ Image ${i + 1}/${facts.length} — fact #${fact.id}...`)
+        setEnrichProgress({ current: i + 1, total: facts.length })
+
+        try {
+          // Étape 1 — Opus directions auto_pick
+          const dirRes = await callEdgeFunction('generate-fact-directions-single', {
+            fact_id: fact.id,
+            auto_pick: true,
+          })
+          const directions = dirRes.directions || []
+          const pickedId = dirRes.picked_id
+          const picked = directions.find(d => d.id === pickedId) || directions[0]
+          if (!picked) throw new Error('Aucune direction pickée')
+
+          // Stocke les 3 directions en DB avec flag was_used
+          const directionsToStore = directions.map(d => ({
+            id: d.id,
+            titre: d.titre,
+            description: d.description,
+            was_used: d.id === picked.id,
+          }))
+          await supabase.from('facts')
+            .update({ image_directions: directionsToStore })
+            .eq('id', fact.id)
+
+          // Étape 2 — Gemini 3 Pro style WTF, 1 variante
+          const imgRes = await callEdgeFunction('generate-fact-image-single', {
+            fact_id: fact.id,
+            direction_title: picked.titre,
+            direction_description: picked.description,
+            styles: ['wtf'],
+            model: 'gemini-3-pro',
+            variants_per_style: 1,
+          })
+          const variant = (imgRes.variants || [])[0]
+          if (!variant) throw new Error('Aucune variante générée')
+
+          // Étape 3 — Activer auto (désactive autres + set active + update facts.image_url)
+          await supabase.from('fact_image_variants')
+            .update({ is_active: false })
+            .eq('fact_id', fact.id)
+            .eq('is_active', true)
+          await supabase.from('fact_image_variants')
+            .update({ is_active: true })
+            .eq('id', variant.id)
+          await supabase.from('facts')
+            .update({ image_url: variant.image_url, updated_at: new Date().toISOString() })
+            .eq('id', fact.id)
+
+          okCount++
+        } catch (err) {
+          console.error(`batch-image #${fact.id}:`, err)
+          errCount++
+          setEnrichErrorCount(prev => prev + 1)
+        }
+      }
+
+      setEnrichRunState('done')
+      setEnrichMessage(`✅ Batch images terminé — ${okCount} générées · ${errCount} erreurs`)
+      loadBatchImgAvailable()
     } catch (err) {
       setEnrichRunState('error')
       setEnrichMessage(`❌ Erreur : ${err.message}`)
     }
   }
 
-  // ── Fill URLs ──────────────────────────────────────────────────────────
-  async function runFillUrls() {
-    if (fillUrlsStatus === 'running') return
-    setFillUrlsStatus('running')
-    setFillUrlsResult(null)
-    setFillUrlsError('')
-    try {
-      const data = await callEdgeFunction('fill-missing-urls')
-      setFillUrlsStatus('done')
-      setFillUrlsResult(data)
-    } catch (err) {
-      setFillUrlsStatus('error')
-      setFillUrlsError(err.message || 'Erreur réseau')
+  // ── Mode chirurgical hints : vides OU > 20 chars (appelé quand seul le groupe
+  //    "hints" est coché dans Enrichir les incomplets) ──────────────────────
+  async function runHintsSurgical(limit) {
+    const MAX = 20
+    const isProblematic = (v) => !v || String(v).trim() === '' || String(v).length > MAX
+
+    setEnrichMessage('⏳ Recherche des indices à compléter...')
+    const all = []
+    let from = 0
+    const PAGE = 1000
+    while (true) {
+      const { data, error } = await supabase
+        .from('facts')
+        .select('id, question, short_answer, explanation, category, hint1, hint2, hint3, hint4')
+        .order('id')
+        .range(from, from + PAGE - 1)
+      if (error) throw error
+      if (!data || data.length === 0) break
+      all.push(...data)
+      if (data.length < PAGE) break
+      from += PAGE
     }
+
+    const toProcess = all.filter(f =>
+      isProblematic(f.hint1) || isProblematic(f.hint2) ||
+      isProblematic(f.hint3) || isProblematic(f.hint4),
+    )
+
+    if (toProcess.length === 0) {
+      setEnrichRunState('done')
+      setEnrichMessage('✅ Aucun indice à compléter : tous sont non-vides et ≤ 20 caractères.')
+      return
+    }
+
+    const subset = limit ? toProcess.slice(0, limit) : toProcess
+    const limitNote = limit && toProcess.length > limit ? ` (limité à ${limit} sur ${toProcess.length})` : ''
+    if (!confirm(`Compléter les indices de ${subset.length} fact${subset.length > 1 ? 's' : ''}${limitNote} ?\n\nSeuls les indices vides ou dépassant 20 caractères seront modifiés. Les indices valides sont préservés.`)) {
+      setEnrichRunState('done')
+      setEnrichMessage('⏹ Annulé.')
+      return
+    }
+
+    setEnrichProgress({ current: 0, total: subset.length })
+    let okCount = 0, koCount = 0, touched = 0
+
+    for (let i = 0; i < subset.length; i++) {
+      if (enrichCancelRef.current) {
+        setEnrichRunState('done')
+        setEnrichMessage(`⏹ Arrêté — ${okCount}/${subset.length}`)
+        loadEnrichCounts()
+        return
+      }
+      const fact = subset[i]
+      setEnrichMessage(`🎯 Complétion ${i + 1}/${subset.length} — fact #${fact.id}...`)
+      setEnrichProgress({ current: i + 1, total: subset.length })
+
+      try {
+        const res = await callEdgeFunction('complete-hints', {
+          question: fact.question,
+          short_answer: fact.short_answer,
+          explanation: fact.explanation,
+          category: fact.category,
+          hint1: fact.hint1, hint2: fact.hint2,
+          hint3: fact.hint3, hint4: fact.hint4,
+        })
+
+        const updated = res.updated || {}
+        const keys = Object.keys(updated)
+        if (keys.length === 0) { okCount++; continue }
+
+        const payload = { updated_at: new Date().toISOString(), ...updated }
+        const { error: updErr } = await supabase.from('facts').update(payload).eq('id', fact.id)
+        if (updErr) throw updErr
+        okCount++
+        touched += keys.length
+      } catch (err) {
+        console.error(`complete-hints #${fact.id}:`, err)
+        koCount++
+        setEnrichErrorCount(prev => prev + 1)
+      }
+    }
+
+    setEnrichRunState('done')
+    setEnrichMessage(`✅ Complétion terminée — ${okCount}/${subset.length} facts traités, ${touched} indice(s) mis à jour (${koCount} erreurs)`)
+    loadEnrichCounts()
+  }
+
+  // ── Complétion URLs (gpt-4o-search-preview + validation HTTP HEAD) ─────
+  // Ne traite que les facts où source_url est null ou vide.
+  async function runUrlsComplete(limit) {
+    setEnrichMessage('⏳ Recherche des facts sans URL...')
+
+    const { data: facts, error } = await supabase
+      .from('facts')
+      .select('id, question, short_answer, explanation, category')
+      .or('source_url.is.null,source_url.eq.')
+      .order('id')
+    if (error) throw error
+
+    if (!facts || facts.length === 0) {
+      setEnrichRunState('done')
+      setEnrichMessage('✅ Aucun fact sans URL — tout est déjà renseigné.')
+      return
+    }
+
+    const subset = limit ? facts.slice(0, limit) : facts
+    const limitNote = limit && facts.length > limit ? ` (limité à ${limit} sur ${facts.length})` : ''
+    if (!confirm(`Rechercher une URL source pour ${subset.length} fact${subset.length > 1 ? 's' : ''}${limitNote} ?\n\nGPT-4o search + validation HTTP (jusqu'à 3 tentatives par fact). Durée estimée : ~${Math.ceil(subset.length * 8 / 60)} min.`)) {
+      setEnrichRunState('done')
+      setEnrichMessage('⏹ Annulé.')
+      return
+    }
+
+    setEnrichProgress({ current: 0, total: subset.length })
+    let okCount = 0, notFoundCount = 0, errCount = 0
+
+    for (let i = 0; i < subset.length; i++) {
+      if (enrichCancelRef.current) {
+        setEnrichRunState('done')
+        setEnrichMessage(`⏹ Arrêté — ${okCount} ok · ${notFoundCount} introuvables · ${errCount} erreurs (${i}/${subset.length})`)
+        loadEnrichCounts()
+        return
+      }
+      const fact = subset[i]
+      setEnrichMessage(`🔗 URL ${i + 1}/${subset.length} — fact #${fact.id}...`)
+      setEnrichProgress({ current: i + 1, total: subset.length })
+
+      try {
+        const res = await callEdgeFunction('complete-urls', {
+          fact_id: fact.id,
+          question: fact.question,
+          short_answer: fact.short_answer,
+          explanation: fact.explanation,
+          category: fact.category,
+        })
+
+        if (res.status === 'ok' && res.url) {
+          const { error: updErr } = await supabase
+            .from('facts')
+            .update({ source_url: res.url, updated_at: new Date().toISOString() })
+            .eq('id', fact.id)
+          if (updErr) throw updErr
+          okCount++
+        } else {
+          notFoundCount++
+        }
+      } catch (err) {
+        console.error(`complete-urls #${fact.id}:`, err)
+        errCount++
+        setEnrichErrorCount(prev => prev + 1)
+      }
+    }
+
+    setEnrichRunState('done')
+    setEnrichMessage(`✅ URLs terminé — ${okCount} ajoutées · ${notFoundCount} introuvables · ${errCount} erreurs`)
+    loadEnrichCounts()
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
@@ -526,61 +952,98 @@ export default function GenerateFactsPage({ toast }) {
       {/* ══════════ STANDARD MODE ══════════ */}
       {tab === 'standard' && (
         <div className="space-y-6">
-          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-            <h2 className="text-base font-black text-white mb-1">⚡ Mode Standard</h2>
-            <p className="text-slate-400 text-xs mb-4">Génère des f*cts en volume via le prompt classique.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Catégorie</label>
-                <select value={stdCategory} onChange={e => setStdCategory(e.target.value)} disabled={stdLoading} className={selectCls}>
-                  <option value="">Choisir…</option>
-                  {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Thème (optionnel)</label>
-                <input value={stdTheme} onChange={e => setStdTheme(e.target.value)} disabled={stdLoading} placeholder="Ex: Les inventions du 20e siècle..." className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nombre</label>
-                <select value={stdCount} onChange={e => setStdCount(Number(e.target.value))} disabled={stdLoading} className={selectCls}>
-                  {[3, 5, 10].map(n => <option key={n} value={n}>{n} f*cts</option>)}
-                </select>
-              </div>
-            </div>
-            <button onClick={generateStandard} disabled={stdLoading || !stdCategory}
-              className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}>
-              {stdLoading ? <><span className="inline-block animate-spin mr-2">⟳</span>Génération...</> : '⚡ Générer'}
+          {/* Toggle Standard / VIP */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setUseVipMode(false)}
+              disabled={stdLoading || vipLoading}
+              className="px-4 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
+              style={{
+                background: !useVipMode ? 'rgba(255,107,26,0.15)' : 'rgba(30,41,59,1)',
+                color: !useVipMode ? '#FF6B1A' : '#94A3B8',
+                border: `2px solid ${!useVipMode ? '#FF6B1A' : '#334155'}`,
+              }}
+            >
+              ⚡ Standard — 1 formulation auto
             </button>
-            {stdMessage && <div className="mt-3 text-sm font-semibold" style={{ color: stdMessage.startsWith('Erreur') ? '#EF4444' : '#22C55E' }}>{stdMessage}</div>}
+            <button
+              onClick={() => setUseVipMode(true)}
+              disabled={stdLoading || vipLoading}
+              className="px-4 py-2 rounded-xl text-xs font-black transition-all disabled:opacity-40"
+              style={{
+                background: useVipMode ? 'rgba(255,215,0,0.15)' : 'rgba(30,41,59,1)',
+                color: useVipMode ? '#FFD700' : '#94A3B8',
+                border: `2px solid ${useVipMode ? '#FFD700' : '#334155'}`,
+              }}
+            >
+              ⭐ VIP — 1 fait, 3 formulations à choisir
+            </button>
           </div>
 
-          {stdResults.length > 0 && (
-            <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
-                <h3 className="text-sm font-black text-white">{stdResults.length} f*cts générés</h3>
-                <button onClick={saveStandardResults} className="px-4 py-2 rounded-xl text-xs font-black text-white active:scale-95" style={{ background: '#22C55E' }}>
-                  Sauvegarder tous en brouillon
-                </button>
-              </div>
-              <div className="divide-y divide-slate-700 max-h-96 overflow-y-auto">
-                {stdResults.map((f, i) => (
-                  <div key={i} className="px-5 py-3">
-                    <div className="text-sm text-white font-semibold mb-1">{f.question}</div>
-                    <div className="text-xs font-bold" style={{ color: '#FF6B1A' }}>{f.short_answer}</div>
-                    {f.explanation && <div className="text-xs text-slate-400 mt-1">{f.explanation}</div>}
+          {/* ── Mode STANDARD ── */}
+          {!useVipMode && (
+            <>
+              <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+                <h2 className="text-base font-black text-white mb-1">⚡ Mode Standard</h2>
+                <p className="text-slate-400 text-xs mb-4">
+                  Pipeline unifié : web search + 7 archétypes + sélection automatique de la meilleure formulation.
+                  L'IA choisit l'angle, tu as plusieurs f*cts d'un coup.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Catégorie</label>
+                    <select value={stdCategory} onChange={e => setStdCategory(e.target.value)} disabled={stdLoading} className={selectCls}>
+                      <option value="">Choisir…</option>
+                      {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
+                    </select>
                   </div>
-                ))}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Thème (optionnel)</label>
+                    <input value={stdTheme} onChange={e => setStdTheme(e.target.value)} disabled={stdLoading} placeholder="Ex: Les inventions du 20e siècle..." className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nombre</label>
+                    <select value={stdCount} onChange={e => setStdCount(Number(e.target.value))} disabled={stdLoading} className={selectCls}>
+                      {[3, 5, 10].map(n => <option key={n} value={n}>{n} f*cts</option>)}
+                    </select>
+                  </div>
+                </div>
+                <button onClick={generateStandard} disabled={stdLoading || !stdCategory}
+                  className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-40"
+                  style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}>
+                  {stdLoading ? <><span className="inline-block animate-spin mr-2">⟳</span>Génération...</> : '⚡ Générer'}
+                </button>
+                {stdMessage && <div className="mt-3 text-sm font-semibold" style={{ color: stdMessage.startsWith('Erreur') ? '#EF4444' : '#22C55E' }}>{stdMessage}</div>}
               </div>
-            </div>
+
+              {stdResults.length > 0 && (
+                <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+                    <h3 className="text-sm font-black text-white">{stdResults.length} f*cts générés</h3>
+                    <button onClick={saveStandardResults} className="px-4 py-2 rounded-xl text-xs font-black text-white active:scale-95" style={{ background: '#22C55E' }}>
+                      Sauvegarder tous en brouillon
+                    </button>
+                  </div>
+                  <div className="divide-y divide-slate-700 max-h-96 overflow-y-auto">
+                    {stdResults.map((f, i) => (
+                      <div key={i} className="px-5 py-3">
+                        <div className="text-sm text-white font-semibold mb-1">{f.question}</div>
+                        <div className="text-xs font-bold" style={{ color: '#FF6B1A' }}>{f.short_answer}</div>
+                        {f.explanation && <div className="text-xs text-slate-400 mt-1">{f.explanation}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
+
         </div>
       )}
 
-      {/* ══════════ VIP MODE ══════════ */}
-      {tab === 'vip' && (
-        <div className="space-y-6">
+      {/* ══════════ VIP MODE — affiché dans l'onglet "Générer" quand toggle VIP activé ══════════ */}
+      {tab === 'standard' && useVipMode && (
+        <div className="space-y-6 mt-6">
           {/* Controls */}
           <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#FFD70030' }}>
             <h2 className="text-base font-black mb-1" style={{ color: '#FFD700' }}>⭐ Mode VIP — 1 fait, 3 formulations</h2>
@@ -1023,9 +1486,104 @@ export default function GenerateFactsPage({ toast }) {
           <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
             <h2 className="text-base font-black text-white mb-2">🧠 Enrichir les incomplets</h2>
             <p className="text-slate-400 text-sm mb-4">
-              Enrichit tous les facts sans fausses réponses ou sans indices via Claude Opus.
-              Chaque fact est sauvegardé immédiatement après enrichissement.
+              Coche les groupes de champs à traiter. Les facts avec au moins un champ vide dans un groupe coché seront ciblés ;
+              seuls les champs cochés seront réécrits (les autres sont préservés).
+              <br />
+              <span className="text-emerald-400">
+                🎯 Mode chirurgical pour les indices : si <strong>seule la case « Indices » est cochée</strong>,
+                seuls les indices vides OU dépassant 20 caractères sont regénérés — les indices valides sont préservés à 100%.
+              </span>
+              <br />
+              <span className="text-violet-400">
+                🔗 Mode URLs : si <strong>seule la case « URL source » est cochée</strong>,
+                les URLs manquantes sont recherchées via GPT-4o search et <strong>validées HTTP</strong> (HEAD request, jusqu'à 3 tentatives).
+              </span>
             </p>
+
+            {/* Filtres par groupe + counts live */}
+            <div className="flex flex-wrap gap-2 mb-2 items-center">
+              {[
+                { key: 'hints',       label: 'Indices',           color: '#38BDF8' },
+                { key: 'funny',       label: 'Fausses drôles',    color: '#EAB308' },
+                { key: 'close',       label: 'Fausses proches',   color: '#F97316' },
+                { key: 'plausible',   label: 'Fausses plausibles', color: '#EF4444' },
+                { key: 'explanation', label: 'Le saviez-vous',    color: '#22C55E' },
+                { key: 'urls',        label: 'URL source',        color: '#A78BFA' },
+              ].map(({ key, label, color }) => {
+                const on = enrichGroups[key]
+                const count = enrichCounts[key]
+                const countStr = enrichCountsLoading && count == null
+                  ? '…'
+                  : count == null ? '?' : String(count)
+                return (
+                  <button
+                    key={key}
+                    onClick={() => toggleEnrichGroup(key)}
+                    disabled={enrichRunState === 'running'}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40 flex items-center gap-1.5"
+                    style={{
+                      background: on ? `${color}22` : 'transparent',
+                      border: `2px solid ${on ? color : '#475569'}`,
+                      color: on ? color : '#94A3B8',
+                    }}
+                  >
+                    <span>{on ? '✓' : '○'} {label}</span>
+                    <span
+                      className="px-1.5 py-0.5 rounded-md text-[10px] font-black"
+                      style={{
+                        background: on ? color : '#475569',
+                        color: on ? (['#EAB308','#F97316'].includes(color) ? '#1a1a2e' : '#fff') : '#cbd5e1',
+                      }}
+                    >
+                      {countStr}
+                    </span>
+                  </button>
+                )
+              })}
+              <button
+                onClick={loadEnrichCounts}
+                disabled={enrichCountsLoading || enrichRunState === 'running'}
+                title="Recharger les compteurs"
+                className="px-2 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-700 disabled:opacity-40 transition-all"
+              >
+                {enrichCountsLoading ? '⟳' : '↻'}
+              </button>
+            </div>
+
+            {/* Limite optionnelle + raccourcis */}
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <label className="text-xs font-bold text-slate-400">Limite :</label>
+              <input
+                type="number"
+                min="0"
+                value={enrichLimit}
+                onChange={e => setEnrichLimit(e.target.value)}
+                placeholder="tous"
+                disabled={enrichRunState === 'running'}
+                className="w-20 px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs font-bold text-white outline-none focus:border-orange-500 disabled:opacity-40"
+              />
+              <span className="text-xs text-slate-500">(vide = tous)</span>
+              <div className="flex gap-1 ml-2">
+                {[5, 10, 50, 100].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setEnrichLimit(String(n))}
+                    disabled={enrichRunState === 'running'}
+                    className="px-2 py-1 rounded-md text-[10px] font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 transition-all"
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setEnrichLimit('')}
+                  disabled={enrichRunState === 'running'}
+                  className="px-2 py-1 rounded-md text-[10px] font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 transition-all"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
             <div className="flex gap-3 flex-wrap">
               <button
                 disabled={enrichRunState === 'running'}
@@ -1043,20 +1601,107 @@ export default function GenerateFactsPage({ toast }) {
             </div>
           </div>
 
-          {/* Card 2 — reformuler indices courts */}
-          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-            <h2 className="text-base font-black text-white mb-2">📝 Reformuler les indices courts</h2>
+        </div>
+      )}
+
+      {/* ══════════ IMAGES — Batch (flow simplifié Opus auto_pick + Gemini 3 Pro WTF) ══════════ */}
+      {tab === 'images' && (
+        <div className="space-y-6">
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#FF6B1A30' }}>
+            <h2 className="text-base font-black mb-2" style={{ color: '#FF6B1A' }}>🖼️ Générer les images manquantes (batch)</h2>
             <p className="text-slate-400 text-sm mb-4">
-              Reformule les indices d'un seul mot (ancien format) en phrases courtes via Claude.
+              Flow auto : <strong>Opus</strong> propose 3 idées, choisit lui-même la plus WTF →
+              <strong> Gemini 3 Pro</strong> style WTF → 1 image → activation auto.
+              Les 3 idées sont stockées dans le fact pour retravail ultérieur dans l'éditeur mobile.
+              <br />
+              <span className="text-[11px] text-slate-500">
+                Cible : uniquement les facts <strong>sans image</strong> dans la catégorie choisie. ~0,15 €/fact.
+              </span>
             </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Catégorie</label>
+                <select
+                  value={batchImgCategory}
+                  onChange={e => setBatchImgCategory(e.target.value)}
+                  disabled={enrichRunState === 'running'}
+                  className={selectCls}
+                >
+                  <option value="">Choisir…</option>
+                  {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Type</label>
+                <div className="flex gap-1">
+                  {[
+                    { id: 'all',   label: 'Tous' },
+                    { id: 'vip',   label: 'WTF!' },
+                    { id: 'funny', label: 'Fun Facts' },
+                  ].map(t => {
+                    const active = batchImgType === t.id
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => setBatchImgType(t.id)}
+                        disabled={enrichRunState === 'running'}
+                        className="flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all disabled:opacity-40"
+                        style={{
+                          background: active ? 'rgba(255,107,26,0.2)' : 'rgba(15,23,42,1)',
+                          color: active ? '#FF6B1A' : '#94A3B8',
+                          border: `1px solid ${active ? '#FF6B1A66' : '#334155'}`,
+                        }}
+                      >
+                        {t.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nombre</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    value={batchImgCount}
+                    onChange={e => setBatchImgCount(e.target.value)}
+                    disabled={enrichRunState === 'running'}
+                    className="w-20 px-2 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm font-bold text-white outline-none focus:border-orange-500 disabled:opacity-40"
+                  />
+                  <div className="flex gap-1">
+                    {[5, 10, 20].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setBatchImgCount(n)}
+                        disabled={enrichRunState === 'running'}
+                        className="px-2 py-1 rounded-md text-[10px] font-bold text-slate-300 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 transition-all"
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-[11px] text-slate-400 mb-3">
+              {batchImgAvailable === null
+                ? '…'
+                : batchImgAvailable === 0
+                  ? '✅ Aucun fact sans image avec ces filtres'
+                  : <>📊 <strong>{batchImgAvailable}</strong> fact{batchImgAvailable > 1 ? 's' : ''} sans image disponibles · coût total ~{(batchImgAvailable * 0.15).toFixed(2)} €</>}
+            </div>
+
             <div className="flex gap-3 flex-wrap">
               <button
-                disabled={enrichRunState === 'running'}
-                onClick={runEnrichShortHints}
+                disabled={enrichRunState === 'running' || !batchImgCategory || batchImgAvailable === 0}
+                onClick={runBatchGenerateImages}
                 className="px-4 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 hover:opacity-90 active:scale-95"
                 style={{ background: 'linear-gradient(135deg, #FF6B1A, #D94A10)' }}
               >
-                {enrichRunState === 'running' ? 'Reformulation…' : '📝 Reformuler les indices'}
+                {enrichRunState === 'running' ? 'Génération…' : `🚀 Générer ${batchImgCount} image${Number(batchImgCount) > 1 ? 's' : ''}`}
               </button>
               {enrichRunState === 'running' && (
                 <button onClick={stopEnrich} className="px-4 py-2 rounded-xl text-sm font-bold bg-red-900/30 text-red-400 border border-red-800/40 hover:bg-red-900/50 transition-all">
@@ -1065,72 +1710,21 @@ export default function GenerateFactsPage({ toast }) {
               )}
             </div>
           </div>
+
+          {/* Message en cours d'exécution */}
+          {enrichMessage && (
+            <div className="px-4 py-3 rounded-xl border text-sm font-semibold"
+              style={{
+                background: 'rgba(255,107,26,0.08)',
+                borderColor: 'rgba(255,107,26,0.3)',
+                color: '#FF6B1A',
+              }}>
+              {enrichMessage}
+            </div>
+          )}
         </div>
       )}
 
-      {/* ══════════ URLS SOURCES ══════════ */}
-      {tab === 'urls' && (
-        <div className="space-y-6">
-          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700" style={{ borderColor: '#38BDF830' }}>
-            <h2 className="text-base font-black mb-1" style={{ color: '#38BDF8' }}>🔗 Remplir les URLs sources manquantes</h2>
-            <p className="text-slate-400 text-sm mb-4">
-              Recherche automatique de sources via Claude Opus pour tous les facts sans URL.
-              Peut prendre 2-3 min selon le volume.
-            </p>
-
-            <button
-              onClick={runFillUrls}
-              disabled={fillUrlsStatus === 'running'}
-              className="px-5 py-2.5 rounded-xl font-black text-sm text-white transition-all active:scale-95 disabled:opacity-50"
-              style={{ background: '#38BDF8' }}
-            >
-              {fillUrlsStatus === 'running'
-                ? <><span className="inline-block animate-spin mr-2">⟳</span>Recherche en cours…</>
-                : '🔍 Remplir les URLs manquantes (Opus)'}
-            </button>
-
-            {fillUrlsStatus === 'error' && fillUrlsError && (
-              <div className="mt-3 px-4 py-2.5 rounded-xl border border-red-700 text-sm font-semibold" style={{ background: 'rgba(239,68,68,0.12)', color: '#EF4444' }}>
-                ❌ Erreur : {fillUrlsError}
-              </div>
-            )}
-
-            {fillUrlsStatus === 'done' && fillUrlsResult && (
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="px-3 py-1 rounded-full text-xs font-black" style={{ background: 'rgba(34,197,94,0.15)', color: '#22C55E' }}>
-                    ✅ {fillUrlsResult.updated} URLs ajoutées
-                  </span>
-                  {fillUrlsResult.not_found > 0 && (
-                    <span className="px-3 py-1 rounded-full text-xs font-black" style={{ background: 'rgba(245,158,11,0.15)', color: '#F59E0B' }}>
-                      ⚠️ {fillUrlsResult.not_found} sans source trouvée
-                    </span>
-                  )}
-                  <span className="text-xs text-slate-500">{fillUrlsResult.processed} traités au total</span>
-                </div>
-                {fillUrlsResult.details?.length > 0 && (
-                  <div className="border border-slate-700 rounded-xl overflow-hidden mt-2">
-                    <div className="divide-y divide-slate-700 max-h-60 overflow-y-auto">
-                      {fillUrlsResult.details.map(d => (
-                        <div key={d.id} className="flex items-center gap-3 px-4 py-2 text-xs hover:bg-slate-700/50 transition-colors">
-                          <span className="font-black shrink-0" style={{ color: '#FF6B1A' }}>#{d.id}</span>
-                          {d.url === 'INTROUVABLE' ? (
-                            <span className="text-amber-400 font-semibold">INTROUVABLE</span>
-                          ) : (
-                            <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white truncate flex-1 min-w-0">
-                              {d.url}
-                            </a>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

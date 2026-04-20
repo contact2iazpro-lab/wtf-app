@@ -175,10 +175,7 @@ export default function ScreenRenderer({
           <BlitzLobbyScreen
             onSelectCategory={handleBlitzStart}
             onBack={handleHome}
-            bestBlitzTime={wd.bestBlitzTime || null}
-            bestSoloScore={wd.blitzSoloBestScore || 0}
-            playerCoins={wd.wtfCoins || 0}
-            opponentId={isChallengeMode ? pendingDuel?.opponentId : null}
+            bestBlitzScore={wd.blitzSoloBestScore || 0}
           />
         )
       })()}
@@ -196,7 +193,7 @@ export default function ScreenRenderer({
 
       {screen === SCREENS.BLITZ_RESULTS && blitzResults && (
         <BlitzResultsScreen
-          variant={blitzResults.variant || blitzVariant || 'defi'}
+          variant={blitzResults.variant || blitzVariant || 'rush'}
           finalTime={blitzResults.finalTime}
           correctCount={blitzResults.correctCount}
           totalAnswered={blitzResults.totalAnswered}
@@ -207,6 +204,8 @@ export default function ScreenRenderer({
           categoryId={selectedCategory}
           categoryLabel={getCategoryById(selectedCategory)?.label || ''}
           questionCount={blitzResults.totalAnswered}
+          sessionAnswers={blitzResults.sessionAnswers || []}
+          palier={blitzResults.palier || null}
           user={user}
           isChallengeMode={isChallengeMode}
           onHome={handleHome}

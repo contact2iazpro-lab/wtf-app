@@ -3,63 +3,104 @@ import { useScale } from '../hooks/useScale'
 import { getValidFacts, getPlayableCategories } from '../data/factsService'
 import { audio } from '../utils/audio'
 import { useDuelContext } from '../features/duels/context/DuelContext'
+import { readWtfData } from '../utils/storageHelper'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const getCategoryIcon = (id) => `/assets/categories/${id}.png`
 
-export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTime = null, bestSoloScore = 0, opponentId = null, playerCoins = 0 }) {
+// Paliers Speedrun (nb questions à enchaîner, chrono montant)
+const SPEEDRUN_PALIERS = [5, 10, 20, 30, 50, 100]
+
+export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzScore = 0 }) {
   const scale = useScale()
-  const isChallenge = !!opponentId
-  // En acceptation de défi : forced 'defi'. Sinon : solo par défaut.
-  const [variant, setVariant] = useState(isChallenge ? 'defi' : 'solo')
-  const [selectedCatId, setSelectedCatId] = useState(isChallenge ? null : 'all')
-  const [questionCount, setQuestionCount] = useState(null)
+  const [variant, setVariant] = useState('rush') // 'rush' (60s descendant) | 'speedrun' (chrono montant, cat 100%)
+  const [selectedCatId, setSelectedCatId] = useState(null)
+  const [selectedPalier, setSelectedPalier] = useState(null)
 
   // Source de vérité : DuelContext → lit collections Supabase direct.
-  // Plus de dépendance à App.jsx state ni à localStorage.
-  const { unlockedFacts: effectiveUnlocked, unlockedLoading } = useDuelContext()
+  const { unlockedFacts: effectiveUnlocked } = useDuelContext()
   const allFacts = getValidFacts()
   const totalUnlocked = allFacts.filter(f => effectiveUnlocked.has(f.id)).length
 
-  // Categories with >= 5 unlocked facts côté créateur (seuil minimum pour Blitz).
-  // En défi : on ne contraint PAS sur l'adversaire — le créateur propose librement
-  // dans ses propres catégories. Si l'opposant n'a pas ≥5 f*cts dans la catégorie,
-  // c'est à lui de le gérer à l'acceptation (fallback côté ChallengeScreen).
+  // Catégories avec compteurs unlocked / total, flag "complétée à 100%" pour Speedrun
+  // Tri : 100% complétées en haut > % complétion desc > alphabétique (19/04/2026)
   const categories = useMemo(() => {
     const cats = getPlayableCategories()
     return cats
       .map(cat => {
-        const count = allFacts.filter(f => f.category === cat.id && effectiveUnlocked.has(f.id)).length
-        return { ...cat, count }
+        const factsInCat = allFacts.filter(f => f.category === cat.id)
+        const unlocked = factsInCat.filter(f => effectiveUnlocked.has(f.id)).length
+        const total = factsInCat.length
+        const ratio = total > 0 ? unlocked / total : 0
+        return { ...cat, unlocked, total, ratio, isComplete: total > 0 && unlocked === total }
       })
-      .filter(c => c.count >= 5)
-      .sort((a, b) => b.count - a.count)
+      .sort((a, b) => {
+        if (a.isComplete !== b.isComplete) return b.isComplete - a.isComplete
+        if (a.ratio !== b.ratio) return b.ratio - a.ratio
+        return (a.label || '').localeCompare(b.label || '', 'fr')
+      })
   }, [allFacts, effectiveUnlocked])
 
-  // Pool size for selected category (basé uniquement sur le créateur)
-  const poolSize = selectedCatId === 'all'
-    ? totalUnlocked
-    : (categories.find(c => c.id === selectedCatId)?.count || 0)
+  // Gate unifiée Rush + Speedrun : cat doit avoir ≥10 f*cts débloqués
+  // (aligné Rush/Speedrun 19/04/2026 — plus besoin d'avoir 100% pour Speedrun)
+  const RUSH_MIN_FACTS = 10
+  const availableCats = categories.filter(c => c.unlocked >= RUSH_MIN_FACTS)
+  const rushCats = availableCats
+  const speedrunCats = availableCats
 
-  const effectivePool = poolSize
+  // Records Speedrun par (cat, palier) — stockés dans wtfData.speedrunRecords[`${catId}_${palier}`] = temps en s
+  const speedrunRecords = useMemo(() => {
+    const wd = readWtfData()
+    return wd.speedrunRecords || {}
+  }, [selectedCatId, selectedPalier, variant])
 
-  // Bloc 3.3 — paliers Blitz : retiré 40, ajouté 100
-  const questionOptions = [5, 10, 20, 30, 50, 100]
-  const poolForCount = effectivePool
-  const effectiveCount = questionCount || (poolForCount >= 100 ? 100 : poolForCount >= 50 ? 50 : poolForCount >= 30 ? 30 : poolForCount >= 20 ? 20 : poolForCount >= 10 ? 10 : poolForCount >= 5 ? 5 : poolForCount)
-  const hasSelection = selectedCatId !== null && poolForCount >= 5
+  const currentRecord = selectedCatId && selectedPalier
+    ? speedrunRecords[`${selectedCatId}_${selectedPalier}`] || null
+    : null
 
-  const canPayDefi = variant !== 'defi' || playerCoins >= 200 || isChallenge
+  // Top 3 derniers records Speedrun (meilleurs temps, tous paliers confondus)
+  const topRecords = useMemo(() => {
+    const entries = Object.entries(speedrunRecords)
+    if (entries.length === 0) return []
+    return entries
+      .map(([key, time]) => {
+        const [catId, palierStr] = key.split('_')
+        const cat = categories.find(c => c.id === catId)
+        return {
+          key,
+          catId,
+          catLabel: cat?.label || catId,
+          catColor: cat?.color || '#888',
+          palier: parseInt(palierStr) || 0,
+          time: Number(time),
+        }
+      })
+      .filter(r => r.time > 0)
+      .sort((a, b) => a.time - b.time)
+      .slice(0, 3)
+  }, [speedrunRecords, categories])
+
+  // Le palier ne peut pas dépasser le nb de facts débloqués dans la cat
+  const selectedCat = selectedCatId ? categories.find(c => c.id === selectedCatId) : null
+  const maxPalier = selectedCat?.unlocked || 0
+
+  // Rush : 'all' par défaut, ou une cat spécifique avec ≥10 f*cts unlocked
+  const [rushCatId, setRushCatId] = useState('all')
+  const canGo = variant === 'rush'
+    ? (rushCatId === 'all' ? totalUnlocked >= RUSH_MIN_FACTS
+        : rushCats.some(c => c.id === rushCatId))
+    : (selectedCatId && selectedPalier && selectedPalier <= maxPalier)
+
   const handleGo = () => {
     audio.play('click')
-    if (variant === 'solo') {
-      // Solo : pas de catégorie, pas de nb questions — toujours 60s sur tout le pool
-      onSelectCategory(null, null, 'solo')
-      return
+    if (variant === 'rush') {
+      // Rush : pool global ('all') ou cat spécifique si ≥10 f*cts unlocked
+      onSelectCategory(rushCatId, null, 'rush')
+    } else {
+      // Speedrun : catégorie + palier fixés
+      onSelectCategory(selectedCatId, selectedPalier, 'speedrun')
     }
-    if (!hasSelection || !canPayDefi) return
-    onSelectCategory(selectedCatId === 'all' ? null : selectedCatId, effectiveCount, 'defi')
   }
 
   return (
@@ -69,7 +110,7 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
       overflow: 'hidden', boxSizing: 'border-box',
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
-      background: 'linear-gradient(160deg, #7b6b8a 0%, #9d8bab 40%, #b5a5c2 70%, #7b6b8a 100%)',
+      background: 'linear-gradient(160deg, #8a1a1a 0%, #CC0000 40%, #FF4444 70%, #8a1a1a 100%)',
       color: '#ffffff',
     }}>
 
@@ -92,50 +133,89 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
         </h1>
       </div>
 
-      {/* Toggle Solo / Défi (masqué en mode acceptation) */}
-      {!isChallenge && (
+      {/* Toggle Rush / Speedrun */}
+      <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(10)}` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8) }}>
+          <button
+            onClick={() => { audio.play('click'); setVariant('rush') }}
+            style={{
+              padding: `${S(12)} 0`, borderRadius: S(12),
+              background: variant === 'rush' ? 'linear-gradient(135deg, #FF4444, #CC0000)' : 'rgba(255,255,255,0.08)',
+              border: variant === 'rush' ? '2.5px solid white' : '2.5px solid transparent',
+              color: 'white', fontWeight: 900, fontSize: S(14), cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif', transition: 'all 0.2s ease',
+            }}
+          >
+            Rush
+            <div style={{ fontSize: S(9), fontWeight: 600, opacity: 0.85, marginTop: 2 }}>
+              60s · bats ton record
+            </div>
+          </button>
+          <button
+            onClick={() => { audio.play('click'); setVariant('speedrun') }}
+            disabled={speedrunCats.length === 0}
+            style={{
+              padding: `${S(12)} 0`, borderRadius: S(12),
+              background: variant === 'speedrun'
+                ? 'linear-gradient(135deg, #8B0000, #500000)'
+                : speedrunCats.length === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)',
+              border: variant === 'speedrun' ? '2.5px solid white' : '2.5px solid transparent',
+              color: speedrunCats.length === 0 ? 'rgba(255,255,255,0.3)' : 'white',
+              fontWeight: 900, fontSize: S(14),
+              cursor: speedrunCats.length === 0 ? 'not-allowed' : 'pointer',
+              fontFamily: 'Nunito, sans-serif', transition: 'all 0.2s ease',
+              position: 'relative',
+            }}
+          >
+            Speedrun
+            <div style={{ fontSize: S(9), fontWeight: 600, opacity: 0.85, marginTop: 2 }}>
+              {speedrunCats.length === 0 ? `🔒 ${RUSH_MIN_FACTS} f*cts min` : 'le + rapide gagne'}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Mes records (Rush + top 3 Speedrun au centième) — SOUS les cards */}
+      {(bestBlitzScore > 0 || topRecords.length > 0) && (
         <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(10)}` }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8) }}>
-            <button
-              onClick={() => { audio.play('click'); setVariant('solo') }}
-              style={{
-                padding: `${S(12)} 0`, borderRadius: S(12),
-                background: variant === 'solo' ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : 'rgba(255,255,255,0.08)',
-                border: variant === 'solo' ? '2.5px solid white' : '2.5px solid transparent',
-                color: 'white', fontWeight: 900, fontSize: S(14), cursor: 'pointer',
-                fontFamily: 'Nunito, sans-serif', transition: 'all 0.2s ease',
-              }}
-            >
-              Solo
-              <div style={{ fontSize: S(9), fontWeight: 600, opacity: 0.85, marginTop: 2 }}>
-                60s · bats ton record
+          <div style={{
+            background: 'rgba(0,0,0,0.25)', borderRadius: S(12),
+            border: '1px solid rgba(255,215,0,0.25)',
+            padding: `${S(8)} ${S(12)}`,
+          }}>
+            <div style={{ fontSize: S(10), fontWeight: 900, color: '#FFD700', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: S(6) }}>
+              🏆 Mes records
+            </div>
+            {bestBlitzScore > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: S(12), padding: `${S(3)} 0` }}>
+                <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 700 }}>⚡ Rush · 60s</span>
+                <span style={{ color: '#FFD700', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>
+                  {bestBlitzScore} bonne{bestBlitzScore > 1 ? 's' : ''}
+                </span>
               </div>
-            </button>
-            <button
-              onClick={() => { audio.play('click'); setVariant('defi') }}
-              style={{
-                padding: `${S(12)} 0`, borderRadius: S(12),
-                background: variant === 'defi' ? 'linear-gradient(135deg, #7C3AED, #3B82F6)' : 'rgba(255,255,255,0.08)',
-                border: variant === 'defi' ? '2.5px solid white' : '2.5px solid transparent',
-                color: 'white', fontWeight: 900, fontSize: S(14), cursor: 'pointer',
-                fontFamily: 'Nunito, sans-serif', transition: 'all 0.2s ease',
-              }}
-            >
-              Défi
-              <div style={{ fontSize: S(9), fontWeight: 600, opacity: 0.85, marginTop: 2 }}>
-                200 WTFCoins · défie un ami
+            )}
+            {topRecords.map(r => (
+              <div key={r.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: S(12), padding: `${S(3)} 0` }}>
+                <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: S(6), minWidth: 0 }}>
+                  <span style={{ width: S(8), height: S(8), borderRadius: '50%', background: r.catColor, flexShrink: 0 }} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.catLabel}</span>
+                  <span style={{ opacity: 0.55, fontSize: S(10), flexShrink: 0 }}>· {r.palier}q</span>
+                </span>
+                <span style={{ color: '#00E5FF', fontWeight: 900, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                  {r.time.toFixed(2)}s
+                </span>
               </div>
-            </button>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Record (contextuel au variant) */}
+      {/* Record contextuel */}
       <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${S(16)} ${S(8)}` }}>
-        {variant === 'solo' ? (
-          bestSoloScore > 0 ? (
+        {variant === 'rush' ? (
+          bestBlitzScore > 0 ? (
             <div style={{ fontSize: S(18), fontWeight: 900, color: '#FFD700' }}>
-              🏆 Ton record : {bestSoloScore} bonne{bestSoloScore > 1 ? 's' : ''}
+              🏆 Ton record : {bestBlitzScore} bonne{bestBlitzScore > 1 ? 's' : ''} en 60s
             </div>
           ) : (
             <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
@@ -143,181 +223,213 @@ export default function BlitzLobbyScreen({ onSelectCategory, onBack, bestBlitzTi
             </div>
           )
         ) : (
-          bestBlitzTime ? (
+          currentRecord ? (
             <div style={{ fontSize: S(18), fontWeight: 900, color: '#FFD700' }}>
-              🏆 Meilleur temps : {bestBlitzTime < 60 ? bestBlitzTime.toFixed(2) + 's' : Math.floor(bestBlitzTime / 60) + ':' + (bestBlitzTime % 60).toFixed(2).padStart(5, '0')}
+              🏆 Record palier {selectedPalier} : {currentRecord.toFixed(2)}s
             </div>
-          ) : (
+          ) : selectedCatId && selectedPalier ? (
             <div style={{ fontSize: S(14), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
-              Pas encore de défi joué — relève-en un !
+              Pas encore de record sur ce palier — go !
             </div>
-          )
+          ) : null
         )}
       </div>
 
-      {/* Description */}
-      <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${S(20)} ${S(12)}` }}>
-        <p style={{ fontSize: S(12), fontWeight: 600, color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.4 }}>
-          {variant === 'solo'
-            ? 'Réponds au max de questions en 60 secondes. Pas d\'indices, pas de pénalité : enchaîne !'
-            : 'Défi asynchrone : même set de questions, meilleur temps gagne. Pénalité +5s sur erreur.'}
-        </p>
-      </div>
-
-      {/* Pool selection (masqué en solo — tout le pool est utilisé) */}
-      {variant === 'solo' ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: S(24), textAlign: 'center' }}>
-          <div>
-            <div style={{ fontSize: S(64), marginBottom: S(12) }}>⚡</div>
-            <div style={{ fontSize: S(16), fontWeight: 900, color: 'white', marginBottom: S(6) }}>
-              {totalUnlocked} f*cts débloqués
-            </div>
-            <div style={{ fontSize: S(12), fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>
-              {totalUnlocked >= 20
-                ? 'Piochés dans toutes tes catégories, VIP et Funny mélangés.'
-                : `Débloque encore ${20 - totalUnlocked} f*ct${20 - totalUnlocked > 1 ? 's' : ''} pour accéder au Blitz Solo.`}
-            </div>
-          </div>
-        </div>
-      ) : (
-      <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(12)} ${S(8)}`, WebkitOverflowScrolling: 'touch' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
-
-          {/* Toutes mes f*cts — Aléatoire (dispo en solo ET en défi) */}
-          <button
-            onClick={() => { audio.play('click'); setSelectedCatId('all') }}
-            style={{
-              background: selectedCatId === 'all'
-                ? 'linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)'
-                : 'linear-gradient(135deg, rgba(124,58,237,0.5) 0%, rgba(59,130,246,0.5) 100%)',
-              borderRadius: S(12), padding: `${S(12)} ${S(14)}`,
-              width: '100%', boxSizing: 'border-box',
-              display: 'flex', alignItems: 'center', gap: S(10),
-              border: selectedCatId === 'all' ? '2.5px solid white' : '2.5px solid transparent',
-              boxShadow: selectedCatId === 'all' ? '0 0 20px rgba(255,255,255,0.2)' : 'none',
-              transform: selectedCatId === 'all' ? 'scale(1.02)' : 'scale(1)',
-              opacity: selectedCatId === null || selectedCatId === 'all' ? 1 : 0.6,
-              cursor: 'pointer', transition: 'all 0.2s ease',
-              fontFamily: 'Nunito, sans-serif', textAlign: 'left',
-            }}
-          >
-            <span style={{ fontSize: S(24), flexShrink: 0 }}>🎲</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 900, fontSize: S(14), color: 'white' }}>Toutes mes f*cts</div>
-              <div style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>
-                {totalUnlocked} f*cts débloqués
+      {/* Contenu principal (varie selon variant) */}
+      {variant === 'rush' ? (
+        <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(12)} ${S(8)}`, WebkitOverflowScrolling: 'touch' }}>
+          {totalUnlocked < RUSH_MIN_FACTS ? (
+            <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.55)', fontSize: S(13), fontWeight: 700 }}>
+              🔒 Débloque au moins {RUSH_MIN_FACTS} f*cts pour accéder au Blitz Rush.
+              <div style={{ fontSize: S(11), opacity: 0.8, marginTop: S(4) }}>
+                Tu en as {totalUnlocked} / {RUSH_MIN_FACTS}
               </div>
             </div>
-          </button>
-
-          {/* Categories */}
-          {categories.map(cat => {
-            const isSelected = selectedCatId === cat.id
-            return (
-              <button
-                key={cat.id}
-                onClick={() => { audio.play('click'); setSelectedCatId(cat.id) }}
-                style={{
-                  background: isSelected ? (cat.color || '#6B7280') : `${cat.color || '#6B7280'}88`,
-                  borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
-                  width: '100%', boxSizing: 'border-box',
-                  display: 'flex', alignItems: 'center', gap: S(10),
-                  border: isSelected ? '2.5px solid white' : '2.5px solid transparent',
-                  boxShadow: isSelected ? '0 0 20px rgba(255,255,255,0.2)' : 'none',
-                  transform: isSelected ? 'scale(1.02)' : 'scale(1)',
-                  opacity: selectedCatId === null || isSelected || selectedCatId === 'all' ? (selectedCatId === 'all' && !isSelected ? 0.6 : 1) : 0.6,
-                  cursor: 'pointer', transition: 'all 0.2s ease',
-                  fontFamily: 'Nunito, sans-serif', textAlign: 'left',
-                }}
-              >
-                <img
-                  src={getCategoryIcon(cat.id)}
-                  alt={cat.label}
-                  style={{ width: S(32), height: S(32), borderRadius: S(6), objectFit: 'cover', flexShrink: 0 }}
-                  onError={e => { e.target.style.display = 'none' }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 900, fontSize: S(13), color: 'white', lineHeight: 1.2 }}>{cat.label}</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
+              {/* Option Aléatoire (toutes cats confondues) */}
+              {(() => {
+                const sel = rushCatId === 'all'
+                return (
+                  <button
+                    key="all"
+                    onClick={() => { audio.play('click'); setRushCatId('all') }}
+                    style={{
+                      background: sel ? 'linear-gradient(135deg, #CC0000, #8a1a1a)' : 'rgba(255,255,255,0.08)',
+                      borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
+                      width: '100%', boxSizing: 'border-box',
+                      display: 'flex', alignItems: 'center', gap: S(10),
+                      border: sel ? '3px solid #ffffff' : '2px solid #ffffff',
+                      cursor: 'pointer', textAlign: 'left',
+                      fontFamily: 'Nunito, sans-serif',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div style={{ width: S(32), height: S(32), borderRadius: S(6), background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: S(18), flexShrink: 0 }}>🎲</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 900, fontSize: S(13), color: 'white', lineHeight: 1.2 }}>Aléatoire</div>
+                      <div style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>
+                        {totalUnlocked} f*cts · toutes catégories
+                      </div>
+                    </div>
+                  </button>
+                )
+              })()}
+              {/* Cats avec ≥10 f*cts débloqués */}
+              {rushCats.map(cat => {
+                const sel = rushCatId === cat.id
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => { audio.play('click'); setRushCatId(cat.id) }}
+                    style={{
+                      background: sel ? (cat.color || '#6B7280') : `${cat.color || '#6B7280'}88`,
+                      borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
+                      width: '100%', boxSizing: 'border-box',
+                      display: 'flex', alignItems: 'center', gap: S(10),
+                      border: sel ? '3px solid #ffffff' : '2px solid #ffffff',
+                      boxShadow: sel ? '0 0 20px rgba(255,255,255,0.25)' : 'none',
+                      opacity: sel || rushCatId === 'all' ? 1 : 0.75,
+                      cursor: 'pointer', textAlign: 'left',
+                      fontFamily: 'Nunito, sans-serif',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <img
+                      src={getCategoryIcon(cat.id)}
+                      alt={cat.label}
+                      style={{ width: S(32), height: S(32), borderRadius: S(6), objectFit: 'cover', flexShrink: 0 }}
+                      onError={e => { e.target.style.display = 'none' }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 900, fontSize: S(13), color: 'white', lineHeight: 1.2 }}>{cat.label}</div>
+                      <div style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>
+                        {cat.unlocked} / {cat.total} f*cts
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
+              {rushCats.length === 0 && (
+                <div style={{ textAlign: 'center', padding: `${S(12)} 0`, color: 'rgba(255,255,255,0.5)', fontSize: S(11), fontWeight: 600 }}>
+                  Aucune catégorie ≥ {RUSH_MIN_FACTS} f*cts débloqués. Joue en aléatoire.
                 </div>
-                <span style={{ fontWeight: 800, fontSize: S(11), color: 'rgba(255,255,255,0.7)', flexShrink: 0 }}>
-                  {cat.count} f*cts
-                </span>
-              </button>
-            )
-          })}
-
-          {totalUnlocked < 5 && (
-            <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.4)', fontSize: S(12) }}>
-              Débloque au moins 5 f*cts pour jouer en Blitz ! 🔓
+              )}
             </div>
           )}
-
         </div>
-      </div>
-      )}
-
-      {/* Question count selector (Défi uniquement) */}
-      {variant === 'defi' && poolSize >= 5 && (
-        <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(8)}` }}>
-          <div style={{ fontSize: S(14), fontWeight: 900, color: 'white', marginBottom: S(8), textAlign: 'center' }}>Nombre de questions</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            {questionOptions.map(n => {
-              const available = poolSize >= n
-              const selected = effectiveCount === n
-              return (
-                <button
-                  key={n}
-                  onClick={() => available && setQuestionCount(n)}
-                  disabled={!available}
-                  style={{
-                    borderRadius: 12, padding: `${S(10)} 0`,
-                    fontSize: S(16), fontWeight: 900, cursor: available ? 'pointer' : 'default',
-                    background: selected ? '#FF6B1A' : available ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: available ? 'white' : 'rgba(255,255,255,0.2)',
-                    border: selected ? '2px solid #FF6B1A' : available ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.08)',
-                    opacity: available ? 1 : 0.35,
-                    transition: 'all 0.2s ease',
-                    fontFamily: 'Nunito, sans-serif',
-                    position: 'relative',
-                  }}
-                >
-                  {n}
-                  {!available && <span style={{ display: 'block', fontSize: S(8), color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>🔒</span>}
-                </button>
-              )
-            })}
+      ) : (
+        <>
+          {/* Liste catégories (Speedrun) — ≥10 f*cts débloqués (aligné Rush 19/04) */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: `0 ${S(12)} ${S(8)}`, WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: S(6) }}>
+              {speedrunCats.length === 0 && (
+                <div style={{ textAlign: 'center', padding: `${S(20)} 0`, color: 'rgba(255,255,255,0.5)', fontSize: S(13), fontWeight: 700 }}>
+                  🔒 Débloque {RUSH_MIN_FACTS} f*cts dans une catégorie pour le Speedrun.
+                </div>
+              )}
+              {categories.map(cat => {
+                const isSelected = selectedCatId === cat.id
+                const available = cat.unlocked >= RUSH_MIN_FACTS
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => { if (!available) return; audio.play('click'); setSelectedCatId(cat.id); setSelectedPalier(null) }}
+                    disabled={!available}
+                    style={{
+                      background: isSelected ? (cat.color || '#6B7280') : available ? `${cat.color || '#6B7280'}88` : 'rgba(255,255,255,0.04)',
+                      borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
+                      width: '100%', boxSizing: 'border-box',
+                      display: 'flex', alignItems: 'center', gap: S(10),
+                      border: isSelected ? '3px solid #ffffff' : '2px solid #ffffff',
+                      boxShadow: isSelected ? '0 0 20px rgba(255,255,255,0.25)' : 'none',
+                      opacity: available ? (isSelected || selectedCatId === null ? 1 : 0.7) : 0.35,
+                      cursor: available ? 'pointer' : 'not-allowed',
+                      fontFamily: 'Nunito, sans-serif', textAlign: 'left',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <img
+                      src={getCategoryIcon(cat.id)}
+                      alt={cat.label}
+                      style={{ width: S(32), height: S(32), borderRadius: S(6), objectFit: 'cover', flexShrink: 0 }}
+                      onError={e => { e.target.style.display = 'none' }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 900, fontSize: S(13), color: 'white', lineHeight: 1.2 }}>{cat.label}</div>
+                      <div style={{ fontSize: S(10), fontWeight: 700, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>
+                        {cat.unlocked} / {cat.total} f*cts
+                      </div>
+                    </div>
+                    <span style={{ fontWeight: 800, fontSize: S(11), color: available ? '#FFD700' : 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+                      {cat.isComplete ? '✓ 100%' : `${Math.round((cat.unlocked / (cat.total || 1)) * 100)}%`}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-        </div>
+
+          {/* Palier selector (Speedrun uniquement, si cat sélectionnée) */}
+          {selectedCatId && (
+            <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(8)}` }}>
+              <div style={{ fontSize: S(14), fontWeight: 900, color: 'white', marginBottom: S(8), textAlign: 'center' }}>
+                Palier (nb questions)
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                {SPEEDRUN_PALIERS.map(n => {
+                  const available = n <= maxPalier
+                  const selected = selectedPalier === n
+                  return (
+                    <button
+                      key={n}
+                      onClick={() => available && setSelectedPalier(n)}
+                      disabled={!available}
+                      style={{
+                        borderRadius: 12, padding: `${S(10)} 0`,
+                        fontSize: S(16), fontWeight: 900, cursor: available ? 'pointer' : 'default',
+                        background: selected ? '#00E5FF' : available ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
+                        color: available ? (selected ? '#0a0a2e' : 'white') : 'rgba(255,255,255,0.2)',
+                        border: selected ? '2px solid #00E5FF' : available ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.08)',
+                        opacity: available ? 1 : 0.35,
+                        transition: 'all 0.2s ease',
+                        fontFamily: 'Nunito, sans-serif',
+                      }}
+                    >
+                      {n}
+                      {!available && <span style={{ display: 'block', fontSize: S(8), color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>🔒</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* CTA */}
       <div style={{ flexShrink: 0, padding: `${S(8)} ${S(12)} ${S(14)}` }}>
-        {(() => {
-          const canGo = variant === 'solo'
-            ? totalUnlocked >= 20
-            : (hasSelection && totalUnlocked >= 5 && canPayDefi)
-          const label = variant === 'solo'
-            ? 'GO ! ⚡'
-            : canPayDefi ? 'LANCER LE DÉFI · 200' : '200 WTFCoins requis'
-          return (
-            <button
-              onClick={canGo ? handleGo : undefined}
-              style={{
-                width: '100%', padding: S(14),
-                borderRadius: S(14), fontSize: S(18), fontWeight: 900,
-                textTransform: 'uppercase', letterSpacing: '0.04em',
-                border: 'none', fontFamily: 'Nunito, sans-serif',
-                cursor: canGo ? 'pointer' : 'default',
-                pointerEvents: canGo ? 'auto' : 'none',
-                background: canGo ? 'linear-gradient(135deg, #FF6B1A, #D94A10)' : 'rgba(255,255,255,0.15)',
-                color: canGo ? 'white' : 'rgba(255,255,255,0.4)',
-                boxShadow: canGo ? '0 6px 24px rgba(255,107,26,0.4)' : 'none',
-              }}
-            >
-              {label}
-            </button>
-          )
-        })()}
+        <button
+          onClick={canGo ? handleGo : undefined}
+          style={{
+            width: '100%', padding: S(14),
+            borderRadius: S(14), fontSize: S(18), fontWeight: 900,
+            textTransform: 'uppercase', letterSpacing: '0.04em',
+            border: canGo ? '3px solid #ffffff' : 'none',
+            fontFamily: 'Nunito, sans-serif',
+            cursor: canGo ? 'pointer' : 'default',
+            pointerEvents: canGo ? 'auto' : 'none',
+            background: canGo
+              ? (variant === 'rush'
+                  ? '#CC0000'
+                  : '#8B0000')
+              : 'rgba(255,255,255,0.15)',
+            color: canGo ? 'white' : 'rgba(255,255,255,0.4)',
+            boxShadow: canGo ? '0 6px 24px rgba(204,0,0,0.5)' : 'none',
+          }}
+        >
+          {variant === 'rush' ? 'GO ! ⚡' : (selectedPalier ? `GO SPEEDRUN · ${selectedPalier} QUESTIONS` : 'CHOISIS UN PALIER')}
+        </button>
       </div>
     </div>
   )

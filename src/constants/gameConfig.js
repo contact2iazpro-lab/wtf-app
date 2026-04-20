@@ -14,9 +14,9 @@ export const DIFFICULTY_LEVELS = {
     coinsPerCorrect: 10, perfectBonus: 50,
     scoring: { correct: 10, wrong: 0 },
     wrongDistribution: { type: 'questionLevel', profiles: [
-      { weight: 0.8, counts: { plausible: 3 } },
-      { weight: 0.1, counts: { plausible: 2, close: 1 } },
-      { weight: 0.1, counts: { plausible: 2, funny: 1 } },
+      { weight: 0.4, counts: { plausible: 3 } },
+      { weight: 0.3, counts: { plausible: 2, close: 1 } },
+      { weight: 0.3, counts: { plausible: 2, funny: 1 } },
     ] },
   },
   VRAI_OU_FOU: {

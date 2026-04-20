@@ -610,7 +610,7 @@ export default function RevelationScreen({
         <div style={{
           background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
           borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
-          border: `2.5px solid ${accentColor}`,
+          border: isVipReveal ? `3px solid #FFD700` : `2.5px solid ${accentColor}`,
           height: S(75), overflow: 'hidden',
         }}>
           <div ref={questionContainerRef} style={{ width: '100%', height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -689,14 +689,14 @@ export default function RevelationScreen({
               animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
             }} />
           </div>
-          {/* Stamp Unlocked — gold + étoile WTF pour les VIP, vert pour les Funny. Masqué en VoF. */}
+          {/* Stamp Unlocked — gold + étoile WTF pour les VIP (étoile dans l'angle haut-droit intérieur), vert pour les Funny. Masqué en VoF. */}
           {!isVofMode && (
             <div style={{
               position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
               background: 'transparent',
               border: `2px solid ${isVipReveal ? '#FFD700' : '#4CAF50'}`,
               borderRadius: S(6),
-              padding: `${S(3)} ${S(8)}`,
+              padding: isVipReveal ? `${S(3)} ${S(14)} ${S(3)} ${S(8)}` : `${S(3)} ${S(8)}`,
               pointerEvents: 'none',
             }}>
               {isVipReveal && (
@@ -704,10 +704,10 @@ export default function RevelationScreen({
                   src="/assets/ui/wtf-star.png"
                   alt=""
                   style={{
-                    position: 'absolute', top: `-${S(8)}`, right: `-${S(8)}`,
-                    width: S(18), height: S(18),
+                    position: 'absolute', top: S(1), right: S(1),
+                    width: S(10), height: S(10),
                     pointerEvents: 'none',
-                    filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))',
+                    filter: 'drop-shadow(0 0 3px rgba(255,215,0,0.9))',
                   }}
                 />
               )}
@@ -726,11 +726,12 @@ export default function RevelationScreen({
         {/* Encadré réponse — hauteur fixe 2 lignes, texte auto-size */}
         <div style={{
           background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-          border: `2.5px solid ${accentColor}`, borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+          border: isVipReveal ? `3px solid #FFD700` : `2.5px solid ${accentColor}`,
+          borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
           height: S(68), overflow: 'hidden', flexShrink: 0,
           display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ fontSize: S(9), fontWeight: 900, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2), flexShrink: 0 }}>✓ Réponse :</div>
+          <div style={{ fontSize: S(9), fontWeight: 900, color: isVipReveal ? '#FFD700' : '#4CAF50', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: S(2), flexShrink: 0 }}>✓ Réponse :</div>
           <div ref={answerContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
             <div ref={answerRef} style={{ fontSize: answerFontSize + 'px', fontWeight: 900, color: '#ffffff' }}>{correctAnswerText}</div>
           </div>
@@ -739,11 +740,12 @@ export default function RevelationScreen({
         {/* Encadré Le saviez-vous */}
         <div style={{
           background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-          border: `2.5px solid ${accentColor}`, borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+          border: isVipReveal ? `3px solid #FFD700` : `2.5px solid ${accentColor}`,
+          borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
           flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
-            <span style={{ color: accentColor, fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            <span style={{ color: isVipReveal ? '#FFD700' : accentColor, fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
           <div ref={explanationContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
             <p ref={explanationRef} style={{ color: 'rgba(255,255,255,0.85)', fontSize: explanationFontSize, lineHeight: 1.45, fontWeight: 500, margin: 0 }}>{stripEmojis(fact.explanation)}</p>
@@ -751,7 +753,7 @@ export default function RevelationScreen({
         </div>
       </div>
 
-      {/* Boutons — violet Quickie contour blanc */}
+      {/* Boutons — gradient gold pour fact WTF (VIP), sinon accent du mode */}
       <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(8)}` }}>
         <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
           <button
@@ -760,10 +762,10 @@ export default function RevelationScreen({
             style={{
               flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(4),
-              background: accentGradient,
+              background: isVipReveal ? 'linear-gradient(135deg, #FFD700, #FFA500)' : accentGradient,
               color: 'white',
               border: '3px solid #ffffff',
-              boxShadow: accentShadow,
+              boxShadow: isVipReveal ? '0 4px 16px rgba(255,215,0,0.55)' : accentShadow,
             }}
           >
             Partager ce f*ct
@@ -776,8 +778,8 @@ export default function RevelationScreen({
               flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
               color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
               border: '3px solid #ffffff',
-              background: accentGradient,
-              boxShadow: accentShadow,
+              background: isVipReveal ? 'linear-gradient(135deg, #FFD700, #FFA500)' : accentGradient,
+              boxShadow: isVipReveal ? '0 4px 16px rgba(255,215,0,0.55)' : accentShadow,
             }}
           >
             {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}

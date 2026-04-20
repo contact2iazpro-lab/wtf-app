@@ -26,7 +26,7 @@ const BOSS_BONUS = 100
 const HINT_COST = 50
 const QUEST_DURATION = 20
 const QUEST_QCM = { choices: 4, duration: QUEST_DURATION, id: 'quest' }
-const QUEST_MAX_LEVEL = 1500
+const QUEST_MAX_LEVEL = 360
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -614,7 +614,8 @@ export default function QuestScreen({ onHome, setStorage }) {
       if (idx === 0) return { x: MAP_WIDTH / 2, y: BOTTOM_DOTS }
       const cycle = Math.floor(idx / 6)
       const pos = idx % 6
-      const goingRight = cycle % 2 === 0
+      const absBlock = viewStart + cycle
+      const goingRight = ((absBlock * 2654435761) >>> 0) % 2 === 0
       const xSteps = [0, 0.5, 1, 1, 0.5, 0]
       const rawX = xSteps[pos]
       const x = goingRight ? rawX : (1 - rawX)
@@ -672,12 +673,8 @@ export default function QuestScreen({ onHome, setStorage }) {
             </h1>
             <div style={{ width: 36 }} />
           </div>
-          <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 800, marginBottom: 2 }}>
+          <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 800, marginBottom: 8 }}>
             Niveau <b>{state.level}</b> / {QUEST_MAX_LEVEL}
-          </div>
-          <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, opacity: 0.9, marginBottom: 8 }}>
-            <img src="/assets/ui/wtf-star.png" alt="" style={{ width: 14, height: 14, objectFit: 'contain', verticalAlign: 'middle', marginRight: 4 }} />
-            {vipUnlocked} WTF! Débloqués !
           </div>
         </div>
 
@@ -778,8 +775,8 @@ export default function QuestScreen({ onHome, setStorage }) {
                         cursor: (isCurrent || (isDone && failedBoss)) ? 'pointer' : 'default',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         padding: 0,
-                        animation: isCurrent ? 'questBossPulse 2s ease-in-out infinite' : 'none',
-                        opacity: isLocked ? 0.35 : 1,
+                        animation: (isCurrent || (node.block === currentBlockIdx)) ? 'questBossPulse 2s ease-in-out infinite' : 'none',
+                        opacity: (isLocked && node.block !== currentBlockIdx) ? 0.35 : 1,
                       }}
                     >
                       {failedBoss ? (
@@ -909,9 +906,12 @@ export default function QuestScreen({ onHome, setStorage }) {
               cursor: 'pointer',
               boxShadow: '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)',
               letterSpacing: '0.03em',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
             }}
           >
-            Continue ta chasse aux F*cts !
+            Niveau {state.level}
+            <span style={{ fontSize: 20, lineHeight: 1 }}>→</span>
+            <img src="/assets/modes/icon-quest.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
           </button>
           {state.bossFailed?.[currentBlockIdx - 1] && currentBlockIdx > 1 && (
             <button
@@ -972,8 +972,8 @@ export default function QuestScreen({ onHome, setStorage }) {
         )}
 
         <style>{`
-          @keyframes questNodePulse { 0%,100%{transform:scaleY(-1) scale(1); box-shadow: 0 0 16px rgba(255,255,255,0.8)} 50%{transform:scaleY(-1) scale(1.25); box-shadow: 0 0 24px rgba(255,255,255,1)} }
-          @keyframes questBossPulse { 0%,100%{transform:scaleY(-1) scale(1); box-shadow: 0 0 24px rgba(255,215,0,0.8)} 50%{transform:scaleY(-1) scale(1.15); box-shadow: 0 0 36px rgba(255,215,0,1)} }
+          @keyframes questNodePulse { 0%,100%{transform:scale(1); box-shadow: 0 0 16px rgba(255,255,255,0.8)} 50%{transform:scale(1.25); box-shadow: 0 0 24px rgba(255,255,255,1)} }
+          @keyframes questBossPulse { 0%,100%{transform:scale(1); box-shadow: 0 0 24px rgba(255,215,0,0.8)} 50%{transform:scale(1.15); box-shadow: 0 0 36px rgba(255,215,0,1)} }
           @keyframes questFloat { 0%,100%{transform:scaleY(-1) translateY(0)} 50%{transform:scaleY(-1) translateY(-6px)} }
           @keyframes questVipFade { 0%{opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{opacity:0} }
           @keyframes questVipPop { 0%{transform:scale(0.3) rotate(-10deg)} 25%{transform:scale(1.15) rotate(3deg)} 45%{transform:scale(0.95) rotate(-1deg)} 60%,100%{transform:scale(1) rotate(0deg)} }

@@ -39,7 +39,12 @@ export default function QuestionScreen({
   const [coinFlash, setCoinFlash] = useState(null)
   const [imgFailed, setImgFailed] = useState(false)
   const [showVipSurprise, setShowVipSurprise] = useState(false)
-  useEffect(() => { setImgFailed(false) }, [fact.id])
+  useEffect(() => {
+    setImgFailed(false)
+    // Stoppe les sons "wrong" (mp4) encore actifs quand on change de question
+    // ou qu'on quitte l'écran. Les _tone (wrong_vof, correct, etc.) se stoppent seuls.
+    return () => { audio.stopAll() }
+  }, [fact.id])
 
   // Bonus VIP surprise en Quickie (19/04/2026) — overlay + jingle jackpot
   const isVipSurprise = !!fact._isVipSurprise

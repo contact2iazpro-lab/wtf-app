@@ -185,7 +185,7 @@ export default function ResultsScreen({
   ]
   const bgRef = useRef(PASTEL_GRADIENTS[Math.floor(Math.random() * PASTEL_GRADIENTS.length)])
   const screenBg = isQuickie
-    ? 'linear-gradient(160deg, #DAA520, #FFD700)'
+    ? 'linear-gradient(160deg, #C2185B, #E91E90)'
     : isVof
       ? 'linear-gradient(160deg, #3A8A4A, #6BCB77)'
       : bgRef.current
@@ -493,10 +493,11 @@ export default function ResultsScreen({
             baseCoins={baseCoins}
             bonusCoins={bonusCoins}
             isPerfect={isPerfect}
+            perfectEnergy={isQuickie && isPerfect}
             total={animatedScore}
             totalColor={catColor}
             textColor={textOnBg}
-            borderColor={isQuickie ? '#FFD700' : null}
+            borderColor={isQuickie ? '#E91E90' : null}
             footerStats={[
               { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
               { label: `${precision}% précision`, color: catColor },
@@ -524,7 +525,12 @@ export default function ResultsScreen({
               onClick={() => {
                 if (!shownFact) return
                 audio.play?.('click')
-                setViewingFact(shownFact)
+                const globalUnlockedSet = new Set([
+                  ...((wtfData.unlockedFacts) || []),
+                  ...extraUnlockedIds,
+                ])
+                const isUnlocked = globalUnlockedSet.has(shownFact.id)
+                setViewingFact({ ...shownFact, _isLocked: !isUnlocked })
               }}
             />
           )

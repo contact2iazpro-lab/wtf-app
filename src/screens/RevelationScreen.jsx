@@ -184,12 +184,12 @@ export default function RevelationScreen({
   const isQuickieMode = sessionType === 'quickie'
   const isVofMode = sessionType === 'vrai_ou_fou'
   const isBrandedMode = isQuickieMode || isVofMode
-  const accentColor = isVofMode ? '#6BCB77' : '#FFD700'
-  const MODE_HIGHLIGHT = { quickie: '#FFEC8B', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', drop: '#E91E63' }
+  const accentColor = isVofMode ? '#6BCB77' : '#E91E90'
+  const MODE_HIGHLIGHT = { quickie: '#FF69B4', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', drop: '#E91E63' }
   const questionHighlight = MODE_HIGHLIGHT[sessionType]
   const accentGradient = isVofMode
     ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
-    : 'linear-gradient(135deg, #FFD700, #DAA520)'
+    : 'linear-gradient(135deg, #E91E90, #C2185B)'
   const accentShadow = isVofMode
     ? '0 4px 16px rgba(107,203,119,0.5)'
     : '0 4px 16px rgba(127,119,221,0.5)'
@@ -431,7 +431,7 @@ export default function RevelationScreen({
                         display: 'flex', alignItems: 'center', gap: S(6),
                       }}
                     >
-                      🔓 Débloquer — {fact.isVip ? 250 : 50} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
+                      ✨ Ajouter à ta collection — {fact.isVip ? 250 : 50} <img src="/assets/ui/icon-coins.png" alt="" style={{ width: S(14), height: S(14) }} />
                   </button>
                 </div>
               )}
@@ -474,9 +474,9 @@ export default function RevelationScreen({
               width: '100%', maxWidth: 320, textAlign: 'center',
               boxShadow: '0 24px 64px rgba(0,0,0,0.3)',
             }}>
-              <div style={{ fontSize: S(40), marginBottom: S(8) }}>🔓</div>
+              <div style={{ fontSize: S(40), marginBottom: S(8) }}>✨</div>
               <h3 style={{ fontSize: S(16), fontWeight: 900, color: '#1a1a2e', margin: `0 0 ${S(6)}` }}>
-                Débloquer ce f*ct ?
+                Ajouter à ta collection ?
               </h3>
               <p style={{ fontSize: S(13), fontWeight: 600, color: '#6B7280', margin: `0 0 ${S(20)}`, lineHeight: 1.4 }}>
                 Tu pourras voir l'image et l'explication pour <span style={{ fontWeight: 900, color: '#1a1a2e' }}>{fact.isVip ? 250 : 50}</span> <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
@@ -509,7 +509,7 @@ export default function RevelationScreen({
                     boxShadow: isBrandedMode ? accentShadow : '0 4px 16px rgba(255,107,26,0.4)',
                   }}
                 >
-                  Débloquer
+                  Ajouter
                 </button>
               </div>
             </div>

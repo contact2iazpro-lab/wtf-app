@@ -50,12 +50,12 @@ export default function ResultsActionButtons({
   const accentGradient = isVof
     ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
     : isQuickie
-      ? 'linear-gradient(135deg, #FFD700, #DAA520)'
+      ? 'linear-gradient(135deg, #E91E90, #C2185B)'
       : null
   const accentShadow = isVof
     ? '0 8px 30px rgba(107,203,119,0.5)'
     : isQuickie
-      ? '0 8px 30px rgba(127,119,221,0.5)'
+      ? '0 8px 30px rgba(233,30,144,0.5)'
       : null
   const useAccent = isQuickie || isVof
 

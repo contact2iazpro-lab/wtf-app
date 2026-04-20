@@ -183,9 +183,9 @@ export default function QuestionScreen({
   // Couleur cadre question/image : gold brillant si VIP surprise, sinon couleur cat/mode
   const vipGold = '#FFD700'
   const vipGoldGlow = '0 0 20px rgba(255,215,0,0.65), 0 0 8px rgba(255,215,0,0.9)'
-  const cardBorderColor = isVipSurprise ? vipGold : (isQuickieMode ? '#FFD700' : (cat?.color + '70'))
+  const cardBorderColor = isVipSurprise ? vipGold : (isQuickieMode ? '#E91E90' : (cat?.color + '70'))
   const cardBoxShadow = isVipSurprise ? vipGoldGlow
-    : (isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`)
+    : (isQuickieMode ? '0 0 20px rgba(233,30,144,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`)
 
   const questionCard = (
     <div
@@ -200,7 +200,7 @@ export default function QuestionScreen({
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
-      <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>{renderFormattedText(fact.question, isQuickieMode ? '#FFD4A3' : undefined)}</p>
+      <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>{renderFormattedText(fact.question, isQuickieMode ? '#FF69B4' : undefined)}</p>
     </div>
   )
 
@@ -214,7 +214,7 @@ export default function QuestionScreen({
       overflow: 'hidden',
       margin: '0 auto',
       background: 'rgba(0,0,0,0.3)',
-      border: `3px solid ${isVipSurprise ? vipGold : '#FFD700'}`,
+      border: `3px solid ${isVipSurprise ? vipGold : '#E91E90'}`,
       boxShadow: isVipSurprise ? vipGoldGlow : undefined,
       flexShrink: 0,
     }}>
@@ -249,12 +249,15 @@ export default function QuestionScreen({
             }}
           />
         ) : (
-          <span style={{
-            fontSize: S(48), fontWeight: 900, color: '#FFD4A3',
-            textShadow: '0 0 30px rgba(127,119,221,0.6), 0 0 60px rgba(127,119,221,0.3)',
-            animation: 'quickie-pulse-btn 2s ease-in-out infinite',
-            lineHeight: 1,
-          }}>?</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(4), padding: `0 ${S(10)}` }}>
+            <span style={{ fontSize: S(28), filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}>🔒</span>
+            <span style={{
+              fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.85)',
+              textAlign: 'center', textShadow: '0 1px 3px rgba(0,0,0,0.6)', lineHeight: 1.3,
+            }}>
+              Trouve la bonne réponse et ajoute-le à ta collection
+            </span>
+          </div>
         )}
       </div>
     </div>
@@ -298,7 +301,7 @@ export default function QuestionScreen({
             key={hintNum}
             num={hintNum}
             hint={hintText}
-            catColor={isQuickieMode ? '#FFD700' : (cat?.color || '#FF6B1A')}
+            catColor={isQuickieMode ? '#E91E90' : (cat?.color || '#FF6B1A')}
             isFree={isFree}
             cost={cost}
             canAfford={canAfford}
@@ -310,7 +313,7 @@ export default function QuestionScreen({
                 console.warn('[QuestionScreen] buy hint RPC failed:', e?.message || e)
               )
             } : null}
-            revealedTextColor={isQuickieMode ? '#FFD700' : undefined}
+            revealedTextColor={isQuickieMode ? '#E91E90' : undefined}
           />
         )
       })}
@@ -535,7 +538,7 @@ export default function QuestionScreen({
             {isQuickieMode && <img src="/assets/modes/icon-quickie.png?v=2" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />}
             <span style={{
               fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: isQuickieMode ? '#FFD4A3' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              color: isQuickieMode ? '#FF69B4' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
             }}>
               {modeLabel}
             </span>
@@ -544,7 +547,7 @@ export default function QuestionScreen({
         {/* Compteur */}
         {isQuickieMode && (
           <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: S(12), fontWeight: 900, color: '#FFD4A3' }}>
+            <span style={{ fontSize: S(12), fontWeight: 900, color: '#FF69B4' }}>
               {factIndex + 1}/{displayTotalFacts}
             </span>
           </div>
@@ -560,7 +563,7 @@ export default function QuestionScreen({
                   flex: 1,
                   height: isActive ? S(12) : S(8),
                   borderRadius: S(4),
-                  background: isActive ? (isQuickieMode ? '#FFD700' : 'white') : 'rgba(255,255,255,0.2)',
+                  background: isActive ? (isQuickieMode ? '#E91E90' : 'white') : 'rgba(255,255,255,0.2)',
                   transition: 'all 0.3s ease',
                 }}
               />
@@ -601,7 +604,7 @@ export default function QuestionScreen({
                   style={{
                     background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
                     border: isQuickieMode
-                      ? `3px solid ${isVipSurprise ? vipGold : '#FFD700'}`
+                      ? `3px solid ${isVipSurprise ? vipGold : '#E91E90'}`
                       : '1.5px solid rgba(255,255,255,0.4)',
                     boxShadow: isVipSurprise && isQuickieMode ? vipGoldGlow : undefined,
                     borderRadius: S(12),

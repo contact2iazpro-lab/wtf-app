@@ -118,13 +118,13 @@ export function useHandleNext({
       // Quickie : perfect 5/5 = +50c · Drop lun-sam = 30c fixe (dim = VIP, géré ailleurs)
       // Quest/Race/VraiOuFou/Blitz : pas de bonus perfect (0)
       let bonusCoins = 0
+      let perfectEnergyReward = false
       if (sessionType === 'drop') {
-        // Drop lun-sam : 30 coins fixe (sessionScore = 0 car DROP.coinsPerCorrect = 0)
         bonusCoins = 30
       } else if (sessionType === 'quickie') {
         const finalCorrect = correctCount + (isCorrect ? 1 : 0)
-        const isPerfectQuickie = finalCorrect === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
-        bonusCoins = isPerfectQuickie ? 50 : 0
+        perfectEnergyReward = finalCorrect === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
+        bonusCoins = 0
 
         // Mini-parcours : bonus gradué si < 5 Funny restants dans la catégorie
         if (selectedCategory) {
@@ -160,6 +160,7 @@ export function useHandleNext({
       const sessionEndDelta = {}
       if (totalBonusCoins > 0)                sessionEndDelta.coins   = totalBonusCoins
       if ((streakReward?.hints ?? 0) > 0)     sessionEndDelta.hints   = streakReward.hints
+      if (perfectEnergyReward)                sessionEndDelta.energy  = 1
       if (Object.keys(sessionEndDelta).length > 0) {
         applyCurrencyDelta?.(sessionEndDelta, `session_end_${sessionType}`).catch(e =>
           console.warn('[useHandleNext] session end RPC failed:', e?.message || e)

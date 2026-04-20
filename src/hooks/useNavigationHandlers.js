@@ -97,10 +97,16 @@ export function useNavigationHandlers({
       case 'quest':
         showOrSkipLaunch('quest')
         break
-      case 'race':
+      case 'race': {
+        const unlockedCount = unlockedFacts?.length || 0
+        if (unlockedCount < 10) {
+          setGameAlert?.({ emoji: '🏎️', title: 'Mode Race verrouillé', message: `Il te faut au moins 10 f*cts débloqués pour jouer en Race. Tu en as ${unlockedCount}.` })
+          break
+        }
         setGameMode('race'); setSessionType('race'); setSelectedDifficulty(DIFFICULTY_LEVELS.RACE); setSelectedCategory(null)
         showOrSkipLaunch('race')
         break
+      }
       case 'vrai_ou_fou':
         showOrSkipLaunch('vrai_ou_fou')
         break

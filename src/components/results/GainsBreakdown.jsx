@@ -35,6 +35,7 @@ export default function GainsBreakdown({
   items = null,
   // Contour custom (ex: violet quickie)
   borderColor = null,
+  perfectEnergy = false,
 }) {
   return (
     <div style={{
@@ -66,7 +67,7 @@ export default function GainsBreakdown({
               </span>
             </div>
           )}
-          {/* Ligne 2 : Bonus (si > 0) */}
+          {/* Ligne 2 : Bonus coins (si > 0) */}
           {bonusCoins > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: S(10), fontWeight: 700, color: '#FDE047', opacity: 0.95 }}>
@@ -74,6 +75,17 @@ export default function GainsBreakdown({
               </span>
               <span style={{ fontSize: S(11), fontWeight: 900, color: '#FDE047' }}>
                 +{bonusCoins} <CoinImg />
+              </span>
+            </div>
+          )}
+          {/* Ligne Perfect énergie */}
+          {perfectEnergy && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: S(10), fontWeight: 700, color: '#22C55E', opacity: 0.95 }}>
+                ⚡ Perfect 5/5
+              </span>
+              <span style={{ fontSize: S(11), fontWeight: 900, color: '#22C55E' }}>
+                +1 énergie
               </span>
             </div>
           )}

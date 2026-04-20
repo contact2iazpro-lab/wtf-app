@@ -15,12 +15,12 @@ import RevelationScreen from './RevelationScreen'
 import ResultsScreen from './ResultsScreen'
 import { CATEGORIES } from '../data/facts'
 
-const SESSION_SIZE = 10
+const SESSION_SIZE = 5
 const SWIPE_THRESHOLD = 60
 const WRONG_DELAY_MS = 1200
 const VOF_GREEN = '#6BCB77'
 const VOF_RED = '#E84535'
-const TIMER_DURATION = 20
+const TIMER_DURATION = 30
 
 function lerpColor(ratio) {
   const r1 = 0xE8, g1 = 0x45, b1 = 0x35
@@ -34,7 +34,7 @@ function lerpColor(ratio) {
 export default function VraiOuFouScreen({ onHome }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _cCoins, applyCurrencyDelta } = usePlayerProfile()
+  const { coins: _cCoins, hints: profileHints, applyCurrencyDelta } = usePlayerProfile()
   const COINS_PER_CORRECT = 10
 
   const [seed, setSeed] = useState(0)
@@ -360,18 +360,28 @@ export default function VraiOuFouScreen({ onHome }) {
         }}>
           {[fact?.hint1, fact?.hint2].map((hintText, i) => (
             <HintFlipButton
-              key={`${fact?.id}-h${i + 1}`}
+              key={`${fact?.id}-${index}-h${i + 1}`}
               num={i + 1}
               hint={hintText}
               catColor={VOF_GREEN}
-              isFree={true}
-              cost={0}
-              canAfford={true}
-              canUse={hintsRevealed >= i + 1 || !feedback}
+              isFree={false}
+              cost={50}
+              canAfford={(profileHints ?? 0) > 0 || (_cCoins ?? 0) >= 50}
+              canUse={(profileHints ?? 0) > 0}
+              needsBuy={(profileHints ?? 0) === 0 && (_cCoins ?? 0) >= 50}
               initialRevealed={hintsRevealed > i}
               revealedTextColor={VOF_GREEN}
-              onReveal={() => { if (!feedback) { audio.play('click'); setHintsRevealed(h => Math.max(h, i + 1)) } }}
-              onBuyHint={null}
+              onReveal={() => {
+                if (feedback) return
+                audio.play('click')
+                setHintsRevealed(h => Math.max(h, i + 1))
+                applyCurrencyDelta?.({ hints: -1 }, 'vof_hint_used')
+              }}
+              onBuyHint={() => {
+                if ((_cCoins ?? 0) >= 50) {
+                  applyCurrencyDelta?.({ coins: -50, hints: 1 }, 'vof_hint_buy')
+                }
+              }}
             />
           ))}
         </div>

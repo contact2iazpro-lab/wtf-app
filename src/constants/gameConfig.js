@@ -9,10 +9,10 @@
 export const DIFFICULTY_LEVELS = {
   QUICKIE: {
     id: 'quickie', label: 'Quickie', emoji: '🎯',
-    choices: 4, duration: 15, questionsCount: 5,
+    choices: 4, duration: 30, questionsCount: 5,
     hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 50,
-    coinsPerCorrect: 10, perfectBonus: 50,
-    entryCost: 50, // coût en coins pour lancer une session (à calibrer)
+    coinsPerCorrect: 10, perfectBonus: 0, perfectEnergy: 1,
+    entryCost: 100, color: '#E91E90',
     scoring: { correct: 10, wrong: 0 },
     wrongDistribution: { type: 'questionLevel', profiles: [
       { weight: 0.4, counts: { plausible: 3 } },
@@ -22,8 +22,8 @@ export const DIFFICULTY_LEVELS = {
   },
   VRAI_OU_FOU: {
     id: 'vrai_ou_fou', label: 'Vrai ET Fou', emoji: '🤔',
-    choices: 0, duration: 20, questionsCount: 10,
-    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    choices: 0, duration: 30, questionsCount: 5,
+    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 50,
     coinsPerCorrect: 10, perfectBonus: 0,
     scoring: { correct: 10, wrong: 0 },
     swipe: true,
@@ -95,15 +95,15 @@ export const SCREENS = {
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
   quickie: {
-    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png?v=2', color: '#FFD700',
+    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png?v=2', color: '#E91E90',
     rules: [
-      { icon: 'icon:coins', text: '**Coût** : 50 WTFCoins / set' },
+      { icon: 'icon:coins', text: '**Coût** : 100 WTFCoins / set' },
       { icon: 'icon:set', text: '**Set** : 5 questions / set' },
       { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
-      { icon: 'icon:timer', text: '**Timer** : 15s / question' },
+      { icon: 'icon:timer', text: '**Timer** : 30s / question' },
       { icon: '💡', text: '**Indices** : 2 max / question' },
       { icon: '🪙', text: '**Gains** : 10 Coins / bonne réponse' },
-      { icon: 'icon:star', text: '**Perfect** : (5 / 5) +50 Coins' },
+      { icon: 'icon:energy', text: '**Perfect** : (5 / 5) +1 énergie' },
       { icon: 'icon:star', text: '**Bonus VIP** : 3% de chance / question ⭐' },
     ],
   },
@@ -112,10 +112,10 @@ export const MODE_CONFIGS = {
     ctaLabel: 'VAS-Y, SWIPE !',
     rules: [
       { icon: 'picto:infinity', text: '**Coût** : Gratuit illimité' },
-      { icon: 'icon:set', text: '**Set** : 10 affirmations / set' },
+      { icon: 'icon:set', text: '**Set** : 5 affirmations / set' },
       { icon: 'picto:swipe', text: '**Swipe** : {{red}}Faux à gauche{{/red}}, Vrai à droite' },
-      { icon: 'icon:timer', text: '**Timer** : 20s / question' },
-      { icon: 'icon:hint', text: '**Indices** : 2 gratuits / question' },
+      { icon: 'icon:timer', text: '**Timer** : 30s / question' },
+      { icon: 'icon:hint', text: '**Indices** : 2 / question (stock perso)' },
       { icon: 'icon:coins', text: '**Gains** : 10 WTFCoins / bonne réponse' },
       { icon: 'picto:share', text: '**Social** : Partage ton score' },
     ],

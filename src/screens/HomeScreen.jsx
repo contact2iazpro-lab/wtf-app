@@ -352,7 +352,7 @@ export default function HomeScreen({
         {/* Ligne 1 : Quest + Quickie */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: S(32) }}>
           <ModeIcon icon="/assets/modes/quest.png?v=2" name="Quest WTF!" color="#FF6B1A" onClick={() => nav('quest')} sizeOverride={64} badge />
-          <ModeIcon icon="/assets/modes/quickie.png?v=2" name="Quickie" color="#FFD700" onClick={() => nav('quickie')} sizeOverride={64} badge />
+          <ModeIcon icon="/assets/modes/quickie.png?v=2" name="Quickie" color="#E91E90" onClick={() => nav('quickie')} sizeOverride={64} badge />
         </div>
 
         {/* Ligne 2 : Race + Blitz + Multi */}
@@ -441,7 +441,7 @@ export default function HomeScreen({
               Collectionne des f*cts !
             </h3>
             <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: '0 0 16px' }}>
-              Seuls <strong style={{ color: '#FF6B1A' }}>Quickie</strong> et <strong style={{ color: '#FFD700' }}>Quest</strong> te permettent de débloquer de nouveaux f*cts pour ta collection.
+              Seuls <strong style={{ color: '#E91E90' }}>Quickie</strong> et <strong style={{ color: '#FF6B1A' }}>Quest</strong> te permettent de débloquer de nouveaux f*cts pour ta collection.
             </p>
             <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, margin: '0 0 20px' }}>
               Repère le badge 🔓 sur ces modes !

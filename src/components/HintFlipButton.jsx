@@ -73,7 +73,7 @@ export default function HintFlipButton({ num, hint, catColor, isFree, cost, canA
         border: (disabled && phase !== 'back') ? '2px solid #6B7280' : `2px solid ${color}`,
         background: (disabled && phase !== 'back')
           ? 'rgba(107,114,128,0.15)'
-          : phase === 'back' ? 'rgba(235,235,235,0.95)' : `${color}28`,
+          : phase === 'back' ? 'rgba(255,255,255,0.95)' : `${color}28`,
         transform: phase === 'flip' ? 'scaleY(0.08)' : 'scaleY(1)',
         transition: 'transform 0.15s ease, background 0.3s, border-color 0.3s',
         overflow: 'hidden',

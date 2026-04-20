@@ -7,7 +7,7 @@ import { renderIcon, QUICKIE_VIOLET, QUICKIE_GOLD } from '../utils/modeRuleIcons
 // ── Couleurs par chapitre ────────────────────────────────────────────────────
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6',
-  quickie: '#FFD700', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
+  quickie: '#E91E90', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
   race: '#00E5FF', blitz: '#FF1744', drop: '#FFD700', multi: '#6B2D8E',
   energy: '#10B981', hints: '#6366F1', coins: '#F59E0B',
   streak: '#F97316', roulette: '#A855F7', shop: '#06B6D4',
@@ -99,7 +99,7 @@ const CHAPTERS = [
       { icon: '🔋', text: 'Le mode **Quest** consomme 1 énergie par bloc.' },
       { icon: '🆓', text: 'Stock max **5 énergies** — régénération **+1 toutes les 8h**.' },
       { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 énergie pour 75 Coins** en boutique.' },
-      { icon: '🎯', text: '**Quickie** coûte **50 WTFCoins** par set (pas d\'énergie).' },
+      { icon: '🎯', text: '**Quickie** coûte **100 WTFCoins** par set (pas d\'énergie).' },
       { icon: '♾️', text: '**Vrai ET Fou, Race, Blitz** et **Drop** : gratuits illimités.' },
     ],
   },
@@ -114,7 +114,7 @@ const CHAPTERS = [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
       { icon: '🗺️', text: '**Quest** : 2 / question · **Quickie** : 2 / question · **Drop dimanche** : 2 max' },
-      { icon: '🤔', text: '**Vrai ET Fou** : 2 indices gratuits / question' },
+      { icon: '🤔', text: '**Vrai ET Fou** : 2 / question (stock perso)' },
       { icon: '🚫', text: '**Race, Blitz, Drop lun-sam** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : **50 Coins** par indice.' },
@@ -130,7 +130,7 @@ const CHAPTERS = [
     title: 'Coins',
     content: [
       { icon: '🪙', text: 'Les **Coins** sont la monnaie du jeu — tu en gagnes en jouant.' },
-      { icon: '🎯', text: '**Quickie** : 10/bonne · +50 perfect' },
+      { icon: '🎯', text: '**Quickie** : 10/bonne · perfect = +1 énergie' },
       { icon: '🗺️', text: '**Quest** : 20/bonne · +100/boss vaincu' },
       { icon: '🔥', text: '**Drop lun-sam** : 30 fixe · **Drop dimanche** : 1 VIP débloqué' },
       { icon: '🤔', text: '**Vrai ET Fou** : 10/bonne · **Race · Blitz** : 0 coin (prestige)' },
@@ -398,7 +398,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 const isStyledMode = STYLED_MODE_IDS.includes(chapter.id)
                 let iconColor = undefined
                 if (chapter.id === 'quickie') {
-                  iconColor = item.icon === 'icon:energy' ? '#22C55E' : '#DAA520'
+                  iconColor = item.icon === 'icon:energy' ? '#22C55E' : '#E91E90'
                 } else if (chapter.id === 'vrai_ou_fou') {
                   iconColor = i % 2 === 0 ? '#6BCB77' : '#E84535'
                 } else if (chapter.id === 'race') {
@@ -410,8 +410,8 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                 } else if (chapter.id === 'quest') {
                   iconColor = i % 2 === 0 ? QUEST_ORANGE : QUEST_DARK
                 }
-                const BORDER_OVERRIDES = { quickie: '#DAA520', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444', multi: MULTI_VIOLET, quest: QUEST_DARK }
-                const TEXT_OVERRIDES = { quickie: '#B8860B', vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444', multi: MULTI_VIOLET, quest: QUEST_ORANGE }
+                const BORDER_OVERRIDES = { quickie: '#C2185B', vrai_ou_fou: '#008000', race: '#0F52BA', blitz: '#FF4444', multi: MULTI_VIOLET, quest: QUEST_DARK }
+                const TEXT_OVERRIDES = { quickie: '#9B1150', vrai_ou_fou: '#6BCB77', race: '#23D5D5', blitz: '#FF4444', multi: MULTI_VIOLET, quest: QUEST_ORANGE }
                 const modeColor = CHAPTER_COLORS[chapter.id] || '#FF6B1A'
                 const borderCol = isStyledMode ? (BORDER_OVERRIDES[chapter.id] || modeColor) : '#E5E7EB'
                 const textCol = isStyledMode ? (TEXT_OVERRIDES[chapter.id] || '#1a1a2e') : '#374151'

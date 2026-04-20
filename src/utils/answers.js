@@ -103,13 +103,24 @@ function pickWrongAnswers(fact, numWrong, factId, distribution) {
     }
     picked = chosen ? [chosen] : [allAvailable[0]]
   } else {
-    // ── numWrong > 1 : tirage déterministe par type (counts) ──
-    // Spec par mode via difficulty.wrongDistribution.counts (ex : {funny:1, plausible:2}).
-    // Si un type spécifié n'a pas assez d'éléments, fallback vers les autres types
-    // (priorité à ceux déjà demandés > 0 dans la distribution).
-    const counts = distribution?.type === 'counts'
-      ? distribution.counts
-      : { funny: 1, plausible: 2 } // défaut historique
+    // ── numWrong > 1 ──
+
+    // Résoudre les counts à utiliser pour cette question
+    let counts
+    if (distribution?.type === 'questionLevel' && distribution.profiles) {
+      // Tirage du profil de la question : ex. 80% tout plausible, 10% +1 close, 10% +1 funny
+      const r = Math.random()
+      let acc = 0
+      counts = distribution.profiles[distribution.profiles.length - 1].counts
+      for (const profile of distribution.profiles) {
+        acc += profile.weight
+        if (r <= acc) { counts = profile.counts; break }
+      }
+    } else if (distribution?.type === 'counts') {
+      counts = distribution.counts
+    } else {
+      counts = { funny: 1, plausible: 2 }
+    }
 
     const used = new Set()
     // 1re passe : prendre count[type] de chaque type demandé
@@ -119,33 +130,10 @@ function pickWrongAnswers(fact, numWrong, factId, distribution) {
       for (const t of taken) used.add(t)
       picked.push(...taken)
     }
-    // 2e passe — slots restants via lastSlotWeights (tirage pondéré) si défini
-    if (picked.length < numWrong && distribution?.lastSlotWeights) {
-      const lsw = distribution.lastSlotWeights
-      const entries = Object.entries(lsw)
-        .map(([type, w]) => ({ type, pool: (pools[type] || []).filter(a => !used.has(a)), weight: w }))
-        .filter(b => b.pool.length > 0)
-      while (picked.length < numWrong && entries.some(b => b.pool.length > 0)) {
-        const totalW = entries.reduce((s, b) => s + (b.pool.length > 0 ? b.weight : 0), 0)
-        const r = Math.random() * totalW
-        let acc = 0
-        for (const b of entries) {
-          if (b.pool.length === 0) continue
-          acc += b.weight
-          if (r <= acc) {
-            const chosen = pickRandom(b.pool, 1)[0]
-            used.add(chosen)
-            picked.push(chosen)
-            b.pool = b.pool.filter(a => a !== chosen)
-            break
-          }
-        }
-      }
-    }
-    // 2e passe bis — combler via les types listés dans counts
+    // 2e passe — combler via les types listés dans counts
     if (picked.length < numWrong) {
-      const allowedTypes = [...Object.keys(counts), ...Object.keys(distribution?.lastSlotWeights || {})]
-      const fallbackPool = [...new Set(allowedTypes)].flatMap(t => pools[t] || []).filter(a => !used.has(a))
+      const allowedTypes = Object.keys(counts)
+      const fallbackPool = allowedTypes.flatMap(t => pools[t] || []).filter(a => !used.has(a))
       const extra = pickRandom(fallbackPool, numWrong - picked.length)
       for (const t of extra) used.add(t)
       picked.push(...extra)

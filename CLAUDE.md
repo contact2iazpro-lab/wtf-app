@@ -181,7 +181,7 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 
 | Mode | QCM | Nb fausses | Tirage |
 |------|-----|-----------|--------|
-| Quickie | 4 | 3 | **2 plausible** + 1 tiré (50% proche / 50% drôle) |
+| Quickie | 4 | 3 | **Par question** : 80% → 3 plausible · 10% → 2 plausible + 1 proche · 10% → 2 plausible + 1 drôle |
 | Drop | 2 | 1 | **Pondéré** : 70% plausible / 20% drôle / 10% proche (idem Quickie) |
 | Quest (niveaux Funny) | 4 | 3 | **1 drôle + 2 plausible** (jamais proche) |
 | Quest (boss VIP) | 4 | 3 | **3 plausible** — hardcore (fallback close puis funny si pool plausible < 3) |

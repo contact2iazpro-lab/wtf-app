@@ -13,7 +13,11 @@ export const DIFFICULTY_LEVELS = {
     hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 50,
     coinsPerCorrect: 10, perfectBonus: 50,
     scoring: { correct: 10, wrong: 0 },
-    wrongDistribution: { type: 'counts', counts: { plausible: 2 }, lastSlotWeights: { close: 0.5, funny: 0.5 } },
+    wrongDistribution: { type: 'questionLevel', profiles: [
+      { weight: 0.8, counts: { plausible: 3 } },
+      { weight: 0.1, counts: { plausible: 2, close: 1 } },
+      { weight: 0.1, counts: { plausible: 2, funny: 1 } },
+    ] },
   },
   VRAI_OU_FOU: {
     id: 'vrai_ou_fou', label: 'Vrai ET Fou', emoji: '🤔',

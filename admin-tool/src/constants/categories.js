@@ -1,9 +1,9 @@
 export const CATEGORIES = [
   { id: 'animaux',            label: 'Animaux',                  emoji: '🦁', color: '#6BCB77' },
-  { id: 'animaux-ciel',       label: 'Animaux du ciel',          emoji: '',   color: '#B8A5E8' },
+  { id: 'animaux-ciel',       label: 'Animaux du ciel',          emoji: '🦅', color: '#B8A5E8' },
   { id: 'animaux-marins',     label: 'Animaux Marins',           emoji: '🐬', color: '#40B4D8' },
   { id: 'animaux-sauvages',   label: 'Animaux sauvages',         emoji: '🦁', color: '#E8712A' },
-  { id: 'bestioles',          label: 'Bestioles',                emoji: '',   color: '#7A9F35' },
+  { id: 'bestioles',          label: 'Bestioles',                emoji: '🐛', color: '#7A9F35' },
   { id: 'architecture',       label: 'Architecture',             emoji: '🏛️', color: '#A0826D' },
   { id: 'art',                label: 'Art',                      emoji: '🎨', color: '#A07CD8' },
   { id: 'celebrites',         label: 'Célébrités',               emoji: '🌟', color: '#FFD700' },
@@ -21,7 +21,7 @@ export const CATEGORIES = [
   { id: 'jeux-jouets',        label: 'Jeux & Jouets',            emoji: '🎮', color: '#9B59B6' },
   { id: 'kids',               label: 'Kids',                     emoji: '🎈', color: '#E8C000' },
   { id: 'lois',               label: 'Lois & Règles',            emoji: '⚖️', color: '#6366B8' },
-  { id: 'meteo',              label: 'Météo',                    emoji: '',   color: '#6FC0D8' },
+  { id: 'meteo',              label: 'Météo',                    emoji: '🌦️', color: '#6FC0D8' },
   { id: 'musique',            label: 'Musique',                  emoji: '🎵', color: '#E84B8A' },
   { id: 'mythologie',         label: 'Mythologie',               emoji: '⚡', color: '#C8A84B' },
   { id: 'phobies',            label: 'Phobies',                  emoji: '😱', color: '#7B5EA7' },
@@ -32,7 +32,7 @@ export const CATEGORIES = [
   { id: 'sciences',           label: 'Sciences',                 emoji: '🔬', color: '#80C8E8' },
   { id: 'sport',              label: 'Sport',                    emoji: '⚽', color: '#E84535' },
   { id: 'technologie',        label: 'Technologie',              emoji: '🤖', color: '#7B8FA0' },
-  { id: 'transports',         label: 'Transports',               emoji: '',   color: '#3A6FA0' },
+  { id: 'transports',         label: 'Transports',               emoji: '🚂', color: '#3A6FA0' },
 ]
 
 export const CATEGORY_MAP = Object.fromEntries(CATEGORIES.map(c => [c.id, c]))

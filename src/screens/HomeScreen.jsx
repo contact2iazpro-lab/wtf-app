@@ -351,8 +351,8 @@ export default function HomeScreen({
 
         {/* Ligne 1 : Quest + Quickie */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: S(32) }}>
-          <ModeIcon icon="/assets/modes/quest.png?v=2" name="Quest WTF!" color="#FF6B1A" onClick={() => nav('quest')} sizeOverride={64} badge />
           <ModeIcon icon="/assets/modes/quickie.png?v=2" name="Quickie" color="#E91E90" onClick={() => nav('quickie')} sizeOverride={64} badge />
+          <ModeIcon icon="/assets/modes/quest.png?v=2" name="Quest WTF!" color="#FF6B1A" onClick={() => nav('quest')} sizeOverride={64} badge />
         </div>
 
         {/* Ligne 2 : Race + Blitz + Multi */}

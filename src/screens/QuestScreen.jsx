@@ -13,7 +13,6 @@ import { QUICKIE_ENERGY } from '../constants/gameConfig'
 import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import HintFlipButton from '../components/HintFlipButton'
-import FallbackImage from '../components/FallbackImage'
 import EnergyIcon from '../components/icons/EnergyIcon'
 import RevelationScreen from './RevelationScreen'
 import renderFormattedText from '../utils/renderFormattedText'
@@ -182,7 +181,6 @@ export default function QuestScreen({ onHome, setStorage }) {
   const [bossCorrect, setBossCorrect] = useState(false)
   const [bossUnlocked, setBossUnlocked] = useState(false) // ≥5/10 atteint
   const [hintsUsed, setHintsUsed] = useState(0)
-  const [imgFailed, setImgFailed] = useState(false)
   const [energyState, setEnergyState] = useState(() => getQuickieEnergy())
   const [showEnergyModal, setShowEnergyModal] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
@@ -205,7 +203,7 @@ export default function QuestScreen({ onHome, setStorage }) {
   // NOTE : hintsUsed NE se reset PAS entre questions d'un même bloc (le flip indice
   // reste actif pour les questions suivantes). Reset uniquement à nouvelle session.
   useEffect(() => {
-    setImgFailed(false); setSelected(null); setTimedOut(false)
+    setSelected(null); setTimedOut(false)
   }, [qIndex])
 
   // Intro dramatique quand on arrive sur le boss
@@ -699,131 +697,103 @@ export default function QuestScreen({ onHome, setStorage }) {
       display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
       '--scale': 1,
     }}>
-      <div style={{ padding: `${S(16)} ${S(16)} 0`, flexShrink: 0 }}>
-        <GameHeader
-          categoryLabel={cat?.label || 'Quest'}
-          categoryColor={catColor}
-          categoryIcon={fact.category ? `/assets/categories/${fact.category}.png` : null}
-          onQuit={() => setSession(null)}
-        />
-      </div>
+      {/* Header */}
+      <GameHeader
+        categoryLabel={cat?.label || 'Quest'}
+        categoryColor={catColor}
+        categoryIcon={fact.category ? `/assets/categories/${fact.category}.png` : null}
+        playerCoins={profileCoins}
+        playerHints={profileHints}
+        onQuit={() => setSession(null)}
+      />
 
-      {/* Label mode */}
-      <div style={{ textAlign: 'center', flexShrink: 0, padding: `${S(4)} 0 ${S(2)}` }}>
-        <span style={{
-          fontSize: S(12), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-        }}>
-          {isBoss ? '👑 BOSS VIP' : `MODE QUEST · BLOC ${session.blockIdx}`}
-        </span>
-      </div>
-
-      {/* Barre de progression */}
-      <div style={{ padding: `0 ${S(16)}`, flexShrink: 0 }}>
+      {/* Bloc barre S(56) : mode label + compteur + progress */}
+      <div style={{ height: S(56), flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: `${S(2)} ${S(16)} ${S(4)}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6) }}>
+          <span style={{
+            fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+            color: isBoss ? '#FFD700' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          }}>
+            {isBoss ? '👑 BOSS VIP' : `MODE QUEST · BLOC ${session.blockIdx}`}
+          </span>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <span style={{ fontSize: S(12), fontWeight: 900, color: 'rgba(255,255,255,0.8)' }}>
+            {displayIndex + 1}/{displayTotal}
+          </span>
+        </div>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
           {Array.from({ length: displayTotal }).map((_, i) => {
             const isActive = i === displayIndex
             return (
               <div key={i} style={{
                 flex: 1,
-                height: isActive ? S(20) : S(10),
-                borderRadius: S(5),
-                background: isActive ? 'white' : 'rgba(255,255,255,0.3)',
-                position: isActive ? 'relative' : 'static',
+                height: isActive ? S(12) : S(8),
+                borderRadius: S(4),
+                background: isActive ? 'white' : 'rgba(255,255,255,0.2)',
                 transition: 'all 0.3s ease',
-              }}>
-                {isActive && (
-                  <span style={{
-                    position: 'absolute', top: '50%', left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    fontSize: S(12), fontWeight: 900, color: catColor, whiteSpace: 'nowrap',
-                  }}>
-                    {displayIndex + 1}/{displayTotal}
-                  </span>
-                )}
-              </div>
+              }} />
             )
           })}
         </div>
       </div>
 
-      {/* Zone question + hints + QCM */}
+      {/* Bloc contenu S(270) : question + indices + QCM (space-between) */}
       <div style={{
-        flex: 1, minHeight: 0, overflow: 'hidden',
-        display: 'flex', flexDirection: 'column', gap: S(10),
-        padding: `${S(10)} ${S(16)} 0`,
+        height: S(270), flexShrink: 0, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: `${S(4)} ${S(16)} 0`,
       }}>
-        {/* Card question avec image floutée + 🔒 */}
+        {/* Card question */}
         <div style={{
-          background: 'rgba(0,0,0,0.28)', border: `1.5px solid ${catColor}70`,
-          borderRadius: S(16), padding: S(12), backdropFilter: 'blur(12px)',
-          boxShadow: `0 4px 32px ${catColor}30`,
-          flexShrink: 0,
+          padding: `${S(12)} ${S(16)}`,
+          borderRadius: S(16),
+          background: 'rgba(0,0,0,0.28)',
+          border: `1.5px solid ${isBoss ? '#FFD700' : catColor}70`,
+          backdropFilter: 'blur(12px)',
+          boxShadow: isBoss ? '0 0 20px rgba(255,215,0,0.3)' : `0 4px 32px ${catColor}30`,
+          height: S(72), flexShrink: 0, overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <div style={{
-            position: 'relative', width: '100%', aspectRatio: '1 / 1',
-            borderRadius: S(12), overflow: 'hidden', marginBottom: S(10),
-            background: 'rgba(0,0,0,0.3)',
-          }}>
-            {fact.imageUrl && !imgFailed ? (
-              <img
-                src={fact.imageUrl} alt=""
-                style={{
-                  width: '100%', height: '100%', objectFit: 'cover',
-                  filter: 'blur(18px) brightness(0.6)', transform: 'scale(1.15)',
-                }}
-                onError={() => setImgFailed(true)}
-              />
-            ) : (
-              <div style={{ width: '100%', height: '100%', filter: 'blur(14px) brightness(0.6)' }}>
-                <FallbackImage categoryColor={catColor} />
-              </div>
-            )}
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: S(56), filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
-            }}>🔒</div>
-          </div>
-          <h2 style={{
-            fontSize: 'calc(1.05rem * var(--scale))', fontWeight: 800, lineHeight: 1.35,
-            color: '#fff', margin: 0, textAlign: 'center',
-          }}>
-            {renderFormattedText(fact.question || fact.fact || '', '#FF6B1A')}
-          </h2>
+          <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>
+            {renderFormattedText(fact.question || fact.fact || '', isBoss ? '#FFD700' : undefined)}
+          </p>
         </div>
 
-        {/* Deux boutons indices visibles d'un coup */}
-        {availableHints.length > 0 && (
-          <div style={{
-            display: 'grid', gridTemplateColumns: availableHints.length === 1 ? '1fr' : '1fr 1fr',
-            gap: 8, flexShrink: 0,
-          }}>
-            {availableHints.map((h, i) => {
-              const hintNum = i + 1
-              const hasStock = (profileHints ?? 0) > 0
-              const canAfford = hasStock || (profileCoins ?? 0) >= HINT_COST
-              const canUse = hasStock
-              return (
-                <HintFlipButton
-                  key={`${fact.id}-${hintNum}`}
-                  num={hintNum}
-                  hint={h}
-                  catColor={catColor}
-                  isFree={false}
-                  cost={HINT_COST}
-                  canAfford={canAfford}
-                  canUse={canUse}
-                  initialRevealed={hintsUsed >= hintNum}
-                  onReveal={() => useHint(hintNum)}
-                  onBuyHint={!canUse && canAfford ? buyHint : null}
-                />
-              )
-            })}
-          </div>
-        )}
+        {/* Indices */}
+        <div>
+          {availableHints.length > 0 && (
+            <div style={{
+              display: 'grid', gridTemplateColumns: availableHints.length === 1 ? '1fr' : '1fr 1fr',
+              gap: 8,
+            }}>
+              {availableHints.map((h, i) => {
+                const hintNum = i + 1
+                const hasStock = (profileHints ?? 0) > 0
+                const canAfford = hasStock || (profileCoins ?? 0) >= HINT_COST
+                const canUse = hasStock
+                return (
+                  <HintFlipButton
+                    key={`${fact.id}-${qIndex}-h${hintNum}`}
+                    num={hintNum}
+                    hint={h}
+                    catColor={catColor}
+                    isFree={false}
+                    cost={HINT_COST}
+                    canAfford={canAfford}
+                    canUse={canUse}
+                    initialRevealed={hintsUsed >= hintNum}
+                    onReveal={() => useHint(hintNum)}
+                    onBuyHint={!canUse && canAfford ? buyHint : null}
+                  />
+                )
+              })}
+            </div>
+          )}
+        </div>
 
-        {/* QCM : pas de vert sur bonne réponse si mal répondu */}
+        {/* QCM 4 choix */}
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5),
           flexShrink: 0, position: 'relative', zIndex: 5,
@@ -849,8 +819,8 @@ export default function QuestScreen({ onHome, setStorage }) {
                 disabled={selected !== null}
                 style={{
                   background: bg, border, borderRadius: S(12),
-                  color: '#fff', fontWeight: 700, fontSize: S(13), lineHeight: 1.2,
-                  padding: `${S(4)} ${S(6)}`, height: S(64), width: '100%',
+                  color: '#fff', fontWeight: 700, fontSize: S(12), lineHeight: 1.2,
+                  padding: `${S(4)} ${S(6)}`, height: S(50), width: '100%',
                   overflow: 'hidden', wordBreak: 'break-word',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   textAlign: 'center', cursor: selected === null ? 'pointer' : 'default',
@@ -867,6 +837,18 @@ export default function QuestScreen({ onHome, setStorage }) {
               </button>
             )
           })}
+        </div>
+      </div>
+
+      {/* Zone flex:1 : timer centré */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <CircularTimer
+            key={`${fact.id}-${phase}`}
+            size={96}
+            duration={QUEST_DURATION}
+            onTimeout={handleTimeout}
+          />
         </div>
       </div>
 
@@ -892,18 +874,6 @@ export default function QuestScreen({ onHome, setStorage }) {
           <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }`}</style>
         </div>
       )}
-
-      {/* Timer en bas */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `${S(8)} 0 ${S(14)}` }}>
-        <div style={{ width: S(72), height: S(72), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <CircularTimer
-            key={`${fact.id}-${phase}`}
-            size={72}
-            duration={QUEST_DURATION}
-            onTimeout={handleTimeout}
-          />
-        </div>
-      </div>
     </div>
   )
 }

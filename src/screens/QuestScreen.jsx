@@ -595,18 +595,20 @@ export default function QuestScreen({ onHome, setStorage }) {
 
     // Couleurs catégories des 5 facts du bloc courant (depuis prebuiltSession)
     const factCatColors = {}
+    const factCatIds = {}
     if (prebuiltSession?.facts) {
       prebuiltSession.facts.forEach((f, i) => {
         const cat = getCategoryById(f.category)
         factCatColors[i + 1] = cat?.color || '#FF6B1A'
+        factCatIds[i + 1] = f.category
       })
     }
 
     // Positions zigzag
-    const NODE_GAP = 52
+    const NODE_GAP = 40
     const MAP_WIDTH = 300
     const MARGIN_X = 50
-    const BOTTOM_DOTS = 50
+    const BOTTOM_DOTS = 80
     const getNodePos = (idx) => {
       const cycle = Math.floor(idx / 6)
       const pos = idx % 6
@@ -707,6 +709,13 @@ export default function QuestScreen({ onHome, setStorage }) {
               {currentBlockIdx > 1 && [0, 1].map(i => (
                 <circle key={`dot-bot-${i}`} cx={dotsBotX} cy={dotsBotY - i * 18} r="4" fill="rgba(255,255,255,0.35)" />
               ))}
+              {/* 4 pointillés sous l'étoile joueur */}
+              {(() => {
+                const pp = getNodePos(playerIdx)
+                return [1, 2, 3, 4].map(i => (
+                  <circle key={`dot-player-${i}`} cx={MAP_WIDTH / 2} cy={pp.y - i * 14} r="4" fill="rgba(255,255,255,0.4)" />
+                ))
+              })()}
             </svg>
 
             {/* Nodes */}
@@ -716,8 +725,8 @@ export default function QuestScreen({ onHome, setStorage }) {
               const isCurrent = i === playerIdx
               const isLocked = node.level > currentLevel
               const failedBoss = node.isBoss && state.bossFailed?.[node.block]
-              const FACT_SIZE = 22
-              const BOSS_SIZE = 33
+              const FACT_SIZE = 34
+              const BOSS_SIZE = 44
               const nodeSize = node.isBoss ? BOSS_SIZE : FACT_SIZE
               const halfSize = nodeSize / 2
 
@@ -767,8 +776,8 @@ export default function QuestScreen({ onHome, setStorage }) {
                       {failedBoss ? (
                         <span style={{ fontSize: 14, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>🔒</span>
                       ) : (
-                        <img src="/assets/ui/wtf-star.png" alt="WTF!" style={{
-                          width: BOSS_SIZE * 0.65, height: BOSS_SIZE * 0.65, objectFit: 'contain',
+                        <img src="/assets/modes/icon-quest.png" alt="WTF!" style={{
+                          width: BOSS_SIZE * 0.6, height: BOSS_SIZE * 0.6, objectFit: 'contain',
                           filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))',
                         }} />
                       )}
@@ -790,13 +799,23 @@ export default function QuestScreen({ onHome, setStorage }) {
                           ? '0 0 8px rgba(255,255,255,0.3)'
                           : 'none',
                       animation: isCurrent ? 'questNodePulse 1.5s ease-in-out infinite' : 'none',
-                    }} />
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden',
+                    }}>
+                      {isCurrentBlock && factCatIds[node.indexInBlock] && (
+                        <img src={`/assets/categories/${factCatIds[node.indexInBlock]}.png`} alt=""
+                          style={{ width: FACT_SIZE * 0.65, height: FACT_SIZE * 0.65, objectFit: 'contain', flexShrink: 0 }} />
+                      )}
+                      {isDone && !isCurrentBlock && (
+                        <span style={{ fontSize: FACT_SIZE * 0.45, lineHeight: 1, color: '#FF6B1A' }}>✓</span>
+                      )}
+                    </div>
                   )}
                 </div>
               )
             })}
 
-            {/* Étoile joueur — anime vers le boss si pendingBoss */}
+            {/* Étoile joueur — centrée horizontalement, anime vers boss si pendingBoss */}
             {(() => {
               const startPos = getNodePos(playerIdx)
               const targetPos = bossAnimPhase === 'travel' && bossNodeIdx >= 0
@@ -806,8 +825,8 @@ export default function QuestScreen({ onHome, setStorage }) {
               return (
                 <div style={{
                   position: 'absolute',
-                  left: (isAnimating ? targetPos.x : startPos.x) - 18,
-                  top: (isAnimating ? targetPos.y : startPos.y) - 50,
+                  left: isAnimating ? (targetPos.x - 18) : (MAP_WIDTH / 2 - 18),
+                  top: (isAnimating ? targetPos.y : startPos.y) - 56,
                   transform: 'scaleY(-1)',
                   textAlign: 'center',
                   pointerEvents: 'none',

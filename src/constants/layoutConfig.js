@@ -7,7 +7,7 @@
 export const UNLOCK_THRESHOLDS = {
   quest: { stat: 'gamesPlayed', threshold: 1 },
   blitz: { stat: 'unlockedFactsCount', threshold: 5 },
-  flash: { stat: 'gamesPlayed', threshold: 10 },
+  drop: { stat: 'gamesPlayed', threshold: 10 },
   quickie: { stat: 'statsByMode.parcours.gamesPlayed', threshold: 1 },
   streakDisplay: { stat: 'gamesPlayed', threshold: 3 },
   badgeDisplay: { stat: 'gamesPlayed', threshold: 3 },
@@ -19,7 +19,7 @@ export const UNLOCK_THRESHOLDS = {
 export const UNLOCK_MESSAGES = {
   quest: 'Joue ta première partie pour débloquer ! 🎮',
   blitz: 'Débloque 5 f*cts pour jouer en Blitz ! ⚡',
-  flash: 'Joue 10 parties pour débloquer la Flash ! 🔥',
+  drop: 'Joue 10 parties pour débloquer le Drop ! 🔥',
   quickie: 'Termine une Quest pour explorer librement ! 🧭',
   boutique: 'Joue 2 parties pour débloquer la Boutique ! 🛍️',
   trophees: 'Joue 2 parties pour voir tes Trophées ! 🏆',
@@ -30,7 +30,7 @@ export const UNLOCK_MESSAGES = {
 // ── Spotlight messages — conseils affichés pendant le tuto ────────────────────
 
 export const SPOTLIGHT_MESSAGES = {
-  flash: 'Lance ta première partie ! 🎮',
+  drop: 'Lance ta première partie ! 🎮',
   quest: 'Découvre les f*cts les plus dingues 🏆',
   collection: 'Tes f*cts sont dans ta collection ! 📚',
   coffre: 'Ouvre ton coffre du jour ! 🎁',

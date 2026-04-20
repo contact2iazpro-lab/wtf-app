@@ -367,8 +367,8 @@ export function getMixedUnlockedFacts() {
   }
 }
 
-/** Mode Flash : Funny facts, toutes catégories */
-export function getFlashFacts() {
+/** Mode Drop : Funny facts, toutes catégories */
+export function getDropFacts() {
   return getFunnyFacts()
 }
 

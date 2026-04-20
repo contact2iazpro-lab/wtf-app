@@ -12,7 +12,7 @@ const MODE_COLORS = {
   race: '#0F52BA',
   blitz: '#FF4444',
   quest: '#D94A10',
-  flash: '#E91E63',
+  drop: '#E91E63',
   multi: '#6B2D8E',
 }
 
@@ -20,19 +20,19 @@ const MULTI_VIOLET = '#6B2D8E'
 const MULTI_GOLD = '#FFD700'
 const QUEST_ORANGE = '#FF6B1A'
 const QUEST_DARK = '#D94A10'
-const FLASH_PINK = '#E91E63'
-const FLASH_DARK = '#AD1457'
+const DROP_PINK = '#E91E63'
+const DROP_DARK = '#AD1457'
 
-const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi', 'quest', 'flash']
+const STYLED_MODES = ['quickie', 'vrai_ou_fou', 'race', 'blitz', 'multi', 'quest', 'drop']
 
-function renderText(text) {
+function renderText(text, highlightColor) {
   const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*|\n)/g)
   return parts.map((part, i) => {
     if (part === '\n') return <br key={i} />
     const redMatch = part.match(/^\{\{red\}\}(.*?)\{\{\/red\}\}$/)
     if (redMatch) return <span key={i} style={{ color: '#E84535' }}>{redMatch[1]}</span>
     const boldMatch = part.match(/^\*\*(.*?)\*\*$/)
-    if (boldMatch) return <strong key={i}>{boldMatch[1]}</strong>
+    if (boldMatch) return <span key={i} style={{ fontWeight: 900, fontStyle: 'italic', color: highlightColor || 'inherit' }}>{boldMatch[1]}</span>
     return part
   })
 }
@@ -60,7 +60,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'race' ? '#23D5D5'
     : modeId === 'multi' ? MULTI_VIOLET
     : modeId === 'quest' ? QUEST_ORANGE
-    : modeId === 'flash' ? FLASH_PINK
+    : modeId === 'drop' ? DROP_PINK
     : modeColor
 
   const btnBg = modeId === 'vrai_ou_fou' ? '#008000'
@@ -68,14 +68,14 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'blitz' ? '#CC0000'
     : modeId === 'multi' ? MULTI_VIOLET
     : modeId === 'quest' ? QUEST_DARK
-    : modeId === 'flash' ? FLASH_DARK
+    : modeId === 'drop' ? DROP_DARK
     : '#FF7518'
   const btnShadow = modeId === 'vrai_ou_fou' ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'race' ? '0 8px 30px rgba(0,255,255,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'blitz' ? '0 8px 30px rgba(204,0,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'multi' ? '0 8px 30px rgba(107,45,142,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'quest' ? '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)'
-    : modeId === 'flash' ? '0 8px 30px rgba(173,20,87,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : modeId === 'drop' ? '0 8px 30px rgba(173,20,87,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : '0 8px 30px rgba(255,117,24,0.5), 0 4px 0 rgba(0,0,0,0.15)'
 
   return (
@@ -158,8 +158,8 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
             iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
           } else if (modeId === 'quest') {
             iconColor = i % 2 === 0 ? QUEST_ORANGE : QUEST_DARK
-          } else if (modeId === 'flash') {
-            iconColor = i % 2 === 0 ? FLASH_PINK : FLASH_DARK
+          } else if (modeId === 'drop') {
+            iconColor = i % 2 === 0 ? DROP_PINK : DROP_DARK
           }
           return (
             <div key={i} style={{
@@ -172,7 +172,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
             }}>
               <span style={{ fontSize: S(18), flexShrink: 0, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: S(18), height: S(18), color: isStyled ? textColor : 'inherit' }}>{renderIcon(rule.icon, 18, iconColor, modeId)}</span>
               <span style={{ fontSize: S(12), fontWeight: isStyled ? 700 : 600, lineHeight: 1.3, color: isStyled ? textColor : 'inherit' }}>
-                {renderText(rule.text)}
+                {renderText(rule.text, isStyled ? modeColor : undefined)}
               </span>
             </div>
           )

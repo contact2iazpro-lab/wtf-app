@@ -17,7 +17,7 @@ import ResultsScreen from '../screens/ResultsScreen'
 import BlitzScreen from '../screens/BlitzScreen'
 import BlitzLobbyScreen from '../screens/BlitzLobbyScreen'
 import BlitzResultsScreen from '../screens/BlitzResultsScreen'
-import FlashScreen from '../screens/FlashScreen'
+import DropScreen from '../screens/DropScreen'
 import QuestScreen from '../screens/QuestScreen'
 import RaceScreen from '../screens/RaceScreen'
 import VraiOuFouScreen from '../screens/VraiOuFouScreen'
@@ -37,7 +37,7 @@ export default function ScreenRenderer({
   handleHomeNavigate, handleHome, handleSelectDifficulty, handleSelectCategory,
   handleSelectAnswer, handleOpenValidate, handleUseHint, handleTimeout,
   handleNext, handleReplay, handleBlitzReplay, handleBlitzStart,
-  handleBlitzFinish, handleStartFlashSession, handleShare, handleShareDailyFact,
+  handleBlitzFinish, handleStartDropSession, handleShare, handleShareDailyFact,
   handleSaveTempFacts, handleLaunchStart,
   // Setters
   setScreen, setShowSettings, setShowHowToPlay, setStorage,
@@ -73,7 +73,7 @@ export default function ScreenRenderer({
           fact={effectiveDailyFact}
           titrePartiel={getTitrePartiel(effectiveDailyFact)}
           streak={streak}
-          onStart={handleStartFlashSession}
+          onStart={handleStartDropSession}
           onBack={() => setScreen(SCREENS.HOME)}
         />
       )}
@@ -217,8 +217,8 @@ export default function ScreenRenderer({
         />
       )}
 
-      {screen === SCREENS.FLASH && (
-        <FlashScreen onHome={handleHome} setStorage={setStorage} />
+      {screen === SCREENS.DROP && (
+        <DropScreen onHome={handleHome} setStorage={setStorage} />
       )}
 
       {screen === SCREENS.QUEST && (

@@ -79,7 +79,7 @@ function pickWrongAnswers(fact, numWrong, factId, distribution) {
 
   let picked = []
 
-  // ── numWrong === 1 : tirage pondéré (Quickie, Flash) ──
+  // ── numWrong === 1 : tirage pondéré (Quickie, Drop) ──
   // Distribution par défaut si non fournie : 70% plausible / 20% funny / 10% close
   if (numWrong <= 1) {
     const weights = distribution?.type === 'weighted'

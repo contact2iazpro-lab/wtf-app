@@ -70,8 +70,8 @@ function getStars(correct, total) {
   return 0
 }
 
-const DIFFICULTY_LABELS = { quickie: 'Quickie', quest: 'Quest', flash: 'Flash', blitz: 'Blitz', race: 'Race', vrai_ou_fou: 'Vrai ET Fou' }
-const DIFFICULTY_EMOJIS = { quickie: '🍿', quest: '🗺️', flash: '⚡', blitz: '⏱️', race: '🏎️', vrai_ou_fou: '🤔' }
+const DIFFICULTY_LABELS = { quickie: 'Quickie', quest: 'Quest', drop: 'Drop', blitz: 'Blitz', race: 'Race', vrai_ou_fou: 'Vrai ET Fou' }
+const DIFFICULTY_EMOJIS = { quickie: '🍿', quest: '🗺️', drop: '🔥', blitz: '⏱️', race: '🏎️', vrai_ou_fou: '🤔' }
 const CHALLENGE_LABELS = {}
 
 // COR 4 — Confetti colors

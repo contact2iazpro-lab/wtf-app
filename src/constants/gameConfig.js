@@ -1,5 +1,5 @@
 // ── Difficulty Levels Configuration — 6 modes officiels (CLAUDE.md 15/04/2026)
-// Quickie · Vrai ET Fou · Quest · Race · Blitz · Flash
+// Quickie · Vrai ET Fou · Quest · Race · Blitz · Drop
 // Économie ×10 appliquée.
 
 // ── Distributions de fausses réponses par mode (CLAUDE.md 19/04/2026) ──
@@ -59,11 +59,11 @@ export const DIFFICULTY_LEVELS = {
     soloMinUnlocked: 20,
     wrongDistribution: { type: 'counts', counts: { funny: 1, close: 1, plausible: 1 } },
   },
-  FLASH: {
-    id: 'flash', label: 'Flash', emoji: '🔥',
+  DROP: {
+    id: 'drop', label: 'Drop', emoji: '🔥',
     choices: 2, duration: 15, questionsCount: 5,
     hintsAllowed: true, freeHints: 0, paidHints: 0, hintCost: 0,
-    coinsPerCorrect: 0, flashDailyCoins: 30, perfectBonus: 0,
+    coinsPerCorrect: 0, dropDailyCoins: 30, perfectBonus: 0,
     scoring: { correct: 0, wrong: 0 },
     wrongDistribution: { type: 'weighted', weights: { plausible: 0.7, funny: 0.2, close: 0.1 } },
   },
@@ -82,7 +82,7 @@ export const SCREENS = {
   BLITZ_RESULTS: 'blitz_results',
   BLITZ_LOBBY: 'blitz_lobby',
   MODE_LAUNCH: 'mode_launch',
-  FLASH: 'flash',
+  DROP: 'drop',
   QUEST: 'quest',
   VRAI_OU_FOU: 'vrai_ou_fou',
   RACE: 'race',
@@ -164,8 +164,8 @@ export const MODE_CONFIGS = {
       { icon: 'picto:share', text: '**Social** : 48 h pour relever le défi' },
     ],
   },
-  flash: {
-    modeId: 'flash', modeName: 'Flash', subtitle: 'Le rendez-vous quotidien', emoji: '🔥', icon: '/assets/daily.png', color: '#E91E63',
+  drop: {
+    modeId: 'drop', modeName: 'Drop', subtitle: 'Le rendez-vous quotidien', emoji: '🔥', icon: '/assets/daily.png', color: '#E91E63',
     rules: [
       { icon: 'picto:free', text: '**Coût** : Gratuit · 1 × / jour' },
       { icon: 'icon:set', text: '**Set** : 5 questions / set' },
@@ -193,7 +193,7 @@ export const QUICKIE_ENERGY = {
 }
 
 // ── Paliers Streak/Coffres fusionnés (décision 16/04/2026 Option B)
-// Pas de J1 (redondant avec Flash quotidien). 4 paliers nommés.
+// 4 paliers majeurs (cerveaux) + récompenses quotidiennes entre paliers.
 export const STREAK_PALIERS = [
   { day: 3,  name: 'Débutant', coins: 75,   hints: 0, badge: false, special: null },
   { day: 7,  name: 'Habitué',  coins: 200,  hints: 2, badge: true,  special: null },
@@ -201,9 +201,53 @@ export const STREAK_PALIERS = [
   { day: 30, name: 'Légende',  coins: 1000, hints: 0, badge: true,  special: 'wtf_premium' },
 ]
 
+// Récompenses quotidiennes — le joueur reçoit toujours quelque chose.
+// Les jours milestone (3,7,14,30) sont gérés par STREAK_PALIERS.
+export const STREAK_DAILY_REWARDS = {
+  1:  { coins: 15 },
+  2:  { coins: 25 },
+  4:  { coins: 15 },
+  5:  { coins: 25 },
+  6:  { coins: 35 },
+  8:  { coins: 15 },
+  9:  { coins: 20 },
+  10: { coins: 25 },
+  11: { coins: 30 },
+  12: { coins: 40 },
+  13: { coins: 50 },
+  15: { coins: 15 },
+  16: { coins: 20 },
+  17: { coins: 25 },
+  18: { coins: 30 },
+  19: { coins: 35 },
+  20: { coins: 40 },
+  21: { coins: 50, hints: 1 },
+  22: { coins: 20 },
+  23: { coins: 25 },
+  24: { coins: 30 },
+  25: { coins: 35 },
+  26: { coins: 40 },
+  27: { coins: 50 },
+  28: { coins: 60 },
+  29: { coins: 75 },
+}
+
+// Pour les jours > 30 (post-Légende) : 25c/jour fixe.
+export const STREAK_POST_LEGEND_DAILY = { coins: 25 }
+
 export function getStreakReward(streakDays) {
   const palier = STREAK_PALIERS.find(p => p.day === streakDays)
   return palier ? { coins: palier.coins, hints: palier.hints, badge: palier.badge, special: palier.special } : null
+}
+
+export function getDailyStreakReward(day) {
+  if (!day || day < 1) return null
+  const milestone = STREAK_PALIERS.find(p => p.day === day)
+  if (milestone) return { coins: milestone.coins, hints: milestone.hints, isMilestone: true, name: milestone.name }
+  const daily = STREAK_DAILY_REWARDS[day]
+  if (daily) return { coins: daily.coins, hints: daily.hints || 0, isMilestone: false }
+  if (day > 30) return { ...STREAK_POST_LEGEND_DAILY, hints: 0, isMilestone: false }
+  return null
 }
 
 // ── Tutorial Configs (isolated, used by TutoTunnel)

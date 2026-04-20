@@ -217,7 +217,7 @@ export default function App() {
 
   // isChallengeMode dérivé de pendingDuel — une seule source de vérité (Palier 2).
   const isChallengeMode = pendingDuel?.mode === 'create'
-  const [sessionType, setSessionType] = useState('parcours') // 'flash' | 'quickie' | 'parcours' | 'quickie' | 'duel'
+  const [sessionType, setSessionType] = useState('parcours') // 'drop' | 'quickie' | 'parcours' | 'quickie' | 'duel'
   const [coinsEarnedLastSession, setCoinsEarnedLastSession] = useState(0)
   const [dailyFact, setDailyFact] = useState(null)
   const [dailyFactOverride, setDailyFactOverride] = useState(null)
@@ -300,7 +300,7 @@ export default function App() {
 
   // ─── Mode starters → extraits dans useModeStarters hook ──────────────────
   const {
-    initSessionState, handleFlashTeaser, handleStartFlashSession,
+    initSessionState, handleDropTeaser, handleStartDropSession,
     handleQuickie, handleQuickPlay,
   } = useModeStarters({
     effectiveDailyFact, unlockedFacts, user,
@@ -328,7 +328,7 @@ export default function App() {
     localStorage.removeItem('skip_launch_quickie')
     localStorage.removeItem('skip_launch_blitz')
     localStorage.removeItem('skip_launch_quickie_legacy')
-    localStorage.removeItem('skip_launch_flash')
+    localStorage.removeItem('skip_launch_drop')
     localStorage.removeItem('skip_launch_race')
     localStorage.removeItem('skip_launch_vrai_ou_fou')
     sessionStorage.clear()
@@ -385,7 +385,7 @@ export default function App() {
     launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
     selectedDifficulty, blitzVariant,
     quickiePool, unlockedFacts, user, sessionCorrectFacts,
-    handleStartFlashSession, handleQuickie, handleSelectDifficulty,
+    handleStartDropSession, handleQuickie, handleSelectDifficulty,
     handleSelectCategory, handleBlitzStart, initSessionState,
     setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
     setSelectedCategory, setSessionFacts, setCurrentIndex, setSessionScore,
@@ -536,7 +536,7 @@ export default function App() {
         handleUseHint={handleUseHint} handleTimeout={handleTimeout}
         handleNext={handleNext} handleReplay={handleReplay}
         handleBlitzReplay={handleBlitzReplay} handleBlitzStart={handleBlitzStart}
-        handleBlitzFinish={handleBlitzFinish} handleStartFlashSession={handleStartFlashSession}
+        handleBlitzFinish={handleBlitzFinish} handleStartDropSession={handleStartDropSession}
         handleShare={handleShare} handleShareDailyFact={handleShareDailyFact}
         handleSaveTempFacts={handleSaveTempFacts} handleLaunchStart={handleLaunchStart}
         setScreen={setScreen} setShowSettings={setShowSettings} setShowHowToPlay={setShowHowToPlay}

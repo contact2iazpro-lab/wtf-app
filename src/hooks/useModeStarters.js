@@ -1,7 +1,7 @@
 /**
  * useModeStarters — Session starters pour chaque mode de jeu.
  *
- * Extrait de App.jsx : handleFlashTeaser, handleStartFlashSession,
+ * Extrait de App.jsx : handleDropTeaser, handleStartDropSession,
  * handleQuickie, handleQuickPlay, initSessionState.
  */
 
@@ -44,20 +44,20 @@ export function useModeStarters({
     setPointsEarned(0)
   }, [])
 
-  const handleFlashTeaser = useCallback(() => {
+  const handleDropTeaser = useCallback(() => {
     audio.play('click')
     setScreen(SCREENS.WTF_TEASER)
   }, [])
 
-  const handleStartFlashSession = useCallback(() => {
+  const handleStartDropSession = useCallback(() => {
     audio.play('click')
-    const flashFact = effectiveDailyFact
-    if (!flashFact) {
+    const dropFact = effectiveDailyFact
+    if (!dropFact) {
       setGameAlert({ emoji: '⏳', title: 'Patience', message: 'Le f*ct de la semaine n\'est pas encore chargé. Réessaie dans quelques secondes !' })
       return
     }
-    const category = flashFact.category
-    const sameCat = getGeneratedFacts().filter(f => f.category === category && f.id !== flashFact.id)
+    const category = dropFact.category
+    const sameCat = getGeneratedFacts().filter(f => f.category === category && f.id !== dropFact.id)
     let pool = sameCat.filter(f => !unlockedFacts.has(f.id))
     if (pool.length < 5) {
       const already = sameCat.filter(f => !pool.some(p => p.id === f.id))
@@ -65,15 +65,15 @@ export function useModeStarters({
     }
     const facts = shuffle(pool)
       .slice(0, 5)
-      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.FLASH) }))
+      .map(fact => ({ ...fact, ...getAnswerOptions(fact, DIFFICULTY_LEVELS.DROP) }))
 
-    setSessionType('flash')
+    setSessionType('drop')
     setGameMode('solo')
     setIsQuickPlay(false)
-    setSelectedDifficulty(DIFFICULTY_LEVELS.FLASH)
+    setSelectedDifficulty(DIFFICULTY_LEVELS.DROP)
     setSelectedCategory(category)
     initSessionState(facts)
-    logDevEvent('session_started', { type: 'flash', category, factId: flashFact.id })
+    logDevEvent('session_started', { type: 'drop', category, factId: dropFact.id })
     setScreen(SCREENS.QUESTION)
   }, [effectiveDailyFact, unlockedFacts, initSessionState])
 
@@ -103,7 +103,7 @@ export function useModeStarters({
     // Bonus surprise VIP en Quickie (19/04/2026) : chaque question remplacée
     // par un VIP non-débloqué. Flag _isVipSurprise pour UX dédiée.
     // Désactivé (20/04/2026) — repasser à 0.03 pour réactiver à 3% / question.
-    const VIP_SURPRISE_RATE = 0
+    const VIP_SURPRISE_RATE = 0.03
     const vipPool = getVipFacts().filter(f => !unlockedFacts.has(f.id))
     const baseFacts = shuffle(pool).slice(0, 5)
     const usedVipIds = new Set()
@@ -153,8 +153,8 @@ export function useModeStarters({
 
   return {
     initSessionState,
-    handleFlashTeaser,
-    handleStartFlashSession,
+    handleDropTeaser,
+    handleStartDropSession,
     handleQuickie,
     handleQuickPlay,
   }

@@ -7,7 +7,7 @@
 
 import { useCallback } from 'react'
 import { SCREENS, getStreakReward } from '../constants/gameConfig'
-import { getCategoryLevelFactIds } from '../data/factsService'
+import { getCategoryLevelFactIds, getFunnyFactsByCategory } from '../data/factsService'
 import { loadStorage, saveStorage, updateTrophyData, TODAY } from '../utils/storageHelper'
 import { syncAfterAction } from '../services/playerSyncService'
 import { checkBadges } from '../utils/badgeManager'
@@ -114,16 +114,26 @@ export function useHandleNext({
       setSessionIsPerfect(isPerfectSession)
 
       // Bonus coins — CLAUDE.md 15/04/2026 économie ×10
-      // Quickie : perfect 5/5 = +50c · Flash lun-sam = 30c fixe (dim = VIP, géré ailleurs)
+      // Quickie : perfect 5/5 = +50c · Drop lun-sam = 30c fixe (dim = VIP, géré ailleurs)
       // Quest/Race/VraiOuFou/Blitz : pas de bonus perfect (0)
       let bonusCoins = 0
-      if (sessionType === 'flash') {
-        // Flash lun-sam : 30 coins fixe (sessionScore = 0 car FLASH.coinsPerCorrect = 0)
+      if (sessionType === 'drop') {
+        // Drop lun-sam : 30 coins fixe (sessionScore = 0 car DROP.coinsPerCorrect = 0)
         bonusCoins = 30
       } else if (sessionType === 'quickie') {
         const finalCorrect = correctCount + (isCorrect ? 1 : 0)
         const isPerfectQuickie = finalCorrect === sessionFacts.length && !sessionAnyHintUsed && (selectedAnswer !== -1)
         bonusCoins = isPerfectQuickie ? 50 : 0
+
+        // Mini-parcours : bonus gradué si < 5 Funny restants dans la catégorie
+        if (selectedCategory) {
+          const catFunny = getFunnyFactsByCategory(selectedCategory)
+          const remaining = catFunny.filter(f => !newUnlocked.has(f.id)).length
+          if (remaining > 0 && remaining <= 4) {
+            const MINI_PARCOURS = [50, 100, 150, 200]
+            bonusCoins += MINI_PARCOURS[remaining - 1]
+          }
+        }
       }
       // quest / race / vrai_ou_fou / blitz : 0 bonus (gains directs via coinsPerCorrect)
       setCoinsEarnedLastSession(sessionScore + bonusCoins)
@@ -141,7 +151,7 @@ export function useHandleNext({
       }
 
       const streakRewardCoins = streakReward?.coins ?? 0
-      const newWtfDuJourDate = sessionType === 'flash' ? TODAY() : wtfDuJourDate
+      const newWtfDuJourDate = sessionType === 'drop' ? TODAY() : wtfDuJourDate
       const quickieSessionsToday = sessionType === 'quickie' ? sessionsToday : newSessionsToday
 
       const totalBonusCoins = bonusCoins + streakRewardCoins
@@ -180,7 +190,7 @@ export function useHandleNext({
       })
 
       // WTF du Jour unlock
-      if (sessionType === 'flash' && effectiveDailyFact && !newUnlocked.has(effectiveDailyFact.id)) {
+      if (sessionType === 'drop' && effectiveDailyFact && !newUnlocked.has(effectiveDailyFact.id)) {
         newUnlocked.add(effectiveDailyFact.id)
         setStorage(prev => {
           const updated = { ...prev, unlockedFacts: newUnlocked }
@@ -235,7 +245,7 @@ export function useHandleNext({
     } catch {}
 
     // Route to end screen
-    if (sessionType === 'flash') {
+    if (sessionType === 'drop') {
       setScreen(SCREENS.WTF_REVEAL)
     } else if (sessionType === 'quickie') {
       setScreen(SCREENS.RESULTS)

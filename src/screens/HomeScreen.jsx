@@ -1,7 +1,7 @@
 /**
  * HomeScreen v10 — Refonte layout (prompt HOMESCREEN_REFONTE).
  * Zones : Header (avatar+coins+hints+batterie+settings) · Streak palier+jauge
- *         · Cerveaux (4 paliers) · Bandeau Roulette+Flash · Logo+Grille 6 · Partie rapide · BottomNav
+ *         · Cerveaux (4 paliers) · Bandeau Roulette+Drop · Logo+Grille 6 · Partie rapide · BottomNav
  */
 
 import { useState, useEffect, useMemo } from 'react'
@@ -72,14 +72,25 @@ export default function HomeScreen({
   const [coffreReward, setCoffreReward] = useState(null)
   const [showRoulette, setShowRoulette] = useState(false)
   const [badgeToShow, setBadgeToShow] = useState(null)
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try { return !localStorage.getItem('wtf_onboarding_collect_done') } catch { return false }
+  })
 
-  const { paliers, currentStreak: streakVal, getStatus, claim } = useStreakRewards(applyCurrencyDelta, mergeFlags)
+  const { paliers, currentStreak: streakVal, getStatus, claim, claimDaily, pendingDaily } = useStreakRewards(applyCurrencyDelta, mergeFlags)
   const countdown = useCountdownToMidnight()
   const scale = useScale()
 
   useEffect(() => {
     if (newlyEarnedBadges.length > 0) setBadgeToShow(newlyEarnedBadges[0])
   }, [newlyEarnedBadges])
+
+  // Auto-claim récompense quotidienne au chargement du Home
+  useEffect(() => {
+    if (pendingDaily && !coffreReward && !badgeToShow) {
+      const result = claimDaily()
+      if (result) setCoffreReward(result)
+    }
+  }, [pendingDaily])
 
   useEffect(() => {
     if (!audio.musicEnabled) return
@@ -302,7 +313,7 @@ export default function HomeScreen({
             </div>
           </button>
           <button
-            onClick={() => nav('flash')}
+            onClick={() => nav('drop')}
             style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
@@ -344,7 +355,7 @@ export default function HomeScreen({
         }}>
           {/* Ligne 1 : Quest · VoF · Race */}
           <div style={{ display: 'flex', justifyContent: 'space-evenly', gap: S(8) }}>
-            <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} sizeOverride={72} />
+            <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} sizeOverride={72} badge />
             <ModeIcon icon="/assets/modes/vrai-et-fou.png" name="Vrai ET Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} sizeOverride={72} />
             <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} sizeOverride={72} />
           </div>
@@ -377,6 +388,7 @@ export default function HomeScreen({
             alt=""
             style={{ width: S(24), height: S(24), objectFit: 'contain', flexShrink: 0 }}
           />
+          <span style={{ fontSize: S(9), lineHeight: 1 }}>🔓</span>
           <span style={{
             fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(10),
             color: '#FFA500', letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -400,6 +412,57 @@ export default function HomeScreen({
       {coffreReward && <CoffreRewardModal reward={coffreReward} onClose={() => setCoffreReward(null)} />}
       {showRoulette && <RouletteModal onClose={() => setShowRoulette(false)} scale={scale} />}
       {badgeToShow && <NewBadgeModal badge={badgeToShow} onClose={handleBadgeClose} />}
+
+      {showOnboarding && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 300,
+            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+          }}
+          onClick={() => {
+            localStorage.setItem('wtf_onboarding_collect_done', '1')
+            setShowOnboarding(false)
+          }}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderRadius: 20,
+              padding: '28px 24px', maxWidth: 320, width: '100%', textAlign: 'center',
+              border: '1px solid rgba(255,255,255,0.15)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+              fontFamily: 'Nunito, sans-serif',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <span style={{ fontSize: 36, display: 'block', marginBottom: 12 }}>🔓</span>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', margin: '0 0 12px' }}>
+              Collectionne des f*cts !
+            </h3>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: '0 0 16px' }}>
+              Seuls <strong style={{ color: '#FF6B1A' }}>Quickie</strong> et <strong style={{ color: '#FFD700' }}>Quest</strong> te permettent de débloquer de nouveaux f*cts pour ta collection.
+            </p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, margin: '0 0 20px' }}>
+              Repère le badge 🔓 sur ces modes !
+            </p>
+            <button
+              onClick={() => {
+                localStorage.setItem('wtf_onboarding_collect_done', '1')
+                setShowOnboarding(false)
+              }}
+              style={{
+                padding: '12px 40px', borderRadius: 14,
+                background: '#FF6B1A', color: 'white', border: 'none',
+                fontWeight: 900, fontSize: 15, cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+              }}
+            >
+              Compris !
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

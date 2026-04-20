@@ -30,7 +30,7 @@ function ProgressBar({ percentage, color }) {
         ? 'transparent'
         : `rgba(${hexToRgb(color)}, 0.9)`
   return (
-    <div className="w-full rounded-full overflow-hidden" style={{ height: 4, background: '#E5E7EB' }}>
+    <div className="w-full rounded-full overflow-hidden" style={{ height: 4, background: 'rgba(255,255,255,0.15)' }}>
       <div className="h-full rounded-full transition-all duration-700" style={{ width: `${percentage}%`, background: barColor }} />
     </div>
   )
@@ -180,7 +180,7 @@ export default function CollectionPage() {
 
   // Main view
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80) }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: 'transparent', paddingBottom: S(80) }}>
       <UnlockCategoryModal
         target={unlockTarget}
         onClose={() => setUnlockTarget(null)}
@@ -192,23 +192,23 @@ export default function CollectionPage() {
           <button
             onClick={goBack}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
+            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff' }}
           >←</button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-black" style={{ color: '#1a1a2e' }}>Ma Collection</h1>
-            <p className="text-xs" style={{ color: '#9CA3AF' }}>
-              <strong style={{ color: '#1a1a2e' }}>{overallUnlocked} / {overallTotal}</strong> F*cts débloqués
+            <h1 className="text-lg font-black" style={{ color: '#ffffff' }}>Ma Collection</h1>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <strong style={{ color: '#ffffff' }}>{overallUnlocked} / {overallTotal}</strong> F*cts débloqués
             </p>
           </div>
         </div>
 
         {/* Global progress bar */}
-        <div className="rounded-2xl p-3 mb-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
+        <div className="rounded-2xl p-3 mb-3" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold" style={{ color: '#374151' }}>Progression globale</span>
+            <span className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.7)' }}>Progression globale</span>
             <span className="text-xs font-bold" style={{ color: '#FF6B1A' }}>{overallUnlocked} / {overallTotal} F*cts</span>
           </div>
-          <div className="w-full rounded-full overflow-hidden" style={{ height: 6, background: '#E5E7EB' }}>
+          <div className="w-full rounded-full overflow-hidden" style={{ height: 6, background: 'rgba(255,255,255,0.15)' }}>
             <div className="h-full rounded-full transition-all duration-700" style={{ width: `${overallPercentage}%`, background: 'linear-gradient(90deg, #FF6B1A, #FF3385)' }} />
           </div>
         </div>
@@ -219,9 +219,9 @@ export default function CollectionPage() {
             onClick={() => { audio.play('click'); setActiveTab('generated') }}
             className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
             style={{
-              background: activeTab === 'generated' ? '#8B5CF6' : '#F3F4F6',
-              color: activeTab === 'generated' ? 'white' : '#9CA3AF',
-              border: activeTab === 'generated' ? 'none' : '1px solid #E5E7EB',
+              background: activeTab === 'generated' ? '#8B5CF6' : 'rgba(255,255,255,0.08)',
+              color: activeTab === 'generated' ? 'white' : 'rgba(255,255,255,0.5)',
+              border: activeTab === 'generated' ? 'none' : '1px solid rgba(255,255,255,0.15)',
               boxShadow: activeTab === 'generated' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
             }}
           >Funny F*cts</button>
@@ -229,9 +229,9 @@ export default function CollectionPage() {
             onClick={() => { audio.play('click'); setActiveTab('vip') }}
             className="flex-1 py-2 rounded-2xl font-black text-xs transition-all active:scale-95"
             style={{
-              background: activeTab === 'vip' ? '#FFD700' : '#F3F4F6',
-              color: activeTab === 'vip' ? '#1a1a2e' : '#9CA3AF',
-              border: activeTab === 'vip' ? 'none' : '1px solid #E5E7EB',
+              background: activeTab === 'vip' ? '#FFD700' : 'rgba(255,255,255,0.08)',
+              color: activeTab === 'vip' ? '#1a1a2e' : 'rgba(255,255,255,0.5)',
+              border: activeTab === 'vip' ? 'none' : '1px solid rgba(255,255,255,0.15)',
               boxShadow: activeTab === 'vip' ? '0 4px 12px rgba(0,0,0,0.3)' : 'none',
             }}
           >WTF!</button>
@@ -239,7 +239,7 @@ export default function CollectionPage() {
 
         {/* Tab progress */}
         <div className="flex items-center justify-between px-1 mb-1">
-          <span className="text-xs" style={{ color: '#9CA3AF' }}>
+          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
             {activeTab === 'vip' ? 'WTF!' : 'Funny F*cts'}
           </span>
           <span className="text-xs font-bold" style={{ color: activeTab === 'vip' ? '#FFD700' : '#8B5CF6' }}>
@@ -265,14 +265,14 @@ export default function CollectionPage() {
                 }}
                 className="rounded-2xl p-3 flex items-center gap-3 text-left w-full active:scale-98 transition-all"
                 style={{
-                  background: isLocked ? '#F3F4F6' : percentage > 0 ? `rgba(${rgb}, 0.08)` : '#F9FAFB',
+                  background: isLocked ? 'rgba(255,255,255,0.04)' : percentage > 0 ? `rgba(${rgb}, 0.15)` : 'rgba(255,255,255,0.06)',
                   border: isLocked
-                    ? '1px solid #E5E7EB'
+                    ? '1px solid rgba(255,255,255,0.1)'
                     : isCompleted
                       ? '1px solid rgba(255,215,0,0.35)'
                       : percentage > 0
-                        ? `1px solid rgba(${rgb}, 0.25)`
-                        : '1px solid rgba(229,231,235,0.5)',
+                        ? `1px solid rgba(${rgb}, 0.3)`
+                        : '1px solid rgba(255,255,255,0.1)',
                   opacity: isLocked ? 0.5 : 1,
                 }}
               >
@@ -297,16 +297,16 @@ export default function CollectionPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="font-black text-sm truncate" style={{ color: isLocked ? '#9CA3AF' : '#1a1a2e' }}>{cat.label}</span>
+                    <span className="font-black text-sm truncate" style={{ color: isLocked ? 'rgba(255,255,255,0.4)' : '#ffffff' }}>{cat.label}</span>
                     {isCompleted && !isLocked && <span className="text-sm shrink-0">🏆</span>}
                   </div>
                   {isLocked ? (
-                    <span className="text-xs" style={{ color: '#9CA3AF' }}>Débloquer cette catégorie</span>
+                    <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Débloquer cette catégorie</span>
                   ) : (
                     <>
                       <ProgressBar percentage={percentage} color={cat.color} />
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-xs" style={{ color: '#6B7280' }}>
+                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
                           {isCompleted
                             ? <span style={{ color: '#FFD700', fontWeight: 700 }}>Complété ! {total}/{total} f*cts</span>
                             : percentage >= 80
@@ -315,7 +315,7 @@ export default function CollectionPage() {
                           }
                         </span>
                         <span className="text-xs font-bold" style={{
-                          color: isCompleted ? '#FFD700' : percentage > 0 ? `rgba(${rgb}, 1)` : '#D1D5DB'
+                          color: isCompleted ? '#FFD700' : percentage > 0 ? `rgba(${rgb}, 1)` : 'rgba(255,255,255,0.3)'
                         }}>
                           {percentage}%
                         </span>
@@ -324,7 +324,7 @@ export default function CollectionPage() {
                   )}
                 </div>
 
-                <span className="text-xl shrink-0" style={{ color: isLocked ? '#D1D5DB' : 'rgba(0,0,0,0.2)' }}>›</span>
+                <span className="text-xl shrink-0" style={{ color: isLocked ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.3)' }}>›</span>
               </button>
             )
           })}

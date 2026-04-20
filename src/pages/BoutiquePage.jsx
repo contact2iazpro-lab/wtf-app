@@ -32,14 +32,14 @@ function PackButton({ emoji, label, price, discount, canBuy, onClick, onCannotBu
       className="w-full flex items-center gap-3 rounded-xl active:scale-95 transition-all"
       style={{
         padding: '12px 16px',
-        background: canBuy ? 'white' : 'rgba(255,255,255,0.7)',
-        border: canBuy ? '1px solid rgba(0,0,0,0.08)' : '1px dashed rgba(0,0,0,0.2)',
+        background: canBuy ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
+        border: canBuy ? '1px solid rgba(255,255,255,0.15)' : '1px dashed rgba(255,255,255,0.1)',
         cursor: 'pointer',
         opacity: canBuy ? 1 : 0.6,
       }}
     >
       <span style={{ fontSize: 22, flexShrink: 0 }}>{emoji}</span>
-      <span className="flex-1 text-left font-bold text-sm" style={{ color: '#1a1a2e' }}>{label}</span>
+      <span className="flex-1 text-left font-bold text-sm" style={{ color: '#ffffff' }}>{label}</span>
       <div className="flex items-center gap-2 shrink-0">
         {discount && (
           <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-black" style={{ background: 'rgba(34,197,94,0.15)', color: '#16a34a' }}>
@@ -119,7 +119,7 @@ export default function BoutiquePage() {
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: 'transparent', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
       {/* Toast */}
       {toast && (
         <div style={{
@@ -145,10 +145,10 @@ export default function BoutiquePage() {
             onClick={() => { setConfirmPurchase(null); setPurchaseQty(1) }}
           >
             <div
-              style={{ background: 'white', borderRadius: 20, padding: 24, maxWidth: 320, width: '100%', textAlign: 'center', fontFamily: 'Nunito, sans-serif' }}
+              style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 20, padding: 24, maxWidth: 320, width: '100%', textAlign: 'center', fontFamily: 'Nunito, sans-serif' }}
               onClick={e => e.stopPropagation()}
             >
-              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 12px' }}>Confirmer l'achat ?</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', margin: '0 0 12px' }}>Confirmer l'achat ?</h3>
 
               {/* Sélecteur de quantité */}
               {canMultiply && (
@@ -165,7 +165,7 @@ export default function BoutiquePage() {
                     disabled={qty <= 1}
                   >−</button>
                   <div>
-                    <div style={{ fontSize: 28, fontWeight: 900, color: '#1a1a2e', lineHeight: 1 }}>{qty}</div>
+                    <div style={{ fontSize: 28, fontWeight: 900, color: '#ffffff', lineHeight: 1 }}>{qty}</div>
                     <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 700 }}>
                       {totalQty} {confirmPurchase.type === 'hint' ? 'indices' : 'énergies'}
                     </div>
@@ -195,7 +195,7 @@ export default function BoutiquePage() {
                 padding: '10px 16px', marginBottom: 16,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#6B7280' }}>Total</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>Total</span>
                 <span style={{ fontSize: 18, fontWeight: 900, color: '#FF6B1A', display: 'flex', alignItems: 'center', gap: 4 }}>
                   {totalPrice} <CoinsIcon size={16} />
                 </span>
@@ -210,7 +210,7 @@ export default function BoutiquePage() {
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
                   onClick={() => { setConfirmPurchase(null); setPurchaseQty(1) }}
-                  style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
+                  style={{ flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}
                 >
                   Annuler
                 </button>
@@ -223,7 +223,7 @@ export default function BoutiquePage() {
                   }}
                   style={{
                     flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14,
-                    background: canAfford ? '#FF6B1A' : '#E5E7EB', border: 'none',
+                    background: canAfford ? '#FF6B1A' : 'rgba(255,255,255,0.15)', border: 'none',
                     color: canAfford ? 'white' : '#9CA3AF',
                     cursor: canAfford ? 'pointer' : 'default', fontFamily: 'Nunito, sans-serif',
                   }}
@@ -242,10 +242,10 @@ export default function BoutiquePage() {
           <button
             onClick={() => navigate('/')}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
+            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff' }}
           >←</button>
-          <h1 className="flex-1 text-lg font-black" style={{ color: '#1a1a2e' }}>Boutique</h1>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: '#FFF7ED', border: '1px solid #FFEDD5' }}>
+          <h1 className="flex-1 text-lg font-black" style={{ color: '#ffffff' }}>Boutique</h1>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background: 'rgba(255,107,26,0.15)', border: '1px solid rgba(255,107,26,0.3)' }}>
             <CoinsIcon size={16} />
             <span className="font-black text-sm" style={{ color: '#FF6B1A' }}>{balances.coins}</span>
           </div>
@@ -269,11 +269,11 @@ export default function BoutiquePage() {
                 flex: 1, padding: '10px 6px', borderRadius: 12,
                 background: isActive
                   ? 'linear-gradient(135deg, #FF6B1A, #D94A10)'
-                  : 'white',
+                  : 'rgba(255,255,255,0.08)',
                 border: isActive
                   ? '1.5px solid #FF6B1A'
-                  : '1.5px solid #D1D5DB',
-                color: isActive ? 'white' : '#1a1a2e',
+                  : '1.5px solid rgba(255,255,255,0.15)',
+                color: isActive ? 'white' : 'rgba(255,255,255,0.7)',
                 fontWeight: 900, fontSize: 11,
                 cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
@@ -305,8 +305,8 @@ export default function BoutiquePage() {
         >
           <img src="/assets/ui/emoji-roulette.png?v=2" alt="roulette" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 28 }} />
           <div className="flex-1">
-            <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Roulette du jour</span>
-            <span className="text-xs" style={{ color: '#6B7280' }}>Tente ta chance pour des récompenses !</span>
+            <span className="font-black text-sm block" style={{ color: '#ffffff' }}>Roulette du jour</span>
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Tente ta chance pour des récompenses !</span>
           </div>
           {(() => {
             const wd = readWtfData()
@@ -327,12 +327,12 @@ export default function BoutiquePage() {
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,107,26,0.06)', border: '1px solid rgba(255,107,26,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
             <img src="/assets/ui/icon-hint.png?v=2" alt="indice" style={{ width: 20, height: 20, verticalAlign: 'middle', display: 'inline' }} />
-            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Indices</h2>
+            <h2 className="font-black text-sm" style={{ color: '#ffffff', margin: 0 }}>Indices</h2>
             <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(255,107,26,0.1)', color: '#FF6B1A' }}>
               Stock : {balances.hints}
             </span>
           </div>
-          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Aide-toi pendant les questions difficiles</p>
+          <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>Aide-toi pendant les questions difficiles</p>
           <div className="flex flex-col gap-2">
             {HINT_PACKS.map(pack => (
               <PackButton
@@ -353,12 +353,12 @@ export default function BoutiquePage() {
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
             <EnergyIcon size={20} />
-            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Énergie</h2>
+            <h2 className="font-black text-sm" style={{ color: '#ffffff', margin: 0 }}>Énergie</h2>
             <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(34,197,94,0.1)', color: '#16a34a' }}>
               {getQuickieEnergy().remaining} / {QUICKIE_ENERGY.FREE_SESSIONS_PER_DAY}
             </span>
           </div>
-          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Quickie et Quest consomment de l'énergie</p>
+          <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>Quickie et Quest consomment de l'énergie</p>
           <div className="flex flex-col gap-2">
             {ENERGY_PACKS.map(pack => (
               <PackButton
@@ -398,17 +398,17 @@ export default function BoutiquePage() {
             }}>
               <div className="flex items-center gap-2 mb-1">
                 <span style={{ fontSize: 20 }}>🎁</span>
-                <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Offres de bienvenue</h2>
+                <h2 className="font-black text-sm" style={{ color: '#ffffff', margin: 0 }}>Offres de bienvenue</h2>
                 <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-black" style={{ background: '#FF6B1A', color: 'white' }}>
                   {daysLeft}j restant{daysLeft > 1 ? 's' : ''}
                 </span>
               </div>
-              <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Achetable une seule fois pendant 7 jours après installation</p>
+              <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>Achetable une seule fois pendant 7 jours après installation</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {/* Starter Light */}
                 {!lightBought && (
                   <div style={{
-                    background: 'white', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14,
+                    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 14,
                     padding: 12, display: 'flex', alignItems: 'center', gap: 12,
                   }}>
                     <div style={{
@@ -418,13 +418,13 @@ export default function BoutiquePage() {
                       fontSize: 24, flexShrink: 0,
                     }}>📦</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Starter Light</span>
-                      <span className="text-xs block" style={{ color: '#6B7280' }}>5 indices · cadre Bronze</span>
+                      <span className="font-black text-sm block" style={{ color: '#ffffff' }}>Starter Light</span>
+                      <span className="text-xs block" style={{ color: 'rgba(255,255,255,0.5)' }}>5 indices · cadre Bronze</span>
                     </div>
                     <button
                       disabled
                       style={{
-                        background: '#F3F4F6', border: '1px solid #E5E7EB',
+                        background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
                         borderRadius: 10, padding: '8px 14px',
                         fontWeight: 900, fontSize: 12, color: '#9CA3AF',
                         fontFamily: 'Nunito, sans-serif', cursor: 'not-allowed',
@@ -439,7 +439,7 @@ export default function BoutiquePage() {
                 {/* Starter Pro */}
                 {!proBought && (
                   <div style={{
-                    background: 'white', border: '1.5px solid rgba(255,215,0,0.5)', borderRadius: 14,
+                    background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,215,0,0.5)', borderRadius: 14,
                     padding: 12, display: 'flex', alignItems: 'center', gap: 12,
                     position: 'relative',
                   }}>
@@ -457,13 +457,13 @@ export default function BoutiquePage() {
                       boxShadow: '0 0 14px rgba(255,215,0,0.6)',
                     }}>👑</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Starter Pro</span>
-                      <span className="text-xs block" style={{ color: '#6B7280' }}>1 500 coins · 5 indices · cadre exclusif</span>
+                      <span className="font-black text-sm block" style={{ color: '#ffffff' }}>Starter Pro</span>
+                      <span className="text-xs block" style={{ color: 'rgba(255,255,255,0.5)' }}>1 500 coins · 5 indices · cadre exclusif</span>
                     </div>
                     <button
                       disabled
                       style={{
-                        background: '#F3F4F6', border: '1px solid #E5E7EB',
+                        background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
                         borderRadius: 10, padding: '8px 14px',
                         fontWeight: 900, fontSize: 12, color: '#9CA3AF',
                         fontFamily: 'Nunito, sans-serif', cursor: 'not-allowed',
@@ -484,12 +484,12 @@ export default function BoutiquePage() {
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)' }}>
           <div className="flex items-center gap-2 mb-1">
             <span style={{ fontSize: 20 }}>🛡️</span>
-            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Streak Freeze</h2>
+            <h2 className="font-black text-sm" style={{ color: '#ffffff', margin: 0 }}>Streak Freeze</h2>
             <span className="ml-auto px-2 py-0.5 rounded-lg text-xs font-bold" style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6' }}>
               Stock : {streakFreezeCount}
             </span>
           </div>
-          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Protège ta série si tu manques un jour</p>
+          <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>Protège ta série si tu manques un jour</p>
           <PackButton
             emoji="🛡️"
             label="1 Streak Freeze"
@@ -505,9 +505,9 @@ export default function BoutiquePage() {
         <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,215,0,0.06)', border: '1px solid rgba(255,215,0,0.25)' }}>
           <div className="flex items-center gap-2 mb-1">
             <span style={{ fontSize: 20 }}>✨</span>
-            <h2 className="font-black text-sm" style={{ color: '#1a1a2e', margin: 0 }}>Cadres de profil</h2>
+            <h2 className="font-black text-sm" style={{ color: '#ffffff', margin: 0 }}>Cadres de profil</h2>
           </div>
-          <p className="text-xs mb-3" style={{ color: '#6B7280' }}>Personnalise ta photo de profil avec un cadre unique</p>
+          <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>Personnalise ta photo de profil avec un cadre unique</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
             {AVATAR_FRAMES.filter(f => f.cost > 0).map(frame => {
               const isOwned = frameState.owned.includes(frame.id)
@@ -529,7 +529,7 @@ export default function BoutiquePage() {
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: 10, borderRadius: 12,
                     background: isOwned ? 'rgba(34,197,94,0.1)' : canBuy ? 'white' : '#F3F4F6',
-                    border: isOwned ? '1.5px solid #22C55E' : '1px solid #E5E7EB',
+                    border: isOwned ? '1.5px solid #22C55E' : '1px solid rgba(255,255,255,0.12)',
                     cursor: canBuy ? 'pointer' : 'default',
                     opacity: canBuy || isOwned ? 1 : 0.55,
                     fontFamily: 'Nunito, sans-serif', textAlign: 'left',
@@ -541,7 +541,7 @@ export default function BoutiquePage() {
                     border: frame.border, boxShadow: frame.glow,
                   }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 12, fontWeight: 900, color: '#1a1a2e', display: 'block' }}>{frame.label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 900, color: '#ffffff', display: 'block' }}>{frame.label}</span>
                     {isOwned ? (
                       <span style={{ fontSize: 10, fontWeight: 800, color: '#22C55E' }}>✓ Débloqué</span>
                     ) : (
@@ -561,17 +561,17 @@ export default function BoutiquePage() {
         {activeTab === 'subscription' && (
         <>
         {/* Packs de Coins (bientôt) */}
-        <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Packs de Coins</h2>
+        <h2 className="font-black text-sm mb-2" style={{ color: '#ffffff' }}>Packs de Coins</h2>
         <div className="flex flex-col gap-2 mb-4">
           {[
             { label: '500 Coins', price: '0,99 €', emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
             { label: '2 000 Coins', price: '2,99 €', emoji: <img src="/assets/ui/icon-coins.png" alt="coins" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> },
             { label: '5 000 Coins', price: '5,99 €', emoji: '🏆' },
           ].map(pack => (
-            <div key={pack.label} className="flex items-center gap-3 rounded-2xl p-3" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', opacity: 0.5 }}>
+            <div key={pack.label} className="flex items-center gap-3 rounded-2xl p-3" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', opacity: 0.5 }}>
               <span className="text-2xl">{pack.emoji}</span>
               <div className="flex-1">
-                <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>{pack.label}</span>
+                <span className="font-black text-sm block" style={{ color: '#ffffff' }}>{pack.label}</span>
                 <span className="text-xs" style={{ color: '#9CA3AF' }}>{pack.price}</span>
               </div>
               <span className="text-lg" style={{ color: '#D1D5DB' }}>Bientôt</span>
@@ -580,11 +580,11 @@ export default function BoutiquePage() {
         </div>
 
         {/* Abonnement */}
-        <h2 className="font-black text-sm mb-2" style={{ color: '#1a1a2e' }}>Abonnement Premium</h2>
+        <h2 className="font-black text-sm mb-2" style={{ color: '#ffffff' }}>Abonnement Premium</h2>
         <div className="rounded-2xl p-4 text-center mb-4" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,165,0,0.18))', border: '1.5px solid rgba(255,165,0,0.4)' }}>
           <span className="text-3xl block mb-2">👑</span>
-          <span className="font-black text-base block" style={{ color: '#1a1a2e' }}>WTF! Premium</span>
-          <span className="text-xs block mb-2" style={{ color: '#6B7280' }}>Énergie illimitée · 3 indices/jour · badge VIP</span>
+          <span className="font-black text-base block" style={{ color: '#ffffff' }}>WTF! Premium</span>
+          <span className="text-xs block mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Énergie illimitée · 3 indices/jour · badge VIP</span>
           <span className="text-sm font-black block" style={{ color: '#FF6B1A' }}>4,99 €/mois</span>
           <span className="inline-block mt-3 px-4 py-1 rounded-lg text-xs font-bold" style={{ background: 'rgba(0,0,0,0.06)', color: '#9CA3AF' }}>Bientôt</span>
         </div>

@@ -126,7 +126,11 @@ function PageWrapper({ children }) {
     try { sessionStorage.setItem('wtf_splash_done', 'true') } catch { /* ignore */ }
   }, [])
   return (
-    <div className="w-full h-full max-w-md mx-auto relative overflow-hidden" style={{ '--scale': scale, height: '100dvh', display: 'flex', flexDirection: 'column' }}>
+    <div className="w-full h-full max-w-md mx-auto relative overflow-hidden" style={{
+      '--scale': scale, height: '100dvh', display: 'flex', flexDirection: 'column',
+      background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+      color: '#ffffff', fontFamily: 'Nunito, sans-serif',
+    }}>
       <div style={{ flex: 1, overflow: 'auto' }}>
         {children}
       </div>

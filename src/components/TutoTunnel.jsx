@@ -375,7 +375,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
   // PHASE: PHASE0_COMPLETE (Ton premier f*ct modal)
   // ═══════════════════════════════════════════════════════════════════════════
   // ═══════════════════════════════════════════════════════════════════════════
-  // PHASE: PHASE1_HOME (simplified home for flash)
+  // PHASE: PHASE1_HOME (simplified home for drop)
   // ═══════════════════════════════════════════════════════════════════════════
   if (phase === 'phase1_home') {
     return (
@@ -538,7 +538,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
             }
             const nextIndex = currentIndex + 1
             if (nextIndex >= sessionFacts.length) {
-              setPhase('flash_complete')
+              setPhase('drop_complete')
             } else {
               setCurrentIndex(nextIndex)
               setSelectedAnswer(null)
@@ -564,7 +564,7 @@ export default function TutoTunnel({ onComplete, onSkip }) {
         catColor={catColor}
         catName={currentFact.category}
         catIcon={'/assets/categories/' + currentFact.category + '.png'}
-        modeLabel='⚡ MODE FLASH'
+        modeLabel='🔥 MODE DROP'
         question={currentFact.question}
         options={currentOptions}
         selectedAnswerIndex={selectedAnswer !== null ? currentOptions.findIndex(opt => opt.text === selectedAnswer) : null}
@@ -591,9 +591,9 @@ export default function TutoTunnel({ onComplete, onSkip }) {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // PHASE: FLASH_COMPLETE
+  // PHASE: DROP_COMPLETE
   // ═══════════════════════════════════════════════════════════════════════════
-  if (phase === 'flash_complete') {
+  if (phase === 'drop_complete') {
     return (
       <div style={{
         position: 'fixed', inset: 0, zIndex: 9999,

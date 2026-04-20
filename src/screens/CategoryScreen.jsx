@@ -91,8 +91,10 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
   //   1. Verrouillées (Quickie) en bas
   //   2. Parmi débloquées : complètes (100%) en bas, classées alpha
   //   3. Parmi non-complètes : % complétion décroissant, puis alpha en cas d'égalité
+  // Seuil de visibilité : ≥5 facts dans le pool pour être affiché
+  const MIN_FACTS_VISIBLE = 5
   const visibleCategories = useMemo(() => {
-    const cats = getPlayableCategories().filter(cat => (totalPerCategory[cat.id] || 0) > 0)
+    const cats = getPlayableCategories().filter(cat => (totalPerCategory[cat.id] || 0) >= MIN_FACTS_VISIBLE)
     const pctOf = (id) => {
       const total = totalPerCategory[id] || 0
       if (!total) return 0

@@ -20,7 +20,7 @@ export function useNavigationHandlers({
   selectedDifficulty, blitzVariant,
   quickiePool, unlockedFacts, user, sessionCorrectFacts,
   // Hooks extraits
-  handleStartFlashSession, handleQuickie, handleSelectDifficulty,
+  handleStartDropSession, handleQuickie, handleSelectDifficulty,
   handleSelectCategory, handleBlitzStart, initSessionState,
   // Setters
   setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,
@@ -46,14 +46,14 @@ export function useNavigationHandlers({
         if (!canPlayQuickieCheck()) { setNoEnergyOrigin('quickie'); setShowNoEnergyModal(true); break }
         setScreen(SCREENS.CATEGORY); break
       }
-      case 'flash':        handleStartFlashSession(); break
+      case 'drop':         handleStartDropSession(); break
       case 'vrai_ou_fou':  setScreen(SCREENS.VRAI_OU_FOU); break
       case 'race':         setScreen(SCREENS.RACE); break
       case 'quest':        setScreen(SCREENS.QUEST); break
       case 'multi':        navigate('/multi'); break
       default: break
     }
-  }, [handleStartFlashSession, navigate])
+  }, [handleStartDropSession, navigate])
 
   const handleLaunchStart = useCallback(() => {
     launchModeDestination(launchMode)
@@ -70,12 +70,10 @@ export function useNavigationHandlers({
   const handleHomeNavigate = useCallback((target) => {
     switch (target) {
       case 'wtfWeekly':
-      case 'flash':
-        // Passe par la page de règles (comme les autres modes) — respect de
-        // skip_launch_flash. Avant : bypass direct vers SCREENS.FLASH.
-        showOrSkipLaunch('flash')
+      case 'drop':
+        showOrSkipLaunch('drop')
         break
-      case 'categoryFlash':
+      case 'categoryDrop':
       case 'quickie': {
         setGameMode('quickie'); setSessionType('quickie'); setSelectedDifficulty(DIFFICULTY_LEVELS.QUICKIE); setSelectedCategory(null)
         showOrSkipLaunch('quickie')
@@ -112,7 +110,7 @@ export function useNavigationHandlers({
         break
       default: break
     }
-  }, [handleQuickie, handleStartFlashSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])
+  }, [handleQuickie, handleStartDropSession, showOrSkipLaunch, handleSelectDifficulty, navigate, launchModeDestination])
 
   // ── Home / Replay / Share ──────────────────────────────────────────────
   const handleSaveTempFacts = useCallback(() => {

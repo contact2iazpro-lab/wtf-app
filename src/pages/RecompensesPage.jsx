@@ -38,12 +38,12 @@ export default function RecompensesPage() {
   }
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: 'transparent', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={goBack} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>←</button>
-          <h1 className="flex-1 text-lg font-black" style={{ color: '#1a1a2e' }}>Trophées</h1>
+          <button onClick={goBack} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}>←</button>
+          <h1 className="flex-1 text-lg font-black" style={{ color: '#ffffff' }}>Trophées</h1>
           <span className="px-3 py-1 rounded-xl text-xs font-black" style={{ background: 'rgba(255,215,0,0.15)', color: '#D97706' }}>
             {totalEarned}/{totalCount}
           </span>
@@ -59,35 +59,35 @@ export default function RecompensesPage() {
                 <BadgeEmoji emoji={nextTrophy.badge.emoji} size={24} />
                 <div>
                   <span className="font-black text-xs block" style={{ color: 'rgba(26,26,46,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Prochain objectif</span>
-                  <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>{nextTrophy.badge.label}</span>
+                  <span className="font-black text-sm block" style={{ color: '#ffffff' }}>{nextTrophy.badge.label}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <div style={{ flex: 1, background: 'rgba(0,0,0,0.15)', borderRadius: 4, height: 6, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${nextTrophy.progress}%`, background: '#1a1a2e', borderRadius: 4, transition: 'width 0.5s ease' }} />
+                  <div style={{ height: '100%', width: `${nextTrophy.progress}%`, background: 'rgba(255,255,255,0.9)', borderRadius: 4, transition: 'width 0.5s ease' }} />
                 </div>
-                <span className="text-xs font-black" style={{ color: '#1a1a2e' }}>{nextTrophy.current}/{nextTrophy.target}</span>
+                <span className="text-xs font-black" style={{ color: '#ffffff' }}>{nextTrophy.current}/{nextTrophy.target}</span>
               </div>
             </>
           ) : (
             <div className="text-center">
               <span className="text-2xl block mb-1">🏆</span>
-              <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>Tous les trophées débloqués !</span>
+              <span className="font-black text-sm block" style={{ color: '#ffffff' }}>Tous les trophées débloqués !</span>
             </div>
           )}
         </div>
 
         {/* Sections */}
         {sections.map(section => (
-          <div key={section.id} className="rounded-2xl mb-3 overflow-hidden" style={{ background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+          <div key={section.id} className="rounded-2xl mb-3 overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
             {/* Section header */}
             <button
               onClick={() => toggle(section.id)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'rgba(0,0,0,0.02)', borderBottom: expanded[section.id] ? '1px solid rgba(0,0,0,0.06)' : 'none', cursor: 'pointer', border: 'none', fontFamily: 'Nunito, sans-serif', textAlign: 'left' }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'rgba(255,255,255,0.05)', borderBottom: expanded[section.id] ? '1px solid rgba(255,255,255,0.1)' : 'none', cursor: 'pointer', border: 'none', fontFamily: 'Nunito, sans-serif', textAlign: 'left' }}
             >
-              <span style={{ fontSize: 14, fontWeight: 900, color: '#1a1a2e' }}>{section.label}</span>
+              <span style={{ fontSize: 14, fontWeight: 900, color: '#ffffff' }}>{section.label}</span>
               <div className="flex items-center gap-2">
-                <span style={{ fontSize: 11, fontWeight: 800, color: section.earnedCount > 0 ? '#D97706' : '#9CA3AF', background: section.earnedCount > 0 ? 'rgba(255,215,0,0.12)' : 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 8 }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: section.earnedCount > 0 ? '#D97706' : '#9CA3AF', background: section.earnedCount > 0 ? 'rgba(255,215,0,0.12)' : 'rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: 8 }}>
                   {section.earnedCount}/{section.totalCount}
                 </span>
                 <span style={{ fontSize: 12, color: '#9CA3AF', transition: 'transform 0.2s', transform: expanded[section.id] ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
@@ -106,7 +106,7 @@ export default function RecompensesPage() {
                         <div key={catId}>
                           <div className="flex items-center gap-2 mb-1.5">
                             <img src={`/assets/categories/${catId}.png`} alt="" style={{ width: 20, height: 20, borderRadius: 4, objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
-                            <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e' }}>{CATEGORY_LABELS[catId] || catId}</span>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: '#ffffff' }}>{CATEGORY_LABELS[catId] || catId}</span>
                             <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', marginLeft: 'auto' }}>{catEarned}/5</span>
                           </div>
                           <div style={{ display: 'flex', gap: 4 }}>
@@ -116,13 +116,13 @@ export default function RecompensesPage() {
                                 onClick={() => setSelectedTrophy(trophy)}
                                 style={{
                                   flex: 1, textAlign: 'center', padding: '6px 2px', borderRadius: 8, cursor: 'pointer',
-                                  background: trophy.earned ? 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.2))' : 'rgba(0,0,0,0.03)',
-                                  border: trophy.earned ? '1px solid rgba(255,215,0,0.4)' : '1px solid rgba(0,0,0,0.05)',
+                                  background: trophy.earned ? 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.2))' : 'rgba(255,255,255,0.05)',
+                                  border: trophy.earned ? '1px solid rgba(255,215,0,0.4)' : '1px solid rgba(255,255,255,0.1)',
                                 }}
                               >
                                 <BadgeEmoji emoji={trophy.emoji} size={16} style={{ display: 'block', opacity: trophy.earned ? 1 : 0.25, filter: trophy.earned ? 'none' : 'grayscale(100%)' }} />
                                 {!trophy.earned && trophy.current > 0 && (
-                                  <div style={{ height: 2, background: 'rgba(0,0,0,0.08)', borderRadius: 1, margin: '3px 4px 0', overflow: 'hidden' }}>
+                                  <div style={{ height: 2, background: 'rgba(255,255,255,0.1)', borderRadius: 1, margin: '3px 4px 0', overflow: 'hidden' }}>
                                     <div style={{ height: '100%', width: `${Math.min(100, (trophy.current / trophy.target) * 100)}%`, background: '#FF6B1A', borderRadius: 1 }} />
                                   </div>
                                 )}
@@ -142,8 +142,8 @@ export default function RecompensesPage() {
                         onClick={() => setSelectedTrophy(trophy)}
                         style={{
                           textAlign: 'center', padding: '10px 4px', borderRadius: 12, cursor: 'pointer',
-                          background: trophy.earned ? 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.2))' : 'rgba(0,0,0,0.03)',
-                          border: trophy.earned ? '1px solid rgba(255,215,0,0.4)' : '1px solid rgba(0,0,0,0.05)',
+                          background: trophy.earned ? 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.2))' : 'rgba(255,255,255,0.05)',
+                          border: trophy.earned ? '1px solid rgba(255,215,0,0.4)' : '1px solid rgba(255,255,255,0.1)',
                         }}
                       >
                         <div className="relative mb-1" style={{ display: 'inline-block' }}>
@@ -151,9 +151,9 @@ export default function RecompensesPage() {
                           {trophy.earned && <span style={{ position: 'absolute', bottom: -2, right: -6, fontSize: 10 }}>✅</span>}
                           {!trophy.earned && <span style={{ position: 'absolute', bottom: -2, right: -6, fontSize: 10 }}>🔒</span>}
                         </div>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: trophy.earned ? '#1a1a2e' : '#9CA3AF', lineHeight: 1.2 }}>{trophy.label}</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: trophy.earned ? '#ffffff' : 'rgba(255,255,255,0.4)', lineHeight: 1.2 }}>{trophy.label}</div>
                         {!trophy.earned && (
-                          <div style={{ margin: '4px 6px 0', height: 3, background: 'rgba(0,0,0,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                          <div style={{ margin: '4px 6px 0', height: 3, background: 'rgba(255,255,255,0.1)', borderRadius: 2, overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${Math.min(100, (trophy.current / trophy.target) * 100)}%`, background: '#FF6B1A', borderRadius: 2 }} />
                           </div>
                         )}
@@ -179,7 +179,7 @@ export default function RecompensesPage() {
         >
           <div
             style={{
-              background: 'white', borderRadius: 20, padding: '24px 20px',
+              background: '#1a1a2e', borderRadius: 20, padding: '24px 20px', border: '1px solid rgba(255,255,255,0.15)',
               maxWidth: 300, width: '100%', textAlign: 'center',
               boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
               fontFamily: 'Nunito, sans-serif',
@@ -187,7 +187,7 @@ export default function RecompensesPage() {
             onClick={e => e.stopPropagation()}
           >
             <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center' }}><BadgeEmoji emoji={selectedTrophy.emoji} size={48} /></div>
-            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', margin: '0 0 8px' }}>
               {selectedTrophy.label}
             </h3>
             <div style={{
@@ -197,7 +197,7 @@ export default function RecompensesPage() {
               {selectedTrophy.earned ? '✅ Débloqué !' : '🔒 Pas encore débloqué'}
             </div>
             {selectedTrophy.description && (
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', margin: '8px 0 12px', lineHeight: 1.4 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '8px 0 12px', lineHeight: 1.4 }}>
                 {selectedTrophy.description}
               </p>
             )}
@@ -208,7 +208,7 @@ export default function RecompensesPage() {
               const pct = Math.min(100, Math.round((current / (target || 1)) * 100))
               return (
                 <>
-                  <div style={{ background: '#F3F4F6', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
+                  <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 8 }}>
                     <div style={{
                       height: '100%', borderRadius: 8,
                       width: `${pct}%`,
@@ -216,7 +216,7 @@ export default function RecompensesPage() {
                       transition: 'width 0.5s ease',
                     }} />
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#6B7280' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>
                     {selectedTrophy.invertedProgress
                       ? `${current > 0 ? (selectedTrophy.target - current).toFixed(1) : '—'}s / ${target}s`
                       : `${current} / ${target}`

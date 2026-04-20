@@ -9,7 +9,11 @@ export default function CoffreRewardModal({ reward, onClose }) {
   if (reward.coins) parts.push(`${reward.coins} coins`)
   if (reward.hints) parts.push(`${reward.hints} indice${reward.hints > 1 ? 's' : ''}`)
   const message = `Tu as gagné ${parts.join(' + ')} !`
-  const title = reward.name ? `Palier ${reward.name} !` : 'Récompense de fidélité !'
+  const title = reward.isMilestone && reward.name
+    ? `Palier ${reward.name} !`
+    : reward.day
+      ? `Jour ${reward.day} !`
+      : 'Récompense de fidélité !'
 
   return (
     <div

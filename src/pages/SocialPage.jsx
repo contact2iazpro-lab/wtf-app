@@ -217,7 +217,7 @@ export default function SocialPage() {
   const blitzRecords = [...blitzRushRecords, ...blitzSpeedrunRecords]
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: 'transparent', paddingBottom: S(80), fontFamily: 'Nunito, sans-serif' }}>
       {/* Friend modal — Bloc 2.10 */}
       {friendModal && (
         <div
@@ -231,15 +231,15 @@ export default function SocialPage() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              width: '100%', maxWidth: 420, background: 'white',
+              width: '100%', maxWidth: 420, background: 'rgba(255,255,255,0.08)',
               borderTopLeftRadius: 24, borderTopRightRadius: 24,
               padding: '20px 16px 24px', display: 'flex', flexDirection: 'column', gap: 8,
               fontFamily: 'Nunito, sans-serif',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 12, borderBottom: '1px solid #F3F4F6' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
               <Initial name={friendModal.displayName} size={42} />
-              <div style={{ flex: 1, fontSize: 16, fontWeight: 900, color: '#1a1a2e' }}>{friendModal.displayName}</div>
+              <div style={{ flex: 1, fontSize: 16, fontWeight: 900, color: '#ffffff' }}>{friendModal.displayName}</div>
             </div>
             {[
               { icon: '⚔️', label: 'Lancer un défi', onClick: () => { startCreateDefi(friendModal.userId, 'all'); setFriendModal(null); navigate('/') } },
@@ -300,8 +300,8 @@ export default function SocialPage() {
       {/* Header */}
       <div className="px-4 pt-4 pb-2 shrink-0">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}>←</button>
-          <h1 className="flex-1 text-lg font-black" style={{ color: '#1a1a2e' }}>Amis</h1>
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff' }}>←</button>
+          <h1 className="flex-1 text-lg font-black" style={{ color: '#ffffff' }}>Amis</h1>
           {pendingReceived.length > 0 && (
             <span className="px-2 py-0.5 rounded-full text-xs font-black" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>{pendingReceived.length}</span>
           )}
@@ -335,7 +335,7 @@ export default function SocialPage() {
               return <Initial name={user?.user_metadata?.name || '?'} size={42} />
             })()}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#1a1a2e', lineHeight: 1.2 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, color: '#ffffff', lineHeight: 1.2 }}>
                 {user?.user_metadata?.name || user?.user_metadata?.full_name || 'Joueur WTF!'}
               </div>
               <div style={{ fontSize: 10, fontWeight: 700, color: '#6B7280', marginTop: 2 }}>
@@ -373,9 +373,9 @@ export default function SocialPage() {
 
         {/* Non connecté */}
         {!isConnected ? (
-          <div className="rounded-2xl p-6 text-center" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div className="rounded-2xl p-6 text-center" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
             <span className="text-3xl block mb-3">👥</span>
-            <p style={{ fontSize: S(14), fontWeight: 700, color: '#1a1a2e', margin: '0 0 12px' }}>Connecte-toi pour ajouter des amis et relever des défis</p>
+            <p style={{ fontSize: S(14), fontWeight: 700, color: '#ffffff', margin: '0 0 12px' }}>Connecte-toi pour ajouter des amis et relever des défis</p>
             <button onClick={() => signInWithGoogle().catch(e => { console.error('[SocialPage] Google sign-in failed:', e?.message || e); showToast('Connexion échouée : ' + (e?.message || 'erreur')) })} className="active:scale-95 transition-all" style={{ padding: '12px 28px', borderRadius: 14, background: '#FF6B1A', color: 'white', border: 'none', fontWeight: 900, fontSize: 14, cursor: 'pointer' }}>
               Se connecter avec Google
             </button>
@@ -383,8 +383,8 @@ export default function SocialPage() {
         ) : (
           <>
             {/* A) Inviter un ami */}
-            <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px' }}>Inviter un ami</h2>
+            <div className="rounded-2xl mb-3" style={{ background: 'rgba(255,255,255,0.08)', padding: 16, border: '1px solid rgba(255,255,255,0.12)' }}>
+              <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#ffffff', margin: '0 0 10px' }}>Inviter un ami</h2>
               <button
                 onClick={() => {
                   if (!myCode) {
@@ -409,7 +409,7 @@ export default function SocialPage() {
             </div>
 
             {/* B) Mes amis — accordéon */}
-            <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div className="rounded-2xl mb-3" style={{ background: 'rgba(255,255,255,0.08)', padding: 16, border: '1px solid rgba(255,255,255,0.12)' }}>
               <button
                 onClick={() => { audio.play('click'); setFriendsListCollapsed(c => !c) }}
                 style={{
@@ -424,7 +424,7 @@ export default function SocialPage() {
                   const pendingToAccept = friends.reduce((n, f) =>
                     n + getDuelStatesFor(f.userId).filter(s => s.action === 'accept').length, 0)
                   return (
-                    <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#ffffff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                       Mes amis ({friends.length})
                       {friendsListCollapsed && pendingToAccept > 0 && (
                         <span style={{
@@ -471,7 +471,7 @@ export default function SocialPage() {
                         >
                           <Initial name={friend.displayName} size={36} />
                           <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-                            <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{friend.displayName}</span>
+                            <span style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', display: 'block' }}>{friend.displayName}</span>
                             <span style={{ fontSize: 10, color: '#9CA3AF' }}>
                               {hasDefis ? `${allStates.length} défi${allStates.length > 1 ? 's' : ''}` : 'Aucun défi'}
                             </span>
@@ -607,12 +607,12 @@ export default function SocialPage() {
             </div>
 
             {/* C) Records Blitz (accordéon) */}
-            <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div className="rounded-2xl mb-3" style={{ background: 'rgba(255,255,255,0.08)', padding: 16, border: '1px solid rgba(255,255,255,0.12)' }}>
               <button
                 onClick={() => setShowBlitzRecordsSection(!showBlitzRecordsSection)}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
               >
-                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: 0 }}>Mes Records Blitz</h2>
+                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#ffffff', margin: 0 }}>Mes Records Blitz</h2>
                 <span style={{ fontSize: 18, color: '#9CA3AF', transition: 'transform 0.2s', transform: showBlitzRecordsSection ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
               </button>
 
@@ -635,7 +635,7 @@ export default function SocialPage() {
                         }}>
                           <span style={{ fontSize: 18 }}>🏆</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>Meilleur score</span>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: '#ffffff', display: 'block' }}>Meilleur score</span>
                             <span style={{ fontSize: 10, color: '#9CA3AF', display: 'block' }}>bonnes réponses en 60s</span>
                           </div>
                           <span style={{ fontSize: 18, fontWeight: 900, color: '#FFD700', fontVariantNumeric: 'tabular-nums' }}>
@@ -667,7 +667,7 @@ export default function SocialPage() {
                               >
                                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: record.categoryColor, flexShrink: 0 }} />
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <span style={{ fontSize: 12, fontWeight: 800, color: '#1a1a2e', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  <span style={{ fontSize: 12, fontWeight: 800, color: '#ffffff', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {record.categoryLabel}
                                   </span>
                                   <span style={{ fontSize: 10, color: '#9CA3AF', display: 'block' }}>
@@ -691,8 +691,8 @@ export default function SocialPage() {
 
             {/* D) Demandes reçues */}
             {pendingReceived.length > 0 && (
-              <div className="rounded-2xl mb-3" style={{ background: 'white', padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#1a1a2e', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div className="rounded-2xl mb-3" style={{ background: 'rgba(255,255,255,0.08)', padding: 16, border: '1px solid rgba(255,255,255,0.12)' }}>
+                <h2 style={{ fontSize: S(14), fontWeight: 900, color: '#ffffff', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
                   Demandes reçues
                   <span style={{ fontSize: 11, fontWeight: 900, background: 'rgba(255,107,26,0.15)', color: '#FF6B1A', padding: '2px 8px', borderRadius: 10 }}>{pendingReceived.length}</span>
                 </h2>
@@ -701,7 +701,7 @@ export default function SocialPage() {
                     <div key={req.friendshipId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(0,0,0,0.03)' }}>
                       <Initial name={req.displayName} size={36} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', display: 'block' }}>{req.displayName}</span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', display: 'block' }}>{req.displayName}</span>
                       </div>
                       <button onClick={() => handleAccept(req.friendshipId)} className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22C55E', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>Accepter</button>
                       <button onClick={() => handleReject(req.friendshipId)} className="active:scale-90" style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', fontWeight: 800, fontSize: 11, cursor: 'pointer' }}>Refuser</button>

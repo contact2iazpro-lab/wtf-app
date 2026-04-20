@@ -1,4 +1,4 @@
-// FlashScreen — Rendez-vous quotidien (spec docs/FLASH_MODE_SPECS.md 15/04/2026)
+// DropScreen — Rendez-vous quotidien
 // Lun-sam : 5 questions Funny thème du jour fixe · 2 QCM · 15s · 30 coins fixe · 0 indice
 // Dimanche : 1 VIP cible + 4 Funny distracteurs · débloque UNIQUEMENT le VIP si sa question est juste
 // Phases : intro → playing → done · Gratuit 1×/jour
@@ -19,9 +19,9 @@ import renderFormattedText from '../utils/renderFormattedText'
 
 const HINT_COST = 50
 
-const STORAGE_KEY_PREFIX = 'wtf_flash_'
-const FLASH_REWARD = 30
-const FLASH_DURATION = 400
+const STORAGE_KEY_PREFIX = 'wtf_drop_'
+const DROP_REWARD = 30
+const DROP_DURATION = 400
 const SUNDAY_GOLD = '#FFD700'
 const SUNDAY_BG = 'linear-gradient(160deg, #2E1A47 0%, #1a0f2e 100%)'
 
@@ -65,7 +65,7 @@ function seededPick(pool, seed, count) {
   return picked
 }
 
-// Rotation thématique V1 (spec FLASH_MODE_SPECS.md) : mapping fixe jour → catégorie,
+// Rotation thématique V1 : mapping fixe jour → catégorie,
 // avec un nom fun (pas le nom de la catégorie). V2 : vrais thèmes transversaux.
 // Index JS getDay() : 0=dim, 1=lun, 2=mar, 3=mer, 4=jeu, 5=ven, 6=sam
 const WEEKDAY_THEMES = {
@@ -90,11 +90,11 @@ function pickThemeOfDay(dayOfWeek) {
   return { ...theme, poolSize: pool.length }
 }
 
-export default function FlashScreen({ onHome, setStorage }) {
+export default function DropScreen({ onHome, setStorage }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
   const { applyCurrencyDelta, unlockFact, hints: profileHints, coins: profileCoins } = usePlayerProfile()
-  const diff = DIFFICULTY_LEVELS.FLASH
+  const diff = DIFFICULTY_LEVELS.DROP
   const dateStr = todayKey()
   const sunday = isSunday()
   const storageKey = STORAGE_KEY_PREFIX + dateStr
@@ -174,13 +174,13 @@ export default function FlashScreen({ onHome, setStorage }) {
   const useHint = useCallback((hintNum) => {
     if (profileHints <= 0) return
     setHintsUsed(h => Math.max(h, hintNum))
-    applyCurrencyDelta?.({ hints: -1 }, 'flash_sunday_use_hint')
-      ?.catch?.(e => console.warn('[Flash] hint debit failed:', e?.message || e))
+    applyCurrencyDelta?.({ hints: -1 }, 'drop_sunday_use_hint')
+      ?.catch?.(e => console.warn('[Drop] hint debit failed:', e?.message || e))
   }, [profileHints, applyCurrencyDelta])
 
   const buyHint = useCallback(() => {
     applyCurrencyDelta?.({ coins: -HINT_COST, hints: 1 }, 'buy_hint_in_session')
-      ?.catch?.(e => console.warn('[Flash] buy hint RPC failed:', e?.message || e))
+      ?.catch?.(e => console.warn('[Drop] buy hint RPC failed:', e?.message || e))
   }, [applyCurrencyDelta])
   const flashTimer = useRef(null)
 
@@ -209,16 +209,16 @@ export default function FlashScreen({ onHome, setStorage }) {
         u.add(fact.id)
         return { ...prev, unlockedFacts: u }
       })
-      unlockFact?.(fact.id, fact.category, 'flash_hunt').catch(e =>
-        console.warn('[Flash] unlockFact RPC failed:', e?.message || e)
+      unlockFact?.(fact.id, fact.category, 'drop_hunt').catch(e =>
+        console.warn('[Drop] unlockFact RPC failed:', e?.message || e)
       )
     }
 
     if (index + 1 >= preparedFacts.length) {
-      const reward = sunday ? 0 : FLASH_REWARD
+      const reward = sunday ? 0 : DROP_REWARD
       if (reward > 0) {
-        applyCurrencyDelta?.({ coins: reward }, 'flash_daily_complete').catch(e =>
-          console.warn('[Flash] reward RPC failed:', e?.message || e)
+        applyCurrencyDelta?.({ coins: reward }, 'drop_daily_complete').catch(e =>
+          console.warn('[Drop] reward RPC failed:', e?.message || e)
         )
       }
       const finalCorrect = correct + (isCorrect ? 1 : 0)
@@ -244,14 +244,14 @@ export default function FlashScreen({ onHome, setStorage }) {
     const isCorrect = answerIdx === fact.correctIndex
     setFlash({ idx: answerIdx, correct: isCorrect })
     audio.play(isCorrect ? 'correct' : 'buzzer')
-    flashTimer.current = setTimeout(() => advance(isCorrect), FLASH_DURATION)
+    flashTimer.current = setTimeout(() => advance(isCorrect), DROP_DURATION)
   }, [flash, fact, phase, advance])
 
   const handleTimeout = useCallback(() => {
     if (flash !== null || !fact || phase !== 'playing') return
     setFlash({ idx: -1, correct: false })
     audio.play('buzzer')
-    flashTimer.current = setTimeout(() => advance(false), FLASH_DURATION)
+    flashTimer.current = setTimeout(() => advance(false), DROP_DURATION)
   }, [flash, fact, phase, advance])
 
   const handleStart = useCallback(() => {
@@ -265,7 +265,7 @@ export default function FlashScreen({ onHome, setStorage }) {
       <div className="absolute inset-0 flex items-center justify-center" style={{ background: SUNDAY_BG, color: '#fff', fontFamily: 'Nunito, sans-serif', padding: 24 }}>
         <div style={{ textAlign: 'center', maxWidth: 320 }}>
           <div style={{ fontSize: 56, marginBottom: 16 }}>🔥</div>
-          <p style={{ fontSize: 18, fontWeight: 900 }}>Flash indisponible</p>
+          <p style={{ fontSize: 18, fontWeight: 900 }}>Drop indisponible</p>
           <p style={{ fontSize: 14, opacity: 0.7, marginTop: 8 }}>Reviens plus tard !</p>
           <button onClick={onHome} style={{ marginTop: 28, padding: '14px 36px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>Retour</button>
         </div>
@@ -293,7 +293,7 @@ export default function FlashScreen({ onHome, setStorage }) {
             {theme.emoji}
           </div>
           <p style={{ fontSize: S(12), letterSpacing: 3, textTransform: 'uppercase', fontWeight: 800, opacity: 0.75, marginBottom: S(8) }}>
-            {sunday ? '👑 Dimanche spécial' : 'Flash du jour'}
+            {sunday ? '👑 Dimanche spécial' : 'Drop du jour'}
           </p>
           <h1 style={{ fontSize: S(32), fontWeight: 900, lineHeight: 1.1, margin: 0, color: themeColor, textShadow: `0 2px 20px ${themeColor}66` }}>
             {theme.label}
@@ -301,13 +301,13 @@ export default function FlashScreen({ onHome, setStorage }) {
           <p style={{ fontSize: S(15), opacity: 0.85, marginTop: S(14), maxWidth: S(320), lineHeight: 1.5 }}>
             {sunday
               ? 'Un WTF! VIP à débloquer chaque dimanche. Pas de coins, mais un fact légendaire à ajouter à ta collection.'
-              : `5 questions · 15 secondes chacune · ${FLASH_REWARD} coins à la clé si tu finis.`}
+              : `5 questions · 15 secondes chacune · ${DROP_REWARD} coins à la clé si tu finis.`}
           </p>
           <div style={{ marginTop: S(28), display: 'flex', flexDirection: 'column', gap: S(12), width: '100%', maxWidth: S(320) }}>
             <div style={{ display: 'flex', justifyContent: 'space-around', padding: `${S(12)} ${S(8)}`, background: 'rgba(255,255,255,0.08)', borderRadius: S(14), border: `1px solid ${themeColor}40` }}>
               <InfoPill label="Questions" value="5" />
               <InfoPill label="Timer" value="15s" />
-              <InfoPill label="Gain" value={sunday ? '1 VIP' : `${FLASH_REWARD}c`} color={themeColor} />
+              <InfoPill label="Gain" value={sunday ? '1 VIP' : `${DROP_REWARD}c`} color={themeColor} />
             </div>
           </div>
         </div>
@@ -349,7 +349,7 @@ export default function FlashScreen({ onHome, setStorage }) {
               {theme?.emoji || '🔥'}
             </div>
             <p style={{ fontSize: 13, opacity: 0.7, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 800, color: themeColor }}>
-              {theme?.label || 'Flash du jour'}
+              {theme?.label || 'Drop du jour'}
             </p>
             <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 1, margin: '14px 0 16px' }}>
               {initial?.correctCount ?? correct}<span style={{ fontSize: 32, opacity: 0.5 }}>/{preparedFacts.length || 5}</span>
@@ -358,7 +358,7 @@ export default function FlashScreen({ onHome, setStorage }) {
             {!alreadyPlayed && coinsEarned > 0 && (
               <div style={{ marginBottom: 16 }}>
                 <GainsBreakdown
-                  items={[{ label: '🔥 Flash quotidien', value: `+${coinsEarned}` }]}
+                  items={[{ label: '🔥 Drop quotidien', value: `+${coinsEarned}` }]}
                   total={coinsEarned}
                   totalColor={themeColor}
                   textColor="#ffffff"
@@ -420,8 +420,8 @@ export default function FlashScreen({ onHome, setStorage }) {
 
             <p style={{ fontSize: 14, opacity: 0.75, marginBottom: 24 }}>
               {alreadyPlayed
-                ? (sunday ? 'Tu as déjà chassé ton VIP cette semaine.' : 'Tu as déjà joué ton Flash aujourd\'hui. Reviens demain !')
-                : (sunday ? 'Reviens lundi pour un nouveau Flash quotidien !' : 'Rendez-vous demain pour un nouveau thème !')}
+                ? (sunday ? 'Tu as déjà chassé ton VIP cette semaine.' : 'Tu as déjà joué ton Drop aujourd\'hui. Reviens demain !')
+                : (sunday ? 'Reviens lundi pour un nouveau Drop quotidien !' : 'Rendez-vous demain pour un nouveau thème !')}
             </p>
             <button onClick={onHome} style={{ padding: '14px 40px', background: '#FF6B1A', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 900, fontSize: 15, cursor: 'pointer' }}>
               Retour
@@ -442,7 +442,7 @@ export default function FlashScreen({ onHome, setStorage }) {
         <div className="absolute inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
           <div className="w-full rounded-3xl p-6 mx-4" style={{ background: '#FAFAF8', maxWidth: 360 }}>
             <div className="text-2xl text-center mb-3">{theme?.emoji || '🔥'}</div>
-            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter le Flash ?</h2>
+            <h2 className="font-black text-lg text-center mb-2" style={{ color: '#1a1a2e' }}>Quitter le Drop ?</h2>
             <p className="text-sm text-center mb-6" style={{ color: '#6B7280' }}>Ta session sera perdue et non rejouable aujourd'hui.</p>
             <div className="flex flex-col gap-3">
               <button onClick={() => setShowQuit(false)} className="w-full py-4 rounded-2xl font-black text-base" style={{ background: '#FF6B1A', color: 'white' }}>Continuer</button>
@@ -452,7 +452,7 @@ export default function FlashScreen({ onHome, setStorage }) {
         </div>
       )}
 
-      <GameHeader categoryLabel={theme?.shortLabel || 'Flash'} categoryColor={themeColor} onQuit={() => setShowQuit(true)} />
+      <GameHeader categoryLabel={theme?.shortLabel || 'Drop'} categoryColor={themeColor} onQuit={() => setShowQuit(true)} />
 
       {/* Bannière thème */}
       <div style={{
@@ -511,7 +511,7 @@ export default function FlashScreen({ onHome, setStorage }) {
         <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ width: S(56), height: S(56) }}>
             <CircularTimer
-              key={`flash-${index}`}
+              key={`drop-${index}`}
               size={56}
               duration={diff.duration || 15}
               onTimeout={handleTimeout}

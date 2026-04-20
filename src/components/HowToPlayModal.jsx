@@ -8,7 +8,7 @@ import { renderIcon, QUICKIE_VIOLET, QUICKIE_GOLD } from '../utils/modeRuleIcons
 const CHAPTER_COLORS = {
   goal: '#3B82F6', tutorial: '#8B5CF6',
   quickie: '#FFA500', vrai_ou_fou: '#6BCB77', quest: '#EF4444',
-  race: '#00E5FF', blitz: '#FF1744', flash: '#FFD700', multi: '#6B2D8E',
+  race: '#00E5FF', blitz: '#FF1744', drop: '#FFD700', multi: '#6B2D8E',
   energy: '#10B981', hints: '#6366F1', coins: '#F59E0B',
   streak: '#F97316', roulette: '#A855F7', shop: '#06B6D4',
   collection: '#14B8A6', trophies: '#EAB308', profile: '#64748B',
@@ -24,7 +24,7 @@ const QUEST_DARK = '#D94A10'
 const MODE_ICON_MAP = {
   quest: '/assets/modes/icon-quest.png',
   quickie: '/assets/modes/icon-quickie.png',
-  flash: '/assets/daily.png',
+  drop: '/assets/daily.png',
   blitz: '/assets/modes/icon-blitz.png',
   race: '/assets/modes/icon-race.png',
   vrai_ou_fou: '/assets/modes/icon-vrai-et-fou.png',
@@ -44,7 +44,7 @@ const CHAPTERS = [
     title: 'Le But du Jeu',
     content: [
       { icon: '🎯', text: 'Des f*cts incroyables te sont présentés — à toi de trouver la **bonne réponse** !' },
-      { icon: '🎮', text: '**6 modes de jeu** : Quickie, Vrai ET Fou, Quest, Race, Blitz et Flash.' },
+      { icon: '🎮', text: '**7 modes de jeu** : Quickie, Vrai ET Fou, Quest, Race, Blitz, Multi et Drop.' },
       { icon: '🪙', text: 'Gagne des **Coins** à chaque bonne réponse pour débloquer du contenu.' },
       { icon: '📚', text: 'Débloque des **f*cts** et enrichis ta **Collection** personnelle.' },
       { icon: '🏆', text: 'Remporte des **trophées**, maintiens ta **série** et défie tes amis !' },
@@ -65,14 +65,14 @@ const CHAPTERS = [
   },
 
   // ═══ MODES DE JEU — contenu dynamique depuis MODE_CONFIGS ═══
-  // Ordre officiel (19/04/2026) : Quest · Quickie · VoF · Race · Blitz · Multi · Flash
+  // Ordre officiel : Quest · Quickie · VoF · Race · Blitz · Multi · Drop
   { id: 'quest', shortTitle: 'Quest', dynamic: true },
   { id: 'quickie', shortTitle: 'Quickie', dynamic: true },
   { id: 'vrai_ou_fou', shortTitle: 'Vrai ET Fou', dynamic: true },
   { id: 'race', shortTitle: 'Race', dynamic: true },
   { id: 'blitz', shortTitle: 'Blitz', dynamic: true },
   { id: 'multi', shortTitle: 'Multi', dynamic: true },
-  { id: 'flash', shortTitle: 'Flash', dynamic: true },
+  { id: 'drop', shortTitle: 'Drop', dynamic: true },
 
   // ═══ ROULETTE (juste après les modes) ═══
   {
@@ -99,7 +99,7 @@ const CHAPTERS = [
       { icon: '🔋', text: 'Les modes **Quickie** et **Quest** consomment 1 énergie par session/bloc.' },
       { icon: '🆓', text: 'Stock max **5 énergies** — régénération **+1 toutes les 8h**.' },
       { icon: '🪙', text: 'Plus d\'énergie ? Achète **1 énergie pour 75 Coins** en boutique.' },
-      { icon: '♾️', text: '**Vrai ET Fou, Race, Blitz** et **Flash** : gratuits illimités.' },
+      { icon: '♾️', text: '**Vrai ET Fou, Race, Blitz** et **Drop** : gratuits illimités.' },
     ],
   },
 
@@ -112,8 +112,8 @@ const CHAPTERS = [
     content: [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
-      { icon: '🗺️', text: '**Quest** : 2 / question · **Quickie** : 1 max · **Flash dimanche** : 2 max' },
-      { icon: '🚫', text: '**Vrai ET Fou, Race, Blitz, Flash lun-sam** : aucun indice disponible.' },
+      { icon: '🗺️', text: '**Quest** : 2 / question · **Quickie** : 1 max · **Drop dimanche** : 2 max' },
+      { icon: '🚫', text: '**Vrai ET Fou, Race, Blitz, Drop lun-sam** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : **50 Coins** par indice.' },
       { icon: '🎁', text: 'Gagne aussi des indices via la **roulette** et les **paliers de série**.' },
@@ -130,7 +130,7 @@ const CHAPTERS = [
       { icon: '🪙', text: 'Les **Coins** sont la monnaie du jeu — tu en gagnes en jouant.' },
       { icon: '🎯', text: '**Quickie** : 10/bonne · +50 perfect' },
       { icon: '🗺️', text: '**Quest** : 20/bonne · +100/boss vaincu' },
-      { icon: '🔥', text: '**Flash lun-sam** : 30 fixe · **Flash dimanche** : 1 VIP débloqué' },
+      { icon: '🔥', text: '**Drop lun-sam** : 30 fixe · **Drop dimanche** : 1 VIP débloqué' },
       { icon: '🤔', text: '**Vrai ET Fou · Race · Blitz** : 0 coin (prestige)' },
       { icon: '🎰', text: 'Gagne aussi des coins via la **roulette quotidienne** et tes **paliers de série**.' },
       { icon: '🛒', text: 'Dépense-les en **boutique** : indices, énergie, cadres, Défi Blitz (200 Coins).' },
@@ -178,7 +178,7 @@ const CHAPTERS = [
     content: [
       { icon: '🗂️', text: 'Tes f*cts débloqués sont organisés par **catégorie** (30+ catégories).' },
       { icon: '📊', text: 'Suis ta **progression par catégorie** avec les barres de progression.' },
-      { icon: 'icon:star', text: '2 onglets : **WTF! VIP** (boss Quest + Hunt Flash) et **Funny F*cts**.' },
+      { icon: 'icon:star', text: '2 onglets : **WTF! VIP** (boss Quest + Hunt Drop) et **Funny F*cts**.' },
       { icon: '🔄', text: 'Un f*ct déjà débloqué **ne réapparaît plus** dans les quiz.' },
       { icon: '🏆', text: 'Complète des catégories pour débloquer des **trophées** !' },
     ],
@@ -226,7 +226,7 @@ const CHAPTERS = [
     content: [
       { icon: '🎯', text: 'Commence par le mode **Quickie** pour gagner des coins et débloquer des f*cts.' },
       { icon: '💡', text: 'Garde tes **indices** pour les boss VIP de Quest.' },
-      { icon: '📅', text: 'Joue **chaque jour** : Flash + roulette + paliers de série = **250-400 Coins/jour**.' },
+      { icon: '📅', text: 'Joue **chaque jour** : Drop + roulette + paliers de série = **250-400 Coins/jour**.' },
       { icon: '🧠', text: 'Joue **Race** pour réviser tes f*cts débloqués sans pression.' },
       { icon: '⚔️', text: 'Envoie un **Défi Blitz** à un ami (200 Coins) pour la gloire !' },
       { icon: '🛡️', text: 'Achète un **Streak Freeze** avant un week-end chargé pour protéger ta série.' },
@@ -235,15 +235,14 @@ const CHAPTERS = [
   },
 ]
 
-// Bold + {{red}} markdown renderer
-function renderText(text) {
+function renderText(text, highlightColor) {
   const parts = text.split(/(\{\{red\}\}.*?\{\{\/red\}\}|\*\*.*?\*\*|\n)/g)
   return parts.map((p, i) => {
     if (p === '\n') return <br key={i} />
     const redMatch = p.match(/^\{\{red\}\}(.*?)\{\{\/red\}\}$/)
     if (redMatch) return <span key={i} style={{ color: '#E84535' }}>{redMatch[1]}</span>
     const boldMatch = p.match(/^\*\*(.*?)\*\*$/)
-    if (boldMatch) return <strong key={i}>{boldMatch[1]}</strong>
+    if (boldMatch) return <span key={i} style={{ fontWeight: 900, fontStyle: 'italic', color: highlightColor || 'inherit' }}>{boldMatch[1]}</span>
     return p
   })
 }
@@ -270,7 +269,7 @@ function resolveChapter(ch) {
 
 // ── Main component ──────────────────────────────────────────────────────────
 // Modes qui ont une page de règles déclenchée par skip_launch_${mode}
-const MODES_WITH_LAUNCH_RULES = ['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'multi']
+const MODES_WITH_LAUNCH_RULES = ['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'drop', 'multi']
 
 export default function HowToPlayModal({ onClose, onRestartTutorial }) {
   // État initial : coché si AUCUN mode n'a de skip_launch_* = 'true' (les règles
@@ -428,7 +427,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
                       {renderIcon(item.icon, 22, iconColor, chapter.id)}
                     </span>
                     <span style={{ fontSize: 13, fontWeight: isStyledMode ? 700 : 600, lineHeight: 1.35, color: isStyledMode ? textCol : '#374151', margin: 0 }}>
-                      {renderText(item.text)}
+                      {renderText(item.text, isStyledMode ? (BORDER_OVERRIDES[chapter.id] || modeColor) : undefined)}
                     </span>
                   </div>
                 )
@@ -449,7 +448,7 @@ export default function HowToPlayModal({ onClose, onRestartTutorial }) {
         </div>
 
         {/* ── Checkbox réafficher règles — extraite pour ne jamais être coupée ── */}
-        {['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'flash', 'energy'].includes(chapter.id) && (
+        {['quickie', 'vrai_ou_fou', 'quest', 'race', 'blitz', 'drop', 'energy'].includes(chapter.id) && (
           <label style={{
             display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(0,0,0,0.7)',
             cursor: 'pointer', margin: '6px 12px 0', padding: '6px 8px',

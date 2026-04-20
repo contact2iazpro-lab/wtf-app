@@ -38,7 +38,7 @@ RÈGLES DES MODES (homogénéité) :
 | Route WTF! | **Quest** | Progression linéaire, boss VIP /5 |
 | Blitz chrono 60s | **Blitz Solo** | Sous-mode de Blitz |
 | Défi Blitz async | **Multi** (19/04/2026) | Mode dédié, Rush + Speedrun |
-| Hunt + Puzzle du Jour | **Flash** | Événement quotidien + Hunt dimanche |
+| Hunt + Puzzle du Jour | ~~Flash~~ → **Drop** (20/04/2026) | Événement quotidien + Hunt dimanche |
 | *(nouveau)* | **Vrai ou Fou** | Swipe Vrai/Faux, 10 affirmations |
 | *(nouveau)* | ~~No Limit~~ → **Race** (17/04/2026) | Survie jusqu'à erreur, 6 QCM, pas de timer |
 | Quest ancien (ticket+Cool/Hot) | **SUPPRIMÉ** | Remplacé par Quest (Route) |
@@ -62,7 +62,8 @@ L'admin-tool (clé service_role) doit être déployé **en isolation** (voir `do
 ## Vocabulaire officiel
 - fact/fait → f*ct | facts → f*cts
 - WTF toujours avec ! (sauf "What The F*ct")
-- Les 7 modes (depuis 19/04/2026) : **Quickie · Vrai ou Fou · Quest · Race · Blitz · Flash · Multi**
+- Les 7 modes (depuis 20/04/2026) : **Quickie · Vrai ou Fou · Quest · Race · Blitz · Multi · Drop**
+- Flash → **Drop** (renommé 20/04/2026)
 - Snack → **Quickie** (renommé 16/04/2026)
 - No Limit → **Race** (renommé 17/04/2026)
 - Cool/Hot/WTF! → **SUPPRIMÉS** (difficulté = nb QCM par mode)
@@ -136,7 +137,7 @@ L'admin-tool (clé service_role) doit être déployé **en isolation** (voir `do
 - Record : `wtfData.speedrunRecords[${catId}_${palier}]` + `blitz_records` Supabase
 - Persistance cross-device via `mergeFlags({ speedrunRecords })`
 
-### 6. FLASH — "Le rendez-vous quotidien" (ex-Hunt + Puzzle du Jour)
+### 6. DROP — "Le rendez-vous quotidien" (ex-Flash, ex-Hunt + Puzzle du Jour)
 - QCM **2 choix**, 5 questions, timer **15s**
 - Lun-Sam : Funny thème du jour, 0 indices, **30 coins fixe**
 - Dimanche : VIP Hunt de la semaine, 2 indices, **1 VIP débloqué**
@@ -167,7 +168,7 @@ L'admin-tool (clé service_role) doit être déployé **en isolation** (voir `do
 - Spec source : `docs/ROULETTE_WTF_SPECS.md`
 
 ### Règles communes
-- QCM facile (2 choix) : Quickie, Flash
+- QCM facile (2 choix) : Quickie, Drop
 - QCM difficile (4 choix) : Quest, Blitz, Multi
 - QCM hardcore (6 choix) : Race
 - Swipe (0 QCM) : Vrai ou Fou
@@ -180,7 +181,7 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 | Mode | QCM | Nb fausses | Tirage |
 |------|-----|-----------|--------|
 | Quickie | 2 | 1 | **Pondéré** : 70% plausible / 20% drôle / 10% proche |
-| Flash | 2 | 1 | **Pondéré** : 70% plausible / 20% drôle / 10% proche (idem Quickie) |
+| Drop | 2 | 1 | **Pondéré** : 70% plausible / 20% drôle / 10% proche (idem Quickie) |
 | Quest (niveaux Funny) | 4 | 3 | **1 drôle + 2 plausible** (jamais proche) |
 | Quest (boss VIP) | 4 | 3 | **3 plausible** — hardcore (fallback close puis funny si pool plausible < 3) |
 | Blitz (Solo & Multi) | 4 | 3 | **1 drôle + 1 proche + 1 plausible** |
@@ -191,15 +192,18 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 - Si un type est insuffisant : fallback sur les types déjà spécifiés dans la distribution (jamais de contamination par un type absent de la spec).
 - Anti-déduction : localStorage `wtf_last_wrong_{factId}` persiste 1 fausse entre sessions.
 
-## Streak & Coffres — Décision 16/04/2026 (Option B)
+## Streak & Coffres — Décision 20/04/2026 (évolution quotidienne)
 - **Streak et coffres sont FUSIONNÉS** : le coffre quotidien = matérialisation visuelle du streak (plus de double rail).
-- **Paliers** (pas de J1 — redondant avec Flash quotidien) :
-  - **Débutant** (J3) = 75c
-  - **Habitué** (J7) = 200c + 2 indices
-  - **Fidèle** (J14) = 500c
-  - **Légende** (J30) = 1 000c + cadre exclusif
-- **Flash** reste le gameplay quotidien. Flash = actif, Coffres/Streak = passif.
-- **Implémentation** : `src/hooks/useStreakRewards.js`. Un seul popup au lancement si récompense disponible.
+- **Récompense CHAQUE jour** — plus de gap vide entre paliers :
+  - **Quotidien J1-J30** : micro-récompense (15c→75c progressive, reset entre paliers)
+  - **Débutant** (J3) = 75c (cerveau)
+  - **Habitué** (J7) = 200c + 2 indices (cerveau)
+  - **Fidèle** (J14) = 500c (cerveau)
+  - **Semaine 3** (J21) = 50c + 1 indice (quotidien bonus)
+  - **Légende** (J30) = 1 000c + cadre exclusif (cerveau)
+  - **Post-Légende** (J31+) = 25c/jour fixe
+- **Drop** reste le gameplay quotidien. Drop = actif, Coffres/Streak = passif.
+- **Implémentation** : `src/hooks/useStreakRewards.js` + `STREAK_DAILY_REWARDS` dans gameConfig. Popup auto au chargement Home.
 
 ## Économie F2P — Source de vérité (15/04/2026) — VALEURS ×10
 
@@ -230,8 +234,8 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 - Bonus session parfaite : Quickie perfect = +50 coins. Quest pas de perfect bonus.
 
 ## Architecture contenu (15/04/2026, maj 19/04/2026)
-- **WTF VIP** (~483) : Quest boss /5, Flash dimanche, Race/Blitz
-- **Funny F*cts** (~770+) : Quickie, Vrai ou Fou, Quest niveaux, Flash lun-sam
+- **WTF VIP** (~483) : Quest boss /5, Drop dimanche, Race/Blitz
+- **Funny F*cts** (~770+) : Quickie, Vrai ou Fou, Quest niveaux, Drop lun-sam
 - **Blitz** pioche dans TOUS les f*cts débloqués (VIP + Funny confondus)
 - Collection : 2 onglets (WTF! + Funny F*cts)
 - **Champs DB VOF** : `statement_true` + `statement_false_funny` + `statement_false_plausible` ✅
@@ -255,25 +259,42 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 - Règle isLightColor : texte #1a1a1a sur fond clair, #ffffff sur fond sombre
 
 ### Couleurs des catégories (source unique : src/data/facts.js)
-| Catégorie | Couleur | Catégorie | Couleur |
-|-----------|---------|-----------|---------|
-| Animaux | #6BCB77 | Lois | #6366B8 |
-| Animaux du ciel | #B8A5E8 | Musique | #E84B8A |
-| Animaux Marins | #40B4D8 | Mythologie | #C8A84B |
-| Animaux sauvages | #E8712A | Bestioles | #7A9F35 |
-| Architecture | #A0826D | Phobies | #7B5EA7 |
-| Art | #A07CD8 | Politique | #B24B4B |
-| Célébrités | #FFD700 | Psychologie | #8E44AD |
-| Cinéma | #D4AF37 | Records | #E8B84B |
-| Corps Humain | #F07070 | Santé | #90F090 |
-| Crimes | #8B4789 | Sciences | #80C8E8 |
-| Définition | #4A9BD9 | Sport | #E84535 |
-| Dictons | #4CAF50 | Technologie | #7B8FA0 |
-| Espace | #2E1A47 | Internet | #5B8DBE |
-| Gastronomie | #FFA500 | Inventions | #5BC0DE |
-| Géographie | #40D9C8 | Jeux & Jouets | #9B59B6 |
-| Histoire | #E8A030 | Kids | #E8C000 |
-| Météo | #6FC0D8 | Transports | #3A6FA0 |
+| Catégorie (label) | ID | Couleur |
+|---|---|---|
+| What the Zoo | animaux | #6BCB77 |
+| Ca plane ! | animaux-ciel | #B8A5E8 |
+| Sous les vagues | animaux-marins | #40B4D8 |
+| Griffes et Crocs | animaux-sauvages | #E8712A |
+| Bestioles | bestioles | #7A9F35 |
+| Bati dingue | architecture | #A0826D |
+| Chef-d'oeuvre ? | art | #A07CD8 |
+| Crazy Stars | celebrites | #FFD700 |
+| Ecran noir | cinema | #D4AF37 |
+| Corps et Ame | corps-humain | #F07070 |
+| Casier judiciaire | crimes | #8B4789 |
+| Dico WTF | definition | #4A9BD9 |
+| On dit que... | dictons | #4CAF50 |
+| Houston... | espace | #2E1A47 |
+| A table ! | gastronomie | #FFA500 |
+| Terre inconnue | geographie | #40D9C8 |
+| Passe compose | histoire | #E8A030 |
+| WTF 2.0 | internet | #5B8DBE |
+| Idee de genie ? | inventions | #5BC0DE |
+| Game On | jeux-jouets | #9B59B6 |
+| Kids | kids | #E8C000 |
+| Article 22 | lois | #6366B8 |
+| Quel temps... | meteo | #6FC0D8 |
+| Volume a fond | musique | #E84B8A |
+| Mythes et Monstres | mythologie | #C8A84B |
+| Phobies | phobies | #7B5EA7 |
+| Coulisses du pouvoir | politique | #B24B4B |
+| Tete a l'envers | psychologie | #8E44AD |
+| Sans limites | records | #E8B84B |
+| Quoi de neuf, Doc ? | sante | #90F090 |
+| E = WTF² | sciences | #80C8E8 |
+| Sport | sport | #E84535 |
+| Geek zone | technologie | #7B8FA0 |
+| On the road again | transports | #3A6FA0 |
 
 ## Toggle Mode Dev
 - Clé localStorage : wtf_dev_mode

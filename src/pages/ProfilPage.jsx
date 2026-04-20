@@ -16,7 +16,7 @@ const MODE_LABELS = {
   quickie: { icon: '⚡', name: 'Quickie' },
   parcours: { icon: '🗺️', name: 'Quest' },
   blitz: { icon: '⏱️', name: 'Blitz' },
-  flash: { icon: '🔥', name: 'Flash' },
+  drop: { icon: '🔥', name: 'Drop' },
 }
 
 export default function ProfilPage() {
@@ -208,7 +208,7 @@ export default function ProfilPage() {
   ]
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: '#FAFAF8', paddingBottom: S(80) }}>
+    <div className="flex flex-col h-full w-full overflow-hidden" style={{ background: 'transparent', paddingBottom: S(80) }}>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {resetStep === 1 && (
         <GameModal
@@ -241,13 +241,13 @@ export default function ProfilPage() {
           <button
             onClick={goBack}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#374151' }}
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}
           >←</button>
-          <h1 className="flex-1 text-sm font-black" style={{ color: '#1a1a2e' }}>Mon Profil</h1>
+          <h1 className="flex-1 text-sm font-black" style={{ color: '#ffffff' }}>Mon Profil</h1>
           <button
             onClick={() => setShowSettings(true)}
             className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-            style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
           >
             <img src="/assets/ui/icon-settings.png" style={{ width: 20, height: 20 }} alt="" />
           </button>
@@ -305,7 +305,7 @@ export default function ProfilPage() {
                 maxLength={20}
                 autoFocus
                 className="text-center font-black text-sm px-2 py-1 rounded-lg"
-                style={{ color: '#1a1a2e', border: '2px solid #FF6B1A', outline: 'none', width: 160 }}
+                style={{ color: '#ffffff', border: '2px solid #FF6B1A', outline: 'none', width: 160 }}
                 onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false) }}
               />
               <button onClick={handleSaveName} disabled={savingName} className="text-green-500 font-bold text-lg active:scale-90">{savingName ? '...' : '✓'}</button>
@@ -313,14 +313,14 @@ export default function ProfilPage() {
             </div>
           ) : (
             <div className="flex items-center gap-1.5" style={{ marginTop: 6 }}>
-              <span className="font-black text-sm" style={{ color: '#1a1a2e' }}>{pseudo}</span>
+              <span className="font-black text-sm" style={{ color: '#ffffff' }}>{pseudo}</span>
               <button onClick={() => { setNameInput(pseudo); setEditingName(true) }} className="text-slate-400 hover:text-slate-600 active:scale-90 transition-all" style={{ fontSize: 12 }}>✏️</button>
             </div>
           )}
 
           {/* Email si connecté, ID anonyme sinon */}
           {isConnected ? (
-            <span className="text-xs font-semibold" style={{ color: '#6B7280', marginTop: 4 }}>{user?.email}</span>
+            <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{user?.email}</span>
           ) : (
             <span
               className="text-xs font-bold"
@@ -374,7 +374,7 @@ export default function ProfilPage() {
           ].map(r => (
             <div key={r.label} style={{ flex: 1, textAlign: 'center' }}>
               <span style={{ fontSize: 18, display: 'block' }}>{r.emoji}</span>
-              <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>{r.value}</span>
+              <span className="font-black text-sm block" style={{ color: '#ffffff' }}>{r.value}</span>
               <span className="text-xs" style={{ color: '#9CA3AF' }}>{r.label}</span>
             </div>
           ))}
@@ -397,9 +397,9 @@ export default function ProfilPage() {
         {/* Stats globales */}
         <div className="grid grid-cols-2 gap-1.5 mb-3">
           {STATS.map(s => (
-            <div key={s.label} className="rounded-2xl p-2 text-center" style={{ background: '#F3F4F6', border: '1px solid #E5E7EB' }}>
+            <div key={s.label} className="rounded-2xl p-2 text-center" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
               <span className="text-base block">{s.emoji}</span>
-              <span className="font-black text-sm block" style={{ color: '#1a1a2e' }}>{s.value}</span>
+              <span className="font-black text-sm block" style={{ color: '#ffffff' }}>{s.value}</span>
               <span className="text-xs" style={{ color: '#9CA3AF' }}>{s.label}</span>
             </div>
           ))}
@@ -408,7 +408,7 @@ export default function ProfilPage() {
         {/* Stats par mode */}
         {Object.entries(statsByMode).filter(([, s]) => s.gamesPlayed > 0).length > 0 && (
           <>
-            <h2 className="font-black text-xs mb-2" style={{ color: '#1a1a2e' }}>Statistiques par mode</h2>
+            <h2 className="font-black text-xs mb-2" style={{ color: '#ffffff' }}>Statistiques par mode</h2>
             <div className="flex flex-col gap-2 mb-3">
               {Object.entries(statsByMode).filter(([, s]) => s.gamesPlayed > 0).map(([key, s]) => {
                 const mode = MODE_LABELS[key] || { icon: '🎮', name: key }
@@ -417,7 +417,7 @@ export default function ProfilPage() {
                   <div key={key} style={{ background: 'rgba(0,0,0,0.04)', borderRadius: 12, padding: '8px 10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
                       <span style={{ fontSize: 14 }}>{mode.icon}</span>
-                      <span className="font-black text-xs" style={{ color: '#1a1a2e' }}>{mode.name}</span>
+                      <span className="font-black text-xs" style={{ color: '#ffffff' }}>{mode.name}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {[
@@ -426,7 +426,7 @@ export default function ProfilPage() {
                         { label: 'Série max', value: s.bestStreak || 0 },
                       ].map(st => (
                         <div key={st.label} style={{ flex: 1, textAlign: 'center' }}>
-                          <span className="font-black text-xs block" style={{ color: '#1a1a2e' }}>{st.value}</span>
+                          <span className="font-black text-xs block" style={{ color: '#ffffff' }}>{st.value}</span>
                           <span style={{ fontSize: 8, color: '#9CA3AF', fontWeight: 600 }}>{st.label}</span>
                         </div>
                       ))}
@@ -470,17 +470,17 @@ export default function ProfilPage() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: 'white', borderRadius: 20, padding: 20,
+              background: '#1a1a2e', borderRadius: 20, padding: 20, border: '1px solid rgba(255,255,255,0.15)',
               maxWidth: 360, width: '100%',
               fontFamily: 'Nunito, sans-serif',
               maxHeight: '85vh', overflowY: 'auto',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 style={{ fontSize: 17, fontWeight: 900, color: '#1a1a2e', margin: 0 }}>✨ Cadre de profil</h3>
+              <h3 style={{ fontSize: 17, fontWeight: 900, color: '#ffffff', margin: 0 }}>✨ Cadre de profil</h3>
               <button
                 onClick={() => setShowFrameSelector(false)}
-                style={{ background: '#F3F4F6', border: 'none', borderRadius: 8, width: 28, height: 28, fontSize: 14, fontWeight: 900, cursor: 'pointer', color: '#6B7280' }}
+                style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, width: 28, height: 28, fontSize: 14, fontWeight: 900, cursor: 'pointer', color: 'rgba(255,255,255,0.5)' }}
               >✕</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
@@ -500,7 +500,7 @@ export default function ProfilPage() {
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                       padding: 10, borderRadius: 12,
                       background: isEquipped ? 'rgba(255,107,26,0.1)' : '#F9FAFB',
-                      border: isEquipped ? '2px solid #FF6B1A' : '1.5px solid #E5E7EB',
+                      border: isEquipped ? '2px solid #FF6B1A' : '1.5px solid rgba(255,255,255,0.15)',
                       cursor: isOwned ? 'pointer' : 'not-allowed',
                       opacity: isOwned ? 1 : 0.45,
                       fontFamily: 'Nunito, sans-serif',
@@ -511,7 +511,7 @@ export default function ProfilPage() {
                       background: '#D1D5DB',
                       border: frame.border, boxShadow: frame.glow,
                     }} />
-                    <span style={{ fontSize: 11, fontWeight: 900, color: '#1a1a2e' }}>{frame.label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 900, color: '#ffffff' }}>{frame.label}</span>
                     {isEquipped ? (
                       <span style={{ fontSize: 9, fontWeight: 900, color: '#FF6B1A' }}>✓ Équipé</span>
                     ) : isOwned ? (

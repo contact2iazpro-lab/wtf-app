@@ -446,7 +446,7 @@ export default function QuestionScreen({
   }
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────
-  const MODE_LABELS = { quickie: 'QUICKIE', flash: 'MODE FLASH', parcours: 'MODE QUEST' }
+  const MODE_LABELS = { quickie: 'QUICKIE', drop: 'MODE DROP', parcours: 'MODE QUEST' }
   const modeLabel = MODE_LABELS[sessionType] || (difficulty ? `Mode ${difficulty.label || difficulty.id}` : '')
 
   // ── Phase 2 : QCM ──────────────────────────────────────────────────────────

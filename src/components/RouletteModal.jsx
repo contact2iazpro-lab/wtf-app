@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
+import { getFunnyFacts } from '../data/factsService'
 import { audio } from '../utils/audio'
 
 const S = (px) => `calc(${px}px * var(--scale))`
@@ -77,7 +78,7 @@ export default function RouletteModal({ onClose, scale }) {
   const tickIntervalRef = useRef(null)
   const imagesRef = useRef({})
   // Phase A.6/A.7 — miroir Supabase
-  const { coins, applyCurrencyDelta } = usePlayerProfile()
+  const { coins, applyCurrencyDelta, unlockFact } = usePlayerProfile()
 
   const isFree = !spinData.freeUsed
 
@@ -246,9 +247,15 @@ export default function RouletteModal({ onClose, scale }) {
           console.warn('[RouletteModal] reward RPC failed:', e?.message || e)
         )
       } else if (seg.reward.type === 'factUnlock') {
-        // TODO : appeler RPC unlock_fact sur un fact aléatoire non-débloqué
-        // Pour l'instant on crédite 25 coins (valeur équivalente)
-        applyCurrencyDelta?.({ coins: 25 }, 'roulette_reward_fact_fallback')?.catch?.(() => {})
+        const wd0 = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        const unlocked = new Set(wd0.unlockedFacts || [])
+        const candidates = getFunnyFacts().filter(f => !unlocked.has(f.id))
+        if (candidates.length > 0) {
+          const pick = candidates[Math.floor(Math.random() * candidates.length)]
+          unlockFact?.(pick.id, pick.category, 'roulette_reward_fact')?.catch?.(() => {})
+        } else {
+          applyCurrencyDelta?.({ coins: 50 }, 'roulette_reward_fact_fallback')?.catch?.(() => {})
+        }
       } else if (seg.reward.type === 'freeSpin') {
         // Relance gratuite : refund les 100 coins du spin courant (sauf si c'était un spin gratuit)
         if (spinData.freeUsed) {

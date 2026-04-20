@@ -71,7 +71,7 @@ export function loadStorage() {
     }
 
     // 1e — Migration statsByMode : flash_solo + explorer + marathon → quickie ;
-    //              hunt + puzzle + wtf_du_jour → flash
+    //              hunt + puzzle + wtf_du_jour + flash → drop
     // 1f — Migration snack → quickie (rename Snack → Quickie 16/04/2026)
     if (saved.statsByMode) {
       const sbm = saved.statsByMode
@@ -86,7 +86,7 @@ export function loadStorage() {
         }
       }
       mergeInto('quickie', ['flash_solo', 'explorer', 'marathon', 'snack'])
-      mergeInto('flash', ['hunt', 'puzzle', 'wtf_du_jour'])
+      mergeInto('drop', ['hunt', 'puzzle', 'wtf_du_jour', 'flash'])
       saved.lastModified = Date.now()
       localStorage.setItem('wtf_data', JSON.stringify(saved))
     }
@@ -157,7 +157,7 @@ export function loadStorage() {
       wtfCoins: saved.wtfCoins || 0,
       // NOTE : clés legacy wtfDuJour* conservées pour compatibilité avec l'état
       // persisté des joueurs existants. Sémantiquement c'est le WTF de la Semaine
-      // (Flash 1×/semaine dimanche) — voir T92 pour le renommage complet si migration.
+      // (Drop 1×/semaine dimanche)
       wtfDuJourDate: saved.wtfDuJourDate || null,
       wtfDuJourFait: (saved.wtfDuJourDate || null) === today,
       sessionsToday: saved.sessionsTodayDate === today ? (saved.sessionsToday || 0) : 0,

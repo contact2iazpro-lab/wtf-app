@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 import { useScale } from '../hooks/useScale'
 import { ICON_SIZES } from '../constants/layoutConfig'
 
-const ModeIcon = forwardRef(({ icon, emoji, name, color, bgColor, onClick, sizeOverride }, ref) => {
+const ModeIcon = forwardRef(({ icon, emoji, name, color, bgColor, onClick, sizeOverride, badge }, ref) => {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
   const size = sizeOverride || ICON_SIZES.modeIcon
@@ -45,14 +45,22 @@ const ModeIcon = forwardRef(({ icon, emoji, name, color, bgColor, onClick, sizeO
           }}>{emoji}</span>
         )}
       </div>
-      <span style={{
-        fontSize: S(11), fontWeight: 700, color: color || '#ffffff',
-        fontFamily: 'Nunito, sans-serif',
-        textShadow: '0 1px 3px rgba(0,0,0,0.4)',
-        lineHeight: 1,
-      }}>
-        {name}
-      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: S(3) }}>
+        {badge && (
+          <span style={{
+            fontSize: S(9), lineHeight: 1,
+            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
+          }}>🔓</span>
+        )}
+        <span style={{
+          fontSize: S(11), fontWeight: 700, color: color || '#ffffff',
+          fontFamily: 'Nunito, sans-serif',
+          textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+          lineHeight: 1,
+        }}>
+          {name}
+        </span>
+      </div>
     </button>
   )
 })

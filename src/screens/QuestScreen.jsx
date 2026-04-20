@@ -26,7 +26,7 @@ const BOSS_BONUS = 100
 const HINT_COST = 50
 const QUEST_DURATION = 20
 const QUEST_QCM = { choices: 4, duration: QUEST_DURATION, id: 'quest' }
-const QUEST_MAX_LEVEL = 850
+const QUEST_MAX_LEVEL = 1500
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -187,6 +187,8 @@ export default function QuestScreen({ onHome, setStorage }) {
   // Pending boss : retour carte → animation → overlay VIP → lancement boss
   const [pendingBoss, setPendingBoss] = useState(null) // { session, correctIds, funnyCount }
   const [bossAnimPhase, setBossAnimPhase] = useState(null) // 'travel' | 'overlay' | null
+  // Pré-build session pour afficher les couleurs catégories sur la carte
+  const [prebuiltSession, setPrebuiltSession] = useState(null)
   const mapRef = useRef(null)
 
   useEffect(() => {
@@ -201,6 +203,14 @@ export default function QuestScreen({ onHome, setStorage }) {
       el?.scrollIntoView({ block: 'center', behavior: 'instant' })
     }
   }, [session, state.level, pendingBoss])
+
+  // Pré-build session dès qu'on est sur la carte (pas en jeu, pas en pending boss)
+  useEffect(() => {
+    if (session || pendingBoss) return
+    const unlockedSet = readUnlockedSet()
+    const s = buildBlockSession({ blockIdx: blockIdxOf(state.level), unlockedSet })
+    setPrebuiltSession(s)
+  }, [session, pendingBoss, state.level])
 
   // Pending boss animation sequence : travel (2s) → overlay (2.5s) → launch boss
   useEffect(() => {
@@ -259,9 +269,10 @@ export default function QuestScreen({ onHome, setStorage }) {
     if (!ok) { setShowEnergyModal(true); return }
     setEnergyState(getQuickieEnergy())
 
-    const unlockedSet = readUnlockedSet()
-    const s = buildBlockSession({ blockIdx: currentBlockIdx, unlockedSet })
+    // Utilise la session pré-construite (couleurs catégories déjà visibles sur la carte)
+    const s = prebuiltSession || buildBlockSession({ blockIdx: currentBlockIdx, unlockedSet: readUnlockedSet() })
     if (!s) return
+    setPrebuiltSession(null)
     setSession(s); setQIndex(0); setPhase('question')
     setSelected(null); setCorrectFactIds([]); setFunnyCorrectCount(0)
     setBossCorrect(false); setBossUnlocked(false); setHintsUsed(0); setTimedOut(false)
@@ -566,6 +577,9 @@ export default function QuestScreen({ onHome, setStorage }) {
   // ═════════════════════════════════════════════════════════════════════════
   if (!session) {
     const TOTAL_BLOCKS = Math.ceil(QUEST_MAX_LEVEL / QUEST_BLOCK_SIZE)
+    // Compteur WTF! débloqués (boss réussis)
+    const vipUnlocked = Object.values(state.stars || {}).filter(s => s === 3).length
+
     // 5 blocs affichés : bloc courant + 4 suivants
     const VIEW_BLOCKS = 5
     const viewStart = currentBlockIdx
@@ -579,10 +593,20 @@ export default function QuestScreen({ onHome, setStorage }) {
       nodes.push({ level: blockBossLevelOf(b), block: b, indexInBlock: 0, isBoss: true })
     }
 
+    // Couleurs catégories des 5 facts du bloc courant (depuis prebuiltSession)
+    const factCatColors = {}
+    if (prebuiltSession?.facts) {
+      prebuiltSession.facts.forEach((f, i) => {
+        const cat = getCategoryById(f.category)
+        factCatColors[i + 1] = cat?.color || '#FF6B1A'
+      })
+    }
+
     // Positions zigzag
     const NODE_GAP = 52
     const MAP_WIDTH = 300
     const MARGIN_X = 50
+    const BOTTOM_DOTS = 50
     const getNodePos = (idx) => {
       const cycle = Math.floor(idx / 6)
       const pos = idx % 6
@@ -592,17 +616,16 @@ export default function QuestScreen({ onHome, setStorage }) {
       const x = goingRight ? rawX : (1 - rawX)
       return {
         x: MARGIN_X + x * (MAP_WIDTH - MARGIN_X * 2),
-        y: idx * NODE_GAP,
+        y: BOTTOM_DOTS + idx * NODE_GAP,
       }
     }
 
     const currentLevel = state.level
     const currentNodeIdx = nodes.findIndex(n => n.level >= currentLevel)
     const playerIdx = currentNodeIdx >= 0 ? currentNodeIdx : 0
-    // Index du boss node du bloc courant (pour l'animation pendingBoss)
     const bossNodeIdx = nodes.findIndex(n => n.isBoss && n.block === currentBlockIdx)
-    const DOTS_EXTRA = 80
-    const totalHeight = nodes.length * NODE_GAP + DOTS_EXTRA + 40
+    const DOTS_TOP = 80
+    const totalHeight = BOTTOM_DOTS + nodes.length * NODE_GAP + DOTS_TOP + 40
 
     // SVG path
     const pathPoints = nodes.map((_, i) => getNodePos(i))
@@ -613,10 +636,13 @@ export default function QuestScreen({ onHome, setStorage }) {
       return d + ` C ${prev.x} ${cpY}, ${p.x} ${cpY}, ${p.x} ${p.y}`
     }, '')
 
-    // Pointillés après le dernier node
+    // Pointillés haut (après le dernier node) et bas (niveaux passés)
     const lastPos = pathPoints[pathPoints.length - 1]
-    const dotsStartY = lastPos ? lastPos.y + NODE_GAP * 0.6 : 0
-    const dotsX = lastPos ? lastPos.x : MAP_WIDTH / 2
+    const dotsTopY = lastPos ? lastPos.y + NODE_GAP * 0.6 : 0
+    const dotsTopX = lastPos ? lastPos.x : MAP_WIDTH / 2
+    const firstPos = pathPoints[0]
+    const dotsBotX = firstPos ? firstPos.x : MAP_WIDTH / 2
+    const dotsBotY = firstPos ? firstPos.y - NODE_GAP * 0.5 : 0
 
     return (
       <div style={{
@@ -628,7 +654,7 @@ export default function QuestScreen({ onHome, setStorage }) {
       }}>
         {/* Header fixe */}
         <div style={{ flexShrink: 0, padding: '16px 20px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
             <button onClick={() => { if (!pendingBoss) onHome() }} style={{
               background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: 18,
               cursor: pendingBoss ? 'default' : 'pointer', padding: 0, width: 36, height: 36, borderRadius: '50%',
@@ -636,18 +662,18 @@ export default function QuestScreen({ onHome, setStorage }) {
               backdropFilter: 'blur(8px)',
               opacity: pendingBoss ? 0.3 : 1,
             }}>←</button>
-            <h1 style={{ fontSize: 20, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center' }}>
-              <img src="/assets/ui/emoji-route.png" alt="quest" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Quest
+            <h1 style={{ fontSize: 18, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <img src="/assets/modes/icon-quest.png" alt="quest" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+              Parcours WTF!
             </h1>
             <div style={{ width: 36 }} />
           </div>
-          <div style={{ textAlign: 'center', fontSize: 13, marginBottom: 2 }}>
-            Niveau <b style={{ color: '#fff' }}>{state.level}</b> / {QUEST_MAX_LEVEL}
-            <span style={{ opacity: 0.7, marginLeft: 8 }}>· Bloc {currentBlockIdx}/{TOTAL_BLOCKS}</span>
+          <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 800, marginBottom: 2 }}>
+            Niveau <b>{state.level}</b> / {QUEST_MAX_LEVEL}
           </div>
-          <div style={{ textAlign: 'center', fontSize: 12, opacity: 0.85, marginBottom: 8 }}>
-            <span style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}><EnergyIcon size={14} /></span>
-            {energyState.remaining}/{energyState.max} · 1 énergie par bloc
+          <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, opacity: 0.9, marginBottom: 8 }}>
+            <img src="/assets/ui/wtf-star.png" alt="" style={{ width: 14, height: 14, objectFit: 'contain', verticalAlign: 'middle', marginRight: 4 }} />
+            {vipUnlocked} WTF! Débloqués !
           </div>
         </div>
 
@@ -663,9 +689,7 @@ export default function QuestScreen({ onHome, setStorage }) {
           }}>
             {/* Chemin SVG */}
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-              {/* Chemin non parcouru */}
               <path d={pathD} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="5" strokeLinecap="round" />
-              {/* Chemin parcouru (orange foncé sur fond orange) */}
               {playerIdx > 0 && (() => {
                 const doneD = pathPoints.slice(0, playerIdx + 1).reduce((d, p, i) => {
                   if (i === 0) return `M ${p.x} ${p.y}`
@@ -675,15 +699,13 @@ export default function QuestScreen({ onHome, setStorage }) {
                 }, '')
                 return <path d={doneD} fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" opacity="0.6" />
               })()}
-              {/* Pointillés après le 5e bloc */}
+              {/* Pointillés haut (niveaux à venir) */}
               {[0, 1, 2].map(i => (
-                <circle
-                  key={`dot-${i}`}
-                  cx={dotsX}
-                  cy={dotsStartY + i * 18}
-                  r="4"
-                  fill="rgba(255,255,255,0.35)"
-                />
+                <circle key={`dot-top-${i}`} cx={dotsTopX} cy={dotsTopY + i * 18} r="4" fill="rgba(255,255,255,0.35)" />
+              ))}
+              {/* Pointillés bas (niveaux passés) */}
+              {currentBlockIdx > 1 && [0, 1].map(i => (
+                <circle key={`dot-bot-${i}`} cx={dotsBotX} cy={dotsBotY - i * 18} r="4" fill="rgba(255,255,255,0.35)" />
               ))}
             </svg>
 
@@ -699,6 +721,12 @@ export default function QuestScreen({ onHome, setStorage }) {
               const nodeSize = node.isBoss ? BOSS_SIZE : FACT_SIZE
               const halfSize = nodeSize / 2
 
+              // Couleur catégorie pour les facts du bloc courant
+              const isCurrentBlock = node.block === currentBlockIdx && !node.isBoss
+              const catColor = isCurrentBlock && factCatColors[node.indexInBlock]
+                ? factCatColors[node.indexInBlock]
+                : '#FF6B1A'
+
               return (
                 <div
                   key={`${node.block}-${node.indexInBlock}-${node.isBoss ? 'boss' : 'f'}`}
@@ -713,7 +741,6 @@ export default function QuestScreen({ onHome, setStorage }) {
                   }}
                 >
                   {node.isBoss ? (
-                    // Boss WTF! — gold, 50% plus gros, wtf-star
                     <button
                       onClick={() => {
                         if (isCurrent) launchBlock()
@@ -740,31 +767,25 @@ export default function QuestScreen({ onHome, setStorage }) {
                       {failedBoss ? (
                         <span style={{ fontSize: 14, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>🔒</span>
                       ) : (
-                        <img
-                          src="/assets/ui/wtf-star.png" alt="WTF!"
-                          style={{
-                            width: BOSS_SIZE * 0.65, height: BOSS_SIZE * 0.65, objectFit: 'contain',
-                            filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))',
-                          }}
-                        />
+                        <img src="/assets/ui/wtf-star.png" alt="WTF!" style={{
+                          width: BOSS_SIZE * 0.65, height: BOSS_SIZE * 0.65, objectFit: 'contain',
+                          filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))',
+                        }} />
                       )}
                     </button>
                   ) : (
-                    // Point fact — orange, pulse si courant
                     <div style={{
                       width: FACT_SIZE, height: FACT_SIZE, borderRadius: '50%',
-                      background: isDone
-                        ? '#ffffff'
-                        : '#FF6B1A',
+                      background: isDone ? '#ffffff' : isCurrentBlock ? catColor : '#FF6B1A',
                       border: isDone
                         ? '2.5px solid rgba(255,255,255,0.9)'
                         : isCurrent
-                          ? '2.5px solid #fff'
-                          : '2.5px solid rgba(255,255,255,0.4)',
+                          ? `2.5px solid #fff`
+                          : `2.5px solid ${isCurrentBlock ? catColor + '80' : 'rgba(255,255,255,0.4)'}`,
                       opacity: isLocked ? 0.3 : 1,
                       transition: 'all 0.3s ease',
                       boxShadow: isCurrent
-                        ? '0 0 16px rgba(255,255,255,0.8), 0 0 6px rgba(255,107,26,0.6)'
+                        ? `0 0 16px rgba(255,255,255,0.8), 0 0 6px ${catColor}99`
                         : isDone
                           ? '0 0 8px rgba(255,255,255,0.3)'
                           : 'none',
@@ -794,48 +815,17 @@ export default function QuestScreen({ onHome, setStorage }) {
                   transition: isAnimating ? 'left 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
                   zIndex: 10,
                 }}>
-                  <img
-                    src="/assets/ui/wtf-star.png"
-                    alt="player"
-                    style={{
-                      width: 36, height: 36, objectFit: 'contain',
-                      filter: 'drop-shadow(0 2px 10px rgba(255,215,0,0.8))',
-                    }}
-                  />
+                  <img src="/assets/ui/wtf-star.png" alt="player" style={{
+                    width: 36, height: 36, objectFit: 'contain',
+                    filter: 'drop-shadow(0 2px 10px rgba(255,215,0,0.8))',
+                  }} />
                 </div>
               )
             })()}
-
-            {/* Labels blocs (sur les boss nodes) */}
-            {nodes.filter(n => n.isBoss).map((node) => {
-              const nodeIdx = nodes.indexOf(node)
-              const pos = getNodePos(nodeIdx)
-              const isDone = node.level < currentLevel
-              const isCurrent = node.block === currentBlockIdx
-              return (
-                <div key={`label-${node.block}`} style={{
-                  position: 'absolute',
-                  left: pos.x > MAP_WIDTH / 2 ? pos.x - 100 : pos.x + 26,
-                  top: pos.y - 8,
-                  transform: 'scaleY(-1)',
-                  pointerEvents: 'none',
-                  whiteSpace: 'nowrap',
-                }}>
-                  <span style={{
-                    fontSize: 11, fontWeight: 900,
-                    color: isDone ? 'rgba(255,255,255,0.9)' : isCurrent ? '#fff' : 'rgba(255,255,255,0.5)',
-                    textShadow: '0 1px 6px rgba(0,0,0,0.5)',
-                    letterSpacing: '0.03em',
-                  }}>
-                    Bloc {node.block}
-                  </span>
-                </div>
-              )
-            })}
           </div>
         </div>
 
-        {/* Overlay VIP Boss — apparaît pendant bossAnimPhase === 'overlay' */}
+        {/* Overlay VIP Boss */}
         {bossAnimPhase === 'overlay' && (
           <div style={{
             position: 'absolute', inset: 0, zIndex: 60,
@@ -857,16 +847,14 @@ export default function QuestScreen({ onHome, setStorage }) {
                 fontSize: 30, fontWeight: 900, letterSpacing: '0.06em',
                 color: '#FFD700',
                 textShadow: '0 0 24px rgba(255,215,0,0.8), 0 2px 8px rgba(0,0,0,0.5)',
-                textTransform: 'uppercase',
-                fontFamily: 'Nunito, sans-serif',
+                textTransform: 'uppercase', fontFamily: 'Nunito, sans-serif',
               }}>
                 BOSS WTF!
               </div>
               <div style={{
                 fontSize: 14, fontWeight: 800, marginTop: 8,
                 color: '#FFE8A0', letterSpacing: '0.04em',
-                textShadow: '0 1px 4px rgba(0,0,0,0.5)',
-                fontFamily: 'Nunito, sans-serif',
+                textShadow: '0 1px 4px rgba(0,0,0,0.5)', fontFamily: 'Nunito, sans-serif',
               }}>
                 Un f*ct rare t'attend !
               </div>
@@ -874,7 +862,7 @@ export default function QuestScreen({ onHome, setStorage }) {
           </div>
         )}
 
-        {/* Bouton JOUER flottant — masqué pendant l'animation */}
+        {/* Bouton CTA — masqué pendant l'animation */}
         {!pendingBoss && (
         <div style={{
           flexShrink: 0, padding: '8px 20px 16px',
@@ -888,14 +876,14 @@ export default function QuestScreen({ onHome, setStorage }) {
               border: '3px solid #ffffff',
               borderRadius: 16,
               fontFamily: 'Nunito, sans-serif',
-              fontSize: 18, fontWeight: 900,
+              fontSize: 16, fontWeight: 900,
               color: '#ffffff',
               cursor: 'pointer',
               boxShadow: '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)',
-              letterSpacing: '0.04em',
+              letterSpacing: '0.03em',
             }}
           >
-            BLOC {currentBlockIdx} — JOUER
+            Continue ta chasse aux F*cts !
           </button>
           {state.bossFailed?.[currentBlockIdx - 1] && currentBlockIdx > 1 && (
             <button

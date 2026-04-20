@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { audio } from '../utils/audio'
 import { MODE_CONFIGS } from '../constants/gameConfig'
 // Icons + renderIcon partagés avec ModeLaunchScreen (source unique de vérité)
-import { renderIcon, QUICKIE_VIOLET } from '../utils/modeRuleIcons'
+import { renderIcon, QUICKIE_VIOLET, QUICKIE_GOLD } from '../utils/modeRuleIcons'
 
 // ── Couleurs par chapitre ────────────────────────────────────────────────────
 const CHAPTER_COLORS = {

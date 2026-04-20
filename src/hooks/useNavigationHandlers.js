@@ -90,10 +90,16 @@ export function useNavigationHandlers({
       case 'boutique':      navigate('/boutique'); break
       case 'amis':          navigate('/social'); break
       case 'streak':        navigate('/recompenses'); break
-      case 'blitz':
+      case 'blitz': {
+        const blitzUnlocked = unlockedFacts?.length || 0
+        if (blitzUnlocked < 10) {
+          setGameAlert?.({ emoji: '⚡', title: 'Mode Blitz verrouillé', message: `Il te faut au moins 10 f*cts débloqués pour jouer en Blitz. Tu en as ${blitzUnlocked}.` })
+          break
+        }
         setGameMode('blitz'); setSessionType('blitz'); setSelectedDifficulty(DIFFICULTY_LEVELS.BLITZ); setSelectedCategory(null)
         showOrSkipLaunch('blitz')
         break
+      }
       case 'quest':
         showOrSkipLaunch('quest')
         break

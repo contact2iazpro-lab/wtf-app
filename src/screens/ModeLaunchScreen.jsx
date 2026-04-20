@@ -85,7 +85,9 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
       overflow: 'hidden', boxSizing: 'border-box',
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
-      background: `linear-gradient(160deg, ${color}88, ${color})`,
+      background: modeId === 'quickie'
+        ? 'linear-gradient(160deg, #F8BBD0, #F06292)'
+        : `linear-gradient(160deg, ${color}88, ${color})`,
       color: '#ffffff',
       position: 'relative',
     }}>

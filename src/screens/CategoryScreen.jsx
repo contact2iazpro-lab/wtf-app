@@ -157,7 +157,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
       ...(isLockedMode
-        ? { background: 'linear-gradient(160deg, #C2185B, #E91E90)' }
+        ? { background: 'linear-gradient(160deg, #F8BBD0, #F06292)' }
         : {
             backgroundImage: `url(${BACKGROUNDS[bgIndex.current]})`,
             backgroundSize: 'cover',

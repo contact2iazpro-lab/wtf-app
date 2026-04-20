@@ -10,6 +10,7 @@ import { SCREENS, getStreakReward } from '../constants/gameConfig'
 import { getCategoryLevelFactIds, getFunnyFactsByCategory } from '../data/factsService'
 import { loadStorage, saveStorage, updateTrophyData, TODAY } from '../utils/storageHelper'
 import { syncAfterAction } from '../services/playerSyncService'
+import { addQuickieEnergy } from '../services/energyService'
 import { checkBadges } from '../utils/badgeManager'
 
 export function useHandleNext({
@@ -160,7 +161,7 @@ export function useHandleNext({
       const sessionEndDelta = {}
       if (totalBonusCoins > 0)                sessionEndDelta.coins   = totalBonusCoins
       if ((streakReward?.hints ?? 0) > 0)     sessionEndDelta.hints   = streakReward.hints
-      if (perfectEnergyReward)                sessionEndDelta.energy  = 1
+      if (perfectEnergyReward)                addQuickieEnergy(1)
       if (Object.keys(sessionEndDelta).length > 0) {
         applyCurrencyDelta?.(sessionEndDelta, `session_end_${sessionType}`).catch(e =>
           console.warn('[useHandleNext] session end RPC failed:', e?.message || e)

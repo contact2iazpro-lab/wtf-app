@@ -185,7 +185,7 @@ export default function ResultsScreen({
   ]
   const bgRef = useRef(PASTEL_GRADIENTS[Math.floor(Math.random() * PASTEL_GRADIENTS.length)])
   const screenBg = isQuickie
-    ? 'linear-gradient(160deg, #FF7518, #FFA500)'
+    ? 'linear-gradient(160deg, #DAA520, #FFD700)'
     : isVof
       ? 'linear-gradient(160deg, #3A8A4A, #6BCB77)'
       : bgRef.current
@@ -433,7 +433,7 @@ export default function ResultsScreen({
         {/* Badge mode + difficulté */}
         {isQuickie ? (
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: S(8), flexShrink: 0 }}>
-            <img src="/assets/modes/icon-quickie.png?v=2" alt="Quickie" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
+            <img src="/assets/modes/icon-quickie.png?v=3" alt="Quickie" style={{ width: S(28), height: S(28), objectFit: 'contain' }} />
             <span style={{ fontSize: S(13), fontWeight: 900, color: textOnBg }}>Résultats — Mode Quickie</span>
           </div>
         ) : isVof ? (
@@ -485,9 +485,6 @@ export default function ResultsScreen({
                 /{totalFacts}
               </span>
             </div>
-            <span style={{ fontSize: S(11), fontWeight: 700, color: textOnBg, opacity: 0.85 }}>
-              {precision}% de bonnes réponses
-            </span>
           </div>
         ) : (
           <GainsBreakdown
@@ -499,7 +496,7 @@ export default function ResultsScreen({
             total={animatedScore}
             totalColor={catColor}
             textColor={textOnBg}
-            borderColor={isQuickie ? '#FFA500' : null}
+            borderColor={isQuickie ? '#FFD700' : null}
             footerStats={[
               { label: `${correctCount}/${totalFacts} trouvés`, color: textOnBg },
               { label: `${precision}% précision`, color: catColor },

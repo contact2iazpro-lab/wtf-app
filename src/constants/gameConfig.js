@@ -12,6 +12,7 @@ export const DIFFICULTY_LEVELS = {
     choices: 4, duration: 15, questionsCount: 5,
     hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 50,
     coinsPerCorrect: 10, perfectBonus: 50,
+    entryCost: 50, // coût en coins pour lancer une session (à calibrer)
     scoring: { correct: 10, wrong: 0 },
     wrongDistribution: { type: 'questionLevel', profiles: [
       { weight: 0.4, counts: { plausible: 3 } },
@@ -21,12 +22,11 @@ export const DIFFICULTY_LEVELS = {
   },
   VRAI_OU_FOU: {
     id: 'vrai_ou_fou', label: 'Vrai ET Fou', emoji: '🤔',
-    choices: 0, duration: 15, questionsCount: 10,
-    hintsAllowed: false, freeHints: 0, paidHints: 0, hintCost: 0,
-    coinsPerCorrect: 0, perfectBonus: 0,
-    scoring: { correct: 0, wrong: 0 },
+    choices: 0, duration: 20, questionsCount: 10,
+    hintsAllowed: true, freeHints: 2, paidHints: 0, hintCost: 0,
+    coinsPerCorrect: 10, perfectBonus: 0,
+    scoring: { correct: 10, wrong: 0 },
     swipe: true,
-    // Tirage du statement_false : 75% plausible / 25% funny — géré dans VraiOuFouScreen
   },
   QUEST: {
     id: 'quest', label: 'Quest', emoji: '🗺️',
@@ -95,9 +95,9 @@ export const SCREENS = {
 // ── Mode launch configs (rules displayed before each mode)
 export const MODE_CONFIGS = {
   quickie: {
-    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png', color: '#FFA500',
+    modeId: 'quickie', modeName: 'Quickie', subtitle: 'Court. Bon. Sans engagement.', emoji: '🍸', icon: '/assets/modes/icon-quickie.png?v=2', color: '#FFD700',
     rules: [
-      { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
+      { icon: 'icon:coins', text: '**Coût** : 50 WTFCoins / set' },
       { icon: 'icon:set', text: '**Set** : 5 questions / set' },
       { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
       { icon: 'icon:timer', text: '**Timer** : 15s / question' },
@@ -111,15 +111,17 @@ export const MODE_CONFIGS = {
     modeId: 'vrai_ou_fou', modeName: 'Vrai ET Fou', subtitle: 'Swipe ou pas swipe ?', emoji: '🤔', icon: '/assets/modes/icon-vrai-et-fou.png', color: '#6BCB77',
     ctaLabel: 'VAS-Y, SWIPE !',
     rules: [
-      { icon: 'picto:infinity', text: '**Coût** : Illimité' },
+      { icon: 'picto:infinity', text: '**Coût** : Gratuit illimité' },
       { icon: 'icon:set', text: '**Set** : 10 affirmations / set' },
       { icon: 'picto:swipe', text: '**Swipe** : {{red}}Faux à gauche{{/red}}, Vrai à droite' },
-      { icon: 'icon:timer', text: '**Timer** : 15s / question' },
+      { icon: 'icon:timer', text: '**Timer** : 20s / question' },
+      { icon: 'icon:hint', text: '**Indices** : 2 gratuits / question' },
+      { icon: 'icon:coins', text: '**Gains** : 10 WTFCoins / bonne réponse' },
       { icon: 'picto:share', text: '**Social** : Partage ton score' },
     ],
   },
   quest: {
-    modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png', color: '#FF6B1A',
+    modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png?v=2', color: '#FF6B1A',
     rules: [
       { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
       { icon: 'icon:set', text: '**Bloc** : 5 fun facts + 1 WTF!' },

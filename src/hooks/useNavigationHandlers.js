@@ -10,7 +10,6 @@ import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS } from '../constants/gameConfig'
 import { getAnswerOptions } from '../utils/answers'
-import { getQuickieEnergy } from '../services/energyService'
 import { saveStorage, loadStorage } from '../utils/storageHelper'
 import { syncAfterAction } from '../services/playerSyncService'
 
@@ -18,7 +17,7 @@ export function useNavigationHandlers({
   // State
   launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
   selectedDifficulty, blitzVariant,
-  quickiePool, unlockedFacts, user, sessionCorrectFacts,
+  quickiePool, unlockedFacts, user, sessionCorrectFacts, coins,
   // Hooks extraits
   handleStartDropSession, handleQuickie, handleSelectDifficulty,
   handleSelectCategory, handleBlitzStart, initSessionState,
@@ -36,7 +35,7 @@ export function useNavigationHandlers({
   unlockFact,
 }) {
   const navigate = useNavigate()
-  const canPlayQuickieCheck = () => getQuickieEnergy().remaining > 0
+  const canPlayQuickieCheck = () => (coins || 0) >= DIFFICULTY_LEVELS.QUICKIE.entryCost
 
   // ── Launch mode ────────────────────────────────────────────────────────
   const launchModeDestination = useCallback((mode) => {

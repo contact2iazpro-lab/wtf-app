@@ -55,7 +55,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
     }
     if (textRef.current) {
       textRef.current.textContent = duration
-      textRef.current.style.fill = isQuickie ? '#FFA500' : '#22C55E'
+      textRef.current.style.fill = isQuickie ? '#FFD700' : '#22C55E'
     }
 
     intervalRef.current = setInterval(() => {
@@ -144,7 +144,7 @@ export default function CircularTimer({ duration = 60, onTimeout, paused = false
           fontSize={fontSize}
           fontWeight="900"
           fontFamily="Inter, sans-serif"
-          fill={isQuickie ? '#FFA500' : (isVof ? '#22C55E' : '#FFFFFF')}
+          fill={isQuickie ? '#FFD700' : (isVof ? '#22C55E' : '#FFFFFF')}
         >
           {duration}
         </text>

@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { readWtfData } from '../utils/storageHelper'
-import { getFunnyFacts } from '../data/factsService'
+import { getVipFacts } from '../data/factsService'
+import { addQuickieEnergy } from '../services/energyService'
 import { audio } from '../utils/audio'
+import EnergyIcon from './icons/EnergyIcon'
+import { CATEGORIES } from '../data/facts'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
@@ -24,12 +27,12 @@ const SEGMENTS = [
   { label: '50',  icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 50  }, color: '#F97316', weight: 18 }, // orange
   { label: '1',   icon: '/assets/ui/icon-hint.png?v=2',   reward: { type: 'hints', amount: 1   }, color: '#8B5CF6', weight: 14 }, // violet — 1 indice
   { label: '100', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 100 }, color: '#3B82F6', weight: 10 }, // bleu
-  { label: '1',   icon: '/assets/ui/emoji-lightning.png', reward: { type: 'energy', amount: 1 },  color: '#06B6D4', weight: 8  }, // cyan — 1 énergie
+  { label: '1',   icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2L4 14h7l-1 8 9-12h-7l1-8z' fill='%2322C55E' stroke='%2322C55E' stroke-width='1' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E", reward: { type: 'energy', amount: 1 },  color: '#EAB308', weight: 8  }, // jaune — 1 énergie
   { label: '150', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 150 }, color: '#22C55E', weight: 7  }, // vert
-  { label: '1',   icon: null, emoji: '🔓',                reward: { type: 'factUnlock', amount: 1 },    color: '#14B8A6', weight: 4 }, // turquoise — 1 f*ct débloqué
+  { label: '1',   icon: '/assets/ui/wtf-logo.png',         reward: { type: 'factUnlock', amount: 1 },    color: '#14B8A6', weight: 4 }, // turquoise — 1 f*ct débloqué
   { label: '2',   icon: '/assets/ui/icon-hint.png?v=2',   reward: { type: 'hints', amount: 2   }, color: '#EC4899', weight: 4  }, // fuchsia — 2 indices
   { label: '1',   icon: '/assets/ui/emoji-roulette.png',  reward: { type: 'freeSpin', amount: 1 },      color: '#F472B6', weight: 5 }, // rose pâle — 1 relance gratuite
-  { label: '300', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 300 }, color: '#EAB308', weight: 3  }, // jaune
+  { label: '300', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 300 }, color: '#06B6D4', weight: 3  }, // cyan
   { label: '1',   icon: null, emoji: '🛡️',               reward: { type: 'streakFreeze', amount: 1 }, color: '#6366F1', weight: 3 }, // indigo — 1 streak freeze
   { label: '750', icon: '/assets/ui/icon-coins.png',      reward: { type: 'coins', amount: 750 }, color: '#EF4444', weight: 2  }, // rouge — jackpot
 ]
@@ -63,8 +66,9 @@ function getSpinData() {
   const wd = readWtfData()
   const today = new Date().toISOString().slice(0, 10)
   const freeUsed = wd.rouletteFreeDate === today
+  const nextFree = !!wd.rouletteNextFree
   const spinsToday = wd.rouletteSpinsToday || 0
-  return { freeUsed, spinsToday, today }
+  return { freeUsed, nextFree, spinsToday, today }
 }
 
 export default function RouletteModal({ onClose, scale }) {
@@ -73,14 +77,14 @@ export default function RouletteModal({ onClose, scale }) {
   const [rotation, setRotation] = useState(0)
   const [spinData, setSpinData] = useState(getSpinData)
   const [notEnough, setNotEnough] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false) // confirmation avant spin (19/04/2026)
   const canvasRef = useRef(null)
   const tickIntervalRef = useRef(null)
   const imagesRef = useRef({})
   // Phase A.6/A.7 — miroir Supabase
   const { coins, applyCurrencyDelta, unlockFact } = usePlayerProfile()
 
-  const isFree = !spinData.freeUsed
+  const [unlockedFact, setUnlockedFact] = useState(null)
+  const isFree = !spinData.freeUsed || spinData.nextFree
 
   // Dessiner la roue (segments égaux + icônes PNG préchargées)
   useEffect(() => {
@@ -191,7 +195,7 @@ export default function RouletteModal({ onClose, scale }) {
   const handleSpin = () => {
     if (spinning) return
 
-    // Vérifier le coût
+    // Vérifier le coût — consommer le flag nextFree si présent
     if (!isFree) {
       if ((coins ?? 0) < EXTRA_SPIN_COST) {
         setNotEnough(true)
@@ -201,6 +205,15 @@ export default function RouletteModal({ onClose, scale }) {
       applyCurrencyDelta?.({ coins: -EXTRA_SPIN_COST }, 'roulette_spin_paid')?.catch?.(e =>
         console.warn('[RouletteModal] spin cost RPC failed:', e?.message || e)
       )
+    }
+    // Consommer le flag nextFree
+    if (spinData.nextFree) {
+      try {
+        const wd0 = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+        delete wd0.rouletteNextFree
+        wd0.lastModified = Date.now()
+        localStorage.setItem('wtf_data', JSON.stringify(wd0))
+      } catch { /* ignore */ }
     }
 
     setSpinning(true)
@@ -235,32 +248,36 @@ export default function RouletteModal({ onClose, scale }) {
       const seg = SEGMENTS[winIndex]
       setResult(seg)
 
-      // Son de gain : jackpot pour 300/750 coins, sinon win
-      const isJackpot = seg.reward.type === 'coins' && seg.reward.amount >= 300
+      // Son de gain : jackpot pour 300/750 coins et factUnlock, sinon win
+      const isJackpot = (seg.reward.type === 'coins' && seg.reward.amount >= 300) || seg.reward.type === 'factUnlock'
       audio.play(isJackpot ? 'roulette_jackpot' : 'roulette_win')
 
-      // Appliquer la récompense selon le type (18/04/2026)
-      if (seg.reward.type === 'coins' || seg.reward.type === 'hints' || seg.reward.type === 'energy') {
-        // Monnaies gérées par le RPC apply_currency_delta
-        const rpcDelta = { [seg.reward.type]: seg.reward.amount }
-        applyCurrencyDelta?.(rpcDelta, `roulette_reward_${seg.reward.type}`)?.catch?.(e =>
+      // Appliquer la récompense selon le type (20/04/2026)
+      if (seg.reward.type === 'coins' || seg.reward.type === 'hints') {
+        applyCurrencyDelta?.({ [seg.reward.type]: seg.reward.amount }, `roulette_reward_${seg.reward.type}`)?.catch?.(e =>
           console.warn('[RouletteModal] reward RPC failed:', e?.message || e)
         )
+      } else if (seg.reward.type === 'energy') {
+        addQuickieEnergy(seg.reward.amount)
+        window.dispatchEvent(new Event('wtf_energy_updated'))
       } else if (seg.reward.type === 'factUnlock') {
         const wd0 = JSON.parse(localStorage.getItem('wtf_data') || '{}')
         const unlocked = new Set(wd0.unlockedFacts || [])
-        const candidates = getFunnyFacts().filter(f => !unlocked.has(f.id))
+        const candidates = getVipFacts().filter(f => !unlocked.has(f.id))
         if (candidates.length > 0) {
           const pick = candidates[Math.floor(Math.random() * candidates.length)]
           unlockFact?.(pick.id, pick.category, 'roulette_reward_fact')?.catch?.(() => {})
+          setUnlockedFact(pick)
         } else {
           applyCurrencyDelta?.({ coins: 50 }, 'roulette_reward_fact_fallback')?.catch?.(() => {})
         }
       } else if (seg.reward.type === 'freeSpin') {
-        // Relance gratuite : refund les 100 coins du spin courant (sauf si c'était un spin gratuit)
-        if (spinData.freeUsed) {
-          applyCurrencyDelta?.({ coins: EXTRA_SPIN_COST }, 'roulette_reward_free_spin')?.catch?.(() => {})
-        }
+        try {
+          const wd0 = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+          wd0.rouletteNextFree = true
+          wd0.lastModified = Date.now()
+          localStorage.setItem('wtf_data', JSON.stringify(wd0))
+        } catch { /* ignore */ }
       } else if (seg.reward.type === 'streakFreeze') {
         // Incrémente le compteur de streak freezes disponibles dans wtf_data
         try {
@@ -289,12 +306,14 @@ export default function RouletteModal({ onClose, scale }) {
   const rewardLabel = result && {
     coins: `+${result.reward.amount} coins`,
     hints: `+${result.reward.amount} indice${result.reward.amount > 1 ? 's' : ''}`,
-    energy: `+${result.reward.amount} énergie${result.reward.amount > 1 ? 's' : ''}`,
-    factUnlock: '1 f*ct débloqué',
-    freeSpin: 'Relance gratuite',
+    energy: `+${result.reward.amount} énergie`,
+    factUnlock: unlockedFact ? 'Nouveau f*ct débloqué !' : 'Tu as déjà tous les f*cts ! +50 coins',
+    freeSpin: 'Relance gratuite !',
     streakFreeze: '+1 Streak Freeze',
   }[result.reward.type]
   const isJackpotResult = result && result.reward.type === 'coins' && result.reward.amount >= 300
+  const isFactResult = result && result.reward.type === 'factUnlock' && unlockedFact
+  const factCat = isFactResult ? CATEGORIES.find(c => c.id === unlockedFact.category) : null
 
   return (
     <div
@@ -328,8 +347,8 @@ export default function RouletteModal({ onClose, scale }) {
           </div>
         </div>
 
-        {/* Résultat — icône centrée horizontalement */}
-        {result && !spinning && (
+        {/* Résultat */}
+        {result && !spinning && !isFactResult && (
           <div style={{
             background: isJackpotResult
               ? 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.15))'
@@ -341,9 +360,56 @@ export default function RouletteModal({ onClose, scale }) {
             boxShadow: isJackpotResult ? '0 0 20px rgba(255,215,0,0.4)' : 'none',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           }}>
-            <img src={result.icon} alt="" style={{ width: 36, height: 36 }} />
+            {result.reward.type === 'energy' ? (
+              <EnergyIcon size={36} color="#22C55E" />
+            ) : result.icon ? (
+              <img src={result.icon} alt="" style={{ width: 36, height: 36 }} />
+            ) : (
+              <span style={{ fontSize: 36 }}>{result.emoji || '🎁'}</span>
+            )}
             <div style={{ fontSize: 16, fontWeight: 900, color: isJackpotResult ? '#B8860B' : '#FF6B1A', marginTop: 4 }}>
               {rewardLabel}
+            </div>
+          </div>
+        )}
+
+        {/* Résultat spécial : fact débloqué — overlay doré style VIP surprise */}
+        {result && !spinning && isFactResult && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,165,0,0.1))',
+            border: '2px solid rgba(255,215,0,0.5)',
+            borderRadius: 16, padding: '16px 14px', marginBottom: 16,
+            animation: 'roulettePop 0.4s ease',
+            boxShadow: '0 0 24px rgba(255,215,0,0.3)',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              animation: 'vipSurprisePopInline 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            }}>
+              <img src="/assets/ui/wtf-star.png" alt="" style={{ width: 40, height: 40, margin: '0 auto 8px', display: 'block', filter: 'drop-shadow(0 0 12px rgba(255,215,0,0.7))' }} />
+              <div style={{ fontSize: 15, fontWeight: 900, color: '#B8860B', marginBottom: 6 }}>
+                Nouveau f*ct débloqué !
+              </div>
+            </div>
+            <div style={{
+              background: 'white', borderRadius: 12, padding: '12px 10px',
+              border: '1.5px solid rgba(255,215,0,0.3)',
+            }}>
+              {factCat && (
+                <div style={{ fontSize: 11, fontWeight: 700, color: factCat.color, marginBottom: 4 }}>
+                  {factCat.emoji} {factCat.label}
+                </div>
+              )}
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#1a1a2e', lineHeight: 1.4 }}>
+                {unlockedFact.question}
+              </div>
+              <div style={{
+                marginTop: 8, fontSize: 13, fontWeight: 900,
+                color: '#22C55E', background: 'rgba(34,197,94,0.1)',
+                borderRadius: 8, padding: '6px 10px', display: 'inline-block',
+              }}>
+                {unlockedFact.shortAnswer || unlockedFact.short_answer}
+              </div>
             </div>
           </div>
         )}
@@ -355,7 +421,7 @@ export default function RouletteModal({ onClose, scale }) {
           </div>
         )}
 
-        {/* Bouton spin — affiche une confirmation avant de lancer (évite clics accidentels) */}
+        {/* Bouton spin — lance directement */}
         <button
           onClick={() => {
             if (spinning) return
@@ -364,8 +430,7 @@ export default function RouletteModal({ onClose, scale }) {
               setTimeout(() => setNotEnough(false), 2000)
               return
             }
-            if (isFree) { setShowConfirm(true) }
-            else { handleSpin() }
+            handleSpin()
           }}
           disabled={spinning}
           style={{
@@ -380,63 +445,6 @@ export default function RouletteModal({ onClose, scale }) {
         >
           {spinning ? 'En cours...' : isFree ? 'Spin gratuit !' : `Spin (${EXTRA_SPIN_COST} coins)`}
         </button>
-
-        {/* Modal de confirmation avant spin */}
-        {showConfirm && !spinning && (
-          <div
-            onClick={() => setShowConfirm(false)}
-            style={{
-              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              zIndex: 10000, padding: 20, backdropFilter: 'blur(4px)',
-            }}
-          >
-            <div
-              onClick={e => e.stopPropagation()}
-              style={{
-                background: '#fff', borderRadius: 20, padding: '24px 20px',
-                maxWidth: 320, width: '100%', textAlign: 'center',
-                boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-                fontFamily: 'Nunito, sans-serif',
-              }}
-            >
-              <div style={{ fontSize: 48, marginBottom: 12 }}>🎰</div>
-              <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e', margin: '0 0 8px' }}>
-                Lancer la roue ?
-              </h3>
-              <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 20px', lineHeight: 1.5 }}>
-                {isFree
-                  ? 'C\'est ton spin gratuit du jour — prêt ?'
-                  : `${EXTRA_SPIN_COST} coins seront débités. Prêt ?`}
-              </p>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  style={{
-                    flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 800, fontSize: 14,
-                    border: '1px solid #E5E7EB', background: '#F3F4F6', color: '#6B7280',
-                    cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-                  }}
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={() => { setShowConfirm(false); handleSpin() }}
-                  style={{
-                    flex: 1, padding: '12px 0', borderRadius: 12, fontWeight: 900, fontSize: 14,
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #FF6B1A, #D94A10)', color: '#fff',
-                    cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-                    boxShadow: '0 4px 12px rgba(255,107,26,0.4)',
-                  }}
-                >
-                  C'est parti !
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
 
         {/* Fermer */}
         {!spinning && (
@@ -457,6 +465,13 @@ export default function RouletteModal({ onClose, scale }) {
         @keyframes roulettePop {
           0% { transform: scale(0.8); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes vipSurprisePopInline {
+          0%   { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+          25%  { transform: scale(1.15) rotate(3deg); opacity: 1; }
+          45%  { transform: scale(0.95) rotate(-1deg); }
+          60%  { transform: scale(1) rotate(0deg); }
+          100% { transform: scale(1) rotate(0deg); }
         }
       `}</style>
     </div>

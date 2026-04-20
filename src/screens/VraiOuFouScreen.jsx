@@ -10,6 +10,7 @@ import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import FallbackImage from '../components/FallbackImage'
+import HintFlipButton from '../components/HintFlipButton'
 import RevelationScreen from './RevelationScreen'
 import ResultsScreen from './ResultsScreen'
 import { CATEGORIES } from '../data/facts'
@@ -19,7 +20,7 @@ const SWIPE_THRESHOLD = 60
 const WRONG_DELAY_MS = 1200
 const VOF_GREEN = '#6BCB77'
 const VOF_RED = '#E84535'
-const TIMER_DURATION = 15
+const TIMER_DURATION = 20
 
 function lerpColor(ratio) {
   const r1 = 0xE8, g1 = 0x45, b1 = 0x35
@@ -33,7 +34,8 @@ function lerpColor(ratio) {
 export default function VraiOuFouScreen({ onHome }) {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
-  const { coins: _cCoins } = usePlayerProfile()
+  const { coins: _cCoins, applyCurrencyDelta } = usePlayerProfile()
+  const COINS_PER_CORRECT = 10
 
   const [seed, setSeed] = useState(0)
   const pool = useMemo(
@@ -48,6 +50,7 @@ export default function VraiOuFouScreen({ onHome }) {
   const [done, setDone] = useState(false)
   const [showQuit, setShowQuit] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
+  const [hintsRevealed, setHintsRevealed] = useState(0)
 
   // Revelation (bonne réponse)
   const [showReveal, setShowReveal] = useState(false)
@@ -76,7 +79,7 @@ export default function VraiOuFouScreen({ onHome }) {
   const draw = pool[index]
   const fact = draw?.fact
 
-  useEffect(() => { setImgFailed(false) }, [fact?.id])
+  useEffect(() => { setImgFailed(false); setHintsRevealed(0) }, [fact?.id])
 
   const cat = useMemo(
     () => (fact ? CATEGORIES.find(c => c.id === fact.category) : null),
@@ -110,7 +113,10 @@ export default function VraiOuFouScreen({ onHome }) {
     setFeedback({ correct: isCorrect })
     audio.play(isCorrect ? 'correct' : 'wrong_vof')
     setSessionAnswers(prev => [...prev, { factId: draw.fact.id, wasCorrect: isCorrect }])
-    if (isCorrect) setCorrect(c => c + 1)
+    if (isCorrect) {
+      setCorrect(c => c + 1)
+      applyCurrencyDelta?.({ coins: COINS_PER_CORRECT }, 'vof_correct')?.catch?.(() => {})
+    }
 
     if (isCorrect) {
       // Bonne réponse → afficher revelation
@@ -219,7 +225,7 @@ export default function VraiOuFouScreen({ onHome }) {
           score={correct}
           correctCount={correct}
           totalFacts={pool.length}
-          coinsEarned={0}
+          coinsEarned={correct * COINS_PER_CORRECT}
           sessionType="vrai_ou_fou"
           difficulty={null}
           categoryId={null}
@@ -316,32 +322,59 @@ export default function VraiOuFouScreen({ onHome }) {
         </div>
       </div>
 
-      {/* ── Bloc contenu S(264) — 2 propositions ── */}
-      <div
-        onMouseDown={onPointerDown}
-        onMouseMove={onPointerMove}
-        onMouseUp={onPointerUp}
-        onMouseLeave={onPointerUp}
-        onTouchStart={onPointerDown}
-        onTouchMove={onPointerMove}
-        onTouchEnd={onPointerUp}
-        style={{
-          height: S(270), flexShrink: 0, overflow: 'hidden',
-          display: 'flex', gap: S(10),
-          padding: `${S(6)} ${S(16)} 0`,
-          alignItems: 'stretch',
-          userSelect: 'none', cursor: feedback ? 'default' : 'grab',
-        }}
-      >
-        {/* Proposition gauche — clic = pick green si leftIsGreen, sinon pick not-green */}
-        <VOFCard S={S} text={leftText} isTrue={leftIsTrue} feedback={feedback}
-          swiping={swipingLeft} dragIntensity={dragIntensity} side="left"
-          textColor={catBg} onClick={() => handlePick(leftIsGreen)} />
+      {/* ── Bloc contenu — propositions + indices — même structure que QuestionScreen ── */}
+      <div style={{
+        height: S(270), flexShrink: 0, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: `${S(6)} ${S(16)} 0`,
+      }}>
+        {/* Propositions */}
+        <div
+          onMouseDown={onPointerDown}
+          onMouseMove={onPointerMove}
+          onMouseUp={onPointerUp}
+          onMouseLeave={onPointerUp}
+          onTouchStart={onPointerDown}
+          onTouchMove={onPointerMove}
+          onTouchEnd={onPointerUp}
+          style={{
+            flex: 1, minHeight: 0, overflow: 'hidden',
+            display: 'flex', gap: S(10),
+            alignItems: 'stretch',
+            userSelect: 'none', cursor: feedback ? 'default' : 'grab',
+          }}
+        >
+          <VOFCard S={S} text={leftText} isTrue={leftIsTrue} feedback={feedback}
+            swiping={swipingLeft} dragIntensity={dragIntensity} side="left"
+            textColor={catBg} onClick={() => handlePick(leftIsGreen)} />
+          <VOFCard S={S} text={rightText} isTrue={!leftIsTrue} feedback={feedback}
+            swiping={swipingRight} dragIntensity={dragIntensity} side="right"
+            textColor={catBg} onClick={() => handlePick(rightIsGreen)} />
+        </div>
 
-        {/* Proposition droite */}
-        <VOFCard S={S} text={rightText} isTrue={!leftIsTrue} feedback={feedback}
-          swiping={swipingRight} dragIntensity={dragIntensity} side="right"
-          textColor={catBg} onClick={() => handlePick(rightIsGreen)} />
+        {/* Indices */}
+        <div style={{
+          flexShrink: 0, paddingTop: S(6),
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(8),
+        }}>
+          {[fact?.hint1, fact?.hint2].map((hintText, i) => (
+            <HintFlipButton
+              key={`${fact?.id}-h${i + 1}`}
+              num={i + 1}
+              hint={hintText}
+              catColor={VOF_GREEN}
+              isFree={true}
+              cost={0}
+              canAfford={true}
+              canUse={hintsRevealed >= i + 1 || !feedback}
+              initialRevealed={hintsRevealed > i}
+              revealedTextColor={VOF_GREEN}
+              onReveal={() => { if (!feedback) { audio.play('click'); setHintsRevealed(h => Math.max(h, i + 1)) } }}
+              onBuyHint={null}
+            />
+          ))}
+        </div>
       </div>
 
       {/* ── Zone image + timer — flex:1 space-evenly (3 espaces égaux) ── */}

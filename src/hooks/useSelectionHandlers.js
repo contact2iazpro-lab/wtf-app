@@ -12,11 +12,9 @@ import {
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { consumeQuickieEnergy } from '../services/energyService'
-
 export function useSelectionHandlers({
   gameMode, sessionType, selectedDifficulty, selectedCategory,
-  unlockedFacts,
+  unlockedFacts, applyCurrencyDelta,
   initSessionState, handleBlitzStart,
   setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
   setIsQuickPlay, setQuickiePool, setScreen,
@@ -101,7 +99,7 @@ export function useSelectionHandlers({
       setSelectedDifficulty(difficulty)
       setIsQuickPlay(false)
       setSessionType('quickie')
-      consumeQuickieEnergy()
+      applyCurrencyDelta({ coins: -DIFFICULTY_LEVELS.QUICKIE.entryCost }, 'quickie_entry')
       initSessionState(sessionFacts)
       setScreen(SCREENS.QUESTION)
       return
@@ -134,7 +132,7 @@ export function useSelectionHandlers({
 
     const factsWithOptions = facts.map(fact => ({ ...fact, ...getAnswerOptions(fact, selectedDifficulty) }))
     setSelectedCategory(categoryId)
-    if (sessionType === 'quickie' || sessionType === 'quickie') consumeQuickieEnergy()
+    if (sessionType === 'quickie') applyCurrencyDelta({ coins: -DIFFICULTY_LEVELS.QUICKIE.entryCost }, 'quickie_entry')
     initSessionState(factsWithOptions)
     setScreen(SCREENS.QUESTION)
   }, [selectedDifficulty, gameMode, sessionType, handleBlitzStart, unlockedFacts, initSessionState])

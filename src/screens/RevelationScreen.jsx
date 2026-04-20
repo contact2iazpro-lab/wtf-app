@@ -184,12 +184,12 @@ export default function RevelationScreen({
   const isQuickieMode = sessionType === 'quickie'
   const isVofMode = sessionType === 'vrai_ou_fou'
   const isBrandedMode = isQuickieMode || isVofMode
-  const accentColor = isVofMode ? '#6BCB77' : '#FFA500'
-  const MODE_HIGHLIGHT = { quickie: '#FFD4A3', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', drop: '#E91E63' }
+  const accentColor = isVofMode ? '#6BCB77' : '#FFD700'
+  const MODE_HIGHLIGHT = { quickie: '#FFEC8B', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', drop: '#E91E63' }
   const questionHighlight = MODE_HIGHLIGHT[sessionType]
   const accentGradient = isVofMode
     ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
-    : 'linear-gradient(135deg, #FFA500, #FF7518)'
+    : 'linear-gradient(135deg, #FFD700, #DAA520)'
   const accentShadow = isVofMode
     ? '0 4px 16px rgba(107,203,119,0.5)'
     : '0 4px 16px rgba(127,119,221,0.5)'

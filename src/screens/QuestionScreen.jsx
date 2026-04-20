@@ -183,7 +183,7 @@ export default function QuestionScreen({
   // Couleur cadre question/image : gold brillant si VIP surprise, sinon couleur cat/mode
   const vipGold = '#FFD700'
   const vipGoldGlow = '0 0 20px rgba(255,215,0,0.65), 0 0 8px rgba(255,215,0,0.9)'
-  const cardBorderColor = isVipSurprise ? vipGold : (isQuickieMode ? '#FFA500' : (cat?.color + '70'))
+  const cardBorderColor = isVipSurprise ? vipGold : (isQuickieMode ? '#FFD700' : (cat?.color + '70'))
   const cardBoxShadow = isVipSurprise ? vipGoldGlow
     : (isQuickieMode ? '0 0 20px rgba(127,119,221,0.3)' : `0 4px 32px ${cat?.color || '#000'}30`)
 
@@ -196,7 +196,7 @@ export default function QuestionScreen({
         border: `${isQuickieMode ? 3 : 1}px solid ${cardBorderColor}`,
         backdropFilter: 'blur(12px)',
         boxShadow: cardBoxShadow,
-        height: S(90), flexShrink: 0, overflow: 'hidden',
+        height: S(72), flexShrink: 0, overflow: 'hidden',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
@@ -214,7 +214,7 @@ export default function QuestionScreen({
       overflow: 'hidden',
       margin: '0 auto',
       background: 'rgba(0,0,0,0.3)',
-      border: `3px solid ${isVipSurprise ? vipGold : '#FFA500'}`,
+      border: `3px solid ${isVipSurprise ? vipGold : '#FFD700'}`,
       boxShadow: isVipSurprise ? vipGoldGlow : undefined,
       flexShrink: 0,
     }}>
@@ -298,7 +298,7 @@ export default function QuestionScreen({
             key={hintNum}
             num={hintNum}
             hint={hintText}
-            catColor={isQuickieMode ? '#FFA500' : (cat?.color || '#FF6B1A')}
+            catColor={isQuickieMode ? '#FFD700' : (cat?.color || '#FF6B1A')}
             isFree={isFree}
             cost={cost}
             canAfford={canAfford}
@@ -310,7 +310,7 @@ export default function QuestionScreen({
                 console.warn('[QuestionScreen] buy hint RPC failed:', e?.message || e)
               )
             } : null}
-            revealedTextColor={isQuickieMode ? '#FFA500' : undefined}
+            revealedTextColor={isQuickieMode ? '#FFD700' : undefined}
           />
         )
       })}
@@ -532,7 +532,7 @@ export default function QuestionScreen({
           </div>
         ) : modeLabel && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6) }}>
-            {isQuickieMode && <img src="/assets/modes/icon-quickie.png" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />}
+            {isQuickieMode && <img src="/assets/modes/icon-quickie.png?v=2" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />}
             <span style={{
               fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
               color: isQuickieMode ? '#FFD4A3' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
@@ -560,7 +560,7 @@ export default function QuestionScreen({
                   flex: 1,
                   height: isActive ? S(12) : S(8),
                   borderRadius: S(4),
-                  background: isActive ? (isQuickieMode ? '#FFA500' : 'white') : 'rgba(255,255,255,0.2)',
+                  background: isActive ? (isQuickieMode ? '#FFD700' : 'white') : 'rgba(255,255,255,0.2)',
                   transition: 'all 0.3s ease',
                 }}
               />
@@ -574,7 +574,7 @@ export default function QuestionScreen({
         height: S(270), flexShrink: 0, overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: `${S(6)} ${S(16)} 0`,
+        padding: `${S(4)} ${S(16)} 0`,
       }}>
         {questionCard}
 
@@ -584,8 +584,8 @@ export default function QuestionScreen({
         {/* Boutons QCM — enfant bas */}
         {(() => {
           const is6 = fact.options.length > 4
-          const btnH = is6 ? 50 : 64
-          const btnFont = is6 ? 11 : 13
+          const btnH = is6 ? 50 : 50
+          const btnFont = is6 ? 11 : 12
           return (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5), flexShrink: 0, position: 'relative', zIndex: 5 }}>
               {fact.options.map((option, index) => (
@@ -601,7 +601,7 @@ export default function QuestionScreen({
                   style={{
                     background: isQuickieMode ? '#FFFFFF' : 'rgba(255,255,255,0.15)',
                     border: isQuickieMode
-                      ? `3px solid ${isVipSurprise ? vipGold : '#FFA500'}`
+                      ? `3px solid ${isVipSurprise ? vipGold : '#FFD700'}`
                       : '1.5px solid rgba(255,255,255,0.4)',
                     boxShadow: isVipSurprise && isQuickieMode ? vipGoldGlow : undefined,
                     borderRadius: S(12),

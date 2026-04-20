@@ -157,7 +157,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
       fontFamily: 'Nunito, sans-serif',
       '--scale': scale,
       ...(isLockedMode
-        ? { background: 'linear-gradient(160deg, #FF7518, #FFA500)' }
+        ? { background: 'linear-gradient(160deg, #DAA520, #FFD700)' }
         : {
             backgroundImage: `url(${BACKGROUNDS[bgIndex.current]})`,
             backgroundSize: 'cover',
@@ -229,8 +229,8 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             style={{
               gridColumn: '1 / -1',
               background: selectedCatId === 'random'
-                ? (isLockedMode ? 'linear-gradient(135deg, #FF7518, #FFA500)' : 'linear-gradient(135deg, rgba(255,107,26,0.95) 0%, rgba(255,51,133,0.95) 30%, rgba(155,89,182,0.95) 60%, rgba(52,152,219,0.95) 80%, rgba(46,204,113,0.95) 100%)')
-                : (isLockedMode ? 'linear-gradient(135deg, #FF7518cc, #FFA500cc)' : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)'),
+                ? (isLockedMode ? 'linear-gradient(135deg, #DAA520, #FFD700)' : 'linear-gradient(135deg, rgba(255,107,26,0.95) 0%, rgba(255,51,133,0.95) 30%, rgba(155,89,182,0.95) 60%, rgba(52,152,219,0.95) 80%, rgba(46,204,113,0.95) 100%)')
+                : (isLockedMode ? 'linear-gradient(135deg, #DAA520cc, #FFD700cc)' : 'linear-gradient(135deg, rgba(255,107,26,0.65) 0%, rgba(255,51,133,0.65) 30%, rgba(155,89,182,0.65) 60%, rgba(52,152,219,0.65) 80%, rgba(46,204,113,0.65) 100%)'),
               borderRadius: S(14),
               padding: `${S(10)} ${S(12)}`,
               width: '100%', boxSizing: 'border-box',
@@ -380,7 +380,7 @@ export default function CategoryScreen({ onSelectCategory, onBack, unlockedFacts
             cursor: hasSelection ? 'pointer' : 'default',
             pointerEvents: hasSelection ? 'auto' : 'none',
             background: hasSelection
-              ? (isLockedMode ? '#FF7518' : `linear-gradient(135deg, ${getCategoryColor(selectedCat) || '#FF6B1A'}, ${getCategoryColor(selectedCat) || '#FF6B1A'}cc)`)
+              ? (isLockedMode ? '#DAA520' : `linear-gradient(135deg, ${getCategoryColor(selectedCat) || '#FF6B1A'}, ${getCategoryColor(selectedCat) || '#FF6B1A'}cc)`)
               : 'rgba(255,255,255,0.25)',
             color: hasSelection ? 'white' : 'rgba(255,255,255,0.5)',
             boxShadow: hasSelection ? (isLockedMode ? '0 8px 30px rgba(148,0,211,0.5), 0 4px 0 rgba(0,0,0,0.15)' : `0 6px 24px ${getCategoryColor(selectedCat) || '#FF6B1A'}50`) : 'none',

@@ -13,12 +13,11 @@ import {
 } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { shuffle } from '../utils/shuffle'
-import { consumeQuickieEnergy } from '../services/energyService'
 import { logDevEvent } from '../utils/devLogger'
 import { audio } from '../utils/audio'
 
 export function useModeStarters({
-  effectiveDailyFact, unlockedFacts, user,
+  effectiveDailyFact, unlockedFacts, user, coins, applyCurrencyDelta,
   setSessionFacts, setCurrentIndex, setSessionScore, setCorrectCount,
   setHintsUsed, setSessionAnyHintUsed, setSelectedAnswer, setIsCorrect,
   setSessionCorrectFacts, setNewlyUnlockedCategories, setShowNewCategoriesModal,
@@ -126,10 +125,10 @@ export function useModeStarters({
     setIsQuickPlay(false)
     setSelectedDifficulty(DIFFICULTY_LEVELS.QUICKIE)
     setSelectedCategory(null)
-    consumeQuickieEnergy()
+    applyCurrencyDelta({ coins: -DIFFICULTY_LEVELS.QUICKIE.entryCost }, 'quickie_entry')
     initSessionState(facts)
     setScreen(SCREENS.QUESTION)
-  }, [unlockedFacts, initSessionState])
+  }, [unlockedFacts, initSessionState, applyCurrencyDelta])
 
   const handleQuickPlay = useCallback(() => {
     const childMode = localStorage.getItem('wtf_child_mode') !== 'false'

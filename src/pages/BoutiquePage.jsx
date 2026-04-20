@@ -6,7 +6,6 @@ import { readWtfData } from '../utils/storageHelper'
 import { getQuickieEnergy, addQuickieEnergy } from '../services/energyService'
 import { QUICKIE_ENERGY } from '../constants/gameConfig'
 import { useScale } from '../hooks/useScale'
-import RouletteModal from '../components/RouletteModal'
 import { AVATAR_FRAMES, readFrameState, addOwnedFrame } from '../data/avatarFrames'
 import EnergyIcon from '../components/icons/EnergyIcon'
 import { audio } from '../utils/audio'
@@ -62,7 +61,6 @@ export default function BoutiquePage() {
   const [confirmPurchase, setConfirmPurchase] = useState(null)
   const [streakFreezeCount, setStreakFreezeCount] = useState(() => readWtfData().streakFreezeCount || 0)
   const [purchaseQty, setPurchaseQty] = useState(1)
-  const [showRoulette, setShowRoulette] = useState(false)
   const scale = useScale()
 
   // Backward compat : les endroits qui lisent balances.coins
@@ -293,33 +291,6 @@ export default function BoutiquePage() {
 
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
 
-        {/* Roulette quotidienne (toujours visible) */}
-        <button
-          onClick={() => setShowRoulette(true)}
-          className="w-full rounded-2xl p-4 mb-4 flex items-center gap-3 active:scale-95 transition-all"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,107,26,0.1), rgba(249,115,22,0.15))',
-            border: '1.5px solid rgba(255,107,26,0.3)',
-            cursor: 'pointer', textAlign: 'left',
-          }}
-        >
-          <img src="/assets/ui/emoji-roulette.png?v=2" alt="roulette" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline', fontSize: 28 }} />
-          <div className="flex-1">
-            <span className="font-black text-sm block" style={{ color: '#ffffff' }}>Roulette du jour</span>
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Tente ta chance pour des récompenses !</span>
-          </div>
-          {(() => {
-            const wd = readWtfData()
-            const isFree = !wd.rouletteFreeDate || wd.rouletteFreeDate !== new Date().toISOString().slice(0, 10)
-            return isFree ? (
-              <span className="px-2 py-1 rounded-lg text-xs font-black" style={{ background: 'rgba(255,107,26,0.15)', color: '#FF6B1A' }}>
-                GRATUIT
-              </span>
-            ) : (
-              <span className="text-xs font-bold" style={{ color: '#9CA3AF' }}>100 <CoinsIcon size={10} /></span>
-            )
-          })()}
-        </button>
 
         {activeTab === 'essentials' && (
         <>
@@ -592,10 +563,6 @@ export default function BoutiquePage() {
         )}
       </div>
 
-      {/* Modal Roulette */}
-      {showRoulette && (
-        <RouletteModal onClose={() => setShowRoulette(false)} scale={scale} />
-      )}
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 import { useScale } from '../hooks/useScale'
 import { ICON_SIZES } from '../constants/layoutConfig'
 
-const ModeIcon = forwardRef(({ icon, emoji, name, color, bgColor, onClick, sizeOverride, badge }, ref) => {
+const ModeIcon = forwardRef(({ icon, emoji, name, color, bgColor, onClick, sizeOverride, badge, imgFilter }, ref) => {
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
   const size = sizeOverride || ICON_SIZES.modeIcon
@@ -36,6 +36,7 @@ const ModeIcon = forwardRef(({ icon, emoji, name, color, bgColor, onClick, sizeO
             style={{
               width: '100%', height: '100%',
               objectFit: 'cover', flexShrink: 0,
+              filter: imgFilter || 'none',
             }}
           />
         ) : (

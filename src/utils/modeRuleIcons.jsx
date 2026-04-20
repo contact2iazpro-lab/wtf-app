@@ -21,7 +21,7 @@ import SwipeArrowsIcon from '../components/icons/SwipeArrowsIcon'
 import ShareIcon from '../components/icons/ShareIcon'
 import { CURRENCY_EMOJI_MAP } from './renderEmoji'
 
-export const QUICKIE_VIOLET = '#FFA500'
+export const QUICKIE_VIOLET = '#DAA520'
 export const QUICKIE_GOLD = '#FFD700'
 export const VOF_GREEN = '#6BCB77'
 export const VOF_RED = '#E84535'

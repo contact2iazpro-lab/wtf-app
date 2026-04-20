@@ -303,7 +303,7 @@ export default function App() {
     initSessionState, handleDropTeaser, handleStartDropSession,
     handleQuickie, handleQuickPlay,
   } = useModeStarters({
-    effectiveDailyFact, unlockedFacts, user,
+    effectiveDailyFact, unlockedFacts, user, coins: profileCoins, applyCurrencyDelta,
     setSessionFacts, setCurrentIndex, setSessionScore, setCorrectCount,
     setHintsUsed, setSessionAnyHintUsed, setSelectedAnswer, setIsCorrect,
     setSessionCorrectFacts, setNewlyUnlockedCategories, setShowNewCategoriesModal,
@@ -338,7 +338,7 @@ export default function App() {
   // ─── Selection handlers (AVANT navigation car handleHomeNavigate en dépend) ──
   const { handleSelectDifficulty, handleSelectCategory, handleQuickieMode } = useSelectionHandlers({
     gameMode, sessionType, selectedDifficulty, selectedCategory,
-    unlockedFacts,
+    unlockedFacts, applyCurrencyDelta,
     initSessionState, handleBlitzStart,
     setSelectedDifficulty, setSelectedCategory, setGameMode, setSessionType,
     setIsQuickPlay, setQuickiePool, setScreen,
@@ -384,7 +384,7 @@ export default function App() {
   } = useNavigationHandlers({
     launchMode, currentFact, effectiveDailyFact, sessionType, selectedCategory,
     selectedDifficulty, blitzVariant,
-    quickiePool, unlockedFacts, user, sessionCorrectFacts,
+    quickiePool, unlockedFacts, user, sessionCorrectFacts, coins: profileCoins,
     handleStartDropSession, handleQuickie, handleSelectDifficulty,
     handleSelectCategory, handleBlitzStart, initSessionState,
     setScreen, setLaunchMode, setGameMode, setSessionType, setSelectedDifficulty,

@@ -7,7 +7,7 @@ import { renderIcon } from '../utils/modeRuleIcons'
 const S = (px) => `calc(${px}px * var(--scale))`
 
 const MODE_COLORS = {
-  quickie: '#FF7518',
+  quickie: '#DAA520',
   vrai_ou_fou: '#008000',
   race: '#0F52BA',
   blitz: '#FF4444',
@@ -55,7 +55,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
 
   const isStyled = STYLED_MODES.includes(modeId)
   const modeColor = MODE_COLORS[modeId] || color
-  const textColor = modeId === 'quickie' ? '#FFA500'
+  const textColor = modeId === 'quickie' ? '#B8860B'
     : modeId === 'vrai_ou_fou' ? '#6BCB77'
     : modeId === 'race' ? '#23D5D5'
     : modeId === 'multi' ? MULTI_VIOLET
@@ -69,14 +69,14 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'multi' ? MULTI_VIOLET
     : modeId === 'quest' ? QUEST_DARK
     : modeId === 'drop' ? DROP_DARK
-    : '#FF7518'
+    : '#DAA520'
   const btnShadow = modeId === 'vrai_ou_fou' ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'race' ? '0 8px 30px rgba(0,255,255,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'blitz' ? '0 8px 30px rgba(204,0,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'multi' ? '0 8px 30px rgba(107,45,142,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'quest' ? '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'drop' ? '0 8px 30px rgba(173,20,87,0.5), 0 4px 0 rgba(0,0,0,0.15)'
-    : '0 8px 30px rgba(255,117,24,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : '0 8px 30px rgba(218,165,32,0.5), 0 4px 0 rgba(0,0,0,0.15)'
 
   return (
     <div style={{
@@ -147,7 +147,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           }
           let iconColor = undefined
           if (modeId === 'quickie') {
-            iconColor = rule.icon === 'icon:energy' ? '#22C55E' : '#FFD700'
+            iconColor = rule.icon === 'icon:energy' ? '#22C55E' : '#DAA520'
           } else if (modeId === 'vrai_ou_fou') {
             iconColor = i % 2 === 0 ? '#6BCB77' : '#E84535'
           } else if (modeId === 'race') {

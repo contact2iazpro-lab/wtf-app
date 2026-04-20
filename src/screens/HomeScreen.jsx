@@ -1,7 +1,6 @@
 /**
- * HomeScreen v10 — Refonte layout (prompt HOMESCREEN_REFONTE).
- * Zones : Header (avatar+coins+hints+batterie+settings) · Streak palier+jauge
- *         · Cerveaux (4 paliers) · Bandeau Roulette+Drop · Logo+Grille 6 · Partie rapide · BottomNav
+ * HomeScreen v11 — Layout modes : Gauche (Quest+Quickie) · Centre (VoF) · Droite (Race+Blitz+Multi)
+ * Zones : Header · Streak · Cerveaux · Roulette+Drop · Grille modes · BottomNav
  */
 
 import { useState, useEffect, useMemo } from 'react'
@@ -76,7 +75,8 @@ export default function HomeScreen({
     try { return !localStorage.getItem('wtf_onboarding_collect_done') } catch { return false }
   })
 
-  const { paliers, currentStreak: streakVal, getStatus, claim, claimDaily, pendingDaily } = useStreakRewards(applyCurrencyDelta, mergeFlags)
+  const { paliers, currentStreak: streakFromHook, getStatus, claim, claimDaily, pendingDaily } = useStreakRewards(applyCurrencyDelta, mergeFlags)
+  const streak = streakFromHook || currentStreak || 0
   const countdown = useCountdownToMidnight()
   const scale = useScale()
 
@@ -116,10 +116,11 @@ export default function HomeScreen({
   }, [showRoulette])
 
   const isSunday = new Date().getDay() === 0
-  const currentPalier = getCurrentPalier(currentStreak)
-  const nextPalier = getNextPalier(currentStreak)
+  const currentPalier = getCurrentPalier(streak)
+  const nextPalier = getNextPalier(streak)
+  const prevDay = currentPalier ? currentPalier.day : 0
   const progressToNext = nextPalier
-    ? Math.min(1, currentStreak / nextPalier.day)
+    ? Math.min(1, (streak - prevDay) / (nextPalier.day - prevDay))
     : 1
   const palierColor = currentPalier
     ? { 3: '#9CA3AF', 7: '#F472B6', 14: '#F97316', 30: '#FFD700' }[currentPalier.day] || '#9CA3AF'
@@ -219,14 +220,14 @@ export default function HomeScreen({
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <img src="/assets/ui/emoji-streak.png" alt="streak" style={{ width: '1em', height: '1em', fontSize: 13 }} />
               <span style={{ fontSize: S(11), fontWeight: 900, color: palierColor }}>
-                {currentPalier ? currentPalier.name : `${currentStreak}j`}
+                {currentPalier ? currentPalier.name : `${streak}j`}
               </span>
               {currentPalier && (
-                <span style={{ fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>{currentStreak}j</span>
+                <span style={{ fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>{streak}j</span>
               )}
             </div>
             <span style={{ fontSize: S(9), fontWeight: 700, color: 'white', opacity: 0.5 }}>
-              {nextPalier ? `→ ${nextPalier.name} dans ${nextPalier.day - currentStreak}j` : '🏆 Max'}
+              {nextPalier ? `→ ${nextPalier.name} dans ${nextPalier.day - streak}j` : '🏆 Max'}
             </span>
           </div>
           <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}>
@@ -240,7 +241,7 @@ export default function HomeScreen({
             const status = getStatus(p.day)
             const isAvail = status === 'available'
             const isClaimed = status === 'claimed'
-            const isReached = currentStreak >= p.day
+            const isReached = streak >= p.day
             const brain = BRAIN_STYLES[p.day] || BRAIN_STYLES[3]
             return (
               <button
@@ -342,58 +343,57 @@ export default function HomeScreen({
         padding: `0 ${S(10)}`,
         position: 'relative', zIndex: 1,
       }}>
-        {/* Logo Vrai ou Fou — même largeur que le bouton Partie rapide */}
+        {/* Logo Vrai ou Fou */}
         <img
           src="/assets/ui/vof-logo.png" alt="Vrai ET Fou"
           style={{ width: '60%', maxWidth: S(220), height: 'auto', objectFit: 'contain', WebkitUserSelect: 'none', userSelect: 'none' }}
         />
 
-        {/* Grille 3 + 2 (spec 19/04/2026) */}
-        <div style={{
-          display: 'flex', flexDirection: 'column', gap: S(12),
-          width: '100%', maxWidth: S(320),
-        }}>
-          {/* Ligne 1 : Quest · VoF · Race */}
-          <div style={{ display: 'flex', justifyContent: 'space-evenly', gap: S(8) }}>
-            <ModeIcon icon="/assets/modes/quest.png" name="Quest WTF!" color="#FFD700" onClick={() => nav('quest')} sizeOverride={72} badge />
-            <ModeIcon icon="/assets/modes/vrai-et-fou.png" name="Vrai ET Fou" color="#6BCB77" onClick={() => nav('vrai_ou_fou')} sizeOverride={72} />
-            <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} sizeOverride={72} />
-          </div>
-          {/* Ligne 2 : Blitz · Multi */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: S(48) }}>
-            <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} sizeOverride={72} />
-            <ModeIcon icon="/assets/modes/multi.png" name="Multi" color="#6B2D8E" onClick={() => nav('multi')} sizeOverride={72} />
-          </div>
+        {/* Ligne 1 : Quest + Quickie */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: S(32) }}>
+          <ModeIcon icon="/assets/modes/quest.png?v=2" name="Quest WTF!" color="#FF6B1A" onClick={() => nav('quest')} sizeOverride={64} badge />
+          <ModeIcon icon="/assets/modes/quickie.png?v=2" name="Quickie" color="#FFD700" onClick={() => nav('quickie')} sizeOverride={64} badge />
         </div>
 
-        {/* Bouton Partie rapide — ratio natif du PNG (790 × 388 ≈ 2.036:1)
-            icon-quickie + texte orange overlay à l'intérieur */}
+        {/* Ligne 2 : Race + Blitz + Multi */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: S(24) }}>
+          <ModeIcon icon="/assets/modes/race.png" name="Race" color="#00E5FF" onClick={() => nav('race')} sizeOverride={64} />
+          <ModeIcon icon="/assets/modes/blitz.png" name="Blitz" color="#FF1744" onClick={() => nav('blitz')} sizeOverride={64} />
+          <ModeIcon icon="/assets/modes/multi.png" name="Multi" color="#6B2D8E" onClick={() => nav('multi')} sizeOverride={64} />
+        </div>
+
+        {/* Bouton Partie Rapide (VOF) — fond vert, icône intacte */}
         <button
-          onClick={() => nav('quickie_random')}
+          onClick={() => nav('vrai_ou_fou')}
           className="btn-press"
           style={{
-            backgroundColor: 'transparent',
-            backgroundImage: "url('/assets/modes/home-button.png?v=4')",
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
+            position: 'relative',
             border: 'none', padding: 0,
             width: '51%', maxWidth: S(187), aspectRatio: '790 / 310',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(7),
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+            background: 'transparent',
           }}
         >
           <img
-            src="/assets/modes/icon-quickie.png?v=2"
-            alt=""
-            style={{ width: S(24), height: S(24), objectFit: 'contain', flexShrink: 0 }}
+            src="/assets/modes/home-button.png?v=5" alt=""
+            style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'contain', pointerEvents: 'none',
+              filter: 'hue-rotate(90deg) saturate(1.2)',
+            }}
           />
-          <span style={{ fontSize: S(9), lineHeight: 1 }}>🔓</span>
+          <img
+            src="/assets/modes/icon-vrai-et-fou.png"
+            alt=""
+            style={{ width: S(24), height: S(24), objectFit: 'contain', flexShrink: 0, position: 'relative', zIndex: 1 }}
+          />
           <span style={{
             fontFamily: "'Fredoka One', cursive", fontWeight: 400, fontSize: S(10),
-            color: '#FFA500', letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: '#6BCB77', letterSpacing: '0.08em', textTransform: 'uppercase',
+            position: 'relative', zIndex: 1,
           }}>
-            Partie rapide
+            Partie Rapide
           </span>
         </button>
       </div>

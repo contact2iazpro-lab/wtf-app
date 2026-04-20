@@ -13,7 +13,8 @@ import NewCategoriesModal from './NewCategoriesModal'
 import GameModal from './GameModal'
 import DevPanel from '../components/DevPanel'
 import { DEV_PANEL_ENABLED } from '../config/devConfig'
-import { SCREENS, QUICKIE_ENERGY } from '../constants/gameConfig'
+import { useNavigate } from 'react-router-dom'
+import { SCREENS, QUICKIE_ENERGY, DIFFICULTY_LEVELS } from '../constants/gameConfig'
 import { getValidFacts } from '../data/factsService'
 import { buyExtraSession } from '../services/energyService'
 import { audio } from '../utils/audio'
@@ -41,6 +42,7 @@ export default function AppModals({
   signInWithGoogle,
 }) {
   const S = (px) => `calc(${px}px * var(--scale))`
+  const navigate = useNavigate()
   const { unlockFact, coins: profileCoins, applyCurrencyDelta } = usePlayerProfile()
   const coinsForGate = profileCoins ?? wtfCoins ?? 0
 
@@ -141,19 +143,12 @@ export default function AppModals({
         </div>
       )}
 
-      {/* No energy modal */}
+      {/* Not enough coins modal (Quickie) */}
       {showNoEnergyModal && (
-        <GameModal emoji={<EnergyIcon size={16} />} title="Plus de sessions !"
-          message={`Tes ${QUICKIE_ENERGY.FREE_SESSIONS_PER_DAY} sessions gratuites du jour sont utilisées. Achète une session pour ${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins ou reviens demain !`}
-          confirmLabel={`Acheter (${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins)`} cancelLabel="Attendre"
-          onConfirm={() => {
-            if (buyExtraSession({ coins: coinsForGate, applyCurrencyDelta })) {
-              setShowNoEnergyModal(false)
-              if (noEnergyOrigin === 'quickie_random') { handleQuickie() }
-              else if (noEnergyOrigin === 'quickie') { setGameMode('quickie'); setSessionType('quickie'); setScreen(SCREENS.CATEGORY) }
-              else { setGameMode('solo'); setSessionType('quickie'); setSelectedCategory(null); setScreen(SCREENS.CATEGORY) }
-            } else { setShowNoEnergyModal(false); setGameAlert({ emoji: '🪙', title: 'Pas assez de coins', message: `Il te faut ${QUICKIE_ENERGY.EXTRA_SESSION_COST} coins pour acheter une session.` }) }
-          }}
+        <GameModal emoji="🪙" title="Pas assez de WTFCoins"
+          message={`Il te faut ${DIFFICULTY_LEVELS.QUICKIE.entryCost} WTFCoins pour lancer un Quickie. Joue en Vrai ET Fou pour en gagner !`}
+          confirmLabel="Boutique" cancelLabel="OK"
+          onConfirm={() => { setShowNoEnergyModal(false); navigate('/boutique') }}
           onCancel={() => setShowNoEnergyModal(false)}
         />
       )}

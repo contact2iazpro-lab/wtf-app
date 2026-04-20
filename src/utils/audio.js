@@ -206,12 +206,11 @@ class AudioManager {
         this._tone(1567.98, 0.40, 'sine', 0.42, 0.46)
         break
       case 'boss_intro':
-        // Intro dramatique boss Quest : descente grave puis montée triomphale
-        this._tone(110, 0.25, 'sawtooth', 0.32)
-        this._tone(87, 0.35, 'sawtooth', 0.35, 0.22)
-        this._tone(220, 0.18, 'square', 0.22, 0.55)
-        this._tone(330, 0.22, 'square', 0.28, 0.70)
-        this._tone(440, 0.40, 'square', 0.34, 0.88)
+        // Montée triomphale pour l'arrivée sur un fact WTF (boss Quest).
+        // Les graves sawtooth initiaux sonnaient comme un buzzer de mauvaise réponse — retirés.
+        this._tone(220, 0.18, 'square', 0.22)
+        this._tone(330, 0.22, 'square', 0.28, 0.15)
+        this._tone(440, 0.40, 'square', 0.34, 0.33)
         break
       case 'buzzer':
         this._tone(150, 0.15, 'square', 0.3)

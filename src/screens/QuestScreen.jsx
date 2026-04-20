@@ -616,7 +616,7 @@ export default function QuestScreen({ onHome, setStorage }) {
       const pos = idx % 6
       const absBlock = viewStart + cycle
       const goingRight = ((absBlock * 2654435761) >>> 0) % 2 === 0
-      const xSteps = [0, 0.5, 1, 1, 0.5, 0]
+      const xSteps = [0, 0.4, 0.85, 1, 0.6, 0.15]
       const rawX = xSteps[pos]
       const x = goingRight ? rawX : (1 - rawX)
       return {

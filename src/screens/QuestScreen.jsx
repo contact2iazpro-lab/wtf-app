@@ -537,98 +537,277 @@ export default function QuestScreen({ onHome, setStorage }) {
   }
 
   // ═════════════════════════════════════════════════════════════════════════
-  // VUE CARTE (hub)
+  // VUE CARTE (hub) — chemin sinueux vertical
   // ═════════════════════════════════════════════════════════════════════════
   if (!session) {
     const TOTAL_BLOCKS = Math.ceil(QUEST_MAX_LEVEL / QUEST_BLOCK_SIZE)
-    const start = Math.max(1, currentBlockIdx - 3)
-    const end = Math.min(TOTAL_BLOCKS, start + 12)
-    const visibleBlocks = []
-    for (let b = start; b <= end; b++) visibleBlocks.push(b)
+    // Niveaux visibles : chaque bloc = 5 funny (petits points) + 1 boss (gros point doré)
+    // On affiche ~4 blocs autour de la position (24 nodes)
+    const viewStart = Math.max(1, currentBlockIdx - 2)
+    const viewEnd = Math.min(TOTAL_BLOCKS, viewStart + 5)
+    const nodes = []
+    for (let b = viewStart; b <= viewEnd; b++) {
+      for (let i = 1; i <= QUEST_BLOCK_SIZE; i++) {
+        const lvl = blockStartOf(b) + i - 1
+        nodes.push({ level: lvl, block: b, indexInBlock: i, isBoss: false })
+      }
+      nodes.push({ level: blockBossLevelOf(b), block: b, indexInBlock: 0, isBoss: true })
+    }
+
+    // Positions zigzag : le chemin serpente de gauche à droite
+    const NODE_GAP = 56
+    const MAP_WIDTH = 300
+    const MARGIN_X = 44
+    const getNodePos = (idx) => {
+      const cycle = Math.floor(idx / 6)
+      const pos = idx % 6
+      // Zigzag : 3 nodes vers la droite, 3 nodes vers la gauche
+      const goingRight = cycle % 2 === 0
+      const xSteps = [0, 0.5, 1, 1, 0.5, 0]
+      const rawX = xSteps[pos]
+      const x = goingRight ? rawX : (1 - rawX)
+      return {
+        x: MARGIN_X + x * (MAP_WIDTH - MARGIN_X * 2),
+        y: idx * NODE_GAP,
+      }
+    }
+
+    // Trouver le node courant (1er node du bloc courant)
+    const currentLevel = state.level
+    const currentNodeIdx = nodes.findIndex(n => n.level >= currentLevel)
+    const playerIdx = currentNodeIdx >= 0 ? currentNodeIdx : 0
+    const totalHeight = nodes.length * NODE_GAP + 80
+
+    // SVG path entre les nodes
+    const pathPoints = nodes.map((_, i) => getNodePos(i))
+    const pathD = pathPoints.reduce((d, p, i) => {
+      if (i === 0) return `M ${p.x} ${p.y}`
+      const prev = pathPoints[i - 1]
+      const cpY = (prev.y + p.y) / 2
+      return d + ` C ${prev.x} ${cpY}, ${p.x} ${cpY}, ${p.x} ${p.y}`
+    }, '')
 
     return (
       <div style={{
         position: 'relative', width: '100%', height: '100%',
-        background: 'linear-gradient(160deg, #1a0f2e 0%, #2E1A47 100%)',
+        background: 'linear-gradient(180deg, #1a0f2e 0%, #2E1A47 50%, #1a0f2e 100%)',
         color: '#fff', fontFamily: 'Nunito, sans-serif',
-        display: 'flex', flexDirection: 'column', padding: '20px 20px 10px',
+        display: 'flex', flexDirection: 'column',
         '--scale': 1,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-          <button onClick={onHome} style={{
-            background: 'none', border: 'none', color: '#fff', fontSize: 20,
-            cursor: 'pointer', padding: 0,
-          }}>←</button>
-          <h1 style={{ fontSize: 22, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center' }}>
-            <img src="/assets/ui/emoji-route.png" alt="quest" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Quest
-          </h1>
-          <div style={{ width: 20 }} />
-        </div>
-        <div style={{ textAlign: 'center', opacity: 0.85, fontSize: 13, marginBottom: 4 }}>
-          Niveau <b style={{ color: '#FF6B1A' }}>{state.level}</b> / {QUEST_MAX_LEVEL}
-          <span style={{ opacity: 0.6, marginLeft: 8 }}>· Bloc {currentBlockIdx}/{TOTAL_BLOCKS}</span>
-        </div>
-        <div style={{ textAlign: 'center', fontSize: 12, opacity: 0.7, marginBottom: 10 }}>
-          <span style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}><EnergyIcon size={14} /></span>
-          {energyState.remaining}/{energyState.max} · 1 énergie par bloc
+        {/* Header fixe */}
+        <div style={{ flexShrink: 0, padding: '16px 20px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+            <button onClick={onHome} style={{
+              background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', fontSize: 18,
+              cursor: 'pointer', padding: 0, width: 36, height: 36, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              backdropFilter: 'blur(8px)',
+            }}>←</button>
+            <h1 style={{ fontSize: 20, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center' }}>
+              <img src="/assets/ui/emoji-route.png" alt="quest" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Quest
+            </h1>
+            <div style={{ width: 36 }} />
+          </div>
+          <div style={{ textAlign: 'center', opacity: 0.85, fontSize: 13, marginBottom: 2 }}>
+            Niveau <b style={{ color: '#FF6B1A' }}>{state.level}</b> / {QUEST_MAX_LEVEL}
+            <span style={{ opacity: 0.6, marginLeft: 8 }}>· Bloc {currentBlockIdx}/{TOTAL_BLOCKS}</span>
+          </div>
+          <div style={{ textAlign: 'center', fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
+            <span style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}><EnergyIcon size={14} /></span>
+            {energyState.remaining}/{energyState.max} · 1 énergie par bloc
+          </div>
         </div>
 
+        {/* Zone scrollable — chemin inversé (bas = début, haut = avancé) */}
         <div ref={mapRef} style={{
-          flex: 1, overflowY: 'auto',
-          display: 'flex', flexDirection: 'column-reverse',
-          gap: 12, padding: '14px 0',
+          flex: 1, overflowY: 'auto', overflowX: 'hidden',
+          position: 'relative',
         }}>
-          {visibleBlocks.map(b => {
-            const isCurrent = b === currentBlockIdx
-            const isDone = b < currentBlockIdx
-            const isLocked = b > currentBlockIdx
-            const failedBoss = state.bossFailed?.[b]
-            const side = b % 2 === 0 ? 'flex-end' : 'flex-start'
-            const startLv = blockStartOf(b)
-            const bossLv = blockBossLevelOf(b)
-            return (
-              <div key={b} data-current={isCurrent ? 'true' : 'false'} style={{
-                display: 'flex', flexDirection: 'column', alignItems: side === 'flex-end' ? 'flex-end' : 'flex-start', width: '100%', gap: 6,
-              }}>
-                <button
-                  onClick={() => isCurrent && launchBlock()}
-                  disabled={!isCurrent}
+          <div style={{
+            position: 'relative', width: MAP_WIDTH, height: totalHeight,
+            margin: '0 auto',
+            transform: 'scaleY(-1)',
+          }}>
+            {/* Chemin SVG */}
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+              <path d={pathD} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="4" strokeLinecap="round" />
+              {/* Chemin parcouru (jusqu'au joueur) */}
+              {playerIdx > 0 && (() => {
+                const doneD = pathPoints.slice(0, playerIdx + 1).reduce((d, p, i) => {
+                  if (i === 0) return `M ${p.x} ${p.y}`
+                  const prev = pathPoints[i - 1]
+                  const cpY = (prev.y + p.y) / 2
+                  return d + ` C ${prev.x} ${cpY}, ${p.x} ${cpY}, ${p.x} ${p.y}`
+                }, '')
+                return <path d={doneD} fill="none" stroke="#FF6B1A" strokeWidth="4" strokeLinecap="round" />
+              })()}
+            </svg>
+
+            {/* Nodes */}
+            {nodes.map((node, i) => {
+              const pos = getNodePos(i)
+              const isDone = node.level < currentLevel
+              const isCurrent = i === playerIdx
+              const isLocked = node.level > currentLevel
+              const failedBoss = node.isBoss && state.bossFailed?.[node.block]
+              const nodeSize = node.isBoss ? 40 : 20
+              const halfSize = nodeSize / 2
+
+              return (
+                <div
+                  key={`${node.block}-${node.indexInBlock}-${node.isBoss ? 'boss' : 'f'}`}
+                  data-current={isCurrent ? 'true' : 'false'}
                   style={{
-                    width: '72%',
-                    background: isCurrent
-                      ? 'linear-gradient(135deg, #FF6B1A 0%, #E84535 100%)'
-                      : isDone ? 'rgba(107,203,119,0.2)' : 'rgba(255,255,255,0.06)',
-                    border: `2px solid ${isCurrent ? '#fff' : isDone ? '#6BCB77' : 'rgba(255,255,255,0.12)'}`,
-                    borderRadius: 16, padding: '14px 16px',
-                    color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 900, fontSize: 14,
-                    cursor: isCurrent ? 'pointer' : 'default',
-                    opacity: isLocked ? 0.35 : 1,
-                    animation: isCurrent ? 'pulse 1.5s ease-in-out infinite' : 'none',
-                    textAlign: 'center',
-                    boxShadow: isCurrent ? '0 4px 20px rgba(255,107,26,0.4)' : 'none',
-                    WebkitTapHighlightColor: 'transparent',
+                    position: 'absolute',
+                    left: pos.x - halfSize,
+                    top: pos.y - halfSize,
+                    width: nodeSize,
+                    height: nodeSize,
+                    transform: 'scaleY(-1)',
                   }}
                 >
-                  Bloc {b} — Niv. {startLv}-{bossLv}{isDone ? ' ✓' : ''}
-                </button>
-                {isDone && failedBoss && (
-                  <button
-                    onClick={() => launchBossRetry(b)}
+                  {node.isBoss ? (
+                    // Gros node boss doré
+                    <button
+                      onClick={() => {
+                        if (isCurrent) launchBlock()
+                        else if (isDone && failedBoss) launchBossRetry(node.block)
+                      }}
+                      style={{
+                        width: nodeSize, height: nodeSize, borderRadius: '50%',
+                        background: isDone && !failedBoss
+                          ? 'linear-gradient(135deg, #FFD700, #FFA500)'
+                          : isCurrent
+                            ? 'linear-gradient(135deg, #FF6B1A, #E84535)'
+                            : failedBoss
+                              ? 'linear-gradient(135deg, #E84535, #8B0000)'
+                              : 'rgba(255,255,255,0.08)',
+                        border: `3px solid ${isDone && !failedBoss ? '#FFD700' : isCurrent ? '#fff' : failedBoss ? '#E84535' : 'rgba(255,255,255,0.15)'}`,
+                        boxShadow: isCurrent
+                          ? '0 0 20px rgba(255,107,26,0.6)'
+                          : isDone && !failedBoss
+                            ? '0 0 12px rgba(255,215,0,0.4)'
+                            : 'none',
+                        cursor: (isCurrent || (isDone && failedBoss)) ? 'pointer' : 'default',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: 0,
+                        animation: isCurrent ? 'questPulse 2s ease-in-out infinite' : 'none',
+                        opacity: isLocked ? 0.3 : 1,
+                      }}
+                    >
+                      <span style={{ fontSize: 16, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+                        {isDone && !failedBoss ? '👑' : failedBoss ? '🔒' : isCurrent ? '⚔️' : '👑'}
+                      </span>
+                    </button>
+                  ) : (
+                    // Petit node funny
+                    <div style={{
+                      width: nodeSize, height: nodeSize, borderRadius: '50%',
+                      background: isDone
+                        ? '#6BCB77'
+                        : isCurrent
+                          ? '#FF6B1A'
+                          : 'rgba(255,255,255,0.12)',
+                      border: `2px solid ${isDone ? '#6BCB77' : isCurrent ? '#fff' : 'rgba(255,255,255,0.15)'}`,
+                      opacity: isLocked ? 0.25 : 1,
+                      transition: 'all 0.3s ease',
+                      boxShadow: isCurrent ? '0 0 12px rgba(255,107,26,0.5)' : 'none',
+                    }} />
+                  )}
+                </div>
+              )
+            })}
+
+            {/* Étoile joueur */}
+            {(() => {
+              const pos = getNodePos(playerIdx)
+              return (
+                <div style={{
+                  position: 'absolute',
+                  left: pos.x - 16,
+                  top: pos.y - 48,
+                  transform: 'scaleY(-1)',
+                  textAlign: 'center',
+                  pointerEvents: 'none',
+                  animation: 'questFloat 2s ease-in-out infinite',
+                  zIndex: 10,
+                }}>
+                  <img
+                    src="/assets/ui/wtf-star.png"
+                    alt="player"
                     style={{
-                      width: '55%',
-                      background: 'rgba(232,69,53,0.2)',
-                      border: '1.5px solid #E84535',
-                      borderRadius: 10, padding: '8px 12px',
-                      color: '#fff', fontFamily: 'Nunito, sans-serif', fontWeight: 800, fontSize: 11,
-                      cursor: 'pointer',
+                      width: 32, height: 32, objectFit: 'contain',
+                      filter: 'drop-shadow(0 2px 8px rgba(255,107,26,0.7))',
                     }}
-                  >
-                    🔒 VIP verrouillé · Rejouer le boss
-                  </button>
-                )}
-              </div>
-            )
-          })}
+                  />
+                </div>
+              )
+            })()}
+
+            {/* Labels blocs (sur les boss nodes) */}
+            {nodes.filter(n => n.isBoss).map((node, i) => {
+              const nodeIdx = nodes.indexOf(node)
+              const pos = getNodePos(nodeIdx)
+              const isDone = node.level < currentLevel
+              const isCurrent = nodeIdx === playerIdx || node.block === currentBlockIdx
+              return (
+                <div key={`label-${node.block}`} style={{
+                  position: 'absolute',
+                  left: pos.x > MAP_WIDTH / 2 ? pos.x - 110 : pos.x + 30,
+                  top: pos.y - 10,
+                  transform: 'scaleY(-1)',
+                  pointerEvents: 'none',
+                  whiteSpace: 'nowrap',
+                }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 800,
+                    color: isDone ? '#FFD700' : isCurrent ? '#FF6B1A' : 'rgba(255,255,255,0.35)',
+                    textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                  }}>
+                    Bloc {node.block}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Bouton JOUER flottant (bloc courant) */}
+        <div style={{
+          flexShrink: 0, padding: '8px 20px 16px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        }}>
+          <button
+            onClick={launchBlock}
+            style={{
+              width: '85%', padding: '14px 0',
+              background: 'linear-gradient(135deg, #FF6B1A, #D94A10)',
+              border: '3px solid #ffffff',
+              borderRadius: 16,
+              fontFamily: 'Nunito, sans-serif',
+              fontSize: 18, fontWeight: 900,
+              color: '#ffffff',
+              cursor: 'pointer',
+              boxShadow: '0 8px 30px rgba(255,107,26,0.5), 0 4px 0 rgba(0,0,0,0.15)',
+              letterSpacing: '0.04em',
+            }}
+          >
+            BLOC {currentBlockIdx} — JOUER
+          </button>
+          {state.bossFailed?.[currentBlockIdx - 1] && currentBlockIdx > 1 && (
+            <button
+              onClick={() => launchBossRetry(currentBlockIdx - 1)}
+              style={{
+                background: 'rgba(232,69,53,0.15)', border: '1.5px solid #E84535',
+                borderRadius: 10, padding: '8px 20px',
+                color: '#E84535', fontWeight: 800, fontSize: 12,
+                cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+              }}
+            >
+              🔒 Rejouer Boss Bloc {currentBlockIdx - 1}
+            </button>
+          )}
         </div>
 
         {/* Modal énergie insuffisante */}
@@ -673,7 +852,10 @@ export default function QuestScreen({ onHome, setStorage }) {
           </div>
         )}
 
-        <style>{`@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }`}</style>
+        <style>{`
+          @keyframes questPulse { 0%,100%{transform:scaleY(-1) scale(1)} 50%{transform:scaleY(-1) scale(1.15)} }
+          @keyframes questFloat { 0%,100%{transform:scaleY(-1) translateY(0)} 50%{transform:scaleY(-1) translateY(-6px)} }
+        `}</style>
       </div>
     )
   }

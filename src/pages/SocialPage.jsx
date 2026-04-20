@@ -505,8 +505,7 @@ export default function SocialPage() {
                               <button
                                 onClick={() => {
                                   audio.play('click')
-                                  startCreateDefi(friend.userId, 'all')
-                                  navigate('/')
+                                  navigate(`/multi?opponentId=${friend.userId}`)
                                 }}
                                 style={{
                                   padding: '8px 12px', borderRadius: 8,
@@ -582,8 +581,7 @@ export default function SocialPage() {
                                 <button
                                   onClick={() => {
                                     audio.play('click')
-                                    startCreateDefi(friend.userId, 'all')
-                                    navigate('/')
+                                    navigate(`/multi?opponentId=${friend.userId}`)
                                   }}
                                   style={{
                                     padding: '8px 12px', borderRadius: 8,

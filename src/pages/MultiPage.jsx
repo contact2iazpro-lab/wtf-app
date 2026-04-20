@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useScale } from '../hooks/useScale'
 import { useAuth } from '../context/AuthContext'
 import { useDuelContext } from '../features/duels/context/DuelContext'
@@ -22,6 +22,7 @@ const DEFI_COST = 100 // mise créateur (accepteur mise 100 de son côté, gagna
  */
 export default function MultiPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const scale = useScale()
   const S = (px) => `calc(${px}px * var(--scale))`
   const { isConnected, signInWithGoogle } = useAuth()
@@ -35,6 +36,17 @@ export default function MultiPage() {
 
   // Au mount : expire les défis > 48h et rembourse les créateurs (idempotent serveur)
   useEffect(() => { expirePendingChallenges().catch(() => {}) }, [])
+
+  // Pré-remplissage ami depuis ?opponentId=xxx (depuis SocialPage accordéon).
+  // Attend que la liste friends soit chargée pour valider l'id, puis retire le param URL.
+  useEffect(() => {
+    const urlOpponentId = searchParams.get('opponentId')
+    if (!urlOpponentId || opponentId) return
+    if (friends.some(f => f.userId === urlOpponentId)) {
+      setOpponentId(urlOpponentId)
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, friends, opponentId, setSearchParams])
 
   const allFacts = getValidFacts()
   const totalUnlocked = allFacts.filter(f => unlockedFacts.has(f.id)).length

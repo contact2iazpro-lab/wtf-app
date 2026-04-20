@@ -626,10 +626,10 @@ export default function RevelationScreen({
         <style>{`
           @keyframes vipCardGlow {
             0%, 100% {
-              box-shadow: inset 0 0 15px ${cat?.color}4D, 0 0 15px ${cat?.color}80, 0 0 30px ${cat?.color}4D, 0 0 45px ${cat?.color}26;
+              box-shadow: inset 0 0 15px #FFD7004D, 0 0 15px #FFD70080, 0 0 30px #FFD7004D, 0 0 45px #FFD70026;
             }
             50% {
-              box-shadow: inset 0 0 20px ${cat?.color}66, 0 0 20px ${cat?.color}B3, 0 0 40px ${cat?.color}66, 0 0 60px ${cat?.color}33;
+              box-shadow: inset 0 0 20px #FFD70066, 0 0 20px #FFD700B3, 0 0 40px #FFD70066, 0 0 60px #FFD70033;
             }
           }
         `}</style>
@@ -640,7 +640,7 @@ export default function RevelationScreen({
           className="relative overflow-hidden"
           style={{
             width: '100%', maxHeight: '35vh', borderRadius: S(16),
-            border: showVipGlow ? `2px solid ${cat?.color}AA` : `3px solid ${accentColor}`,
+            border: showVipGlow ? `3px solid #FFD700` : `3px solid ${accentColor}`,
             background: catGradient, cursor: 'pointer',
             ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
           }}
@@ -689,15 +689,33 @@ export default function RevelationScreen({
               animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
             }} />
           </div>
-          {/* Stamp Unlocked — masqué en VoF (fact non débloqué même si bonne réponse) */}
+          {/* Stamp Unlocked — gold + étoile WTF pour les VIP, vert pour les Funny. Masqué en VoF. */}
           {!isVofMode && (
             <div style={{
               position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
-              background: 'transparent', border: '2px solid #4CAF50', borderRadius: S(6),
+              background: 'transparent',
+              border: `2px solid ${isVipReveal ? '#FFD700' : '#4CAF50'}`,
+              borderRadius: S(6),
               padding: `${S(3)} ${S(8)}`,
               pointerEvents: 'none',
             }}>
-              <span style={{ fontSize: S(10), fontWeight: 900, color: '#4CAF50', letterSpacing: '0.04em' }}>Unlocked !</span>
+              {isVipReveal && (
+                <img
+                  src="/assets/ui/wtf-star.png"
+                  alt=""
+                  style={{
+                    position: 'absolute', top: `-${S(8)}`, right: `-${S(8)}`,
+                    width: S(18), height: S(18),
+                    pointerEvents: 'none',
+                    filter: 'drop-shadow(0 0 4px rgba(255,215,0,0.8))',
+                  }}
+                />
+              )}
+              <span style={{
+                fontSize: S(10), fontWeight: 900,
+                color: isVipReveal ? '#FFD700' : '#4CAF50',
+                letterSpacing: '0.04em',
+              }}>Unlocked !</span>
             </div>
           )}
         </div>

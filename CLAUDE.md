@@ -73,8 +73,8 @@ L'admin-tool (clé service_role) doit être déployé **en isolation** (voir `do
 ## Règles de jeu — Source de vérité (15/04/2026)
 
 ### 1. QUICKIE — "Court. Bon. Sans engagement."
-- QCM **2 choix**, 5 questions, timer **15s**
-- Indices : 1 max (stock perso, coût 50 coins en boutique)
+- QCM **4 choix**, 5 questions, timer **15s** (passé de 2 à 4 choix le 20/04/2026)
+- Indices : 2 max (stock perso, coût 50 coins en boutique)
 - Contenu : Funny facts **+ 3% chance / question d'un VIP surprise** (19/04/2026)
 - Coût : 1 énergie (cap 5, régén +1/8h, extra = 75 coins)
 - Gains : 10 coins/bonne réponse · Perfect (5/5) : +50 coins
@@ -168,7 +168,8 @@ L'admin-tool (clé service_role) doit être déployé **en isolation** (voir `do
 - Spec source : `docs/ROULETTE_WTF_SPECS.md`
 
 ### Règles communes
-- QCM facile (2 choix) : Quickie, Drop
+- QCM facile (2 choix) : Drop
+- QCM intermédiaire (4 choix) : Quickie
 - QCM difficile (4 choix) : Quest, Blitz, Multi
 - QCM hardcore (6 choix) : Race
 - Swipe (0 QCM) : Vrai ou Fou
@@ -180,7 +181,7 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 
 | Mode | QCM | Nb fausses | Tirage |
 |------|-----|-----------|--------|
-| Quickie | 2 | 1 | **Pondéré** : 70% plausible / 20% drôle / 10% proche |
+| Quickie | 4 | 3 | **2 plausible** + 1 tiré (50% proche / 50% drôle) |
 | Drop | 2 | 1 | **Pondéré** : 70% plausible / 20% drôle / 10% proche (idem Quickie) |
 | Quest (niveaux Funny) | 4 | 3 | **1 drôle + 2 plausible** (jamais proche) |
 | Quest (boss VIP) | 4 | 3 | **3 plausible** — hardcore (fallback close puis funny si pool plausible < 3) |

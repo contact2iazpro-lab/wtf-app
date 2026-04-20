@@ -119,12 +119,33 @@ function pickWrongAnswers(fact, numWrong, factId, distribution) {
       for (const t of taken) used.add(t)
       picked.push(...taken)
     }
-    // 2e passe — combler les slots manquants SANS toucher à un type absent
-    // de la distribution demandée (ex : Quest spécifie {funny:1, plausible:2}
-    // → jamais piocher dans close). Priorise les types déjà listés dans counts.
+    // 2e passe — slots restants via lastSlotWeights (tirage pondéré) si défini
+    if (picked.length < numWrong && distribution?.lastSlotWeights) {
+      const lsw = distribution.lastSlotWeights
+      const entries = Object.entries(lsw)
+        .map(([type, w]) => ({ type, pool: (pools[type] || []).filter(a => !used.has(a)), weight: w }))
+        .filter(b => b.pool.length > 0)
+      while (picked.length < numWrong && entries.some(b => b.pool.length > 0)) {
+        const totalW = entries.reduce((s, b) => s + (b.pool.length > 0 ? b.weight : 0), 0)
+        const r = Math.random() * totalW
+        let acc = 0
+        for (const b of entries) {
+          if (b.pool.length === 0) continue
+          acc += b.weight
+          if (r <= acc) {
+            const chosen = pickRandom(b.pool, 1)[0]
+            used.add(chosen)
+            picked.push(chosen)
+            b.pool = b.pool.filter(a => a !== chosen)
+            break
+          }
+        }
+      }
+    }
+    // 2e passe bis — combler via les types listés dans counts
     if (picked.length < numWrong) {
-      const allowedTypes = Object.keys(counts)
-      const fallbackPool = allowedTypes.flatMap(t => pools[t] || []).filter(a => !used.has(a))
+      const allowedTypes = [...Object.keys(counts), ...Object.keys(distribution?.lastSlotWeights || {})]
+      const fallbackPool = [...new Set(allowedTypes)].flatMap(t => pools[t] || []).filter(a => !used.has(a))
       const extra = pickRandom(fallbackPool, numWrong - picked.length)
       for (const t of extra) used.add(t)
       picked.push(...extra)

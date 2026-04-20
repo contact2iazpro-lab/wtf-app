@@ -112,7 +112,7 @@ const CHAPTERS = [
     content: [
       { icon: '💡', text: 'Un indice **élimine une mauvaise réponse** parmi les choix.' },
       { icon: '📉', text: 'Chaque utilisation **consomme 1 indice** de ton stock personnel.' },
-      { icon: '🗺️', text: '**Quest** : 2 / question · **Quickie** : 1 max · **Drop dimanche** : 2 max' },
+      { icon: '🗺️', text: '**Quest** : 2 / question · **Quickie** : 2 / question · **Drop dimanche** : 2 max' },
       { icon: '🚫', text: '**Vrai ET Fou, Race, Blitz, Drop lun-sam** : aucun indice disponible.' },
       { icon: '⚠️', text: 'Si ton stock est **vide**, le bouton est **grisé** — le timer ne pause jamais.' },
       { icon: '🛒', text: 'Achète des indices en **boutique** : **50 Coins** par indice.' },

@@ -9,11 +9,11 @@
 export const DIFFICULTY_LEVELS = {
   QUICKIE: {
     id: 'quickie', label: 'Quickie', emoji: '🎯',
-    choices: 2, duration: 15, questionsCount: 5,
-    hintsAllowed: true, freeHints: 0, paidHints: 1, hintCost: 50,
+    choices: 4, duration: 15, questionsCount: 5,
+    hintsAllowed: true, freeHints: 0, paidHints: 2, hintCost: 50,
     coinsPerCorrect: 10, perfectBonus: 50,
     scoring: { correct: 10, wrong: 0 },
-    wrongDistribution: { type: 'weighted', weights: { plausible: 0.7, funny: 0.2, close: 0.1 } },
+    wrongDistribution: { type: 'counts', counts: { plausible: 2 }, lastSlotWeights: { close: 0.5, funny: 0.5 } },
   },
   VRAI_OU_FOU: {
     id: 'vrai_ou_fou', label: 'Vrai ET Fou', emoji: '🤔',
@@ -95,9 +95,9 @@ export const MODE_CONFIGS = {
     rules: [
       { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
       { icon: 'icon:set', text: '**Set** : 5 questions / set' },
-      { icon: 'icon:qcm', text: '**QCM** : 2 / question' },
+      { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
       { icon: 'icon:timer', text: '**Timer** : 15s / question' },
-      { icon: '💡', text: '**Indices** : 1 max / question' },
+      { icon: '💡', text: '**Indices** : 2 max / question' },
       { icon: '🪙', text: '**Gains** : 10 Coins / bonne réponse' },
       { icon: 'icon:star', text: '**Perfect** : (5 / 5) +50 Coins' },
       { icon: 'icon:star', text: '**Bonus VIP** : 3% de chance / question ⭐' },

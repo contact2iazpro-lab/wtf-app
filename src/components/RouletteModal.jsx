@@ -364,7 +364,8 @@ export default function RouletteModal({ onClose, scale }) {
               setTimeout(() => setNotEnough(false), 2000)
               return
             }
-            setShowConfirm(true)
+            if (isFree) { setShowConfirm(true) }
+            else { handleSpin() }
           }}
           disabled={spinning}
           style={{

@@ -179,11 +179,14 @@ export default function QuestScreen({ onHome, setStorage }) {
   const [correctFactIds, setCorrectFactIds] = useState([])
   const [funnyCorrectCount, setFunnyCorrectCount] = useState(0)
   const [bossCorrect, setBossCorrect] = useState(false)
-  const [bossUnlocked, setBossUnlocked] = useState(false) // ≥5/10 atteint
+  const [bossUnlocked, setBossUnlocked] = useState(false)
   const [hintsUsed, setHintsUsed] = useState(0)
   const [energyState, setEnergyState] = useState(() => getQuickieEnergy())
   const [showEnergyModal, setShowEnergyModal] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
+  // Pending boss : retour carte → animation → overlay VIP → lancement boss
+  const [pendingBoss, setPendingBoss] = useState(null) // { session, correctIds, funnyCount }
+  const [bossAnimPhase, setBossAnimPhase] = useState(null) // 'travel' | 'overlay' | null
   const mapRef = useRef(null)
 
   useEffect(() => {
@@ -193,15 +196,39 @@ export default function QuestScreen({ onHome, setStorage }) {
   }, [])
 
   useEffect(() => {
-    if (mapRef.current && !session) {
+    if (mapRef.current && !session && !pendingBoss) {
       const el = mapRef.current.querySelector('[data-current="true"]')
       el?.scrollIntoView({ block: 'center', behavior: 'instant' })
     }
-  }, [session, state.level])
+  }, [session, state.level, pendingBoss])
 
-  // Reset image/selected/timeout quand on change de question.
-  // NOTE : hintsUsed NE se reset PAS entre questions d'un même bloc (le flip indice
-  // reste actif pour les questions suivantes). Reset uniquement à nouvelle session.
+  // Pending boss animation sequence : travel (2s) → overlay (2.5s) → launch boss
+  useEffect(() => {
+    if (!pendingBoss) return
+    setBossAnimPhase('travel')
+    audio.play('click')
+    const t1 = setTimeout(() => {
+      setBossAnimPhase('overlay')
+      audio.play('roulette_jackpot')
+      audio.vibrate?.([40, 30, 80])
+    }, 2000)
+    const t2 = setTimeout(() => {
+      // Launch boss question
+      const { session: sess, correctIds, funnyCount } = pendingBoss
+      setBossAnimPhase(null)
+      setPendingBoss(null)
+      setBossUnlocked(true)
+      setSession(sess)
+      setQIndex(sess.facts.length) // bossFact
+      setSelected(null)
+      setPhase('question')
+      setHintsUsed(0)
+      setCorrectFactIds(correctIds)
+      setFunnyCorrectCount(funnyCount)
+    }, 4500)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [pendingBoss])
+
   useEffect(() => {
     setSelected(null); setTimedOut(false)
   }, [qIndex])
@@ -211,7 +238,6 @@ export default function QuestScreen({ onHome, setStorage }) {
     if (!session || phase !== 'question') return
     const fact = currentFact()
     if (fact?._isBoss) audio.play('boss_intro')
-
   }, [phase, session, qIndex])
 
   const currentBlockIdx = blockIdxOf(state.level)
@@ -395,16 +421,15 @@ export default function QuestScreen({ onHome, setStorage }) {
       setPhase('question')
       return
     }
-    // 10e funny terminée → seuil boss ?
+    // 5e funny terminée → seuil boss ?
     const unlocked = funnyCount >= BOSS_THRESHOLD
     if (unlocked) {
-      setBossUnlocked(true)
-      setQIndex(sess.facts.length) // → currentFact() renvoie bossFact
-      setSelected(null)
-      setPhase('question')
+      // Retour carte → animation vers boss → overlay VIP → lancement boss
+      setPendingBoss({ session: sess, correctIds, funnyCount })
+      setSession(null)
       return
     }
-    // <5/10 : bloc raté, pas de boss
+    // <3/5 : bloc raté, pas de boss
     finalizeSession(sess, correctIds, didBossCorrect, false)
     setPhase('results')
   }
@@ -574,6 +599,8 @@ export default function QuestScreen({ onHome, setStorage }) {
     const currentLevel = state.level
     const currentNodeIdx = nodes.findIndex(n => n.level >= currentLevel)
     const playerIdx = currentNodeIdx >= 0 ? currentNodeIdx : 0
+    // Index du boss node du bloc courant (pour l'animation pendingBoss)
+    const bossNodeIdx = nodes.findIndex(n => n.isBoss && n.block === currentBlockIdx)
     const DOTS_EXTRA = 80
     const totalHeight = nodes.length * NODE_GAP + DOTS_EXTRA + 40
 
@@ -602,11 +629,12 @@ export default function QuestScreen({ onHome, setStorage }) {
         {/* Header fixe */}
         <div style={{ flexShrink: 0, padding: '16px 20px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-            <button onClick={onHome} style={{
+            <button onClick={() => { if (!pendingBoss) onHome() }} style={{
               background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: 18,
-              cursor: 'pointer', padding: 0, width: 36, height: 36, borderRadius: '50%',
+              cursor: pendingBoss ? 'default' : 'pointer', padding: 0, width: 36, height: 36, borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               backdropFilter: 'blur(8px)',
+              opacity: pendingBoss ? 0.3 : 1,
             }}>←</button>
             <h1 style={{ fontSize: 20, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center' }}>
               <img src="/assets/ui/emoji-route.png" alt="quest" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} /> Quest
@@ -747,18 +775,23 @@ export default function QuestScreen({ onHome, setStorage }) {
               )
             })}
 
-            {/* Étoile joueur au-dessus du node courant */}
+            {/* Étoile joueur — anime vers le boss si pendingBoss */}
             {(() => {
-              const pos = getNodePos(playerIdx)
+              const startPos = getNodePos(playerIdx)
+              const targetPos = bossAnimPhase === 'travel' && bossNodeIdx >= 0
+                ? getNodePos(bossNodeIdx)
+                : startPos
+              const isAnimating = bossAnimPhase === 'travel'
               return (
                 <div style={{
                   position: 'absolute',
-                  left: pos.x - 18,
-                  top: pos.y - 50,
+                  left: (isAnimating ? targetPos.x : startPos.x) - 18,
+                  top: (isAnimating ? targetPos.y : startPos.y) - 50,
                   transform: 'scaleY(-1)',
                   textAlign: 'center',
                   pointerEvents: 'none',
-                  animation: 'questFloat 2s ease-in-out infinite',
+                  animation: isAnimating ? 'none' : 'questFloat 2s ease-in-out infinite',
+                  transition: isAnimating ? 'left 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
                   zIndex: 10,
                 }}>
                   <img
@@ -802,7 +835,47 @@ export default function QuestScreen({ onHome, setStorage }) {
           </div>
         </div>
 
-        {/* Bouton JOUER flottant */}
+        {/* Overlay VIP Boss — apparaît pendant bossAnimPhase === 'overlay' */}
+        {bossAnimPhase === 'overlay' && (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 60,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'radial-gradient(circle at center, rgba(255,215,0,0.25) 0%, rgba(0,0,0,0.75) 70%)',
+            backdropFilter: 'blur(4px)',
+            pointerEvents: 'none',
+            animation: 'questVipFade 2.5s ease-out forwards',
+          }}>
+            <div style={{
+              textAlign: 'center',
+              animation: 'questVipPop 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            }}>
+              <img src="/assets/ui/wtf-star.png" alt="" style={{
+                width: 64, height: 64, objectFit: 'contain', marginBottom: 8,
+                filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.9))',
+              }} />
+              <div style={{
+                fontSize: 30, fontWeight: 900, letterSpacing: '0.06em',
+                color: '#FFD700',
+                textShadow: '0 0 24px rgba(255,215,0,0.8), 0 2px 8px rgba(0,0,0,0.5)',
+                textTransform: 'uppercase',
+                fontFamily: 'Nunito, sans-serif',
+              }}>
+                BOSS WTF!
+              </div>
+              <div style={{
+                fontSize: 14, fontWeight: 800, marginTop: 8,
+                color: '#FFE8A0', letterSpacing: '0.04em',
+                textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                fontFamily: 'Nunito, sans-serif',
+              }}>
+                Un f*ct rare t'attend !
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bouton JOUER flottant — masqué pendant l'animation */}
+        {!pendingBoss && (
         <div style={{
           flexShrink: 0, padding: '8px 20px 16px',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
@@ -838,6 +911,7 @@ export default function QuestScreen({ onHome, setStorage }) {
             </button>
           )}
         </div>
+        )}
 
         {/* Modal énergie insuffisante */}
         {showEnergyModal && (
@@ -885,6 +959,8 @@ export default function QuestScreen({ onHome, setStorage }) {
           @keyframes questNodePulse { 0%,100%{transform:scaleY(-1) scale(1); box-shadow: 0 0 16px rgba(255,255,255,0.8)} 50%{transform:scaleY(-1) scale(1.25); box-shadow: 0 0 24px rgba(255,255,255,1)} }
           @keyframes questBossPulse { 0%,100%{transform:scaleY(-1) scale(1); box-shadow: 0 0 24px rgba(255,215,0,0.8)} 50%{transform:scaleY(-1) scale(1.15); box-shadow: 0 0 36px rgba(255,215,0,1)} }
           @keyframes questFloat { 0%,100%{transform:scaleY(-1) translateY(0)} 50%{transform:scaleY(-1) translateY(-6px)} }
+          @keyframes questVipFade { 0%{opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{opacity:0} }
+          @keyframes questVipPop { 0%{transform:scale(0.3) rotate(-10deg)} 25%{transform:scale(1.15) rotate(3deg)} 45%{transform:scale(0.95) rotate(-1deg)} 60%,100%{transform:scale(1) rotate(0deg)} }
         `}</style>
       </div>
     )

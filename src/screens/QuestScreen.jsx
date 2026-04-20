@@ -367,7 +367,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     try { document.activeElement?.blur?.() } catch (_) {}
     setSelected(idx)
     const isCorrect = idx === fact.correctIndex
-    audio.play(isCorrect ? 'correct' : 'wrong_quest')
+    audio.play(isCorrect ? 'correct' : 'wrong')
     audio.vibrate(isCorrect ? [40, 20, 40] : [120])
 
     const wasBoss = !!fact._isBoss
@@ -429,6 +429,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     if (qIndex + 1 < sess.facts.length) {
       setQIndex(q => q + 1)
       setSelected(null)
+      setHintsUsed(0)
       setPhase('question')
       return
     }
@@ -608,8 +609,9 @@ export default function QuestScreen({ onHome, setStorage }) {
     const NODE_GAP = 40
     const MAP_WIDTH = 300
     const MARGIN_X = 50
-    const BOTTOM_DOTS = 80
+    const BOTTOM_DOTS = 110
     const getNodePos = (idx) => {
+      if (idx === 0) return { x: MAP_WIDTH / 2, y: BOTTOM_DOTS }
       const cycle = Math.floor(idx / 6)
       const pos = idx % 6
       const goingRight = cycle % 2 === 0
@@ -709,12 +711,19 @@ export default function QuestScreen({ onHome, setStorage }) {
               {currentBlockIdx > 1 && [0, 1].map(i => (
                 <circle key={`dot-bot-${i}`} cx={dotsBotX} cy={dotsBotY - i * 18} r="4" fill="rgba(255,255,255,0.35)" />
               ))}
-              {/* 4 pointillés sous l'étoile joueur */}
+              {/* 1 pointillé entre étoile et premier node */}
               {(() => {
                 const pp = getNodePos(playerIdx)
-                return [1, 2, 3, 4].map(i => (
-                  <circle key={`dot-player-${i}`} cx={MAP_WIDTH / 2} cy={pp.y - i * 14} r="4" fill="rgba(255,255,255,0.4)" />
-                ))
+                const starCenterY = pp.y - 38
+                return (
+                  <>
+                    <circle cx={MAP_WIDTH / 2} cy={(pp.y + starCenterY) / 2} r="4" fill="rgba(255,255,255,0.5)" />
+                    {/* 3 pointillés sous l'étoile */}
+                    {[1, 2, 3].map(i => (
+                      <circle key={`dot-below-${i}`} cx={MAP_WIDTH / 2} cy={starCenterY - i * 16} r="4" fill="rgba(255,255,255,0.35)" />
+                    ))}
+                  </>
+                )
               })()}
             </svg>
 
@@ -791,7 +800,7 @@ export default function QuestScreen({ onHome, setStorage }) {
                         : isCurrent
                           ? `2.5px solid #fff`
                           : `2.5px solid ${isCurrentBlock ? catColor + '80' : 'rgba(255,255,255,0.4)'}`,
-                      opacity: isLocked ? 0.3 : 1,
+                      opacity: isLocked && !isCurrentBlock ? 0.3 : 1,
                       transition: 'all 0.3s ease',
                       boxShadow: isCurrent
                         ? `0 0 16px rgba(255,255,255,0.8), 0 0 6px ${catColor}99`

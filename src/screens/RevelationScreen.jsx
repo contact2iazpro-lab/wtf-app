@@ -183,16 +183,21 @@ export default function RevelationScreen({
   // COR 7 — Gradient catégorie identique dans les deux cas
   const isQuickieMode = sessionType === 'quickie'
   const isVofMode = sessionType === 'vrai_ou_fou'
-  const isBrandedMode = isQuickieMode || isVofMode
-  const accentColor = isVofMode ? '#6BCB77' : '#E91E90'
+  const isQuestMode = sessionType === 'parcours' || sessionType === 'quest'
+  const isBrandedMode = isQuickieMode || isVofMode || isQuestMode
+  const accentColor = isVofMode ? '#6BCB77' : isQuestMode ? '#FF6B1A' : '#E91E90'
   const MODE_HIGHLIGHT = { quickie: '#FF69B4', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', drop: '#E91E63' }
   const questionHighlight = MODE_HIGHLIGHT[sessionType]
   const accentGradient = isVofMode
     ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
-    : 'linear-gradient(135deg, #E91E90, #C2185B)'
+    : isQuestMode
+      ? 'linear-gradient(135deg, #FF6B1A, #D94A10)'
+      : 'linear-gradient(135deg, #E91E90, #C2185B)'
   const accentShadow = isVofMode
     ? '0 4px 16px rgba(107,203,119,0.5)'
-    : '0 4px 16px rgba(127,119,221,0.5)'
+    : isQuestMode
+      ? '0 4px 16px rgba(255,107,26,0.5)'
+      : '0 4px 16px rgba(127,119,221,0.5)'
   const catGradient = cat
     ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
     : 'linear-gradient(160deg, #1a3a5c22 0%, #1a3a5c 100%)'

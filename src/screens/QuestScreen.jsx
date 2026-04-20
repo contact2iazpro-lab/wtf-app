@@ -541,10 +541,10 @@ export default function QuestScreen({ onHome, setStorage }) {
   // ═════════════════════════════════════════════════════════════════════════
   if (!session) {
     const TOTAL_BLOCKS = Math.ceil(QUEST_MAX_LEVEL / QUEST_BLOCK_SIZE)
-    // Niveaux visibles : chaque bloc = 5 funny (petits points) + 1 boss (gros point doré)
-    // On affiche ~4 blocs autour de la position (24 nodes)
-    const viewStart = Math.max(1, currentBlockIdx - 2)
-    const viewEnd = Math.min(TOTAL_BLOCKS, viewStart + 5)
+    // 5 blocs affichés : bloc courant + 4 suivants
+    const VIEW_BLOCKS = 5
+    const viewStart = currentBlockIdx
+    const viewEnd = Math.min(TOTAL_BLOCKS, viewStart + VIEW_BLOCKS - 1)
     const nodes = []
     for (let b = viewStart; b <= viewEnd; b++) {
       for (let i = 1; i <= QUEST_BLOCK_SIZE; i++) {
@@ -554,14 +554,13 @@ export default function QuestScreen({ onHome, setStorage }) {
       nodes.push({ level: blockBossLevelOf(b), block: b, indexInBlock: 0, isBoss: true })
     }
 
-    // Positions zigzag : le chemin serpente de gauche à droite
-    const NODE_GAP = 56
+    // Positions zigzag
+    const NODE_GAP = 52
     const MAP_WIDTH = 300
-    const MARGIN_X = 44
+    const MARGIN_X = 50
     const getNodePos = (idx) => {
       const cycle = Math.floor(idx / 6)
       const pos = idx % 6
-      // Zigzag : 3 nodes vers la droite, 3 nodes vers la gauche
       const goingRight = cycle % 2 === 0
       const xSteps = [0, 0.5, 1, 1, 0.5, 0]
       const rawX = xSteps[pos]
@@ -572,13 +571,13 @@ export default function QuestScreen({ onHome, setStorage }) {
       }
     }
 
-    // Trouver le node courant (1er node du bloc courant)
     const currentLevel = state.level
     const currentNodeIdx = nodes.findIndex(n => n.level >= currentLevel)
     const playerIdx = currentNodeIdx >= 0 ? currentNodeIdx : 0
-    const totalHeight = nodes.length * NODE_GAP + 80
+    const DOTS_EXTRA = 80
+    const totalHeight = nodes.length * NODE_GAP + DOTS_EXTRA + 40
 
-    // SVG path entre les nodes
+    // SVG path
     const pathPoints = nodes.map((_, i) => getNodePos(i))
     const pathD = pathPoints.reduce((d, p, i) => {
       if (i === 0) return `M ${p.x} ${p.y}`
@@ -587,10 +586,15 @@ export default function QuestScreen({ onHome, setStorage }) {
       return d + ` C ${prev.x} ${cpY}, ${p.x} ${cpY}, ${p.x} ${p.y}`
     }, '')
 
+    // Pointillés après le dernier node
+    const lastPos = pathPoints[pathPoints.length - 1]
+    const dotsStartY = lastPos ? lastPos.y + NODE_GAP * 0.6 : 0
+    const dotsX = lastPos ? lastPos.x : MAP_WIDTH / 2
+
     return (
       <div style={{
         position: 'relative', width: '100%', height: '100%',
-        background: 'linear-gradient(180deg, #1a0f2e 0%, #2E1A47 50%, #1a0f2e 100%)',
+        background: 'linear-gradient(180deg, #D94A10 0%, #FF6B1A 40%, #FF8C42 100%)',
         color: '#fff', fontFamily: 'Nunito, sans-serif',
         display: 'flex', flexDirection: 'column',
         '--scale': 1,
@@ -599,7 +603,7 @@ export default function QuestScreen({ onHome, setStorage }) {
         <div style={{ flexShrink: 0, padding: '16px 20px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
             <button onClick={onHome} style={{
-              background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', fontSize: 18,
+              background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: 18,
               cursor: 'pointer', padding: 0, width: 36, height: 36, borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               backdropFilter: 'blur(8px)',
@@ -609,11 +613,11 @@ export default function QuestScreen({ onHome, setStorage }) {
             </h1>
             <div style={{ width: 36 }} />
           </div>
-          <div style={{ textAlign: 'center', opacity: 0.85, fontSize: 13, marginBottom: 2 }}>
-            Niveau <b style={{ color: '#FF6B1A' }}>{state.level}</b> / {QUEST_MAX_LEVEL}
-            <span style={{ opacity: 0.6, marginLeft: 8 }}>· Bloc {currentBlockIdx}/{TOTAL_BLOCKS}</span>
+          <div style={{ textAlign: 'center', fontSize: 13, marginBottom: 2 }}>
+            Niveau <b style={{ color: '#fff' }}>{state.level}</b> / {QUEST_MAX_LEVEL}
+            <span style={{ opacity: 0.7, marginLeft: 8 }}>· Bloc {currentBlockIdx}/{TOTAL_BLOCKS}</span>
           </div>
-          <div style={{ textAlign: 'center', fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
+          <div style={{ textAlign: 'center', fontSize: 12, opacity: 0.85, marginBottom: 8 }}>
             <span style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4 }}><EnergyIcon size={14} /></span>
             {energyState.remaining}/{energyState.max} · 1 énergie par bloc
           </div>
@@ -631,8 +635,9 @@ export default function QuestScreen({ onHome, setStorage }) {
           }}>
             {/* Chemin SVG */}
             <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-              <path d={pathD} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="4" strokeLinecap="round" />
-              {/* Chemin parcouru (jusqu'au joueur) */}
+              {/* Chemin non parcouru */}
+              <path d={pathD} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="5" strokeLinecap="round" />
+              {/* Chemin parcouru (orange foncé sur fond orange) */}
               {playerIdx > 0 && (() => {
                 const doneD = pathPoints.slice(0, playerIdx + 1).reduce((d, p, i) => {
                   if (i === 0) return `M ${p.x} ${p.y}`
@@ -640,8 +645,18 @@ export default function QuestScreen({ onHome, setStorage }) {
                   const cpY = (prev.y + p.y) / 2
                   return d + ` C ${prev.x} ${cpY}, ${p.x} ${cpY}, ${p.x} ${p.y}`
                 }, '')
-                return <path d={doneD} fill="none" stroke="#FF6B1A" strokeWidth="4" strokeLinecap="round" />
+                return <path d={doneD} fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" opacity="0.6" />
               })()}
+              {/* Pointillés après le 5e bloc */}
+              {[0, 1, 2].map(i => (
+                <circle
+                  key={`dot-${i}`}
+                  cx={dotsX}
+                  cy={dotsStartY + i * 18}
+                  r="4"
+                  fill="rgba(255,255,255,0.35)"
+                />
+              ))}
             </svg>
 
             {/* Nodes */}
@@ -651,7 +666,9 @@ export default function QuestScreen({ onHome, setStorage }) {
               const isCurrent = i === playerIdx
               const isLocked = node.level > currentLevel
               const failedBoss = node.isBoss && state.bossFailed?.[node.block]
-              const nodeSize = node.isBoss ? 40 : 20
+              const FACT_SIZE = 22
+              const BOSS_SIZE = 33
+              const nodeSize = node.isBoss ? BOSS_SIZE : FACT_SIZE
               const halfSize = nodeSize / 2
 
               return (
@@ -668,65 +685,76 @@ export default function QuestScreen({ onHome, setStorage }) {
                   }}
                 >
                   {node.isBoss ? (
-                    // Gros node boss doré
+                    // Boss WTF! — gold, 50% plus gros, wtf-star
                     <button
                       onClick={() => {
                         if (isCurrent) launchBlock()
                         else if (isDone && failedBoss) launchBossRetry(node.block)
                       }}
                       style={{
-                        width: nodeSize, height: nodeSize, borderRadius: '50%',
+                        width: BOSS_SIZE, height: BOSS_SIZE, borderRadius: '50%',
                         background: isDone && !failedBoss
                           ? 'linear-gradient(135deg, #FFD700, #FFA500)'
-                          : isCurrent
-                            ? 'linear-gradient(135deg, #FF6B1A, #E84535)'
-                            : failedBoss
-                              ? 'linear-gradient(135deg, #E84535, #8B0000)'
-                              : 'rgba(255,255,255,0.08)',
-                        border: `3px solid ${isDone && !failedBoss ? '#FFD700' : isCurrent ? '#fff' : failedBoss ? '#E84535' : 'rgba(255,255,255,0.15)'}`,
+                          : failedBoss
+                            ? 'linear-gradient(135deg, #E84535, #8B0000)'
+                            : 'linear-gradient(135deg, #FFD700, #FFAA00)',
+                        border: `3px solid ${isDone && !failedBoss ? '#FFD700' : failedBoss ? '#E84535' : '#FFD700'}`,
                         boxShadow: isCurrent
-                          ? '0 0 20px rgba(255,107,26,0.6)'
-                          : isDone && !failedBoss
-                            ? '0 0 12px rgba(255,215,0,0.4)'
-                            : 'none',
+                          ? '0 0 24px rgba(255,215,0,0.8), 0 0 8px rgba(255,215,0,0.5)'
+                          : '0 0 12px rgba(255,215,0,0.3)',
                         cursor: (isCurrent || (isDone && failedBoss)) ? 'pointer' : 'default',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         padding: 0,
-                        animation: isCurrent ? 'questPulse 2s ease-in-out infinite' : 'none',
-                        opacity: isLocked ? 0.3 : 1,
+                        animation: isCurrent ? 'questBossPulse 2s ease-in-out infinite' : 'none',
+                        opacity: isLocked ? 0.35 : 1,
                       }}
                     >
-                      <span style={{ fontSize: 16, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
-                        {isDone && !failedBoss ? '👑' : failedBoss ? '🔒' : isCurrent ? '⚔️' : '👑'}
-                      </span>
+                      {failedBoss ? (
+                        <span style={{ fontSize: 14, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>🔒</span>
+                      ) : (
+                        <img
+                          src="/assets/ui/wtf-star.png" alt="WTF!"
+                          style={{
+                            width: BOSS_SIZE * 0.65, height: BOSS_SIZE * 0.65, objectFit: 'contain',
+                            filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))',
+                          }}
+                        />
+                      )}
                     </button>
                   ) : (
-                    // Petit node funny
+                    // Point fact — orange, pulse si courant
                     <div style={{
-                      width: nodeSize, height: nodeSize, borderRadius: '50%',
+                      width: FACT_SIZE, height: FACT_SIZE, borderRadius: '50%',
                       background: isDone
-                        ? '#6BCB77'
+                        ? '#ffffff'
+                        : '#FF6B1A',
+                      border: isDone
+                        ? '2.5px solid rgba(255,255,255,0.9)'
                         : isCurrent
-                          ? '#FF6B1A'
-                          : 'rgba(255,255,255,0.12)',
-                      border: `2px solid ${isDone ? '#6BCB77' : isCurrent ? '#fff' : 'rgba(255,255,255,0.15)'}`,
-                      opacity: isLocked ? 0.25 : 1,
+                          ? '2.5px solid #fff'
+                          : '2.5px solid rgba(255,255,255,0.4)',
+                      opacity: isLocked ? 0.3 : 1,
                       transition: 'all 0.3s ease',
-                      boxShadow: isCurrent ? '0 0 12px rgba(255,107,26,0.5)' : 'none',
+                      boxShadow: isCurrent
+                        ? '0 0 16px rgba(255,255,255,0.8), 0 0 6px rgba(255,107,26,0.6)'
+                        : isDone
+                          ? '0 0 8px rgba(255,255,255,0.3)'
+                          : 'none',
+                      animation: isCurrent ? 'questNodePulse 1.5s ease-in-out infinite' : 'none',
                     }} />
                   )}
                 </div>
               )
             })}
 
-            {/* Étoile joueur */}
+            {/* Étoile joueur au-dessus du node courant */}
             {(() => {
               const pos = getNodePos(playerIdx)
               return (
                 <div style={{
                   position: 'absolute',
-                  left: pos.x - 16,
-                  top: pos.y - 48,
+                  left: pos.x - 18,
+                  top: pos.y - 50,
                   transform: 'scaleY(-1)',
                   textAlign: 'center',
                   pointerEvents: 'none',
@@ -737,8 +765,8 @@ export default function QuestScreen({ onHome, setStorage }) {
                     src="/assets/ui/wtf-star.png"
                     alt="player"
                     style={{
-                      width: 32, height: 32, objectFit: 'contain',
-                      filter: 'drop-shadow(0 2px 8px rgba(255,107,26,0.7))',
+                      width: 36, height: 36, objectFit: 'contain',
+                      filter: 'drop-shadow(0 2px 10px rgba(255,215,0,0.8))',
                     }}
                   />
                 </div>
@@ -746,24 +774,25 @@ export default function QuestScreen({ onHome, setStorage }) {
             })()}
 
             {/* Labels blocs (sur les boss nodes) */}
-            {nodes.filter(n => n.isBoss).map((node, i) => {
+            {nodes.filter(n => n.isBoss).map((node) => {
               const nodeIdx = nodes.indexOf(node)
               const pos = getNodePos(nodeIdx)
               const isDone = node.level < currentLevel
-              const isCurrent = nodeIdx === playerIdx || node.block === currentBlockIdx
+              const isCurrent = node.block === currentBlockIdx
               return (
                 <div key={`label-${node.block}`} style={{
                   position: 'absolute',
-                  left: pos.x > MAP_WIDTH / 2 ? pos.x - 110 : pos.x + 30,
-                  top: pos.y - 10,
+                  left: pos.x > MAP_WIDTH / 2 ? pos.x - 100 : pos.x + 26,
+                  top: pos.y - 8,
                   transform: 'scaleY(-1)',
                   pointerEvents: 'none',
                   whiteSpace: 'nowrap',
                 }}>
                   <span style={{
-                    fontSize: 11, fontWeight: 800,
-                    color: isDone ? '#FFD700' : isCurrent ? '#FF6B1A' : 'rgba(255,255,255,0.35)',
-                    textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                    fontSize: 11, fontWeight: 900,
+                    color: isDone ? 'rgba(255,255,255,0.9)' : isCurrent ? '#fff' : 'rgba(255,255,255,0.5)',
+                    textShadow: '0 1px 6px rgba(0,0,0,0.5)',
+                    letterSpacing: '0.03em',
                   }}>
                     Bloc {node.block}
                   </span>
@@ -773,7 +802,7 @@ export default function QuestScreen({ onHome, setStorage }) {
           </div>
         </div>
 
-        {/* Bouton JOUER flottant (bloc courant) */}
+        {/* Bouton JOUER flottant */}
         <div style={{
           flexShrink: 0, padding: '8px 20px 16px',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
@@ -782,14 +811,14 @@ export default function QuestScreen({ onHome, setStorage }) {
             onClick={launchBlock}
             style={{
               width: '85%', padding: '14px 0',
-              background: 'linear-gradient(135deg, #FF6B1A, #D94A10)',
+              background: '#D94A10',
               border: '3px solid #ffffff',
               borderRadius: 16,
               fontFamily: 'Nunito, sans-serif',
               fontSize: 18, fontWeight: 900,
               color: '#ffffff',
               cursor: 'pointer',
-              boxShadow: '0 8px 30px rgba(255,107,26,0.5), 0 4px 0 rgba(0,0,0,0.15)',
+              boxShadow: '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)',
               letterSpacing: '0.04em',
             }}
           >
@@ -799,9 +828,9 @@ export default function QuestScreen({ onHome, setStorage }) {
             <button
               onClick={() => launchBossRetry(currentBlockIdx - 1)}
               style={{
-                background: 'rgba(232,69,53,0.15)', border: '1.5px solid #E84535',
+                background: 'rgba(255,255,255,0.15)', border: '1.5px solid #fff',
                 borderRadius: 10, padding: '8px 20px',
-                color: '#E84535', fontWeight: 800, fontSize: 12,
+                color: '#fff', fontWeight: 800, fontSize: 12,
                 cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
               }}
             >
@@ -853,7 +882,8 @@ export default function QuestScreen({ onHome, setStorage }) {
         )}
 
         <style>{`
-          @keyframes questPulse { 0%,100%{transform:scaleY(-1) scale(1)} 50%{transform:scaleY(-1) scale(1.15)} }
+          @keyframes questNodePulse { 0%,100%{transform:scaleY(-1) scale(1); box-shadow: 0 0 16px rgba(255,255,255,0.8)} 50%{transform:scaleY(-1) scale(1.25); box-shadow: 0 0 24px rgba(255,255,255,1)} }
+          @keyframes questBossPulse { 0%,100%{transform:scaleY(-1) scale(1); box-shadow: 0 0 24px rgba(255,215,0,0.8)} 50%{transform:scaleY(-1) scale(1.15); box-shadow: 0 0 36px rgba(255,215,0,1)} }
           @keyframes questFloat { 0%,100%{transform:scaleY(-1) translateY(0)} 50%{transform:scaleY(-1) translateY(-6px)} }
         `}</style>
       </div>

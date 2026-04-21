@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { getFunnyFacts, getVipFacts, getCategoryById } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
+import { updateWtfData, readWtfData } from '../utils/storageHelper'
 import { shuffle } from '../utils/shuffle'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
 import { audio } from '../utils/audio'
@@ -55,7 +56,9 @@ function readQuestState() {
 function writeQuestState(state) {
   try {
     const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
-    wd.quest = state
+    const prevServed = wd.quest?.servedFacts
+    wd.quest = { ...state }
+    if (prevServed) wd.quest.servedFacts = prevServed
     if (wd.route) delete wd.route
     wd.lastModified = Date.now()
     localStorage.setItem('wtf_data', JSON.stringify(wd))
@@ -70,11 +73,30 @@ function readUnlockedSet() {
   } catch { return new Set() }
 }
 
-// ── Pick 10 Funny diversifiées (catégories variées, hors déjà débloquées) ──
-function pickDiverseFunny(pool, n, unlockedSet) {
-  const available = pool.filter(f => !unlockedSet.has(f.id))
-  const source = available.length >= n ? available : pool
-  const shuffled = [...source].sort(() => Math.random() - 0.5)
+function readQuestServedSet() {
+  try {
+    const wd = JSON.parse(localStorage.getItem('wtf_data') || '{}')
+    const arr = wd.quest?.servedFacts || []
+    return new Set(Array.isArray(arr) ? arr : [])
+  } catch { return new Set() }
+}
+
+function writeQuestServedFacts(factIds) {
+  updateWtfData(wd => {
+    if (!wd.quest) wd.quest = { level: 1, stars: {}, bossFailed: {}, bossWrongs: {} }
+    const prev = new Set(wd.quest.servedFacts || [])
+    factIds.forEach(id => prev.add(id))
+    wd.quest.servedFacts = Array.from(prev)
+  })
+}
+
+// ── Pick 5 Funny diversifiées (hors déjà débloquées ET déjà servies en Quest) ──
+function pickDiverseFunny(pool, n, unlockedSet, servedSet) {
+  const excludeSet = new Set([...unlockedSet, ...servedSet])
+  const available = pool.filter(f => !excludeSet.has(f.id))
+  const source = available.length >= n ? available : pool.filter(f => !unlockedSet.has(f.id))
+  const finalSource = source.length >= n ? source : pool
+  const shuffled = [...finalSource].sort(() => Math.random() - 0.5)
   const picked = []
   const usedCats = new Set()
   for (const f of shuffled) {
@@ -135,7 +157,7 @@ function buildBossOptions(fact, excludeWrongs = []) {
 }
 
 // ── Construit une session de bloc : 10 funny + 1 boss préparé (conditionnel) ─
-function buildBlockSession({ blockIdx, unlockedSet, bossOnly = false, bossExcludeWrongs = [] }) {
+function buildBlockSession({ blockIdx, unlockedSet, servedSet = new Set(), bossOnly = false, bossExcludeWrongs = [] }) {
   const bossFact = pickBossForBlock(blockIdx)
   if (!bossFact) return null
   const bossPrepped = {
@@ -147,7 +169,7 @@ function buildBlockSession({ blockIdx, unlockedSet, bossOnly = false, bossExclud
 
   const funnyPool = getFunnyFacts()
   if (funnyPool.length < QUEST_BLOCK_SIZE) return null
-  const diverse = pickDiverseFunny(funnyPool, QUEST_BLOCK_SIZE, unlockedSet)
+  const diverse = pickDiverseFunny(funnyPool, QUEST_BLOCK_SIZE, unlockedSet, servedSet)
   const funnyPrepped = diverse.map(f => ({
     ...f,
     ...getAnswerOptions(f, QUEST_QCM),
@@ -189,6 +211,8 @@ export default function QuestScreen({ onHome, setStorage }) {
   const [bossAnimPhase, setBossAnimPhase] = useState(null) // 'travel' | 'overlay' | null
   // Pré-build session pour afficher les couleurs catégories sur la carte
   const [prebuiltSession, setPrebuiltSession] = useState(null)
+  const [prebuiltNextSession, setPrebuiltNextSession] = useState(null)
+  const [catTooltip, setCatTooltip] = useState(null)
   const mapRef = useRef(null)
 
   useEffect(() => {
@@ -204,12 +228,21 @@ export default function QuestScreen({ onHome, setStorage }) {
     }
   }, [session, state.level, pendingBoss])
 
-  // Pré-build session dès qu'on est sur la carte (pas en jeu, pas en pending boss)
+  // Pré-build session bloc courant + suivant (couleurs catégories sur la carte)
   useEffect(() => {
     if (session || pendingBoss) return
     const unlockedSet = readUnlockedSet()
-    const s = buildBlockSession({ blockIdx: blockIdxOf(state.level), unlockedSet })
+    const servedSet = readQuestServedSet()
+    const curBlock = blockIdxOf(state.level)
+    const s = buildBlockSession({ blockIdx: curBlock, unlockedSet, servedSet })
     setPrebuiltSession(s)
+    const TOTAL_BLOCKS = Math.ceil(QUEST_MAX_LEVEL / QUEST_BLOCK_SIZE)
+    if (curBlock < TOTAL_BLOCKS) {
+      const s2 = buildBlockSession({ blockIdx: curBlock + 1, unlockedSet, servedSet })
+      setPrebuiltNextSession(s2)
+    } else {
+      setPrebuiltNextSession(null)
+    }
   }, [session, pendingBoss, state.level])
 
   // Pending boss animation sequence : travel (2s) → overlay (2.5s) → launch boss
@@ -270,7 +303,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     setEnergyState(getQuickieEnergy())
 
     // Utilise la session pré-construite (couleurs catégories déjà visibles sur la carte)
-    const s = prebuiltSession || buildBlockSession({ blockIdx: currentBlockIdx, unlockedSet: readUnlockedSet() })
+    const s = prebuiltSession || buildBlockSession({ blockIdx: currentBlockIdx, unlockedSet: readUnlockedSet(), servedSet: readQuestServedSet() })
     if (!s) return
     setPrebuiltSession(null)
     setSession(s); setQIndex(0); setPhase('question')
@@ -322,6 +355,17 @@ export default function QuestScreen({ onHome, setStorage }) {
       unlockFact?.(id, fact?.category, isBoss ? 'quest_boss_unlock' : 'quest_level_unlock')
         ?.catch?.(e => console.warn('[QuestScreen] unlockFact RPC failed:', e?.message || e))
     })
+
+    // Persiste unlocked + served dans localStorage pour que le prochain bloc les exclue
+    const allServedIds = sessionArg.facts.filter(f => !f._isBoss).map(f => f.id)
+    if (allServedIds.length > 0) writeQuestServedFacts(allServedIds)
+    if (toUnlock.size > 0) {
+      updateWtfData(wd => {
+        const prev = new Set(wd.unlockedFacts || [])
+        toUnlock.forEach(id => prev.add(id))
+        wd.unlockedFacts = Array.from(prev)
+      })
+    }
 
     const nextBossFailed = { ...state.bossFailed }
     const nextBossWrongs = { ...state.bossWrongs }
@@ -594,14 +638,27 @@ export default function QuestScreen({ onHome, setStorage }) {
       nodes.push({ level: blockBossLevelOf(b), block: b, indexInBlock: 0, isBoss: true })
     }
 
-    // Couleurs catégories des 5 facts du bloc courant (depuis prebuiltSession)
+    // Couleurs catégories des facts (bloc courant + suivant) depuis prebuiltSessions
     const factCatColors = {}
     const factCatIds = {}
+    const factCatLabels = {}
+    const nextBlockIdx = currentBlockIdx + 1
     if (prebuiltSession?.facts) {
       prebuiltSession.facts.forEach((f, i) => {
         const cat = getCategoryById(f.category)
-        factCatColors[i + 1] = cat?.color || '#FF6B1A'
-        factCatIds[i + 1] = f.category
+        const key = `${currentBlockIdx}_${i + 1}`
+        factCatColors[key] = cat?.color || '#FF6B1A'
+        factCatIds[key] = f.category
+        factCatLabels[key] = cat?.label || ''
+      })
+    }
+    if (prebuiltNextSession?.facts) {
+      prebuiltNextSession.facts.forEach((f, i) => {
+        const cat = getCategoryById(f.category)
+        const key = `${nextBlockIdx}_${i + 1}`
+        factCatColors[key] = cat?.color || '#FF6B1A'
+        factCatIds[key] = f.category
+        factCatLabels[key] = cat?.label || ''
       })
     }
 
@@ -679,7 +736,7 @@ export default function QuestScreen({ onHome, setStorage }) {
         </div>
 
         {/* Zone scrollable — chemin inversé (bas = début, haut = avancé) */}
-        <div ref={mapRef} style={{
+        <div ref={mapRef} onClick={(e) => { if (e.target === e.currentTarget || !e.target.closest('[data-cat-node]')) setCatTooltip(null) }} style={{
           flex: 1, overflowY: 'auto', overflowX: 'hidden',
           position: 'relative',
         }}>
@@ -736,11 +793,10 @@ export default function QuestScreen({ onHome, setStorage }) {
               const nodeSize = node.isBoss ? BOSS_SIZE : FACT_SIZE
               const halfSize = nodeSize / 2
 
-              // Couleur catégorie pour les facts du bloc courant
-              const isCurrentBlock = node.block === currentBlockIdx && !node.isBoss
-              const catColor = isCurrentBlock && factCatColors[node.indexInBlock]
-                ? factCatColors[node.indexInBlock]
-                : '#FF6B1A'
+              // Couleur catégorie pour les facts du bloc courant ou suivant
+              const nodeKey = `${node.block}_${node.indexInBlock}`
+              const hasPrebuiltCat = !node.isBoss && factCatColors[nodeKey]
+              const catColor = hasPrebuiltCat ? factCatColors[nodeKey] : '#FF6B1A'
 
               return (
                 <div
@@ -776,7 +832,8 @@ export default function QuestScreen({ onHome, setStorage }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         padding: 0,
                         animation: (isCurrent || (node.block === currentBlockIdx)) ? 'questBossPulse 2s ease-in-out infinite' : 'none',
-                        opacity: (isLocked && node.block !== currentBlockIdx) ? 0.35 : 1,
+                        opacity: (isLocked && node.block !== currentBlockIdx && node.block !== nextBlockIdx) ? 0.35
+                          : (isLocked && node.block === nextBlockIdx) ? 0.55 : 1,
                       }}
                     >
                       {failedBoss ? (
@@ -789,31 +846,55 @@ export default function QuestScreen({ onHome, setStorage }) {
                       )}
                     </button>
                   ) : (
-                    <div style={{
-                      width: FACT_SIZE, height: FACT_SIZE, borderRadius: '50%',
-                      background: isDone ? '#ffffff' : isCurrentBlock ? catColor : '#FF6B1A',
-                      border: isDone
-                        ? '2.5px solid rgba(255,255,255,0.9)'
-                        : isCurrent
-                          ? `2.5px solid #fff`
-                          : `2.5px solid ${isCurrentBlock ? catColor + '80' : 'rgba(255,255,255,0.4)'}`,
-                      opacity: isLocked && !isCurrentBlock ? 0.3 : 1,
-                      transition: 'all 0.3s ease',
-                      boxShadow: isCurrent
-                        ? `0 0 16px rgba(255,255,255,0.8), 0 0 6px ${catColor}99`
-                        : isDone
-                          ? '0 0 8px rgba(255,255,255,0.3)'
-                          : 'none',
-                      animation: isCurrent ? 'questNodePulse 1.5s ease-in-out infinite' : 'none',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      overflow: 'hidden',
-                    }}>
-                      {isCurrentBlock && factCatIds[node.indexInBlock] && (
-                        <img src={`/assets/categories/${factCatIds[node.indexInBlock]}.png`} alt=""
+                    <div
+                      data-cat-node="true"
+                      onClick={() => {
+                        if (hasPrebuiltCat && factCatLabels[nodeKey]) {
+                          setCatTooltip(prev => prev === nodeKey ? null : nodeKey)
+                        }
+                      }}
+                      style={{
+                        width: FACT_SIZE, height: FACT_SIZE, borderRadius: '50%',
+                        background: isDone ? '#ffffff' : hasPrebuiltCat ? catColor : '#FF6B1A',
+                        border: isDone
+                          ? '2.5px solid rgba(255,255,255,0.9)'
+                          : isCurrent
+                            ? `2.5px solid #fff`
+                            : `2.5px solid ${hasPrebuiltCat ? catColor + '80' : 'rgba(255,255,255,0.4)'}`,
+                        opacity: isLocked && !hasPrebuiltCat ? 0.3
+                          : (isLocked && node.block === nextBlockIdx) ? 0.65 : 1,
+                        transition: 'all 0.3s ease',
+                        boxShadow: isCurrent
+                          ? `0 0 16px rgba(255,255,255,0.8), 0 0 6px ${catColor}99`
+                          : isDone
+                            ? '0 0 8px rgba(255,255,255,0.3)'
+                            : 'none',
+                        animation: isCurrent ? 'questNodePulse 1.5s ease-in-out infinite' : 'none',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        overflow: 'hidden',
+                        cursor: hasPrebuiltCat ? 'pointer' : 'default',
+                        position: 'relative',
+                      }}
+                    >
+                      {hasPrebuiltCat && factCatIds[nodeKey] && (
+                        <img src={`/assets/categories/${factCatIds[nodeKey]}.png`} alt=""
                           style={{ width: FACT_SIZE * 0.65, height: FACT_SIZE * 0.65, objectFit: 'contain', flexShrink: 0 }} />
                       )}
-                      {isDone && !isCurrentBlock && (
+                      {isDone && !hasPrebuiltCat && (
                         <span style={{ fontSize: FACT_SIZE * 0.45, lineHeight: 1, color: '#FF6B1A' }}>✓</span>
+                      )}
+                      {catTooltip === nodeKey && factCatLabels[nodeKey] && (
+                        <div style={{
+                          position: 'absolute', bottom: '110%', left: '50%',
+                          transform: 'translateX(-50%) scaleY(-1)',
+                          background: 'rgba(0,0,0,0.85)', color: '#fff',
+                          padding: '4px 10px', borderRadius: 8, fontSize: 11,
+                          fontWeight: 700, whiteSpace: 'nowrap', zIndex: 20,
+                          pointerEvents: 'none',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        }}>
+                          {factCatLabels[nodeKey]}
+                        </div>
                       )}
                     </div>
                   )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useScale } from './hooks/useScale'
 import { useNavigate } from 'react-router-dom'
 import { DIFFICULTY_LEVELS, SCREENS, MODE_CONFIGS } from './constants/gameConfig'
@@ -11,6 +11,8 @@ import ScreenRenderer from './components/ScreenRenderer'
 import DesktopDecor from './components/DesktopDecor'
 import SplashScreen from './screens/SplashScreen'
 import FalkonIntroScreen from './screens/FalkonIntroScreen'
+import OnboardingTunnel from './onboarding/OnboardingTunnel'
+import { useOnboarding } from './onboarding/useOnboarding'
 // Hooks
 import { useGameHandlers } from './hooks/useGameHandlers'
 import { usePlayerProfile } from './hooks/usePlayerProfile'
@@ -29,6 +31,7 @@ import { useDevActions } from './hooks/useDevActions'
 export default function App() {
   const navigate = useNavigate()
   const scale = useScale()
+  const onboarding = useOnboarding()
   // Phase A — profil Supabase (source de vérité pour devises/unlocks/flags)
   const { applyCurrencyDelta, unlockFact, mergeFlags, coins: profileCoins, hints: profileHints } = usePlayerProfile()
   // DuelContext — pending nav state en mémoire (remplace localStorage pour Défi)
@@ -174,11 +177,21 @@ export default function App() {
 
   const [showFalkon, setShowFalkon] = useState(() => !sessionStorage.getItem('wtf_splash_done'))
   const [showSplash, setShowSplash] = useState(false)
+  const [showOnboardingTunnel, setShowOnboardingTunnel] = useState(false)
   const handleSplashComplete = async () => {
-    // Audio et musique OFF par défaut — le joueur les active dans les paramètres
-
     sessionStorage.setItem('wtf_splash_done', 'true')
     setShowSplash(false)
+    if (onboarding.needsTunnel) {
+      setShowOnboardingTunnel(true)
+    } else {
+      setScreen(SCREENS.HOME)
+    }
+  }
+  const handleOnboardingComplete = ({ factId, coinsEarned }) => {
+    setShowOnboardingTunnel(false)
+    if (coinsEarned > 0) {
+      applyCurrencyDelta({ coins: coinsEarned }, 'onboarding_hook_fact')
+    }
     setScreen(SCREENS.HOME)
   }
 
@@ -218,6 +231,7 @@ export default function App() {
   // isChallengeMode dérivé de pendingDuel — une seule source de vérité (Palier 2).
   const isChallengeMode = pendingDuel?.mode === 'create'
   const [sessionType, setSessionType] = useState('parcours') // 'drop' | 'quickie' | 'parcours' | 'quickie' | 'duel'
+  const [lastSessionType, setLastSessionType] = useState(null)
   const [coinsEarnedLastSession, setCoinsEarnedLastSession] = useState(0)
   const [dailyFact, setDailyFact] = useState(null)
   const [dailyFactOverride, setDailyFactOverride] = useState(null)
@@ -331,6 +345,17 @@ export default function App() {
     localStorage.removeItem('skip_launch_drop')
     localStorage.removeItem('skip_launch_race')
     localStorage.removeItem('skip_launch_vrai_ou_fou')
+    localStorage.removeItem('wtf_ob_welcome')
+    localStorage.removeItem('wtf_ob_first_fact')
+    localStorage.removeItem('wtf_ob_home_spots')
+    localStorage.removeItem('wtf_ob_vof_done')
+    localStorage.removeItem('wtf_ob_quickie_intro')
+    localStorage.removeItem('wtf_ob_collection')
+    localStorage.removeItem('wtf_ob_quest_intro')
+    localStorage.removeItem('wtf_ob_streak_intro')
+    localStorage.removeItem('wtf_ob_roulette_intro')
+    localStorage.removeItem('wtf_ob_drop_intro')
+    localStorage.removeItem('wtf_onboarding_collect_done')
     sessionStorage.clear()
     window.location.reload()
   }
@@ -422,6 +447,11 @@ export default function App() {
     setCorrectCount, setSessionFacts, setScreen,
   })
 
+  const handleHomeWithTracking = useCallback(() => {
+    setLastSessionType(sessionType)
+    handleHome()
+  }, [sessionType, handleHome])
+
   // ─── App effects → extraits dans useAppEffects hook ─────────────────────────
   useAppEffects({
     user, factsReady, screen, streakRewardToast,
@@ -444,6 +474,15 @@ export default function App() {
       <SplashScreen
         onComplete={handleSplashComplete}
         isReady={factsReady}
+      />
+    )
+  }
+
+  if (showOnboardingTunnel) {
+    return (
+      <OnboardingTunnel
+        onComplete={handleOnboardingComplete}
+        complete={onboarding.complete}
       />
     )
   }
@@ -530,7 +569,7 @@ export default function App() {
         newlyEarnedBadges={newlyEarnedBadges} showHowToPlay={showHowToPlay}
         quickieEnergy={quickieEnergy}
         modeConfigs={MODE_CONFIGS}
-        handleHomeNavigate={handleHomeNavigate} handleHome={handleHome}
+        handleHomeNavigate={handleHomeNavigate} handleHome={handleHomeWithTracking}
         handleSelectDifficulty={handleSelectDifficulty} handleSelectCategory={handleSelectCategory}
         handleSelectAnswer={handleSelectAnswer} handleOpenValidate={handleOpenValidate}
         handleUseHint={handleUseHint} handleTimeout={handleTimeout}
@@ -546,6 +585,9 @@ export default function App() {
         socialNotifCount={socialNotifCount}
         pendingChallengesCount={pendingChallengesCount}
         navigate={navigate}
+        onboarding={onboarding}
+        lastSessionType={lastSessionType}
+        clearLastSessionType={() => setLastSessionType(null)}
       />
 
       <AppModals

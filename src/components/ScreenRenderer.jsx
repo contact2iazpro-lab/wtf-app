@@ -43,6 +43,7 @@ export default function ScreenRenderer({
   setScreen, setShowSettings, setShowHowToPlay, setStorage,
   onBadgeSeen, onResetSocialNotif,
   socialNotifCount, pendingChallengesCount, navigate,
+  onboarding, lastSessionType, clearLastSessionType,
 }) {
   // Handler stable pour BlitzResultsScreen — évite que son useEffect cleanup
   // ne wipe lastCreatedDuel sur chaque re-render (fresh closure trap).
@@ -65,6 +66,9 @@ export default function ScreenRenderer({
           socialNotifCount={socialNotifCount}
           onResetSocialNotif={onResetSocialNotif}
           pendingChallengesCount={pendingChallengesCount}
+          onboarding={onboarding}
+          lastSessionType={lastSessionType}
+          clearLastSessionType={clearLastSessionType}
         />
       )}
 

@@ -134,7 +134,7 @@ export default function QuestionTemplate({
               else { bg = 'rgba(255,255,255,0.08)'; textColor = 'rgba(255,255,255,0.4)' }
             }
             return (
-              <button key={i} disabled={answered || disabled}
+              <button key={i} disabled={answered || disabled || opt.disabled}
                 onClick={() => onSelectAnswer(i)}
                 style={{
                   background: bg, border: 'none', borderRadius: S(12),
@@ -142,9 +142,10 @@ export default function QuestionTemplate({
                   lineHeight: 1.2, padding: `${S(4)}px ${S(6)}px`,
                   height: S(btnH), width: '100%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  textAlign: 'center', cursor: answered ? 'default' : 'pointer',
+                  textAlign: 'center', cursor: (answered || opt.disabled) ? 'default' : 'pointer',
                   transition: 'transform 0.1s, background 0.15s',
                   overflow: 'hidden', wordBreak: 'break-word',
+                  opacity: opt.disabled ? 0.3 : 1,
                 }}>
                 <span style={{
                   overflow: 'hidden', textOverflow: 'ellipsis',

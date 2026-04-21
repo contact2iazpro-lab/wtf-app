@@ -7,7 +7,7 @@ export default function RevelationTemplate({
   hintsCount = 0, socialProofPercent = 0,
   onNext = () => {}, onShare = () => {}, onQuit = () => {},
   showFinger = true, showShareButton = true, showExplanation = true,
-  isLast = false, isVip = false,
+  isLast = false, isVip = false, showCollectionBadge = false,
 }) {
   const S = useScale()
 
@@ -83,6 +83,25 @@ export default function RevelationTemplate({
               borderRadius: S(12), objectFit: 'cover',
               filter: isCorrect ? 'none' : 'blur(12px) brightness(0.5)',
             }} />
+            {/* BADGE COLLECTION */}
+            {isCorrect && showCollectionBadge && (
+              <div style={{
+                position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
+                background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+                border: `2px solid ${isVip ? '#FFD700' : '#4CAF50'}`,
+                borderRadius: S(8),
+                padding: `${S(4)}px ${S(10)}px`,
+                display: 'flex', alignItems: 'center', gap: S(4),
+                animation: 'badgePop 0.5s cubic-bezier(0.34,1.56,0.64,1)',
+              }}>
+                <span style={{ fontSize: S(12) }}>📚</span>
+                <span style={{
+                  fontSize: S(10), fontWeight: 900,
+                  color: isVip ? '#FFD700' : '#4CAF50',
+                  letterSpacing: '0.04em',
+                }}>Ajouté à ta collection !</span>
+              </div>
+            )}
             {/* STAMP ERREUR */}
             {!isCorrect && (
               <div style={{
@@ -190,6 +209,7 @@ export default function RevelationTemplate({
 
       {/* ANIMATIONS */}
       <style>{`
+        @keyframes badgePop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes vipPulse { 0%, 100% { opacity: 0.1; transform: scale(0.8); } 50% { opacity: 0.35; transform: scale(1.2); } }
         @keyframes vipGlow { 0%, 100% { box-shadow: inset 0 0 15px ${catColor}4D, 0 0 15px ${catColor}80; } 50% { box-shadow: inset 0 0 20px ${catColor}66, 0 0 20px ${catColor}B3; } }
         @keyframes tutoFinger { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }

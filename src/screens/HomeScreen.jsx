@@ -3,7 +3,7 @@
  * Zones : Header · Streak · Cerveaux · Roulette+Drop · Grille modes · BottomNav
  */
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import SettingsModal from '../components/SettingsModal'
 import BottomNav from '../components/BottomNav'
 import ModeIcon from '../components/ModeIcon'
@@ -15,6 +15,9 @@ import { useScale } from '../hooks/useScale'
 import { STREAK_PALIERS } from '../constants/gameConfig'
 import RouletteModal from '../components/RouletteModal'
 
+import SpotlightOverlay from '../onboarding/SpotlightOverlay'
+import OnboardingToast from '../onboarding/OnboardingToast'
+import { TEXTS } from '../onboarding/onboardingConfig'
 import { useStreakRewards } from '../hooks/useStreakRewards'
 import { useCountdownToMidnight } from '../hooks/useCountdownToMidnight'
 // StarburstBackground retiré — fond uni sans rayons
@@ -64,6 +67,9 @@ export default function HomeScreen({
   onResetSocialNotif,
   pendingChallengesCount = 0,
   quickieEnergyRemaining = 3,
+  onboarding = null,
+  lastSessionType = null,
+  clearLastSessionType = null,
 }) {
   const { coins, hints, applyCurrencyDelta, mergeFlags } = usePlayerProfile()
 
@@ -71,9 +77,9 @@ export default function HomeScreen({
   const [coffreReward, setCoffreReward] = useState(null)
   const [showRoulette, setShowRoulette] = useState(false)
   const [badgeToShow, setBadgeToShow] = useState(null)
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    try { return !localStorage.getItem('wtf_onboarding_collect_done') } catch { return false }
-  })
+  const partieRapideRef = useRef(null)
+  const coinsPillRef = useRef(null)
+  const [spotlightStep, setSpotlightStep] = useState(0)
 
   const { paliers, currentStreak: streakFromHook, getStatus, claim, claimDaily, pendingDaily } = useStreakRewards(applyCurrencyDelta, mergeFlags)
   const streak = streakFromHook || currentStreak || 0
@@ -177,7 +183,7 @@ export default function HomeScreen({
               { icon: '/assets/ui/icon-hint.png?v=2', value: hints },
             ].map((pill, i) => (
               <button
-                key={i} onClick={() => nav('boutique')}
+                key={i} ref={i === 0 ? coinsPillRef : undefined} onClick={() => nav('boutique')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: S(4),
                   background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
@@ -364,6 +370,7 @@ export default function HomeScreen({
 
         {/* Bouton Partie Rapide (VOF) — fond vert, icône intacte */}
         <button
+          ref={partieRapideRef}
           onClick={() => nav('vrai_ou_fou')}
           className="btn-press"
           style={{
@@ -413,56 +420,47 @@ export default function HomeScreen({
       {showRoulette && <RouletteModal onClose={() => setShowRoulette(false)} scale={scale} />}
       {badgeToShow && <NewBadgeModal badge={badgeToShow} onClose={handleBadgeClose} />}
 
-      {showOnboarding && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, zIndex: 300,
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24,
-          }}
-          onClick={() => {
-            localStorage.setItem('wtf_onboarding_collect_done', '1')
-            setShowOnboarding(false)
-          }}
-        >
-          <div
-            style={{
-              background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderRadius: 20,
-              padding: '28px 24px', maxWidth: 320, width: '100%', textAlign: 'center',
-              border: '1px solid rgba(255,255,255,0.15)',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-              fontFamily: 'Nunito, sans-serif',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <span style={{ fontSize: 36, display: 'block', marginBottom: 12 }}>🔓</span>
-            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#ffffff', margin: '0 0 12px' }}>
-              Collectionne des f*cts !
-            </h3>
-            <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: '0 0 16px' }}>
-              Seuls <strong style={{ color: '#E91E90' }}>Quickie</strong> et <strong style={{ color: '#FF6B1A' }}>Quest</strong> te permettent de débloquer de nouveaux f*cts pour ta collection.
-            </p>
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', lineHeight: 1.4, margin: '0 0 20px' }}>
-              Repère le badge 🔓 sur ces modes !
-            </p>
-            <button
-              onClick={() => {
-                localStorage.setItem('wtf_onboarding_collect_done', '1')
-                setShowOnboarding(false)
-              }}
-              style={{
-                padding: '12px 40px', borderRadius: 14,
-                background: '#FF6B1A', color: 'white', border: 'none',
-                fontWeight: 900, fontSize: 15, cursor: 'pointer',
-                fontFamily: 'Nunito, sans-serif',
-              }}
-            >
-              Compris !
-            </button>
-          </div>
-        </div>
+      {/* Toast onboarding post-session */}
+      {lastSessionType === 'vrai_ou_fou' && onboarding && !onboarding.completed.vofDone && (
+        <OnboardingToast
+          icon={TEXTS.toasts.postVof.icon}
+          message={TEXTS.toasts.postVof.message}
+          cta={TEXTS.toasts.postVof.cta}
+          onCta={() => { onboarding.complete('vofDone'); clearLastSessionType?.(); nav('quickie') }}
+          onDismiss={() => { onboarding.complete('vofDone'); clearLastSessionType?.() }}
+        />
       )}
+      {lastSessionType === 'quickie' && onboarding && !onboarding.completed.quickieIntro && (
+        <OnboardingToast
+          icon={TEXTS.toasts.postQuickie.icon}
+          message={TEXTS.toasts.postQuickie.message}
+          cta={TEXTS.toasts.postQuickie.cta}
+          onCta={() => { onboarding.complete('quickieIntro'); clearLastSessionType?.(); nav('collection') }}
+          onDismiss={() => { onboarding.complete('quickieIntro'); clearLastSessionType?.() }}
+        />
+      )}
+
+      {/* Spotlights onboarding Séquence 2 */}
+      {onboarding?.needsHomeSpotlights && spotlightStep === 0 && (
+        <SpotlightOverlay
+          targetRef={partieRapideRef}
+          text={TEXTS.homeSpotlights[0].text}
+          shape="rect"
+          onDismiss={() => setSpotlightStep(1)}
+        />
+      )}
+      {onboarding?.needsHomeSpotlights && spotlightStep === 1 && (
+        <SpotlightOverlay
+          targetRef={coinsPillRef}
+          text={TEXTS.homeSpotlights[1].text}
+          shape="round"
+          onDismiss={() => {
+            setSpotlightStep(2)
+            onboarding.complete('homeSpots')
+          }}
+        />
+      )}
+
     </div>
   )
 }

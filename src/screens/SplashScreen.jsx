@@ -33,10 +33,14 @@ export default function SplashScreen({ onComplete, isReady }) {
 
   // Animations d'entrée (logo + tagline) + son "What the fact" sur la tagline
   useEffect(() => {
-    const t1 = setTimeout(() => setLogoVisible(true), 100)
+    const t1 = setTimeout(() => {
+      setLogoVisible(true)
+      try { audio.play('splash_logo') } catch { /* ignore */ }
+    }, 100)
     const t2 = setTimeout(() => {
       setTaglineVisible(true)
-      try { audio.playFile('What the fact.mp3') } catch { /* ignore */ }
+      try { audio.play('splash_tagline') } catch { /* ignore */ }
+      try { audio.playFile('sounds/What the fact.mp3') } catch { /* ignore */ }
     }, 700)
     const t3 = setTimeout(() => setMinTimeElapsed(true), 3000)
     const t4 = setTimeout(() => {
@@ -65,6 +69,7 @@ export default function SplashScreen({ onComplete, isReady }) {
   useEffect(() => {
     if (minTimeElapsed && (isReady || forceReady)) {
       setFadeOut(true)
+      try { audio.play('splash_ready') } catch { /* ignore */ }
       const t = setTimeout(() => onComplete(), 500)
       return () => clearTimeout(t)
     }

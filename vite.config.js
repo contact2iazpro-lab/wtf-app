@@ -14,7 +14,7 @@ export default defineConfig({
     'import.meta.env.VITE_BUILD_ID': JSON.stringify(Date.now().toString()),
   },
   server: {
-    port: 3000,
+    port: 5176,
     strictPort: true,
     headers: {
       'Cache-Control': 'no-cache',

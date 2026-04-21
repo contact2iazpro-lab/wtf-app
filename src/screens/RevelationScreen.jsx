@@ -209,8 +209,8 @@ export default function RevelationScreen({
     setShowScorePulse(false)
     setDisplayedScore(isCorrect ? sessionScore - pointsEarned : sessionScore)
     if (isCorrect) {
-      const soundTimer1 = setTimeout(() => audio.playFile('What the fact.mp3'), 350)
-      const soundTimer2 = setTimeout(() => audio.playFile('Coins points.mp3'), 600)
+      const soundTimer1 = setTimeout(() => audio.playFile('sounds/What the fact.mp3'), 350)
+      const soundTimer2 = setTimeout(() => audio.playFile('sounds/Coins points.mp3'), 600)
       const coinsTimer = setTimeout(() => setShowCoins(true), 400)
       const scoreTimer = setTimeout(() => {
         setDisplayedScore(prev => prev + pointsEarned)

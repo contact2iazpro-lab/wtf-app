@@ -19,5 +19,8 @@ export const useScale = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  return scale
+  const S = (px) => Math.round(px * scale)
+  S.valueOf = () => scale
+  S.toString = () => String(scale)
+  return S
 }

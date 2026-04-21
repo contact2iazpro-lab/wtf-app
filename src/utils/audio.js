@@ -133,9 +133,40 @@ class AudioManager {
     } catch (_) {}
   }
 
+  // ── Sound registry : fichiers mode-spécifiques + pool commun ────────
+  // Convention : "mode_Nom.mp3" = exclusif au mode, "Nom.mp3" = pool commun.
+  // playRandomSound(type, mode) pioche d'abord dans les sons du mode, fallback commun.
+
+  _wrongSounds = {
+    _common: [
+      'sounds/wrong/Au_Suivant.mp3',
+      'sounds/wrong/Dommage.mp3',
+      'sounds/wrong/Ha_la_la.mp3',
+      'sounds/wrong/Nan_c_est_pas_ca.mp3',
+      'sounds/wrong/Oh_essaye_un_autre.mp3',
+      'sounds/wrong/Oh_non.mp3',
+      'sounds/wrong/Prochaine_question.mp3',
+      'sounds/wrong/Rat\u00e9.mp3',
+      'sounds/wrong/What_the.mp3',
+    ],
+  }
+
+  _rightSounds = {
+    _common: [],
+  }
+
+  playRandomSound(type, mode = null) {
+    const registry = type === 'right' ? this._rightSounds : this._wrongSounds
+    const modePool = mode && registry[mode] ? registry[mode] : []
+    const commonPool = registry._common || []
+    const pool = modePool.length > 0 ? modePool : commonPool
+    if (!pool.length) return
+    this.playFile(pool[Math.floor(Math.random() * pool.length)], 0.2)
+  }
+
   // ── SFX (called on user gesture → safe to create ctx) ─────────────
 
-  play(name) {
+  play(name, mode = null) {
     if (!this._sfxEnabled) return
 
     // Premier appel = premier geste = on crée le ctx
@@ -150,34 +181,23 @@ class AudioManager {
         this._tone(523.25, 0.12, 'sine', 0.3)
         this._tone(659.25, 0.12, 'sine', 0.35, 0.1)
         this._tone(783.99, 0.3, 'sine', 0.4, 0.22)
+        this.playRandomSound('right', mode)
         break
-      case 'wrong': {
-        const wrongSounds = [
-          '/sounds/wrong/Au_Suivant.mp4',
-          '/sounds/wrong/Dommage.mp4',
-          '/sounds/wrong/Ha_la_la.mp4',
-          '/sounds/wrong/Nan_c_est_pas_ca.mp4',
-          '/sounds/wrong/Oh_essaye_un_autre.mp4',
-          '/sounds/wrong/Oh_non.mp4',
-          '/sounds/wrong/Prochaine_question.mp4',
-          '/sounds/wrong/Rat\u00e9.mp4',
-          '/sounds/wrong/What_the.mp4',
-        ]
-        this.playFile(wrongSounds[Math.floor(Math.random() * wrongSounds.length)].slice(1), 0.2)
+      case 'wrong':
+        this.playRandomSound('wrong', mode)
         break
-      }
       case 'wrong_vof': {
-        // Descente "whoop" moqueuse pour Vrai ET Fou : 3 tons sine descendants
         this._tone(494, 0.12, 'sine', 0.22)
         this._tone(370, 0.14, 'sine', 0.24, 0.1)
         this._tone(247, 0.3, 'sine', 0.26, 0.22)
+        this.playRandomSound('wrong', 'vof')
         break
       }
       case 'wrong_quest': {
-        // Grave dramatique "donjon raté" pour Quest : sawtooth bas + square dissonant
         this._tone(165, 0.18, 'sawtooth', 0.28)
         this._tone(155, 0.22, 'sawtooth', 0.28, 0.10)
         this._tone(110, 0.40, 'square', 0.22, 0.24)
+        this.playRandomSound('wrong', 'quest')
         break
       }
       case 'roulette_spin':

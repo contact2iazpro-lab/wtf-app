@@ -121,15 +121,15 @@ export const MODE_CONFIGS = {
     ],
   },
   quest: {
-    modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png?v=2', color: '#FF6B1A',
+    modeId: 'quest', modeName: 'Quest', subtitle: 'Le chemin des WTF!', emoji: '🗺️', icon: '/assets/modes/icon-quest.png?v=2', color: '#FFA500',
     rules: [
       { icon: 'icon:energy', text: '**Coût** : 1 énergie' },
-      { icon: 'icon:set', text: '**Bloc** : 5 fun facts + 1 WTF!' },
+      { icon: 'icon:set', text: '**Set** : 5 Fun F*cts + 1 WTF!' },
       { icon: 'icon:qcm', text: '**QCM** : 4 / question' },
-      { icon: 'icon:timer', text: '**Timer** : 20s / question' },
+      { icon: 'icon:timer', text: '**Timer** : 30s / question' },
       { icon: 'icon:hint', text: '**Indices** : 2 / question' },
-      { icon: 'picto:target', text: '**Boss** : WTF! f*act ! toutes les 5 questions' },
-      { icon: 'icon:coins', text: '**Gains** : +20c / q. · +100c / WTF!' },
+      { icon: 'icon:quest', text: '**WTF!** : Accès au WTF! si 3 bonnes réponses min.' },
+      { icon: 'icon:coins', text: '**Gains** : 10 Coins / bonne réponse' },
     ],
   },
   race: {
@@ -194,7 +194,7 @@ export const QUICKIE_ENERGY = {
   MAX_STOCK: 5,
   REGEN_HOURS: 8,
   REGEN_MS: 8 * 60 * 60 * 1000,
-  EXTRA_SESSION_COST: 75,
+  EXTRA_SESSION_COST: 200,
   FREE_SESSIONS_PER_DAY: 5,
 }
 

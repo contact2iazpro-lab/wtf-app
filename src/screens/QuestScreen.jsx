@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { getFunnyFacts, getVipFacts, getCategoryById } from '../data/factsService'
 import { getAnswerOptions } from '../utils/answers'
 import { updateWtfData, readWtfData } from '../utils/storageHelper'
@@ -15,6 +15,8 @@ import GameHeader from '../components/GameHeader'
 import CircularTimer from '../components/CircularTimer'
 import HintFlipButton from '../components/HintFlipButton'
 import EnergyIcon from '../components/icons/EnergyIcon'
+import SettingsModal from '../components/SettingsModal'
+import FallbackImage from '../components/FallbackImage'
 import RevelationScreen from './RevelationScreen'
 import renderFormattedText from '../utils/renderFormattedText'
 import GainsBreakdown from '../components/results/GainsBreakdown'
@@ -22,10 +24,11 @@ import GainsBreakdown from '../components/results/GainsBreakdown'
 // ── Constantes Quest (refonte 19/04/2026 : blocs courts pour rythme soutenu) ─
 const QUEST_BLOCK_SIZE = 5                  // 5 Funny par bloc (ex-10)
 const BOSS_THRESHOLD = 3                    // boss débloqué à ≥3/5 (ex-5/10)
-const COINS_PER_CORRECT = 20
-const BOSS_BONUS = 100
+const COINS_PER_CORRECT = 10
+const BOSS_BONUS = 0
 const HINT_COST = 50
-const QUEST_DURATION = 20
+const BOSS_HINT_COST = 100
+const QUEST_DURATION = 30
 const QUEST_QCM = { choices: 4, duration: QUEST_DURATION, id: 'quest' }
 const QUEST_MAX_LEVEL = 360
 
@@ -206,6 +209,9 @@ export default function QuestScreen({ onHome, setStorage }) {
   const [energyState, setEnergyState] = useState(() => getQuickieEnergy())
   const [showEnergyModal, setShowEnergyModal] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
+  const [imgFailed, setImgFailed] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [buyBossOffer, setBuyBossOffer] = useState(null)
   // Pending boss : retour carte → animation → overlay VIP → lancement boss
   const [pendingBoss, setPendingBoss] = useState(null) // { session, correctIds, funnyCount }
   const [bossAnimPhase, setBossAnimPhase] = useState(null) // 'travel' | 'overlay' | null
@@ -245,7 +251,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     }
   }, [session, pendingBoss, state.level])
 
-  // Pending boss animation sequence : travel (2s) → overlay (2.5s) → launch boss
+  // Pending boss animation sequence : travel (1.2s) → overlay (2.5s) → launch boss
   useEffect(() => {
     if (!pendingBoss) return
     setBossAnimPhase('travel')
@@ -254,9 +260,8 @@ export default function QuestScreen({ onHome, setStorage }) {
       setBossAnimPhase('overlay')
       audio.play('roulette_jackpot')
       audio.vibrate?.([40, 30, 80])
-    }, 2000)
+    }, 1200)
     const t2 = setTimeout(() => {
-      // Launch boss question
       const { session: sess, correctIds, funnyCount } = pendingBoss
       setBossAnimPhase(null)
       setPendingBoss(null)
@@ -268,7 +273,7 @@ export default function QuestScreen({ onHome, setStorage }) {
       setHintsUsed(0)
       setCorrectFactIds(correctIds)
       setFunnyCorrectCount(funnyCount)
-    }, 4500)
+    }, 3700)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [pendingBoss])
 
@@ -308,7 +313,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     setPrebuiltSession(null)
     setSession(s); setQIndex(0); setPhase('question')
     setSelected(null); setCorrectFactIds([]); setFunnyCorrectCount(0)
-    setBossCorrect(false); setBossUnlocked(false); setHintsUsed(0); setTimedOut(false)
+    setBossCorrect(false); setBossUnlocked(false); setHintsUsed(0); setTimedOut(false); setImgFailed(false)
   }
 
   // ── Lance la boss retry (gratuit, bloc déjà gagné à ≥5/10) ───────────────
@@ -322,7 +327,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     setBossCorrect(false); setBossUnlocked(true); setHintsUsed(0)
   }
 
-  // ── Achat énergie (75 coins) ─────────────────────────────────────────────
+  // ── Achat énergie (200 coins) ─────────────────────────────────────────────
   const handleBuyEnergy = () => {
     const ok = buyExtraSession({ coins: profileCoins ?? 0, applyCurrencyDelta })
     if (!ok) return
@@ -411,7 +416,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     try { document.activeElement?.blur?.() } catch (_) {}
     setSelected(idx)
     const isCorrect = idx === fact.correctIndex
-    audio.play(isCorrect ? 'correct' : 'wrong')
+    audio.play(isCorrect ? 'correct' : 'buzzer')
     audio.vibrate(isCorrect ? [40, 20, 40] : [120])
 
     const wasBoss = !!fact._isBoss
@@ -429,9 +434,9 @@ export default function QuestScreen({ onHome, setStorage }) {
         ?.catch?.(e => console.warn('[QuestScreen] coins credit failed:', e?.message || e))
     }
 
-    // Enchaînement : si bonne réponse → révélation, sinon saut direct
+    // Enchaînement : bonne réponse OU boss (même raté) → révélation, sinon saut direct
     setTimeout(() => {
-      if (isCorrect) {
+      if (isCorrect || wasBoss) {
         setPhase('revelation')
       } else {
         advance(nextCorrectIds, nextFunnyCount, nextBossCorrect)
@@ -439,19 +444,18 @@ export default function QuestScreen({ onHome, setStorage }) {
     }, 650)
   }
 
-  // ── Timeout : avertissement bref puis saut comme mauvaise réponse ─────────
-  const handleTimeout = () => {
+  // ── Timeout : redirige vers revelation (mauvaise réponse) ──────────────────
+  const handleTimeoutRef = useRef()
+  handleTimeoutRef.current = () => {
     if (selected !== null || phase !== 'question' || timedOut) return
     const fact = currentFact()
     if (!fact) return
     setTimedOut(true)
     audio.play('timeout')
     audio.vibrate([120])
-    const wasBoss = !!fact._isBoss
-    setTimeout(() => {
-      advance(correctFactIds, funnyCorrectCount, wasBoss ? false : bossCorrect)
-    }, 1200)
+    setPhase('revelation')
   }
+  const handleTimeout = useCallback(() => handleTimeoutRef.current?.(), [])
 
   // ── Passe à la question suivante ou aux résultats ─────────────────────────
   const advance = (correctIds, funnyCount, didBossCorrect) => {
@@ -474,6 +478,8 @@ export default function QuestScreen({ onHome, setStorage }) {
       setQIndex(q => q + 1)
       setSelected(null)
       setHintsUsed(0)
+      setTimedOut(false)
+      setImgFailed(false)
       setPhase('question')
       return
     }
@@ -485,9 +491,10 @@ export default function QuestScreen({ onHome, setStorage }) {
       setSession(null)
       return
     }
-    // <3/5 : bloc raté, pas de boss
-    finalizeSession(sess, correctIds, didBossCorrect, false)
-    setPhase('results')
+    // <3/5 : proposer l'achat d'accès au WTF!
+    const missing = BOSS_THRESHOLD - funnyCount
+    const cost = missing * 100
+    setBuyBossOffer({ session: sess, correctIds, funnyCount, didBossCorrect, missing, cost })
   }
 
   // ── Révélation → next ─────────────────────────────────────────────────────
@@ -522,10 +529,75 @@ export default function QuestScreen({ onHome, setStorage }) {
     applyCurrencyDelta?.({ hints: -1 }, 'quest_use_hint')
       ?.catch?.(e => console.warn('[QuestScreen] hint debit failed:', e?.message || e))
   }
+  const currentHintCost = isBoss ? BOSS_HINT_COST : HINT_COST
   const buyHint = () => {
-    if ((profileCoins ?? 0) < HINT_COST) return
-    applyCurrencyDelta?.({ coins: -HINT_COST, hints: 1 }, 'buy_hint_in_session')
+    if ((profileCoins ?? 0) < currentHintCost) return
+    applyCurrencyDelta?.({ coins: -currentHintCost, hints: 1 }, 'buy_hint_in_session')
       ?.catch?.(e => console.warn('[QuestScreen] buy hint RPC failed:', e?.message || e))
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // MODAL ACHAT ACCÈS WTF!
+  // ═════════════════════════════════════════════════════════════════════════
+  if (buyBossOffer) {
+    const { session: bSess, correctIds: bIds, funnyCount: bCount, didBossCorrect: bDid, missing, cost } = buyBossOffer
+    const canBuy = (profileCoins ?? 0) >= cost
+    const handleBuy = () => {
+      applyCurrencyDelta?.({ coins: -cost }, 'buy_boss_access')
+      setBuyBossOffer(null)
+      setPendingBoss({ session: bSess, correctIds: bIds, funnyCount: bCount })
+      setSession(null)
+    }
+    const handleDecline = () => {
+      setBuyBossOffer(null)
+      finalizeSession(bSess, bIds, bDid, false)
+      setPhase('results')
+    }
+    return (
+      <div style={{
+        position: 'relative', width: '100%', height: '100%',
+        background: 'linear-gradient(160deg, #FFA50088, #FFA500)',
+        color: '#fff', fontFamily: 'Nunito, sans-serif',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20, '--scale': 1,
+      }}>
+        <div style={{
+          background: '#FAFAF8', borderRadius: 20, padding: 24, width: '100%', maxWidth: 320,
+          color: '#1a1a2e', textAlign: 'center',
+        }}>
+          <img src="/assets/modes/icon-quest.png?v=2" alt="" style={{ width: 48, height: 48, objectFit: 'contain', marginBottom: 8 }} />
+          <h2 style={{ fontSize: 18, fontWeight: 900, margin: '0 0 6px' }}>Accès au F*ct WTF!</h2>
+          <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 4px', lineHeight: 1.5 }}>
+            Tu as obtenu <b>{bCount}/{QUEST_BLOCK_SIZE}</b> bonnes réponses.
+          </p>
+          <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', lineHeight: 1.5 }}>
+            Il te manque <b>{missing}</b> bonne{missing > 1 ? 's' : ''} réponse{missing > 1 ? 's' : ''}.
+            <br />Achète l'accès pour <b>{cost} coins</b> !
+          </p>
+          <button
+            onClick={handleBuy}
+            disabled={!canBuy}
+            style={{
+              width: '100%', padding: '12px 0', borderRadius: 12,
+              background: canBuy ? '#FF6600' : '#E5E7EB',
+              border: 'none',
+              color: canBuy ? '#fff' : '#9CA3AF',
+              fontWeight: 900, fontSize: 14, fontFamily: 'Nunito, sans-serif',
+              cursor: canBuy ? 'pointer' : 'not-allowed',
+            }}
+          >
+            {canBuy ? `Acheter (${cost} coins)` : `Pas assez de coins (${cost})`}
+          </button>
+          <button onClick={handleDecline} style={{
+            width: '100%', padding: '10px 0', marginTop: 8,
+            background: 'transparent', border: 'none', color: '#6B7280',
+            fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
+          }}>
+            Non merci
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // ═════════════════════════════════════════════════════════════════════════
@@ -592,16 +664,17 @@ export default function QuestScreen({ onHome, setStorage }) {
   // VUE RÉVÉLATION (après bonne réponse → déblocage fact)
   // ═════════════════════════════════════════════════════════════════════════
   if (phase === 'revelation' && fact) {
+    const isCorrectReveal = !timedOut && selected !== null && selected === fact.correctIndex
     const totalFunny = session?.bossOnly ? 1 : (session?.facts?.length || 10)
     const totalDisplay = session?.bossOnly ? 1 : totalFunny + (bossUnlocked ? 1 : 0)
     const displayIdx = session?.bossOnly ? 0 : (isBoss ? totalFunny : qIndex)
-    const pointsEarned = isBoss ? BOSS_BONUS : COINS_PER_CORRECT
+    const pointsEarned = isCorrectReveal ? (isBoss ? BOSS_BONUS : COINS_PER_CORRECT) : 0
     return (
       <div style={{ position: 'relative', width: '100%', height: '100%', '--scale': 1 }}>
         <RevelationScreen
           fact={fact}
-          isCorrect={true}
-          selectedAnswer={selected ?? 0}
+          isCorrect={isCorrectReveal}
+          selectedAnswer={timedOut ? -1 : (selected ?? 0)}
           pointsEarned={pointsEarned}
           hintsUsed={hintsUsed}
           onNext={handleRevelationNext}
@@ -709,7 +782,7 @@ export default function QuestScreen({ onHome, setStorage }) {
     return (
       <div style={{
         position: 'relative', width: '100%', height: '100%',
-        background: 'linear-gradient(180deg, #D94A10 0%, #FF6B1A 40%, #FF8C42 100%)',
+        background: 'linear-gradient(160deg, #FFA50088, #FFA500)',
         color: '#fff', fontFamily: 'Nunito, sans-serif',
         display: 'flex', flexDirection: 'column',
         '--scale': 1,
@@ -726,9 +799,16 @@ export default function QuestScreen({ onHome, setStorage }) {
             }}>←</button>
             <h1 style={{ fontSize: 18, fontWeight: 900, margin: 0, flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <img src="/assets/modes/icon-quest.png" alt="quest" style={{ width: 24, height: 24, objectFit: 'contain' }} />
-              Parcours WTF!
+              Quête WTF!
             </h1>
-            <div style={{ width: 36 }} />
+            <button onClick={() => setShowSettings(true)} style={{
+              background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff',
+              width: 36, height: 36, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', backdropFilter: 'blur(8px)', padding: 0,
+            }}>
+              <img src="/assets/ui/icon-settings.png" alt="settings" style={{ width: 16, height: 16 }} />
+            </button>
           </div>
           <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 800, marginBottom: 8 }}>
             Niveau <b>{state.level}</b> / {QUEST_MAX_LEVEL}
@@ -836,14 +916,10 @@ export default function QuestScreen({ onHome, setStorage }) {
                           : (isLocked && node.block === nextBlockIdx) ? 0.55 : 1,
                       }}
                     >
-                      {failedBoss ? (
-                        <span style={{ fontSize: 14, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>🔒</span>
-                      ) : (
-                        <img src="/assets/modes/icon-quest.png" alt="WTF!" style={{
-                          width: BOSS_SIZE * 0.6, height: BOSS_SIZE * 0.6, objectFit: 'contain',
-                          filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))',
-                        }} />
-                      )}
+                      <img src="/assets/modes/icon-quest.png" alt="WTF!" style={{
+                        width: BOSS_SIZE * 0.6, height: BOSS_SIZE * 0.6, objectFit: 'contain',
+                        filter: 'drop-shadow(0 1px 4px rgba(0,0,0,0.4))',
+                      }} />
                     </button>
                   ) : (
                     <div
@@ -918,7 +994,7 @@ export default function QuestScreen({ onHome, setStorage }) {
                   textAlign: 'center',
                   pointerEvents: 'none',
                   animation: isAnimating ? 'none' : 'questFloat 2s ease-in-out infinite',
-                  transition: isAnimating ? 'left 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
+                  transition: isAnimating ? 'left 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
                   zIndex: 10,
                 }}>
                   <img src="/assets/ui/wtf-star.png" alt="player" style={{
@@ -955,7 +1031,7 @@ export default function QuestScreen({ onHome, setStorage }) {
                 textShadow: '0 0 24px rgba(255,215,0,0.8), 0 2px 8px rgba(0,0,0,0.5)',
                 textTransform: 'uppercase', fontFamily: 'Nunito, sans-serif',
               }}>
-                BOSS WTF!
+                F*CT WTF!
               </div>
               <div style={{
                 fontSize: 14, fontWeight: 800, marginTop: 8,
@@ -977,21 +1053,22 @@ export default function QuestScreen({ onHome, setStorage }) {
           <button
             onClick={launchBlock}
             style={{
-              width: '85%', padding: '14px 0',
-              background: '#FF5C00',
+              width: '85%', padding: '10px 0 8px',
+              background: '#FF6600',
               border: '3px solid #ffffff',
               borderRadius: 16,
               fontFamily: 'Nunito, sans-serif',
               fontSize: 16, fontWeight: 900,
               color: '#ffffff',
               cursor: 'pointer',
-              boxShadow: '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)',
+              boxShadow: '0 8px 30px rgba(255,102,0,0.5), 0 4px 0 rgba(0,0,0,0.15)',
               letterSpacing: '0.03em',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              padding: '14px 0',
             }}
           >
             Niveau {state.level}
-            <span style={{ fontSize: 20, lineHeight: 1 }}>→</span>
+            <span style={{ fontSize: 20, lineHeight: 1, display: 'inline-block', transform: 'scaleX(1.8)' }}>→</span>
             <img src="/assets/modes/icon-quest.png" alt="" style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
           </button>
           {state.bossFailed?.[currentBlockIdx - 1] && currentBlockIdx > 1 && (
@@ -1004,7 +1081,7 @@ export default function QuestScreen({ onHome, setStorage }) {
                 cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
               }}
             >
-              🔒 Rejouer Boss Bloc {currentBlockIdx - 1}
+              🔒 Rejouer WTF! Set {currentBlockIdx - 1}
             </button>
           )}
         </div>
@@ -1052,6 +1129,8 @@ export default function QuestScreen({ onHome, setStorage }) {
           </div>
         )}
 
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+
         <style>{`
           @keyframes questNodePulse { 0%,100%{transform:scale(1); box-shadow: 0 0 16px rgba(255,255,255,0.8)} 50%{transform:scale(1.25); box-shadow: 0 0 24px rgba(255,255,255,1)} }
           @keyframes questBossPulse { 0%,100%{transform:scale(1); box-shadow: 0 0 24px rgba(255,215,0,0.8)} 50%{transform:scale(1.15); box-shadow: 0 0 36px rgba(255,215,0,1)} }
@@ -1064,24 +1143,51 @@ export default function QuestScreen({ onHome, setStorage }) {
   }
 
   // ═════════════════════════════════════════════════════════════════════════
-  // VUE QUESTION
+  // VUE QUESTION — squelette Quickie
   // ═════════════════════════════════════════════════════════════════════════
   const cat = getCategoryById(fact.category)
   const catColor = cat?.color || '#FF6B1A'
+  const questAccent = isBoss ? '#FFA500' : '#FFA500'
+  const bossGold = '#FFD700'
   const screenBg = isBoss
-    ? 'linear-gradient(160deg, #4a0e1a 0%, #2E1A47 100%)'
+    ? '#1a1a2e'
     : `linear-gradient(160deg, ${catColor}22 0%, ${catColor} 100%)`
   const totalFunny = session.bossOnly ? 0 : session.facts.length
   const displayIndex = isBoss ? totalFunny : qIndex
   const displayTotal = totalFunny + (bossUnlocked || isBoss ? 1 : 0) || 1
+  const cardBorderColor = isBoss ? bossGold : questAccent
+  const cardBoxShadow = isBoss ? '0 0 20px rgba(255,215,0,0.3)' : 'none'
+  const btnBorderColor = isBoss ? bossGold : questAccent
 
   return (
-    <div style={{
-      position: 'relative', width: '100%', height: '100%', overflow: 'hidden',
-      background: screenBg, color: '#fff', fontFamily: 'Nunito, sans-serif',
-      display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
-      '--scale': 1,
-    }}>
+    <div
+      className="relative screen-enter"
+      style={{
+        height: '100%', width: '100%', overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
+        boxSizing: 'border-box', background: screenBg,
+        color: '#fff', fontFamily: 'Nunito, sans-serif', '--scale': 1,
+        position: 'relative',
+      }}
+    >
+      {/* Particules gold flottantes — boss uniquement */}
+      {isBoss && (
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+          {Array.from({ length: 18 }).map((_, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              width: i % 3 === 0 ? 4 : i % 3 === 1 ? 3 : 2,
+              height: i % 3 === 0 ? 4 : i % 3 === 1 ? 3 : 2,
+              borderRadius: '50%',
+              background: `rgba(255,215,0,${0.3 + (i % 4) * 0.15})`,
+              boxShadow: `0 0 ${4 + (i % 3) * 3}px rgba(255,215,0,${0.2 + (i % 3) * 0.1})`,
+              left: `${5 + (i * 37) % 90}%`,
+              top: `${3 + (i * 53) % 94}%`,
+              animation: `questParticleFloat${i % 3} ${4 + (i % 4) * 1.5}s ${(i * 0.7) % 3}s ease-in-out infinite`,
+            }} />
+          ))}
+        </div>
+      )}
       {/* Header */}
       <GameHeader
         categoryLabel={cat?.label || 'Quest'}
@@ -1092,30 +1198,49 @@ export default function QuestScreen({ onHome, setStorage }) {
         onQuit={() => setSession(null)}
       />
 
-      {/* Bloc barre S(56) : mode label + compteur + progress */}
+      {/* Mode label + compteur + progress */}
       <div style={{ height: S(56), flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: `${S(2)} ${S(16)} ${S(4)}` }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(6) }}>
-          <span style={{
-            fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
-            color: isBoss ? '#FFD700' : 'rgba(255,255,255,0.6)', textShadow: '0 1px 3px rgba(0,0,0,0.3)',
-          }}>
-            {isBoss ? '👑 BOSS VIP' : `MODE QUEST · BLOC ${session.blockIdx}`}
-          </span>
+          {isBoss ? (
+            <>
+              <img src="/assets/modes/icon-quest.png?v=2" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />
+              <span style={{
+                fontSize: S(11), fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: bossGold, textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+              }}>
+                F*ct WTF!
+              </span>
+            </>
+          ) : (
+            <>
+              <img src="/assets/modes/icon-quest.png?v=2" alt="" style={{ width: S(18), height: S(18), objectFit: 'contain' }} />
+              <span style={{
+                fontSize: S(11), fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+                color: questAccent, textShadow: '0 1px 3px rgba(0,0,0,0.3)',
+              }}>
+                QUEST
+              </span>
+            </>
+          )}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <span style={{ fontSize: S(12), fontWeight: 900, color: 'rgba(255,255,255,0.8)' }}>
+          <span style={{ fontSize: S(12), fontWeight: 900, color: isBoss ? bossGold : questAccent }}>
             {displayIndex + 1}/{displayTotal}
           </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: S(3) }}>
           {Array.from({ length: displayTotal }).map((_, i) => {
             const isActive = i === displayIndex
+            const isBossSegment = i === totalFunny && (bossUnlocked || isBoss)
+            const segColor = isActive
+              ? (isBossSegment ? bossGold : questAccent)
+              : (isBossSegment ? `${bossGold}40` : 'rgba(255,255,255,0.2)')
             return (
               <div key={i} style={{
                 flex: 1,
                 height: isActive ? S(12) : S(8),
                 borderRadius: S(4),
-                background: isActive ? 'white' : 'rgba(255,255,255,0.2)',
+                background: segColor,
                 transition: 'all 0.3s ease',
               }} />
             )
@@ -1123,7 +1248,7 @@ export default function QuestScreen({ onHome, setStorage }) {
         </div>
       </div>
 
-      {/* Bloc contenu S(270) : question + indices + QCM (space-between) */}
+      {/* Bloc contenu : question + indices + QCM */}
       <div style={{
         height: S(270), flexShrink: 0, overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
@@ -1135,14 +1260,14 @@ export default function QuestScreen({ onHome, setStorage }) {
           padding: `${S(12)} ${S(16)}`,
           borderRadius: S(16),
           background: 'rgba(0,0,0,0.28)',
-          border: `1.5px solid ${isBoss ? '#FFD700' : catColor}70`,
+          border: `3px solid ${cardBorderColor}`,
           backdropFilter: 'blur(12px)',
-          boxShadow: isBoss ? '0 0 20px rgba(255,215,0,0.3)' : `0 4px 32px ${catColor}30`,
+          boxShadow: isBoss ? `0 0 16px ${bossGold}80, 0 0 32px ${bossGold}40` : cardBoxShadow,
           height: S(72), flexShrink: 0, overflow: 'hidden',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>
-            {renderFormattedText(fact.question || fact.fact || '', isBoss ? '#FFD700' : undefined)}
+            {renderFormattedText(fact.question || fact.fact || '', isBoss ? bossGold : catColor, { noUnderline: true })}
           </p>
         </div>
 
@@ -1152,25 +1277,28 @@ export default function QuestScreen({ onHome, setStorage }) {
             <div style={{
               display: 'grid', gridTemplateColumns: availableHints.length === 1 ? '1fr' : '1fr 1fr',
               gap: 8,
+              ...(isBoss ? { filter: `drop-shadow(0 0 8px ${bossGold}80)` } : {}),
             }}>
               {availableHints.map((h, i) => {
                 const hintNum = i + 1
                 const hasStock = (profileHints ?? 0) > 0
-                const canAfford = hasStock || (profileCoins ?? 0) >= HINT_COST
+                const hCost = isBoss ? BOSS_HINT_COST : HINT_COST
+                const canAfford = hasStock || (profileCoins ?? 0) >= hCost
                 const canUse = hasStock
                 return (
                   <HintFlipButton
                     key={`${fact.id}-${qIndex}-h${hintNum}`}
                     num={hintNum}
                     hint={h}
-                    catColor={catColor}
+                    catColor={isBoss ? bossGold : questAccent}
                     isFree={false}
-                    cost={HINT_COST}
+                    cost={hCost}
                     canAfford={canAfford}
                     canUse={canUse}
                     initialRevealed={hintsUsed >= hintNum}
                     onReveal={() => useHint(hintNum)}
                     onBuyHint={!canUse && canAfford ? buyHint : null}
+                    revealedTextColor={isBoss ? bossGold : questAccent}
                   />
                 )
               })}
@@ -1178,10 +1306,11 @@ export default function QuestScreen({ onHome, setStorage }) {
           )}
         </div>
 
-        {/* QCM 4 choix */}
+        {/* QCM 4 choix — style Quickie (fond blanc, bordure accent) */}
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: S(5),
           flexShrink: 0, position: 'relative', zIndex: 5,
+          ...(isBoss ? { filter: `drop-shadow(0 0 8px ${bossGold}80)` } : {}),
         }}>
           {fact.options.map((opt, i) => {
             const isSel = selected === i
@@ -1191,26 +1320,31 @@ export default function QuestScreen({ onHome, setStorage }) {
               ? 'rgba(232,69,53,0.55)'
               : isRightPick
                 ? 'rgba(107,203,119,0.55)'
-                : 'rgba(255,255,255,0.15)'
+                : '#FFFFFF'
             const border = isWrongPick
-              ? '2px solid #E84535'
+              ? '3px solid #E84535'
               : isRightPick
-                ? '2px solid #6BCB77'
-                : '1.5px solid rgba(255,255,255,0.4)'
+                ? '3px solid #6BCB77'
+                : `3px solid ${btnBorderColor}`
+            const optLen = opt?.length || 0
+            const btnFont = optLen > 40 ? 10 : optLen > 25 ? 11 : 12
             return (
               <button
                 key={i}
                 onClick={() => handleAnswer(i)}
                 disabled={selected !== null}
+                className="btn-press active:scale-95"
                 style={{
                   background: bg, border, borderRadius: S(12),
-                  color: '#fff', fontWeight: 700, fontSize: S(12), lineHeight: 1.2,
+                  color: (isWrongPick || isRightPick) ? '#fff' : (catColor || '#4A3FA3'),
+                  fontWeight: 800, fontSize: S(btnFont), lineHeight: 1.2,
                   padding: `${S(4)} ${S(6)}`, height: S(50), width: '100%',
                   overflow: 'hidden', wordBreak: 'break-word',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
                   textAlign: 'center', cursor: selected === null ? 'pointer' : 'default',
                   WebkitTapHighlightColor: 'transparent',
-                  transition: 'background 0.15s, border-color 0.15s',
+                  transition: 'transform 0.1s, background 0.15s',
                 }}
               >
                 <span style={{
@@ -1225,39 +1359,92 @@ export default function QuestScreen({ onHome, setStorage }) {
         </div>
       </div>
 
-      {/* Zone flex:1 : timer centré */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Image floutée + timer */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: S(8) }}>
+        {/* Image floutée avec cadenas */}
+        <div style={{
+          position: 'relative',
+          width: '55%', aspectRatio: '1 / 1',
+          borderRadius: S(12), overflow: 'hidden',
+          margin: '0 auto',
+          background: 'rgba(0,0,0,0.3)',
+          border: `3px solid ${isBoss ? bossGold : questAccent}`,
+          ...(isBoss ? { boxShadow: `0 0 20px ${bossGold}80, 0 0 40px ${bossGold}40` } : {}),
+          flexShrink: 0,
+        }}>
+          {fact.imageUrl && !imgFailed ? (
+            <img
+              src={fact.imageUrl}
+              alt=""
+              style={{
+                width: '100%', height: '100%', objectFit: 'cover',
+                filter: 'blur(18px) brightness(0.6)',
+                transform: 'scale(1.15)',
+              }}
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            <div style={{ width: '100%', height: '100%', filter: 'blur(14px) brightness(0.6)' }}>
+              <FallbackImage categoryColor={catColor} />
+            </div>
+          )}
+          {/* Holo shimmer — boss uniquement */}
+          {isBoss && (
+            <>
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+                background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(127,119,221,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(127,119,221,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
+                backgroundSize: '200% 100%',
+                animation: 'questHoloShimmer 3s linear infinite',
+                mixBlendMode: 'screen',
+              }} />
+              <div style={{ position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden' }}>
+                <div style={{
+                  position: 'absolute', top: '-20%', bottom: '-20%', width: '45%',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                  animation: 'questHoloSweep 2.5s 0.5s ease-in-out infinite',
+                }} />
+              </div>
+            </>
+          )}
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: S(4), padding: `0 ${S(10)}` }}>
+              <span style={{ fontSize: S(28), filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' }}>
+                🔒
+              </span>
+              <span style={{
+                fontSize: S(9), fontWeight: 700, color: 'rgba(255,255,255,0.85)',
+                textAlign: 'center', textShadow: '0 1px 3px rgba(0,0,0,0.6)', lineHeight: 1.3,
+              }}>
+                Trouve la bonne réponse et ajoute ce f*ct à ta collection
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Timer */}
         <div style={{ width: S(96), height: S(96), display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <CircularTimer
-            key={`${fact.id}-${phase}`}
+            key={`${fact.id}-${qIndex}`}
             size={96}
             duration={QUEST_DURATION}
+            paused={selected !== null || timedOut}
             onTimeout={handleTimeout}
           />
         </div>
       </div>
 
-      {/* Overlay timeout */}
-      {timedOut && (
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 40,
-          background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          animation: 'fadeIn 0.2s ease',
-        }}>
-          <div style={{
-            background: 'rgba(232,69,53,0.95)', borderRadius: 18,
-            padding: '20px 32px', textAlign: 'center',
-            border: '2px solid rgba(255,255,255,0.4)',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-          }}>
-            <div style={{ fontSize: 42, marginBottom: 6 }}>⏱️</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '0.05em' }}>
-              TEMPS ÉCOULÉ !
-            </div>
-          </div>
-          <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }`}</style>
-        </div>
+      {isBoss && (
+        <style>{`
+          @keyframes questHoloShimmer { 0% { background-position: 0% 50% } 100% { background-position: 200% 50% } }
+          @keyframes questHoloSweep { 0% { transform: translateX(-100%) skewX(-15deg) } 100% { transform: translateX(200%) skewX(-15deg) } }
+          @keyframes questParticleFloat0 { 0%,100% { transform: translateY(0) scale(1); opacity: 0.4 } 50% { transform: translateY(-18px) scale(1.3); opacity: 0.9 } }
+          @keyframes questParticleFloat1 { 0%,100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.3 } 50% { transform: translateY(-12px) translateX(8px) scale(1.2); opacity: 0.8 } }
+          @keyframes questParticleFloat2 { 0%,100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.5 } 50% { transform: translateY(-22px) translateX(-6px) scale(1.4); opacity: 1 } }
+        `}</style>
       )}
     </div>
   )

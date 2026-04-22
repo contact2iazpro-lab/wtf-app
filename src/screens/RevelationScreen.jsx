@@ -185,18 +185,18 @@ export default function RevelationScreen({
   const isVofMode = sessionType === 'vrai_ou_fou'
   const isQuestMode = sessionType === 'parcours' || sessionType === 'quest'
   const isBrandedMode = isQuickieMode || isVofMode || isQuestMode
-  const accentColor = isVofMode ? '#6BCB77' : isQuestMode ? '#FF6B1A' : '#E91E90'
-  const MODE_HIGHLIGHT = { quickie: '#FF69B4', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FF6B1A', blitz: '#FF4444', drop: '#E91E63' }
+  const accentColor = isVofMode ? '#6BCB77' : isQuestMode ? '#FFA500' : '#E91E90'
+  const MODE_HIGHLIGHT = { quickie: '#FF69B4', vrai_ou_fou: '#6BCB77', race: '#23D5D5', quest: '#FFA500', blitz: '#FF4444', drop: '#E91E63' }
   const questionHighlight = MODE_HIGHLIGHT[sessionType]
   const accentGradient = isVofMode
     ? 'linear-gradient(135deg, #6BCB77, #3A8A4A)'
     : isQuestMode
-      ? 'linear-gradient(135deg, #FF6B1A, #D94A10)'
+      ? 'linear-gradient(135deg, #FF6600, #CC5200)'
       : 'linear-gradient(135deg, #E91E90, #C2185B)'
   const accentShadow = isVofMode
     ? '0 4px 16px rgba(107,203,119,0.5)'
     : isQuestMode
-      ? '0 4px 16px rgba(255,107,26,0.5)'
+      ? '0 4px 16px rgba(255,102,0,0.5)'
       : '0 4px 16px rgba(127,119,221,0.5)'
   const catGradient = cat
     ? `linear-gradient(160deg, ${cat.color}22 0%, ${cat.color} 100%)`
@@ -359,18 +359,40 @@ export default function RevelationScreen({
   )
 
   // ── CAS MAUVAISE RÉPONSE (solo) — sauf si débloqué par coins ──────────────
+  const isVipWrong = !isCorrect && fact.isVip && isQuestMode
   if (!isCorrect && !unlockedByCoins) {
+    const wrongBorderColor = isVipWrong ? '#FFD700' : accentColor
+    const wrongBtnGradient = isVipWrong ? 'linear-gradient(135deg, #FFD700, #FFA500)' : accentGradient
+    const wrongBtnShadow = isVipWrong ? '0 4px 16px rgba(255,215,0,0.55)' : accentShadow
     return (
       <div className="relative screen-enter" style={{
         height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column',
         boxSizing: 'border-box', width: '100%',
-        ...(isBrandedMode ? { background: catGradient } : {
+        background: isVipWrong ? '#1a1a2e' : (isBrandedMode ? catGradient : undefined),
+        ...(!isVipWrong && !isBrandedMode ? {
           backgroundImage: 'url(/assets/backgrounds/question-default.webp)',
           backgroundSize: 'cover', backgroundPosition: 'center',
           backgroundColor: cat?.color || '#1a1a2e',
-        }),
+        } : {}),
       }}>
-        {!isBrandedMode && <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />}
+        {!isBrandedMode && !isVipWrong && <div style={{ position: 'absolute', inset: 0, background: `${cat?.color || '#1a1a2e'}cc`, zIndex: 0 }} />}
+        {/* Particules VIP flottantes */}
+        {isVipWrong && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+            {Array.from({ length: 12 }, (_, i) => (
+              <div key={i} style={{
+                position: 'absolute',
+                top: `${(i * 31 + 7) % 90}%`,
+                left: `${(i * 43 + 13) % 95}%`,
+                width: i % 3 === 0 ? 6 : 4,
+                height: i % 3 === 0 ? 6 : 4,
+                borderRadius: '50%',
+                background: `rgba(255,215,0,${0.1 + (i % 4) * 0.07})`,
+                animation: `vipParticlePulse ${2 + (i % 3) * 0.5}s ${(i * 0.3).toFixed(1)}s ease-in-out infinite`,
+              }} />
+            ))}
+          </div>
+        )}
 
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
         {quitModal}
@@ -382,24 +404,26 @@ export default function RevelationScreen({
         {/* Question + Image + Social — gap uniforme 3vh */}
         <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '3vh', padding: `${S(10)} ${S(16)} 0` }}>
 
-          {/* Encadré question — même style que QuestionScreen */}
+          {/* Encadré question — harmonisé avec QuestionScreen */}
           <div style={{
-            background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-            border: isBrandedMode ? `3px solid ${accentColor}` : '1px solid rgba(255,255,255,0.15)',
-            borderRadius: S(16), padding: S(12),
-            boxShadow: isBrandedMode ? `0 0 20px ${isVofMode ? 'rgba(107,203,119,0.3)' : 'rgba(127,119,221,0.3)'}` : 'none',
+            background: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(12px)',
+            border: `3px solid ${wrongBorderColor}`,
+            borderRadius: S(16), padding: `${S(12)} ${S(16)}`,
+            boxShadow: isVipWrong ? '0 0 16px rgba(255,215,0,0.4), 0 0 32px rgba(255,215,0,0.2)' : 'none',
+            height: S(72), overflow: 'hidden',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{ fontSize: 'calc(1.1rem * var(--scale))', fontWeight: 700, color: '#ffffff', lineHeight: 1.4 }}>{renderFormattedText(fact.question, questionHighlight)}</div>
+            <p style={{ color: '#ffffff', fontSize: S(15), fontWeight: 800, textAlign: 'center', lineHeight: 1.4, margin: 0 }}>{renderFormattedText(fact.question, isVipWrong ? '#FFD700' : questionHighlight)}</p>
           </div>
 
-          {/* Image floutée + stamp bienveillant — carrée, limitée en hauteur */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {/* Image floutée — carrée, limitée en hauteur */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: `0 ${S(16)}` }}>
             <div
               className="overflow-hidden relative"
               style={{
-                background: catGradient, width: '100%', aspectRatio: '1 / 1', maxHeight: '30vh', borderRadius: S(16), padding: 4,
-                border: isBrandedMode ? `3px solid ${accentColor}` : `3px solid ${cat?.color || '#1a3a5c'}`,
-                boxShadow: isBrandedMode ? `0 0 20px ${isVofMode ? 'rgba(107,203,119,0.3)' : 'rgba(127,119,221,0.3)'}` : 'none',
+                background: catGradient, width: '100%', aspectRatio: '1 / 1', maxHeight: '30vh', borderRadius: S(16),
+                border: `3px solid ${wrongBorderColor}`,
+                boxShadow: isVipWrong ? '0 0 16px rgba(255,215,0,0.4), 0 0 32px rgba(255,215,0,0.2)' : 'none',
               }}
             >
               {fact.imageUrl && !imgFailed ? (
@@ -415,19 +439,37 @@ export default function RevelationScreen({
                 </div>
               )}
               <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
+              {/* Holo shimmer + sweep VIP */}
+              {isVipWrong && <>
+                <div style={{
+                  position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+                  background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(127,119,221,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(127,119,221,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'holoShimmer 3s linear infinite',
+                  mixBlendMode: 'screen',
+                }} />
+                <div style={{ position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden' }}>
+                  <div style={{
+                    position: 'absolute', top: '-20%', bottom: '-20%',
+                    width: '45%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                    animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
+                  }} />
+                </div>
+              </>}
               {/* Cadenas + débloquer sur l'image */}
               {flipped && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ zIndex: 5, gap: S(10) }}>
                   <span style={{ fontSize: S(48), filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }}>🔒</span>
                   <button
                       onClick={() => {
-                        if (_currencyCoins < 25) return
+                        if (_currencyCoins < (fact.isVip ? 250 : 50)) return
                         setShowUnlockConfirm(true)
                       }}
                       className="btn-press active:scale-95"
                       style={{
                         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-                        border: isBrandedMode ? `2px solid ${accentColor}` : '2px solid rgba(255,255,255,0.5)',
+                        border: isVipWrong ? '2px solid #FFD700' : (isBrandedMode ? `2px solid ${accentColor}` : '2px solid rgba(255,255,255,0.5)'),
                         borderRadius: S(12), padding: `${S(8)} ${S(16)}`,
                         color: _currencyCoins >= (fact.isVip ? 250 : 50) ? '#ffffff' : '#9CA3AF',
                         fontWeight: 800, fontSize: S(13),
@@ -457,12 +499,13 @@ export default function RevelationScreen({
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: `0 ${S(16)}` }}>
           <div style={{
             background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
-            border: '3px solid #EF4444',
+            border: isVipWrong ? '3px solid #FFD700' : '3px solid #EF4444',
             borderRadius: S(14), padding: `${S(14)} ${S(20)}`,
             textAlign: 'center',
+            boxShadow: isVipWrong ? '0 0 16px rgba(255,215,0,0.4)' : 'none',
           }}>
-            <span style={{ fontSize: S(18), fontWeight: 900, color: '#EF4444', lineHeight: 1.4 }}>
-              {isTimeout ? '⏱️ Temps écoulé' : wrongMsg}
+            <span style={{ fontSize: S(18), fontWeight: 900, color: isVipWrong ? '#FFD700' : '#EF4444', lineHeight: 1.4 }}>
+              {isTimeout ? '⏱️ Temps écoulé' : (isVipWrong ? '👑 F*ct WTF! non débloqué' : wrongMsg)}
             </span>
           </div>
         </div>
@@ -475,16 +518,17 @@ export default function RevelationScreen({
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: S(24),
           }}>
             <div style={{
-              background: '#FAFAF8', borderRadius: S(20), padding: S(24),
+              background: isVipWrong ? '#1a1a2e' : '#FAFAF8', borderRadius: S(20), padding: S(24),
               width: '100%', maxWidth: 320, textAlign: 'center',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.3)',
+              boxShadow: isVipWrong ? '0 24px 64px rgba(255,215,0,0.2), 0 0 1px rgba(255,215,0,0.5)' : '0 24px 64px rgba(0,0,0,0.3)',
+              border: isVipWrong ? '2px solid #FFD700' : 'none',
             }}>
-              <div style={{ fontSize: S(40), marginBottom: S(8) }}>✨</div>
-              <h3 style={{ fontSize: S(16), fontWeight: 900, color: '#1a1a2e', margin: `0 0 ${S(6)}` }}>
+              <div style={{ fontSize: S(40), marginBottom: S(8) }}>{isVipWrong ? '👑' : '✨'}</div>
+              <h3 style={{ fontSize: S(16), fontWeight: 900, color: isVipWrong ? '#FFD700' : '#1a1a2e', margin: `0 0 ${S(6)}` }}>
                 Ajouter à ta collection ?
               </h3>
-              <p style={{ fontSize: S(13), fontWeight: 600, color: '#6B7280', margin: `0 0 ${S(20)}`, lineHeight: 1.4 }}>
-                Tu pourras voir l'image et l'explication pour <span style={{ fontWeight: 900, color: '#1a1a2e' }}>{fact.isVip ? 250 : 50}</span> <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
+              <p style={{ fontSize: S(13), fontWeight: 600, color: isVipWrong ? 'rgba(255,255,255,0.7)' : '#6B7280', margin: `0 0 ${S(20)}`, lineHeight: 1.4 }}>
+                Tu pourras voir l'image et l'explication pour <span style={{ fontWeight: 900, color: isVipWrong ? '#FFD700' : '#1a1a2e' }}>{fact.isVip ? 250 : 50}</span> <img src="/assets/ui/icon-coins.png" alt="" style={{ width: '1em', height: '1em', verticalAlign: 'middle', display: 'inline' }} />
               </p>
               <div style={{ display: 'flex', gap: S(10) }}>
                 <button
@@ -492,7 +536,9 @@ export default function RevelationScreen({
                   style={{
                     flex: 1, padding: `${S(12)} 0`, borderRadius: S(12),
                     fontWeight: 800, fontSize: S(13), fontFamily: 'Nunito, sans-serif',
-                    background: '#F3F4F6', border: '1px solid #E5E7EB', color: '#6B7280', cursor: 'pointer',
+                    background: isVipWrong ? 'rgba(255,255,255,0.08)' : '#F3F4F6',
+                    border: isVipWrong ? '1px solid rgba(255,255,255,0.15)' : '1px solid #E5E7EB',
+                    color: isVipWrong ? 'rgba(255,255,255,0.6)' : '#6B7280', cursor: 'pointer',
                   }}
                 >
                   Annuler
@@ -509,9 +555,9 @@ export default function RevelationScreen({
                   style={{
                     flex: 1, padding: `${S(12)} 0`, borderRadius: S(12),
                     fontWeight: 900, fontSize: S(13), fontFamily: 'Nunito, sans-serif',
-                    background: isBrandedMode ? accentGradient : '#FF6B1A',
+                    background: isVipWrong ? 'linear-gradient(135deg, #FFD700, #FFA500)' : (isBrandedMode ? accentGradient : '#FF6B1A'),
                     border: 'none', color: 'white', cursor: 'pointer',
-                    boxShadow: isBrandedMode ? accentShadow : '0 4px 16px rgba(255,107,26,0.4)',
+                    boxShadow: isVipWrong ? '0 4px 16px rgba(255,215,0,0.55)' : (isBrandedMode ? accentShadow : '0 4px 16px rgba(255,107,26,0.4)'),
                   }}
                 >
                   Ajouter
@@ -521,38 +567,34 @@ export default function RevelationScreen({
           </div>
         )}
 
-        {/* Boutons — demander aide + suivant côte à côte */}
+        {/* Boutons — VIP raté : Retenter + Accueil / sinon : Demander à un ami + Suivant */}
         <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
           <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
             <button
-              onClick={() => { audio.play('click'); handleNativeShare() }}
+              onClick={() => { audio.play('click'); isVipWrong ? handleNext() : handleNativeShare() }}
               className="btn-press active:scale-95 transition-all"
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(11),
                 color: 'white', letterSpacing: '0.03em',
-                border: isBrandedMode ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
-                background: isBrandedMode
-                  ? accentGradient
-                  : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                boxShadow: isBrandedMode ? accentShadow : 'none',
+                border: '3px solid #ffffff',
+                background: wrongBtnGradient,
+                boxShadow: wrongBtnShadow,
               }}
             >
-              Demander à un ami
+              {isVipWrong ? '🔄 Retenter' : 'Demander à un ami'}
             </button>
             <button
-              onClick={handleNext}
+              onClick={() => { audio.play('click'); isVipWrong ? onQuit() : handleNext() }}
               className="btn-press active:scale-95 transition-all"
               style={{
                 flex: 1, height: '100%', borderRadius: S(14), fontWeight: 900, fontSize: S(12),
                 color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em',
-                border: isBrandedMode ? '3px solid #ffffff' : '2px solid rgba(255,255,255,0.4)',
-                background: isBrandedMode
-                  ? accentGradient
-                  : `linear-gradient(135deg, ${cat?.color || '#FF6B1A'}dd 0%, ${cat?.color || '#FF6B1A'}99 100%)`,
-                boxShadow: isBrandedMode ? accentShadow : 'none',
+                border: '3px solid #ffffff',
+                background: wrongBtnGradient,
+                boxShadow: wrongBtnShadow,
               }}
             >
-              {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
+              {isVipWrong ? '🏠 ACCUEIL' : (isLast && !isQuestMode ? '🏁 RÉSULTATS' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(5) }}>SUIVANT {isQuestMode && !isLast && factIndex === 4 ? <img src="/assets/modes/icon-quest.png?v=2" alt="" style={{ width: S(16), height: S(16), objectFit: 'contain' }} /> : '→'}</span>)}
             </button>
           </div>
         </div>
@@ -605,16 +647,18 @@ export default function RevelationScreen({
       {/* Header */}
       {renderHeader()}
 
-      {/* Encadré question — hauteur fixe 3 lignes, texte auto-size */}
-      <div style={{ flexShrink: 0, padding: `0 ${S(12)} ${S(6)}` }}>
+      {/* Encadré question — harmonisé avec QuestionScreen */}
+      <div style={{ flexShrink: 0, padding: `0 ${S(16)} ${S(6)}` }}>
         <div style={{
-          background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(12px)',
-          borderRadius: S(12), padding: `${S(10)} ${S(14)}`,
-          border: isVipReveal ? `3px solid #FFD700` : `2.5px solid ${accentColor}`,
-          height: S(75), overflow: 'hidden',
+          background: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(12px)',
+          borderRadius: S(16), padding: `${S(12)} ${S(16)}`,
+          border: isVipReveal ? `3px solid #FFD700` : `3px solid ${accentColor}`,
+          boxShadow: isVipReveal ? '0 0 16px rgba(255,215,0,0.5), 0 0 32px rgba(255,215,0,0.25)' : 'none',
+          height: S(72), overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <div ref={questionContainerRef} style={{ width: '100%', height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span ref={questionRef} style={{ fontWeight: 900, fontSize: questionFontSize + 'px', color: '#ffffff', lineHeight: 1.3, textAlign: 'center' }}>
+            <span ref={questionRef} style={{ fontWeight: 800, fontSize: questionFontSize + 'px', color: '#ffffff', lineHeight: 1.4, textAlign: 'center' }}>
               {renderFormattedText(fact.question, questionHighlight)}
             </span>
           </div>
@@ -634,12 +678,12 @@ export default function RevelationScreen({
           }
         `}</style>
       )}
-      <div style={{ flexShrink: 0, padding: `0 ${S(10)}`, maxHeight: '35vh' }}>
+      <div style={{ flexShrink: 0, padding: `0 ${S(16)}`, maxHeight: '35vh' }}>
         <div
           onClick={() => setShowLightbox(true)}
           className="relative overflow-hidden"
           style={{
-            width: '100%', maxHeight: '35vh', borderRadius: S(16),
+            width: '100%', aspectRatio: '1 / 1', maxHeight: '35vh', borderRadius: S(16),
             border: showVipGlow ? `3px solid #FFD700` : `3px solid ${accentColor}`,
             background: catGradient, cursor: 'pointer',
             ...(showVipGlow ? { animation: 'vipCardGlow 2s ease-in-out infinite' } : {}),
@@ -649,11 +693,11 @@ export default function RevelationScreen({
             <img
               src={fact.imageUrl}
               alt={fact.question}
-              style={{ objectFit: 'cover', width: '100%', maxHeight: 'calc(35vh - 6px)', display: 'block' }}
+              style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
               onError={() => setImgFailed(true)}
             />
           ) : (
-            <div style={{ width: '100%', height: 'calc(35vh - 6px)', overflow: 'hidden' }}>
+            <div style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
               <FallbackImage categoryColor={cat?.color || '#1a3a5c'} />
             </div>
           )}
@@ -670,16 +714,16 @@ export default function RevelationScreen({
               }}
             >🔍</button>
           )}
-          {/* Holo shimmer — toujours visible (pokemon glow) */}
-          <div style={{
+          {/* Holo shimmer — VIP uniquement (pokemon glow) */}
+          {showVipGlow && <div style={{
             position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
             background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.15) 30%, rgba(127,119,221,0.2) 38%, rgba(255,215,0,0.15) 44%, rgba(0,188,212,0.15) 50%, rgba(255,64,129,0.15) 56%, rgba(127,119,221,0.2) 62%, rgba(255,255,255,0.15) 70%, transparent 80%)',
             backgroundSize: '200% 100%',
             animation: 'holoShimmer 3s linear infinite',
             mixBlendMode: 'screen',
-          }} />
-          {/* Lame de lumière blanche qui balaie */}
-          <div style={{
+          }} />}
+          {/* Lame de lumière blanche — VIP uniquement */}
+          {showVipGlow && <div style={{
             position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none', overflow: 'hidden',
           }}>
             <div style={{
@@ -688,15 +732,12 @@ export default function RevelationScreen({
               background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
               animation: 'holoSweep 2.5s 0.5s ease-in-out infinite',
             }} />
-          </div>
-          {/* Stamp Unlocked — gold + étoile WTF pour les VIP (étoile dans l'angle haut-droit intérieur), vert pour les Funny. Masqué en VoF. */}
+          </div>}
+          {/* Stamp Unlocked — étoile centrée au-dessus pour VIP, vert pour Funny. Masqué en VoF. */}
           {!isVofMode && (
             <div style={{
               position: 'absolute', bottom: S(8), right: S(8), zIndex: 5,
-              background: 'transparent',
-              border: `2px solid ${isVipReveal ? '#FFD700' : '#4CAF50'}`,
-              borderRadius: S(6),
-              padding: isVipReveal ? `${S(3)} ${S(14)} ${S(3)} ${S(8)}` : `${S(3)} ${S(8)}`,
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
               pointerEvents: 'none',
             }}>
               {isVipReveal && (
@@ -704,30 +745,37 @@ export default function RevelationScreen({
                   src="/assets/ui/wtf-star.png"
                   alt=""
                   style={{
-                    position: 'absolute', top: S(1), right: S(1),
-                    width: S(10), height: S(10),
-                    pointerEvents: 'none',
+                    width: S(12), height: S(12),
+                    marginBottom: S(2),
                     filter: 'drop-shadow(0 0 3px rgba(255,215,0,0.9))',
                   }}
                 />
               )}
-              <span style={{
-                fontSize: S(10), fontWeight: 900,
-                color: isVipReveal ? '#FFD700' : '#4CAF50',
-                letterSpacing: '0.04em',
-              }}>Unlocked !</span>
+              <div style={{
+                background: 'transparent',
+                border: `2px solid ${isVipReveal ? '#FFD700' : '#4CAF50'}`,
+                borderRadius: S(6),
+                padding: `${S(3)} ${S(8)}`,
+              }}>
+                <span style={{
+                  fontSize: S(10), fontWeight: 900,
+                  color: isVipReveal ? '#FFD700' : '#4CAF50',
+                  letterSpacing: '0.04em',
+                }}>Unlocked !</span>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Réponse + Explication — format explorer */}
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(4)} ${S(12)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: `${S(4)} ${S(16)} 0`, display: 'flex', flexDirection: 'column', gap: S(4) }}>
         {/* Encadré réponse — hauteur fixe 2 lignes, texte auto-size */}
         <div style={{
-          background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-          border: isVipReveal ? `3px solid #FFD700` : `2.5px solid ${accentColor}`,
-          borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+          background: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(12px)',
+          border: isVipReveal ? `3px solid #FFD700` : `3px solid ${accentColor}`,
+          borderRadius: S(16), padding: `${S(8)} ${S(12)}`,
+          boxShadow: isVipReveal ? '0 0 16px rgba(255,215,0,0.4), 0 0 32px rgba(255,215,0,0.2)' : 'none',
           height: S(68), overflow: 'hidden', flexShrink: 0,
           display: 'flex', flexDirection: 'column',
         }}>
@@ -739,22 +787,23 @@ export default function RevelationScreen({
 
         {/* Encadré Le saviez-vous */}
         <div style={{
-          background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)',
-          border: isVipReveal ? `3px solid #FFD700` : `2.5px solid ${accentColor}`,
-          borderRadius: S(12), padding: `${S(8)} ${S(10)}`,
+          background: 'rgba(0,0,0,0.28)', backdropFilter: 'blur(12px)',
+          border: isVipReveal ? `3px solid #FFD700` : `3px solid ${accentColor}`,
+          borderRadius: S(16), padding: `${S(8)} ${S(12)}`,
+          boxShadow: isVipReveal ? '0 0 16px rgba(255,215,0,0.4), 0 0 32px rgba(255,215,0,0.2)' : 'none',
           flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: S(4), marginBottom: S(3), flexShrink: 0 }}>
-            <span style={{ color: isVipReveal ? '#FFD700' : accentColor, fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
+            <span style={{ color: isVipReveal ? '#FFD700' : '#4CAF50', fontWeight: 900, fontSize: S(9), textTransform: 'uppercase', letterSpacing: '0.05em' }}>Le saviez-vous ?</span>
           </div>
-          <div ref={explanationContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+          <div ref={explanationContainerRef} style={{ flex: 1, minHeight: 0, overflow: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <p ref={explanationRef} style={{ color: 'rgba(255,255,255,0.85)', fontSize: explanationFontSize, lineHeight: 1.45, fontWeight: 500, margin: 0 }}>{stripEmojis(fact.explanation)}</p>
           </div>
         </div>
       </div>
 
       {/* Boutons — gradient gold pour fact WTF (VIP), sinon accent du mode */}
-      <div style={{ flexShrink: 0, padding: `${S(4)} ${S(12)} ${S(8)}` }}>
+      <div style={{ flexShrink: 0, padding: `${S(4)} ${S(16)} ${S(8)}` }}>
         <div style={{ display: 'flex', gap: S(8), height: S(44) }}>
           <button
             onClick={handleNativeShare}
@@ -782,7 +831,7 @@ export default function RevelationScreen({
               boxShadow: isVipReveal ? '0 4px 16px rgba(255,215,0,0.55)' : accentShadow,
             }}
           >
-            {isLast ? '🏁 RÉSULTATS' : 'SUIVANT →'}
+            {isLast && !isQuestMode ? '🏁 RÉSULTATS' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: S(5) }}>SUIVANT {isQuestMode && !isLast && factIndex === 4 ? <img src="/assets/modes/icon-quest.png?v=2" alt="" style={{ width: S(16), height: S(16), objectFit: 'contain' }} /> : '→'}</span>}
           </button>
         </div>
       </div>

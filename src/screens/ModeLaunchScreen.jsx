@@ -11,7 +11,7 @@ const MODE_COLORS = {
   vrai_ou_fou: '#008000',
   race: '#0F52BA',
   blitz: '#FF4444',
-  quest: '#D94A10',
+  quest: '#FF6600',
   drop: '#E91E63',
   multi: '#6B2D8E',
 }
@@ -59,7 +59,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'vrai_ou_fou' ? '#6BCB77'
     : modeId === 'race' ? '#23D5D5'
     : modeId === 'multi' ? MULTI_VIOLET
-    : modeId === 'quest' ? QUEST_ORANGE
+    : modeId === 'quest' ? '#FFA500'
     : modeId === 'drop' ? DROP_PINK
     : modeColor
 
@@ -67,14 +67,14 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
     : modeId === 'race' ? '#0F52BA'
     : modeId === 'blitz' ? '#CC0000'
     : modeId === 'multi' ? MULTI_VIOLET
-    : modeId === 'quest' ? QUEST_DARK
+    : modeId === 'quest' ? '#FF6600'
     : modeId === 'drop' ? DROP_DARK
     : '#E91E90'
   const btnShadow = modeId === 'vrai_ou_fou' ? '0 8px 30px rgba(0,128,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'race' ? '0 8px 30px rgba(0,255,255,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'blitz' ? '0 8px 30px rgba(204,0,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'multi' ? '0 8px 30px rgba(107,45,142,0.5), 0 4px 0 rgba(0,0,0,0.15)'
-    : modeId === 'quest' ? '0 8px 30px rgba(217,74,16,0.5), 0 4px 0 rgba(0,0,0,0.15)'
+    : modeId === 'quest' ? '0 8px 30px rgba(255,102,0,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : modeId === 'drop' ? '0 8px 30px rgba(173,20,87,0.5), 0 4px 0 rgba(0,0,0,0.15)'
     : '0 8px 30px rgba(233,30,144,0.5), 0 4px 0 rgba(0,0,0,0.15)'
 
@@ -159,7 +159,7 @@ export default function ModeLaunchScreen({ modeId, modeName, subtitle, emoji, ic
           } else if (modeId === 'multi') {
             iconColor = i % 2 === 0 ? MULTI_VIOLET : '#4A1E63'
           } else if (modeId === 'quest') {
-            iconColor = i % 2 === 0 ? QUEST_ORANGE : QUEST_DARK
+            iconColor = i % 2 === 0 ? '#FFA500' : '#FF6600'
           } else if (modeId === 'drop') {
             iconColor = i % 2 === 0 ? DROP_PINK : DROP_DARK
           }

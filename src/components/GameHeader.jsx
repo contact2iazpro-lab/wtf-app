@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import SettingsModal from './SettingsModal'
+import ShopModal from './ShopModal'
 import BatteryIcon from './home/BatteryIcon'
 import { audio } from '../utils/audio'
 import { usePlayerProfile } from '../hooks/usePlayerProfile'
@@ -7,15 +8,20 @@ import { getQuickieEnergy } from '../services/energyService'
 
 const S = (px) => `calc(${px}px * var(--scale))`
 
-const Pill = ({ icon, value, alt }) => (
-  <div style={{
-    display: 'flex', alignItems: 'center', gap: S(4),
-    background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
-    padding: `${S(3)} ${S(10)}`,
-  }}>
+const Pill = ({ icon, value, alt, onClick }) => (
+  <button
+    onClick={onClick}
+    style={{
+      display: 'flex', alignItems: 'center', gap: S(4),
+      background: 'rgba(255,255,255,0.25)', borderRadius: S(20),
+      padding: `${S(3)} ${S(10)}`,
+      border: 'none', cursor: 'pointer',
+      WebkitTapHighlightColor: 'transparent',
+    }}
+  >
     <img src={icon} alt={alt} style={{ width: S(14), height: S(14), objectFit: 'contain', flexShrink: 0 }} />
     <span style={{ fontWeight: 800, color: 'white', fontSize: S(11), whiteSpace: 'nowrap' }}>{value}</span>
-  </div>
+  </button>
 )
 
 export default function GameHeader({
@@ -27,6 +33,7 @@ export default function GameHeader({
   coinFlash = null,
 }) {
   const [showSettings, setShowSettings] = useState(false)
+  const [showShop, setShowShop] = useState(null)
 
   const { coins, hints } = usePlayerProfile()
   const [energy, setEnergy] = useState(() => getQuickieEnergy().remaining)
@@ -39,6 +46,7 @@ export default function GameHeader({
   return (
     <>
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showShop && <ShopModal initialTab={showShop} onClose={() => setShowShop(null)} />}
       <div style={{
         display: 'flex', flexDirection: 'row',
         alignItems: 'center', justifyContent: 'space-between',
@@ -82,7 +90,7 @@ export default function GameHeader({
         {/* Droite : pills + settings */}
         <div style={{ display: 'flex', alignItems: 'center', gap: S(6), flexShrink: 0 }}>
           <div style={{ position: 'relative' }}>
-            <Pill icon="/assets/ui/icon-coins.png" value={coins} alt="coins" />
+            <Pill icon="/assets/ui/icon-coins.png" value={coins} alt="coins" onClick={() => { audio.play('click'); setShowShop('hints') }} />
             {coinFlash && (
               <span style={{
                 position: 'absolute', top: '-12px', right: S(4),
@@ -93,7 +101,7 @@ export default function GameHeader({
               </span>
             )}
           </div>
-          <Pill icon="/assets/ui/icon-hint.png?v=2" value={hints} alt="hints" />
+          <Pill icon="/assets/ui/icon-hint.png?v=2" value={hints} alt="hints" onClick={() => { audio.play('click'); setShowShop('hints') }} />
           <BatteryIcon level={energy ?? 0} />
           <button
             onClick={() => { audio.play('click'); setShowSettings(true) }}

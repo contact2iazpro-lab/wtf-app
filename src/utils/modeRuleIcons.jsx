@@ -144,7 +144,7 @@ export const COMPONENT_ICONS = {
     // Multi : lignes 1 & 3 violettes, ligne 2 sélectionnée en gold
     if (modeId === 'multi') return <MultipleChoiceIcon size={size} color={MULTI_VIOLET} accent={MULTI_GOLD} />
     // Quest : lignes 1 & 3 orange Quest, ligne 2 gold
-    if (modeId === 'quest') return <MultipleChoiceIcon size={size} color={QUEST_ORANGE} accent={QUICKIE_GOLD} />
+    if (modeId === 'quest') return <MultipleChoiceIcon size={size} color={QUEST_ORANGE} accent={MULTI_GOLD} />
     // Drop : lignes 1 & 3 pink, ligne 2 gold
     if (modeId === 'drop') return <MultipleChoiceIcon size={size} color={DROP_PINK} accent={QUICKIE_GOLD} />
     return <MultipleChoiceIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
@@ -154,7 +154,7 @@ export const COMPONENT_ICONS = {
     // Drop : "?" en gold
     if (modeId === 'drop') return <QuestionTargetIcon size={size} color={DROP_PINK} accent={DROP_PINK} questionColor={QUICKIE_GOLD} />
     // Quest : "?" en gold
-    if (modeId === 'quest') return <QuestionTargetIcon size={size} color={QUEST_ORANGE} accent={QUEST_ORANGE} questionColor={QUICKIE_GOLD} />
+    if (modeId === 'quest') return <QuestionTargetIcon size={size} color={QUEST_ORANGE} accent={QUEST_ORANGE} questionColor={MULTI_GOLD} />
     return <QuestionTargetIcon size={size} color={color === QUICKIE_GOLD ? '#ffffff' : (color || '#ffffff')} accent={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || undefined)} questionColor={color === QUICKIE_GOLD ? QUICKIE_GOLD : null} />
   },
   'icon:timer': (size, color, modeId) => {
@@ -164,7 +164,7 @@ export const COMPONENT_ICONS = {
     // Multi : cercle blanc, intérieur (aiguilles + bouton) violet
     if (modeId === 'multi') return <TimerIcon size={size} color={'#ffffff'} accent={MULTI_VIOLET} />
     // Quest : cercle orange Quest, aiguilles/bouton en gold
-    if (modeId === 'quest') return <TimerIcon size={size} color={QUEST_ORANGE} accent={QUICKIE_GOLD} />
+    if (modeId === 'quest') return <TimerIcon size={size} color={QUEST_ORANGE} accent={MULTI_GOLD} />
     // Drop : cercle pink, aiguilles/bouton en gold
     if (modeId === 'drop') return <TimerIcon size={size} color={DROP_PINK} accent={QUICKIE_GOLD} />
     return <TimerIcon size={size} color={color === QUICKIE_GOLD ? QUICKIE_VIOLET : (color || '#ffffff')} accent={color || undefined} />
@@ -178,6 +178,7 @@ export const COMPONENT_ICONS = {
   },
   'icon:hint': (size) => <img src="/assets/ui/icon-hint.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
   'icon:coins': (size) => <img src="/assets/ui/icon-coins.png" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
+  'icon:quest': (size) => <img src="/assets/modes/icon-quest.png?v=2" alt="" style={{ width: size, height: size, objectFit: 'contain' }} />,
   'picto:infinity': (size, color) => <InfinityIcon size={size} color={color || '#6BCB77'} />,
   'picto:swipe': (size) => <SwipeArrowsIcon size={size} />,
   'picto:share': (size, color, modeId) => {
@@ -195,7 +196,7 @@ export const COMPONENT_ICONS = {
   },
   'picto:target': (size, color, modeId) => {
     // Quest : cible avec "?" gold à l'intérieur (sur contour orange Quest)
-    if (modeId === 'quest') return <TargetIcon size={size} color={QUEST_ORANGE} questionMark questionColor={QUICKIE_GOLD} />
+    if (modeId === 'quest') return <TargetIcon size={size} color={QUEST_ORANGE} questionMark questionColor={MULTI_GOLD} />
     return <TargetIcon size={size} color={color || '#ffffff'} />
   },
   'picto:steps': (size, color) => <StepsIcon size={size} color={color || '#ffffff'} />,

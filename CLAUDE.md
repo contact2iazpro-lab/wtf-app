@@ -76,7 +76,7 @@ L'admin-tool (clé service_role) doit être déployé **en isolation** (voir `do
 - QCM **4 choix**, 5 questions, timer **15s** (passé de 2 à 4 choix le 20/04/2026)
 - Indices : 2 max (stock perso, coût 50 coins en boutique)
 - Contenu : Funny facts **+ 3% chance / question d'un VIP surprise** (19/04/2026)
-- Coût : 1 énergie (cap 5, régén +1/8h, extra = 75 coins)
+- Coût : 1 énergie (cap 5, régén +1/8h, extra = 200 coins)
 - Gains : 10 coins/bonne réponse · Perfect (5/5) : +50 coins
 - Déblocage f*cts : Oui (Funny + VIP si bien répondu)
 - Catégories : 5 gratuites (sport, records, animaux, kids, définition) + débloquables 200 coins (baissé de 1 500 le 19/04/2026)
@@ -95,17 +95,16 @@ L'admin-tool (clé service_role) doit être déployé **en isolation** (voir `do
 
 ### 3. QUEST — "Le chemin des WTF!" (ex-Route WTF!)
 - QCM **4 choix**, blocs de **5 Funny + 1 boss VIP conditionnel** (refonte 19/04/2026, ex-10+1)
-- Timer : **20s** · Indices : 2/question (stock perso, achat 50 coins si vide)
-- Coût : 1 énergie par tentative de bloc (extra = 75 coins)
+- Timer : **30s** · Indices : 2/question (stock perso, achat 50 coins si vide) · **Indice boss : 100 coins**
+- Coût : 1 énergie par tentative de bloc (extra = 200 coins)
 - **Seuil boss : ≥3/5 bonnes réponses** sur les Funny pour affronter le boss VIP
-- `<3/5` → bloc raté, pas de boss, joueur bloqué (refaire)
+- `<3/5` → proposition d'**achat accès boss** (100c × réponses manquantes : 0/5=300c, 1/5=200c, 2/5=100c). Refus = bloc raté.
 - `≥3/5 + boss réussi` → niveau suivant, VIP débloqué
 - `≥3/5 + boss raté` → bloqué, VIP verrouillé, retry boss depuis la carte
-- Gains : 20 coins/bonne Funny · +100 coins/boss vaincu
+- Gains : **10 coins/bonne Funny** · **+0 coins/boss vaincu** (22/04/2026, anciennement 20c + 100c boss)
 - Déblocage f*cts : Funny correctes (toujours) + VIP (si boss réussi)
 - Anti-déduction boss : fausses tirées parmi 7 à chaque retry, 2 indices parmi 4 (seed par retry)
 - Map progression : ~154 blocs × 6 niveaux (770 Funny ÷ 5)
-- Rythme : 100c + 100c = 200c/bloc, 2× plus de blocs → volume identique, consommation énergie ×2
 - Spec source : `docs/QUEST_MODE_UPDATE.md`
 
 ### 4. RACE — "Zéro droit à l'erreur" (ex-No Limit)
@@ -214,16 +213,16 @@ Implémentation : `src/constants/gameConfig.js` (field `wrongDistribution`) + `s
 |-----------|--------|
 | **Nouveau joueur** | **500 coins / 3 indices / 5 énergies** (plus de tickets) |
 | Énergie max (stock) | 5 (régén +1/8h) |
-| Énergie extra | 75 coins |
+| Énergie extra | 200 coins (22/04/2026, anciennement 75) |
 | Indice (boutique) | 50 coins |
 | Débloquer catégorie | 200 coins |
 | Cosmétique profil (moyen) | 500 coins |
 | Mise Multi (créateur) | 100 coins |
 | Spin roulette (payant) | 100 coins |
-| Gains journaliers cible | 250-400 coins/jour |
-| Sinks journaliers cible | ~125 coins/jour |
-| Surplus net cible | 80-250 coins/jour |
-| TTF (pression achat) | 5-10 jours |
+| Gains journaliers cible | 250-400 coins/jour (22/04/2026 : Quickie reste dominant, Quest nerfé à ~50c/bloc) |
+| Sinks journaliers cible | ~200 coins/jour (22/04/2026, énergie extra 200c, boss buy 100-300c) |
+| Surplus net cible | 50-200 coins/jour |
+| TTF (pression achat) | 4-7 jours (22/04/2026, resserré par nerf Quest + coût énergie) |
 | **Devises** | **Coins + Gems uniquement** (plus de tickets) |
 | **Modèle F2P** | **Modèle A+** — Starter Pack 2,99€ + Packs Gems + Abo optionnel |
 
